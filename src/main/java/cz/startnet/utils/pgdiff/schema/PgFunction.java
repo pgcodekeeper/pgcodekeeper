@@ -36,6 +36,13 @@ public class PgFunction extends PgStatement {
      * Comment.
      */
     private String comment;
+    
+    /**
+     * Create a new PgFunction object
+     */
+    public PgFunction(final String rawStatement, final String searchPath) {
+    	super(rawStatement, searchPath);
+    }
 
     /**
      * Getter for {@link #comment}.

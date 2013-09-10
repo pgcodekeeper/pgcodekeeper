@@ -135,6 +135,10 @@ public class PgDumpLoader { //NOPMD
      * Storage of unprocessed line part.
      */
     private static String lineBuffer;
+    /**
+     * Last SET search_path seen in the dump
+     */
+    private static String activeSearchPath;
 
     /**
      * Loads database schema from dump file.
@@ -174,28 +178,29 @@ public class PgDumpLoader { //NOPMD
                         PATTERN_DEFAULT_SCHEMA.matcher(statement);
                 matcher.matches();
                 database.setDefaultSchema(matcher.group(1));
+                activeSearchPath = statement;
             } else if (PATTERN_CREATE_TABLE.matcher(statement).matches()) {
-                CreateTableParser.parse(database, statement);
+                CreateTableParser.parse(database, statement, activeSearchPath);
             } else if (PATTERN_ALTER_TABLE.matcher(statement).matches()) {
                 AlterTableParser.parse(
                         database, statement, outputIgnoredStatements);
             } else if (PATTERN_CREATE_SEQUENCE.matcher(statement).matches()) {
-                CreateSequenceParser.parse(database, statement);
+                CreateSequenceParser.parse(database, statement, activeSearchPath);
             } else if (PATTERN_ALTER_SEQUENCE.matcher(statement).matches()) {
                 AlterSequenceParser.parse(
                         database, statement, outputIgnoredStatements);
             } else if (PATTERN_CREATE_INDEX.matcher(statement).matches()) {
-                CreateIndexParser.parse(database, statement);
+                CreateIndexParser.parse(database, statement, activeSearchPath);
             } else if (PATTERN_CREATE_VIEW.matcher(statement).matches()) {
-                CreateViewParser.parse(database, statement);
+                CreateViewParser.parse(database, statement, activeSearchPath);
             } else if (PATTERN_ALTER_VIEW.matcher(statement).matches()) {
                 AlterViewParser.parse(
                         database, statement, outputIgnoredStatements);
             } else if (PATTERN_CREATE_TRIGGER.matcher(statement).matches()) {
                 CreateTriggerParser.parse(
-                        database, statement, ignoreSlonyTriggers);
+                        database, statement, activeSearchPath, ignoreSlonyTriggers);
             } else if (PATTERN_CREATE_FUNCTION.matcher(statement).matches()) {
-                CreateFunctionParser.parse(database, statement);
+                CreateFunctionParser.parse(database, statement, activeSearchPath);
             } else if (PATTERN_COMMENT.matcher(statement).matches()) {
                 CommentParser.parse(
                         database, statement, outputIgnoredStatements);

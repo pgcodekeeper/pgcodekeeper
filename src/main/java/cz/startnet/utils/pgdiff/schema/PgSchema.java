@@ -70,7 +70,8 @@ public class PgSchema extends PgStatement {
      *
      * @param name {@link #name}
      */
-    public PgSchema(final String name) {
+    public PgSchema(final String name, final String rawStatement) {
+    	super(rawStatement);
         this.name = name;
     }
 
@@ -450,4 +451,14 @@ public class PgSchema extends PgStatement {
 
         return false;
     }
+    
+    /**
+     * searchPath calls are not valid for PgSchema
+     * Do not call this!
+     */
+    public String getSearchPath() {
+    	assert false;
+    	return null;
+    }
+    
 }

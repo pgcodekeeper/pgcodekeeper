@@ -25,13 +25,13 @@ public class CreateSequenceParser {
      * @param statement CREATE SEQUENCE statement
      */
     public static void parse(final PgDatabase database,
-            final String statement) {
+            final String statement, final String searchPath) {
         final Parser parser = new Parser(statement);
         parser.expect("CREATE", "SEQUENCE");
 
         final String sequenceName = parser.parseIdentifier();
         final PgSequence sequence =
-                new PgSequence(ParserUtils.getObjectName(sequenceName));
+                new PgSequence(ParserUtils.getObjectName(sequenceName), statement, searchPath);
         final String schemaName =
                 ParserUtils.getSchemaName(sequenceName, database);
         final PgSchema schema = database.getSchema(schemaName);
@@ -44,9 +44,6 @@ public class CreateSequenceParser {
 
         schema.addSequence(sequence);
         
-        // MYFIX
-        sequence.setRawStatement(statement);
-
         while (!parser.expectOptional(";")) {
             if (parser.expectOptional("INCREMENT")) {
                 parser.expectOptional("BY");

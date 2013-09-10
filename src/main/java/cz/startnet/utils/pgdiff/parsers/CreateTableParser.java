@@ -27,7 +27,7 @@ public class CreateTableParser {
      * @param statement CREATE TABLE statement
      */
     public static void parse(final PgDatabase database,
-            final String statement) {
+            final String statement, final String searchPath) {
         final Parser parser = new Parser(statement);
         parser.expect("CREATE", "TABLE");
 
@@ -35,7 +35,8 @@ public class CreateTableParser {
         parser.expectOptional("IF", "NOT", "EXISTS");
 
         final String tableName = parser.parseIdentifier();
-        final PgTable table = new PgTable(ParserUtils.getObjectName(tableName));
+        final PgTable table = new PgTable(ParserUtils.getObjectName(tableName),
+        		statement, searchPath);
         final String schemaName =
                 ParserUtils.getSchemaName(tableName, database);
         final PgSchema schema = database.getSchema(schemaName);
@@ -47,9 +48,6 @@ public class CreateTableParser {
         }
 
         schema.addTable(table);
-
-        // MYFIX
-        table.setRawStatement(statement);
 
         parser.expect("(");
 

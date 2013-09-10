@@ -69,6 +69,13 @@ public class PgTrigger extends PgStatement {
      * Comment.
      */
     private String comment;
+    
+    /**
+     * Create a new PgTrigger object
+     */
+    public PgTrigger(final String rawStatement, final String searchPath) {
+    	super(rawStatement, searchPath);    	
+    }
 
     /**
      * Setter for {@link #before}.

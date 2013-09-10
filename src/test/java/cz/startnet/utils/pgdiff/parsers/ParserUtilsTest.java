@@ -19,7 +19,7 @@ public class ParserUtilsTest {
     @Test(timeout = 1000)
     public void testParseSchemaBothQuoted() {
         final PgDatabase database = new PgDatabase();
-        final PgSchema schema = new PgSchema("juzz_system");
+        final PgSchema schema = new PgSchema("juzz_system", "CREATE SCHEMA juzz_system;");
         database.addSchema(schema);
 
         Assert.assertThat(ParserUtils.getSchemaName(
@@ -30,7 +30,7 @@ public class ParserUtilsTest {
     @Test(timeout = 1000)
     public void testParseSchemaFirstQuoted() {
         final PgDatabase database = new PgDatabase();
-        final PgSchema schema = new PgSchema("juzz_system");
+        final PgSchema schema = new PgSchema("juzz_system", "CREATE SCHEMA juzz_system;");
         database.addSchema(schema);
 
         Assert.assertThat(ParserUtils.getSchemaName(
@@ -41,7 +41,7 @@ public class ParserUtilsTest {
     @Test(timeout = 1000)
     public void testParseSchemaSecondQuoted() {
         final PgDatabase database = new PgDatabase();
-        final PgSchema schema = new PgSchema("juzz_system");
+        final PgSchema schema = new PgSchema("juzz_system", "CREATE SCHEMA juzz_system;");
         database.addSchema(schema);
 
         Assert.assertThat(ParserUtils.getSchemaName(
@@ -52,7 +52,7 @@ public class ParserUtilsTest {
     @Test(timeout = 1000)
     public void testParseSchemaNoneQuoted() {
         final PgDatabase database = new PgDatabase();
-        final PgSchema schema = new PgSchema("juzz_system");
+        final PgSchema schema = new PgSchema("juzz_system", "CREATE SCHEMA juzz_system;");
         database.addSchema(schema);
 
         Assert.assertThat(ParserUtils.getSchemaName(
@@ -63,7 +63,7 @@ public class ParserUtilsTest {
     @Test(timeout = 1000)
     public void testParseSchemaThreeQuoted() {
         final PgDatabase database = new PgDatabase();
-        final PgSchema schema = new PgSchema("juzz_system");
+        final PgSchema schema = new PgSchema("juzz_system", "CREATE SCHEMA juzz_system;");
         database.addSchema(schema);
 
         Assert.assertThat(ParserUtils.getSchemaName(

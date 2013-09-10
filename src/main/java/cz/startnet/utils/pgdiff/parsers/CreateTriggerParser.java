@@ -24,14 +24,15 @@ public class CreateTriggerParser {
      * @param ignoreSlonyTriggers whether Slony triggers should be ignored
      */
     public static void parse(final PgDatabase database,
-            final String statement, final boolean ignoreSlonyTriggers) {
+            final String statement, final String searchPath,
+            final boolean ignoreSlonyTriggers) {
         final Parser parser = new Parser(statement);
         parser.expect("CREATE", "TRIGGER");
 
         final String triggerName = parser.parseIdentifier();
         final String objectName = ParserUtils.getObjectName(triggerName);
 
-        final PgTrigger trigger = new PgTrigger();
+        final PgTrigger trigger = new PgTrigger(statement, searchPath);
         trigger.setName(objectName);
 
         if (parser.expectOptional("BEFORE")) {
@@ -98,9 +99,6 @@ public class CreateTriggerParser {
         final boolean ignoreSlonyTrigger = ignoreSlonyTriggers
                 && ("_slony_logtrigger".equals(trigger.getName())
                 || "_slony_denyaccess".equals(trigger.getName()));
-
-        // MYFIX
-        trigger.setRawStatement(statement);
         
         if (!ignoreSlonyTrigger) {
             final PgSchema tableSchema = database.getSchema(

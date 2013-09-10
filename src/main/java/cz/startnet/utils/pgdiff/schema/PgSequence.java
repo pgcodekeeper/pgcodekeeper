@@ -56,7 +56,9 @@ public class PgSequence extends PgStatement {
      *
      * @param name name of the sequence
      */
-    public PgSequence(final String name) {
+    public PgSequence(final String name, final String rawStatement,
+    		final String searchPath) {
+    	super(rawStatement, searchPath);
         this.name = name;
     }
 

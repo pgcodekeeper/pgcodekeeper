@@ -44,7 +44,7 @@ public class PgDatabase {
      * Creates a new PgDatabase object.
      */
     public PgDatabase() {
-        schemas.add(new PgSchema("public"));
+        schemas.add(new PgSchema("public", "CREATE SCHEMA public;"));
         defaultSchema = schemas.get(0);
     }
 

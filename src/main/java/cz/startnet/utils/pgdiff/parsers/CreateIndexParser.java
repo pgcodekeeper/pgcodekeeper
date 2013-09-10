@@ -26,7 +26,7 @@ public class CreateIndexParser {
      * @param statement CREATE INDEX statement
      */
     public static void parse(final PgDatabase database,
-            final String statement) {
+            final String statement, final String searchPath) {
         final Parser parser = new Parser(statement);
         parser.expect("CREATE");
 
@@ -61,15 +61,12 @@ public class CreateIndexParser {
                     statement));
         }
 
-        final PgIndex index = new PgIndex(indexName);
+        final PgIndex index = new PgIndex(indexName, statement, searchPath);
         table.addIndex(index);
         schema.addIndex(index);
         index.setDefinition(definition.trim());
         index.setTableName(table.getName());
         index.setUnique(unique);
-        
-        // MYFIX
-        index.setRawStatement(statement);
     }
 
     /**

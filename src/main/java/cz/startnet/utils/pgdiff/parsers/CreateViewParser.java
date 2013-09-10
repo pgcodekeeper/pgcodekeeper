@@ -27,7 +27,7 @@ public class CreateViewParser {
      * @param statement CREATE VIEW statement
      */
     public static void parse(final PgDatabase database,
-            final String statement) {
+            final String statement, final String searchPath) {
         final Parser parser = new Parser(statement);
         parser.expect("CREATE");
         parser.expectOptional("OR", "REPLACE");
@@ -50,7 +50,8 @@ public class CreateViewParser {
 
         final String query = parser.getRest();
 
-        final PgView view = new PgView(ParserUtils.getObjectName(viewName));
+        final PgView view = new PgView(ParserUtils.getObjectName(viewName),
+        		statement, searchPath);
         view.setColumnNames(columnNames);
         view.setQuery(query);
 
@@ -64,9 +65,6 @@ public class CreateViewParser {
         }
 
         schema.addView(view);
-        
-        // MYFIX
-        view.setRawStatement(statement);
     }
 
     /**

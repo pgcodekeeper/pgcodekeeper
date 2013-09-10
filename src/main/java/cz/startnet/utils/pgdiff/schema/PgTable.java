@@ -72,13 +72,14 @@ public class PgTable extends PgStatement {
      */
     private boolean ignored;
     
-
     /**
      * Creates a new PgTable object.
      *
      * @param name {@link #name}
      */
-    public PgTable(final String name) {
+    public PgTable(final String name, final String rawStatement,
+    		final String searchPath) {
+    	super(rawStatement, searchPath);
         this.name = name;
     }
 

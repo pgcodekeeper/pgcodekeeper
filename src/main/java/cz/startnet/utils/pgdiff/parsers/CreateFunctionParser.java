@@ -25,7 +25,7 @@ public class CreateFunctionParser {
      * @param statement CREATE FUNCTION statement
      */
     public static void parse(final PgDatabase database,
-            final String statement) {
+            final String statement, final String searchPath) {
         final Parser parser = new Parser(statement);
         parser.expect("CREATE");
         parser.expectOptional("OR", "REPLACE");
@@ -42,13 +42,10 @@ public class CreateFunctionParser {
                     statement));
         }
 
-        final PgFunction function = new PgFunction();
+        final PgFunction function = new PgFunction(statement, searchPath);
         function.setName(ParserUtils.getObjectName(functionName));
         schema.addFunction(function);
         
-        // MYFIX
-        function.setRawStatement(statement);
-
         parser.expect("(");
 
         while (!parser.expectOptional(")")) {

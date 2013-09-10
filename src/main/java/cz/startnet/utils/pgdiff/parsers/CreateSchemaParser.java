@@ -28,7 +28,7 @@ public class CreateSchemaParser {
 
         if (parser.expectOptional("AUTHORIZATION")) {
             final PgSchema schema = new PgSchema(
-                    ParserUtils.getObjectName(parser.parseIdentifier()));
+                    ParserUtils.getObjectName(parser.parseIdentifier()), statement);
             database.addSchema(schema);
             schema.setAuthorization(schema.getName());
 
@@ -37,12 +37,9 @@ public class CreateSchemaParser {
             if (definition != null && !definition.isEmpty()) {
                 schema.setDefinition(definition);
             }
-            
-            // MYFIX
-            schema.setRawStatement(statement);
         } else {
             final PgSchema schema = new PgSchema(
-                    ParserUtils.getObjectName(parser.parseIdentifier()));
+                    ParserUtils.getObjectName(parser.parseIdentifier()), statement);
             database.addSchema(schema);
 
             if (parser.expectOptional("AUTHORIZATION")) {
@@ -55,9 +52,6 @@ public class CreateSchemaParser {
             if (definition != null && !definition.isEmpty()) {
                 schema.setDefinition(definition);
             }
-            
-            // MYFIX
-            schema.setRawStatement(statement);
         }
     }
 

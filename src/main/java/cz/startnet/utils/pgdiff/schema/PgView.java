@@ -50,7 +50,9 @@ public class PgView extends PgStatement {
      *
      * @param name {@link #name}
      */
-    public PgView(final String name) {
+    public PgView(final String name, final String rawStatement,
+    		final String searchPath) {
+    	super(rawStatement, searchPath);
         this.name = name;
     }
 

@@ -293,7 +293,7 @@ public class CommentParser {
 
         parser.expect("(");
 
-        final PgFunction tmpFunction = new PgFunction();
+        final PgFunction tmpFunction = new PgFunction(null, null);
         tmpFunction.setName(objectName);
 
         while (!parser.expectOptional(")")) {

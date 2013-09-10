@@ -40,7 +40,9 @@ public class PgIndex extends PgStatement {
      *
      * @param name {@link #name}
      */
-    public PgIndex(final String name) {
+    public PgIndex(final String name, final String rawStatement,
+    		final String searchPath) {
+    	super(rawStatement, searchPath);
         this.name = name;
     }
 
