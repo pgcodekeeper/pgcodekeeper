@@ -12,7 +12,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  *
  * @author fordfrog
  */
-public class PgSequence extends PgStatement {
+public class PgSequence extends PgStatementWithSearchPath {
 
     /**
      * Value for CACHE or null if no value is specified.

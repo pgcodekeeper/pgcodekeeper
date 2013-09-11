@@ -451,15 +451,4 @@ public class PgSchema extends PgStatement {
 
         return false;
     }
-    
-    /**
-     * searchPath calls are not valid for PgSchema
-     * Do not call this!
-     */
-    public String getSearchPath() {
-    	// TODO FIX
-    	assert false;
-    	return null;
-    }
-    
 }

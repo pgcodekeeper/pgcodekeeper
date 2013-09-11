@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author fordfrog
  */
-public class PgTrigger extends PgStatement {
+public class PgTrigger extends PgStatementWithSearchPath {
 
     /**
      * Function name and arguments that should be fired on the trigger.

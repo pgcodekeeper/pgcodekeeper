@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author fordfrog
  */
-public class PgTable extends PgStatement {
+public class PgTable extends PgStatementWithSearchPath {
 
     /**
      * List of columns defined on the table.

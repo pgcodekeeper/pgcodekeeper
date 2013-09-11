@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author fordfrog
  */
-public class PgView extends PgStatement {
+public class PgView extends PgStatementWithSearchPath {
 
     /**
      * List of column names.

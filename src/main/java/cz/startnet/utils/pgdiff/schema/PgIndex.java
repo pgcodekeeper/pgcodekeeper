@@ -12,7 +12,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  *
  * @author fordfrog
  */
-public class PgIndex extends PgStatement {
+public class PgIndex extends PgStatementWithSearchPath {
 
     /**
      * Definition of the index.

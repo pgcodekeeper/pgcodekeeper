@@ -17,7 +17,7 @@ import java.util.Locale;
  *
  * @author fordfrog
  */
-public class PgFunction extends PgStatement {
+public class PgFunction extends PgStatementWithSearchPath {
 
     /**
      * Name of the function including argument types.
