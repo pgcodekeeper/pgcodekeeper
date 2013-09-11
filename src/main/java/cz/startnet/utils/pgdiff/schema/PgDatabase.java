@@ -21,6 +21,10 @@ public class PgDatabase {
      */
     private final List<PgSchema> schemas = new ArrayList<PgSchema>(1);
     /**
+     * List of database extensions.
+     */
+    private final List<PgExtension> extensions = new ArrayList<PgExtension>();
+    /**
      * Array of ignored statements.
      */
     @SuppressWarnings("CollectionWithoutInitialCapacity")
@@ -153,11 +157,46 @@ public class PgDatabase {
     }
 
     /**
-     * Adds {@code schema} to the lists of schemas.
+     * Adds {@code schema} to the list of schemas.
      *
      * @param schema schema
      */
     public void addSchema(final PgSchema schema) {
         schemas.add(schema);
+    }
+    
+    /**
+     * Returns extension of given name or null if the extension has not been found.
+     * 
+     * @param name extension name
+     * 
+     * @return found extension or null
+     */
+    public PgExtension getExtension(final String name) {
+    	for(final PgExtension ext : extensions) {
+    		if(ext.getName().equals(name)) {
+    			return ext;
+    		}
+    	}
+    	
+    	return null;
+    }
+    
+    /**
+     * Getter for {@link #extensions}. The list cannot be modified.
+     * 
+     * @return {@link #extensions}
+     */
+    public List<PgExtension> getExtensions() {
+    	return Collections.unmodifiableList(extensions);
+    }
+    
+    /**
+     * Adds {@code #extension} to the list of extension.
+     * 
+     *  @param extension extension
+     */
+    public void addExtension(final PgExtension extension) {
+    	extensions.add(extension);
     }
 }

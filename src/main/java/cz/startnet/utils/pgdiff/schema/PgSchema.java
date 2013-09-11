@@ -457,6 +457,7 @@ public class PgSchema extends PgStatement {
      * Do not call this!
      */
     public String getSearchPath() {
+    	// TODO FIX
     	assert false;
     	return null;
     }

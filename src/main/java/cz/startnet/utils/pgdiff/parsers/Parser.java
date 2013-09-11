@@ -60,7 +60,7 @@ public final class Parser {
      *
      * @return true if word was found, otherwise false
      */
-    public boolean expect(final String word, final boolean optional) {
+    private boolean expect(final String word, final boolean optional) {
         final int wordEnd = position + word.length();
 
         if (wordEnd <= string.length()
