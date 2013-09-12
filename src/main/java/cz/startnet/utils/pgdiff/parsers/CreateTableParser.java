@@ -53,7 +53,7 @@ public class CreateTableParser {
 
         while (!parser.expectOptional(")")) {
             if (parser.expectOptional("CONSTRAINT")) {
-                parseConstraint(parser, table);
+                parseConstraint(parser, table, searchPath);
             } else {
                 parseColumn(parser, table);
             }
@@ -119,9 +119,10 @@ public class CreateTableParser {
      * @param table  table
      */
     private static void parseConstraint(final Parser parser,
-            final PgTable table) {
+            final PgTable table, final String searchPath) {
         final PgConstraint constraint = new PgConstraint(
-                ParserUtils.getObjectName(parser.parseIdentifier()));
+                ParserUtils.getObjectName(parser.parseIdentifier()),
+                null, searchPath);
         table.addConstraint(constraint);
         constraint.setDefinition(parser.getExpression());
         constraint.setTableName(table.getName());

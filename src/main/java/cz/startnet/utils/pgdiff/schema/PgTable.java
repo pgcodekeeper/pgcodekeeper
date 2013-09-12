@@ -179,6 +179,7 @@ public class PgTable extends PgStatementWithSearchPath {
     public String getCreationSQL() {
     	// MYFIX
     	if(ignored) {
+    		assert false;
     		return "";
     	}
     	

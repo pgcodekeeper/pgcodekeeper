@@ -33,7 +33,8 @@ public class AlterTableParser {
      *                                output in the diff
      */
     public static void parse(final PgDatabase database,
-            final String statement, final boolean outputIgnoredStatements) {
+            final String statement, final boolean outputIgnoredStatements,
+            final String searchPath) {
         final Parser parser = new Parser(statement);
         parser.expect("ALTER", "TABLE");
         parser.expectOptional("ONLY");
@@ -95,9 +96,9 @@ public class AlterTableParser {
                 }
             } else if (parser.expectOptional("ADD")) {
                 if (parser.expectOptional("FOREIGN", "KEY")) {
-                    parseAddForeignKey(parser, table);
+                    parseAddForeignKey(parser, table, searchPath);
                 } else if (parser.expectOptional("CONSTRAINT")) {
-                    parseAddConstraint(parser, table, schema);
+                    parseAddConstraint(parser, table, schema, searchPath);
                 } else {
                     parser.throwUnsupportedCommand();
                 }
@@ -214,10 +215,11 @@ public class AlterTableParser {
      * @param schema schema
      */
     private static void parseAddConstraint(final Parser parser,
-            final PgTable table, final PgSchema schema) {
+            final PgTable table, final PgSchema schema, final String searchPath) {
         final String constraintName =
                 ParserUtils.getObjectName(parser.parseIdentifier());
-        final PgConstraint constraint = new PgConstraint(constraintName);
+        final PgConstraint constraint = 
+        		new PgConstraint(constraintName, null, searchPath);
         constraint.setTableName(table.getName());
         table.addConstraint(constraint);
 
@@ -307,7 +309,7 @@ public class AlterTableParser {
      * @param table  pg table
      */
     private static void parseAddForeignKey(final Parser parser,
-            final PgTable table) {
+            final PgTable table, final String searchPath) {
         final List<String> columnNames = new ArrayList<String>(1);
         parser.expect("(");
 
@@ -325,7 +327,7 @@ public class AlterTableParser {
         final String constraintName = ParserUtils.generateName(
                 table.getName() + "_", columnNames, "_fkey");
         final PgConstraint constraint =
-                new PgConstraint(constraintName);
+                new PgConstraint(constraintName, null, searchPath);
         table.addConstraint(constraint);
         constraint.setDefinition(parser.getExpression());
         constraint.setTableName(table.getName());

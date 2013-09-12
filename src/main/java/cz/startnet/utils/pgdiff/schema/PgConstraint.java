@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  *
  * @author fordfrog
  */
-public class PgConstraint {
+public class PgConstraint extends PgStatementWithSearchPath {
 
     /**
      * Pattern for checking whether the constraint is PRIMARY KEY constraint.
@@ -41,8 +41,12 @@ public class PgConstraint {
      * Creates a new PgConstraint object.
      *
      * @param name {@link #name}
+     * @param rawStatement {@link #rawStatement}
+     * @param searchPath {@link #searchPath}
      */
-    public PgConstraint(String name) {
+    public PgConstraint(final String name, final String rawStatement,
+    		final String searchPath) {
+    	super(rawStatement, searchPath);
         this.name = name;
     }
 

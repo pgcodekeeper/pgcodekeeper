@@ -162,7 +162,7 @@ public class PgDumpLoader { //NOPMD
     public static PgDatabase loadDatabaseSchema(final InputStream inputStream,
             final String charsetName, final boolean outputIgnoredStatements,
             final boolean ignoreSlonyTriggers) {
-
+    	// TODO remove outputIgnoredStatements
         final PgDatabase database = new PgDatabase();
         BufferedReader reader = null;
 
@@ -192,7 +192,7 @@ public class PgDumpLoader { //NOPMD
                 CreateTableParser.parse(database, statement, activeSearchPath);
             } else if (PATTERN_ALTER_TABLE.matcher(statement).matches()) {
                 AlterTableParser.parse(
-                        database, statement, outputIgnoredStatements);
+                        database, statement, outputIgnoredStatements, activeSearchPath);
             } else if (PATTERN_CREATE_SEQUENCE.matcher(statement).matches()) {
                 CreateSequenceParser.parse(database, statement, activeSearchPath);
             } else if (PATTERN_ALTER_SEQUENCE.matcher(statement).matches()) {
@@ -218,7 +218,6 @@ public class PgDumpLoader { //NOPMD
                     || PATTERN_UPDATE.matcher(statement).matches()
                     || PATTERN_DELETE_FROM.matcher(statement).matches()) {
                 // we just ignore these statements
-            	// MYFIX
             	// add them as ignoredDataStatements
             	database.addIgnoredDataStatement(statement);
             } else if (outputIgnoredStatements) {
@@ -231,8 +230,7 @@ public class PgDumpLoader { //NOPMD
             statement = getWholeStatement(reader);
         }
         
-        // TODO fix
-        assert database.getIgnoredDataStatements().size() == 0;
+	//	assert database.getIgnoredDataStatements().size() == 0; // we actually dont care
 
         return database;
     }

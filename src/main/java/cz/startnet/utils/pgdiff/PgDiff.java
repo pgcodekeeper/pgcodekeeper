@@ -79,6 +79,7 @@ public class PgDiff {
             }
         }
     }
+    // TODO createNewExtensions ?
 
     /**
      * Creates diff from comparison of two database schemas.

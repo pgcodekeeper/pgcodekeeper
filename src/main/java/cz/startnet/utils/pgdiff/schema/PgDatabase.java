@@ -30,7 +30,6 @@ public class PgDatabase {
     @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<String> ignoredStatements = new ArrayList<String>();
     /**
-     * MYFIX
      * Array of ignored data statements.
      */
     @SuppressWarnings("CollectionWithoutInitialCapacity")
@@ -116,7 +115,6 @@ public class PgDatabase {
     }
     
     /**
-     * MYFIX
      * Adds ignored data statement to the list of ignored data statements.
      *
      * @param ignoredDataStatement ignored data statement

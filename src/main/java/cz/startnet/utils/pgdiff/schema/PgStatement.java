@@ -5,7 +5,7 @@ package cz.startnet.utils.pgdiff.schema;
  * 
  * @author Alexander Levsha
  */
-public class PgStatement {	
+abstract public class PgStatement {	
 	/**
 	 * The statement as it's been read from dump before parsing.
 	 */
@@ -28,5 +28,19 @@ public class PgStatement {
 	public String getRawStatement() {
 		return rawStatement;
 	}
+	
+	/**
+	 * Abstraction to get name of the object statement defines.
+	 * 
+	 *  @return object's name
+	 */
+	abstract public String getName();
+	
+	/**
+	 * Abstraction for creating SQL for creation of the object.
+     *
+     * @return created SQL
+	 */
+	abstract public String getCreationSQL();
 }
 
