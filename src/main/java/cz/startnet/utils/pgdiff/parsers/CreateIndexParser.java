@@ -60,6 +60,10 @@ public class CreateIndexParser {
                     Resources.getString("CannotFindTable"), tableName,
                     statement));
         }
+        
+        if(table.getIgnored()) {
+        	return;
+        }
 
         final PgIndex index = new PgIndex(indexName, statement, searchPath);
         table.addIndex(index);

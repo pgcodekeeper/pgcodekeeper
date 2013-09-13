@@ -83,8 +83,8 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -214,8 +214,8 @@
                 <configuration>
                     <minmemory>128m</minmemory>
                     <maxmemory>512</maxmemory>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                     <tags>
                         <tag>
                             <name>todo</name>
@@ -233,7 +233,7 @@
                 <artifactId>maven-pmd-plugin</artifactId>
                 <configuration>
                     <sourceEncoding>utf-8</sourceEncoding>
-                    <targetJdk>1.6</targetJdk>
+                    <targetJdk>1.7</targetJdk>
                 </configuration>
             </plugin>
             <plugin>

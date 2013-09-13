@@ -543,4 +543,35 @@ public class PgTable extends PgStatementWithSearchPath {
 
         return list;
     }
+    
+    /**
+     * {@inheritDoc}
+     * 
+     * @param obj {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object obj) {
+    	boolean eq = false;
+    	
+    	if(this == obj) {
+    		eq = true;
+    	} else if(obj instanceof PgTable) {
+    		PgTable table = (PgTable) obj;
+    		
+    		eq = name.equals(table.getName())
+    				&& clusterIndexName.equals(table.getClusterIndexName())
+    				&& ignored == table.getIgnored()
+    				&& tablespace.equals(table.getTablespace())
+    				&& with.equals(table.getWith())
+    				
+    				&& PgDBUtils.listsEqual(inherits, table.getInherits())
+    				&& PgDBUtils.listsEqual(columns, table.getColumns())
+    				&& PgDBUtils.listsEqual(constraints, table.getConstraints())
+    				&& PgDBUtils.listsEqual(indexes, table.getIndexes())
+    				&& PgDBUtils.listsEqual(triggers, table.getTriggers());
+    	}
+    	
+    	return eq;
+    }
 }

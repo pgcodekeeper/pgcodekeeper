@@ -6,6 +6,7 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -450,5 +451,35 @@ public class PgSchema extends PgStatement {
         }
 
         return false;
+    }
+    
+    /**
+     * {@inheritDoc}
+     * 
+     * @param obj {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object obj) {
+    	boolean eq = false;
+    	
+    	if(this == obj) {
+    		eq = true;
+    	} else if(obj instanceof PgSchema) {
+    		PgSchema schema = (PgSchema) obj;
+    		
+    		eq = name.equals(schema.getName())
+    				&& authorization.equals(schema.getAuthorization())
+    				&& definition.equals(schema.getDefinition())
+    				
+    				&& PgDBUtils.listsEqual(sequences, schema.getSequences())
+    				&& PgDBUtils.listsEqual(primaryKeys, schema.getPrimaryKeys())
+    				&& PgDBUtils.listsEqual(indexes, schema.getIndexes())
+    				&& PgDBUtils.listsEqual(functions, schema.getFunctions())
+    				&& PgDBUtils.listsEqual(views, schema.getViews())
+    				&& PgDBUtils.listsEqual(tables, schema.getTables());
+    	}
+    	
+    	return eq;
     }
 }

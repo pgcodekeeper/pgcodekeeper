@@ -15,11 +15,6 @@ public class PgExtension extends PgStatement {
 	private final String name;
 	
 	/**
-	 * With IF NOT EXISTS.
-	 */
-	private boolean ifNotExists;
-	
-	/**
 	 * Schema of the extension.
 	 */
 	private String schema;
@@ -57,24 +52,6 @@ public class PgExtension extends PgStatement {
 	 */
 	public String getName() {
 		return name;
-	}
-	
-	/**
-	 * Getter for {@link #ifNotExists}.
-	 * 
-	 * @return {@link #ifNotExists}
-	 */
-	public boolean getIfNotExists() {
-		return ifNotExists;
-	}
-	
-	/**
-	 * Setter for {@link #ifNotExists}.
-	 * 
-	 * @param schema {@link #ifNotExists}
-	 */
-	public void setIfNotExists(boolean ifNotExists) {
-		this.ifNotExists = ifNotExists;
 	}
 	
 	/**
@@ -157,9 +134,6 @@ public class PgExtension extends PgStatement {
 	public String getCreationSQL() {
 		final StringBuilder sbSQL = new StringBuilder(50);
 		sbSQL.append("CREATE EXTENSION ");
-		if(getIfNotExists()) {
-			sbSQL.append("IF NOT EXISTS ");
-		}
 		sbSQL.append(PgDiffUtils.getQuotedName(getName()));
 		
 		if(getSchema() != null && !getSchema().isEmpty()) {
@@ -188,5 +162,28 @@ public class PgExtension extends PgStatement {
 		}
 		
 		return sbSQL.toString();
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @param obj {@inheritDoc}
+	 * @return {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean eq = false;
+		
+		if(this == obj) {
+			eq = true;
+		} else if(obj instanceof PgExtension) {
+			final PgExtension ext = (PgExtension) obj;
+			eq = name.equals(ext.getName()) 
+					&& schema.equals(ext.getSchema())
+					&& version.equals(ext.getVersion())
+					&& oldVersion.equals(ext.getOldVersion());
+		}
+		
+		return eq;
 	}
 }

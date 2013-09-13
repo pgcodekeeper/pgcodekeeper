@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
 import java.util.List;
-import java.util.ArrayList;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,9 +40,9 @@ public class ModelExporter {
 	private final String sqlEncoding;
 	
 	/**
-	 * List for written files' names.
+	 * List of written files' names.
 	 */
-	private List<String> writtenFiles = new ArrayList<>(2000);
+	private StringBuilder writtenFiles = new StringBuilder(2000 * 260);
 	
 	/**
 	 * Creates a new ModelExporter object with set {@link #outDir} and {@link #db}
@@ -112,19 +111,15 @@ public class ModelExporter {
 				throw new DirectoryException("Could not create schema directory:"
 						+ schemaDir.getAbsolutePath());
 			}
-			
-			// stub for toArray type conversion
-			PgStatementWithSearchPath[] sampleArray = new PgStatementWithSearchPath[0];
-			// TODO List.toArray(new T[List.size()]) is significantly more efficient
-			
-			processObjects(schema.getFunctions().toArray(sampleArray), schemaDir, "FUNCTION/");
-			processObjects(schema.getSequences().toArray(sampleArray), schemaDir, "SEQUENCE/");
-			processObjects(schema.getTables().toArray(sampleArray), schemaDir, "TABLE/");
-			processObjects(schema.getViews().toArray(sampleArray), schemaDir, "VIEW/");
+						
+			processObjects(schema.getFunctions(), schemaDir, "FUNCTION/");
+			processObjects(schema.getSequences(), schemaDir, "SEQUENCE/");
+			processObjects(schema.getTables(), schemaDir, "TABLE/");
+			processObjects(schema.getViews(), schemaDir, "VIEW/");
 			
 			// indexes are stored both in schemas and tables
 			// this is sufficient
-			processObjects(schema.getIndexes().toArray(sampleArray), schemaDir, "INDEX/");
+			processObjects(schema.getIndexes(), schemaDir, "INDEX/");
 			
 			// constraints are saved when tables are processed
 			// primary keys in schema are redundant, they are a subset of constraints
@@ -153,16 +148,14 @@ public class ModelExporter {
 		}
 		
 		try(PrintWriter listingOut = new PrintWriter(listing, sqlEncoding)) {
-			for(String s : writtenFiles) {
-				listingOut.println(s);
-			}
+			listingOut.println(writtenFiles.toString());
 		}
 	}
 	
 	/**
 	 * Processes dumping of objects.
 	 * 
-	 * @param objects array of {@link #PgStatementWithSearchPath} to dump
+	 * @param objects List of {@link #PgStatementWithSearchPath} to dump
 	 * @param parentOutDir schema directory
 	 * @param outDirName object type directory
 	 * 
@@ -172,8 +165,12 @@ public class ModelExporter {
 	 * @throws FileException
 	 * @throws IOException
 	 */
-	private void processObjects(final PgStatementWithSearchPath[] objects,
+	private void processObjects(final List<? extends PgStatementWithSearchPath> objects,
 			final File parentOutDir, final String outDirName) throws IOException {
+		if(objects.isEmpty()) {
+			return;
+		}
+		
 		File objectDir = new File(parentOutDir, outDirName);
 		
 		if(objectDir.exists()) {
@@ -204,12 +201,9 @@ public class ModelExporter {
 					continue;
 				}
 				
-				// TODO same optimization here
-				PgStatementWithSearchPath[] sampleArray = new PgStatementWithSearchPath[0];
-				
-				// out them to schema's subdirectory, not table's subdirectory
-				processObjects(table.getConstraints().toArray(sampleArray), parentOutDir, "CONSTRAINT/");
-				processObjects(table.getTriggers().toArray(sampleArray), parentOutDir, "TRIGGER/");
+				// out them to their own directory in schema, not table directory
+				processObjects(table.getConstraints(), parentOutDir, "CONSTRAINT/");
+				processObjects(table.getTriggers(), parentOutDir, "TRIGGER/");
 			}
 
 			File objectSQL = new File(objectDir, filename);
@@ -228,8 +222,8 @@ public class ModelExporter {
 	 * @throws FileAlreadyExistsException
 	 * @throws FileException
 	 */
-	private void dumpSQL(final String sql, final File file
-			) throws IOException{
+	private void dumpSQL(final String sql,
+			final File file) throws IOException{
 		if(file.exists()) {
 			throw new FileAlreadyExistsException(file.getAbsolutePath());
 		}
@@ -243,6 +237,6 @@ public class ModelExporter {
 			outFile.println(sql);
 		}
 		
-		writtenFiles.add(file.getAbsolutePath());
+		writtenFiles.append(file.getAbsolutePath()).append('\n');
 	}
 }

@@ -313,4 +313,31 @@ public class PgSequence extends PgStatementWithSearchPath {
     public void setOwnedBy(final String ownedBy) {
         this.ownedBy = ownedBy;
     }
+    
+    /**
+     * {@inheritDoc}
+     * 
+     * @param obj {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object obj) {
+    	boolean eq = false;
+    	
+    	if(this == obj) {
+    		eq = true;
+    	} else if(obj instanceof PgSequence) {
+    		PgSequence seq = (PgSequence) obj;
+    		eq = name.equals(seq.getName())
+    				&& increment.equals(seq.getIncrement())
+    				&& minValue.equals(seq.getMinValue())
+    				&& maxValue.equals(seq.getMaxValue())
+    				&& startWith.equals(seq.getStartWith())
+    				&& cache.equals(seq.getCache())
+    				&& cycle == seq.isCycle()
+    				&& ownedBy.equals(seq.getOwnedBy());
+    	}
+    	
+    	return eq;
+    }
 }

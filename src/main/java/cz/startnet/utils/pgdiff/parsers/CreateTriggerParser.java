@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff.parsers;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 
 /**
@@ -103,7 +104,10 @@ public class CreateTriggerParser {
         if (!ignoreSlonyTrigger) {
             final PgSchema tableSchema = database.getSchema(
                     ParserUtils.getSchemaName(tableName, database));
-            tableSchema.getTable(trigger.getTableName()).addTrigger(trigger);
+            PgTable table = tableSchema.getTable(trigger.getTableName());
+            if(!table.getIgnored()){
+            	table.addTrigger(trigger);
+            }
         }
     }
 

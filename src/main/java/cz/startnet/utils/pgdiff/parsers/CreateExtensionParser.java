@@ -21,11 +21,10 @@ public class CreateExtensionParser {
 		final Parser parser = new Parser(statement);
 		parser.expect("CREATE", "EXTENSION");
 		
-		boolean ifNotExists = parser.expectOptional("IF", "NOT", "EXISTS");
+		parser.expectOptional("IF", "NOT", "EXISTS");
 		
 		final PgExtension ext = new PgExtension(
 				ParserUtils.getObjectName(parser.parseIdentifier()), statement);
-		ext.setIfNotExists(ifNotExists);
 		database.addExtension(ext);
 		
 		parser.expectOptional("WITH");

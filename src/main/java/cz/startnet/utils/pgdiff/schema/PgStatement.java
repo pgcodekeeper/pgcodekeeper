@@ -42,5 +42,13 @@ abstract public class PgStatement {
      * @return created SQL
 	 */
 	abstract public String getCreationSQL();
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @param obj {@inheritDoc}
+	 * @return {@inheritDoc}
+	 */
+	abstract public boolean equals(Object obj);
 }
 

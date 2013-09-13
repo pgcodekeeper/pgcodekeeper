@@ -261,6 +261,29 @@ public class PgView extends PgStatementWithSearchPath {
     }
 
     /**
+     * {@inheritDoc}
+     * 
+     * @param obj {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object obj) {
+    	boolean eq = false;
+    	
+    	if(this == obj) {
+    		eq = true;
+    	} else if(obj instanceof PgView) {
+    		PgView view = (PgView) obj;
+    		eq = name.equals(view.getName())
+    				&& query.equals(view.getQuery())
+    				&& PgDBUtils.listsEqual(columnNames, view.getColumnNames())
+    				&& PgDBUtils.listsEqual(defaultValues, view.getDefaultValues());
+    	}
+    	
+    	return eq;
+    }
+
+    /**
      * Contains information about default value of column.
      */
     @SuppressWarnings("PublicInnerClass")
@@ -302,6 +325,27 @@ public class PgView extends PgStatementWithSearchPath {
          */
         public String getDefaultValue() {
             return defaultValue;
+        }
+
+        /**
+         * {@inheritDoc}
+         * 
+         * @param obj {@inheritDoc}
+         * @return {@inheritDoc}
+         */
+        @Override
+        public boolean equals(Object obj) {
+        	boolean eq = false;
+        	
+        	if(this == obj) {
+        		eq = true;
+        	} else if(obj instanceof PgView.DefaultValue) {
+        		PgView.DefaultValue val = (PgView.DefaultValue) obj;
+        		eq = columnName.equals(val.getColumnName())
+        				&& defaultValue.equals(val.getDefaultValue());
+        	}
+        	
+        	return eq;
         }
     }
 

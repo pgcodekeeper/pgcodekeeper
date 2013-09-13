@@ -47,7 +47,7 @@ public class PgDatabase {
      * Creates a new PgDatabase object.
      */
     public PgDatabase() {
-        schemas.add(new PgSchema("public", "CREATE SCHEMA public;"));
+        schemas.add(new PgSchema("public", ""));
         defaultSchema = schemas.get(0);
     }
 
@@ -196,5 +196,27 @@ public class PgDatabase {
      */
     public void addExtension(final PgExtension extension) {
     	extensions.add(extension);
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @param obj {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object obj) {
+    	boolean eq = false;
+    	
+    	if(this == obj) {
+    		eq = true;
+    	} else if(obj instanceof PgDatabase) {
+    		PgDatabase db = (PgDatabase) obj;
+    		
+    		eq = PgDBUtils.listsEqual(extensions, db.getExtensions())
+    				&& PgDBUtils.listsEqual(schemas, db.getSchemas());
+    	}
+    	
+    	return eq;
     }
 }

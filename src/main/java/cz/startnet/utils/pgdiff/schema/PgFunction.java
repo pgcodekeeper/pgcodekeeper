@@ -286,18 +286,8 @@ public class PgFunction extends PgStatementWithSearchPath {
                     || thisBody != null && !thisBody.equals(thatBody)) {
                 return false;
             }
-
-            if (arguments.size() != function.getArguments().size()) {
-                return false;
-            } else {
-                for (int i = 0; i < arguments.size(); i++) {
-                    if (!arguments.get(i).equals(function.getArguments().get(i))) {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
+            
+            return PgDBUtils.listsEqual(arguments, function.getArguments());
         }
 
         return equals;
