@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Objects;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -178,10 +180,10 @@ public class PgExtension extends PgStatement {
 			eq = true;
 		} else if(obj instanceof PgExtension) {
 			final PgExtension ext = (PgExtension) obj;
-			eq = name.equals(ext.getName()) 
-					&& schema.equals(ext.getSchema())
-					&& version.equals(ext.getVersion())
-					&& oldVersion.equals(ext.getOldVersion());
+			eq = Objects.equals(name, ext.getName()) 
+					&& Objects.equals(schema, ext.getSchema())
+					&& Objects.equals(version, ext.getVersion())
+					&& Objects.equals(oldVersion, ext.getOldVersion());
 		}
 		
 		return eq;

@@ -5,6 +5,8 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Objects;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -174,9 +176,9 @@ public class PgIndex extends PgStatementWithSearchPath {
             equals = true;
         } else if (object instanceof PgIndex) {
             final PgIndex index = (PgIndex) object;
-            equals = definition.equals(index.getDefinition())
-                    && name.equals(index.getName())
-                    && tableName.equals(index.getTableName())
+            equals = Objects.equals(definition, index.getDefinition())
+                    && Objects.equals(name, index.getName())
+                    && Objects.equals(tableName, index.getTableName())
                     && unique == index.isUnique();
         }
 

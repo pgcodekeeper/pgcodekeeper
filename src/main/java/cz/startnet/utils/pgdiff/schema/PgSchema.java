@@ -10,6 +10,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Stores schema information.
@@ -468,9 +469,9 @@ public class PgSchema extends PgStatement {
     	} else if(obj instanceof PgSchema) {
     		PgSchema schema = (PgSchema) obj;
     		
-    		eq = name.equals(schema.getName())
-    				&& authorization.equals(schema.getAuthorization())
-    				&& definition.equals(schema.getDefinition())
+    		eq = Objects.equals(name, schema.getName())
+    				&& Objects.equals(authorization, schema.getAuthorization())
+    				&& Objects.equals(definition, schema.getDefinition())
     				
     				&& PgDBUtils.listsEqual(sequences, schema.getSequences())
     				&& PgDBUtils.listsEqual(primaryKeys, schema.getPrimaryKeys())

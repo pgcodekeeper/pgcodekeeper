@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -276,12 +277,12 @@ public class PgColumn {
     	} else if(obj instanceof PgColumn) {
     		PgColumn col = (PgColumn) obj;
     		
-    		eq = name.equals(col.getName())
-    				&& type.equals(col.getType())
+    		eq = Objects.equals(name, col.getName())
+    				&& Objects.equals(type, col.getType())
     				&& nullValue == col.getNullValue()
-    				&& defaultValue.equals(col.getDefaultValue())
-    				&& statistics.equals(col.getStatistics())
-    				&& storage.equals(col.getStorage());
+    				&& Objects.equals(defaultValue, col.getDefaultValue())
+    				&& Objects.equals(statistics, col.getStatistics())
+    				&& Objects.equals(storage, col.getStorage());
     	}
     	
     	return eq;

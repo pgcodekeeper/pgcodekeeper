@@ -6,6 +6,8 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -190,9 +192,9 @@ public class PgConstraint extends PgStatementWithSearchPath {
             equals = true;
         } else if (object instanceof PgConstraint) {
             final PgConstraint constraint = (PgConstraint) object;
-            equals = definition.equals(constraint.getDefinition())
-                    && name.equals(constraint.getName())
-                    && tableName.equals(constraint.getTableName());
+            equals = Objects.equals(definition, constraint.getDefinition())
+                    && Objects.equals(name, constraint.getName())
+                    && Objects.equals(tableName, constraint.getTableName());
         }
 
         return equals;

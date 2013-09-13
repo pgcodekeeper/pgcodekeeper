@@ -10,6 +10,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Stores trigger information.
@@ -403,13 +404,14 @@ public class PgTrigger extends PgStatementWithSearchPath {
             final PgTrigger trigger = (PgTrigger) object;
             equals = (before == trigger.isBefore())
                     && (forEachRow == trigger.isForEachRow())
-                    && function.equals(trigger.getFunction())
-                    && name.equals(trigger.getName())
+                    && Objects.equals(function, trigger.getFunction())
+                    && Objects.equals(name, trigger.getName())
                     && (onDelete == trigger.isOnDelete())
                     && (onInsert == trigger.isOnInsert())
                     && (onUpdate == trigger.isOnUpdate())
                     && (onTruncate == trigger.isOnTruncate())
-                    && tableName.equals(trigger.getTableName());
+                    && Objects.equals(tableName, trigger.getTableName())
+                    && Objects.equals(when, trigger.getWhen());
 
             if (equals) {
                 final List<String> sorted1 =

@@ -10,6 +10,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Stores view information.
@@ -274,8 +275,8 @@ public class PgView extends PgStatementWithSearchPath {
     		eq = true;
     	} else if(obj instanceof PgView) {
     		PgView view = (PgView) obj;
-    		eq = name.equals(view.getName())
-    				&& query.equals(view.getQuery())
+    		eq = Objects.equals(name, view.getName())
+    				&& Objects.equals(query, view.getQuery())
     				&& PgDBUtils.listsEqual(columnNames, view.getColumnNames())
     				&& PgDBUtils.listsEqual(defaultValues, view.getDefaultValues());
     	}
@@ -341,8 +342,8 @@ public class PgView extends PgStatementWithSearchPath {
         		eq = true;
         	} else if(obj instanceof PgView.DefaultValue) {
         		PgView.DefaultValue val = (PgView.DefaultValue) obj;
-        		eq = columnName.equals(val.getColumnName())
-        				&& defaultValue.equals(val.getDefaultValue());
+        		eq = Objects.equals(columnName, val.getColumnName())
+        				&& Objects.equals(defaultValue, val.getDefaultValue());
         	}
         	
         	return eq;

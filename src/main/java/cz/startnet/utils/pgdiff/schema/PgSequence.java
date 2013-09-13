@@ -5,6 +5,8 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.Objects;
+
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -328,14 +330,14 @@ public class PgSequence extends PgStatementWithSearchPath {
     		eq = true;
     	} else if(obj instanceof PgSequence) {
     		PgSequence seq = (PgSequence) obj;
-    		eq = name.equals(seq.getName())
-    				&& increment.equals(seq.getIncrement())
-    				&& minValue.equals(seq.getMinValue())
-    				&& maxValue.equals(seq.getMaxValue())
-    				&& startWith.equals(seq.getStartWith())
-    				&& cache.equals(seq.getCache())
+    		eq = Objects.equals(name, seq.getName())
+    				&& Objects.equals(increment, seq.getIncrement())
+    				&& Objects.equals(minValue, seq.getMinValue())
+    				&& Objects.equals(maxValue, seq.getMaxValue())
+    				&& Objects.equals(startWith, seq.getStartWith())
+    				&& Objects.equals(cache, seq.getCache())
     				&& cycle == seq.isCycle()
-    				&& ownedBy.equals(seq.getOwnedBy());
+    				&& Objects.equals(ownedBy, seq.getOwnedBy());
     	}
     	
     	return eq;

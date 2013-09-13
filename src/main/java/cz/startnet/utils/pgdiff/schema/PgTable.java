@@ -10,6 +10,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Stores table information.
@@ -559,11 +560,11 @@ public class PgTable extends PgStatementWithSearchPath {
     	} else if(obj instanceof PgTable) {
     		PgTable table = (PgTable) obj;
     		
-    		eq = name.equals(table.getName())
-    				&& clusterIndexName.equals(table.getClusterIndexName())
+    		eq = Objects.equals(name, table.getName())
+    				&& Objects.equals(clusterIndexName, table.getClusterIndexName())
     				&& ignored == table.getIgnored()
-    				&& tablespace.equals(table.getTablespace())
-    				&& with.equals(table.getWith())
+    				&& Objects.equals(tablespace, table.getTablespace())
+    				&& Objects.equals(with, table.getWith())
     				
     				&& PgDBUtils.listsEqual(inherits, table.getInherits())
     				&& PgDBUtils.listsEqual(columns, table.getColumns())
