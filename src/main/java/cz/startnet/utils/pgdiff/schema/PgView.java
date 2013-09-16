@@ -22,7 +22,7 @@ public class PgView extends PgStatementWithSearchPath {
     /**
      * List of column names.
      */
-    private List<String> columnNames;
+    private List<String> columnNames = new ArrayList<>(1);
     /**
      * Name of the view.
      */
