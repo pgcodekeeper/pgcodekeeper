@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Path;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -28,6 +29,11 @@ public class ModelExporter {
 	 * Objects of the export directory;
 	 */
 	private final File outDir;
+	
+	/**
+	 * Path for the outDir;
+	 */
+	private final Path outPath;
 	
 	/**
 	 * Database to export.
@@ -65,6 +71,7 @@ public class ModelExporter {
 	public ModelExporter(final String outDir, final PgDatabase db,
 			final String sqlEncoding) {
 		this.outDir = new File(outDir);
+		this.outPath = this.outDir.toPath(); 
 		this.db = db;
 		this.sqlEncoding = sqlEncoding;
 	}
@@ -95,7 +102,7 @@ public class ModelExporter {
 			}
 		}
 		
-		// exporting schemas and all they contain
+		// exporting schemas
 		File schemasSharedDir = new File(outDir, "SCHEMA/");
 		if(!schemasSharedDir.mkdir()) {
 			throw new DirectoryException("Could not create schemas directory:"
@@ -103,15 +110,33 @@ public class ModelExporter {
 		}
 		
 		for(PgSchema schema : db.getSchemas()) {
+			if(schema.getName().equals("public")) {
+            	continue;
+            }
 			File schemaSQL = new File(schemasSharedDir, schema.getName() + ".sql");
 			dumpSQL(schema.getCreationSQL(), schemaSQL);
-			
+		}
+		
+		// exporting extensions
+		File extensionsDir = new File(outDir, "EXTENSION/");
+		if(!extensionsDir.mkdir()) {
+			throw new DirectoryException("Could not create extensions directory:"
+					+ extensionsDir.getAbsolutePath());
+		}
+		
+		for(PgExtension ext : db.getExtensions()) {
+			File extSQL = new File(extensionsDir, ext.getName() + ".sql");
+			dumpSQL(ext.getCreationSQL(), extSQL);
+		}
+		
+		// exporting schemas contents
+		for(PgSchema schema : db.getSchemas()) {
 			File schemaDir = new File(schemasSharedDir, schema.getName() + '/');
 			if(!schemaDir.mkdir()) {
 				throw new DirectoryException("Could not create schema directory:"
 						+ schemaDir.getAbsolutePath());
 			}
-						
+			
 			processObjects(schema.getFunctions(), schemaDir, "FUNCTION/");
 			processObjects(schema.getSequences(), schemaDir, "SEQUENCE/");
 			processObjects(schema.getTables(), schemaDir, "TABLE/");
@@ -125,18 +150,6 @@ public class ModelExporter {
 			// primary keys in schema are redundant, they are a subset of constraints
 			
 			// triggers are saved when tables are processed
-		}
-		
-		// exporting extensions
-		File extensionsDir = new File(outDir, "EXTENSION/");
-		if(!extensionsDir.mkdir()) {
-			throw new DirectoryException("Could not create extensions directory:"
-					+ extensionsDir.getAbsolutePath());
-		}
-		
-		for(PgExtension ext : db.getExtensions()) {
-			File extSQL = new File(extensionsDir, ext.getName() + ".sql");
-			dumpSQL(ext.getCreationSQL(), extSQL);
 		}
 		
 		
@@ -192,24 +205,31 @@ public class ModelExporter {
 			} else {
 				filename = obj.getName();
 			}
+			
 			filename += ".sql";
 			
+			PgTable table = null;
 			if(obj instanceof PgTable) {
-				PgTable table = (PgTable) obj;
+				table = (PgTable) obj;
 				
 				if(table.getIgnored()) {
 					continue;
 				}
-				
-				// out them to their own directory in schema, not table directory
-				processObjects(table.getConstraints(), parentOutDir, "CONSTRAINT/");
-				processObjects(table.getTriggers(), parentOutDir, "TRIGGER/");
 			}
-
+			
+			// this has to be after the ignore check but before
+			// dependencies export for the listing to be in the right order
+			// hence the (table != null) trick
 			File objectSQL = new File(objectDir, filename);
 			dumpSQL(obj.getSearchPath() + "\n\n" +
 					obj.getCreationSQL(),
 					objectSQL);
+			
+			if(table != null) {
+				// out them to their own directory in schema, not table directory
+				processObjects(table.getConstraints(), parentOutDir, "CONSTRAINT/");
+				processObjects(table.getTriggers(), parentOutDir, "TRIGGER/");
+			}
 		}
 	}
 	
@@ -237,6 +257,6 @@ public class ModelExporter {
 			outFile.println(sql);
 		}
 		
-		writtenFiles.append(file.getAbsolutePath()).append('\n');
+		writtenFiles.append(outPath.relativize(file.toPath())).append('\n');
 	}
 }

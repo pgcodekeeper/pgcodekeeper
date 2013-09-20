@@ -29,6 +29,9 @@ public class CreateSchemaParser {
         if (parser.expectOptional("AUTHORIZATION")) {
             final PgSchema schema = new PgSchema(
                     ParserUtils.getObjectName(parser.parseIdentifier()), statement);
+            if(schema.getName().equals("public")) {
+            	return;
+            }
             database.addSchema(schema);
             schema.setAuthorization(schema.getName());
 
@@ -40,6 +43,9 @@ public class CreateSchemaParser {
         } else {
             final PgSchema schema = new PgSchema(
                     ParserUtils.getObjectName(parser.parseIdentifier()), statement);
+            if(schema.getName().equals("public")) {
+            	return;
+            }
             database.addSchema(schema);
 
             if (parser.expectOptional("AUTHORIZATION")) {

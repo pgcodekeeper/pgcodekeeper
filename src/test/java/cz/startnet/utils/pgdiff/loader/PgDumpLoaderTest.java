@@ -108,7 +108,7 @@ public class PgDumpLoaderTest {
     @Test(timeout = 1000)
     public void loadSchema() {
     	String filename = "schema_" + fileIndex + ".sql";
-        PgDatabase d = PgDumpLoader.loadDatabaseSchema(
+        PgDatabase d = PgDumpLoader.loadDatabaseSchemaFromDump(
                 getClass().getResourceAsStream(filename),
                 "UTF-8", false, false);
         

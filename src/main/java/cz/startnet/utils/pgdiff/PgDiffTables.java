@@ -476,7 +476,7 @@ public class PgDiffTables {
         if (oldSchema == null) {
             return;
         }
-
+        // TODO check if it's ignored
         for (final PgTable table : oldSchema.getTables()) {
             if (!newSchema.containsTable(table.getName())) {
                 searchPathHelper.outputSearchPath(writer);

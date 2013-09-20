@@ -26,11 +26,11 @@ public class PgDiff {
      */
     public static void createDiff(final PrintWriter writer,
             final PgDiffArguments arguments) {
-        final PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchema(
+        final PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
                 arguments.getOldDumpFile(), arguments.getInCharsetName(),
                 arguments.isOutputIgnoredStatements(),
                 arguments.isIgnoreSlonyTriggers());
-        final PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchema(
+        final PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
                 arguments.getNewDumpFile(), arguments.getInCharsetName(),
                 arguments.isOutputIgnoredStatements(),
                 arguments.isIgnoreSlonyTriggers());
@@ -51,36 +51,18 @@ public class PgDiff {
     public static void createDiff(final PrintWriter writer,
             final PgDiffArguments arguments, final InputStream oldInputStream,
             final InputStream newInputStream) {
-        final PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchema(
+        final PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
                 oldInputStream, arguments.getInCharsetName(),
                 arguments.isOutputIgnoredStatements(),
                 arguments.isIgnoreSlonyTriggers());
-        final PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchema(
+        final PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
                 newInputStream, arguments.getInCharsetName(),
                 arguments.isOutputIgnoredStatements(),
                 arguments.isIgnoreSlonyTriggers());
 
         diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase);
     }
-
-    /**
-     * Creates new schemas (not the objects inside the schemas).
-     *
-     * @param writer      writer the output should be written to
-     * @param oldDatabase original database schema
-     * @param newDatabase new database schema
-     */
-    private static void createNewSchemas(final PrintWriter writer,
-            final PgDatabase oldDatabase, final PgDatabase newDatabase) {
-        for (final PgSchema newSchema : newDatabase.getSchemas()) {
-            if (oldDatabase.getSchema(newSchema.getName()) == null) {
-                writer.println();
-                writer.println(newSchema.getCreationSQL());
-            }
-        }
-    }
-    // TODO createNewExtensions ?
-
+    
     /**
      * Creates diff from comparison of two database schemas.
      *
@@ -89,7 +71,7 @@ public class PgDiff {
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
-    private static void diffDatabaseSchemas(final PrintWriter writer,
+    public static void diffDatabaseSchemas(final PrintWriter writer,
             final PgDiffArguments arguments, final PgDatabase oldDatabase,
             final PgDatabase newDatabase) {
         if (arguments.isAddTransaction()) {
@@ -152,6 +134,24 @@ public class PgDiff {
             }
         }
     }
+    
+    /**
+     * Creates new schemas (not the objects inside the schemas).
+     *
+     * @param writer      writer the output should be written to
+     * @param oldDatabase original database schema
+     * @param newDatabase new database schema
+     */
+    private static void createNewSchemas(final PrintWriter writer,
+            final PgDatabase oldDatabase, final PgDatabase newDatabase) {
+        for (final PgSchema newSchema : newDatabase.getSchemas()) {
+            if (oldDatabase.getSchema(newSchema.getName()) == null) {
+                writer.println();
+                writer.println(newSchema.getCreationSQL());
+            }
+        }
+    }
+    // TODO createNewExtensions ?
 
     /**
      * Drops old schemas that do not exist anymore.

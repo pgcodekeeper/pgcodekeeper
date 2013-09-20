@@ -19,7 +19,9 @@ import cz.startnet.utils.pgdiff.parsers.CreateTriggerParser;
 import cz.startnet.utils.pgdiff.parsers.CreateViewParser;
 import cz.startnet.utils.pgdiff.parsers.CreateExtensionParser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -156,14 +158,14 @@ public class PgDumpLoader { //NOPMD
      * @param outputIgnoredStatements whether ignored statements should be
      *                                included in the output
      * @param ignoreSlonyTriggers     whether Slony triggers should be ignored
+     * 
+     * @param database				  {@link PgDatabase} to load into
      *
      * @return database schema from dump file
      */
-    public static PgDatabase loadDatabaseSchema(final InputStream inputStream,
+    private static PgDatabase loadDatabaseSchemaCore(final InputStream inputStream,
             final String charsetName, final boolean outputIgnoredStatements,
-            final boolean ignoreSlonyTriggers) {
-    	// TODO remove outputIgnoredStatements
-        final PgDatabase database = new PgDatabase();
+            final boolean ignoreSlonyTriggers, final PgDatabase database) {
         BufferedReader reader = null;
 
         try {
@@ -234,7 +236,61 @@ public class PgDumpLoader { //NOPMD
 
         return database;
     }
-
+    
+    /**
+     * Loads database schema from a ModelExporter directory tree.
+     * The root directory must contain a listing.lst file for ordered list of files.
+     * 
+     * @param dirPath				  path to the directory tree root
+     * @param charsetName             charset that should be used to read the
+     *                                file
+     * @param outputIgnoredStatements whether ignored statements should be
+     *                                included in the output
+     * @param ignoreSlonyTriggers     whether Slony triggers should be ignored
+     *
+     * @return database schema
+     */
+    public static PgDatabase loadDatabaseSchemaFromDirTree(final String dirPath,
+            final String charsetName, final boolean outputIgnoredStatements,
+            final boolean ignoreSlonyTriggers) {
+        final PgDatabase db = new PgDatabase();
+        
+        File dir = new File(dirPath);    	
+        File listing = new File(dir, "listing.lst");
+        
+        try(BufferedReader readerListing = new BufferedReader(
+    			new InputStreamReader(
+    					new FileInputStream(listing), charsetName))) {
+        	String listingLine = null;
+        	
+        	while((listingLine = readerListing.readLine()) != null) {
+        		listingLine = listingLine.trim();
+        		if(listingLine.isEmpty()) {
+        			continue;
+        		}
+        		File listingFile = new File(dir, listingLine);
+        		
+        		try(FileInputStream inputStream = new FileInputStream(listingFile)) {
+        			loadDatabaseSchemaCore(inputStream, charsetName,
+        					outputIgnoredStatements, ignoreSlonyTriggers, db);
+        		} catch(FileNotFoundException ex) {
+        			throw new FileException(MessageFormat.format(
+                            Resources.getString("FileNotFound"), listingFile.getAbsolutePath()), ex);
+        		}
+        	}
+        } catch(FileNotFoundException ex) {
+        	throw new FileException(MessageFormat.format(
+                    Resources.getString("FileNotFound"), listing.getAbsolutePath()), ex);
+        } catch(UnsupportedEncodingException ex) {
+            throw new UnsupportedOperationException(
+                    Resources.getString("UnsupportedEncoding") + ": " + charsetName, ex);
+        } catch(IOException ex) {
+        	throw new FileException("An unexpected IOException", ex);
+        }
+        
+        return db;
+    }
+    
     /**
      * Loads database schema from dump file.
      *
@@ -247,11 +303,30 @@ public class PgDumpLoader { //NOPMD
      *
      * @return database schema from dump file
      */
-    public static PgDatabase loadDatabaseSchema(final String file,
+    public static PgDatabase loadDatabaseSchemaFromDump(final InputStream inputStream,
+            final String charsetName, final boolean outputIgnoredStatements,
+            final boolean ignoreSlonyTriggers) {
+    	return loadDatabaseSchemaCore(inputStream, charsetName, outputIgnoredStatements,
+    			ignoreSlonyTriggers, new PgDatabase());
+    }
+    
+    /**
+     * Loads database schema from dump file.
+     *
+     * @param file                    name of file containing the dump
+     * @param charsetName             charset that should be used to read the
+     *                                file
+     * @param outputIgnoredStatements whether ignored statements should be
+     *                                included in the output
+     * @param ignoreSlonyTriggers     whether Slony triggers should be ignored
+     *
+     * @return database schema from dump file
+     */
+    public static PgDatabase loadDatabaseSchemaFromDump(final String file,
             final String charsetName, final boolean outputIgnoredStatements,
             final boolean ignoreSlonyTriggers) {
         try {
-            return loadDatabaseSchema(new FileInputStream(file), charsetName,
+            return loadDatabaseSchemaFromDump(new FileInputStream(file), charsetName,
                     outputIgnoredStatements, ignoreSlonyTriggers);
         } catch (final FileNotFoundException ex) {
             throw new FileException(MessageFormat.format(
