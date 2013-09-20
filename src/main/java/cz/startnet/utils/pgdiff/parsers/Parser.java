@@ -14,7 +14,6 @@ import java.util.Locale;
  *
  * @author fordfrog
  */
-@SuppressWarnings("FinalClass")
 public final class Parser {
 
     /**

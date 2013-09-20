@@ -26,7 +26,6 @@ public class PgFunction extends PgStatementWithSearchPath {
     /**
      * List of arguments.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<Argument> arguments = new ArrayList<Argument>();
     /**
      * Whole definition of the function from RETURNS keyword.
@@ -311,7 +310,6 @@ public class PgFunction extends PgStatementWithSearchPath {
     /**
      * Function argument information.
      */
-    @SuppressWarnings("PublicInnerClass")
     public static class Argument {
 
         /**

@@ -60,7 +60,6 @@ public class PgTrigger extends PgStatementWithSearchPath {
     /**
      * Optional list of columns for UPDATE event.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<String> updateColumns = new ArrayList<String>();
     /**
      * WHEN condition.

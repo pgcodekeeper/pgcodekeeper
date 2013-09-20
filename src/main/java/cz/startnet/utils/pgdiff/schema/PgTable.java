@@ -22,23 +22,19 @@ public class PgTable extends PgStatementWithSearchPath {
     /**
      * List of columns defined on the table.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<PgColumn> columns = new ArrayList<PgColumn>();
     /**
      * List of constraints defined on the table.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<PgConstraint> constraints =
             new ArrayList<PgConstraint>();
     /**
      * List of indexes defined on the table.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<PgIndex> indexes = new ArrayList<PgIndex>();
     /**
      * List of triggers defined on the table.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<PgTrigger> triggers = new ArrayList<PgTrigger>();
     /**
      * Name of the index on which the table is clustered
@@ -47,7 +43,6 @@ public class PgTable extends PgStatementWithSearchPath {
     /**
      * List of names of inherited tables.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<String> inherits = new ArrayList<String>();
     /**
      * Name of the table.
@@ -533,7 +528,6 @@ public class PgTable extends PgStatementWithSearchPath {
      * @return list of columns that have statistics defined
      */
     private List<PgColumn> getColumnsWithStatistics() {
-        @SuppressWarnings("CollectionWithoutInitialCapacity")
         final List<PgColumn> list = new ArrayList<PgColumn>();
 
         for (PgColumn column : columns) {

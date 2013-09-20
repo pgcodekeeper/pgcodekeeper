@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+
 import java.io.InputStream;
 import java.io.PrintWriter;
 
@@ -26,16 +27,36 @@ public class PgDiff {
      */
     public static void createDiff(final PrintWriter writer,
             final PgDiffArguments arguments) {
-        final PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
-                arguments.getOldDumpFile(), arguments.getInCharsetName(),
-                arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers());
-        final PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
-                arguments.getNewDumpFile(), arguments.getInCharsetName(),
-                arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers());
-
-        diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase);
+        diffDatabaseSchemas(writer, arguments,
+        		loadDatabaseSchema(arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments),
+        		loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments));
+    }
+    
+    /**
+     * Loads database schema choosing the provided method.
+     * 
+     * @param format		format of the database source, must be "dump", "parsed" or "db"
+     * 						otherwise exception is thrown
+     * @param srcPath		path to the database source to load
+     * @param arguments		object containing arguments settings
+     * 
+     * @return the loaded database
+     */
+    static PgDatabase loadDatabaseSchema(final String format, final String srcPath,
+    			final PgDiffArguments arguments) {
+    	if(format.equals("dump")) {
+    		return PgDumpLoader.loadDatabaseSchemaFromDump(srcPath,
+    				arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
+    				arguments.isIgnoreSlonyTriggers());
+    	} else if(format.equals("parsed")) {
+    		return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
+    				arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
+    				arguments.isIgnoreSlonyTriggers());
+    	} else if(format.equals("db")) {
+    		throw new UnsupportedOperationException("DB connection is not yet implemented!");
+    	}
+    	
+    	throw new UnsupportedOperationException("Unknown DB format!");
     }
 
     /**

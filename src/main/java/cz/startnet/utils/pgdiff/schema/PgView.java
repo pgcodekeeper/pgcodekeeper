@@ -62,7 +62,6 @@ public class PgView extends PgStatementWithSearchPath {
      *
      * @param columnNames {@link #columnNames}
      */
-    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     public void setColumnNames(final List<String> columnNames) {
         this.columnNames = columnNames;
     }
@@ -287,7 +286,6 @@ public class PgView extends PgStatementWithSearchPath {
     /**
      * Contains information about default value of column.
      */
-    @SuppressWarnings("PublicInnerClass")
     public class DefaultValue {
 
         /**
@@ -353,7 +351,6 @@ public class PgView extends PgStatementWithSearchPath {
     /**
      * Contains information about column comment.
      */
-    @SuppressWarnings("PublicInnerClass")
     public class ColumnComment {
 
         /**

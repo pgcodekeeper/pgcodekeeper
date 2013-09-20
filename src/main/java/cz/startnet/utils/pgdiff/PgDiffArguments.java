@@ -15,19 +15,51 @@ import java.util.SortedMap;
  * @author fordfrog
  */
 public class PgDiffArguments {
-
+	
+	/**
+	 * Is program in diff mode.
+	 */
+	private boolean modeDiff;
+	/**
+	 * Is program in parser mode.
+	 */
+	private boolean modeParse;
+    /**
+     * Path to the new dump file.
+     */
+    private String newSrc;
+    /**
+     * Path to the original dump file.
+     */
+    private String oldSrc;
+    /**
+     * New DB source format.
+     */
+    private String newSrcFormat = "dump";
+    /**
+     * Old DB source format.
+     */
+    private String oldSrcFormat = "dump";
+    /**
+     * File to write the diff into.
+     */
+    private  String diffOutfile;
+    /**
+     * Path to the DB to parse.
+     */
+    private String parseSrc;
+    /**
+     * Format of the DB to parse.
+     */
+    private String parseSrcFormat = "dump";
+    /**
+     * Directory to parse into.
+     */
+    private String parserOutdir;
     /**
      * Input file charset name.
      */
     private String inCharsetName = "UTF-8";
-    /**
-     * Path to the new dump file.
-     */
-    private String newDumpFile;
-    /**
-     * Path to the original dump file.
-     */
-    private String oldDumpFile;
     /**
      * Output file charset name.
      */
@@ -66,6 +98,186 @@ public class PgDiffArguments {
      */
     private boolean ignoreSlonyTriggers;
 
+    /**
+     * Setter for {@link #modeDiff}
+     * 
+     * @param modeDiff {@link #modeDiff}
+     */
+    public void setModeDiff(final boolean modeDiff) {
+    	this.modeDiff = modeDiff;
+    }
+    
+    /**
+     * Getter for {@link #modeDiff}
+     * 
+     * @return {@link #modeDiff}
+     */
+    public boolean isModeDiff() {
+    	return modeDiff;
+    }
+    
+    /**
+     * Setter for {@link #modeParse}
+     * 
+     * @param modeParse {@link #modeParse}
+     */
+    public void setModeParse(final boolean modeParse) {
+    	this.modeParse = modeParse;
+    }
+    
+    /**
+     * Getter for {@link #modeParse}
+     * 
+     * @return {@link #modeParse}
+     */
+    public boolean isModeParse() {
+    	return modeParse;
+    }
+    
+    /**
+     * Setter for {@link #newSrc}
+     * 
+     * @param newSrc {@link #newSrc}
+     */
+    public void setNewSrc(final String newSrc) {
+    	this.newSrc = newSrc;
+    }
+    
+    /**
+     * Getter for {@link #newSrc}
+     * 
+     * @return {@link #newSrc}
+     */
+    public String getNewSrc() {
+    	return newSrc;
+    }
+    
+    /**
+     * Setter for {@link #oldSrc}
+     * 
+     * @param oldSrc {@link #oldSrc}
+     */
+    public void setOldSrc(final String oldSrc) {
+    	this.oldSrc = oldSrc;
+    }
+    
+    /**
+     * Getter for {@link #oldSrc}
+     * 
+     * @return {@link #oldSrc}
+     */
+    public String getOldSrc() {
+    	return this.oldSrc;
+    }
+    
+    /**
+     * Setter for {@link #newSrcFormat}
+     * 
+     * @param newSrcFormat {@link #newSrcFormat}
+     */
+    public void setNewSrcFormat(final String newSrcFormat) {
+    	this.newSrcFormat = newSrcFormat;
+    }
+    
+    /**
+     * Getter for {@link #oldSrc}
+     * 
+     * @return {@link #oldSrc}
+     */
+    public String getNewSrcFormat() {
+    	return this.newSrcFormat;
+    }
+    
+    /**
+     * Setter for {@link #oldSrcFormat}
+     * 
+     * @param oldSrcFormat {@link #oldSrcFormat}
+     */
+    public void setOldSrcFormat(final String oldSrcFormat) {
+    	this.oldSrcFormat = oldSrcFormat;
+    }
+    
+    /**
+     * Getter for {@link #oldSrcFormat}
+     * 
+     * @return {@link #oldSrcFormat}
+     */
+    public String getOldSrcFormat() {
+    	return this.oldSrcFormat;
+    }
+    
+    /**
+     * Setter for {@link #diffOutfile}
+     * 
+     * @param diffOutfile {@link #diffOutfile}
+     */
+    public void setDiffOutfile(final String diffOutfile) {
+    	this.diffOutfile = diffOutfile;
+    }
+    
+    /**
+     * Getter for {@link #diffOutfile}
+     * 
+     * @return {@link #diffOutfile}
+     */
+    public String getDiffOutfile() {
+    	return this.diffOutfile;
+    }
+    
+    /**
+     * Setter for {@link #parseSrc}
+     * 
+     * @param parseSrc {@link #parseSrc}
+     */
+    public void setParseSrc(final String parseSrc) {
+    	this.parseSrc = parseSrc;
+    }
+    
+    /**
+     * Getter for {@link #parseSrc}
+     * 
+     * @return {@link #parseSrc}
+     */
+    public String getParseSrc() {
+    	return this.parseSrc;
+    }
+    
+    /**
+     * Setter for {@link #parseSrcFormat}
+     * 
+     * @param parseSrcFormat {@link #parseSrcFormat}
+     */
+    public void setParseSrcFormat(final String parseSrcFormat) {
+    	this.parseSrcFormat = parseSrcFormat;
+    }
+    
+    /**
+     * Getter for {@link #parseSrcFormat}
+     * 
+     * @return {@link #parseSrcFormat}
+     */
+    public String getParseSrcFormat() {
+    	return this.parseSrcFormat;
+    }
+    
+    /**
+     * Setter for {@link #parserOutdir}
+     * 
+     * @param parserOutdir {@link #parserOutdir}
+     */
+    public void setParserOutdir(final String parserOutdir) {
+    	this.parserOutdir = parserOutdir;
+    }
+    
+    /**
+     * Getter for {@link #parserOutdir}
+     * 
+     * @return {@link #parserOutdir}
+     */
+    public String getParserOutdir() {
+    	return this.parserOutdir;
+    }
+    
     /**
      * Setter for {@link #addDefaults}.
      *
@@ -140,42 +352,6 @@ public class PgDiffArguments {
     }
 
     /**
-     * Setter for {@link #newDumpFile}.
-     *
-     * @param newDumpFile {@link #newDumpFile}
-     */
-    public void setNewDumpFile(final String newDumpFile) {
-        this.newDumpFile = newDumpFile;
-    }
-
-    /**
-     * Getter for {@link #newDumpFile}.
-     *
-     * @return {@link #newDumpFile}
-     */
-    public String getNewDumpFile() {
-        return newDumpFile;
-    }
-
-    /**
-     * Setter for {@link #oldDumpFile}.
-     *
-     * @param oldDumpFile {@link #oldDumpFile}
-     */
-    public void setOldDumpFile(final String oldDumpFile) {
-        this.oldDumpFile = oldDumpFile;
-    }
-
-    /**
-     * Getter for {@link #oldDumpFile}.
-     *
-     * @return {@link #oldDumpFile}
-     */
-    public String getOldDumpFile() {
-        return oldDumpFile;
-    }
-
-    /**
      * Getter for {@link #outputIgnoredStatements}.
      *
      * @return {@link #outputIgnoredStatements}
@@ -221,19 +397,45 @@ public class PgDiffArguments {
      * @return true if arguments were parsed and execution can continue,
      *         otherwise false
      */
-    @SuppressWarnings("AssignmentToForLoopParameter")
     public boolean parse(final PrintWriter writer, final String[] args) {
         boolean success = true;
-        final int argsLength;
-
-        if (args.length >= 2) {
-            argsLength = args.length - 2;
-        } else {
-            argsLength = args.length;
-        }
+        int argsLength = args.length;
 
         for (int i = 0; i < argsLength; i++) {
-            if ("--add-defaults".equals(args[i])) {
+        	if("--diff".equals(args[i])) {
+        		setModeDiff(true);
+        		argsLength -= 3; // dont read last three parameters in the loop, they're not options
+        	} else if("--parse".equals(args[i])) {
+        		setModeParse(true);
+        		argsLength -= 2; // same for last two params in this mode
+        	} else if("--dbOld-format".equals(args[i])) {
+        		String format = args[++i];
+        		
+        		if("dump".equals(format) || "parsed".equals(format) || "db".equals(format)) {
+        			setOldSrcFormat(format);
+        		} else {
+        			writer.println("Unsupported DB format!");
+        			success = false;
+        		}
+        	} else if("--dbNew-format".equals(args[i])) {
+        		String format = args[++i];
+        		
+        		if("dump".equals(format) || "parsed".equals(format) || "db".equals(format)) {
+        			setNewSrcFormat(format);
+        		} else {
+        			writer.println("Unsupported DB format!");
+        			success = false;
+        		}
+        	} else if("--db-format".equals(args[i])) {
+        		String format = args[++i];
+        		
+        		if("dump".equals(format) || "db".equals(format)) {
+        			setParseSrcFormat(format);
+        		} else {
+        			writer.println("Unsupported DB format for parsing!");
+        			success = false;
+        		}
+        	} else if ("--add-defaults".equals(args[i])) {
                 setAddDefaults(true);
             } else if ("--add-transaction".equals(args[i])) {
                 setAddTransaction(true);
@@ -264,22 +466,48 @@ public class PgDiffArguments {
                 break;
             }
         }
+        
+        // TODO temporary until DB connection is implemented
+        if("db".equals(getOldSrcFormat()) || "db".equals(getNewSrcFormat())
+        		|| "db".equals(getParseSrcFormat())) {
+        	throw new UnsupportedOperationException("DB connection is not yet implemented!");
+        }
 
         if (args.length == 1 && isVersion()) {
             printVersion(writer);
-            success = false;
+            return false;
         } else if (args.length == 1 && isListCharsets()) {
             listCharsets(writer);
+            return false;
+        } else if(isModeDiff() == isModeParse()) {
+        	success = false;
+        	if(isModeDiff()) {
+        		writer.println("Only one of --diff or --parse mode can be set!");
+        	}
+        } else if (args.length < 3) {
             success = false;
-        } else if (args.length < 2) {
-            printUsage(writer);
-            success = false;
-        } else if (success) {
-            setOldDumpFile(args[args.length - 2]);
-            setNewDumpFile(args[args.length - 1]);
         }
-
-        return success;
+        
+        if (!success) {
+        	printUsage(writer);
+        	return false;
+        }
+        
+        try {
+        	if(isModeDiff()) {
+		        setOldSrc(args[args.length - 3]);
+		        setNewSrc(args[args.length - 2]);
+		        setDiffOutfile(args[args.length - 1]);
+        	} else if (isModeParse()) {
+        		setParseSrc(args[args.length - 2]);
+        		setParserOutdir(args[args.length - 1]);
+        	}
+        } catch (ArrayIndexOutOfBoundsException ex) {
+        	printUsage(writer);
+        	return false;
+        }
+        
+        return true;
     }
 
     /**

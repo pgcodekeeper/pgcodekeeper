@@ -22,32 +22,26 @@ public class PgSchema extends PgStatement {
     /**
      * List of functions defined in the schema.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<PgFunction> functions = new ArrayList<PgFunction>();
     /**
      * List of sequences defined in the schema.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<PgSequence> sequences = new ArrayList<PgSequence>();
     /**
      * List of tables defined in the schema.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<PgTable> tables = new ArrayList<PgTable>();
     /**
      * List of views defined in the schema.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<PgView> views = new ArrayList<PgView>();
     /**
      * List of indexes defined in the schema.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<PgIndex> indexes = new ArrayList<PgIndex>();
     /**
      * List of primary keys defined in the schema.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<PgConstraint> primaryKeys =
             new ArrayList<PgConstraint>();
     /**

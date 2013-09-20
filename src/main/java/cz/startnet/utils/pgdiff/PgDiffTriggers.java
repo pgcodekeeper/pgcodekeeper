@@ -88,7 +88,6 @@ public class PgDiffTriggers {
      */
     private static List<PgTrigger> getDropTriggers(final PgTable oldTable,
             final PgTable newTable) {
-        @SuppressWarnings("CollectionWithoutInitialCapacity")
         final List<PgTrigger> list = new ArrayList<PgTrigger>();
 
         if (newTable != null && oldTable != null) {
@@ -114,7 +113,6 @@ public class PgDiffTriggers {
      */
     private static List<PgTrigger> getNewTriggers(final PgTable oldTable,
             final PgTable newTable) {
-        @SuppressWarnings("CollectionWithoutInitialCapacity")
         final List<PgTrigger> list = new ArrayList<PgTrigger>();
 
         if (newTable != null) {

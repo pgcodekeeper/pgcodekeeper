@@ -27,12 +27,10 @@ public class PgDatabase {
     /**
      * Array of ignored statements.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<String> ignoredStatements = new ArrayList<String>();
     /**
      * Array of ignored data statements.
      */
-    @SuppressWarnings("CollectionWithoutInitialCapacity")
     private final List<String> ignoredDataStatements = new ArrayList<String>();
     /**
      * Current default schema.

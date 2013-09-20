@@ -140,7 +140,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
     	
     	PgConstraint constraint = new PgConstraint("fax_boxes_pkey", "", "");
     	table.addConstraint(constraint);
-    //	schema.addPrimaryKey(constraint);
+    	schema.addPrimaryKey(constraint);
     	constraint.setTableName("fax_boxes");
     	constraint.setDefinition("PRIMARY KEY (fax_box_id)");
     	    	
@@ -207,7 +207,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
     	constraint.setTableName("faxes");
     	constraint.setDefinition("PRIMARY KEY (fax_id)");
     	table.addConstraint(constraint);
-   // 	schema.addPrimaryKey(constraint);
+    	schema.addPrimaryKey(constraint);
     	
     	constraint = new PgConstraint("faxes_fax_box_id_fkey", "", "");
     	constraint.setTableName("faxes");
@@ -340,9 +340,10 @@ class PgDB3 extends PgDatabaseObjectCreator {
 		
 		PgConstraint constraint = new PgConstraint("admins_pkey", "", "");
 		constraint.setTableName("admins");
-		constraint.setDefinition("Primary Key (\"aid\")");
+		constraint.setDefinition("PRIMARY KEY (\"aid\")");
 		table.addConstraint(constraint);
-				
+		schema.addPrimaryKey(constraint);
+
 		return d;
 	}
 }

@@ -5,9 +5,14 @@
  */
 package cz.startnet.utils.pgdiff;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
 /**
  * Compares two PostgreSQL dumps and outputs information about differences in
@@ -26,18 +31,26 @@ public class Main {
      *                                      encoding has been encountered.
      */
     public static void main(final String[] args)
-            throws UnsupportedEncodingException {
-        @SuppressWarnings("UseOfSystemOutOrSystemErr")
+            throws UnsupportedEncodingException, FileNotFoundException,
+            IOException {
         final PrintWriter writer = new PrintWriter(System.out, true);
         final PgDiffArguments arguments = new PgDiffArguments();
 
         if (arguments.parse(writer, args)) {
-            @SuppressWarnings("UseOfSystemOutOrSystemErr")
-            final PrintWriter encodedWriter = new PrintWriter(
-                    new OutputStreamWriter(
-                    System.out, arguments.getOutCharsetName()));
-            PgDiff.createDiff(encodedWriter, arguments);
-            encodedWriter.close();
+        	if(arguments.isModeDiff()) {
+	            try(final PrintWriter encodedWriter = new PrintWriter(
+	                    new OutputStreamWriter(
+	                    	new FileOutputStream(arguments.getDiffOutfile()),
+	                    						arguments.getOutCharsetName()))) {
+		            PgDiff.createDiff(encodedWriter, arguments);
+	            }
+        	} else if(arguments.isModeParse()) {
+        		new ModelExporter(arguments.getParserOutdir(),
+        				PgDiff.loadDatabaseSchema(arguments.getParseSrcFormat(),
+        						arguments.getParseSrc(), arguments),
+        				arguments.getOutCharsetName())
+        		.export();
+        	}
         }
 
         writer.close();
