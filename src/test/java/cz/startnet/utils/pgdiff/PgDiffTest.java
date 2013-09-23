@@ -93,7 +93,7 @@ public class PgDiffTest {
                     // Tests reading of TABLE with INHERITS.
                     {"read_inherits", false, false, false, false},
                     // Tests scenario where TABLE with INHERITS is added.
-                //  {"add_inherits", false, false, false, false}, // MYFIX we ignore INHERITS
+                  {"add_inherits", false, false, false, false}, // MYFIX we ignore INHERITS
                     // Tests scenario where original and new TABLE contain
                     //different INHERITS.
                     {"modify_inherits", false, false, false, false},
