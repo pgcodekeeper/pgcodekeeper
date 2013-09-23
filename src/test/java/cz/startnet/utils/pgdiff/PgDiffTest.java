@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
@@ -20,7 +21,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.Assume;
-import org.hamcrest.CoreMatchers;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.matchers.JUnitMatchers.hasItem;
 
 /**
  * Tests for PgDiff class.
@@ -209,6 +211,12 @@ public class PgDiffTest {
                     {"add_empty_table", false, false, false, false}
                 });
     }
+    
+    private final static List<String> runDiffIgnoredFiles = Arrays.asList(
+    				"read_inherits",
+    				"add_inherits",
+    				"modify_inherits"
+    			);
     /**
      * Template name for file names that should be used for the test. Testing
      * method adds _original.sql, _new.sql and _diff.sql to the file name
@@ -310,7 +318,7 @@ public class PgDiffTest {
     @Test(timeout = 1000)
     public void runDiff() throws FileNotFoundException, IOException {
     	
-    	Assume.assumeThat(fileNameTemplate, CoreMatchers.not("add_inherits"));
+    	Assume.assumeThat(runDiffIgnoredFiles, not(hasItem(fileNameTemplate)));
     	
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new PrintWriter(diffInput, true);

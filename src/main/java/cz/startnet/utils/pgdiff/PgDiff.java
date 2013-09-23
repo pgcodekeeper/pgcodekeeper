@@ -172,7 +172,7 @@ public class PgDiff {
             }
         }
     }
-    // TODO createNewExtensions ?
+    // TODO diff extensions
 
     /**
      * Drops old schemas that do not exist anymore.
@@ -217,6 +217,7 @@ public class PgDiff {
             } else {
                 searchPathHelper = new SearchPathHelper(null);
             }
+            // TODO is this search_path setting sufficient ?
 
             final PgSchema oldSchema =
                     oldDatabase.getSchema(newSchema.getName());
@@ -227,7 +228,7 @@ public class PgDiff {
                         || oldSchema.getComment() != null
                         && newSchema.getComment() != null
                         && !oldSchema.getComment().equals(
-                        newSchema.getComment())) {
+                        		newSchema.getComment())) {
                     writer.println();
                     writer.print("COMMENT ON SCHEMA ");
                     writer.print(

@@ -32,7 +32,7 @@ public class Main {
      */
     public static void main(final String[] args)
             throws UnsupportedEncodingException, FileNotFoundException,
-            IOException {
+            	IOException {
         final PrintWriter writer = new PrintWriter(System.out, true);
         final PgDiffArguments arguments = new PgDiffArguments();
 
@@ -48,8 +48,8 @@ public class Main {
         		new ModelExporter(arguments.getParserOutdir(),
         				PgDiff.loadDatabaseSchema(arguments.getParseSrcFormat(),
         						arguments.getParseSrc(), arguments),
-        				arguments.getOutCharsetName())
-        		.export();
+        					arguments.getOutCharsetName())
+        			.export();
         	}
         }
 

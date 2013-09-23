@@ -9,7 +9,6 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -79,30 +78,13 @@ public class PgDiffViews {
      */
     private static boolean isViewModified(final PgView oldView,
             final PgView newView) {
-        final String[] oldViewColumnNames;
+        List<String> oldColumnNames = oldView.getColumnNames();
+        List<String> newColumnNames = newView.getColumnNames();
 
-        if (oldView.getColumnNames() == null
-                || oldView.getColumnNames().isEmpty()) {
-            oldViewColumnNames = null;
+        if(oldColumnNames.isEmpty() && newColumnNames.isEmpty()) {
+        	return !oldView.getQuery().trim().equals(newView.getQuery().trim());
         } else {
-            oldViewColumnNames = oldView.getColumnNames().toArray(
-                    new String[oldView.getColumnNames().size()]);
-        }
-
-        final String[] newViewColumnNames;
-
-        if (newView.getColumnNames() == null
-                || newView.getColumnNames().isEmpty()) {
-            newViewColumnNames = null;
-        } else {
-            newViewColumnNames = newView.getColumnNames().toArray(
-                    new String[newView.getColumnNames().size()]);
-        }
-
-        if (oldViewColumnNames == null && newViewColumnNames == null) {
-            return !oldView.getQuery().trim().equals(newView.getQuery().trim());
-        } else {
-            return !Arrays.equals(oldViewColumnNames, newViewColumnNames);
+        	return !oldColumnNames.equals(newColumnNames);
         }
     }
 
