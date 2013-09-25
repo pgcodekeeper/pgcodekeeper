@@ -12,7 +12,6 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.util.Objects;
 
 /**
  * Creates diff of two database schemas.

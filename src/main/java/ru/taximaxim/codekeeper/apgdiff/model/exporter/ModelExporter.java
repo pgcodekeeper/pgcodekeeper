@@ -95,15 +95,13 @@ public class ModelExporter {
 			if(outDir.list().length != 0) {
 				throw new DirectoryNotEmptyException(outDir.getAbsolutePath());
 			}
-		} else {
-			if(!outDir.mkdirs()) {
+		} else if(!outDir.mkdirs()) {
 				throw new DirectoryException("Could not create output directory:"
 						+ outDir.getAbsolutePath());
-			}
 		}
 		
 		// exporting schemas
-		File schemasSharedDir = new File(outDir, "SCHEMA/");
+		File schemasSharedDir = new File(outDir, "SCHEMA");
 		if(!schemasSharedDir.mkdir()) {
 			throw new DirectoryException("Could not create schemas directory:"
 					+ schemasSharedDir.getAbsolutePath());
@@ -118,7 +116,7 @@ public class ModelExporter {
 		}
 		
 		// exporting extensions
-		File extensionsDir = new File(outDir, "EXTENSION/");
+		File extensionsDir = new File(outDir, "EXTENSION");
 		if(!extensionsDir.mkdir()) {
 			throw new DirectoryException("Could not create extensions directory:"
 					+ extensionsDir.getAbsolutePath());
@@ -131,20 +129,20 @@ public class ModelExporter {
 		
 		// exporting schemas contents
 		for(PgSchema schema : db.getSchemas()) {
-			File schemaDir = new File(schemasSharedDir, schema.getName() + '/');
+			File schemaDir = new File(schemasSharedDir, schema.getName());
 			if(!schemaDir.mkdir()) {
 				throw new DirectoryException("Could not create schema directory:"
 						+ schemaDir.getAbsolutePath());
 			}
 			
-			processObjects(schema.getFunctions(), schemaDir, "FUNCTION/");
-			processObjects(schema.getSequences(), schemaDir, "SEQUENCE/");
-			processObjects(schema.getTables(), schemaDir, "TABLE/");
-			processObjects(schema.getViews(), schemaDir, "VIEW/");
+			processObjects(schema.getFunctions(), schemaDir, "FUNCTION");
+			processObjects(schema.getSequences(), schemaDir, "SEQUENCE");
+			processObjects(schema.getTables(), schemaDir, "TABLE");
+			processObjects(schema.getViews(), schemaDir, "VIEW");
 			
 			// indexes are stored both in schemas and tables
 			// this is sufficient
-			processObjects(schema.getIndexes(), schemaDir, "INDEX/");
+			processObjects(schema.getIndexes(), schemaDir, "INDEX");
 			
 			// constraints are saved when tables are processed
 			// primary keys in schema are redundant, they are a subset of constraints
@@ -234,8 +232,8 @@ public class ModelExporter {
 			
 			if(table != null) {
 				// out them to their own directory in schema, not table directory
-				processObjects(table.getConstraints(), parentOutDir, "CONSTRAINT/");
-				processObjects(table.getTriggers(), parentOutDir, "TRIGGER/");
+				processObjects(table.getConstraints(), parentOutDir, "CONSTRAINT");
+				processObjects(table.getTriggers(), parentOutDir, "TRIGGER");
 			}
 		}
 	}
