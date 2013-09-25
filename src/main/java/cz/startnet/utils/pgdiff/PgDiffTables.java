@@ -96,7 +96,7 @@ public class PgDiffTables {
 
             if ((oldCluster == null && newCluster != null)
                     || (oldCluster != null && newCluster != null
-                    && newCluster.compareTo(oldCluster) != 0)) {
+                    && !newCluster.equals(oldCluster))) {
                 searchPathHelper.outputSearchPath(writer);
                 writer.println();
                 writer.print("ALTER TABLE ");
@@ -456,8 +456,8 @@ public class PgDiffTables {
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgTable table : newSchema.getTables()) {
-            if (!table.getIgnored() && oldSchema == null
-                    || !oldSchema.containsTable(table.getName())) {
+            if (!table.getIgnored() && (oldSchema == null
+                    || !oldSchema.containsTable(table.getName()))) {
                 searchPathHelper.outputSearchPath(writer);
                 writer.println();
                 writer.println(table.getCreationSQL());

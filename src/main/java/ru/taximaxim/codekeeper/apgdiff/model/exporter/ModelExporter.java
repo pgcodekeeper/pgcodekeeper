@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
 import java.util.List;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -11,6 +10,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
@@ -220,10 +220,17 @@ public class ModelExporter {
 			// this has to be after the ignore check but before
 			// dependencies export for the listing to be in the right order
 			// hence the (table != null) trick
+			
+			String sqlToDump = obj.getSearchPath()
+					+ "\n\n" + obj.getCreationSQL();
+			
+			// OWNED BY is exported as a separate statement for SEQUENCE
+			if(obj instanceof PgSequence) {
+				sqlToDump += "\n\n" + ((PgSequence)obj).getOwnedBySQL();
+			}
+			
 			File objectSQL = new File(objectDir, filename);
-			dumpSQL(obj.getSearchPath() + "\n\n" +
-					obj.getCreationSQL(),
-					objectSQL);
+			dumpSQL(sqlToDump, objectSQL);
 			
 			if(table != null) {
 				// out them to their own directory in schema, not table directory

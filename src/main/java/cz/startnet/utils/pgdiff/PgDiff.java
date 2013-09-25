@@ -7,10 +7,12 @@ package cz.startnet.utils.pgdiff;
 
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.Objects;
 
 /**
  * Creates diff of two database schemas.
@@ -116,6 +118,11 @@ public class PgDiff {
 
         dropOldSchemas(writer, oldDatabase, newDatabase);
         createNewSchemas(writer, oldDatabase, newDatabase);
+        
+        dropOldExtensions(writer, oldDatabase, newDatabase);
+        createNewExtensions(writer, oldDatabase, newDatabase);
+        updateExtensions(writer, arguments, oldDatabase, newDatabase);
+        
         updateSchemas(writer, arguments, oldDatabase, newDatabase);
 
         if (arguments.isAddTransaction()) {
@@ -155,6 +162,82 @@ public class PgDiff {
             }
         }
     }
+
+    /**
+     * Creates new extensions.
+     * 
+     * @param writer      writer the output should be written to
+     * @param oldDatabase original database schema
+     * @param newDatabase new database schema
+     */
+    
+    private static void createNewExtensions(final PrintWriter writer, 
+    		final PgDatabase oldDatabase, final PgDatabase newDatabase) {
+    	for(final PgExtension newExt : newDatabase.getExtensions()) {
+    		if(oldDatabase.getExtension(newExt.getName()) == null) {
+    			writer.println();
+    			writer.println(newExt.getCreationSQL());
+    		}
+    	}
+    }
+    
+    /**
+     * Drops old extensions that do not exist anymore.
+     *
+     * @param writer      writer the output should be written to
+     * @param oldDatabase original database schema
+     * @param newDatabase new database schema
+     */
+    private static void dropOldExtensions(final PrintWriter writer, 
+    		final PgDatabase oldDatabase, final PgDatabase newDatabase) {
+    	for(final PgExtension oldExt : oldDatabase.getExtensions()) {
+    		if(newDatabase.getExtension(oldExt.getName()) == null) {
+    			writer.println();
+    			writer.println("DROP EXTENSION "
+    					+ PgDiffUtils.getQuotedName(oldExt.getName())
+    					+ ";");
+    		}
+    	}
+    }
+    
+    /**
+     * Updates changed extensions.
+     *
+     * @param writer      writer the output should be written to
+     * @param arguments   object containing arguments settings
+     * @param oldDatabase original database schema
+     * @param newDatabase new database schema
+     */
+    private static void updateExtensions(final PrintWriter writer,
+            final PgDiffArguments arguments, final PgDatabase oldDatabase,
+            final PgDatabase newDatabase) {
+    	for(final PgExtension newExt : newDatabase.getExtensions()) {
+    		final PgExtension oldExt = oldDatabase.getExtension(
+    				newExt.getName());
+    		if(oldExt == null) {
+    			continue;
+    		}
+    		/*
+    		// TODO do this with DROP/CREATE? as an option?
+    		if(newExt.getVersion() != null 
+    				&& !newExt.getVersion().equals(
+    						oldExt.getVersion())) {
+    			writer.println();
+    			writer.println("ALTER EXTENSION "
+    					+ PgDiffUtils.getQuotedName(oldExt.getName())
+    					+ " UPDATE TO " + newExt.getVersion() + ";");
+    		}
+    		*/
+    		if(newExt.getSchema() != null
+    				&& !newExt.getSchema().equals(
+    						oldExt.getSchema())) {
+    			writer.println();
+    			writer.println("ALTER EXTENSION "
+    					+ PgDiffUtils.getQuotedName(oldExt.getName())
+    					+ " SET SCHEMA " + newExt.getSchema() + ";");
+    		}
+    	}
+    }
     
     /**
      * Creates new schemas (not the objects inside the schemas).
@@ -172,7 +255,6 @@ public class PgDiff {
             }
         }
     }
-    // TODO diff extensions
 
     /**
      * Drops old schemas that do not exist anymore.

@@ -75,7 +75,7 @@ public class PgDumpLoaderTest {
      * Array of implementations of {@link PgDatabaseObjectCreator}
      * each returning a specific {@link PgDatabase} for a test-case.
      */
-    private final PgDatabaseObjectCreator[] dbCreators = {
+    private static final PgDatabaseObjectCreator[] dbCreators = {
     	new PgDB1(),
     	new PgDB2(),
     	new PgDB3(), 
@@ -113,10 +113,10 @@ public class PgDumpLoaderTest {
                 "UTF-8", false, false);
         
         if(fileIndex > dbCreators.length) {        
-        	Assert.fail("No predefined object for file:"
-        			+ filename);
+        	Assert.fail("No predefined object for file: " + filename);
         }
-        Assert.assertEquals(dbCreators[fileIndex - 1].getDatabase(), d);
+        Assert.assertEquals("predefined object is not equal to file: "
+        		+ filename, dbCreators[fileIndex - 1].getDatabase(), d);
     }
 }
 
@@ -222,7 +222,21 @@ class PgDB2 extends PgDatabaseObjectCreator {
 	@Override
     public PgDatabase getDatabase() {
 		PgDatabase d = new PgDatabase();
-    	PgSchema schema = d.getDefaultSchema();
+		
+    	PgSchema schema = new PgSchema("postgis", "");
+    	d.addSchema(schema);
+    	
+    	PgExtension ext = new PgExtension("plpgsql", "");
+    	ext.setSchema("pg_catalog");
+    	d.addExtension(ext);
+    	ext.setComment("'PL/pgSQL procedural language'");
+    	
+    	ext = new PgExtension("postgis", "");
+    	ext.setSchema("postgis");
+    	d.addExtension(ext);
+    	ext.setComment("'PostGIS geometry, geography, and raster spatial types and functions'");
+    	
+    	schema = d.getSchema("public");
     	
     	PgTable table = new PgTable("contacts", "", "");
     	schema.addTable(table);

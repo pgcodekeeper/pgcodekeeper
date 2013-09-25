@@ -34,11 +34,11 @@ public class CreateExtensionParser {
 		}
 		
 		if(parser.expectOptional("VERSION")) {
-			ext.setVersion(parser.getString());
+			ext.setVersion(parser.parseString());
 		}
 		
 		if(parser.expectOptional("FROM")) {
-			ext.setOldVersion(parser.getString());
+			ext.setOldVersion(parser.parseString());
 		}
 	}
 	
