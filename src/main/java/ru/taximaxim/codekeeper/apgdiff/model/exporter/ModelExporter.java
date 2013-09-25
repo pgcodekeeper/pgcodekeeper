@@ -159,7 +159,7 @@ public class ModelExporter {
 		}
 		
 		try(PrintWriter listingOut = new PrintWriter(listing, sqlEncoding)) {
-			listingOut.println(writtenFiles.toString());
+			listingOut.println(writtenFiles.toString().replace('\\', '/'));
 		}
 	}
 	
