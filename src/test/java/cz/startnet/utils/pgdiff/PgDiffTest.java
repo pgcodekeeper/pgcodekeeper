@@ -215,10 +215,8 @@ public class PgDiffTest {
     }
     
     private final static List<String> runDiffIgnoredFiles = Arrays.asList(
-    				"read_inherits",
-    				"add_inherits",
-    				"modify_inherits"
-    			);
+    		
+    		);
     /**
      * Template name for file names that should be used for the test. Testing
      * method adds _original.sql, _new.sql and _diff.sql to the file name

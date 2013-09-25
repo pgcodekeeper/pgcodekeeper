@@ -374,7 +374,10 @@ public class PgTable extends PgStatementWithSearchPath {
      * @param name {@link #ignored}
      */
     public void setIgnored(boolean ignored) {
-    	this.ignored = ignored;
+    	// TODO убрать костыль ?
+    	// было сделано для игнорирования INHERITS таблиц
+    	// вместо этого проще игнорировать только ошибки их парсинга
+    	this.ignored = false; //ignored;
     }
     
     /**

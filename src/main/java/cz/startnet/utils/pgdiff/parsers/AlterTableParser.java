@@ -243,46 +243,32 @@ public class AlterTableParser {
 
         final String columnName =
                 ParserUtils.getObjectName(parser.parseIdentifier());
+        
+        PgColumn column = table.getColumn(columnName);
+        if (column == null) {
+        	
+        	// костыль
+        	// ignore columns not found on inherited tables
+        	// as they are not correctly supported
+        	if(!table.getInherits().isEmpty()) {
+        		// consume the statement into a fake column object
+        		column = new PgColumn(columnName);
+        	}
+        	
+        	// if table is not inherited throw an error as we're supposed to
+        	else
+        	
+            throw new RuntimeException(MessageFormat.format(
+                    Resources.getString("CannotFindTableColumn"),
+                    columnName, table.getName(), parser.getString()));
+        }
 
         if (parser.expectOptional("SET")) {
             if (parser.expectOptional("STATISTICS")) {
-                final PgColumn column = table.getColumn(columnName);
-
-                if (column == null) {
-                    throw new RuntimeException(MessageFormat.format(
-                            Resources.getString("CannotFindTableColumn"),
-                            columnName, table.getName(), parser.getString()));
-                }
-
                 column.setStatistics(parser.parseInteger());
             } else if (parser.expectOptional("DEFAULT")) {
-                final String defaultValue = parser.getExpression();
-
-                if (table.containsColumn(columnName)) {
-                    final PgColumn column = table.getColumn(columnName);
-
-                    if (column == null) {
-                        throw new RuntimeException(MessageFormat.format(
-                                Resources.getString("CannotFindTableColumn"),
-                                columnName, table.getName(),
-                                parser.getString()));
-                    }
-
-                    column.setDefaultValue(defaultValue);
-                } else {
-                    throw new ParserException(MessageFormat.format(
-                            Resources.getString("CannotFindColumnInTable"),
-                            columnName, table.getName()));
-                }
+                column.setDefaultValue(parser.getExpression());
             } else if (parser.expectOptional("STORAGE")) {
-                final PgColumn column = table.getColumn(columnName);
-
-                if (column == null) {
-                    throw new RuntimeException(MessageFormat.format(
-                            Resources.getString("CannotFindTableColumn"),
-                            columnName, table.getName(), parser.getString()));
-                }
-
                 if (parser.expectOptional("PLAIN")) {
                     column.setStorage("PLAIN");
                 } else if (parser.expectOptional("EXTERNAL")) {
