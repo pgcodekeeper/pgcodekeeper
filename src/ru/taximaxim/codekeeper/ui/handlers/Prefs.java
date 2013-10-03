@@ -18,12 +18,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
-import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ViewerComparator;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -66,8 +61,8 @@ public class Prefs {
 		PreferenceManager pm = new PreferenceManager();
 		IContributionFactory contribFactory = ctx.get(IContributionFactory.class);
 		
-		for( IConfigurationElement el : extRegistry.getConfigurationElementsFor(
-				PREF_PAGES_XP)) {
+		for(IConfigurationElement el : 
+				extRegistry.getConfigurationElementsFor(PREF_PAGES_XP)) {
 			if(!el.getName().equals(ELMT_PAGE)) {
 				logger.warn("unexpected preferencePages element: {0}",
 						el.getName());
@@ -81,26 +76,24 @@ public class Prefs {
 				continue;
 			}
 			
-			IPreferencePage page = null;
-			
 			String prefPageClassURI = getClassURI(el.getNamespaceIdentifier(),
 					el.getAttribute(ATTR_CLASS));
 			Object ob = contribFactory.create(prefPageClassURI, ctx);
-			if(ob instanceof IPreferencePage) {
-				page = (IPreferencePage) ob;
-			} else {
+			if(!(ob instanceof IPreferencePage)) {
 				logger.warn("expected instance of IPreferencePage: {0}",
 						prefPageClassURI);
 				continue;
 			}
-			
+
+			IPreferencePage page = (IPreferencePage) ob;
 			ContextInjectionFactory.inject(page, ctx);
 			
 			if(isEmpty(page.getTitle())) {
 				page.setTitle(el.getAttribute(ATTR_NAME));
 			}
 
-			PreferenceNode node = new PreferenceNode(el.getAttribute(ATTR_ID), page);
+			PreferenceNode node =
+					new PreferenceNode(el.getAttribute(ATTR_ID),page);
 			
 			IPreferenceNode parent = null;
 			if(!isEmpty(el.getAttribute(ATTR_CAT))) {

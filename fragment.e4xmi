@@ -18,7 +18,7 @@
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_dQL-sCnKEeObfOm2RjyZmw" featurename="children" parentElementId="ru.taximaxim.codekeeper.mainapp.mainwindow">
     <elements xsi:type="basic:PartStack" xmi:id="_o7nrECnKEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.partstack.0">
-      <children xsi:type="basic:Part" xmi:id="_pXUIkCnKEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.part.0" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts._1" label="1" closeable="true"/>
+      <children xsi:type="basic:Part" xmi:id="_pXUIkCnKEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.part.TestPart" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.TestPart" label="TestPart" closeable="true"/>
     </elements>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_V_i7QCnNEeObfOm2RjyZmw" featurename="handlers" parentElementId="org.eclipse.e4.ide.application">

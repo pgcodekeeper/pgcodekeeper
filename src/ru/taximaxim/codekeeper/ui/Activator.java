@@ -1,10 +1,5 @@
 package ru.taximaxim.codekeeper.ui;
 
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.e4.core.contexts.EclipseContextFactory;
-import org.eclipse.e4.core.contexts.IEclipseContext;
-import org.eclipse.ui.internal.handlers.WizardHandler.New;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 

@@ -12,6 +12,6 @@ public interface UIConsts {
 	public static final String PREF_STORE = PLUGIN_ID + ".preferenceStore";
 	
 	// Preferences
-	public static final String SVN_EXE_PATH = "prefSvnExePath";
+	public static final String PREF_SVN_EXE_PATH = "prefSvnExePath";
 	
 }

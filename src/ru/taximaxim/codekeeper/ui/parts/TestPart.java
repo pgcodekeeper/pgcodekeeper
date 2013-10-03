@@ -20,10 +20,10 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import javax.annotation.PostConstruct;
 
 
-public class _1 {
+public class TestPart {
 	
 	@Inject
-	@Preference(value=UIConsts.SVN_EXE_PATH)
+	@Preference(value=UIConsts.PREF_SVN_EXE_PATH)
 	private String prefSvnPath;
 	
 	Text txt;

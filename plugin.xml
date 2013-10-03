@@ -17,6 +17,7 @@
       </page>
       <page
             category="ru.taximaxim.codekeeper.ui.prefs.general"
+            class="ru.taximaxim.codekeeper.ui.prefs.SubPrefPage"
             id="ru.taximaxim.codekeeper.ui.prefs.generalsub"
             name="Sub">
       </page>
