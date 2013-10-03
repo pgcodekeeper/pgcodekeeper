@@ -13,5 +13,5 @@ public interface UIConsts {
 	
 	// Preferences
 	public static final String PREF_SVN_EXE_PATH = "prefSvnExePath";
-	
+	public static final String PREF_PGDUMP_EXE_PATH = "prefPgdumpExePath";
 }

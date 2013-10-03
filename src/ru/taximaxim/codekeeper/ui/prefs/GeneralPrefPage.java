@@ -31,6 +31,8 @@ public class GeneralPrefPage
 	@Override
 	protected void createFieldEditors() {
 		addField(new FileFieldEditor(UIConsts.PREF_SVN_EXE_PATH,
-				"Path to svn executable", true, getFieldEditorParent()));
+				"svn executable", true, getFieldEditorParent()));
+		addField(new FileFieldEditor(UIConsts.PREF_PGDUMP_EXE_PATH,
+				"pg_dump executable", true, getFieldEditorParent()));
 	}
 }
