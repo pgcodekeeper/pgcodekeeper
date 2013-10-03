@@ -27,6 +27,6 @@
     <elements xsi:type="commands:Handler" xmi:id="_cnL2ACpvEeOWDPrJZCzSgA" elementId="ru.taximaxim.codekeeper.ui.handler.prefs" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.Prefs" command="_Xdq-gCpvEeOWDPrJZCzSgA"/>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_BGHjQCtXEeOOlv4Y_5F9zw" featurename="addons" parentElementId="org.eclipse.e4.ide.application">
-    <elements xsi:type="application:Addon" xmi:id="_EnG9wCtXEeOOlv4Y_5F9zw" elementId="ru.taximaxim.codekeeper.ui.addon.0" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.Addon"/>
+    <elements xsi:type="application:Addon" xmi:id="_EnG9wCtXEeOOlv4Y_5F9zw" elementId="ru.taximaxim.codekeeper.ui.addon.PrefLoader" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.AddonPrefLoader"/>
   </fragments>
 </fragment:ModelFragments>

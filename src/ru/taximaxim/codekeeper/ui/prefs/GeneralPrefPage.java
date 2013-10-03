@@ -4,7 +4,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -30,9 +29,9 @@ public class GeneralPrefPage
 
 	@Override
 	protected void createFieldEditors() {
-		addField(new FileFieldEditor(UIConsts.PREF_SVN_EXE_PATH,
-				"svn executable", true, getFieldEditorParent()));
-		addField(new FileFieldEditor(UIConsts.PREF_PGDUMP_EXE_PATH,
-				"pg_dump executable", true, getFieldEditorParent()));
+		addField(new ExecutableFileFieldEditor(UIConsts.PREF_SVN_EXE_PATH,
+				"svn executable", getFieldEditorParent()));
+		addField(new ExecutableFileFieldEditor(UIConsts.PREF_PGDUMP_EXE_PATH,
+				"pg_dump executable", getFieldEditorParent()));
 	}
 }

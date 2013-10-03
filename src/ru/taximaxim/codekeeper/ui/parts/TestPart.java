@@ -26,6 +26,10 @@ public class TestPart {
 	@Preference(value=UIConsts.PREF_SVN_EXE_PATH)
 	private String prefSvnPath;
 	
+	@Inject
+	@Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
+	private String prefPgdumpPath;
+	
 	Text txt;
 	
 	@PostConstruct
@@ -42,7 +46,8 @@ public class TestPart {
 			
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				txt.setText(txt.getText() + "\n" + prefSvnPath);
+				txt.setText(txt.getText() + "\n"
+						+ prefSvnPath + " | " + prefPgdumpPath);
 			}
 		});
 		
