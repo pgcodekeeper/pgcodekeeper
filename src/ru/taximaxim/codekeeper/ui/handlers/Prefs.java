@@ -4,14 +4,10 @@ package ru.taximaxim.codekeeper.ui.handlers;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.e4.core.contexts.ContextInjectionFactory;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Execute;
-import org.eclipse.e4.core.services.contributions.IContributionFactory;
-import org.eclipse.e4.core.services.log.Logger;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -22,25 +18,22 @@ import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.prefs.GeneralPrefPage;
+import ru.taximaxim.codekeeper.ui.prefs.SubPrefPage;
 
-//@SuppressWarnings("restriction")
 public class Prefs {
 	
-	private static final String PREF_PAGES_XP = "org.eclipse.ui.preferencePages";
-	private static final String ELMT_PAGE = "page";
-	private static final String ATTR_ID = "id";
-	private static final String ATTR_NAME = "name";
-	private static final String ATTR_CLASS = "class";
-	private static final String ATTR_CAT = "category";
+	private static final FakePrefPageExtension[] pages = {
+		
+		new FakePrefPageExtension("ru.taximaxim.codekeeper.ui.prefs.general",
+				"General", GeneralPrefPage.class, null),
+				
+		new FakePrefPageExtension("ru.taximaxim.codekeeper.ui.prefs.generalsub",
+				"Sub", SubPrefPage.class, "ru.taximaxim.codekeeper.ui.prefs.general")
+	};
 	
 	@Inject
 	private IEclipseContext ctx;
-	
-	@Inject
-	private Logger logger;
-	
-	@Inject
-	private IExtensionRegistry extRegistry;
 	
 	@Execute
 	public void execute(
@@ -59,46 +52,21 @@ public class Prefs {
 	
 	private PreferenceManager configurePrefs() {
 		PreferenceManager pm = new PreferenceManager();
-		IContributionFactory contribFactory = ctx.get(IContributionFactory.class);
 		
-		for(IConfigurationElement el : 
-				extRegistry.getConfigurationElementsFor(PREF_PAGES_XP)) {
-			if(!el.getName().equals(ELMT_PAGE)) {
-				logger.warn("unexpected preferencePages element: {0}",
-						el.getName());
-				continue;
-			}
-			else if(isEmpty(el.getAttribute(ATTR_ID))
-					|| isEmpty(el.getAttribute(ATTR_NAME))
-					|| isEmpty(el.getAttribute(ATTR_CLASS))) {
-				logger.warn("preferencePage missing id, name and/or class: {0}", 
-						el.getNamespaceIdentifier());
-				continue;
-			}
-			
-			String prefPageClassURI = getClassURI(el.getNamespaceIdentifier(),
-					el.getAttribute(ATTR_CLASS));
-			Object ob = contribFactory.create(prefPageClassURI, ctx);
-			if(!(ob instanceof IPreferencePage)) {
-				logger.warn("expected instance of IPreferencePage: {0}",
-						prefPageClassURI);
-				continue;
-			}
-
-			IPreferencePage page = (IPreferencePage) ob;
-			ContextInjectionFactory.inject(page, ctx);
+		for (FakePrefPageExtension pageExt : pages) {
+			IPreferencePage page = ContextInjectionFactory.make(
+					pageExt.getClazz(), ctx);
 			
 			if(isEmpty(page.getTitle())) {
-				page.setTitle(el.getAttribute(ATTR_NAME));
+				page.setTitle(pageExt.getName());
 			}
-
-			PreferenceNode node =
-					new PreferenceNode(el.getAttribute(ATTR_ID),page);
 			
 			IPreferenceNode parent = null;
-			if(!isEmpty(el.getAttribute(ATTR_CAT))) {
-				parent = findPrefNode(pm, el.getAttribute(ATTR_CAT));
+			if(!isEmpty(pageExt.getCat())) {
+				parent = findPrefNode(pm, pageExt.getCat());
 			}
+
+			PreferenceNode node = new PreferenceNode(pageExt.getId(), page);
 			
 			if(parent != null) {
 				parent.add(node);
@@ -124,14 +92,47 @@ public class Prefs {
 		return null;
 	}
 	
-	private String getClassURI(String definingBundleId, String spec) {
-		if(spec.startsWith("platform:") || spec.startsWith("bundleclass:")) {
-			return spec;
-		}
-		return "bundleclass://" + definingBundleId + "/" + spec;
-	}
-	
 	private boolean isEmpty(String value) {
 		return value == null || value.trim().isEmpty();
+	}
+}
+/**
+ * Instead of storing preference pages info in extension and reading it manually
+ * from there - store it in a more convenient array of custom container objects.
+ * 
+ * @author Alexander Levsha
+ */
+class FakePrefPageExtension {
+	
+	private final String id;
+	
+	private final String name;
+	
+	private final Class<? extends IPreferencePage> clazz;
+	
+	private final String category;
+	
+	public FakePrefPageExtension(String id, String name,
+			Class<? extends IPreferencePage> clazz, String category) {
+		this.id = id;
+		this.name = name;
+		this.clazz = clazz;
+		this.category = category;
+	}
+	
+	public String getId() {
+		return id;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public Class<? extends IPreferencePage> getClazz() {
+		return clazz;
+	}
+	
+	public String getCat() {
+		return category;
 	}
 }

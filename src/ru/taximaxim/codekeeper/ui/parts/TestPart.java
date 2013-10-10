@@ -51,7 +51,7 @@ public class TestPart {
 			}
 		});
 		
-		txt = new Text(parent, SWT.MULTI);
+		txt = new Text(parent, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
 		data = new FormData();
 		data.left = new FormAttachment(5);
 		data.right = new FormAttachment(95);

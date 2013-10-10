@@ -8,19 +8,5 @@
             uri="fragment.e4xmi">
       </fragment>
    </extension>
-   <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            class="ru.taximaxim.codekeeper.ui.prefs.GeneralPrefPage"
-            id="ru.taximaxim.codekeeper.ui.prefs.general"
-            name="General">
-      </page>
-      <page
-            category="ru.taximaxim.codekeeper.ui.prefs.general"
-            class="ru.taximaxim.codekeeper.ui.prefs.SubPrefPage"
-            id="ru.taximaxim.codekeeper.ui.prefs.generalsub"
-            name="Sub">
-      </page>
-   </extension>
 
 </plugin>

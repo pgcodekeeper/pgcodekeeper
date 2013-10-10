@@ -8,10 +8,22 @@ package ru.taximaxim.codekeeper.ui;
  */
 public interface UIConsts {
 
-	public static final String PLUGIN_ID = "ru.taximaxim.codekeeper.ui";
-	public static final String PREF_STORE = PLUGIN_ID + ".preferenceStore";
+	String PLUGIN_ID = "ru.taximaxim.codekeeper.ui";
+	String PREF_STORE = PLUGIN_ID + ".preferenceStore";
+	String PROJ_PREF_STORE = PLUGIN_ID + ".projectPrefStore";
 	
 	// Preferences
-	public static final String PREF_SVN_EXE_PATH = "prefSvnExePath";
-	public static final String PREF_PGDUMP_EXE_PATH = "prefPgdumpExePath";
+	String PREF_SVN_EXE_PATH = "prefSvnExePath";
+	String PREF_PGDUMP_EXE_PATH = "prefPgdumpExePath";
+	
+	// Project preferences
+	String PROJ_PREF_DB_NAME = "prefDbName";
+	String PROJ_PREF_DB_HOST = "prefDbHost";
+	String PROJ_PREF_DB_USER = "prefDbUser";
+	String PROJ_PREF_DB_PASS = "prefDbPass";
+	String PROJ_PREF_SVN_URL = "prefSvnUrl";
+	String PROJ_PREF_SVN_USER = "prefSvnUser";
+	String PROJ_PREF_SVN_PASS = "prefSvnPass";
+	
+	String PROJ_PREF_STORE_FILENAME = "pgcodekeeper.project";
 }

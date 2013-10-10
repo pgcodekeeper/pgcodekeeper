@@ -2,11 +2,11 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
 import org.eclipse.e4.core.di.annotations.Execute;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.e4.ui.workbench.IWorkbench;
 
 public class Exit {
 	@Execute
-	public void execute(Shell shell) {
-		shell.close();
+	public void execute(IWorkbench wb) {
+		wb.close();
 	}
 }
