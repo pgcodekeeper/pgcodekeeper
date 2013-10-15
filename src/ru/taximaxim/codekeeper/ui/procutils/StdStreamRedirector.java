@@ -1,5 +1,5 @@
 
-package ru.taximaxim.codekeeper.ui.pgdbproject;
+package ru.taximaxim.codekeeper.ui.procutils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,7 +10,7 @@ import ru.taximaxim.codekeeper.ui.parts.Console;
 
 /**
  * A Runnable that consumes everything from the {@link InputStream},
- * redirects data to {@link Console} and optionally stores it as a String.
+ * redirects data to {@link Console} and stores it as a String.
  * 
  * @author Alexander Levsha
  */
@@ -44,15 +44,21 @@ public class StdStreamRedirector implements Runnable {
 	
 	/**
 	 * Launches a process combining stdout & stderr and redirecting them
-	 * onto {@link Console}.
+	 * onto {@link Console}. Blocks until process exits and all output is consumed.
 	 * 
-	 * @param cmdLine Command line to execute
-	 * @param workingDir Working directory for process to start in
+	 * @param pb process to start 
 	 * @return captured stdout & stderr output
 	 * @throws IOException
 	 */
-	public static String launchProcessWithRedirection(ProcessBuilder pb)
+	public static String launchAndRedirect(ProcessBuilder pb)
 			throws IOException {
+		StringBuilder sb = new StringBuilder(1000 * pb.command().size());
+		for(String param : pb.command()) {
+			sb.append(param);
+			sb.append(' ');
+		}
+		Console.addMessage(sb.toString());
+		
 		pb.redirectErrorStream(true);
 		Process p = pb.start();
 		
@@ -65,6 +71,11 @@ public class StdStreamRedirector implements Runnable {
 			redirectorThread.join();
 		} catch(InterruptedException ex) {
 			throw new IllegalStateException(ex);
+		}
+		
+		if(p.exitValue() != 0) {
+			throw new IOException("Process returned with error: "
+						+ p.exitValue());
 		}
 		
 		return redirector.storage.toString();

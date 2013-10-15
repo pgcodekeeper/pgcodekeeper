@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.eclipse.jface.preference.PreferenceStore;
@@ -15,7 +16,7 @@ public class PgDbProject extends PreferenceStore {
 	
 	public PgDbProject(String projectDir) {
 		super(new File(projectDir,
-				UIConsts.PROJ_PREF_STORE_FILENAME).getAbsolutePath());
+				UIConsts.FILENAME_PROJ_PREF_STORE).getAbsolutePath());
 		
 		this.projectDir = projectDir;
 		
@@ -28,5 +29,13 @@ public class PgDbProject extends PreferenceStore {
 	
 	public String getProjectDir() {
 		return projectDir;
+	}
+	
+	public File getProjectDirFile() {
+		return new File(projectDir);
+	}
+	
+	public Path getProjectPath() {
+		return getProjectDirFile().toPath();
 	}
 }

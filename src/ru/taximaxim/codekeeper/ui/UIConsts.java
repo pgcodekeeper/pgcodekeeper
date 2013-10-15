@@ -17,13 +17,17 @@ public interface UIConsts {
 	String PREF_PGDUMP_EXE_PATH = "prefPgdumpExePath";
 	
 	// Project preferences
+	String PROJ_PREF_ENCODING = "prefGeneralEncoding";
+	
 	String PROJ_PREF_DB_NAME = "prefDbName";
 	String PROJ_PREF_DB_HOST = "prefDbHost";
+	String PROJ_PREF_DB_PORT = "prefDbPort";
 	String PROJ_PREF_DB_USER = "prefDbUser";
 	String PROJ_PREF_DB_PASS = "prefDbPass";
 	String PROJ_PREF_SVN_URL = "prefSvnUrl";
 	String PROJ_PREF_SVN_USER = "prefSvnUser";
 	String PROJ_PREF_SVN_PASS = "prefSvnPass";
 	
-	String PROJ_PREF_STORE_FILENAME = "pgcodekeeper.project";
+	String FILENAME_PROJ_PREF_STORE = "pgcodekeeper.project";
+	String FILENAME_PROJ_SCHEMA_DIR = "svn";
 }
