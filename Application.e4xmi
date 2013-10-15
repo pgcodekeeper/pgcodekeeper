@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <application:Application xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:application="http://www.eclipse.org/ui/2010/UIModel/application" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmi:id="_KVvzsBkQEeOQf_bcFyOniA" elementId="org.eclipse.e4.ide.application">
   <children xsi:type="basic:TrimmedWindow" xmi:id="_KVvzsRkQEeOQf_bcFyOniA" elementId="ru.taximaxim.codekeeper.mainapp.mainwindow" label="ru.taximaxim.codekeeper.mainapp" bindingContexts="_Xzl44BkQEeOQf_bcFyOniA" width="500" height="400">
+    <tags>shellMaximized</tags>
     <mainMenu xmi:id="_ysG0ECnSEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.mainapp.mainmenu"/>
   </children>
   <bindingTables xmi:id="_dnJy8BkQEeOQf_bcFyOniA" elementId="ru.taximaxim.codekeeper.mainapp.bindingtable.0" bindingContext="_Xzl44BkQEeOQf_bcFyOniA"/>
