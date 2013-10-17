@@ -10,7 +10,9 @@ public interface UIConsts {
 
 	String PLUGIN_ID = "ru.taximaxim.codekeeper.ui";
 	String PREF_STORE = PLUGIN_ID + ".preferenceStore";
-	String PROJ_PREF_STORE = PLUGIN_ID + ".projectPrefStore";
+	String PROJ_PART_STACK_ID = PLUGIN_ID + ".partstack.Projects";
+	String PROJ_PART_DESCR_ID = PLUGIN_ID + ".partdescriptor.Project";
+	String PROJ_PART_PERSISTED_ID = PROJ_PART_DESCR_ID + ".Id";
 	
 	// Preferences
 	String PREF_SVN_EXE_PATH = "prefSvnExePath";

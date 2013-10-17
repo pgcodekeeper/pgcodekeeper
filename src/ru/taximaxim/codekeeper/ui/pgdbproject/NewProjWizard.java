@@ -42,11 +42,17 @@ public class NewProjWizard extends Wizard {
 	
 	final IPreferenceStore mainPrefStore;
 	
+	private PgDbProject props;
+	
 	public NewProjWizard(IPreferenceStore mainPrefStore) {
 		setWindowTitle("New PgDbProject");
 		setNeedsProgressMonitor(true);
 		
 		this.mainPrefStore = mainPrefStore;
+	}
+	
+	public PgDbProject getProject() {
+		return props;
 	}
 	
 	@Override
@@ -82,7 +88,7 @@ public class NewProjWizard extends Wizard {
 			return false;
 		}
 		
-		final PgDbProject props = new PgDbProject(pageDb.getProjectPath());
+		props = new PgDbProject(pageDb.getProjectPath());
 		
 		props.setValue(UIConsts.PROJ_PREF_ENCODING, pageMisc.getEncoding());
 		
