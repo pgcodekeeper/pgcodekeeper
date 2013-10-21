@@ -1,6 +1,7 @@
  
 package ru.taximaxim.codekeeper.ui.handlers;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.inject.Named;
@@ -27,10 +28,7 @@ public class LoadProj {
 			EPartService partService, EModelService model, MApplication app,
 			IEventBroker events) throws IOException {
 		DirectoryDialog dialog = new DirectoryDialog(shell);
-		/*
 		String path = dialog.open();
-		*/
-		String path = "/home/levsha_aa/workspace/"; // TODO tmp
 		if(path != null) {
 			PgDbProject proj = new PgDbProject(path);
 			load(proj, partService, model, app, events);
@@ -42,7 +40,8 @@ public class LoadProj {
 		for(MPart existingPart : partService.getParts()) {
 			String partProjId = existingPart.getPersistedState().get(
 					UIConsts.PROJ_PART_PERSISTED_ID);
-			if(partProjId != null && partProjId.equals(proj.getProjectDir())) {
+			if(partProjId != null && !partProjId.isEmpty()
+					&& new File(partProjId).equals(proj.getProjectDirFile())) {
 				partService.hidePart(existingPart);
 				break;
 			}

@@ -15,7 +15,6 @@ Require-Bundle: org.eclipse.e4.ui.di,
  org.eclipse.e4.core.contexts,
  org.eclipse.e4.core.services,
  org.eclipse.e4.ui.model.workbench,
- javax.annotation,
  org.eclipse.e4.core.di.extensions,
  com.opcoach.e4.contextExplorer;bundle-version="1.0.0",
  apgdiff;bundle-version="1.0.0"

@@ -38,8 +38,8 @@ public class Console {
 		Text consoleLog = new Text(parent, SWT.MULTI
 				| SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
 		consoleLog.setFont(new Font(shell.getDisplay(), new FontData[] {
-			new FontData("Courier New", 10, SWT.NORMAL),
 			new FontData("Monospace", 10, SWT.NORMAL),
+			new FontData("Courier New", 10, SWT.NORMAL),
 			new FontData("Courier", 10, SWT.NORMAL)
 		}));
 		log.setTextControl(consoleLog);

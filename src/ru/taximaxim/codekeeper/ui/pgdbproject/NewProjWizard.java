@@ -286,7 +286,7 @@ class PageDb extends WizardPage implements Listener {
 		lblWarn = new CLabel(grpDb, SWT.NONE);
 		lblWarn.setImage(ImageDescriptor.createFromURL(
 				Activator.getContext().getBundle().getResource(
-						"/icons/warning.gif")).createImage());
+						UIConsts.FILENAME_ICONWARNING)).createImage());
 		lblWarn.setText("Warning:\n"
 				+ "Providing password here is insecure!\n"
 				+ "Consider using .pgpass file instead.");
@@ -479,7 +479,7 @@ class PageSvn extends WizardPage implements Listener {
 		lblWarn = new CLabel(container, SWT.NONE);
 		lblWarn.setImage(ImageDescriptor.createFromURL(
 				Activator.getContext().getBundle().getResource(
-						"/icons/warning.gif")).createImage());
+						UIConsts.FILENAME_ICONWARNING)).createImage());
 		lblWarn.setText("Warning:\n"
 				+ "Providing password here is insecure!"
 				+ " This password WILL show up in logs!\n"
