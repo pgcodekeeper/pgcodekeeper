@@ -3,9 +3,10 @@
   <children xsi:type="basic:TrimmedWindow" xmi:id="_KVvzsRkQEeOQf_bcFyOniA" elementId="ru.taximaxim.codekeeper.mainapp.mainwindow" label="ru.taximaxim.codekeeper.mainapp" bindingContexts="_Xzl44BkQEeOQf_bcFyOniA" width="500" height="400">
     <tags>shellMaximized</tags>
     <mainMenu xmi:id="_ysG0ECnSEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.mainapp.mainmenu"/>
+    <trimBars xmi:id="_6v4z0Df1EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.mainapp.trimbar.main"/>
   </children>
   <bindingTables xmi:id="_dnJy8BkQEeOQf_bcFyOniA" elementId="ru.taximaxim.codekeeper.mainapp.bindingtable.0" bindingContext="_Xzl44BkQEeOQf_bcFyOniA"/>
-  <rootContext xmi:id="_Xzl44BkQEeOQf_bcFyOniA" elementId="ru.taximaxim.codekeeper.mainapp.bindingcontext.0" name="bindingcontext.main"/>
+  <rootContext xmi:id="_Xzl44BkQEeOQf_bcFyOniA" elementId="bindingcontext.main" name="bindingcontext.main"/>
   <addons xmi:id="_KVvzshkQEeOQf_bcFyOniA" elementId="org.eclipse.e4.core.commands.service" contributionURI="bundleclass://org.eclipse.e4.core.commands/org.eclipse.e4.core.commands.CommandServiceAddon"/>
   <addons xmi:id="_KVvzsxkQEeOQf_bcFyOniA" elementId="org.eclipse.e4.ui.contexts.service" contributionURI="bundleclass://org.eclipse.e4.ui.services/org.eclipse.e4.ui.services.ContextServiceAddon"/>
   <addons xmi:id="_KVvztBkQEeOQf_bcFyOniA" elementId="org.eclipse.e4.ui.bindings.service" contributionURI="bundleclass://org.eclipse.e4.ui.bindings/org.eclipse.e4.ui.bindings.BindingServiceAddon"/>
