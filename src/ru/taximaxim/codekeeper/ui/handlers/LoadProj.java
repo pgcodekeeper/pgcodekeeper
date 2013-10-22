@@ -2,6 +2,7 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import javax.inject.Named;
@@ -45,6 +46,11 @@ public class LoadProj {
 				partService.hidePart(existingPart);
 				break;
 			}
+		}
+		
+		if(!proj.getProjectPropsFile().isFile()) {
+			throw new FileNotFoundException(
+					proj.getProjectPropsFile().getAbsolutePath());
 		}
 		
 		MPart part = partService.createPart(UIConsts.PROJ_PART_DESCR_ID);

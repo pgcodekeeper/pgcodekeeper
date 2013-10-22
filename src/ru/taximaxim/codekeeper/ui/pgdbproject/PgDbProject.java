@@ -38,4 +38,8 @@ public class PgDbProject extends PreferenceStore {
 	public Path getProjectPath() {
 		return getProjectDirFile().toPath();
 	}
+	
+	public File getProjectPropsFile() {
+		return new File(projectDir, UIConsts.FILENAME_PROJ_PREF_STORE);
+	}
 }

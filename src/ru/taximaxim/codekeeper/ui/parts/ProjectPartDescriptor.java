@@ -10,10 +10,10 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
-import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.e4.ui.workbench.swt.modeling.EMenuService;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -42,8 +42,14 @@ public class ProjectPartDescriptor {
 	
 	private Text txt;
 	
+	public PgDbProject getProject() {
+		return proj;
+	}
+	
 	@PostConstruct
-	public void postConstruct(Composite parent, MPart part) throws IOException {
+	public void postConstruct(Composite parent, MPart part,
+			EMenuService menuService, EPartService partService)
+					throws IOException {
 		proj = new PgDbProject(part.getPersistedState()
 				.get(UIConsts.PROJ_PART_PERSISTED_ID));
 		proj.load();
@@ -166,6 +172,9 @@ public class ProjectPartDescriptor {
 			}
 		});
 		
+		menuService.registerContextMenu(treeDb.getControl(),
+				"ru.taximaxim.codekeeper.ui.popupmenu.project");
+		
 		Composite containerRight = new Composite(sash, SWT.NONE);
 		containerRight.setLayout(new FillLayout());
 		
@@ -178,13 +187,5 @@ public class ProjectPartDescriptor {
 		}));
 		
 		sash.setWeights(new int[] { 2000, 8000 });
-	}
-	
-	@PreDestroy
-	public void preDestroy() {
-	}
-	
-	@Focus
-	public void onFocus() {
 	}
 }

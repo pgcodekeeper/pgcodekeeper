@@ -20,6 +20,9 @@ public interface UIConsts {
 	
 	// Project preferences
 	String PROJ_PREF_ENCODING = "prefGeneralEncoding";
+	String PROJ_PREF_SOURCE = "prefGeneralSource";
+	String PROJ_SOURCE_TYPE_DB = "db";
+	String PROJ_SOURCE_TYPE_DUMP = "dump";
 	
 	String PROJ_PREF_DB_NAME = "prefDbName";
 	String PROJ_PREF_DB_HOST = "prefDbHost";

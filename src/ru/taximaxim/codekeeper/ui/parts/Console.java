@@ -12,7 +12,6 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.UISynchronize;
 import org.eclipse.e4.ui.services.IServiceConstants;
 
@@ -48,10 +47,6 @@ public class Console {
 	@PreDestroy
 	public void preDestroy() {
 		log.setTextControl(null);
-	}
-	
-	@Focus
-	public void onFocus() {
 	}
 }
 

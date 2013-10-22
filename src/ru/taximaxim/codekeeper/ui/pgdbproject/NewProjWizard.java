@@ -91,6 +91,9 @@ public class NewProjWizard extends Wizard {
 		props = new PgDbProject(pageDb.getProjectPath());
 		
 		props.setValue(UIConsts.PROJ_PREF_ENCODING, pageMisc.getEncoding());
+		props.setValue(UIConsts.PROJ_PREF_SOURCE,
+				pageDb.isSourceDb()? UIConsts.PROJ_SOURCE_TYPE_DB : 
+					UIConsts.PROJ_SOURCE_TYPE_DUMP);
 		
 		props.setValue(UIConsts.PROJ_PREF_DB_NAME, pageDb.getDbName());
 		props.setValue(UIConsts.PROJ_PREF_DB_USER, pageDb.getDbUser());
@@ -483,7 +486,7 @@ class PageSvn extends WizardPage implements Listener {
 		lblWarn.setText("Warning:\n"
 				+ "Providing password here is insecure!"
 				+ " This password WILL show up in logs!\n"
-				+ "Consider using SVN password storage instead.");
+				+ "Consider using SVN password store instead.");
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
 		gd.exclude = true;
 		lblWarn.setLayoutData(gd);
@@ -510,7 +513,7 @@ class PageSvn extends WizardPage implements Listener {
 	}
 }
 
-class PageMisc extends WizardPage implements Listener {
+class PageMisc extends WizardPage {
 	
 	private Combo cmbEncoding;
 	
@@ -530,29 +533,12 @@ class PageMisc extends WizardPage implements Listener {
 		new Label(container, SWT.NONE).setText(
 				"Project encoding (used for all supporting operaions):");
 		
-		cmbEncoding = new Combo(container, SWT.BORDER | SWT.DROP_DOWN);
+		cmbEncoding = new Combo(container, SWT.BORDER | SWT.DROP_DOWN
+				| SWT.READ_ONLY);
 		Set<String> charsets = Charset.availableCharsets().keySet();
 		cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
 		cmbEncoding.select(cmbEncoding.indexOf("UTF-8"));
-		cmbEncoding.addListener(SWT.Modify, this);
 		
 		setControl(container);
-	}
-	
-	@Override
-	public boolean isPageComplete() {
-		if(cmbEncoding.getText().isEmpty()) {
-			setErrorMessage("Select an encoding for the project!");
-			return false;
-		}
-		
-		setErrorMessage(null);
-		return true;
-	}
-	
-	@Override
-	public void handleEvent(Event event) {
-		getWizard().getContainer().updateButtons();
-		getWizard().getContainer().updateMessage();
 	}
 }
