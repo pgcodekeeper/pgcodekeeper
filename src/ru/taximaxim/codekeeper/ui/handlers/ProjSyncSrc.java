@@ -1,7 +1,6 @@
  
 package ru.taximaxim.codekeeper.ui.handlers;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CancellationException;
 
@@ -12,17 +11,18 @@ import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.services.IServiceConstants;
-import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -44,28 +44,32 @@ public class ProjSyncSrc {
 			@Named(IServiceConstants.ACTIVE_SHELL)
 			Shell shell,
 			@Named(UIConsts.PREF_STORE)
-			IPreferenceStore prefStore) 
-					throws InvocationTargetException, IOException {
-		ProjectPartDescriptor partImpl = ((ProjectPartDescriptor) part.getObject());
+			IPreferenceStore prefStore) throws InvocationTargetException {
+	    boolean cancelled;
 		try {
-			if(sync(partImpl.getProject(), shell, prefStore)) {
-				partImpl.reload();
-			}
+		    cancelled = !sync((ProjectPartDescriptor) part.getObject(), shell,
+		            prefStore);
 		} catch(CancellationException ex) {
-			MessageBox mb = new MessageBox(shell, SWT.ICON_CANCEL);
-			mb.setText("Sync operation");
-			mb.setMessage("Sync operation cancelled.");
-			mb.open();
+		    cancelled = true;
 		}
+		
+	    if(cancelled) {
+            MessageBox mb = new MessageBox(shell, SWT.ICON_CANCEL);
+            mb.setText("Sync operation");
+            mb.setMessage("Sync operation cancelled.");
+            mb.open();
+	    }
 	}
 	
 	/**
-	 * @throws CancellationException
-	 * @return true if the project was changed
+	 * @throws CancellationException if the calling operation was cancelled
+	 * @return true if user proceeded to sync,
+	 *         false if user decided not to sync
 	 */
-	public static boolean sync(PgDbProject proj, Shell shell,
+	public static boolean sync(ProjectPartDescriptor partImpl, Shell shell,
 		IPreferenceStore mainPrefStore) throws InvocationTargetException {
-
+	    PgDbProject proj = partImpl.getProject();
+	    
 		String syncDump = null;
 		if(UIConsts.PROJ_SOURCE_TYPE_DUMP.equals(
 				proj.getString(UIConsts.PROJ_PREF_SOURCE))) {
@@ -93,14 +97,26 @@ public class ProjSyncSrc {
 		
 		String diff = projChecker.getDiff();
 		if(diff.isEmpty()) {
-			return false;
+			return true;
 		}
 		
-		if(new TextDialog(shell, diff, "Found differences in the project."
+		int syncDecision = new TextDialog(shell, "Sync differences?",
+		        "Found differences in the project."
 				+ " Want to sync it with source?\n\n"
-				+ "Diff from the project to its schema source:")
-				.open() != Dialog.OK) {
-			throw new CancellationException();
+				+ "Diff from the project to its schema source:", diff)
+		.open();
+		
+		switch(syncDecision) {
+		    case IDialogConstants.YES_ID: break;
+		    case IDialogConstants.NO_ID:  return false;
+		    
+		    case IDialogConstants.CANCEL_ID:
+		    case SWT.DEFAULT:
+		        throw new CancellationException();
+		        
+		    default:
+		        throw new IllegalStateException(
+		                "Unexpected value from sync dialog: " + syncDecision);
 		}
 		
 		dialog = new ProgressMonitorDialog(shell);
@@ -114,52 +130,59 @@ public class ProjSyncSrc {
 					"Project reload thread cancelled. Shouldn't happen!", ex);
 		}
 		
+		partImpl.reload();
 		return true;
 	}
 	
 	@CanExecute
 	public boolean canExecute() {
-		if(part.getElementId().equals(UIConsts.PROJ_PART_DESCR_ID)) {
-			return true;
-		}
-		
-		return false;
+		return part.getElementId().equals(UIConsts.PROJ_PART_DESCR_ID);
 	}
 }
 
-class TextDialog extends Dialog {
+class TextDialog extends MessageDialog {
 	
-	final private String text, message;
+	final private String text;
 	
-	public TextDialog(Shell parentShell, String text, String message) {
-		super(parentShell);
+	public TextDialog(Shell parentShell, String title, String message, String text) {
+	    super(parentShell, title, null, message, QUESTION_WITH_CANCEL, null, 2);
 		
 		this.text = text;
-		this.message = message;
 	}
 	
 	@Override
-	protected Control createDialogArea(Composite parent) {
-		Composite container = (Composite) super.createDialogArea(parent);
-		
-		new Label(container, SWT.NONE).setText(message);
-		
-		Text txt = new Text(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
-				| SWT.READ_ONLY | SWT.MULTI);
-		
-		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-		gd.widthHint = 600;
-		gd.heightHint = 400;
-		txt.setLayoutData(gd);
-		
-		txt.setFont(new Font(parent.getShell().getDisplay(), new FontData[] {
-			new FontData("Monospace", 10, SWT.NORMAL),
-			new FontData("Courier New", 10, SWT.NORMAL),
-			new FontData("Courier", 10, SWT.NORMAL)
-		}));
-		txt.setText(text);
-		
-		applyDialogFont(container);
-		return container;
+	protected void createButtonsForButtonBar(Composite parent) {
+	    createButton(parent, IDialogConstants.YES_ID,
+	            IDialogConstants.YES_LABEL, true);
+	    createButton(parent, IDialogConstants.NO_ID,
+	            IDialogConstants.NO_LABEL, false);
+	    createButton(parent, IDialogConstants.CANCEL_ID,
+	            IDialogConstants.CANCEL_LABEL, false);
+	}
+	
+	@Override
+	protected Control createCustomArea(Composite parent) {
+	    Text txt = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
+                | SWT.READ_ONLY | SWT.MULTI);
+        
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.widthHint = 600;
+        gd.heightHint = 400;
+        txt.setLayoutData(gd);
+        
+        txt.setFont(new Font(parent.getShell().getDisplay(), new FontData[] {
+            new FontData("Monospace", 10, SWT.NORMAL),
+            new FontData("Courier New", 10, SWT.NORMAL),
+            new FontData("Courier", 10, SWT.NORMAL)
+        }));
+        txt.setText(text);
+        
+        return txt;
+	}
+	
+	@Override
+	public int open() {
+	    
+	    return super.open();
 	}
 }

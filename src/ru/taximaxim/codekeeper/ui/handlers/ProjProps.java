@@ -67,11 +67,7 @@ public class ProjProps {
 	
 	@CanExecute
 	public boolean canExecute() {
-		if(part.getElementId().equals(UIConsts.PROJ_PART_DESCR_ID)) {
-			return true;
-		}
-		
-		return false;
+	    return part.getElementId().equals(UIConsts.PROJ_PART_DESCR_ID);
 	}
 }
 
