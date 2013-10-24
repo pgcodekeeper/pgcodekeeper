@@ -10,12 +10,8 @@ import javax.inject.Named;
 
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.CanExecute;
-import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.services.IServiceConstants;
-import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -48,15 +44,12 @@ public class ProjSyncSrc {
 			@Named(IServiceConstants.ACTIVE_SHELL)
 			Shell shell,
 			@Named(UIConsts.PREF_STORE)
-			IPreferenceStore prefStore,
-			EPartService partService, EModelService model, MApplication app,
-			IEventBroker events) throws InvocationTargetException, IOException {
+			IPreferenceStore prefStore) 
+					throws InvocationTargetException, IOException {
+		ProjectPartDescriptor partImpl = ((ProjectPartDescriptor) part.getObject());
 		try {
-			PgDbProject proj = ((ProjectPartDescriptor) part.getObject())
-					.getProject();
-			
-			if(sync(proj, shell, prefStore)) {
-				LoadProj.load(proj, partService, model, app, events);
+			if(sync(partImpl.getProject(), shell, prefStore)) {
+				partImpl.reload();
 			}
 		} catch(CancellationException ex) {
 			MessageBox mb = new MessageBox(shell, SWT.ICON_CANCEL);

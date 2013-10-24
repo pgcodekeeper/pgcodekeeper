@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;

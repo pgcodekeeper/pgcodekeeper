@@ -42,6 +42,8 @@ public class ProjectPartDescriptor {
 	
 	private Text txt;
 	
+	private TreeViewer treeDb;
+	
 	public PgDbProject getProject() {
 		return proj;
 	}
@@ -61,7 +63,7 @@ public class ProjectPartDescriptor {
 		Composite containerTree = new Composite(sash, SWT.NONE);
 		containerTree.setLayout(new FillLayout());
 		
-		TreeViewer treeDb = new TreeViewer(containerTree);
+		treeDb = new TreeViewer(containerTree);
 		treeDb.setContentProvider(new ITreeContentProvider() {
 			
 			private final List<String> ignoredFiles = Arrays.asList(
@@ -186,5 +188,10 @@ public class ProjectPartDescriptor {
 		}));
 		
 		sash.setWeights(new int[] { 2000, 8000 });
+	}
+	
+	public void reload() {
+		treeDb.setInput(proj.getProjectSchemaDir());
+		txt.setText("");
 	}
 }
