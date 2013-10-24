@@ -1,30 +1,29 @@
-package ru.taximaxim.codekeeper.ui.pgdbproject;
+package ru.taximaxim.codekeeper.ui.externalcalls;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.externalcalls.utils.ProcBuilderUtils;
+import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
-import ru.taximaxim.codekeeper.ui.procutils.ProcBuilderUtils;
-import ru.taximaxim.codekeeper.ui.procutils.StdStreamRedirector;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class PgDumper {
 
 	public static PgDatabase pgDump(String exePgdump, PgDbProject props,
-			IProgressMonitor pm) throws IOException, InterruptedException {
+			SubMonitor pm) throws IOException, InterruptedException {
 		SubMonitor subpm = SubMonitor.convert(pm, 2);
 		
 		try(TempFile tf = new TempFile(props.getProjectPath(),
 				"tmp_dump_", ".sql")) {
 			File dump = tf.get();
 			
-			subpm.subTask("Executing pg_dump");
-			subpm.newChild(1);
+			subpm.newChild(1).subTask("Executing pg_dump");
 			
 			ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
 					"--file=" + dump.getAbsolutePath(),
@@ -47,8 +46,7 @@ public class PgDumper {
 			
 			StdStreamRedirector.launchAndRedirect(pgdump);
 
-			subpm.subTask("Loading dump");
-			subpm.newChild(1);
+			subpm.newChild(1).subTask("Loading dump");
 
 			return PgDumpLoader.loadDatabaseSchemaFromDump(
 					dump.getAbsolutePath(), 

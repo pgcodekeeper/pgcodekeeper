@@ -1,5 +1,5 @@
 
-package ru.taximaxim.codekeeper.ui.procutils;
+package ru.taximaxim.codekeeper.ui.externalcalls.utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;

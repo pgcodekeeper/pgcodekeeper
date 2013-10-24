@@ -147,8 +147,7 @@ public class ProjectPartDescriptor {
 				return imgFile;
 			}
 		});
-		treeDb.setInput(new File(proj.getProjectDirFile(),
-				UIConsts.FILENAME_PROJ_SCHEMA_DIR));
+		treeDb.setInput(proj.getProjectSchemaDir());
 		
 		treeDb.addDoubleClickListener(new IDoubleClickListener() {
 			

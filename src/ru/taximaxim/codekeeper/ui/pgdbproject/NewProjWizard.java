@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.Set;
@@ -36,9 +37,9 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class NewProjWizard extends Wizard {
 
-	PageDb pageDb;
-	PageSvn pageSvn;
-	PageMisc pageMisc;
+	private PageDb pageDb;
+	private PageSvn pageSvn;
+	private PageMisc pageMisc;
 	
 	final IPreferenceStore mainPrefStore;
 	
@@ -104,16 +105,21 @@ public class NewProjWizard extends Wizard {
 		props.setValue(UIConsts.PROJ_PREF_SVN_URL, pageSvn.getSvnUrl());
 		props.setValue(UIConsts.PROJ_PREF_SVN_USER, pageSvn.getSvnUser());
 		props.setValue(UIConsts.PROJ_PREF_SVN_PASS, pageSvn.getSvnPass());
-
-		NewProjCreator creator = new NewProjCreator(
-				mainPrefStore,
-				props,
-				pageDb.isSourceDump()? pageDb.getDumpPath() : null);
+		
+		try {
+			props.save();
+		} catch(IOException ex) {
+			throw new IllegalStateException(
+					"Error while saving project properties", ex);
+		}
+		
+		ProjectLoaderParser creator = new ProjectLoaderParser(
+				mainPrefStore, props, pageDb.getDumpPath());
 		try {
 			getContainer().run(true, false, creator);
 		} catch(InvocationTargetException ex) {
 			throw new IllegalStateException(
-					"Error in th project creator thread", ex);
+					"Error in the project creator thread", ex);
 		} catch(InterruptedException ex) {
 			// assume run() was called as non cancelable
 			throw new IllegalStateException(

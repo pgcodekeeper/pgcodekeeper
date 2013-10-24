@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.pgdbproject;
+package ru.taximaxim.codekeeper.ui.externalcalls;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +9,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.procutils.StdStreamRedirector;
+import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class SvnExec {
 	

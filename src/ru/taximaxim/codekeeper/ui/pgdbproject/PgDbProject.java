@@ -42,4 +42,8 @@ public class PgDbProject extends PreferenceStore {
 	public File getProjectPropsFile() {
 		return new File(projectDir, UIConsts.FILENAME_PROJ_PREF_STORE);
 	}
+	
+	public File getProjectSchemaDir() {
+		return new File(projectDir, UIConsts.FILENAME_PROJ_SCHEMA_DIR);
+	}
 }

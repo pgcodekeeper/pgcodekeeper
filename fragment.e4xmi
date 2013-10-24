@@ -16,8 +16,11 @@
       <children xsi:type="menu:Menu" xmi:id="_oZAFMCnVEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.menu.0" label="&amp;File">
         <children xsi:type="menu:HandledMenuItem" xmi:id="_fAWkQCzJEeOC9s_7P-LAEQ" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.3" label="&amp;New Project" command="_1JlsQCzJEeOC9s_7P-LAEQ"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_e5l6wDYmEeOu39tpQ1Oozg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.5" label="&amp;Load Project" command="_o6NrIDYmEeOu39tpQ1Oozg"/>
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_nbtWkDooEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.6" label="&amp;Project Properties" command="_8p39cDooEeOo66lUbQncjg"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_tIyOECnVEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.2" label="E&amp;xit" command="_Zjel8CnWEeObfOm2RjyZmw"/>
+      </children>
+      <children xsi:type="menu:Menu" xmi:id="_wKDhsDsjEeOHuJV2eZ06pg" elementId="ru.taximaxim.codekeeper.ui.menu.3" label="&amp;Project">
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_9Ef-4DsjEeOHuJV2eZ06pg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.8" label="&amp;Sync to Source" command="_HhqhUDskEeOHuJV2eZ06pg"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_nbtWkDooEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.6" label="&amp;Properties" command="_8p39cDooEeOo66lUbQncjg"/>
       </children>
       <children xsi:type="menu:Menu" xmi:id="_Ah0REC_xEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.menu.2" label="&amp;Window">
         <children xsi:type="menu:HandledMenuItem" xmi:id="_NUbA4C_xEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.4" label="&amp;Switch Perspective" command="_UkgjUC_xEeO2acHPThBe1g"/>
@@ -46,6 +49,7 @@
     <elements xsi:type="commands:Command" xmi:id="_o6NrIDYmEeOu39tpQ1Oozg" elementId="ru.taximaxim.codekeeper.ui.command.LoadProj" commandName="Load Project"/>
     <elements xsi:type="commands:Command" xmi:id="_H_VU0DfvEeOJGp3TAROjKg" elementId="org.eclipse.ui.file.close" commandName="Close Active Project"/>
     <elements xsi:type="commands:Command" xmi:id="_8p39cDooEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.command.ProjProps" commandName="Project Properties"/>
+    <elements xsi:type="commands:Command" xmi:id="_HhqhUDskEeOHuJV2eZ06pg" elementId="ru.taximaxim.codekeeper.ui.command.ProjSyncSrc" commandName="Project Sync to Source"/>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_V_i7QCnNEeObfOm2RjyZmw" featurename="handlers" parentElementId="org.eclipse.e4.ide.application">
     <elements xsi:type="commands:Handler" xmi:id="_bNwFgCnNEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.handler.About" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.About" command="_s6NdACnJEeObfOm2RjyZmw"/>
@@ -56,6 +60,7 @@
     <elements xsi:type="commands:Handler" xmi:id="_wB_mIDYmEeOu39tpQ1Oozg" elementId="ru.taximaxim.codekeeper.ui.handler.LoadProj" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.LoadProj" command="_o6NrIDYmEeOu39tpQ1Oozg"/>
     <elements xsi:type="commands:Handler" xmi:id="_NM0GUDfvEeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.handler.CloseActiveProj" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.CloseActiveProj" command="_H_VU0DfvEeOJGp3TAROjKg"/>
     <elements xsi:type="commands:Handler" xmi:id="_C5uK4DopEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.handler.ProjProps" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.ProjProps" command="_8p39cDooEeOo66lUbQncjg"/>
+    <elements xsi:type="commands:Handler" xmi:id="_SCkUQDskEeOHuJV2eZ06pg" elementId="ru.taximaxim.codekeeper.ui.handler.ProjSyncSrc" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc" command="_HhqhUDskEeOHuJV2eZ06pg"/>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_dQL-sCnKEeObfOm2RjyZmw" featurename="children" parentElementId="ru.taximaxim.codekeeper.mainapp.mainwindow">
     <elements xsi:type="advanced:PerspectiveStack" xmi:id="_K9WGsC_vEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.perspectivestack.0">
@@ -80,6 +85,7 @@
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_XVz-QDY8EeOu39tpQ1Oozg" featurename="descriptors" parentElementId="org.eclipse.e4.ide.application">
     <elements xsi:type="basic_1:PartDescriptor" xmi:id="_hEqpMDY8EeOu39tpQ1Oozg" elementId="ru.taximaxim.codekeeper.ui.partdescriptor.Project" label="{project name placeholder}" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/tree_explorer.gif" allowMultiple="true" closeable="true" dirtyable="true" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.ProjectPartDescriptor">
       <menus xsi:type="menu:PopupMenu" xmi:id="_TZPmcDorEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.popupmenu.project" label="Project">
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_3iR88DumEeOhEMin4A9R4g" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.9" label="&amp;Sync to Source" command="_HhqhUDskEeOHuJV2eZ06pg"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_u4_qsDosEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.7" label="&amp;Project Properties" command="_8p39cDooEeOo66lUbQncjg"/>
       </menus>
     </elements>

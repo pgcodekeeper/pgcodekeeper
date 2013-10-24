@@ -13,10 +13,12 @@ import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
+import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 
-public class NewProjCreator implements IRunnableWithProgress {
+public class ProjectLoaderParser implements IRunnableWithProgress {
 	
 	final private String exePgdump, exeSvn; 
 	
@@ -24,7 +26,7 @@ public class NewProjCreator implements IRunnableWithProgress {
 	
 	final private String dumpPath;
 	
-	public NewProjCreator(final IPreferenceStore mainPrefStore,
+	public ProjectLoaderParser(final IPreferenceStore mainPrefStore,
 			final PgDbProject props,
 			final String dumpPath) {
 		this.exePgdump = mainPrefStore.getString(UIConsts.PREF_PGDUMP_EXE_PATH);
@@ -38,22 +40,23 @@ public class NewProjCreator implements IRunnableWithProgress {
 	public void run(IProgressMonitor pm) throws InvocationTargetException,
 			InterruptedException {
 		try {
-			SubMonitor subpm = SubMonitor.convert(pm, "Creating Project", 100);
+			SubMonitor subpm = SubMonitor.convert(pm, "Loading project", 100); // 0
 			
 			SubMonitor taskpm = subpm.newChild(20); // 20
 			PgDatabase db = null;
-			if(dumpPath == null) {
-				db = PgDumper.pgDump(exePgdump, props, taskpm);
-			} else {
+			
+			if(UIConsts.PROJ_SOURCE_TYPE_DUMP.equals(
+					props.getString(UIConsts.PROJ_PREF_SOURCE))) {
 				taskpm.setWorkRemaining(1).newChild(1).subTask("Loading dump");
 				db = PgDumpLoader.loadDatabaseSchemaFromDump(
 						dumpPath, props.getString(UIConsts.PROJ_PREF_ENCODING),
 						false, false);
+			} else {
+				db = PgDumper.pgDump(exePgdump, props, taskpm);
 			}
 			
 			subpm.newChild(10).subTask("DB model export"); // 30
-			File dirSvn = new File(props.getProjectDir(),
-					UIConsts.FILENAME_PROJ_SCHEMA_DIR);
+			File dirSvn = props.getProjectSchemaDir();
 			if(dirSvn.exists()) {
 				Dir.deleteRecursive(dirSvn);
 			}
@@ -84,8 +87,6 @@ public class NewProjCreator implements IRunnableWithProgress {
 			svn.svnCi(dirSvn, "new rev"); // TODO prompt for comment?
 
 			pm.done();
-			
-			props.save();
 		} catch(IOException ex) {
 			throw new InvocationTargetException(ex,
 					"IOException while creating project!");

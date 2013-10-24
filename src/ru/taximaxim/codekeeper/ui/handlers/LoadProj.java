@@ -37,7 +37,8 @@ public class LoadProj {
 	}
 	
 	public static void load(PgDbProject proj, EPartService partService,
-			EModelService model, MApplication app, IEventBroker events) throws IOException {
+			EModelService model, MApplication app, IEventBroker events)
+					throws IOException {
 		for(MPart existingPart : partService.getParts()) {
 			String partProjId = existingPart.getPersistedState().get(
 					UIConsts.PROJ_PART_PERSISTED_ID);
