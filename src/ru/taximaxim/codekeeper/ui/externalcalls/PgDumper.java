@@ -1,57 +1,46 @@
 package ru.taximaxim.codekeeper.ui.externalcalls;
 
-import java.io.File;
 import java.io.IOException;
 
-import org.eclipse.core.runtime.SubMonitor;
-
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.ProcBuilderUtils;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
-import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class PgDumper {
 
-	public static PgDatabase pgDump(String exePgdump, PgDbProject props,
-			SubMonitor pm) throws IOException, InterruptedException {
-		SubMonitor subpm = SubMonitor.convert(pm, 2);
+    final private String exePgdump;
+
+    final private String host, user, pass, dbname, encoding;
+    final private int port;
+    
+    final private String dumpFile;
+    
+    public PgDumper(String exePgdump, String host, int port,
+            String user, String pass, String dbname, String encoding,
+            String dumpFile) {
+        this.exePgdump = exePgdump;
+        this.host = host;
+        this.port = port;
+        this.user = user;
+        this.pass = pass;
+        this.dbname = dbname;
+        this.encoding = encoding;
+        this.dumpFile = dumpFile;
+    }
+    
+	public void pgDump() throws IOException {
+		ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
+				"--file=" + dumpFile,
+				"--schema-only",
+				"--no-password");
 		
-		try(TempFile tf = new TempFile(props.getProjectPath(),
-				"tmp_dump_", ".sql")) {
-			File dump = tf.get();
-			
-			subpm.newChild(1).subTask("Executing pg_dump");
-			
-			ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
-					"--file=" + dump.getAbsolutePath(),
-					"--schema-only",
-					"--no-password");
-			
-			ProcBuilderUtils env = new ProcBuilderUtils(pgdump);
-			env.addEnv("PGHOST",
-					props.getString(UIConsts.PROJ_PREF_DB_HOST));
-			env.addEnv("PGPORT",
-					props.getInt(UIConsts.PROJ_PREF_DB_PORT));
-			env.addEnv("PGDATABASE",
-					props.getString(UIConsts.PROJ_PREF_DB_NAME));
-			env.addEnv("PGUSER",
-					props.getString(UIConsts.PROJ_PREF_DB_USER));
-			env.addEnv("PGPASSWORD",
-					props.getString(UIConsts.PROJ_PREF_DB_PASS));
-			env.addEnv("PGCLIENTENCODING",
-					props.getString(UIConsts.PROJ_PREF_ENCODING));
-			
-			StdStreamRedirector.launchAndRedirect(pgdump);
-
-			subpm.newChild(1).subTask("Loading dump");
-
-			return PgDumpLoader.loadDatabaseSchemaFromDump(
-					dump.getAbsolutePath(), 
-					props.getString(UIConsts.PROJ_PREF_ENCODING),
-					false, false);
-		}
+		ProcBuilderUtils env = new ProcBuilderUtils(pgdump);
+		env.addEnv("PGHOST", host);
+        env.addEnv("PGPORT", port);
+        env.addEnv("PGDATABASE", dbname);
+        env.addEnv("PGUSER", user);
+        env.addEnv("PGPASSWORD", pass);
+        env.addEnv("PGCLIENTENCODING", encoding);
+		
+		StdStreamRedirector.launchAndRedirect(pgdump);
 	}
 }

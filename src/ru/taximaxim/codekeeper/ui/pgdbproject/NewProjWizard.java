@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
@@ -68,27 +67,6 @@ public class NewProjWizard extends Wizard {
 
 	@Override
 	public boolean performFinish() {
-		String errMsg = null;
-		if(pageDb.isSourceDump() && pageDb.getDumpPath().isEmpty()) {
-			errMsg = "Specify dump file path if you want to create your project"
-					+ " from an existing dump!";
-		} else if(pageDb.getProjectPath().isEmpty()
-				|| !new File(pageDb.getProjectPath()).isDirectory()) {
-			errMsg = "Specify correct Project Directory!";
-		} else if(pageSvn.getSvnUrl().isEmpty()) {
-			errMsg = "Specify SVN repo URL to store and version"
-					+ " DB schema objects!";
-		} else if(pageMisc.getEncoding().isEmpty()) {
-			errMsg = "Specify encoding for the project!";
-		}
-		
-		if(errMsg != null) {
-			MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
-			mb.setMessage(errMsg);
-			mb.open();
-			return false;
-		}
-		
 		props = new PgDbProject(pageDb.getProjectPath());
 		
 		props.setValue(UIConsts.PROJ_PREF_ENCODING, pageMisc.getEncoding());
@@ -282,6 +260,18 @@ class PageDb extends WizardPage implements Listener {
 				}
 			}
 		});
+        
+        lblWarn = new CLabel(grpDb, SWT.NONE);
+        lblWarn.setImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(
+                        UIConsts.FILENAME_ICONWARNING)).createImage());
+        lblWarn.setText("Warning:\n"
+                + "Providing password here is insecure!\n"
+                + "Consider using .pgpass file instead.");
+        gd = new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1);
+        gd.exclude = true;
+        lblWarn.setLayoutData(gd);
+        lblWarn.setVisible(false);
 		
 		new Label(grpDb, SWT.NONE).setText("DB Host:");
 		
@@ -291,18 +281,7 @@ class PageDb extends WizardPage implements Listener {
 		new Label(grpDb, SWT.NONE).setText("Port:");
 		
 		txtDbPort = new Text(grpDb, SWT.BORDER);
-		
-		lblWarn = new CLabel(grpDb, SWT.NONE);
-		lblWarn.setImage(ImageDescriptor.createFromURL(
-				Activator.getContext().getBundle().getResource(
-						UIConsts.FILENAME_ICONWARNING)).createImage());
-		lblWarn.setText("Warning:\n"
-				+ "Providing password here is insecure!\n"
-				+ "Consider using .pgpass file instead.");
-		gd = new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1);
-		gd.exclude = true;
-		lblWarn.setLayoutData(gd);
-		lblWarn.setVisible(false);
+		txtDbPort.addListener(SWT.Modify, this);
 		
 		grpDump = new Group(container, SWT.NONE);
 		grpDump.setText("Dump File Source Settings");

@@ -19,7 +19,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
@@ -28,10 +27,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.parts.ProjectPartDescriptor;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.ProjectLoaderParser;
-import ru.taximaxim.codekeeper.ui.pgdbproject.ProjectSyncChecker;
 
 public class ProjSyncSrc {
 	
@@ -67,44 +67,53 @@ public class ProjSyncSrc {
 	 *         false if user decided not to sync
 	 */
 	public static boolean sync(ProjectPartDescriptor partImpl, Shell shell,
-		IPreferenceStore mainPrefStore) throws InvocationTargetException {
+	        IPreferenceStore mainPrefStore) throws InvocationTargetException {
 	    PgDbProject proj = partImpl.getProject();
-	    
-		String syncDump = null;
-		if(UIConsts.PROJ_SOURCE_TYPE_DUMP.equals(
-				proj.getString(UIConsts.PROJ_PREF_SOURCE))) {
-			FileDialog dialogDump = new FileDialog(shell);
-			dialogDump.setText("Synchronizing:"
-					+ " Dump file is chosen as project source."
-					+ " Select a file to sync with.");
-			
-			syncDump = dialogDump.open();
-			if(syncDump == null) {
-				throw new CancellationException();
-			}
-		}
-
-		ProgressMonitorDialog dialog = new ProgressMonitorDialog(shell);
-		ProjectSyncChecker projChecker = new ProjectSyncChecker(mainPrefStore,
-				proj, syncDump);
-		try {
-			dialog.run(true, false, projChecker);
-		} catch(InterruptedException ex) {
-			// assume run() was called as non cancelable
-			throw new IllegalStateException(
-					"Project creator thread cancelled. Shouldn't happen!", ex);
-		}
-		
-		String diff = projChecker.getDiff();
-		if(diff.isEmpty()) {
-			return true;
-		}
-		
+        
+        String syncDump = null;
+        DbSource db2 = null;
+        if(UIConsts.PROJ_SOURCE_TYPE_DUMP.equals(
+                proj.getString(UIConsts.PROJ_PREF_SOURCE))) {
+            FileDialog dialogDump = new FileDialog(shell);
+            dialogDump.setText("Synchronizing:"
+                    + " Dump file is chosen as project source."
+                    + " Select a file to sync with.");
+            
+            syncDump = dialogDump.open();
+            if(syncDump == null) {
+                throw new CancellationException();
+            }
+            
+            db2 = DbSource.fromFile(syncDump,
+                    proj.getString(UIConsts.PROJ_PREF_ENCODING));
+        } else {
+            db2 = DbSource.fromDb(mainPrefStore.getString(
+                    UIConsts.PREF_PGDUMP_EXE_PATH), proj);
+        }
+        
+        DbSource db1 = DbSource.fromProject(proj);
+        
+        ProgressMonitorDialog dialog = new ProgressMonitorDialog(shell);
+        Differ differ = new Differ(db1, db2, false);
+        
+        try {
+            dialog.run(true, false, differ);
+        } catch(InterruptedException ex) {
+            // assume run() was called as non cancelable
+            throw new IllegalStateException(
+                    "Diff thread cancelled. Shouldn't happen!", ex);
+        }
+        
+        String diff = differ.getDiff();
+        if(diff.isEmpty()) {
+            return true;
+        }
+        
 		int syncDecision = new TextDialog(shell, "Sync differences?",
 		        "Found differences in the project."
 				+ " Want to sync it with source?\n\n"
 				+ "Diff from the project to its schema source:", diff)
-		.open();
+		    .open();
 		
 		switch(syncDecision) {
 		    case IDialogConstants.YES_ID: break;

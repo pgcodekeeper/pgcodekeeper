@@ -22,19 +22,37 @@ public class SvnExec {
 	
 	private final String svnExec;
 	
-	private final PgDbProject props;
+	private final String url, user, pass;
 	
-	public SvnExec(String svnExec, PgDbProject props) {
+	public SvnExec(String svnExec, String url, String user, String pass) {
 		this.svnExec = svnExec;
-		this.props = props;
+		
+		this.url = url;
+		this.user = user;
+		this.pass = pass;
+	}
+	
+	public SvnExec(String svnExec, PgDbProject proj) {
+	    this(svnExec,
+	            proj.getString(UIConsts.PROJ_PREF_SVN_URL),
+	            proj.getString(UIConsts.PROJ_PREF_SVN_USER),
+	            proj.getString(UIConsts.PROJ_PREF_SVN_PASS));
 	}
 	
 	public void svnCo(File dirTo) throws IOException {
+	    svnCo(dirTo, null);
+	}
+	
+	public void svnCo(File dirTo, String rev) throws IOException {
 		ProcessBuilder svn = new ProcessBuilder(svnExec,
 				"co",
 				"--non-interactive");
 		addCredentials(svn);
 		addUrl(svn);
+		if(rev != null && !rev.isEmpty()) {
+		    svn.command().add("-r");
+		    svn.command().add(rev);
+		}
 		svn.command().add(".");
 		
 		svn.directory(dirTo);
@@ -131,22 +149,18 @@ public class SvnExec {
 	}
 	
 	private void addCredentials(ProcessBuilder pb) {
-		String user = props.getString(UIConsts.PROJ_PREF_SVN_USER);
-		String pass = props.getString(UIConsts.PROJ_PREF_SVN_PASS);
-		
-		if(!user.isEmpty()) {
+		if(user != null && !user.isEmpty()) {
 			pb.command().add("--username");
 			pb.command().add(user);
 		}
-		if(!pass.isEmpty()) {
+		if(pass != null && !pass.isEmpty()) {
 			pb.command().add("--password");
 			pb.command().add(pass);
 		}
 	}
 	
 	private void addUrl(ProcessBuilder pb) {
-		String url = props.getString(UIConsts.PROJ_PREF_SVN_URL);
-		if(!url.isEmpty()) {
+		if(url != null) {
 			pb.command().add(url);
 		}
 	}
