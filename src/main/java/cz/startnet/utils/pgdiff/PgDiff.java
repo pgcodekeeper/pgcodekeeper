@@ -120,7 +120,7 @@ public class PgDiff {
         
         dropOldExtensions(writer, oldDatabase, newDatabase);
         createNewExtensions(writer, oldDatabase, newDatabase);
-        updateExtensions(writer, arguments, oldDatabase, newDatabase);
+        updateExtensions(writer, oldDatabase, newDatabase);
         
         updateSchemas(writer, arguments, oldDatabase, newDatabase);
 
@@ -203,13 +203,11 @@ public class PgDiff {
      * Updates changed extensions.
      *
      * @param writer      writer the output should be written to
-     * @param arguments   object containing arguments settings
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
     private static void updateExtensions(final PrintWriter writer,
-            final PgDiffArguments arguments, final PgDatabase oldDatabase,
-            final PgDatabase newDatabase) {
+            final PgDatabase oldDatabase, final PgDatabase newDatabase) {
     	for(final PgExtension newExt : newDatabase.getExtensions()) {
     		final PgExtension oldExt = oldDatabase.getExtension(
     				newExt.getName());
