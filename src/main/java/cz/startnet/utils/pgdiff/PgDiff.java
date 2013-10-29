@@ -86,7 +86,13 @@ public class PgDiff {
     }
     
     /**
-     * Creates diff from comparison of two database schemas.
+     * Creates diff from comparison of two database schemas.<br><br>
+     * Following PgDiffArguments methods are called from this method:<br>
+     * isAddTransaction()<br>
+     * isOutputIgnoredStatements()<br>
+     * isIgnoreStartWith()<br>
+     * isAddDefaults()<br>
+     * isIgnoreFunctionWhitespace()<br>
      *
      * @param writer      writer the output should be written to
      * @param arguments   object containing arguments settings
@@ -328,7 +334,7 @@ public class PgDiff {
             PgDiffTriggers.dropTriggers(
                     writer, oldSchema, newSchema, searchPathHelper);
             PgDiffFunctions.dropFunctions(
-                    writer, arguments, oldSchema, newSchema, searchPathHelper);
+                    writer, oldSchema, newSchema, searchPathHelper);
             PgDiffViews.dropViews(
                     writer, oldSchema, newSchema, searchPathHelper);
             PgDiffConstraints.dropConstraints(

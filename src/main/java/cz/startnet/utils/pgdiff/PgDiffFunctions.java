@@ -57,8 +57,8 @@ public class PgDiffFunctions {
      * @param searchPathHelper search path helper
      */
     public static void dropFunctions(final PrintWriter writer,
-            final PgDiffArguments arguments, final PgSchema oldSchema,
-            final PgSchema newSchema, final SearchPathHelper searchPathHelper) {
+            final PgSchema oldSchema, final PgSchema newSchema,
+            final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
             return;
         }
