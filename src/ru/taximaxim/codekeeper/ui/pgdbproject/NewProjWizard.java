@@ -187,13 +187,15 @@ class PageDb extends WizardPage implements Listener {
 		radioDb.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				grpDump.setVisible(false);
-				grpDb.setVisible(true);
-				
-				((GridData)grpDump.getLayoutData()).exclude = true;
-				((GridData)grpDb.getLayoutData()).exclude = false;
-				
-				container.layout(false);
+			    if(radioDb.getSelection()) {
+    				grpDump.setVisible(false);
+    				grpDb.setVisible(true);
+    				
+    				((GridData)grpDump.getLayoutData()).exclude = true;
+    				((GridData)grpDb.getLayoutData()).exclude = false;
+    				
+    				container.layout(false);
+			    }
 			}
 		});
 		radioDb.addListener(SWT.Selection, this);
@@ -205,13 +207,15 @@ class PageDb extends WizardPage implements Listener {
 		radioDump.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				grpDb.setVisible(false);
-				grpDump.setVisible(true);
-				
-				((GridData)grpDb.getLayoutData()).exclude = true;
-				((GridData)grpDump.getLayoutData()).exclude = false;
-				
-				container.layout(false);
+			    if(radioDump.getSelection()) {
+    				grpDb.setVisible(false);
+    				grpDump.setVisible(true);
+    				
+    				((GridData)grpDb.getLayoutData()).exclude = true;
+    				((GridData)grpDump.getLayoutData()).exclude = false;
+    				
+    				container.layout(false);
+			    }
 			}
 		});
 		radioDb.addListener(SWT.Selection, this);
@@ -317,7 +321,7 @@ class PageDb extends WizardPage implements Listener {
 
 		l = new Label(container, SWT.NONE);
 		l.setText("Project Directory (used for settings storage,"
-				+ " SVN operations, temp storage, etc):");
+				+ " SVN operations, etc):");
 		gd = new GridData();
 		gd.horizontalSpan = 2;
 		gd.verticalIndent = 12;
@@ -483,7 +487,7 @@ class PageSvn extends WizardPage implements Listener {
 	@Override
 	public boolean isPageComplete() {
 		if(txtSvnUrl.getText().isEmpty()) {
-			setErrorMessage("Enter URL of SVN Repo!");
+			setErrorMessage("Enter SVN Repo URL!");
 			return false;
 		}
 		

@@ -1,6 +1,9 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Set;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -12,10 +15,13 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
@@ -60,24 +66,27 @@ public class DiffWizard extends Wizard {
 class PageDiff extends WizardPage implements Listener {
     
     public enum DiffTargetType {
-        DB, DUMP, SVN
+        DB, DUMP, SVN, PROJ
     }
     
     final private PgDbProject proj;
     
     private Composite container;
     
-    private Button radioDb, radioDump, radioSvn, radioThis;
+    private Button radioDb, radioDump, radioSvn, radioProj;
     
     private Group currentTargetGrp;
     
-    private Group grpDb, grpDump, grpSvn;
+    private Group grpDb, grpDump, grpSvn, grpProj;
     
     private Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort,
         txtDumpPath,
-        txtSvnUrl, txtSvnUser, txtSvnPass, txtSvnRev;
+        txtSvnUrl, txtSvnUser, txtSvnPass, txtSvnRev,
+        txtProjPath, txtProjRev;
     
     private CLabel lblWarnDbPass, lblWarnSvnPass;
+    
+    private Combo cmbEncoding;
     
     private Button radioFromThis, radioToThis;
     
@@ -88,8 +97,11 @@ class PageDiff extends WizardPage implements Listener {
         if(radioDump.getSelection()) {
             return DiffTargetType.DUMP;
         }
-        if(radioSvn.getSelection() || radioThis.getSelection()) {
+        if(radioSvn.getSelection()) {
             return DiffTargetType.SVN;
+        }
+        if(radioProj.getSelection()) {
+            return DiffTargetType.PROJ;
         }
         
         throw new IllegalStateException("No target type selection found!");
@@ -135,6 +147,22 @@ class PageDiff extends WizardPage implements Listener {
         return txtSvnPass.getText();
     }
     
+    public String getSvnRev() {
+        return txtSvnRev.getText();
+    }
+    
+    public String getProjPath() {
+        return txtProjPath.getText();
+    }
+    
+    public String getProjRev() {
+        return txtProjRev.getText();
+    }
+    
+    public String getTargetEncoding() {
+        return cmbEncoding.getText();
+    }
+    
     public boolean isDirectionFromThis() {
         return radioFromThis.getSelection();
     }
@@ -155,61 +183,45 @@ class PageDiff extends WizardPage implements Listener {
         grpRadio.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         grpRadio.setLayout(new GridLayout(4, false));
         
-        radioDb = new Button(grpRadio, SWT.RADIO);
-        radioDb.setText("DB Target");
-        radioDb.setSelection(true);
-        
-        radioDb.addSelectionListener(new SelectionAdapter() {
+        SelectionListener switcher = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                switchTargetGrp(grpDb);
+                Button cause = (Button) e.getSource();
+                
+                if(cause.getSelection()) {
+                    Group to = (Group) cause.getData();
+                    
+                    if(to != grpProj) {
+                        cmbEncoding.setEnabled(true);
+                        cmbEncoding.select(cmbEncoding.indexOf("UTF-8"));
+                    } else {
+                        cmbEncoding.setEnabled(false);
+                        txtProjPath.notifyListeners(SWT.Modify, null);
+                    }
+                    switchTargetGrp(to);
+                }
             }
-        });
+        };
+        
+        radioDb = new Button(grpRadio, SWT.RADIO);
+        radioDb.setText("DB target");
+        radioDb.setSelection(true);
+        radioDb.addSelectionListener(switcher);
         
         radioDump = new Button(grpRadio, SWT.RADIO);
-        radioDump.setText("Dump Target");
-        
-        radioDump.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                switchTargetGrp(grpDump);
-            }
-        });
+        radioDump.setText("Dump target");
+        radioDump.addSelectionListener(switcher);
         
         radioSvn = new Button(grpRadio, SWT.RADIO);
-        radioSvn.setText("SVN Target");
+        radioSvn.setText("SVN target");
+        radioSvn.addSelectionListener(switcher);
         
-        radioSvn.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                switchTargetGrp(grpSvn);
-
-                txtSvnUrl.setEnabled(true);
-                txtSvnUser.setEnabled(true);
-                txtSvnPass.setEnabled(true);
-            }
-        });
-        
-        radioThis = new Button(grpRadio, SWT.RADIO);
-        radioThis.setText("This project, different revision");
-        
-        radioThis.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                switchTargetGrp(grpSvn);
-                
-                txtSvnUrl.setEnabled(false);
-                txtSvnUser.setEnabled(false);
-                txtSvnPass.setEnabled(false);
-                
-                txtSvnUrl.setText(proj.getString(UIConsts.PROJ_PREF_SVN_URL));
-                txtSvnUser.setText(proj.getString(UIConsts.PROJ_PREF_SVN_USER));
-                txtSvnPass.setText(proj.getString(UIConsts.PROJ_PREF_SVN_PASS));
-            }
-        });
+        radioProj = new Button(grpRadio, SWT.RADIO);
+        radioProj.setText("Project target");
+        radioProj.addSelectionListener(switcher);
         
         grpDb = new Group(container, SWT.NONE);
-        grpDb.setText("DB Target");
+        grpDb.setText("DB target");
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         grpDb.setLayoutData(gd);
@@ -278,7 +290,7 @@ class PageDiff extends WizardPage implements Listener {
         txtDbPort.addListener(SWT.Modify, this);
         
         grpDump = new Group(container, SWT.NONE);
-        grpDump.setText("Dump Target");
+        grpDump.setText("Dump target");
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         grpDump.setLayoutData(gd);
@@ -311,7 +323,7 @@ class PageDiff extends WizardPage implements Listener {
         });
 
         grpSvn = new Group(container, SWT.NONE);
-        grpSvn.setText("SVN Source");
+        grpSvn.setText("SVN target");
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         grpSvn.setLayoutData(gd);
@@ -372,8 +384,108 @@ class PageDiff extends WizardPage implements Listener {
         new Label(grpSvn, SWT.NONE).setText("SVN Revision:");
         
         txtSvnRev = new Text(grpSvn, SWT.BORDER);
-        txtSvnRev.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtSvnRev.setLayoutData(new GridData());
         txtSvnRev.addListener(SWT.Modify, this);
+        
+        grpProj = new Group(container, SWT.NONE);
+        grpProj.setText("Project target");
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = 12;
+        grpProj.setLayoutData(gd);
+        grpProj.setLayout(new GridLayout(2, false));
+        
+        gd.exclude = true;
+        grpProj.setVisible(false);
+        
+        final Button btnThis = new Button(grpProj, SWT.CHECK);
+        btnThis.setText("This project");
+        btnThis.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+        btnThis.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if(btnThis.getSelection()) {
+                    txtProjPath.setText(proj.getProjectDir());
+                    txtProjPath.setEnabled(false);
+                } else {
+                    txtProjPath.setEnabled(true);
+                }
+            }
+        });
+        
+        Composite tmpCont = new Composite(grpProj, SWT.NONE);
+        tmpCont.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        tmpCont.setLayout(new GridLayout(2, false));
+        
+        l = new Label(tmpCont, SWT.NONE);
+        l.setText("Path to Target Project:");
+        l.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+        
+        txtProjPath = new Text(tmpCont, SWT.BORDER);
+        txtProjPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtProjPath.addModifyListener(new ModifyListener() {
+            
+            @Override
+            public void modifyText(ModifyEvent e) {
+                String dir = txtProjPath.getText();
+                
+                if(!dir.isEmpty() && new File(dir).isDirectory()) {
+                    PgDbProject tmpProj = new PgDbProject(dir);
+                    
+                    if(tmpProj.getProjectPropsFile().isFile()) {
+                        try {
+                            tmpProj.load();
+                        } catch(IOException ex) {
+                            throw new IllegalStateException(
+                                    "Unexpected error"
+                                    + " when reading project properties", ex);
+                        }
+                        cmbEncoding.select(cmbEncoding.indexOf(
+                                tmpProj.getString(UIConsts.PROJ_PREF_ENCODING)));
+                    }
+                }
+            }
+        });
+        txtProjPath.addListener(SWT.Modify, this);
+        
+        Button btnBrowseProj = new Button(tmpCont, SWT.PUSH);
+        btnBrowseProj.setText("Browse...");
+        btnBrowseProj.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                DirectoryDialog dialog = new DirectoryDialog(container.getShell());
+                String path = dialog.open();
+                if(path != null) {
+                    txtProjPath.setText(path);
+                    txtProjPath.setEnabled(true);
+                    btnThis.setSelection(false);
+                }
+            }
+        });
+        
+        new Label(grpProj, SWT.NONE).setText("Project revision (grab from SVN):");
+        
+        txtProjRev = new Text(grpProj, SWT.BORDER);
+        txtProjRev.setLayoutData(new GridData());
+        
+        radioDb.setData(grpDb);
+        radioDump.setData(grpDump);
+        radioSvn.setData(grpSvn);
+        radioProj.setData(grpProj);
+        
+        Group grpEncoding = new Group(container, SWT.NONE);
+        grpEncoding.setText("Target encoding");
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = 12;
+        grpEncoding.setLayoutData(gd);
+        grpEncoding.setLayout(new GridLayout(2, false));
+        
+        new Label(grpEncoding, SWT.NONE).setText("Encoding of the target:");
+        
+        cmbEncoding = new Combo(grpEncoding, SWT.BORDER | SWT.DROP_DOWN
+                | SWT.READ_ONLY);
+        Set<String> charsets = Charset.availableCharsets().keySet();
+        cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
+        cmbEncoding.select(cmbEncoding.indexOf("UTF-8"));
         
         Group grpDirection = new Group(container, SWT.NONE);
         grpDirection.setText("Diff direction");
@@ -425,7 +537,6 @@ class PageDiff extends WizardPage implements Listener {
                     errMsg = "Port must be a number!";
                 }
             }
-            
             break;
             
         case DUMP:
@@ -433,12 +544,20 @@ class PageDiff extends WizardPage implements Listener {
                     || !new File(txtDumpPath.getText()).isFile()) {
                 errMsg = "Select a readable DB dump file!";
             }
-            
             break;
             
         case SVN:
             if(txtSvnUrl.getText().isEmpty()) {
-                errMsg = "Enter URL of SVN Repo!";
+                errMsg = "Enter SVN Repo URL!";
+            }
+            break;
+            
+        case PROJ:
+            String dir = txtProjPath.getText();
+            
+            if(dir.isEmpty() || !new File(dir).isDirectory()
+                    || !new PgDbProject(dir).getProjectPropsFile().isFile()) {
+                errMsg = "Select a valid project directory!";
             }
             
             break;
