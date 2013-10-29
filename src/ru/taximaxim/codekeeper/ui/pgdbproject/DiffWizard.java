@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.Set;
 
@@ -32,6 +33,8 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import ru.taximaxim.codekeeper.ui.differ.Differ;
 
 public class DiffWizard extends Wizard {
 
@@ -40,6 +43,28 @@ public class DiffWizard extends Wizard {
     private PgDbProject proj;
     
     private IPreferenceStore mainPrefs;
+    
+    private DbSource db1, db2;
+    
+    private boolean reverse;
+    
+    private String diffResult;
+    
+    public DbSource getDb1() {
+        return db1;
+    }
+    
+    public DbSource getDb2() {
+        return db2;
+    }
+    
+    public boolean isReverse() {
+        return reverse;
+    }
+    
+    public String getDiffResult() {
+        return diffResult;
+    }
     
     public DiffWizard(PgDbProject proj, IPreferenceStore mainPrefs) {
         setWindowTitle("Diff");
@@ -57,7 +82,70 @@ public class DiffWizard extends Wizard {
     
     @Override
     public boolean performFinish() {
+        reverse = !pageDiff.isDirectionFromThis();
         
+        db1 = DbSource.fromProject(proj);
+        
+        switch(pageDiff.getTargetType()) {
+        case DB:
+            db2 = DbSource.fromDb(
+                    mainPrefs.getString(UIConsts.PREF_PGDUMP_EXE_PATH),
+                    pageDiff.getDbHost(), pageDiff.getDbPort(),
+                    pageDiff.getDbUser(), pageDiff.getDbPass(),
+                    pageDiff.getDbName(), pageDiff.getTargetEncoding());
+            break;
+            
+        case DUMP:
+            db2 = DbSource.fromFile(
+                    pageDiff.getDumpPath(),
+                    pageDiff.getTargetEncoding());
+            break;
+            
+        case SVN:
+            db2 = DbSource.fromSvn(
+                    mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH),
+                    pageDiff.getSvnUrl(), pageDiff.getSvnUser(),
+                    pageDiff.getSvnPass(), pageDiff.getSvnRev(),
+                    pageDiff.getTargetEncoding());
+            break;
+            
+        case PROJ:
+            PgDbProject fromProj = new PgDbProject(pageDiff.getProjPath());
+            try {
+                fromProj.load();
+            } catch(IOException ex) {
+                throw new IllegalStateException(
+                        "Unexpected error while reading target project!", ex);
+            }
+            
+            if(pageDiff.getProjRev().isEmpty()) {
+                db2 = DbSource.fromProject(fromProj);
+            } else {
+                db2 = DbSource.fromSvn(
+                        mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH),
+                        fromProj.getString(UIConsts.PROJ_PREF_SVN_URL),
+                        fromProj.getString(UIConsts.PROJ_PREF_SVN_USER),
+                        fromProj.getString(UIConsts.PROJ_PREF_SVN_PASS),
+                        pageDiff.getProjRev(),
+                        fromProj.getString(UIConsts.PROJ_PREF_ENCODING));
+            }
+            break;
+        
+        default:
+            throw new IllegalStateException("Unexpected target type value!");
+        }
+        
+        Differ differ = new Differ(db1, db2, reverse);
+        try {
+            getContainer().run(true, false, differ);
+        } catch(InvocationTargetException ex) {
+            throw new IllegalStateException("Error in differ thread", ex);
+        } catch(InterruptedException ex) {
+            // assume run() was called as non cancelable
+            throw new IllegalStateException(
+                    "Differ thread cancelled. Shouldn't happen!", ex);
+        }
+        diffResult = differ.getDiff();
         
         return true;
     }
@@ -436,8 +524,7 @@ class PageDiff extends WizardPage implements Listener {
                             tmpProj.load();
                         } catch(IOException ex) {
                             throw new IllegalStateException(
-                                    "Unexpected error"
-                                    + " when reading project properties", ex);
+                                    "Unexpected error while reading targetproject", ex);
                         }
                         cmbEncoding.select(cmbEncoding.indexOf(
                                 tmpProj.getString(UIConsts.PROJ_PREF_ENCODING)));

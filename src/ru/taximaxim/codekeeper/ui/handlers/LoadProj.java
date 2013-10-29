@@ -16,6 +16,7 @@ import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -32,7 +33,15 @@ public class LoadProj {
 		String path = dialog.open();
 		if(path != null) {
 			PgDbProject proj = new PgDbProject(path);
-			load(proj, partService, model, app, events);
+			if(proj.getProjectPropsFile().isFile()) {
+			    load(proj, partService, model, app, events);
+			} else {
+			    MessageBox mb = new MessageBox(shell);
+			    mb.setText("Load failed");
+			    mb.setMessage("Directory is not a valid project!"
+			            + " Properties file not found!");
+			    mb.open();
+			}
 		}
 	}
 	

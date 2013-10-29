@@ -260,6 +260,8 @@ class MiscSettingPage
 	extends FieldEditorPreferencePage
 	implements IWorkbenchPreferencePage {
 	
+    // TODO Warn about encoding change!
+    
 	public MiscSettingPage() {
 		super(GRID);
 	}

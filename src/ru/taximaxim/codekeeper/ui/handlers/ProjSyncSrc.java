@@ -12,20 +12,14 @@ import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 
+import ru.taximaxim.codekeeper.ui.TextDialog;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
@@ -109,7 +103,8 @@ public class ProjSyncSrc {
             return true;
         }
         
-		int syncDecision = new TextDialog(shell, "Sync differences?",
+		int syncDecision = new TextDialog(shell, TextDialog.QUESTION_WITH_CANCEL,
+		        "Sync differences?",
 		        "Found differences in the project."
 				+ " Want to sync it with source?\n\n"
 				+ "Diff from the project to its schema source:", diff)
@@ -146,52 +141,5 @@ public class ProjSyncSrc {
 	@CanExecute
 	public boolean canExecute() {
 		return part.getElementId().equals(UIConsts.PROJ_PART_DESCR_ID);
-	}
-}
-
-class TextDialog extends MessageDialog {
-	
-	final private String text;
-	
-	public TextDialog(Shell parentShell, String title, String message, String text) {
-	    super(parentShell, title, null, message, QUESTION_WITH_CANCEL, null, 2);
-		
-		this.text = text;
-	}
-	
-	@Override
-	protected void createButtonsForButtonBar(Composite parent) {
-	    createButton(parent, IDialogConstants.YES_ID,
-	            IDialogConstants.YES_LABEL, true);
-	    createButton(parent, IDialogConstants.NO_ID,
-	            IDialogConstants.NO_LABEL, false);
-	    createButton(parent, IDialogConstants.CANCEL_ID,
-	            IDialogConstants.CANCEL_LABEL, false);
-	}
-	
-	@Override
-	protected Control createCustomArea(Composite parent) {
-	    Text txt = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
-                | SWT.READ_ONLY | SWT.MULTI);
-        
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.widthHint = 600;
-        gd.heightHint = 400;
-        txt.setLayoutData(gd);
-        
-        txt.setFont(new Font(parent.getShell().getDisplay(), new FontData[] {
-            new FontData("Monospace", 10, SWT.NORMAL),
-            new FontData("Courier New", 10, SWT.NORMAL),
-            new FontData("Courier", 10, SWT.NORMAL)
-        }));
-        txt.setText(text);
-        
-        return txt;
-	}
-	
-	@Override
-	public int open() {
-	    
-	    return super.open();
 	}
 }

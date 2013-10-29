@@ -15,6 +15,17 @@ import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public abstract class DbSource {
+    
+    final private String origin;
+    
+    public String getOrigin() {
+        return origin;
+    }
+    
+    protected DbSource(String origin) {
+        this.origin = origin;
+    }
+    
     abstract public PgDatabase get(SubMonitor monitor) throws IOException;
 
     public static DbSource fromDirTree(String dirTreePath, String encoding) {
@@ -30,8 +41,8 @@ public abstract class DbSource {
     }
     
     public static DbSource fromSvn(String svnExec, String url, String user,
-            String pass, String encoding, String rev) {
-        return new DbSourceSvn(svnExec, url, user, pass, encoding, rev);
+            String pass, String rev, String encoding) {
+        return new DbSourceSvn(svnExec, url, user, pass, rev, encoding);
     }
     
     public static DbSource fromProject(PgDbProject proj) {
@@ -59,6 +70,8 @@ class DbSourceDirTree extends DbSource {
     final private String encoding;
     
     public DbSourceDirTree(String dirTreePath, String encoding) {
+        super(dirTreePath);
+        
         this.dirTreePath = dirTreePath;
         this.encoding = encoding;
     }
@@ -94,7 +107,9 @@ class DbSourceSvn extends DbSource {
     }
     
     public DbSourceSvn(String svnExec, String url, String user, String pass,
-            String encoding, String rev) {
+            String rev, String encoding) {
+        super(url + (rev.isEmpty()? "" : "@" + rev));
+        
         svn = new SvnExec(svnExec, url, user, pass);
         
         this.encoding = encoding;
@@ -123,6 +138,8 @@ class DbSourceProject extends DbSource {
     final private PgDbProject proj;
     
     public DbSourceProject(PgDbProject proj) {
+        super(proj.getProjectPropsFile().getAbsolutePath());
+        
         this.proj = proj;
     }
     
@@ -143,6 +160,8 @@ class DbSourceFile extends DbSource {
     final private String encoding;
     
     public DbSourceFile(String filename, String encoding) {
+        super(filename);
+        
         this.filename = filename;
         this.encoding = encoding;
     }
@@ -175,6 +194,11 @@ class DbSourceDb extends DbSource {
     
     public DbSourceDb(String exePgdump, String host, int port,
             String user, String pass, String dbname, String encoding) {
+        super((host.isEmpty() && dbname.isEmpty())? "Undisclosed DB"
+                : (host.isEmpty()? dbname + "@unknown_host"
+                        : (dbname.isEmpty() ? "unknown_db@" + host
+                                : dbname + "@" + host)));
+        
         this.exePgdump = exePgdump;
         this.host = host;
         this.port = port;

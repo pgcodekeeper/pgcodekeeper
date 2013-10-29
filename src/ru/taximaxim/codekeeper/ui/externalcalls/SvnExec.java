@@ -48,11 +48,11 @@ public class SvnExec {
 				"co",
 				"--non-interactive");
 		addCredentials(svn);
-		addUrl(svn);
 		if(rev != null && !rev.isEmpty()) {
-		    svn.command().add("-r");
-		    svn.command().add(rev);
-		}
+            svn.command().add("-r");
+            svn.command().add(rev);
+        }
+		addUrl(svn);
 		svn.command().add(".");
 		
 		svn.directory(dirTo);
