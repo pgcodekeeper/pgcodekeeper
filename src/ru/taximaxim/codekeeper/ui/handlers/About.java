@@ -3,7 +3,8 @@ package ru.taximaxim.codekeeper.ui.handlers;
 
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 
 public class About {
 	@Execute

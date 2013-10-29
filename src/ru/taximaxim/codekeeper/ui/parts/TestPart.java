@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.parts;
 
 import javax.inject.Inject;
 
-import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.core.di.extensions.Preference;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -51,16 +50,12 @@ public class TestPart {
 			}
 		});
 		
-		txt = new Text(parent, SWT.MULTI);
+		txt = new Text(parent, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
 		data = new FormData();
 		data.left = new FormAttachment(5);
 		data.right = new FormAttachment(95);
 		data.bottom = new FormAttachment(95);
 		data.top = new FormAttachment(btn, 5);
 		txt.setLayoutData(data);
-	}
-	
-	@Focus
-	public void onFocus() {
 	}
 }
