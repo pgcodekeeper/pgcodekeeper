@@ -186,9 +186,9 @@ class DbSourceDb extends DbSource {
         this(exePgdump,
                 props.getString(UIConsts.PROJ_PREF_DB_HOST),
                 props.getInt(UIConsts.PROJ_PREF_DB_PORT),
-                props.getString(UIConsts.PROJ_PREF_DB_NAME),
                 props.getString(UIConsts.PROJ_PREF_DB_USER),
                 props.getString(UIConsts.PROJ_PREF_DB_PASS),
+                props.getString(UIConsts.PROJ_PREF_DB_NAME),
                 props.getString(UIConsts.PROJ_PREF_ENCODING));
     }
     
