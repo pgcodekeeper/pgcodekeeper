@@ -38,7 +38,7 @@ public class Main {
 
         if (arguments.parse(writer, args)) {
         	if(arguments.isModeDiff()) {
-	            try(final PrintWriter encodedWriter = new PrintWriter(
+	            try(final PrintWriter encodedWriter = new UnixPrintWriter(
 	                    new OutputStreamWriter(
 	                    	new FileOutputStream(arguments.getDiffOutfile()),
 	                    						arguments.getOutCharsetName()))) {

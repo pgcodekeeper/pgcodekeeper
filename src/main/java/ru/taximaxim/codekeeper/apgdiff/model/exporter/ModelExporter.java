@@ -9,6 +9,7 @@ import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 
+import cz.startnet.utils.pgdiff.UnixPrintWriter;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -158,7 +159,7 @@ public class ModelExporter {
 					+ listing.getAbsolutePath());
 		}
 		
-		try(PrintWriter listingOut = new PrintWriter(listing, sqlEncoding)) {
+		try(PrintWriter listingOut = new UnixPrintWriter(listing, sqlEncoding)) {
 			listingOut.println(writtenFiles.toString().replace('\\', '/'));
 		}
 	}
@@ -258,7 +259,7 @@ public class ModelExporter {
 					+ file.getAbsolutePath());
 		}
 		
-		try(PrintWriter outFile = new PrintWriter(file, sqlEncoding)) {
+		try(PrintWriter outFile = new UnixPrintWriter(file, sqlEncoding)) {
 			outFile.println(sql);
 		}
 		

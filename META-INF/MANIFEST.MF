@@ -7,3 +7,5 @@ Export-Package: cz.startnet.utils.pgdiff,
  cz.startnet.utils.pgdiff.loader,
  cz.startnet.utils.pgdiff.schema,
  ru.taximaxim.codekeeper.apgdiff.model.exporter;uses:="cz.startnet.utils.pgdiff.schema"
+Require-Bundle: org.hamcrest.core,
+ org.junit

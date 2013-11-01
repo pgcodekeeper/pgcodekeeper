@@ -22,7 +22,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.Assume;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.matchers.JUnitMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.hasItem;
 
 /**
  * Tests for PgDiff class.
@@ -272,7 +272,7 @@ public class PgDiffTest {
     @Test(timeout = 1000)
     public void runDiffSameOriginal() throws FileNotFoundException, IOException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new PrintWriter(diffInput, true);
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();
         PgDiff.createDiff(writer, arguments,
                 PgDiffTest.class.getResourceAsStream(
@@ -295,7 +295,7 @@ public class PgDiffTest {
     @Test(timeout = 1000)
     public void runDiffSameNew() throws FileNotFoundException, IOException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new PrintWriter(diffInput, true);
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();
         PgDiff.createDiff(writer, arguments,
                 PgDiffTest.class.getResourceAsStream(
@@ -321,7 +321,7 @@ public class PgDiffTest {
     	Assume.assumeThat(runDiffIgnoredFiles, not(hasItem(fileNameTemplate)));
     	
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-        final PrintWriter writer = new PrintWriter(diffInput, true);
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();
         arguments.setAddDefaults(addDefaults);
         arguments.setIgnoreFunctionWhitespace(ignoreFunctionWhitespace);

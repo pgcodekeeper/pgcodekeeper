@@ -166,75 +166,72 @@ public class PgDumpLoader { //NOPMD
     private static PgDatabase loadDatabaseSchemaCore(final InputStream inputStream,
             final String charsetName, final boolean outputIgnoredStatements,
             final boolean ignoreSlonyTriggers, final PgDatabase database) {
-        BufferedReader reader = null;
-
-        try {
-            reader = new BufferedReader(
-                    new InputStreamReader(inputStream, charsetName));
+        try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(inputStream, charsetName))) {
+        
+            String statement = getWholeStatement(reader);
+    
+            while (statement != null) {
+                if (PATTERN_CREATE_SCHEMA.matcher(statement).matches()) {
+                    CreateSchemaParser.parse(database, statement);
+                } else if(PATTERN_CREATE_EXTENSION.matcher(statement).matches()) {
+                	CreateExtensionParser.parse(database, statement);
+                } else if (PATTERN_DEFAULT_SCHEMA.matcher(statement).matches()) {
+                    final Matcher matcher =
+                            PATTERN_DEFAULT_SCHEMA.matcher(statement);
+                    matcher.matches();
+                    database.setDefaultSchema(matcher.group(1));
+                    activeSearchPath = statement;
+                } else if (PATTERN_CREATE_TABLE.matcher(statement).matches()) {
+                    CreateTableParser.parse(database, statement, activeSearchPath);
+                } else if (PATTERN_ALTER_TABLE.matcher(statement).matches()) {
+                    AlterTableParser.parse(
+                            database, statement, outputIgnoredStatements, activeSearchPath);
+                } else if (PATTERN_CREATE_SEQUENCE.matcher(statement).matches()) {
+                    CreateSequenceParser.parse(database, statement, activeSearchPath);
+                } else if (PATTERN_ALTER_SEQUENCE.matcher(statement).matches()) {
+                    AlterSequenceParser.parse(
+                            database, statement, outputIgnoredStatements);
+                } else if (PATTERN_CREATE_INDEX.matcher(statement).matches()) {
+                    CreateIndexParser.parse(database, statement, activeSearchPath);
+                } else if (PATTERN_CREATE_VIEW.matcher(statement).matches()) {
+                    CreateViewParser.parse(database, statement, activeSearchPath);
+                } else if (PATTERN_ALTER_VIEW.matcher(statement).matches()) {
+                    AlterViewParser.parse(
+                            database, statement, outputIgnoredStatements);
+                } else if (PATTERN_CREATE_TRIGGER.matcher(statement).matches()) {
+                    CreateTriggerParser.parse(
+                            database, statement, activeSearchPath, ignoreSlonyTriggers);
+                } else if (PATTERN_CREATE_FUNCTION.matcher(statement).matches()) {
+                    CreateFunctionParser.parse(database, statement, activeSearchPath);
+                } else if (PATTERN_COMMENT.matcher(statement).matches()) {
+                    CommentParser.parse(
+                            database, statement, outputIgnoredStatements);
+                } else if (PATTERN_SELECT.matcher(statement).matches()
+                        || PATTERN_INSERT_INTO.matcher(statement).matches()
+                        || PATTERN_UPDATE.matcher(statement).matches()
+                        || PATTERN_DELETE_FROM.matcher(statement).matches()) {
+                    // we just ignore these statements
+                	// add them as ignoredDataStatements
+                	database.addIgnoredDataStatement(statement);
+                } else if (outputIgnoredStatements) {
+                    database.addIgnoredStatement(statement);
+                } else {
+                    // these statements are ignored if outputIgnoredStatements
+                    // is false
+                }
+    
+                statement = getWholeStatement(reader);
+            }
+    
+            return database;
         } catch (final UnsupportedEncodingException ex) {
             throw new UnsupportedOperationException(
                     Resources.getString("UnsupportedEncoding") + ": "
                     + charsetName, ex);
+        } catch(IOException ex) {
+            throw new FileException("Exception while closing dump file", ex);
         }
-
-        String statement = getWholeStatement(reader);
-
-        while (statement != null) {
-            if (PATTERN_CREATE_SCHEMA.matcher(statement).matches()) {
-                CreateSchemaParser.parse(database, statement);
-            } else if(PATTERN_CREATE_EXTENSION.matcher(statement).matches()) {
-            	CreateExtensionParser.parse(database, statement);
-            } else if (PATTERN_DEFAULT_SCHEMA.matcher(statement).matches()) {
-                final Matcher matcher =
-                        PATTERN_DEFAULT_SCHEMA.matcher(statement);
-                matcher.matches();
-                database.setDefaultSchema(matcher.group(1));
-                activeSearchPath = statement;
-            } else if (PATTERN_CREATE_TABLE.matcher(statement).matches()) {
-                CreateTableParser.parse(database, statement, activeSearchPath);
-            } else if (PATTERN_ALTER_TABLE.matcher(statement).matches()) {
-                AlterTableParser.parse(
-                        database, statement, outputIgnoredStatements, activeSearchPath);
-            } else if (PATTERN_CREATE_SEQUENCE.matcher(statement).matches()) {
-                CreateSequenceParser.parse(database, statement, activeSearchPath);
-            } else if (PATTERN_ALTER_SEQUENCE.matcher(statement).matches()) {
-                AlterSequenceParser.parse(
-                        database, statement, outputIgnoredStatements);
-            } else if (PATTERN_CREATE_INDEX.matcher(statement).matches()) {
-                CreateIndexParser.parse(database, statement, activeSearchPath);
-            } else if (PATTERN_CREATE_VIEW.matcher(statement).matches()) {
-                CreateViewParser.parse(database, statement, activeSearchPath);
-            } else if (PATTERN_ALTER_VIEW.matcher(statement).matches()) {
-                AlterViewParser.parse(
-                        database, statement, outputIgnoredStatements);
-            } else if (PATTERN_CREATE_TRIGGER.matcher(statement).matches()) {
-                CreateTriggerParser.parse(
-                        database, statement, activeSearchPath, ignoreSlonyTriggers);
-            } else if (PATTERN_CREATE_FUNCTION.matcher(statement).matches()) {
-                CreateFunctionParser.parse(database, statement, activeSearchPath);
-            } else if (PATTERN_COMMENT.matcher(statement).matches()) {
-                CommentParser.parse(
-                        database, statement, outputIgnoredStatements);
-            } else if (PATTERN_SELECT.matcher(statement).matches()
-                    || PATTERN_INSERT_INTO.matcher(statement).matches()
-                    || PATTERN_UPDATE.matcher(statement).matches()
-                    || PATTERN_DELETE_FROM.matcher(statement).matches()) {
-                // we just ignore these statements
-            	// add them as ignoredDataStatements
-            	database.addIgnoredDataStatement(statement);
-            } else if (outputIgnoredStatements) {
-                database.addIgnoredStatement(statement);
-            } else {
-                // these statements are ignored if outputIgnoredStatements
-                // is false
-            }
-
-            statement = getWholeStatement(reader);
-        }
-        
-	//	assert database.getIgnoredDataStatements().size() == 0; // we actually dont care
-
-        return database;
     }
     
     /**
