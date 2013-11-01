@@ -11,6 +11,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.UnixPrintWriter;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class Differ implements IRunnableWithProgress {
@@ -50,7 +51,7 @@ public class Differ implements IRunnableWithProgress {
         pm.newChild(34).subTask("Comparing schemas"); // 100
         PgDiffArguments args = new PgDiffArguments();
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
-        PrintWriter writer = new PrintWriter(diffOut, true);
+        PrintWriter writer = new UnixPrintWriter(diffOut, true);
         
         PgDiff.diffDatabaseSchemas(writer, args, db1, db2);
         

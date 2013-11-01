@@ -15,6 +15,7 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.swt.modeling.EMenuService;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -25,8 +26,6 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -181,11 +180,8 @@ public class ProjectPartDescriptor {
 		
 		txt = new Text(containerRight, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY
 				| SWT.H_SCROLL | SWT.V_SCROLL);
-		txt.setFont(new Font(parent.getShell().getDisplay(), new FontData[] {
-			new FontData("Monospace", 10, SWT.NORMAL),
-			new FontData("Courier New", 10, SWT.NORMAL),
-			new FontData("Courier", 10, SWT.NORMAL)
-		}));
+        txt.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+		txt.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 		
 		sash.setWeights(new int[] { 2000, 8000 });
 	}
