@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import cz.startnet.utils.pgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.ui.TextDialog;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.parts.ProjectPartDescriptor;
@@ -74,7 +75,7 @@ public class Diff {
 	                
 	                String saveTo = saveDialog.open();
 	                if(saveTo != null) {
-	                    try(final PrintWriter encodedWriter = new PrintWriter(
+	                    try(final PrintWriter encodedWriter = new UnixPrintWriter(
 	                            new OutputStreamWriter(
 	                                new FileOutputStream(saveTo),
 	                                proj.getString(UIConsts.PROJ_PREF_ENCODING)))) {
