@@ -49,7 +49,7 @@ public class ModelExporter {
 	/**
 	 * List of written files' names.
 	 */
-	private StringBuilder writtenFiles = new StringBuilder(2000 * 260);
+	private StringBuilder writtenFiles = new StringBuilder(3000 * 260);
 	
 	/**
 	 * Creates a new ModelExporter object with set {@link #outDir} and {@link #db}

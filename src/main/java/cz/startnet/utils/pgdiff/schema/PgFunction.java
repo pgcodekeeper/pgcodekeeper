@@ -218,7 +218,7 @@ public class PgFunction extends PgStatementWithSearchPath {
             }
 
             if (addComma) {
-                sbString.append(", ");
+                sbString.append(',');
             }
 
             sbString.append(argument.getDataType().toLowerCase(Locale.ENGLISH));

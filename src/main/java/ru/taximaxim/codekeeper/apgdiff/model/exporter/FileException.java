@@ -2,9 +2,8 @@ package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
 import java.io.IOException;
 
+@SuppressWarnings("serial")
 public class FileException extends IOException {
-
-	private static final long serialVersionUID = 1L;
 	
 	public FileException() {
 	}
