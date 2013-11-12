@@ -18,15 +18,29 @@ public abstract class DbSource {
     
     final private String origin;
     
+    private PgDatabase dbObject;
+    
     public String getOrigin() {
         return origin;
+    }
+    
+    public PgDatabase getDbObject() {
+        if(dbObject == null) {
+            throw new NullPointerException("DB is not loaded yet, object is null!");
+        }
+        return dbObject;
+    }
+    
+    public PgDatabase get(SubMonitor monitor) throws IOException {
+        dbObject = this.loadInternal(monitor);
+        return dbObject;
     }
     
     protected DbSource(String origin) {
         this.origin = origin;
     }
     
-    abstract public PgDatabase get(SubMonitor monitor) throws IOException;
+    protected abstract PgDatabase loadInternal(SubMonitor monitor) throws IOException;
 
     public static DbSource fromDirTree(String dirTreePath, String encoding) {
         return new DbSourceDirTree(dirTreePath, encoding);
@@ -69,7 +83,7 @@ class DbSourceDirTree extends DbSource {
     
     final private String encoding;
     
-    public DbSourceDirTree(String dirTreePath, String encoding) {
+    DbSourceDirTree(String dirTreePath, String encoding) {
         super(dirTreePath);
         
         this.dirTreePath = dirTreePath;
@@ -77,7 +91,7 @@ class DbSourceDirTree extends DbSource {
     }
     
     @Override
-    public PgDatabase get(SubMonitor monitor) {
+    protected PgDatabase loadInternal(SubMonitor monitor) {
         SubMonitor.convert(monitor, 1).newChild(1).subTask("Loading tree");
         
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(
@@ -93,7 +107,7 @@ class DbSourceSvn extends DbSource {
     
     final private String rev;
     
-    public DbSourceSvn(String svnExec, PgDbProject proj) {
+    DbSourceSvn(String svnExec, PgDbProject proj) {
         this(svnExec, proj, null);
     }
     
@@ -106,7 +120,7 @@ class DbSourceSvn extends DbSource {
                 rev);
     }
     
-    public DbSourceSvn(String svnExec, String url, String user, String pass,
+    DbSourceSvn(String svnExec, String url, String user, String pass,
             String rev, String encoding) {
         super(url + (rev.isEmpty()? "" : "@" + rev));
         
@@ -117,7 +131,7 @@ class DbSourceSvn extends DbSource {
     }
     
     @Override
-    public PgDatabase get(SubMonitor monitor) throws IOException {
+    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
         SubMonitor pm = SubMonitor.convert(monitor, 2);
         
         try(TempDir tmpDir = new TempDir("tmp_svn_")) {
@@ -137,14 +151,14 @@ class DbSourceProject extends DbSource {
     
     final private PgDbProject proj;
     
-    public DbSourceProject(PgDbProject proj) {
+    DbSourceProject(PgDbProject proj) {
         super(proj.getProjectPropsFile().getAbsolutePath());
         
         this.proj = proj;
     }
     
     @Override
-    public PgDatabase get(SubMonitor monitor) {
+    protected PgDatabase loadInternal(SubMonitor monitor) {
         SubMonitor.convert(monitor, 1).newChild(1).subTask("Loading tree");
         
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(
@@ -159,7 +173,7 @@ class DbSourceFile extends DbSource {
     
     final private String encoding;
     
-    public DbSourceFile(String filename, String encoding) {
+    DbSourceFile(String filename, String encoding) {
         super(filename);
         
         this.filename = filename;
@@ -167,7 +181,7 @@ class DbSourceFile extends DbSource {
     }
     
     @Override
-    public PgDatabase get(SubMonitor monitor) {
+    protected PgDatabase loadInternal(SubMonitor monitor) {
         SubMonitor.convert(monitor, 1).newChild(1).subTask("Loading dump");
         
         return PgDumpLoader.loadDatabaseSchemaFromDump(
@@ -182,7 +196,7 @@ class DbSourceDb extends DbSource {
     final private String host, user, pass, dbname, encoding;
     final private int port;
 
-    public DbSourceDb(String exePgdump, PgDbProject props) {
+    DbSourceDb(String exePgdump, PgDbProject props) {
         this(exePgdump,
                 props.getString(UIConsts.PROJ_PREF_DB_HOST),
                 props.getInt(UIConsts.PROJ_PREF_DB_PORT),
@@ -192,7 +206,7 @@ class DbSourceDb extends DbSource {
                 props.getString(UIConsts.PROJ_PREF_ENCODING));
     }
     
-    public DbSourceDb(String exePgdump, String host, int port,
+    DbSourceDb(String exePgdump, String host, int port,
             String user, String pass, String dbname, String encoding) {
         super((host.isEmpty() && dbname.isEmpty())? "Undisclosed DB"
                 : (host.isEmpty()? dbname + "@unknown_host"
@@ -209,7 +223,7 @@ class DbSourceDb extends DbSource {
     }
     
     @Override
-    public PgDatabase get(SubMonitor monitor) throws IOException {
+    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
         SubMonitor pm = SubMonitor.convert(monitor, 2);
         
         try(TempFile tf = new TempFile("tmp_dump_", ".sql")) {

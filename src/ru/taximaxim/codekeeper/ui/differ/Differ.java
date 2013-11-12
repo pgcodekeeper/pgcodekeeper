@@ -57,8 +57,8 @@ public class Differ implements IRunnableWithProgress {
         
         writer.flush();
         diff = diffOut.toString().trim();
-        finished = true;
         
         monitor.done();
+        finished = true;
     }
 }
