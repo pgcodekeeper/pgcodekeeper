@@ -16,7 +16,6 @@ import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 
 /**
  * Exports PgDatabase model as a directory tree with
@@ -197,15 +196,7 @@ public class ModelExporter {
 		}
 		
 		for(PgStatementWithSearchPath obj : objects) {
-			String filename;
-			
-			if(obj instanceof PgFunction) {
-				filename = ((PgFunction) obj).getSignature();
-			} else {
-				filename = obj.getName();
-			}
-			
-			filename += ".sql";
+			String filename = obj.getName() + ".sql";
 			
 			PgTable table = null;
 			if(obj instanceof PgTable) {

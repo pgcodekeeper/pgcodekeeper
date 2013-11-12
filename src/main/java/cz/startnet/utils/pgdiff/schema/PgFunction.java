@@ -173,11 +173,21 @@ public class PgFunction extends PgStatementWithSearchPath {
     }
 
     /**
-     * Getter for {@link #name}.
-     *
-     * @return {@link #name}
+     * Alias for {@link #getSignature()} which provides a unique function ID.
+     * 
+     * Use {@link #getBareName()} to get just the function name.
      */
     public String getName() {
+        return getSignature();
+    }
+    
+    /**
+     * Getter for {@link #name}.
+     * 
+     * @return {@link #name}
+     */
+    
+    public String getBareName() {
         return name;
     }
 
@@ -264,8 +274,8 @@ public class PgFunction extends PgStatementWithSearchPath {
         } else if (object instanceof PgFunction) {
             final PgFunction function = (PgFunction) object;
 
-            if (name == null && function.getName() != null
-                    || name != null && !name.equals(function.getName())) {
+            if (name == null && function.getBareName() != null
+                    || name != null && !name.equals(function.getBareName())) {
                 return false;
             }
 

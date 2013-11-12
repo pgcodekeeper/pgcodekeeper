@@ -105,7 +105,7 @@ public class PgDiffFunctions {
                 searchPathHelper.outputSearchPath(writer);
                 writer.println();
                 writer.print("COMMENT ON FUNCTION ");
-                writer.print(PgDiffUtils.getQuotedName(newFunction.getName()));
+                writer.print(PgDiffUtils.getQuotedName(newFunction.getBareName()));
                 writer.print('(');
 
                 boolean addComma = false;
@@ -129,7 +129,7 @@ public class PgDiffFunctions {
                 searchPathHelper.outputSearchPath(writer);
                 writer.println();
                 writer.print("COMMENT ON FUNCTION ");
-                writer.print(PgDiffUtils.getQuotedName(newFunction.getName()));
+                writer.print(PgDiffUtils.getQuotedName(newFunction.getBareName()));
                 writer.print('(');
 
                 boolean addComma = false;
