@@ -17,14 +17,14 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class TreeElement {
 
-    enum DbObjType {
+    public enum DbObjType {
         DATABASE,
         SCHEMA, EXTENSION,
         FUNCTION, SEQUENCE, TABLE, VIEW,
         INDEX, TRIGGER, CONSTRAINT
     }
     
-    enum DiffSide {
+    public enum DiffSide {
         LEFT, RIGHT, BOTH
     }
     

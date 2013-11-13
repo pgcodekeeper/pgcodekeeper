@@ -125,13 +125,7 @@ public class CreateTableParser {
                 null, searchPath);
         table.addConstraint(constraint);
         constraint.setTableName(table.getName());
-        
-        if(parser.expectOptional("PRIMARY", "KEY")) {
-        	schema.addPrimaryKey(constraint);
-        	constraint.setDefinition("PRIMARY KEY " + parser.getExpression());
-        } else {
-        	constraint.setDefinition(parser.getExpression());
-        }
+        constraint.setDefinition(parser.getExpression());
     }
 
     /**
