@@ -140,14 +140,7 @@ public class ModelExporter {
 			processObjects(schema.getTables(), schemaDir, "TABLE");
 			processObjects(schema.getViews(), schemaDir, "VIEW");
 			
-			// indexes are stored both in schemas and tables
-			// this is sufficient
-			processObjects(schema.getIndexes(), schemaDir, "INDEX");
-			
-			// constraints are saved when tables are processed
-			// primary keys in schema are redundant, they are a subset of constraints
-			
-			// triggers are saved when tables are processed
+			// indexes, triggers, constraints are saved when tables are processed
 		}
 		
 		
@@ -226,6 +219,7 @@ public class ModelExporter {
 				// out them to their own directory in schema, not table directory
 				processObjects(table.getConstraints(), parentOutDir, "CONSTRAINT");
 				processObjects(table.getTriggers(), parentOutDir, "TRIGGER");
+				processObjects(table.getIndexes(), parentOutDir, "INDEX");
 			}
 		}
 	}

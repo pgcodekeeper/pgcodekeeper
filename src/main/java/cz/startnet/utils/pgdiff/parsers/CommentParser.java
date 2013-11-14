@@ -139,7 +139,13 @@ public class CommentParser {
                 ParserUtils.getSchemaName(indexName, database);
         final PgSchema schema = database.getSchema(schemaName);
 
-        final PgIndex index = schema.getIndex(objectName);
+        PgIndex index = null;
+        for(PgTable table : schema.getTables()) {
+            index = table.getIndex(objectName);
+            if(index != null) {
+                break;
+            }
+        }
 
         // since PRIMARY KEY implicitly creates an index with same name
         // search for those CONSTRAINTs if INDEX is not found 

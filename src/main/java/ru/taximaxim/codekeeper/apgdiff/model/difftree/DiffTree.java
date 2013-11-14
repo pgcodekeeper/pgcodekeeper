@@ -113,10 +113,10 @@ public class DiffTree {
                 
                 // constraints
                 if(tableLeft != null) {
-                    leftTableSub = tableLeft.getIndexes();
+                    leftTableSub = tableLeft.getConstraints();
                 }
                 if(tableRight!= null) {
-                    rightTableSub = tableRight.getIndexes();
+                    rightTableSub = tableRight.getConstraints();
                 }
                 for(CompareResult resTable : compareLists(leftTableSub, rightTableSub)) {
                     elTable.addChild(new TreeElement(

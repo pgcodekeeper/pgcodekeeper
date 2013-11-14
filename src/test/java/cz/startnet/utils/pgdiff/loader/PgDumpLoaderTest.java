@@ -14,6 +14,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.schema.*;
 
 /**
@@ -115,8 +119,19 @@ public class PgDumpLoaderTest {
         if(fileIndex > dbCreators.length) {        
         	Assert.fail("No predefined object for file: " + filename);
         }
+        PgDatabase dbPredefined = dbCreators[fileIndex - 1].getDatabase();
+        PgDatabase empty = new PgDatabase();
+        
         Assert.assertEquals("predefined object is not equal to file: "
-        		+ filename, dbCreators[fileIndex - 1].getDatabase(), d);
+        		+ filename, dbPredefined, d);
+        
+        TreeElement dbTree = DiffTree.create(d, empty);
+        PgDatabase dbFilteredFullTree = PgDbFilter.apply(d, dbTree, DiffSide.LEFT);
+        
+        Assert.assertEquals("filter altered the result", d, dbFilteredFullTree);
+        Assert.assertEquals("filter altered the original", dbPredefined, d);
+        
+        // TODO more filter tests?
     }
 }
 
@@ -253,7 +268,6 @@ class PgDB2 extends PgDatabaseObjectCreator {
     	
     	PgIndex idx = new PgIndex("contacts_number_pool_id_idx", "", "");
     	table.addIndex(idx);
-    	schema.addIndex(idx);
     	idx.setTableName("contacts");
     	idx.setDefinition("(number_pool_id)");    	
     	
@@ -479,7 +493,6 @@ class PgDB6 extends PgDatabaseObjectCreator {
 		idx.setTableName("test_table");
 		idx.setDefinition("USING btree (date_deleted) WHERE (date_deleted IS NULL)");
 		table.addIndex(idx);
-		schema.addIndex(idx);
 		
 		return d;
 	}
@@ -671,7 +684,6 @@ class PgDB10 extends PgDatabaseObjectCreator {
 		idx.setTableName("user");
 		idx.setDefinition("USING btree (role_id)");
 		table.addIndex(idx);
-		schema.addIndex(idx);
 		
 		constraint = new PgConstraint("user_role_id_fkey", "", "");
 		constraint.setTableName("user");
