@@ -98,13 +98,16 @@ public class CheckboxTreeSelectionHelper {
 		
 		List<Object> descendants = getDescendants(node);
 		Set<Object> checkedSet = new HashSet<Object>(checkedElements);
-		for (Object n : descendants) {
-			viewer.setGrayChecked(n, false);
-			viewer.setChecked(n, checked);
-			if (checked)
-				checkedSet.add(n);
-			else
-				checkedSet.remove(n);
+		if(!checked) {
+		    // do only for unchecking, do not check children with their parent
+    		for (Object n : descendants) {
+    			viewer.setGrayChecked(n, false);
+    			viewer.setChecked(n, checked);
+    			if (checked)
+    				checkedSet.add(n);
+    			else
+    				checkedSet.remove(n);
+    		}
 		}
 
 		updateAncestors(node, checkedSet);

@@ -25,9 +25,11 @@ public class ExecutableFileFieldEditor extends FileFieldEditor {
 		File f = null;
 		
 		if(!super.checkState()) {
+		    // TODO check general logic, messages showing
 			String envVarPath = System.getenv("PATH");
 			for(String subVarPath :
 					envVarPath.split(Pattern.quote(File.pathSeparator))) {
+			    // TODO try with PATHEXTs too
 				File fTry = new File(subVarPath, getStringValue());
 				if(fTry.isFile()) {
 					f = fTry;

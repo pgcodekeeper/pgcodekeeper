@@ -10,9 +10,7 @@ import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
-import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -41,7 +39,11 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import com.safi.jface.CheckboxTreeSelectionHelper;
+
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -59,8 +61,6 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     
     private DbSource db1, db2;
     
-    private boolean reverse;
-    
     private String diffResult;
     
     public DbSource getDb1() {
@@ -69,10 +69,6 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     
     public DbSource getDb2() {
         return db2;
-    }
-    
-    public boolean isReverse() {
-        return reverse;
     }
     
     public String getDiffResult() {
@@ -96,11 +92,14 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         addPage(pagePartial);
     }
     
+    // objects from handlePageChanging() needed in perfromFinish()
+    DbSource dbFrom, dbTo;
+    
     @Override
     public void handlePageChanging(PageChangingEvent e) {
         if(e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
             TreeDiffer treediffer = new TreeDiffer(
-                    DbSource.fromProject(proj), pageDiff.getTargetDbSource(),
+                    DbSource.fromProject(proj), pageDiff.getTargetDbSource(), 
                     !pageDiff.isDirectionFromThis());
             
             try {
@@ -118,10 +117,11 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 throw ex;
             }
             
-            pagePartial.setLabels(treediffer.getDbFrom().getOrigin(),
-                    treediffer.getDbTo().getOrigin());
-            pagePartial.setDiffTreeInput(treediffer.getDiffTree());
+            dbFrom = treediffer.getDbFrom();
+            dbTo = treediffer.getDbTo();
             
+            pagePartial.setLabels(dbFrom.getOrigin(), dbTo.getOrigin());
+            pagePartial.setDiffTreeInput(treediffer.getDiffTree());
             pagePartial.layout();
         }
     }
@@ -136,12 +136,13 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     
     @Override
     public boolean performFinish() {
-        reverse = !pageDiff.isDirectionFromThis();
+        TreeElement filtered = filterDiffTree(pagePartial.getDiffTree(),
+                (TreeElement) pagePartial.getDiffTree().getInput());
         
-        db1 = DbSource.fromProject(proj);
-        db2 = pageDiff.getTargetDbSource();
+        db1 = DbSource.fromFilter(dbFrom, filtered, DiffSide.LEFT);
+        db2 = DbSource.fromFilter(dbTo, filtered, DiffSide.RIGHT);
         
-        Differ differ = new Differ(db1, db2, reverse);
+        Differ differ = new Differ(db1, db2, false);
         try {
             getContainer().run(true, false, differ);
         } catch(InvocationTargetException ex) {
@@ -154,6 +155,28 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         diffResult = differ.getDiff();
         
         return true;
+    }
+    
+    // recursively copy only selected tree elements into a new tree
+    private TreeElement filterDiffTree(CheckboxTreeViewer viewer,
+            TreeElement diffTree) {
+        if(diffTree.getType() != DbObjType.DATABASE 
+                && !viewer.getChecked(diffTree)
+                && !viewer.getGrayed(diffTree)) {
+            // skip unselected non-root nodes and all their children
+            return null;
+        }
+        
+        TreeElement copy = new TreeElement(
+                diffTree.getName(), diffTree.getType(), diffTree.getSide());
+        
+        for(TreeElement sub : diffTree.getChildren()) {
+            TreeElement subCopy = filterDiffTree(viewer, sub);
+            if(subCopy != null) {
+                copy.addChild(subCopy);
+            }
+        }
+        return copy;
     }
 }
 
@@ -741,6 +764,10 @@ class PagePartial extends WizardPage {
         lblTo.setText(to);
     }
     
+    public CheckboxTreeViewer getDiffTree() {
+        return diffTree;
+    }
+    
     public void setDiffTreeInput(TreeElement root) {
         diffTree.setInput(root);
     }
@@ -823,16 +850,8 @@ class PagePartial extends WizardPage {
                         el.getType(), el.getName(), el.getSide());
             }
         });
-        diffTree.addCheckStateListener(new ICheckStateListener() {
-            @Override
-            public void checkStateChanged(CheckStateChangedEvent event) {
-                TreeElement el = (TreeElement) event.getElement();
-                
-                // TODO make recursive checks up and down the tree
-                // to determine whether this element is allowed to be unchecked
-                // and setting its and its parents' grayed state if necessary
-            }
-        });
+        CheckboxTreeSelectionHelper.attach(
+                diffTree, (ITreeContentProvider) diffTree.getContentProvider());
         
         setControl(container);
     }

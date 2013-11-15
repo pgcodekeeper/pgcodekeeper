@@ -56,10 +56,8 @@ public class Diff {
 	        if(dialog.open() == Dialog.OK) {
 	            String diffResult = diff.getDiffResult();
 	            
-	            String from = diff.isReverse()? diff.getDb2().getOrigin()
-	                    : diff.getDb1().getOrigin();
-	            String to = diff.isReverse()? diff.getDb1().getOrigin()
-	                    : diff.getDb2().getOrigin();
+	            String from = diff.getDb1().getOrigin();
+	            String to = diff.getDb2().getOrigin();
 	            
 	            
 	            TextDialog txtDialog = new TextDialog(shell, TextDialog.QUESTION,
