@@ -220,17 +220,7 @@ public class PgDiff {
     		if(oldExt == null) {
     			continue;
     		}
-    		/*
-    		// TODO do this with DROP/CREATE? as an option?
-    		if(newExt.getVersion() != null 
-    				&& !newExt.getVersion().equals(
-    						oldExt.getVersion())) {
-    			writer.println();
-    			writer.println("ALTER EXTENSION "
-    					+ PgDiffUtils.getQuotedName(oldExt.getName())
-    					+ " UPDATE TO " + newExt.getVersion() + ";");
-    		}
-    		*/
+    		
     		if(newExt.getSchema() != null
     				&& !newExt.getSchema().equals(
     						oldExt.getSchema())) {

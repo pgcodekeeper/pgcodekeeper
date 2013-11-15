@@ -467,7 +467,6 @@ public class PgDiffArguments {
             }
         }
         
-        // TODO temporary until DB connection is implemented
         if("db".equals(getOldSrcFormat()) || "db".equals(getNewSrcFormat())
         		|| "db".equals(getParseSrcFormat())) {
         	throw new UnsupportedOperationException("DB connection is not yet implemented!");
