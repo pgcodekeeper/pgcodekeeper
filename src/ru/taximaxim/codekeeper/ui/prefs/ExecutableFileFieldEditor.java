@@ -1,6 +1,9 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.eclipse.jface.preference.FileFieldEditor;
@@ -17,7 +20,7 @@ public class ExecutableFileFieldEditor extends FileFieldEditor {
 	public ExecutableFileFieldEditor(String name, String labelText,
 			Composite parent) {
 		// always create without enforcing absolute paths
-		super(name, labelText, false, parent);
+		super(name, labelText, false, VALIDATE_ON_KEY_STROKE, parent);
 	}
 	
 	@Override
@@ -25,22 +28,41 @@ public class ExecutableFileFieldEditor extends FileFieldEditor {
 		File f = null;
 		
 		if(!super.checkState()) {
-		    // TODO check general logic, messages showing
+            // we cannot search filepaths in %PATH%,
+            // only filenames are allowed in this case
+            // always block '/' because on Windows File.separator will be '\'
+            // but '/' will work as well
+		    if(getStringValue().contains(File.separator)
+		            || getStringValue().indexOf('/') != -1) {
+		        return false;
+		    }
+		    
+		    String pathSep = Pattern.quote(File.pathSeparator);
+		    
+		    List<String> pathExts = new ArrayList<>(16);
+		    // since we always try to search with extension add empty one too
+		    pathExts.add("");
+		    
+		    String pathext = System.getenv("PATHEXT");
+		    if(pathext != null) {
+		        for(String ext : pathext.split(pathSep)) {
+		            pathExts.add(ext);
+		        }
+		    }
+		    
 			String envVarPath = System.getenv("PATH");
-			for(String subVarPath :
-					envVarPath.split(Pattern.quote(File.pathSeparator))) {
-			    // TODO try with PATHEXTs too
-				File fTry = new File(subVarPath, getStringValue());
-				if(fTry.isFile()) {
-					f = fTry;
-					break;
-				}
+			for(String subVarPath : envVarPath.split(pathSep)) {
+			    for(String ext : pathExts) {
+    				File fTry = new File(subVarPath, getStringValue() + ext);
+    				if(fTry.isFile()) {
+    					f = fTry;
+    					break;
+    				}
+			    }
 			}
 			
 			if(f == null) {
 				return false;
-			} else {
-				clearErrorMessage();
 			}
 		} else {
 			f = new File(getStringValue());
@@ -52,6 +74,7 @@ public class ExecutableFileFieldEditor extends FileFieldEditor {
 			return false;
 		}
 		
+		clearErrorMessage();
 		return true;
 	}
 }

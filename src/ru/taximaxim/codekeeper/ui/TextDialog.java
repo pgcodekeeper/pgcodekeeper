@@ -45,6 +45,7 @@ public class TextDialog extends MessageDialog {
 	protected Control createCustomArea(Composite parent) {
 	    Text txt = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
                 | SWT.READ_ONLY | SWT.MULTI);
+	    txt.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 600;

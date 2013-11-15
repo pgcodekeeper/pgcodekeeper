@@ -219,7 +219,7 @@ class SvnSettingsPage
 				+ "Providing password here is insecure!\n"
 				+ "This password WILL show up in logs!\n"
 				+ "Consider using SVN password store instead.");
-		GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
 		
 		if(getPreferenceStore().getString(UIConsts.PROJ_PREF_SVN_PASS).isEmpty()) {
 			gd.exclude = true;
@@ -259,8 +259,10 @@ class SvnSettingsPage
 class MiscSettingPage
 	extends FieldEditorPreferencePage
 	implements IWorkbenchPreferencePage {
-	
-    // TODO Warn about encoding change!
+    
+    private String originalEncoding;
+    
+    private CLabel lblWarn;
     
 	public MiscSettingPage() {
 		super(GRID);
@@ -272,6 +274,7 @@ class MiscSettingPage
 	
 	@Override
 	protected void createFieldEditors() {
+	    originalEncoding = getPreferenceStore().getString(UIConsts.PROJ_PREF_ENCODING);
 		
 		Set<String> charsets  = Charset.availableCharsets().keySet();
 		List<String[]> lstCharsets = new ArrayList<>(charsets.size());
@@ -284,5 +287,45 @@ class MiscSettingPage
 				"Project encoding:",
 				lstCharsets.toArray(new String[lstCharsets.size()][]),
 				getFieldEditorParent()));
+
+        lblWarn = new CLabel(getFieldEditorParent(), SWT.NONE);
+        lblWarn.setImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(
+                        UIConsts.FILENAME_ICONWARNING)).createImage());
+        lblWarn.setText("Warning:\n"
+                + "Encoding of existing files will not be changed!");
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
+        gd.exclude = true;
+        lblWarn.setVisible(false);
+        
+        lblWarn.setLayoutData(gd);
+	}
+	
+	@Override
+	public void propertyChange(PropertyChangeEvent e) {
+	    String prefName = ((FieldEditor) e.getSource()).getPreferenceName();
+	    
+	    if(UIConsts.PROJ_PREF_ENCODING.equals(prefName)) {
+            String oldVal = (String) e.getOldValue();
+	        String newVal = (String) e.getNewValue();
+	        
+	        if(!oldVal.equals(newVal)) {
+	            boolean show = !newVal.equals(originalEncoding);
+	            
+	            GridData gd = (GridData) lblWarn.getLayoutData();
+                
+                gd.exclude = !show;
+                lblWarn.setVisible(show);
+
+                Shell sh =  lblWarn.getShell();
+                int width = sh.getSize().x;
+                int newht = sh.computeSize(width, SWT.DEFAULT).y;
+                sh.setSize(width, newht);
+
+                lblWarn.getParent().layout(false);
+	        }
+	    }
+
+	    super.propertyChange(e);
 	}
 }
