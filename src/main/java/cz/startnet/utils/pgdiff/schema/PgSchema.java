@@ -36,15 +36,6 @@ public class PgSchema extends PgStatement {
      */
     private final List<PgView> views = new ArrayList<PgView>();
     /**
-     * List of indexes defined in the schema.
-     */
-    private final List<PgIndex> indexes = new ArrayList<PgIndex>();
-    /**
-     * List of primary keys defined in the schema.
-     */
-    private final List<PgConstraint> primaryKeys =
-            new ArrayList<PgConstraint>();
-    /**
      * Name of the schema.
      */
     private final String name;
@@ -189,40 +180,6 @@ public class PgSchema extends PgStatement {
     }
 
     /**
-     * Finds index according to specified index {@code name}.
-     *
-     * @param name name of the index to be searched
-     *
-     * @return found index or null if no such index has been found
-     */
-    public PgIndex getIndex(final String name) {
-        for (PgIndex index : indexes) {
-            if (index.getName().equals(name)) {
-                return index;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Finds primary key according to specified primary key {@code name}.
-     *
-     * @param name name of the primary key to be searched
-     *
-     * @return found primary key or null if no such primary key has been found
-     */
-    public PgConstraint getPrimaryKey(final String name) {
-        for (PgConstraint constraint : primaryKeys) {
-            if (constraint.getName().equals(name)) {
-                return constraint;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Finds sequence according to specified sequence {@code name}.
      *
      * @param name name of the sequence to be searched
@@ -237,24 +194,6 @@ public class PgSchema extends PgStatement {
         }
 
         return null;
-    }
-
-    /**
-     * Getter for {@link #indexes}. The list cannot be modified.
-     *
-     * @return {@link #indexes}
-     */
-    public List<PgIndex> getIndexes() {
-        return Collections.unmodifiableList(indexes);
-    }
-
-    /**
-     * Getter for {@link #primaryKeys}. The list cannot be modified.
-     *
-     * @return {@link #primaryKeys}
-     */
-    public List<PgConstraint> getPrimaryKeys() {
-        return Collections.unmodifiableList(primaryKeys);
     }
 
     /**
@@ -316,24 +255,6 @@ public class PgSchema extends PgStatement {
      */
     public List<PgView> getViews() {
         return Collections.unmodifiableList(views);
-    }
-
-    /**
-     * Adds {@code index} to the list of indexes.
-     *
-     * @param index index
-     */
-    public void addIndex(final PgIndex index) {
-        indexes.add(index);
-    }
-
-    /**
-     * Adds {@code primary key} to the list of primary keys.
-     *
-     * @param primaryKey index
-     */
-    public void addPrimaryKey(final PgConstraint primaryKey) {
-        primaryKeys.add(primaryKey);
     }
 
     /**
@@ -468,8 +389,6 @@ public class PgSchema extends PgStatement {
     				&& Objects.equals(definition, schema.getDefinition())
     				
     				&& PgDBUtils.listsEqual(sequences, schema.getSequences())
-    				&& PgDBUtils.listsEqual(primaryKeys, schema.getPrimaryKeys())
-    				&& PgDBUtils.listsEqual(indexes, schema.getIndexes())
     				&& PgDBUtils.listsEqual(functions, schema.getFunctions())
     				&& PgDBUtils.listsEqual(views, schema.getViews())
     				&& PgDBUtils.listsEqual(tables, schema.getTables());

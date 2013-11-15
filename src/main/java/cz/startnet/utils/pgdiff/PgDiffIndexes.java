@@ -154,35 +154,43 @@ public class PgDiffIndexes {
             return;
         }
 
-        for (final PgIndex oldIndex : oldSchema.getIndexes()) {
-            final PgIndex newIndex = newSchema.getIndex(oldIndex.getName());
+        for(PgTable oldTable : oldSchema.getTables()) {
+            final PgTable newTable = newSchema.getTable(oldTable.getName());
 
-            if (newIndex == null) {
+            if (newTable == null) {
                 continue;
             }
-
-            if (oldIndex.getComment() == null
-                    && newIndex.getComment() != null
-                    || oldIndex.getComment() != null
-                    && newIndex.getComment() != null
-                    && !oldIndex.getComment().equals(
-                    newIndex.getComment())) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.print("COMMENT ON INDEX ");
-                writer.print(
-                        PgDiffUtils.getQuotedName(newIndex.getName()));
-                writer.print(" IS ");
-                writer.print(newIndex.getComment());
-                writer.println(';');
-            } else if (oldIndex.getComment() != null
-                    && newIndex.getComment() == null) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.print("COMMENT ON INDEX ");
-                writer.print(
-                        PgDiffUtils.getQuotedName(newIndex.getName()));
-                writer.println(" IS NULL;");
+            
+            for (final PgIndex oldIndex : oldTable.getIndexes()) {
+                final PgIndex newIndex = newTable.getIndex(oldIndex.getName());
+                
+                if (newIndex == null) {
+                    continue;
+                }
+    
+                if (oldIndex.getComment() == null
+                        && newIndex.getComment() != null
+                        || oldIndex.getComment() != null
+                        && newIndex.getComment() != null
+                        && !oldIndex.getComment().equals(
+                        newIndex.getComment())) {
+                    searchPathHelper.outputSearchPath(writer);
+                    writer.println();
+                    writer.print("COMMENT ON INDEX ");
+                    writer.print(
+                            PgDiffUtils.getQuotedName(newIndex.getName()));
+                    writer.print(" IS ");
+                    writer.print(newIndex.getComment());
+                    writer.println(';');
+                } else if (oldIndex.getComment() != null
+                        && newIndex.getComment() == null) {
+                    searchPathHelper.outputSearchPath(writer);
+                    writer.println();
+                    writer.print("COMMENT ON INDEX ");
+                    writer.print(
+                            PgDiffUtils.getQuotedName(newIndex.getName()));
+                    writer.println(" IS NULL;");
+                }
             }
         }
     }

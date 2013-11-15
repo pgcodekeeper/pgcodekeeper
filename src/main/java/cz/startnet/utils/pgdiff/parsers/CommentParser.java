@@ -139,12 +139,29 @@ public class CommentParser {
                 ParserUtils.getSchemaName(indexName, database);
         final PgSchema schema = database.getSchema(schemaName);
 
-        final PgIndex index = schema.getIndex(objectName);
+        PgIndex index = null;
+        for(PgTable table : schema.getTables()) {
+            index = table.getIndex(objectName);
+            if(index != null) {
+                break;
+            }
+        }
 
-        if (index == null) {
-            final PgConstraint primaryKey = schema.getPrimaryKey(objectName);
+        // since PRIMARY KEY implicitly creates an index with same name
+        // search for those CONSTRAINTs if INDEX is not found 
+        if(index == null) {
+            PgConstraint pkey = null;
+            
+            for(PgTable table : schema.getTables()) {
+                PgConstraint constr = table.getConstraint(objectName);
+                
+                if(constr != null && constr.isPrimaryKeyConstraint()) {
+                    pkey = constr;
+                    break;
+                }
+            }
             parser.expect("IS");
-            primaryKey.setComment(getComment(parser));
+            pkey.setComment(getComment(parser));
             parser.expect(";");
         } else {
             parser.expect("IS");

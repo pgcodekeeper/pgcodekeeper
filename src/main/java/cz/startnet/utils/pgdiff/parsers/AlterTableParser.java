@@ -222,13 +222,7 @@ public class AlterTableParser {
         		new PgConstraint(constraintName, null, searchPath);
         constraint.setTableName(table.getName());
         table.addConstraint(constraint);
-
-        if (parser.expectOptional("PRIMARY", "KEY")) {
-            schema.addPrimaryKey(constraint);
-            constraint.setDefinition("PRIMARY KEY " + parser.getExpression());
-        } else {
-            constraint.setDefinition(parser.getExpression());
-        }
+        constraint.setDefinition(parser.getExpression());
     }
 
     /**
