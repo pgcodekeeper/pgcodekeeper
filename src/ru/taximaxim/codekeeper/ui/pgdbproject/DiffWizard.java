@@ -11,8 +11,13 @@ import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TreePath;
+import org.eclipse.jface.viewers.TreeSelection;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
@@ -852,6 +857,16 @@ class PagePartial extends WizardPage {
         });
         CheckboxTreeSelectionHelper.attach(
                 diffTree, (ITreeContentProvider) diffTree.getContentProvider());
+        diffTree.addDoubleClickListener(new IDoubleClickListener() {
+            
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+                TreePath path = ((TreeSelection) event.getSelection()).getPaths()[0];
+                TreeViewer viewer = (TreeViewer) event.getViewer();
+                viewer.setExpandedState(path, !viewer.getExpandedState(path));
+                viewer.refresh();
+            }
+        });
         
         setControl(container);
     }
