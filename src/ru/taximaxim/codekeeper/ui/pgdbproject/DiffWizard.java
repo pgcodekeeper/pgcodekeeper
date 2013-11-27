@@ -165,7 +165,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     // recursively copy only selected tree elements into a new tree
     private TreeElement filterDiffTree(CheckboxTreeViewer viewer,
             TreeElement diffTree) {
-        if(diffTree.getType() != DbObjType.DATABASE 
+        if(diffTree.getType() != DbObjType.CONTAINER 
                 && !viewer.getChecked(diffTree)
                 && !viewer.getGrayed(diffTree)) {
             // skip unselected non-root nodes and all their children
