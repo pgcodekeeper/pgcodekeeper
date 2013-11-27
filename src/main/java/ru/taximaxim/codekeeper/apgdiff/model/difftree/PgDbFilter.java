@@ -16,6 +16,7 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
+@Deprecated
 public class PgDbFilter {
 
     public static PgDatabase apply(PgDatabase db, TreeElement filterRoot,

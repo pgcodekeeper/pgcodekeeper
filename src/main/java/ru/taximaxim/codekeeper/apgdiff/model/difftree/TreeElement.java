@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 public class TreeElement {
 
     public enum DbObjType {
+        CONTAINER, // not a DB object, just a container for further tree elements
         DATABASE,
         SCHEMA, EXTENSION,
         FUNCTION, SEQUENCE, TABLE, VIEW,
@@ -54,6 +55,10 @@ public class TreeElement {
         return Collections.unmodifiableList(children);
     }
     
+    public TreeElement getParent() {
+        return parent;
+    }
+    
     public TreeElement(String name, DbObjType type, DiffSide side) {
         this.name = name;
         this.type = type;
@@ -87,8 +92,8 @@ public class TreeElement {
         }
     }
     
-    public TreeElement getParent() {
-        return parent;
+    public static TreeElement createContainer(String name, DiffSide side) {
+        return new TreeElement(name, DbObjType.CONTAINER, side);
     }
     
     public boolean hasChildren() {
@@ -105,12 +110,29 @@ public class TreeElement {
         children.add(child);
     }
     
-    public TreeElement getChild(String name) {
+    public void addChildNotEmpty(TreeElement container) {
+        if(!container.hasChildren()) {
+            return;
+        }
+        
+        addChild(container);
+    }
+    
+    public TreeElement getChild(String name, DbObjType type) {
         for(TreeElement el : children) {
-            if(el.name.equals(name)) {
+            if((type == null || el.type == type) && el.name.equals(name)) {
                 return el;
             }
         }
+        
         return null;
+    }
+    
+    public TreeElement getChild(String name) {
+        return getChild(name, null);
+    }
+    
+    public TreeElement getChild(int index) {
+        return children.get(index);
     }
 }

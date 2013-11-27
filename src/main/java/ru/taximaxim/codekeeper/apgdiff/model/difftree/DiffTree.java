@@ -17,24 +17,67 @@ public class DiffTree {
             Collections.unmodifiableList(new ArrayList<PgStatement>());
 
     public static TreeElement create(PgDatabase left, PgDatabase right) {
-        TreeElement root = new TreeElement("", DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement root = TreeElement.createContainer("<root>", DiffSide.BOTH);
         
-        for(CompareResult res
-                : compareLists(left.getExtensions(), right.getExtensions())) {
-            root.addChild(new TreeElement(res.getStatement(), res.getSide()));
-        }
+        TreeElement db = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
+        root.addChild(db);
         
-        for(CompareResult resSchema
-                : compareLists(left.getSchemas(), right.getSchemas())) {
-            TreeElement elSchema =
-                    new TreeElement(resSchema.getStatement(), resSchema.getSide());
-            root.addChild(elSchema);
-
+        TreeElement leftTree = TreeElement.createContainer("LEFT", DiffSide.LEFT);
+        db.addChild(leftTree);
+        TreeElement rightTree = TreeElement.createContainer("RIGHT", DiffSide.RIGHT);
+        db.addChild(rightTree);
+        TreeElement bothTree = TreeElement.createContainer("BOTH", DiffSide.BOTH);
+        db.addChild(bothTree);
+        
+        TreeElement extContainerLeft = TreeElement.createContainer("EXTENSION", DiffSide.LEFT);
+        TreeElement extContainerRight = TreeElement.createContainer("EXTENSION", DiffSide.RIGHT);
+        TreeElement extContainerBoth = TreeElement.createContainer("EXTENSION", DiffSide.BOTH);
+        
+        compareLists(left.getExtensions(), right.getExtensions(), extContainerLeft,
+                extContainerRight, extContainerBoth);
+        leftTree.addChildNotEmpty(extContainerLeft);
+        rightTree.addChildNotEmpty(extContainerRight);
+        bothTree.addChildNotEmpty(extContainerBoth);
+        
+        TreeElement schemaContLeft = TreeElement.createContainer("SCHEMA", DiffSide.LEFT);
+        TreeElement schemaContRight = TreeElement.createContainer("SCHEMA", DiffSide.RIGHT);
+        TreeElement schemaContBoth = TreeElement.createContainer("SCHEMA", DiffSide.BOTH);
+        
+        for(CompareResult resSchema : compareLists(left.getSchemas(), right.getSchemas(),
+                schemaContLeft, schemaContRight, schemaContBoth)) {
+            TreeElement elSchemaLeft, elSchemaRight, elSchemaBoth;
+            
+            // sides other than the current should always be empty except when current is BOTH 
+            switch(resSchema.getSide()) {
+            case LEFT:
+                elSchemaLeft = schemaContLeft.getChild(
+                        resSchema.getStatement().getName(), DbObjType.SCHEMA);
+                elSchemaRight = new TreeElement(resSchema.getStatement(), DiffSide.BOTH);
+                elSchemaBoth = new TreeElement(resSchema.getStatement(), DiffSide.BOTH);
+                break;
+            case RIGHT:
+                elSchemaLeft = new TreeElement(resSchema.getStatement(), DiffSide.BOTH);
+                elSchemaRight = schemaContRight.getChild(
+                        resSchema.getStatement().getName(), DbObjType.SCHEMA);
+                elSchemaBoth = new TreeElement(resSchema.getStatement(), DiffSide.BOTH);
+                break;
+            case BOTH:
+                elSchemaLeft = new TreeElement(resSchema.getStatement(), DiffSide.BOTH);
+                elSchemaRight = new TreeElement(resSchema.getStatement(), DiffSide.BOTH);
+                elSchemaBoth = schemaContBoth.getChild(
+                        resSchema.getStatement().getName(), DbObjType.SCHEMA);
+                break;
+            default:
+                elSchemaLeft = elSchemaRight = elSchemaBoth = null;
+            }
+            
             List<? extends PgStatement> leftSub = EMPTY_LIST;
             List<? extends PgStatement> rightSub = EMPTY_LIST;
             
             PgSchema schemaLeft = (PgSchema) resSchema.getLeft();
             PgSchema schemaRight = (PgSchema) resSchema.getRight();
+            
+            TreeElement schemaSubLeft, schemaSubRight, schemaSubBoth;
             
             // functions
             if(schemaLeft != null) {
@@ -43,9 +86,14 @@ public class DiffTree {
             if(schemaRight != null) {
                 rightSub = schemaRight.getFunctions();
             }
-            for(CompareResult resSub : compareLists(leftSub, rightSub)) {
-                elSchema.addChild(new TreeElement(resSub.getStatement(), resSub.getSide()));
-            }
+            schemaSubLeft = TreeElement.createContainer("FUNCTION", DiffSide.LEFT);
+            schemaSubRight = TreeElement.createContainer("FUNCTION", DiffSide.RIGHT);
+            schemaSubBoth = TreeElement.createContainer("FUNCTION", DiffSide.BOTH);
+            
+            compareLists(leftSub, rightSub, schemaSubLeft, schemaSubRight, schemaSubBoth);
+            elSchemaLeft.addChildNotEmpty(schemaSubLeft);
+            elSchemaRight.addChildNotEmpty(schemaSubRight);
+            elSchemaBoth.addChildNotEmpty(schemaSubBoth);
             
             // sequences
             if(schemaLeft != null) {
@@ -54,9 +102,14 @@ public class DiffTree {
             if(schemaRight != null) {
                 rightSub = schemaRight.getSequences();
             }
-            for(CompareResult resSub : compareLists(leftSub, rightSub)) {
-                elSchema.addChild(new TreeElement(resSub.getStatement(), resSub.getSide()));
-            }
+            schemaSubLeft = TreeElement.createContainer("SEQUENCE", DiffSide.LEFT);
+            schemaSubRight = TreeElement.createContainer("SEQUENCE", DiffSide.RIGHT);
+            schemaSubBoth = TreeElement.createContainer("SEQUENCE", DiffSide.BOTH);
+            
+            compareLists(leftSub, rightSub, schemaSubLeft, schemaSubRight, schemaSubBoth);
+            elSchemaLeft.addChildNotEmpty(schemaSubLeft);
+            elSchemaRight.addChildNotEmpty(schemaSubRight);
+            elSchemaBoth.addChildNotEmpty(schemaSubBoth);
             
             // view
             if(schemaLeft != null) {
@@ -65,9 +118,14 @@ public class DiffTree {
             if(schemaRight != null) {
                 rightSub = schemaRight.getViews();
             }
-            for(CompareResult resSub : compareLists(leftSub, rightSub)) {
-                elSchema.addChild(new TreeElement(resSub.getStatement(), resSub.getSide()));
-            }
+            schemaSubLeft = TreeElement.createContainer("VIEW", DiffSide.LEFT);
+            schemaSubRight = TreeElement.createContainer("VIEW", DiffSide.RIGHT);
+            schemaSubBoth = TreeElement.createContainer("VIEW", DiffSide.BOTH);
+            
+            compareLists(leftSub, rightSub, schemaSubLeft, schemaSubRight, schemaSubBoth);
+            elSchemaLeft.addChildNotEmpty(schemaSubLeft);
+            elSchemaRight.addChildNotEmpty(schemaSubRight);
+            elSchemaBoth.addChildNotEmpty(schemaSubBoth);
             
             // tables
             if(schemaLeft != null) {
@@ -76,10 +134,37 @@ public class DiffTree {
             if(schemaRight != null) {
                 rightSub = schemaRight.getTables();
             }
-            for(CompareResult resSub : compareLists(leftSub, rightSub)) {
-                TreeElement elTable =
-                        new TreeElement(resSub.getStatement(), resSub.getSide());
-                elSchema.addChild(elTable);
+            schemaSubLeft = TreeElement.createContainer("TABLE", DiffSide.LEFT);
+            schemaSubRight = TreeElement.createContainer("TABLE", DiffSide.RIGHT);
+            schemaSubBoth = TreeElement.createContainer("TABLE", DiffSide.BOTH);
+            
+            for(CompareResult resSub : compareLists(leftSub, rightSub,
+                    schemaSubLeft, schemaSubRight, schemaSubBoth)) {
+                TreeElement elTableLeft, elTableRight, elTableBoth;
+
+                // sides other than the current should always be empty except when current is BOTH 
+                switch(resSub.getSide()) {
+                case LEFT:
+                    elTableLeft = schemaSubLeft.getChild(
+                            resSub.getStatement().getName(), DbObjType.TABLE);
+                    elTableRight = new TreeElement(resSub.getStatement(), DiffSide.BOTH);
+                    elTableBoth = new TreeElement(resSub.getStatement(), DiffSide.BOTH);
+                    break;
+                case RIGHT:
+                    elTableLeft = new TreeElement(resSub.getStatement(), DiffSide.BOTH);
+                    elTableRight = schemaSubRight.getChild(
+                            resSub.getStatement().getName(), DbObjType.TABLE);
+                    elTableBoth = new TreeElement(resSub.getStatement(), DiffSide.BOTH);
+                    break;
+                case BOTH:
+                    elTableLeft = new TreeElement(resSub.getStatement(), DiffSide.BOTH);
+                    elTableRight = new TreeElement(resSub.getStatement(), DiffSide.BOTH);
+                    elTableBoth = schemaSubBoth.getChild(
+                            resSub.getStatement().getName(), DbObjType.TABLE);
+                    break;
+                default:
+                    elTableLeft = elTableRight = elTableBoth = null;
+                }
                 
                 List<? extends PgStatement> leftTableSub = EMPTY_LIST;
                 List<? extends PgStatement> rightTableSub = EMPTY_LIST;
@@ -87,49 +172,103 @@ public class DiffTree {
                 PgTable tableLeft = (PgTable) resSub.getLeft();
                 PgTable tableRight = (PgTable) resSub.getRight();
                 
+                TreeElement tableSubLeft, tableSubRight, tableSubBoth;
+                
                 // indexes
                 if(tableLeft != null) {
                     leftTableSub = tableLeft.getIndexes();
                 }
-                if(tableRight!= null) {
+                if(tableRight != null) {
                     rightTableSub = tableRight.getIndexes();
                 }
-                for(CompareResult resTable : compareLists(leftTableSub, rightTableSub)) {
-                    elTable.addChild(new TreeElement(
-                            resTable.getStatement(), resTable.getSide()));
-                }
+                tableSubLeft = TreeElement.createContainer("INDEX", DiffSide.LEFT);
+                tableSubRight = TreeElement.createContainer("INDEX", DiffSide.RIGHT);
+                tableSubBoth = TreeElement.createContainer("INDEX", DiffSide.BOTH);
+                
+                compareLists(leftTableSub, rightTableSub, tableSubLeft,
+                        tableSubRight, tableSubBoth);
+                elTableLeft.addChildNotEmpty(tableSubLeft);
+                elTableRight.addChildNotEmpty(tableSubRight);
+                elTableBoth.addChildNotEmpty(tableSubBoth);
                 
                 // triggers
                 if(tableLeft != null) {
                     leftTableSub = tableLeft.getTriggers();
                 }
-                if(tableRight!= null) {
+                if(tableRight != null) {
                     rightTableSub = tableRight.getTriggers();
                 }
-                for(CompareResult resTable : compareLists(leftTableSub, rightTableSub)) {
-                    elTable.addChild(new TreeElement(
-                            resTable.getStatement(), resTable.getSide()));
-                }
+                tableSubLeft = TreeElement.createContainer("TRIGGER", DiffSide.LEFT);
+                tableSubRight = TreeElement.createContainer("TRIGGER", DiffSide.RIGHT);
+                tableSubBoth = TreeElement.createContainer("TRIGGER", DiffSide.BOTH);
+                
+                compareLists(leftTableSub, rightTableSub, tableSubLeft,
+                        tableSubRight, tableSubBoth);
+                elTableLeft.addChildNotEmpty(tableSubLeft);
+                elTableRight.addChildNotEmpty(tableSubRight);
+                elTableBoth.addChildNotEmpty(tableSubBoth);
                 
                 // constraints
                 if(tableLeft != null) {
                     leftTableSub = tableLeft.getConstraints();
                 }
-                if(tableRight!= null) {
+                if(tableRight != null) {
                     rightTableSub = tableRight.getConstraints();
                 }
-                for(CompareResult resTable : compareLists(leftTableSub, rightTableSub)) {
-                    elTable.addChild(new TreeElement(
-                            resTable.getStatement(), resTable.getSide()));
+                tableSubLeft = TreeElement.createContainer("CONSTRAINT", DiffSide.LEFT);
+                tableSubRight = TreeElement.createContainer("CONSTRAINT", DiffSide.RIGHT);
+                tableSubBoth = TreeElement.createContainer("CONSTRAINT", DiffSide.BOTH);
+                
+                compareLists(leftTableSub, rightTableSub, tableSubLeft,
+                        tableSubRight, tableSubBoth);
+                elTableLeft.addChildNotEmpty(tableSubLeft);
+                elTableRight.addChildNotEmpty(tableSubRight);
+                elTableBoth.addChildNotEmpty(tableSubBoth);
+                
+                switch(resSub.getSide()) {
+                case LEFT:
+                    schemaSubRight.addChildNotEmpty(elTableRight);
+                    schemaSubBoth.addChildNotEmpty(elTableBoth);
+                    break;
+                case RIGHT:
+                    schemaSubLeft.addChildNotEmpty(elTableLeft);
+                    schemaSubBoth.addChildNotEmpty(elTableBoth);
+                    break;
+                case BOTH:
+                    schemaSubLeft.addChildNotEmpty(elTableLeft);
+                    schemaSubRight.addChildNotEmpty(elTableRight);
+                    break;
                 }
             }
+            elSchemaLeft.addChildNotEmpty(schemaSubLeft);
+            elSchemaRight.addChildNotEmpty(schemaSubRight);
+            elSchemaBoth.addChildNotEmpty(schemaSubBoth);
+            
+            switch(resSchema.getSide()) {
+            case LEFT:
+                schemaContRight.addChildNotEmpty(elSchemaRight);
+                schemaContBoth.addChildNotEmpty(elSchemaBoth);
+                break;
+            case RIGHT:
+                schemaContLeft.addChildNotEmpty(elSchemaLeft);
+                schemaContBoth.addChildNotEmpty(elSchemaBoth);
+                break;
+            case BOTH:
+                schemaContLeft.addChildNotEmpty(elSchemaLeft);
+                schemaContRight.addChildNotEmpty(elSchemaRight);
+                break;
+            }
         }
+        leftTree.addChildNotEmpty(schemaContLeft);
+        rightTree.addChildNotEmpty(schemaContRight);
+        bothTree.addChildNotEmpty(schemaContBoth);
         
         return root;
     }
     
     private static List<CompareResult> compareLists(List<? extends PgStatement> left,
-            List<? extends PgStatement> right) {
+            List<? extends PgStatement> right, TreeElement leftCont, TreeElement rightCont,
+            TreeElement bothCont) {
         List<CompareResult> rv = new ArrayList<>();
         
         // add LEFT and BOTH here
@@ -143,8 +282,12 @@ public class DiffTree {
                 }
             }
             
-            if(foundRight == null || !sLeft.equals(foundRight)) {
+            if(foundRight == null) {
                 rv.add(new CompareResult(sLeft, foundRight));
+                leftCont.addChild(new TreeElement(sLeft, DiffSide.LEFT));
+            } else if(!sLeft.equals(foundRight)) {
+                rv.add(new CompareResult(sLeft, foundRight));
+                bothCont.addChild(new TreeElement(sLeft, DiffSide.BOTH));
             } else {
                 // do nothing if both statements exist and equal
             }
@@ -160,6 +303,7 @@ public class DiffTree {
             }
             if(!foundLeft) {
                 rv.add(new CompareResult(null, sRight));
+                rightCont.addChild(new TreeElement(sRight, DiffSide.RIGHT));
             }
         }
         
@@ -168,6 +312,7 @@ public class DiffTree {
 }
 
 class CompareResult {
+    
     private final PgStatement left, right;
     
     public PgStatement getLeft() {
