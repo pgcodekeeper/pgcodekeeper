@@ -758,9 +758,7 @@ class PagePartial extends WizardPage {
     }
     
     public void layout() {
-        container.getShell().setSize(
-                container.getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true));
-        container.layout(false);
+        container.layout(true);
     }
     
     @Override
@@ -769,13 +767,22 @@ class PagePartial extends WizardPage {
         container.setLayout(new GridLayout());
         
         new Label(container, SWT.NONE).setText("Source:");
+        
         lblSource = new Label(container, SWT.WRAP);
+        GridData gd = new GridData();
+        gd.widthHint = 600;
+        lblSource.setLayoutData(gd);
+        
         Label l = new Label(container, SWT.NONE);
         l.setText("Target:");
-        GridData gd = new GridData();
+        gd = new GridData();
         gd.verticalIndent = 12;
         l.setLayoutData(gd);
+        
         lblTarget = new Label(container, SWT.WRAP);
+        gd = new GridData();
+        gd.widthHint = 600;
+        lblTarget.setLayoutData(gd);
         
         Composite contButtons = new Composite(container, SWT.NONE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -897,9 +904,7 @@ class PageResult extends WizardPage {
     }
     
     public void layout() {
-        container.getShell().setSize(
-                container.getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true));
-        container.layout(false);
+        container.layout(true);
     }
     
     @Override
@@ -908,15 +913,24 @@ class PageResult extends WizardPage {
         container.setLayout(new GridLayout());
         
         new Label(container, SWT.NONE).setText("Source:");
-        lblSource = new Label(container, SWT.NONE);
-        Label l = new Label(container, SWT.WRAP);
-        l.setText("Target:");
+        
+        lblSource = new Label(container, SWT.WRAP);
         GridData gd = new GridData();
+        gd.widthHint = 600;
+        lblSource.setLayoutData(gd);
+        
+        Label l = new Label(container, SWT.NONE);
+        l.setText("Target:");
+        gd = new GridData();
         gd.verticalIndent = 12;
         l.setLayoutData(gd);
-        lblTarget = new Label(container, SWT.WRAP);
         
-        final TabFolder tabs = new TabFolder(container, SWT.BORDER);
+        lblTarget = new Label(container, SWT.WRAP);
+        gd = new GridData();
+        gd.widthHint = 600;
+        lblTarget.setLayoutData(gd);
+        
+        final TabFolder tabs = new TabFolder(container, SWT.NONE);
         gd = new GridData(GridData.FILL_BOTH);
         gd.verticalIndent = 12;
         gd.widthHint = 600;
@@ -926,6 +940,7 @@ class PageResult extends WizardPage {
         txtDirect = new Text(tabs, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
                 | SWT.READ_ONLY | SWT.MULTI);
         txtDirect.setLayoutData(new GridData(GridData.FILL_BOTH));
+        txtDirect.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         
         TabItem tabDirect = new TabItem(tabs, SWT.NONE);
         tabDirect.setText("Source -> Target");
@@ -934,6 +949,7 @@ class PageResult extends WizardPage {
         txtReverse = new Text(tabs, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
                 | SWT.READ_ONLY | SWT.MULTI);
         txtReverse.setLayoutData(new GridData(GridData.FILL_BOTH));
+        txtReverse.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         
         TabItem tabReverse = new TabItem(tabs, SWT.NONE);
         tabReverse.setText("Target -> Source");
@@ -947,7 +963,7 @@ class PageResult extends WizardPage {
         btnSave.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                FileDialog saveDialog = new FileDialog(container.getShell(), SWT.SAVE);
+                FileDialog saveDialog = new FileDialog(getShell(), SWT.SAVE);
                 saveDialog.setOverwrite(true);
                 saveDialog.setFilterExtensions(new String[] { "*.sql", "*" });
                 saveDialog.setFilterPath(proj.getProjectDir());
