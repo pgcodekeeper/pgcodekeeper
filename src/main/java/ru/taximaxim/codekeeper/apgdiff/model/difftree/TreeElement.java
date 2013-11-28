@@ -33,6 +33,8 @@ public class TreeElement {
     
     final private DbObjType type;
     
+    final private DbObjType containerType;
+    
     final private DiffSide side;
     
     private TreeElement parent;
@@ -47,6 +49,10 @@ public class TreeElement {
         return type;
     }
     
+    public DbObjType getContainerType() {
+        return containerType;
+    }
+    
     public DiffSide getSide() {
         return side;
     }
@@ -59,15 +65,18 @@ public class TreeElement {
         return parent;
     }
     
-    public TreeElement(String name, DbObjType type, DiffSide side) {
+    public TreeElement(String name, DbObjType type, DbObjType containerType,
+            DiffSide side) {
         this.name = name;
         this.type = type;
+        this.containerType = containerType;
         this.side = side;
     }
     
     public TreeElement(PgStatement statement, DiffSide side) {
         this.name = statement.getName();
         this.side = side;
+        this.containerType = null;
         
         if(statement instanceof PgSchema) {
             type = DbObjType.SCHEMA;
@@ -92,8 +101,44 @@ public class TreeElement {
         }
     }
     
-    public static TreeElement createContainer(String name, DiffSide side) {
-        return new TreeElement(name, DbObjType.CONTAINER, side);
+    public static TreeElement createContainer(DbObjType containerType, DiffSide side) {
+        String name = null;
+        switch(containerType) {
+        case CONTAINER:
+            name = "<Container>";
+            break;
+        case DATABASE:
+            name = "Databases";
+            break;
+        case EXTENSION:
+            name = "Extensions";
+            break;
+        case SCHEMA:
+            name = "Schemas";
+            break;
+        case FUNCTION:
+            name = "Functions";
+            break;
+        case SEQUENCE:
+            name = "Sequences";
+            break;
+        case VIEW:
+            name = "Views";
+            break;
+        case TABLE:
+            name = "Tables";
+            break;
+        case INDEX:
+            name = "Indexes";
+            break;
+        case TRIGGER:
+            name = "Triggers";
+            break;
+        case CONSTRAINT:
+            name = "Constraints";
+            break;
+        }
+        return new TreeElement(name, DbObjType.CONTAINER, containerType, side);
     }
     
     public boolean hasChildren() {

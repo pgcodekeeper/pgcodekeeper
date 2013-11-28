@@ -17,21 +17,25 @@ public class DiffTree {
             Collections.unmodifiableList(new ArrayList<PgStatement>());
 
     public static TreeElement create(PgDatabase left, PgDatabase right) {
-        TreeElement root = TreeElement.createContainer("<root>", DiffSide.BOTH);
+        TreeElement root = new TreeElement(
+                "<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
         
-        TreeElement db = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement db = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
         root.addChild(db);
         
-        TreeElement leftTree = TreeElement.createContainer("LEFT", DiffSide.LEFT);
-        db.addChild(leftTree);
-        TreeElement rightTree = TreeElement.createContainer("RIGHT", DiffSide.RIGHT);
-        db.addChild(rightTree);
-        TreeElement bothTree = TreeElement.createContainer("BOTH", DiffSide.BOTH);
+        TreeElement leftTree = new TreeElement(
+                "Source only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.LEFT);
+        TreeElement rightTree = new TreeElement(
+                "Target only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.RIGHT);
+        TreeElement bothTree = new TreeElement(
+                "Different", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.BOTH);
         db.addChild(bothTree);
+        db.addChild(leftTree);
+        db.addChild(rightTree);
         
-        TreeElement extContainerLeft = TreeElement.createContainer("EXTENSION", DiffSide.LEFT);
-        TreeElement extContainerRight = TreeElement.createContainer("EXTENSION", DiffSide.RIGHT);
-        TreeElement extContainerBoth = TreeElement.createContainer("EXTENSION", DiffSide.BOTH);
+        TreeElement extContainerLeft = TreeElement.createContainer(DbObjType.EXTENSION, DiffSide.LEFT);
+        TreeElement extContainerRight = TreeElement.createContainer(DbObjType.EXTENSION, DiffSide.RIGHT);
+        TreeElement extContainerBoth = TreeElement.createContainer(DbObjType.EXTENSION, DiffSide.BOTH);
         
         compareLists(left.getExtensions(), right.getExtensions(), extContainerLeft,
                 extContainerRight, extContainerBoth);
@@ -39,9 +43,9 @@ public class DiffTree {
         rightTree.addChildNotEmpty(extContainerRight);
         bothTree.addChildNotEmpty(extContainerBoth);
         
-        TreeElement schemaContLeft = TreeElement.createContainer("SCHEMA", DiffSide.LEFT);
-        TreeElement schemaContRight = TreeElement.createContainer("SCHEMA", DiffSide.RIGHT);
-        TreeElement schemaContBoth = TreeElement.createContainer("SCHEMA", DiffSide.BOTH);
+        TreeElement schemaContLeft = TreeElement.createContainer(DbObjType.SCHEMA, DiffSide.LEFT);
+        TreeElement schemaContRight = TreeElement.createContainer(DbObjType.SCHEMA, DiffSide.RIGHT);
+        TreeElement schemaContBoth = TreeElement.createContainer(DbObjType.SCHEMA, DiffSide.BOTH);
         
         for(CompareResult resSchema : compareLists(left.getSchemas(), right.getSchemas(),
                 schemaContLeft, schemaContRight, schemaContBoth)) {
@@ -86,9 +90,9 @@ public class DiffTree {
             if(schemaRight != null) {
                 rightSub = schemaRight.getFunctions();
             }
-            schemaSubLeft = TreeElement.createContainer("FUNCTION", DiffSide.LEFT);
-            schemaSubRight = TreeElement.createContainer("FUNCTION", DiffSide.RIGHT);
-            schemaSubBoth = TreeElement.createContainer("FUNCTION", DiffSide.BOTH);
+            schemaSubLeft = TreeElement.createContainer(DbObjType.FUNCTION, DiffSide.LEFT);
+            schemaSubRight = TreeElement.createContainer(DbObjType.FUNCTION, DiffSide.RIGHT);
+            schemaSubBoth = TreeElement.createContainer(DbObjType.FUNCTION, DiffSide.BOTH);
             
             compareLists(leftSub, rightSub, schemaSubLeft, schemaSubRight, schemaSubBoth);
             elSchemaLeft.addChildNotEmpty(schemaSubLeft);
@@ -102,9 +106,9 @@ public class DiffTree {
             if(schemaRight != null) {
                 rightSub = schemaRight.getSequences();
             }
-            schemaSubLeft = TreeElement.createContainer("SEQUENCE", DiffSide.LEFT);
-            schemaSubRight = TreeElement.createContainer("SEQUENCE", DiffSide.RIGHT);
-            schemaSubBoth = TreeElement.createContainer("SEQUENCE", DiffSide.BOTH);
+            schemaSubLeft = TreeElement.createContainer(DbObjType.SEQUENCE, DiffSide.LEFT);
+            schemaSubRight = TreeElement.createContainer(DbObjType.SEQUENCE, DiffSide.RIGHT);
+            schemaSubBoth = TreeElement.createContainer(DbObjType.SEQUENCE, DiffSide.BOTH);
             
             compareLists(leftSub, rightSub, schemaSubLeft, schemaSubRight, schemaSubBoth);
             elSchemaLeft.addChildNotEmpty(schemaSubLeft);
@@ -118,9 +122,9 @@ public class DiffTree {
             if(schemaRight != null) {
                 rightSub = schemaRight.getViews();
             }
-            schemaSubLeft = TreeElement.createContainer("VIEW", DiffSide.LEFT);
-            schemaSubRight = TreeElement.createContainer("VIEW", DiffSide.RIGHT);
-            schemaSubBoth = TreeElement.createContainer("VIEW", DiffSide.BOTH);
+            schemaSubLeft = TreeElement.createContainer(DbObjType.VIEW, DiffSide.LEFT);
+            schemaSubRight = TreeElement.createContainer(DbObjType.VIEW, DiffSide.RIGHT);
+            schemaSubBoth = TreeElement.createContainer(DbObjType.VIEW, DiffSide.BOTH);
             
             compareLists(leftSub, rightSub, schemaSubLeft, schemaSubRight, schemaSubBoth);
             elSchemaLeft.addChildNotEmpty(schemaSubLeft);
@@ -134,9 +138,9 @@ public class DiffTree {
             if(schemaRight != null) {
                 rightSub = schemaRight.getTables();
             }
-            schemaSubLeft = TreeElement.createContainer("TABLE", DiffSide.LEFT);
-            schemaSubRight = TreeElement.createContainer("TABLE", DiffSide.RIGHT);
-            schemaSubBoth = TreeElement.createContainer("TABLE", DiffSide.BOTH);
+            schemaSubLeft = TreeElement.createContainer(DbObjType.TABLE, DiffSide.LEFT);
+            schemaSubRight = TreeElement.createContainer(DbObjType.TABLE, DiffSide.RIGHT);
+            schemaSubBoth = TreeElement.createContainer(DbObjType.TABLE, DiffSide.BOTH);
             
             for(CompareResult resSub : compareLists(leftSub, rightSub,
                     schemaSubLeft, schemaSubRight, schemaSubBoth)) {
@@ -181,9 +185,9 @@ public class DiffTree {
                 if(tableRight != null) {
                     rightTableSub = tableRight.getIndexes();
                 }
-                tableSubLeft = TreeElement.createContainer("INDEX", DiffSide.LEFT);
-                tableSubRight = TreeElement.createContainer("INDEX", DiffSide.RIGHT);
-                tableSubBoth = TreeElement.createContainer("INDEX", DiffSide.BOTH);
+                tableSubLeft = TreeElement.createContainer(DbObjType.INDEX, DiffSide.LEFT);
+                tableSubRight = TreeElement.createContainer(DbObjType.INDEX, DiffSide.RIGHT);
+                tableSubBoth = TreeElement.createContainer(DbObjType.INDEX, DiffSide.BOTH);
                 
                 compareLists(leftTableSub, rightTableSub, tableSubLeft,
                         tableSubRight, tableSubBoth);
@@ -198,9 +202,9 @@ public class DiffTree {
                 if(tableRight != null) {
                     rightTableSub = tableRight.getTriggers();
                 }
-                tableSubLeft = TreeElement.createContainer("TRIGGER", DiffSide.LEFT);
-                tableSubRight = TreeElement.createContainer("TRIGGER", DiffSide.RIGHT);
-                tableSubBoth = TreeElement.createContainer("TRIGGER", DiffSide.BOTH);
+                tableSubLeft = TreeElement.createContainer(DbObjType.TRIGGER, DiffSide.LEFT);
+                tableSubRight = TreeElement.createContainer(DbObjType.TRIGGER, DiffSide.RIGHT);
+                tableSubBoth = TreeElement.createContainer(DbObjType.TRIGGER, DiffSide.BOTH);
                 
                 compareLists(leftTableSub, rightTableSub, tableSubLeft,
                         tableSubRight, tableSubBoth);
@@ -215,9 +219,9 @@ public class DiffTree {
                 if(tableRight != null) {
                     rightTableSub = tableRight.getConstraints();
                 }
-                tableSubLeft = TreeElement.createContainer("CONSTRAINT", DiffSide.LEFT);
-                tableSubRight = TreeElement.createContainer("CONSTRAINT", DiffSide.RIGHT);
-                tableSubBoth = TreeElement.createContainer("CONSTRAINT", DiffSide.BOTH);
+                tableSubLeft = TreeElement.createContainer(DbObjType.CONSTRAINT, DiffSide.LEFT);
+                tableSubRight = TreeElement.createContainer(DbObjType.CONSTRAINT, DiffSide.RIGHT);
+                tableSubBoth = TreeElement.createContainer(DbObjType.CONSTRAINT, DiffSide.BOTH);
                 
                 compareLists(leftTableSub, rightTableSub, tableSubLeft,
                         tableSubRight, tableSubBoth);
@@ -266,6 +270,9 @@ public class DiffTree {
         return root;
     }
     
+    /**
+     * Compare lists and put elements onto appropriate sides.
+     */
     private static List<CompareResult> compareLists(List<? extends PgStatement> left,
             List<? extends PgStatement> right, TreeElement leftCont, TreeElement rightCont,
             TreeElement bothCont) {
