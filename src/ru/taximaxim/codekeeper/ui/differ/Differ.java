@@ -16,47 +16,61 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class Differ implements IRunnableWithProgress {
     
-    final private DbSource db1, db2;
+    final private DbSource dbSource, dbTarget;
 
     private boolean finished;
     
-    private String diff;
+    private String diffDirect, diffReverse;
     
-    public Differ(DbSource db1, DbSource db2, boolean reverse) {
-        this.db1 = reverse? db2 : db1;
-        this.db2 = reverse? db1 : db2;
+    public Differ(DbSource dbSource, DbSource dbTarget) {
+        this.dbSource = dbSource;
+        this.dbTarget = dbTarget;
     }
     
-    public String getDiff() {
+    public String getDiffDirect() {
+        checkFinished();
+        return diffDirect;
+    }
+    
+    public String getDiffReverse() {
+        checkFinished();
+        return diffReverse;
+    }
+    
+    private void checkFinished() {
         if(!finished) {
             throw new IllegalStateException("Runnable has not yet finished!"
                     + " diff is undefined!");
         }
-        return diff;
     }
     
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException {
         SubMonitor pm = SubMonitor.convert(monitor, "Calculating diff", 100); // 0
         
-        PgDatabase db1, db2;
-        db1 = db2 = null;
+        PgDatabase dbSource, dbTarget;
+        dbSource = dbTarget = null;
         try {
-            db1 = this.db1.get(pm.newChild(33)); // 33
-            db2 = this.db2.get(pm.newChild(33)); // 66
+            dbSource = this.dbSource.get(pm.newChild(25)); // 25
+            dbTarget = this.dbTarget.get(pm.newChild(25)); // 50
         } catch(IOException ex) {
             throw new InvocationTargetException(ex);
         }
         
-        pm.newChild(34).subTask("Comparing schemas"); // 100
+        pm.newChild(25).subTask("Direct diff"); // 75
         PgDiffArguments args = new PgDiffArguments();
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
         PrintWriter writer = new UnixPrintWriter(diffOut, true);
         
-        PgDiff.diffDatabaseSchemas(writer, args, db1, db2);
-        
+        PgDiff.diffDatabaseSchemas(writer, args, dbSource, dbTarget);
         writer.flush();
-        diff = diffOut.toString().trim();
+        diffDirect = diffOut.toString().trim();
+        
+        pm.newChild(25).subTask("Reverse diff"); // 100
+        diffOut.reset();
+        PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource);
+        writer.flush();
+        diffReverse = diffOut.toString().trim();
         
         monitor.done();
         finished = true;

@@ -88,7 +88,7 @@ public class ProjSyncSrc {
         DbSource db1 = DbSource.fromProject(proj);
         
         ProgressMonitorDialog dialog = new ProgressMonitorDialog(shell);
-        Differ differ = new Differ(db1, db2, false);
+        Differ differ = new Differ(db1, db2);
         
         try {
             dialog.run(true, false, differ);
@@ -98,7 +98,7 @@ public class ProjSyncSrc {
                     "Diff thread cancelled. Shouldn't happen!", ex);
         }
         
-        String diff = differ.getDiff();
+        String diff = differ.getDiffDirect();
         if(diff.isEmpty()) {
             return true;
         }

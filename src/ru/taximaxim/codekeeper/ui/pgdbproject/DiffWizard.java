@@ -1,7 +1,12 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.Set;
@@ -42,10 +47,13 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 
 import com.safi.jface.CheckboxTreeSelectionHelper;
 
+import cz.startnet.utils.pgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -59,26 +67,11 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 
     private PageDiff pageDiff;
     private PagePartial pagePartial;
+    private PageResult pageResult;
     
     private final PgDbProject proj;
     
     private final IPreferenceStore mainPrefs;
-    
-    private DbSource db1, db2;
-    
-    private String diffResult;
-    
-    public DbSource getDb1() {
-        return db1;
-    }
-    
-    public DbSource getDb2() {
-        return db2;
-    }
-    
-    public String getDiffResult() {
-        return diffResult;
-    }
     
     public DiffWizard(PgDbProject proj, IPreferenceStore mainPrefs) {
         setWindowTitle("Diff");
@@ -92,22 +85,22 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     public void addPages() {
         pageDiff = new PageDiff("Diff parameters", mainPrefs, proj);
         pagePartial = new PagePartial("Diff tree");
+        pageResult = new PageResult("Diff result", proj);
         
         addPage(pageDiff);
         addPage(pagePartial);
+        addPage(pageResult);
     }
     
-    // objects from handlePageChanging() needed in perfromFinish()
-    DbSource dbFrom, dbTo;
+    DbSource dbSource, dbTarget;
     
     @Override
     public void handlePageChanging(PageChangingEvent e) {
-        if(e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
-            TreeDiffer treediffer = new TreeDiffer(
-                    DbSource.fromProject(proj), pageDiff.getTargetDbSource(), 
-                    !pageDiff.isDirectionFromThis());
-            
-            try {
+        try {
+            if(e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
+                TreeDiffer treediffer = new TreeDiffer(
+                        DbSource.fromProject(proj), pageDiff.getTargetDbSource());
+                
                 try {
                     getContainer().run(true, false, treediffer);
                 } catch(InvocationTargetException ex) {
@@ -117,49 +110,41 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     throw new IllegalStateException(
                             "Differ thread cancelled. Shouldn't happen!", ex);
                 }
-            } catch(Exception ex) {
-                e.doit = false;
-                throw ex;
+                
+                dbSource = treediffer.getDbSource();
+                dbTarget = treediffer.getDbTarget();
+                
+                pagePartial.setData(dbSource.getOrigin(), dbTarget.getOrigin(),
+                        treediffer.getDiffTree());
+                pagePartial.layout();
+            } else if(e.getCurrentPage() == pagePartial && e.getTargetPage() == pageResult) {
+                TreeElement filtered = filterDiffTree(pagePartial.getDiffTree(),
+                        (TreeElement) pagePartial.getDiffTree().getInput());
+                
+                DbSource dbSource = DbSource.fromFilter(
+                        this.dbSource, filtered, DiffSide.LEFT);
+                DbSource dbTarget = DbSource.fromFilter(
+                        this.dbTarget, filtered, DiffSide.RIGHT);
+                
+                Differ differ = new Differ(dbSource, dbTarget);
+                try {
+                    getContainer().run(true, false, differ);
+                } catch(InvocationTargetException ex) {
+                    throw new IllegalStateException("Error in differ thread", ex);
+                } catch(InterruptedException ex) {
+                    // assume run() was called as non cancelable
+                    throw new IllegalStateException(
+                            "Differ thread cancelled. Shouldn't happen!", ex);
+                }
+                
+                pageResult.setData(dbSource.getOrigin(), dbTarget.getOrigin(),
+                        differ.getDiffDirect(), differ.getDiffReverse());
+                pageResult.layout();
             }
-            
-            dbFrom = treediffer.getDbFrom();
-            dbTo = treediffer.getDbTo();
-            
-            pagePartial.setLabels(dbFrom.getOrigin(), dbTo.getOrigin());
-            pagePartial.setDiffTreeInput(treediffer.getDiffTree());
-            pagePartial.layout();
+        } catch(Exception ex) {
+            e.doit = false;
+            throw ex;
         }
-    }
-    
-    @Override
-    public boolean canFinish() {
-        if(getContainer().getCurrentPage() != pagePartial) {
-            return false;
-        }
-        return super.canFinish();
-    }
-    
-    @Override
-    public boolean performFinish() {
-        TreeElement filtered = filterDiffTree(pagePartial.getDiffTree(),
-                (TreeElement) pagePartial.getDiffTree().getInput());
-        
-        db1 = DbSource.fromFilter(dbFrom, filtered, DiffSide.LEFT);
-        db2 = DbSource.fromFilter(dbTo, filtered, DiffSide.RIGHT);
-        
-        Differ differ = new Differ(db1, db2, false);
-        try {
-            getContainer().run(true, false, differ);
-        } catch(InvocationTargetException ex) {
-            throw new IllegalStateException("Error in differ thread", ex);
-        } catch(InterruptedException ex) {
-            // assume run() was called as non cancelable
-            throw new IllegalStateException(
-                    "Differ thread cancelled. Shouldn't happen!", ex);
-        }
-        diffResult = differ.getDiff();
-        
-        return true;
     }
     
     // recursively copy only selected tree elements into a new tree
@@ -173,7 +158,8 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         }
         
         TreeElement copy = new TreeElement(
-                diffTree.getName(), diffTree.getType(), diffTree.getSide());
+                diffTree.getName(), diffTree.getType(),
+                diffTree.getContainerType(), diffTree.getSide());
         
         for(TreeElement sub : diffTree.getChildren()) {
             TreeElement subCopy = filterDiffTree(viewer, sub);
@@ -182,6 +168,19 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             }
         }
         return copy;
+    }
+    
+    @Override
+    public boolean canFinish() {
+        if(getContainer().getCurrentPage() != pageResult) {
+            return false;
+        }
+        return super.canFinish();
+    }
+    
+    @Override
+    public boolean performFinish() {
+        return true;
     }
 }
 
@@ -211,8 +210,6 @@ class PageDiff extends WizardPage implements Listener {
     private CLabel lblWarnDbPass, lblWarnSvnPass;
     
     private Combo cmbEncoding;
-    
-    private Button radioFromThis, radioToThis;
     
     public DiffTargetType getTargetType() {
         if(radioDb.getSelection()) {
@@ -285,10 +282,6 @@ class PageDiff extends WizardPage implements Listener {
     
     public String getTargetEncoding() {
         return cmbEncoding.getText();
-    }
-    
-    public boolean isDirectionFromThis() {
-        return radioFromThis.getSelection();
     }
     
     public DbSource getTargetDbSource() {
@@ -662,20 +655,6 @@ class PageDiff extends WizardPage implements Listener {
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
         cmbEncoding.select(cmbEncoding.indexOf("UTF-8"));
         
-        Group grpDirection = new Group(container, SWT.NONE);
-        grpDirection.setText("Diff direction");
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.verticalIndent = 12;
-        grpDirection.setLayoutData(gd);
-        grpDirection.setLayout(new GridLayout());
-        
-        radioFromThis = new Button(grpDirection, SWT.RADIO);
-        radioFromThis.setText("This project -> Target");
-        radioFromThis.setSelection(true);
-        
-        radioToThis = new Button(grpDirection, SWT.RADIO);
-        radioToThis.setText("Target -> This project");
-        
         setControl(container);
         
         ((WizardDialog) getContainer()).addPageChangingListener(
@@ -760,21 +739,18 @@ class PagePartial extends WizardPage {
     
     private Composite container;
     
-    private Label lblFrom, lblTo;
+    private Label lblSource, lblTarget;
     
     private CheckboxTreeViewer diffTree;
     
-    public void setLabels(String from, String to) {
-        lblFrom.setText(from);
-        lblTo.setText(to);
+    public void setData(String source, String target, TreeElement root) {
+        lblSource.setText(source);
+        lblTarget.setText(target);
+        diffTree.setInput(root);
     }
     
     public CheckboxTreeViewer getDiffTree() {
         return diffTree;
-    }
-    
-    public void setDiffTreeInput(TreeElement root) {
-        diffTree.setInput(root);
     }
     
     public PagePartial(String pageName) {
@@ -792,14 +768,18 @@ class PagePartial extends WizardPage {
         container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout());
         
-        new Label(container, SWT.NONE).setText("From (LEFT):");
-        lblFrom = new Label(container, SWT.WRAP);
-        new Label(container, SWT.NONE).setText("To (RIGHT):");
-        lblTo = new Label(container, SWT.WRAP);
+        new Label(container, SWT.NONE).setText("Source:");
+        lblSource = new Label(container, SWT.WRAP);
+        Label l = new Label(container, SWT.NONE);
+        l.setText("Target:");
+        GridData gd = new GridData();
+        gd.verticalIndent = 12;
+        l.setLayoutData(gd);
+        lblTarget = new Label(container, SWT.WRAP);
         
         final Button btnSelectAll = new Button(container, SWT.CHECK);
         btnSelectAll.setText("Select all");
-        GridData gd = new GridData();
+        gd = new GridData();
         gd.verticalIndent = 12;
         btnSelectAll.setLayoutData(gd);
         btnSelectAll.addSelectionListener(new SelectionAdapter() {
@@ -865,6 +845,109 @@ class PagePartial extends WizardPage {
                 TreeViewer viewer = (TreeViewer) event.getViewer();
                 viewer.setExpandedState(path, !viewer.getExpandedState(path));
                 viewer.refresh();
+            }
+        });
+        
+        setControl(container);
+    }
+    
+    @Override
+    public IWizardPage getPreviousPage() {
+        return null;
+    }
+}
+class PageResult extends WizardPage {
+    
+    final private PgDbProject proj;
+    
+    private Composite container;
+    
+    private Label lblSource, lblTarget;
+    
+    private Text txtDirect, txtReverse;
+    
+    public void setData(String source, String target, String direct, String reverse) {
+        lblSource.setText(source);
+        lblTarget.setText(target);
+        txtDirect.setText(direct);
+        txtReverse.setText(reverse);
+    }
+    
+    public PageResult(String pageName, PgDbProject proj) {
+        super(pageName, pageName, null);
+        
+        this.proj = proj;
+    }
+    
+    public void layout() {
+        container.getShell().setSize(
+                container.getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true));
+        container.layout(false);
+    }
+    
+    @Override
+    public void createControl(Composite parent) {
+        container = new Composite(parent, SWT.NONE);
+        container.setLayout(new GridLayout());
+        
+        new Label(container, SWT.NONE).setText("Source:");
+        lblSource = new Label(container, SWT.NONE);
+        Label l = new Label(container, SWT.WRAP);
+        l.setText("Target:");
+        GridData gd = new GridData();
+        gd.verticalIndent = 12;
+        l.setLayoutData(gd);
+        lblTarget = new Label(container, SWT.WRAP);
+        
+        final TabFolder tabs = new TabFolder(container, SWT.BORDER);
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.verticalIndent = 12;
+        gd.widthHint = 600;
+        tabs.setLayoutData(gd);
+        tabs.setLayout(new GridLayout());
+        
+        txtDirect = new Text(tabs, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
+                | SWT.READ_ONLY | SWT.MULTI);
+        txtDirect.setLayoutData(new GridData(GridData.FILL_BOTH));
+        
+        TabItem tabDirect = new TabItem(tabs, SWT.NONE);
+        tabDirect.setText("Source -> Target");
+        tabDirect.setControl(txtDirect);
+        
+        txtReverse = new Text(tabs, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
+                | SWT.READ_ONLY | SWT.MULTI);
+        txtReverse.setLayoutData(new GridData(GridData.FILL_BOTH));
+        
+        TabItem tabReverse = new TabItem(tabs, SWT.NONE);
+        tabReverse.setText("Target -> Source");
+        tabReverse.setControl(txtReverse);
+        
+        Button btnSave = new Button(container, SWT.PUSH);
+        btnSave.setText("Save...");
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        gd.verticalIndent = 12;
+        btnSave.setLayoutData(gd);
+        btnSave.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                FileDialog saveDialog = new FileDialog(container.getShell(), SWT.SAVE);
+                saveDialog.setOverwrite(true);
+                saveDialog.setFilterExtensions(new String[] { "*.sql", "*" });
+                saveDialog.setFilterPath(proj.getProjectDir());
+                
+                String saveTo = saveDialog.open();
+                if(saveTo != null) {
+                    try(final PrintWriter encodedWriter = new UnixPrintWriter(
+                            new OutputStreamWriter(
+                                new FileOutputStream(saveTo),
+                                proj.getString(UIConsts.PROJ_PREF_ENCODING)))) {
+                        Text txtDiff = (Text) tabs.getSelection()[0].getControl();
+                        encodedWriter.println(txtDiff.getText());
+                    } catch(FileNotFoundException | UnsupportedEncodingException ex) {
+                        throw new IllegalStateException(
+                                "Unexpected error while saving diff!", ex);
+                    }
+                }
             }
         });
         
