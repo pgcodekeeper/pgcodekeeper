@@ -777,11 +777,17 @@ class PagePartial extends WizardPage {
         l.setLayoutData(gd);
         lblTarget = new Label(container, SWT.WRAP);
         
-        final Button btnSelectAll = new Button(container, SWT.CHECK);
-        btnSelectAll.setText("Select all");
-        gd = new GridData();
+        Composite contButtons = new Composite(container, SWT.NONE);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
-        btnSelectAll.setLayoutData(gd);
+        contButtons.setLayoutData(gd);
+        GridLayout contButtonsLayout = new GridLayout(2, false);
+        contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
+        contButtons.setLayout(contButtonsLayout);
+        
+        final Button btnSelectAll = new Button(contButtons, SWT.CHECK);
+        btnSelectAll.setText("Select all");
+        btnSelectAll.setLayoutData(new GridData(SWT.LEFT, SWT.DEFAULT, false, false));
         btnSelectAll.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -790,6 +796,16 @@ class PagePartial extends WizardPage {
                 for(TreeElement sub : root.getChildren()) {
                     diffTree.setSubtreeChecked(sub, checked);
                 }
+            }
+        });
+        
+        final Button btnDebugView = new Button(contButtons, SWT.CHECK);
+        btnDebugView.setText("Debug view");
+        btnDebugView.setLayoutData(new GridData(SWT.END, SWT.DEFAULT, true, false));
+        btnDebugView.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                diffTree.refresh();
             }
         });
         
@@ -831,8 +847,9 @@ class PagePartial extends WizardPage {
             public String getText(Object element) {
                 TreeElement el = (TreeElement) element;
                 
-                return String.format("%s:%s:%s",
-                        el.getType(), el.getName(), el.getSide());
+                return btnDebugView.getSelection()?
+                        String.format("%s:%s:%s", el.getType(), el.getName(), el.getSide())
+                        : el.getName();
             }
         });
         CheckboxTreeSelectionHelper.attach(
