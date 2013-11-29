@@ -751,6 +751,8 @@ class PagePartial extends WizardPage {
     
     private CheckboxTreeViewer diffTree;
     
+    private Button btnDebugView;
+    
     public void setData(String source, String target, TreeElement root) {
         lblSource.setText(source);
         lblTarget.setText(target);
@@ -792,40 +794,10 @@ class PagePartial extends WizardPage {
         gd.widthHint = 600;
         lblTarget.setLayoutData(gd);
         
-        Composite contButtons = new Composite(container, SWT.NONE);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.verticalIndent = 12;
-        contButtons.setLayoutData(gd);
-        GridLayout contButtonsLayout = new GridLayout(2, false);
-        contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
-        contButtons.setLayout(contButtonsLayout);
-        
-        final Button btnSelectAll = new Button(contButtons, SWT.CHECK);
-        btnSelectAll.setText("Select all");
-        btnSelectAll.setLayoutData(new GridData(SWT.LEFT, SWT.DEFAULT, false, false));
-        btnSelectAll.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                TreeElement root = (TreeElement) diffTree.getInput();
-                boolean checked = btnSelectAll.getSelection();
-                for(TreeElement sub : root.getChildren()) {
-                    diffTree.setSubtreeChecked(sub, checked);
-                }
-            }
-        });
-        
-        final Button btnDebugView = new Button(contButtons, SWT.CHECK);
-        btnDebugView.setText("Debug view");
-        btnDebugView.setLayoutData(new GridData(SWT.END, SWT.DEFAULT, true, false));
-        btnDebugView.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                diffTree.refresh();
-            }
-        });
-        
         diffTree = new CheckboxTreeViewer(container);
-        diffTree.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.verticalIndent = 12;
+        diffTree.getTree().setLayoutData(gd);
         
         diffTree.setContentProvider(new ITreeContentProvider() {
             
@@ -935,6 +907,65 @@ class PagePartial extends WizardPage {
                 TreeViewer viewer = (TreeViewer) event.getViewer();
                 viewer.setExpandedState(path, !viewer.getExpandedState(path));
                 viewer.refresh();
+            }
+        });
+        
+        Composite contButtons = new Composite(container, SWT.NONE);
+        contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridLayout contButtonsLayout = new GridLayout(5, false);
+        contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
+        contButtons.setLayout(contButtonsLayout);
+        
+        Button btnSelectAll = new Button(contButtons, SWT.PUSH);
+        btnSelectAll.setText("Select All");
+        btnSelectAll.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                TreeElement root = (TreeElement) diffTree.getInput();
+                for(TreeElement sub : root.getChildren()) {
+                    diffTree.setSubtreeChecked(sub, true);
+                }
+            }
+        });
+        
+        Button btnSelectNone = new Button(contButtons, SWT.PUSH);
+        btnSelectNone.setText("Select None");
+        btnSelectNone.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                TreeElement root = (TreeElement) diffTree.getInput();
+                for(TreeElement sub : root.getChildren()) {
+                    diffTree.setSubtreeChecked(sub, false);
+                }
+            }
+        });
+        
+        Button btnExpandAll = new Button(contButtons, SWT.PUSH);
+        btnExpandAll.setText("Expand All");
+        btnExpandAll.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                diffTree.expandAll();
+            }
+        });
+        
+        Button btnCollapseAll = new Button(contButtons, SWT.PUSH);
+        btnCollapseAll.setText("Collapse All");
+        btnCollapseAll.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                diffTree.collapseAll();
+            }
+        });
+        
+        btnDebugView = new Button(contButtons, SWT.CHECK);
+        btnDebugView.setText("Debug view");
+        btnDebugView.setLayoutData(new GridData(
+                GridData.HORIZONTAL_ALIGN_END | GridData.FILL_HORIZONTAL));
+        btnDebugView.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                diffTree.refresh();
             }
         });
         
