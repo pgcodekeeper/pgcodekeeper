@@ -10,7 +10,9 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jface.dialogs.IPageChangingListener;
@@ -39,6 +41,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -856,10 +859,34 @@ class PagePartial extends WizardPage {
         });
         diffTree.setLabelProvider(new StyledCellLabelProvider() {
             
+            private final Map<DbObjType, Image> mapObjIcons =
+                    new HashMap<>(DbObjType.values().length);
+            private final Map<DbObjType, Image> mapContIcons = 
+                    new HashMap<>(DbObjType.values().length);
+            
+            {
+                for(DbObjType objType : DbObjType.values()) {
+                    ImageDescriptor iObj = ImageDescriptor.createFromURL(
+                            Activator.getContext().getBundle().getResource(
+                                    UIConsts.FILENAME_ICONPGADMIN
+                                    + objType.toString().toLowerCase()
+                                    + ".png"));
+                    ImageDescriptor iCont = ImageDescriptor.createFromURL(
+                            Activator.getContext().getBundle().getResource(
+                                    UIConsts.FILENAME_ICONPGADMIN
+                                    + objType.toString().toLowerCase()
+                                    + "s.png"));
+                    
+                    mapObjIcons.put(objType, iObj.createImage());
+                    mapContIcons.put(objType, iCont.createImage());
+                }
+            }
+            
             @Override
             public void update(ViewerCell cell) {
                 TreeElement el = (TreeElement) cell.getElement();
                 List<StyleRange> styles = new ArrayList<>();
+                Image icon = null;
                 
                 if(btnDebugView.getSelection()) {
                     cell.setText(String.format("%s:%s:%s",
@@ -883,11 +910,17 @@ class PagePartial extends WizardPage {
                         styleCount.length = label.length() - el.getName().length();
                         
                         styles.add(styleCount);
+                        
+                        icon = mapContIcons.get(el.getContainerType());
+                    } else {
+                        icon = mapObjIcons.get(el.getType());
                     }
                     
                     cell.setText(label.toString());
                 }
+                
                 cell.setStyleRanges(styles.toArray(new StyleRange[styles.size()]));
+                cell.setImage(icon);
                 
                 super.update(cell);
             }

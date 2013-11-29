@@ -36,6 +36,7 @@ public interface UIConsts {
 	String FILENAME_PROJ_PREF_STORE = "pgcodekeeper.project";
 	String FILENAME_PROJ_SCHEMA_DIR = "svn";
 	
+	String FILENAME_ICONPGADMIN = "/icons/pgadmin/";
 	String FILENAME_ICONWARNING = "/icons/warning.gif";
 	String FILENAME_ICONDIR = "/icons/exportdir_wiz.gif";
 	String FILENAME_ICONFILE = "/icons/file_obj.gif";
