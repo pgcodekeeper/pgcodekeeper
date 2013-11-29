@@ -769,7 +769,7 @@ class PagePartial extends WizardPage {
         new Label(container, SWT.NONE).setText("Source:");
         
         lblSource = new Label(container, SWT.WRAP);
-        GridData gd = new GridData();
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 600;
         lblSource.setLayoutData(gd);
         
@@ -780,7 +780,7 @@ class PagePartial extends WizardPage {
         l.setLayoutData(gd);
         
         lblTarget = new Label(container, SWT.WRAP);
-        gd = new GridData();
+        gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 600;
         lblTarget.setLayoutData(gd);
         
@@ -915,7 +915,7 @@ class PageResult extends WizardPage {
         new Label(container, SWT.NONE).setText("Source:");
         
         lblSource = new Label(container, SWT.WRAP);
-        GridData gd = new GridData();
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 600;
         lblSource.setLayoutData(gd);
         
@@ -926,7 +926,7 @@ class PageResult extends WizardPage {
         l.setLayoutData(gd);
         
         lblTarget = new Label(container, SWT.WRAP);
-        gd = new GridData();
+        gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 600;
         lblTarget.setLayoutData(gd);
         
