@@ -9,6 +9,8 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jface.dialogs.IPageChangingListener;
@@ -19,22 +21,25 @@ import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -849,14 +854,42 @@ class PagePartial extends WizardPage {
                 return getElements(parentElement);
             }
         });
-        diffTree.setLabelProvider(new LabelProvider() {
+        diffTree.setLabelProvider(new StyledCellLabelProvider() {
+            
             @Override
-            public String getText(Object element) {
-                TreeElement el = (TreeElement) element;
+            public void update(ViewerCell cell) {
+                TreeElement el = (TreeElement) cell.getElement();
+                List<StyleRange> styles = new ArrayList<>();
                 
-                return btnDebugView.getSelection()?
-                        String.format("%s:%s:%s", el.getType(), el.getName(), el.getSide())
-                        : el.getName();
+                if(btnDebugView.getSelection()) {
+                    cell.setText(String.format("%s:%s:%s",
+                            el.getType(), el.getName(), el.getSide()));
+                } else {
+                    StringBuilder label = new StringBuilder(el.getName());
+                    
+                    if(el.getType() == DbObjType.CONTAINER) {
+                        label.append(" (")
+                            .append(el.countChildren())
+                            .append(") [")
+                            .append(el.countDescendants())
+                            .append(']');
+                        
+                        TextStyle styleGray = new TextStyle();
+                        styleGray.foreground = getShell().getDisplay()
+                                .getSystemColor(SWT.COLOR_GRAY);
+                        
+                        StyleRange styleCount = new StyleRange(styleGray);
+                        styleCount.start = el.getName().length();
+                        styleCount.length = label.length() - el.getName().length();
+                        
+                        styles.add(styleCount);
+                    }
+                    
+                    cell.setText(label.toString());
+                }
+                cell.setStyleRanges(styles.toArray(new StyleRange[styles.size()]));
+                
+                super.update(cell);
             }
         });
         CheckboxTreeSelectionHelper.attach(
