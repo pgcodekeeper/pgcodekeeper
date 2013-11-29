@@ -192,4 +192,8 @@ public class TreeElement {
         
         return descendants;
     }
+    
+    public int countChildren() {
+        return children.size();
+    }
 }
