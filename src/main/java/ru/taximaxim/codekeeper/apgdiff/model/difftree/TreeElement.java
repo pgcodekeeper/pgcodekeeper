@@ -180,4 +180,16 @@ public class TreeElement {
     public TreeElement getChild(int index) {
         return children.get(index);
     }
+    
+    public int countDescendants() {
+        int descendants = 0;
+        for(TreeElement sub : children) {
+            if(sub.getType() != DbObjType.CONTAINER) {
+                descendants++;
+            }
+            descendants += sub.countDescendants();
+        }
+        
+        return descendants;
+    }
 }
