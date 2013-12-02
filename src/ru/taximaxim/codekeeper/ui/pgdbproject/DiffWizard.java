@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -59,13 +62,12 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 
-import com.safi.jface.CheckboxTreeSelectionHelper;
-
 import cz.startnet.utils.pgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.CheckedTreeViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
@@ -794,7 +796,7 @@ class PagePartial extends WizardPage {
         gd.widthHint = 600;
         lblTarget.setLayoutData(gd);
         
-        diffTree = new CheckboxTreeViewer(container);
+        diffTree = new CheckedTreeViewer(container);
         gd = new GridData(GridData.FILL_BOTH);
         gd.verticalIndent = 12;
         diffTree.getTree().setLayoutData(gd);
@@ -897,8 +899,7 @@ class PagePartial extends WizardPage {
                 super.update(cell);
             }
         });
-        CheckboxTreeSelectionHelper.attach(
-                diffTree, (ITreeContentProvider) diffTree.getContentProvider());
+        
         diffTree.addDoubleClickListener(new IDoubleClickListener() {
             
             @Override
@@ -909,6 +910,44 @@ class PagePartial extends WizardPage {
                 viewer.refresh();
             }
         });
+        
+        MenuManager menuMgr = new MenuManager();
+        menuMgr.add(new Action("Select Subtree") {
+            @Override
+            public void run() {
+                TreeElement el = 
+                        (TreeElement) ((TreeSelection) diffTree.getSelection())
+                            .getFirstElement();
+                diffTree.setSubtreeChecked(el, true);
+            }
+        });
+        menuMgr.add(new Action("Deselect Subtree") {
+            @Override
+            public void run() {
+                TreeElement el = 
+                        (TreeElement) ((TreeSelection) diffTree.getSelection())
+                            .getFirstElement();
+                diffTree.setSubtreeChecked(el, false);
+            }
+        });
+        menuMgr.add(new Separator());
+        menuMgr.add(new Action("Expand Subtree") {
+            @Override
+            public void run() {
+                TreePath path = ((TreeSelection) diffTree.getSelection()).getPaths()[0];
+                diffTree.expandToLevel(path, TreeViewer.ALL_LEVELS);
+            }
+        });
+        menuMgr.add(new Action("Collapse Subtree") {
+            @Override
+            public void run() {
+                TreePath path = ((TreeSelection) diffTree.getSelection()).getPaths()[0];
+                diffTree.collapseToLevel(path, TreeViewer.ALL_LEVELS);
+            }
+        });
+        
+        diffTree.getControl().setMenu(
+                menuMgr.createContextMenu(diffTree.getControl()));
         
         Composite contButtons = new Composite(container, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

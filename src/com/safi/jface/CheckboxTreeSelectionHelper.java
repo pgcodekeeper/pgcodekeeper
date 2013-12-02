@@ -31,6 +31,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
  *  myCheckboxTreeViewer.setInput(myInput);
  * </code>
  */
+@Deprecated
 public class CheckboxTreeSelectionHelper {
 
 	/** The viewer. */
@@ -61,19 +62,27 @@ public class CheckboxTreeSelectionHelper {
 
 		viewer.addCheckStateListener(new ICheckStateListener() {
 			public void checkStateChanged(final CheckStateChangedEvent event) {
-
-				Object node = event.getElement();
-				if (viewer.getGrayed(node))
-					viewer.setGrayChecked(node, false);
-				
-				List<Object> checkedElements = getCheckedElements();
-				updateTree(node, checkedElements, event.getChecked());
+			    handleCheckEvent(event.getElement(), event.getChecked());
 			}
 		});
 
 		if (viewer.getContentProvider() != contentProvider)
 			viewer.setContentProvider(contentProvider);
 
+	}
+	
+	/**
+	 * For programmatical access to check event logic.
+	 * 
+	 * @param node
+	 * @param checked
+	 */
+	public void handleCheckEvent(Object node, boolean checked) {
+        if (viewer.getGrayed(node))
+            viewer.setGrayChecked(node, false);
+        
+        List<Object> checkedElements = getCheckedElements();
+        updateTree(node, checkedElements, checked);
 	}
 
 	/**
