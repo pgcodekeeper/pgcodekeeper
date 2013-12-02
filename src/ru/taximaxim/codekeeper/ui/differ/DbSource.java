@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import org.eclipse.core.runtime.SubMonitor;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -275,6 +275,6 @@ class DbSourceFilter extends DbSource {
             db = src.get(monitor);
         }
         
-        return PgDbFilter.apply(db, filter, side);
+        return new PgDbFilter2(db, filter, side).apply();
     }
 }

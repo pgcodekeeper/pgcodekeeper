@@ -1,11 +1,23 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -14,22 +26,26 @@ import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -42,14 +58,16 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 
-import com.safi.jface.CheckboxTreeSelectionHelper;
-
+import cz.startnet.utils.pgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.CheckedTreeViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
@@ -59,26 +77,11 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 
     private PageDiff pageDiff;
     private PagePartial pagePartial;
+    private PageResult pageResult;
     
     private final PgDbProject proj;
     
     private final IPreferenceStore mainPrefs;
-    
-    private DbSource db1, db2;
-    
-    private String diffResult;
-    
-    public DbSource getDb1() {
-        return db1;
-    }
-    
-    public DbSource getDb2() {
-        return db2;
-    }
-    
-    public String getDiffResult() {
-        return diffResult;
-    }
     
     public DiffWizard(PgDbProject proj, IPreferenceStore mainPrefs) {
         setWindowTitle("Diff");
@@ -92,22 +95,22 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     public void addPages() {
         pageDiff = new PageDiff("Diff parameters", mainPrefs, proj);
         pagePartial = new PagePartial("Diff tree");
+        pageResult = new PageResult("Diff result", proj);
         
         addPage(pageDiff);
         addPage(pagePartial);
+        addPage(pageResult);
     }
     
-    // objects from handlePageChanging() needed in perfromFinish()
-    DbSource dbFrom, dbTo;
+    DbSource dbSource, dbTarget;
     
     @Override
     public void handlePageChanging(PageChangingEvent e) {
-        if(e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
-            TreeDiffer treediffer = new TreeDiffer(
-                    DbSource.fromProject(proj), pageDiff.getTargetDbSource(), 
-                    !pageDiff.isDirectionFromThis());
-            
-            try {
+        try {
+            if(e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
+                TreeDiffer treediffer = new TreeDiffer(
+                        DbSource.fromProject(proj), pageDiff.getTargetDbSource());
+                
                 try {
                     getContainer().run(true, false, treediffer);
                 } catch(InvocationTargetException ex) {
@@ -117,55 +120,47 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     throw new IllegalStateException(
                             "Differ thread cancelled. Shouldn't happen!", ex);
                 }
-            } catch(Exception ex) {
-                e.doit = false;
-                throw ex;
+                
+                dbSource = treediffer.getDbSource();
+                dbTarget = treediffer.getDbTarget();
+                
+                pagePartial.setData(dbSource.getOrigin(), dbTarget.getOrigin(),
+                        treediffer.getDiffTree());
+                pagePartial.layout();
+            } else if(e.getCurrentPage() == pagePartial && e.getTargetPage() == pageResult) {
+                TreeElement filtered = filterDiffTree(pagePartial.getDiffTree(),
+                        (TreeElement) pagePartial.getDiffTree().getInput());
+                
+                DbSource dbSource = DbSource.fromFilter(
+                        this.dbSource, filtered, DiffSide.LEFT);
+                DbSource dbTarget = DbSource.fromFilter(
+                        this.dbTarget, filtered, DiffSide.RIGHT);
+                
+                Differ differ = new Differ(dbSource, dbTarget);
+                try {
+                    getContainer().run(true, false, differ);
+                } catch(InvocationTargetException ex) {
+                    throw new IllegalStateException("Error in differ thread", ex);
+                } catch(InterruptedException ex) {
+                    // assume run() was called as non cancelable
+                    throw new IllegalStateException(
+                            "Differ thread cancelled. Shouldn't happen!", ex);
+                }
+                
+                pageResult.setData(dbSource.getOrigin(), dbTarget.getOrigin(),
+                        differ.getDiffDirect(), differ.getDiffReverse());
+                pageResult.layout();
             }
-            
-            dbFrom = treediffer.getDbFrom();
-            dbTo = treediffer.getDbTo();
-            
-            pagePartial.setLabels(dbFrom.getOrigin(), dbTo.getOrigin());
-            pagePartial.setDiffTreeInput(treediffer.getDiffTree());
-            pagePartial.layout();
+        } catch(Exception ex) {
+            e.doit = false;
+            throw ex;
         }
-    }
-    
-    @Override
-    public boolean canFinish() {
-        if(getContainer().getCurrentPage() != pagePartial) {
-            return false;
-        }
-        return super.canFinish();
-    }
-    
-    @Override
-    public boolean performFinish() {
-        TreeElement filtered = filterDiffTree(pagePartial.getDiffTree(),
-                (TreeElement) pagePartial.getDiffTree().getInput());
-        
-        db1 = DbSource.fromFilter(dbFrom, filtered, DiffSide.LEFT);
-        db2 = DbSource.fromFilter(dbTo, filtered, DiffSide.RIGHT);
-        
-        Differ differ = new Differ(db1, db2, false);
-        try {
-            getContainer().run(true, false, differ);
-        } catch(InvocationTargetException ex) {
-            throw new IllegalStateException("Error in differ thread", ex);
-        } catch(InterruptedException ex) {
-            // assume run() was called as non cancelable
-            throw new IllegalStateException(
-                    "Differ thread cancelled. Shouldn't happen!", ex);
-        }
-        diffResult = differ.getDiff();
-        
-        return true;
     }
     
     // recursively copy only selected tree elements into a new tree
     private TreeElement filterDiffTree(CheckboxTreeViewer viewer,
             TreeElement diffTree) {
-        if(diffTree.getType() != DbObjType.DATABASE 
+        if(diffTree.getType() != DbObjType.CONTAINER 
                 && !viewer.getChecked(diffTree)
                 && !viewer.getGrayed(diffTree)) {
             // skip unselected non-root nodes and all their children
@@ -173,7 +168,8 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         }
         
         TreeElement copy = new TreeElement(
-                diffTree.getName(), diffTree.getType(), diffTree.getSide());
+                diffTree.getName(), diffTree.getType(),
+                diffTree.getContainerType(), diffTree.getSide());
         
         for(TreeElement sub : diffTree.getChildren()) {
             TreeElement subCopy = filterDiffTree(viewer, sub);
@@ -182,6 +178,19 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             }
         }
         return copy;
+    }
+    
+    @Override
+    public boolean canFinish() {
+        if(getContainer().getCurrentPage() != pageResult) {
+            return false;
+        }
+        return super.canFinish();
+    }
+    
+    @Override
+    public boolean performFinish() {
+        return true;
     }
 }
 
@@ -211,8 +220,6 @@ class PageDiff extends WizardPage implements Listener {
     private CLabel lblWarnDbPass, lblWarnSvnPass;
     
     private Combo cmbEncoding;
-    
-    private Button radioFromThis, radioToThis;
     
     public DiffTargetType getTargetType() {
         if(radioDb.getSelection()) {
@@ -285,10 +292,6 @@ class PageDiff extends WizardPage implements Listener {
     
     public String getTargetEncoding() {
         return cmbEncoding.getText();
-    }
-    
-    public boolean isDirectionFromThis() {
-        return radioFromThis.getSelection();
     }
     
     public DbSource getTargetDbSource() {
@@ -662,20 +665,6 @@ class PageDiff extends WizardPage implements Listener {
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
         cmbEncoding.select(cmbEncoding.indexOf("UTF-8"));
         
-        Group grpDirection = new Group(container, SWT.NONE);
-        grpDirection.setText("Diff direction");
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.verticalIndent = 12;
-        grpDirection.setLayoutData(gd);
-        grpDirection.setLayout(new GridLayout());
-        
-        radioFromThis = new Button(grpDirection, SWT.RADIO);
-        radioFromThis.setText("This project -> Target");
-        radioFromThis.setSelection(true);
-        
-        radioToThis = new Button(grpDirection, SWT.RADIO);
-        radioToThis.setText("Target -> This project");
-        
         setControl(container);
         
         ((WizardDialog) getContainer()).addPageChangingListener(
@@ -760,21 +749,20 @@ class PagePartial extends WizardPage {
     
     private Composite container;
     
-    private Label lblFrom, lblTo;
+    private Label lblSource, lblTarget;
     
     private CheckboxTreeViewer diffTree;
     
-    public void setLabels(String from, String to) {
-        lblFrom.setText(from);
-        lblTo.setText(to);
+    private Button btnDebugView;
+    
+    public void setData(String source, String target, TreeElement root) {
+        lblSource.setText(source);
+        lblTarget.setText(target);
+        diffTree.setInput(root);
     }
     
     public CheckboxTreeViewer getDiffTree() {
         return diffTree;
-    }
-    
-    public void setDiffTreeInput(TreeElement root) {
-        diffTree.setInput(root);
     }
     
     public PagePartial(String pageName) {
@@ -782,9 +770,7 @@ class PagePartial extends WizardPage {
     }
     
     public void layout() {
-        container.getShell().setSize(
-                container.getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true));
-        container.layout(false);
+        container.layout(true);
     }
     
     @Override
@@ -792,29 +778,28 @@ class PagePartial extends WizardPage {
         container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout());
         
-        new Label(container, SWT.NONE).setText("From (LEFT):");
-        lblFrom = new Label(container, SWT.WRAP);
-        new Label(container, SWT.NONE).setText("To (RIGHT):");
-        lblTo = new Label(container, SWT.WRAP);
+        new Label(container, SWT.NONE).setText("Source:");
         
-        final Button btnSelectAll = new Button(container, SWT.CHECK);
-        btnSelectAll.setText("Select all");
-        GridData gd = new GridData();
+        lblSource = new Label(container, SWT.WRAP);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 600;
+        lblSource.setLayoutData(gd);
+        
+        Label l = new Label(container, SWT.NONE);
+        l.setText("Target:");
+        gd = new GridData();
         gd.verticalIndent = 12;
-        btnSelectAll.setLayoutData(gd);
-        btnSelectAll.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                TreeElement root = (TreeElement) diffTree.getInput();
-                boolean checked = btnSelectAll.getSelection();
-                for(TreeElement sub : root.getChildren()) {
-                    diffTree.setSubtreeChecked(sub, checked);
-                }
-            }
-        });
+        l.setLayoutData(gd);
         
-        diffTree = new CheckboxTreeViewer(container);
-        diffTree.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
+        lblTarget = new Label(container, SWT.WRAP);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 600;
+        lblTarget.setLayoutData(gd);
+        
+        diffTree = new CheckedTreeViewer(container);
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.verticalIndent = 12;
+        diffTree.getTree().setLayoutData(gd);
         
         diffTree.setContentProvider(new ITreeContentProvider() {
             
@@ -846,17 +831,75 @@ class PagePartial extends WizardPage {
                 return getElements(parentElement);
             }
         });
-        diffTree.setLabelProvider(new LabelProvider() {
+        diffTree.setLabelProvider(new StyledCellLabelProvider() {
+            
+            private final Map<DbObjType, Image> mapObjIcons =
+                    new HashMap<>(DbObjType.values().length);
+            private final Map<DbObjType, Image> mapContIcons = 
+                    new HashMap<>(DbObjType.values().length);
+            
+            {
+                for(DbObjType objType : DbObjType.values()) {
+                    ImageDescriptor iObj = ImageDescriptor.createFromURL(
+                            Activator.getContext().getBundle().getResource(
+                                    UIConsts.FILENAME_ICONPGADMIN
+                                    + objType.toString().toLowerCase()
+                                    + ".png"));
+                    ImageDescriptor iCont = ImageDescriptor.createFromURL(
+                            Activator.getContext().getBundle().getResource(
+                                    UIConsts.FILENAME_ICONPGADMIN
+                                    + objType.toString().toLowerCase()
+                                    + "s.png"));
+                    
+                    mapObjIcons.put(objType, iObj.createImage());
+                    mapContIcons.put(objType, iCont.createImage());
+                }
+            }
+            
             @Override
-            public String getText(Object element) {
-                TreeElement el = (TreeElement) element;
+            public void update(ViewerCell cell) {
+                TreeElement el = (TreeElement) cell.getElement();
+                List<StyleRange> styles = new ArrayList<>();
+                Image icon = null;
                 
-                return String.format("%s:%s:%s",
-                        el.getType(), el.getName(), el.getSide());
+                if(btnDebugView.getSelection()) {
+                    cell.setText(String.format("%s:%s:%s",
+                            el.getType(), el.getName(), el.getSide()));
+                } else {
+                    StringBuilder label = new StringBuilder(el.getName());
+                    
+                    if(el.getType() == DbObjType.CONTAINER) {
+                        label.append(" (")
+                            .append(el.countChildren())
+                            .append(") [")
+                            .append(el.countDescendants())
+                            .append(']');
+                        
+                        TextStyle styleGray = new TextStyle();
+                        styleGray.foreground = getShell().getDisplay()
+                                .getSystemColor(SWT.COLOR_GRAY);
+                        
+                        StyleRange styleCount = new StyleRange(styleGray);
+                        styleCount.start = el.getName().length();
+                        styleCount.length = label.length() - el.getName().length();
+                        
+                        styles.add(styleCount);
+                        
+                        icon = mapContIcons.get(el.getContainerType());
+                    } else {
+                        icon = mapObjIcons.get(el.getType());
+                    }
+                    
+                    cell.setText(label.toString());
+                }
+                
+                cell.setStyleRanges(styles.toArray(new StyleRange[styles.size()]));
+                cell.setImage(icon);
+                
+                super.update(cell);
             }
         });
-        CheckboxTreeSelectionHelper.attach(
-                diffTree, (ITreeContentProvider) diffTree.getContentProvider());
+        
         diffTree.addDoubleClickListener(new IDoubleClickListener() {
             
             @Override
@@ -865,6 +908,215 @@ class PagePartial extends WizardPage {
                 TreeViewer viewer = (TreeViewer) event.getViewer();
                 viewer.setExpandedState(path, !viewer.getExpandedState(path));
                 viewer.refresh();
+            }
+        });
+        
+        MenuManager menuMgr = new MenuManager();
+        menuMgr.add(new Action("Select Subtree") {
+            @Override
+            public void run() {
+                TreeElement el = 
+                        (TreeElement) ((TreeSelection) diffTree.getSelection())
+                            .getFirstElement();
+                diffTree.setSubtreeChecked(el, true);
+            }
+        });
+        menuMgr.add(new Action("Deselect Subtree") {
+            @Override
+            public void run() {
+                TreeElement el = 
+                        (TreeElement) ((TreeSelection) diffTree.getSelection())
+                            .getFirstElement();
+                diffTree.setSubtreeChecked(el, false);
+            }
+        });
+        menuMgr.add(new Separator());
+        menuMgr.add(new Action("Expand Subtree") {
+            @Override
+            public void run() {
+                TreePath path = ((TreeSelection) diffTree.getSelection()).getPaths()[0];
+                diffTree.expandToLevel(path, TreeViewer.ALL_LEVELS);
+            }
+        });
+        menuMgr.add(new Action("Collapse Subtree") {
+            @Override
+            public void run() {
+                TreePath path = ((TreeSelection) diffTree.getSelection()).getPaths()[0];
+                diffTree.collapseToLevel(path, TreeViewer.ALL_LEVELS);
+            }
+        });
+        
+        diffTree.getControl().setMenu(
+                menuMgr.createContextMenu(diffTree.getControl()));
+        
+        Composite contButtons = new Composite(container, SWT.NONE);
+        contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridLayout contButtonsLayout = new GridLayout(5, false);
+        contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
+        contButtons.setLayout(contButtonsLayout);
+        
+        Button btnSelectAll = new Button(contButtons, SWT.PUSH);
+        btnSelectAll.setText("Select All");
+        btnSelectAll.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                TreeElement root = (TreeElement) diffTree.getInput();
+                for(TreeElement sub : root.getChildren()) {
+                    diffTree.setSubtreeChecked(sub, true);
+                }
+            }
+        });
+        
+        Button btnSelectNone = new Button(contButtons, SWT.PUSH);
+        btnSelectNone.setText("Select None");
+        btnSelectNone.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                TreeElement root = (TreeElement) diffTree.getInput();
+                for(TreeElement sub : root.getChildren()) {
+                    diffTree.setSubtreeChecked(sub, false);
+                }
+            }
+        });
+        
+        Button btnExpandAll = new Button(contButtons, SWT.PUSH);
+        btnExpandAll.setText("Expand All");
+        btnExpandAll.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                diffTree.expandAll();
+            }
+        });
+        
+        Button btnCollapseAll = new Button(contButtons, SWT.PUSH);
+        btnCollapseAll.setText("Collapse All");
+        btnCollapseAll.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                diffTree.collapseAll();
+            }
+        });
+        
+        btnDebugView = new Button(contButtons, SWT.CHECK);
+        btnDebugView.setText("Debug view");
+        btnDebugView.setLayoutData(new GridData(
+                GridData.HORIZONTAL_ALIGN_END | GridData.FILL_HORIZONTAL));
+        btnDebugView.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                diffTree.refresh();
+            }
+        });
+        
+        setControl(container);
+    }
+    
+    @Override
+    public IWizardPage getPreviousPage() {
+        return null;
+    }
+}
+class PageResult extends WizardPage {
+    
+    final private PgDbProject proj;
+    
+    private Composite container;
+    
+    private Label lblSource, lblTarget;
+    
+    private Text txtDirect, txtReverse;
+    
+    public void setData(String source, String target, String direct, String reverse) {
+        lblSource.setText(source);
+        lblTarget.setText(target);
+        txtDirect.setText(direct);
+        txtReverse.setText(reverse);
+    }
+    
+    public PageResult(String pageName, PgDbProject proj) {
+        super(pageName, pageName, null);
+        
+        this.proj = proj;
+    }
+    
+    public void layout() {
+        container.layout(true);
+    }
+    
+    @Override
+    public void createControl(Composite parent) {
+        container = new Composite(parent, SWT.NONE);
+        container.setLayout(new GridLayout());
+        
+        new Label(container, SWT.NONE).setText("Source:");
+        
+        lblSource = new Label(container, SWT.WRAP);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 600;
+        lblSource.setLayoutData(gd);
+        
+        Label l = new Label(container, SWT.NONE);
+        l.setText("Target:");
+        gd = new GridData();
+        gd.verticalIndent = 12;
+        l.setLayoutData(gd);
+        
+        lblTarget = new Label(container, SWT.WRAP);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 600;
+        lblTarget.setLayoutData(gd);
+        
+        final TabFolder tabs = new TabFolder(container, SWT.NONE);
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.verticalIndent = 12;
+        gd.widthHint = 600;
+        tabs.setLayoutData(gd);
+        tabs.setLayout(new GridLayout());
+        
+        txtDirect = new Text(tabs, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
+                | SWT.READ_ONLY | SWT.MULTI);
+        txtDirect.setLayoutData(new GridData(GridData.FILL_BOTH));
+        txtDirect.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        
+        TabItem tabDirect = new TabItem(tabs, SWT.NONE);
+        tabDirect.setText("Source -> Target");
+        tabDirect.setControl(txtDirect);
+        
+        txtReverse = new Text(tabs, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
+                | SWT.READ_ONLY | SWT.MULTI);
+        txtReverse.setLayoutData(new GridData(GridData.FILL_BOTH));
+        txtReverse.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        
+        TabItem tabReverse = new TabItem(tabs, SWT.NONE);
+        tabReverse.setText("Target -> Source");
+        tabReverse.setControl(txtReverse);
+        
+        Button btnSave = new Button(container, SWT.PUSH);
+        btnSave.setText("Save...");
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        gd.verticalIndent = 12;
+        btnSave.setLayoutData(gd);
+        btnSave.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                FileDialog saveDialog = new FileDialog(getShell(), SWT.SAVE);
+                saveDialog.setOverwrite(true);
+                saveDialog.setFilterExtensions(new String[] { "*.sql", "*" });
+                saveDialog.setFilterPath(proj.getProjectDir());
+                
+                String saveTo = saveDialog.open();
+                if(saveTo != null) {
+                    try(final PrintWriter encodedWriter = new UnixPrintWriter(
+                            new OutputStreamWriter(
+                                new FileOutputStream(saveTo),
+                                proj.getString(UIConsts.PROJ_PREF_ENCODING)))) {
+                        Text txtDiff = (Text) tabs.getSelection()[0].getControl();
+                        encodedWriter.println(txtDiff.getText());
+                    } catch(FileNotFoundException | UnsupportedEncodingException ex) {
+                        throw new IllegalStateException(
+                                "Unexpected error while saving diff!", ex);
+                    }
+                }
             }
         });
         

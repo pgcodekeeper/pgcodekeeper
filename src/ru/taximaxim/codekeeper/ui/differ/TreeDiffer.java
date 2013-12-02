@@ -13,20 +13,20 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class TreeDiffer implements IRunnableWithProgress {
     
-    final private DbSource dbFrom, dbTo;
+    final private DbSource dbSource, dbTarget;
 
     private boolean finished;
     
     private TreeElement diffTree;
     
-    public DbSource getDbFrom() {
+    public DbSource getDbSource() {
         checkFinished();
-        return dbFrom;
+        return dbSource;
     }
     
-    public DbSource getDbTo() {
+    public DbSource getDbTarget() {
         checkFinished();
-        return dbTo;
+        return dbTarget;
     }
     
     public TreeElement getDiffTree() {
@@ -34,9 +34,9 @@ public class TreeDiffer implements IRunnableWithProgress {
         return diffTree;
     }
     
-    public TreeDiffer(DbSource db1, DbSource db2, boolean reverse) {
-        this.dbFrom = reverse? db2 : db1;
-        this.dbTo = reverse? db1 : db2;
+    public TreeDiffer(DbSource dbSource, DbSource dbTarget) {
+        this.dbSource = dbSource;
+        this.dbTarget = dbTarget;
     }
     
     private void checkFinished() {
@@ -50,17 +50,17 @@ public class TreeDiffer implements IRunnableWithProgress {
     public void run(IProgressMonitor monitor) throws InvocationTargetException {
         SubMonitor pm = SubMonitor.convert(monitor, "Calculating diff", 100); // 0
         
-        PgDatabase dbFrom, dbTo;
-        dbFrom = dbTo = null;
+        PgDatabase dbSource, dbTarget;
+        dbSource = dbTarget = null;
         try {
-            dbFrom = this.dbFrom.get(pm.newChild(33)); // 33
-            dbTo = this.dbTo.get(pm.newChild(33)); // 66
+            dbSource = this.dbSource.get(pm.newChild(33)); // 33
+            dbTarget = this.dbTarget.get(pm.newChild(33)); // 66
         } catch(IOException ex) {
             throw new InvocationTargetException(ex);
         }
         
         pm.newChild(34).subTask("Building diff tree"); // 100
-        diffTree = DiffTree.create(dbFrom, dbTo);
+        diffTree = DiffTree.create(dbSource, dbTarget);
         
         monitor.done();
         finished = true;
