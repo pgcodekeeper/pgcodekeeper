@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author fordfrog
  */
-public class PgDatabase {
+public class PgDatabase extends PgStatement {
 
     /**
      * List of database schemas.
@@ -45,6 +45,8 @@ public class PgDatabase {
      * Creates a new PgDatabase object.
      */
     public PgDatabase() {
+        super(null);
+        
         schemas.add(new PgSchema("public", ""));
         defaultSchema = schemas.get(0);
     }
@@ -216,5 +218,15 @@ public class PgDatabase {
     	}
     	
     	return eq;
+    }
+    
+    @Override
+    public String getCreationSQL() {
+        return null;
+    }
+    
+    @Override
+    public String getName() {
+        return null;
     }
 }

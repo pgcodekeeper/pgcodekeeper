@@ -15,7 +15,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.schema.*;
@@ -126,7 +126,7 @@ public class PgDumpLoaderTest {
         		+ filename, dbPredefined, d);
         
         TreeElement dbTree = DiffTree.create(d, empty);
-        PgDatabase dbFilteredFullTree = PgDbFilter.apply(d, dbTree, DiffSide.LEFT);
+        PgDatabase dbFilteredFullTree = new PgDbFilter2(d, dbTree, DiffSide.LEFT).apply();
         
         Assert.assertEquals("filter altered the result", d, dbFilteredFullTree);
         Assert.assertEquals("filter altered the original", dbPredefined, d);

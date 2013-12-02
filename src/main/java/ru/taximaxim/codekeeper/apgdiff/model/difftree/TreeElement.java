@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 public class TreeElement {
 
     public enum DbObjType {
+        CONTAINER, // not a DB object, just a container for further tree elements
         DATABASE,
         SCHEMA, EXTENSION,
         FUNCTION, SEQUENCE, TABLE, VIEW,
@@ -31,6 +32,8 @@ public class TreeElement {
     final private String name;
     
     final private DbObjType type;
+    
+    final private DbObjType containerType;
     
     final private DiffSide side;
     
@@ -46,6 +49,10 @@ public class TreeElement {
         return type;
     }
     
+    public DbObjType getContainerType() {
+        return containerType;
+    }
+    
     public DiffSide getSide() {
         return side;
     }
@@ -54,15 +61,22 @@ public class TreeElement {
         return Collections.unmodifiableList(children);
     }
     
-    public TreeElement(String name, DbObjType type, DiffSide side) {
+    public TreeElement getParent() {
+        return parent;
+    }
+    
+    public TreeElement(String name, DbObjType type, DbObjType containerType,
+            DiffSide side) {
         this.name = name;
         this.type = type;
+        this.containerType = containerType;
         this.side = side;
     }
     
     public TreeElement(PgStatement statement, DiffSide side) {
         this.name = statement.getName();
         this.side = side;
+        this.containerType = null;
         
         if(statement instanceof PgSchema) {
             type = DbObjType.SCHEMA;
@@ -87,8 +101,44 @@ public class TreeElement {
         }
     }
     
-    public TreeElement getParent() {
-        return parent;
+    public static TreeElement createContainer(DbObjType containerType, DiffSide side) {
+        String name = null;
+        switch(containerType) {
+        case CONTAINER:
+            name = "<Container>";
+            break;
+        case DATABASE:
+            name = "Databases";
+            break;
+        case EXTENSION:
+            name = "Extensions";
+            break;
+        case SCHEMA:
+            name = "Schemas";
+            break;
+        case FUNCTION:
+            name = "Functions";
+            break;
+        case SEQUENCE:
+            name = "Sequences";
+            break;
+        case VIEW:
+            name = "Views";
+            break;
+        case TABLE:
+            name = "Tables";
+            break;
+        case INDEX:
+            name = "Indexes";
+            break;
+        case TRIGGER:
+            name = "Triggers";
+            break;
+        case CONSTRAINT:
+            name = "Constraints";
+            break;
+        }
+        return new TreeElement(name, DbObjType.CONTAINER, containerType, side);
     }
     
     public boolean hasChildren() {
@@ -105,12 +155,45 @@ public class TreeElement {
         children.add(child);
     }
     
-    public TreeElement getChild(String name) {
+    public void addChildNotEmpty(TreeElement container) {
+        if(!container.hasChildren()) {
+            return;
+        }
+        
+        addChild(container);
+    }
+    
+    public TreeElement getChild(String name, DbObjType type) {
         for(TreeElement el : children) {
-            if(el.name.equals(name)) {
+            if((type == null || el.type == type) && el.name.equals(name)) {
                 return el;
             }
         }
+        
         return null;
+    }
+    
+    public TreeElement getChild(String name) {
+        return getChild(name, null);
+    }
+    
+    public TreeElement getChild(int index) {
+        return children.get(index);
+    }
+    
+    public int countDescendants() {
+        int descendants = 0;
+        for(TreeElement sub : children) {
+            if(sub.getType() != DbObjType.CONTAINER) {
+                descendants++;
+            }
+            descendants += sub.countDescendants();
+        }
+        
+        return descendants;
+    }
+    
+    public int countChildren() {
+        return children.size();
     }
 }
