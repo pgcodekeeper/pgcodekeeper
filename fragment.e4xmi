@@ -36,9 +36,14 @@
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_b1_SADf2EeOJGp3TAROjKg" featurename="trimContributions" parentElementId="org.eclipse.e4.ide.application">
     <elements xsi:type="menu:TrimContribution" xmi:id="_58cSwDf3EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.trimcontribution.0" parentId="ru.taximaxim.codekeeper.mainapp.trimbar.main">
       <children xsi:type="menu:ToolBar" xmi:id="_6hmOQDf3EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.toolbar.0">
-        <children xsi:type="menu:HandledToolItem" xmi:id="_qm0CADf2EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.0" label="" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/new_wiz.gif" tooltip="New Project" command="_1JlsQCzJEeOC9s_7P-LAEQ"/>
-        <children xsi:type="menu:HandledToolItem" xmi:id="_rEakADf2EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.1" label="" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/opentype.gif" tooltip="Load Project" command="_o6NrIDYmEeOu39tpQ1Oozg"/>
+        <children xsi:type="menu:HandledToolItem" xmi:id="_qm0CADf2EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.0" label="" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/new_wiz.gif" tooltip="New Project..." command="_1JlsQCzJEeOC9s_7P-LAEQ"/>
+        <children xsi:type="menu:HandledToolItem" xmi:id="_rEakADf2EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.1" label="" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/opentype.gif" tooltip="Load Project..." command="_o6NrIDYmEeOu39tpQ1Oozg"/>
         <children xsi:type="menu:ToolBarSeparator" xmi:id="_sHZD8Df2EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.toolbarseparator.0"/>
+        <children xsi:type="menu:HandledToolItem" xmi:id="_WCptkFvpEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.2" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/compare_view.gif" tooltip="Diff..." command="_ncHkEDyKEeOnONY5mbpMNQ"/>
+        <children xsi:type="menu:HandledToolItem" xmi:id="_tY3JkFvqEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.3" label="" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/synch_toc_nav.gif" tooltip="Sync Project" command="_HhqhUDskEeOHuJV2eZ06pg"/>
+        <children xsi:type="menu:HandledToolItem" xmi:id="_y-JXEFvqEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.4" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/properties.gif" tooltip="Project Properties" command="_8p39cDooEeOo66lUbQncjg"/>
+        <children xsi:type="menu:ToolBarSeparator" xmi:id="_6-X9AFvqEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.toolbarseparator.1"/>
+        <children xsi:type="menu:HandledToolItem" xmi:id="_7TBXUFvqEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.5" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/sprocket_dark_gear.png" tooltip="Preferences" command="_Xdq-gCpvEeOWDPrJZCzSgA"/>
       </children>
     </elements>
   </fragments>
