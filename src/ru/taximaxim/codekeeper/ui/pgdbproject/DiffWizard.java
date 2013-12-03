@@ -22,6 +22,7 @@ import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -101,6 +102,12 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         addPage(pagePartial);
         addPage(pageResult);
     }
+    
+    public void createPageControls(Composite pageContainer) {
+        super.createPageControls(pageContainer);
+
+        ((WizardDialog) getContainer()).addPageChangingListener(this);
+    };
     
     DbSource dbSource, dbTarget;
     
@@ -383,20 +390,20 @@ class PageDiff extends WizardPage implements Listener {
         };
         
         radioDb = new Button(grpRadio, SWT.RADIO);
-        radioDb.setText("DB target");
+        radioDb.setText("DB");
         radioDb.setSelection(true);
         radioDb.addSelectionListener(switcher);
         
         radioDump = new Button(grpRadio, SWT.RADIO);
-        radioDump.setText("Dump target");
+        radioDump.setText("Dump");
         radioDump.addSelectionListener(switcher);
         
         radioSvn = new Button(grpRadio, SWT.RADIO);
-        radioSvn.setText("SVN target");
+        radioSvn.setText("SVN");
         radioSvn.addSelectionListener(switcher);
         
         radioProj = new Button(grpRadio, SWT.RADIO);
-        radioProj.setText("Project target");
+        radioProj.setText("Project");
         radioProj.addSelectionListener(switcher);
         
         grpDb = new Group(container, SWT.NONE);
@@ -651,13 +658,13 @@ class PageDiff extends WizardPage implements Listener {
         radioProj.setData(grpProj);
         
         Group grpEncoding = new Group(container, SWT.NONE);
-        grpEncoding.setText("Target encoding");
+        grpEncoding.setText("Encoding");
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         grpEncoding.setLayoutData(gd);
         grpEncoding.setLayout(new GridLayout(2, false));
         
-        new Label(grpEncoding, SWT.NONE).setText("Encoding of the target:");
+        new Label(grpEncoding, SWT.NONE).setText("Target encoding:");
         
         cmbEncoding = new Combo(grpEncoding, SWT.BORDER | SWT.DROP_DOWN
                 | SWT.READ_ONLY);
@@ -666,9 +673,6 @@ class PageDiff extends WizardPage implements Listener {
         cmbEncoding.select(cmbEncoding.indexOf("UTF-8"));
         
         setControl(container);
-        
-        ((WizardDialog) getContainer()).addPageChangingListener(
-                (DiffWizard) getWizard());
     }
     
     private void switchTargetGrp(Group newActive) {
@@ -1077,6 +1081,7 @@ class PageResult extends WizardPage {
                 | SWT.READ_ONLY | SWT.MULTI);
         txtDirect.setLayoutData(new GridData(GridData.FILL_BOTH));
         txtDirect.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        txtDirect.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         
         TabItem tabDirect = new TabItem(tabs, SWT.NONE);
         tabDirect.setText("Source -> Target");
@@ -1086,6 +1091,7 @@ class PageResult extends WizardPage {
                 | SWT.READ_ONLY | SWT.MULTI);
         txtReverse.setLayoutData(new GridData(GridData.FILL_BOTH));
         txtReverse.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        txtReverse.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         
         TabItem tabReverse = new TabItem(tabs, SWT.NONE);
         tabReverse.setText("Target -> Source");
@@ -1100,6 +1106,8 @@ class PageResult extends WizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog saveDialog = new FileDialog(getShell(), SWT.SAVE);
+                saveDialog.setText("Save " + tabs.getSelection()[0].getText()
+                        + " diff...");
                 saveDialog.setOverwrite(true);
                 saveDialog.setFilterExtensions(new String[] { "*.sql", "*" });
                 saveDialog.setFilterPath(proj.getProjectDir());
