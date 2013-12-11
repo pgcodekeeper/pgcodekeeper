@@ -25,7 +25,7 @@ import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.parts.ProjectPartDescriptor;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.pgdbproject.ProjectLoaderParser;
+import ru.taximaxim.codekeeper.ui.pgdbproject.ProjectCreator;
 
 public class ProjSyncSrc {
 	
@@ -124,8 +124,8 @@ public class ProjSyncSrc {
 		}
 		
 		dialog = new ProgressMonitorDialog(shell);
-		ProjectLoaderParser reload = 
-				new ProjectLoaderParser(mainPrefStore, proj, syncDump);
+		ProjectCreator reload = 
+				new ProjectCreator(mainPrefStore, proj, syncDump);
 		try {
 			dialog.run(true, false, reload);
 		} catch(InterruptedException ex) {

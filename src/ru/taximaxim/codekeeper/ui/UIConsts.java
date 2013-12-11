@@ -17,10 +17,12 @@ public interface UIConsts {
 	// Preferences
 	String PREF_SVN_EXE_PATH = "prefSvnExePath";
 	String PREF_PGDUMP_EXE_PATH = "prefPgdumpExePath";
+	String PREF_DB_STORE = "prefDbStore";
 	
 	// Project preferences
 	String PROJ_PREF_ENCODING = "prefGeneralEncoding";
 	String PROJ_PREF_SOURCE = "prefGeneralSource";
+	String PROJ_SOURCE_TYPE_NONE = "none";
 	String PROJ_SOURCE_TYPE_DB = "db";
 	String PROJ_SOURCE_TYPE_DUMP = "dump";
 	
@@ -40,4 +42,7 @@ public interface UIConsts {
 	String FILENAME_ICONWARNING = "/icons/warning.gif";
 	String FILENAME_ICONDIR = "/icons/exportdir_wiz.gif";
 	String FILENAME_ICONFILE = "/icons/file_obj.gif";
+	String FILENAME_ICONADD = "/icons/add_obj.gif";
+	String FILENAME_ICONSAVE = "/icons/save_edit.gif";
+	String FILENAME_ICONDEL = "/icons/delete_obj.gif";
 }

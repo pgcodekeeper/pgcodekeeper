@@ -30,7 +30,6 @@ public class NewProj {
 			IEventBroker events) throws IOException {
 		NewProjWizard newProj = new NewProjWizard(prefStore);
 		WizardDialog dialog = new WizardDialog(shell, newProj);
-		dialog.create();
 		if(dialog.open() == Dialog.OK) {
 			LoadProj.load(newProj.getProject(), partService, model, app, events);
 		}

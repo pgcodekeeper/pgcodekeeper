@@ -37,7 +37,6 @@ public class SwitchPerspective {
 			}
 		});
 		
-		dialog.create();
 		if(dialog.open() == Dialog.OK) {
 			partSrv.switchPerspective((MPerspective)(dialog.getResult()[0]));
 		}

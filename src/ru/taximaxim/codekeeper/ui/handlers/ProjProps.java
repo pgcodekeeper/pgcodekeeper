@@ -25,12 +25,11 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -50,11 +49,11 @@ public class ProjProps {
 			Shell shell) {
 		
 		FakePrefPageExtension[] propPages = {
-				new FakePrefPageExtension("projprefs.0.pagedbsouce", "DB Source",
+                new FakePrefPageExtension("projprefs.0.pagesvn", "SVN Settings",
+                        new SvnSettingsPage(), null),
+                
+				new FakePrefPageExtension("projprefs.1.pagedbsouce", "DB Source",
 						new DbSrcPage(), null),
-				
-				new FakePrefPageExtension("projprefs.1.pagesvn", "SVN Settings",
-						new SvnSettingsPage(), null),
 						
 				new FakePrefPageExtension("projprefs.2.pagemisc", "Miscellaneous",
 						new MiscSettingPage(), null)
@@ -71,9 +70,7 @@ public class ProjProps {
 	}
 }
 
-class DbSrcPage
-	extends FieldEditorPreferencePage
-	implements IWorkbenchPreferencePage {
+class DbSrcPage extends FieldEditorPreferencePage {
 	
 	private Group grpSourceDb;
 	
@@ -84,14 +81,11 @@ class DbSrcPage
 	}
 	
 	@Override
-	public void init(IWorkbench workbench) {
-	}
-	
-	@Override
 	protected void createFieldEditors() {
 		RadioGroupFieldEditor radio = new RadioGroupFieldEditor(
 				UIConsts.PROJ_PREF_SOURCE, "Source of the DB schema", 1,
 				new String[][] {
+				        {"None", UIConsts.PROJ_SOURCE_TYPE_NONE},
 						{"Dump file", UIConsts.PROJ_SOURCE_TYPE_DUMP},
 						{"Database", UIConsts.PROJ_SOURCE_TYPE_DB}
 				}, getFieldEditorParent(), true);
@@ -109,7 +103,7 @@ class DbSrcPage
 		StringFieldEditor sfePass = new StringFieldEditor(
 				UIConsts.PROJ_PREF_DB_PASS, "DB Password:", grpSourceDb);
 		addField(sfePass);
-		sfePass.getTextControl(grpSourceDb).setEchoChar((char)0x2022); // •
+		sfePass.getTextControl(grpSourceDb).setEchoChar('\u2022'); // •
 		
 		lblWarn = new CLabel(grpSourceDb, SWT.NONE);
 		lblWarn.setImage(ImageDescriptor.createFromURL(
@@ -132,11 +126,12 @@ class DbSrcPage
 		addField(new IntegerFieldEditor(UIConsts.PROJ_PREF_DB_PORT, "DB Port:",
 				grpSourceDb));
 		
-		if(UIConsts.PROJ_SOURCE_TYPE_DUMP.equals(
+		if(!UIConsts.PROJ_SOURCE_TYPE_DB.equals(
 				getPreferenceStore().getString(UIConsts.PROJ_PREF_SOURCE))) {
-			
 			recursiveSetEnabled(grpSourceDb, false);
 		}
+		
+		((GridLayout) grpSourceDb.getLayout()).marginWidth = 5;
 	}
 	
 	@Override
@@ -145,7 +140,8 @@ class DbSrcPage
 		
 		if(UIConsts.PROJ_PREF_SOURCE.equals(prefName)) {
 			if(!e.getNewValue().equals(e.getOldValue())) {
-				recursiveSetEnabled(grpSourceDb, !grpSourceDb.getEnabled());
+				recursiveSetEnabled(grpSourceDb,
+				        UIConsts.PROJ_SOURCE_TYPE_DB.equals(e.getNewValue()));
 			}
 		} else  if(UIConsts.PROJ_PREF_DB_PASS.equals(prefName)) {
 			String oldVal = (String) e.getOldValue();
@@ -182,18 +178,12 @@ class DbSrcPage
 	}
 }
 
-class SvnSettingsPage
-	extends FieldEditorPreferencePage
-	implements IWorkbenchPreferencePage {
+class SvnSettingsPage extends FieldEditorPreferencePage {
 	
 	private CLabel lblWarn;
 	
 	public SvnSettingsPage() {
 		super(GRID);
-	}
-	
-	@Override
-	public void init(IWorkbench workbench) {
 	}
 	
 	@Override
@@ -209,7 +199,7 @@ class SvnSettingsPage
 		StringFieldEditor sfePass = new StringFieldEditor(
 				UIConsts.PROJ_PREF_SVN_PASS, "SVN Pass:", getFieldEditorParent());
 		addField(sfePass);
-		sfePass.getTextControl(getFieldEditorParent()).setEchoChar((char)0x2022); // •
+		sfePass.getTextControl(getFieldEditorParent()).setEchoChar('\u2022'); // •
 		
 		lblWarn = new CLabel(getFieldEditorParent(), SWT.NONE);
 		lblWarn.setImage(ImageDescriptor.createFromURL(
@@ -256,9 +246,7 @@ class SvnSettingsPage
 	}
 }
 
-class MiscSettingPage
-	extends FieldEditorPreferencePage
-	implements IWorkbenchPreferencePage {
+class MiscSettingPage extends FieldEditorPreferencePage {
     
     private String originalEncoding;
     
@@ -267,11 +255,7 @@ class MiscSettingPage
 	public MiscSettingPage() {
 		super(GRID);
 	}
-	
-	@Override
-	public void init(IWorkbench workbench) {
-	}
-	
+
 	@Override
 	protected void createFieldEditors() {
 	    originalEncoding = getPreferenceStore().getString(UIConsts.PROJ_PREF_ENCODING);

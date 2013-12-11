@@ -45,7 +45,6 @@ public class Diff {
 	        
 	        WizardDialog dialog = new WizardDialog(
 	                shell, new DiffWizard(proj, prefStore));
-	        dialog.create();
 	        dialog.open();
 	    } catch(CancellationException ex) {
 	        MessageBox mb = new MessageBox(shell, SWT.ICON_CANCEL);
