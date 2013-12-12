@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -63,7 +62,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
 	public void addPages() {
         pageSvn = new PageSvn("SVN settings");
         addPage(pageSvn);
-		pageDb = new PageDb("Schema Source Settings");
+		pageDb = new PageDb("Schema Source Settings", mainPrefStore);
 		addPage(pageDb);
 		pageMisc = new PageMisc("Miscellaneous");
 		addPage(pageMisc);
@@ -221,11 +220,7 @@ class PageSvn extends WizardPage implements Listener {
                     gd.exclude = !gd.exclude;
                     lblWarnPass.setVisible(!lblWarnPass.getVisible());
                     
-                    Shell sh = parent.getShell();
-                    int width = sh.getSize().x;
-                    int newht = sh.computeSize(width, SWT.DEFAULT).y;
-                    sh.setSize(width, newht);
-                    
+                    getShell().pack();
                     container.layout(false);
                 }
             }
@@ -257,11 +252,7 @@ class PageSvn extends WizardPage implements Listener {
                 gd.exclude = !btnDoInit.getSelection();
                 lblWarnInit.setVisible(btnDoInit.getSelection());
                 
-                Shell sh = parent.getShell();
-                int width = sh.getSize().x;
-                int newht = sh.computeSize(width, SWT.DEFAULT).y;
-                sh.setSize(width, newht);
-                
+                getShell().pack();
                 container.layout(false);
             }
         });
@@ -353,6 +344,8 @@ class PageSvn extends WizardPage implements Listener {
 
 class PageDb extends WizardPage implements Listener {
 	
+    private final IPreferenceStore mainPrefs;
+    
 	private Composite container;
 	
 	private Button radioDb, radioDump, radioNone;
@@ -415,8 +408,10 @@ class PageDb extends WizardPage implements Listener {
 		return txtDumpPath.getText();
 	}
 
-	PageDb(String pageName) {
+	PageDb(String pageName, IPreferenceStore mainPrefs) {
 		super(pageName, pageName, null);
+		
+		this.mainPrefs = mainPrefs;
 	}
 
 	@Override
@@ -491,7 +486,7 @@ class PageDb extends WizardPage implements Listener {
 		radioNone.addListener(SWT.Selection, this);
 		radioNone.setSelection(true);
 		
-		grpDb = new DbPicker(container, SWT.NONE);
+		grpDb = new DbPicker(container, SWT.NONE, mainPrefs);
 		grpDb.setText("DB Source Settings");
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
 		gd.exclude = true;

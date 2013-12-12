@@ -13,6 +13,7 @@ import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.services.IServiceConstants;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
@@ -24,8 +25,11 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -33,6 +37,8 @@ import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.dbstore.DbStorePickerDialog;
 import ru.taximaxim.codekeeper.ui.parts.ProjectPartDescriptor;
 import ru.taximaxim.codekeeper.ui.prefs.FakePrefPageExtension;
 import ru.taximaxim.codekeeper.ui.prefs.PrefDialogFactory;
@@ -45,6 +51,8 @@ public class ProjProps {
 	
 	@Execute
 	public void execute(
+            @Named(UIConsts.PREF_STORE)
+            IPreferenceStore mainPrefs,
 			@Named(IServiceConstants.ACTIVE_SHELL)
 			Shell shell) {
 		
@@ -53,7 +61,7 @@ public class ProjProps {
                         new SvnSettingsPage(), null),
                 
 				new FakePrefPageExtension("projprefs.1.pagedbsouce", "DB Source",
-						new DbSrcPage(), null),
+						new DbSrcPage(mainPrefs), null),
 						
 				new FakePrefPageExtension("projprefs.2.pagemisc", "Miscellaneous",
 						new MiscSettingPage(), null)
@@ -71,13 +79,17 @@ public class ProjProps {
 }
 
 class DbSrcPage extends FieldEditorPreferencePage {
+    
+    private final IPreferenceStore mainPrefs;
 	
 	private Group grpSourceDb;
 	
 	private CLabel lblWarn;
 	
-	public DbSrcPage() {
+	public DbSrcPage(IPreferenceStore mainPrefs) {
 		super(GRID);
+		
+		this.mainPrefs = mainPrefs;
 	}
 	
 	@Override
@@ -95,12 +107,15 @@ class DbSrcPage extends FieldEditorPreferencePage {
 		grpSourceDb.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 		grpSourceDb.setText("Settings for Database schema source");
 		
-		addField(new StringFieldEditor(UIConsts.PROJ_PREF_DB_NAME, "DB Name:",
-				grpSourceDb));
-		addField(new StringFieldEditor(UIConsts.PROJ_PREF_DB_USER, "DB User:",
-				grpSourceDb));
+		final StringFieldEditor sfeName = new StringFieldEditor(
+		        UIConsts.PROJ_PREF_DB_NAME, "DB Name:", grpSourceDb);
+		addField(sfeName);
 		
-		StringFieldEditor sfePass = new StringFieldEditor(
+		final StringFieldEditor sfeUser = new StringFieldEditor(
+		        UIConsts.PROJ_PREF_DB_USER, "DB User:", grpSourceDb);
+		addField(sfeUser);
+		
+		final StringFieldEditor sfePass = new StringFieldEditor(
 				UIConsts.PROJ_PREF_DB_PASS, "DB Password:", grpSourceDb);
 		addField(sfePass);
 		sfePass.getTextControl(grpSourceDb).setEchoChar('\u2022'); // •
@@ -121,10 +136,32 @@ class DbSrcPage extends FieldEditorPreferencePage {
 		
 		lblWarn.setLayoutData(gd);
 		
-		addField(new StringFieldEditor(UIConsts.PROJ_PREF_DB_HOST, "DB Host:",
-				grpSourceDb));
-		addField(new IntegerFieldEditor(UIConsts.PROJ_PREF_DB_PORT, "DB Port:",
-				grpSourceDb));
+		final StringFieldEditor sfeHost = new StringFieldEditor(
+		        UIConsts.PROJ_PREF_DB_HOST, "DB Host:",grpSourceDb);
+		addField(sfeHost);
+		
+		final IntegerFieldEditor ifePort = new IntegerFieldEditor(
+		        UIConsts.PROJ_PREF_DB_PORT, "DB Port:", grpSourceDb);
+		addField(ifePort);
+		
+		Button btnStorePick = new Button(grpSourceDb, SWT.PUSH);
+		btnStorePick.setText("...");
+		btnStorePick.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false, 2, 1));
+		btnStorePick.addSelectionListener(new SelectionAdapter() {
+		    @Override
+		    public void widgetSelected(SelectionEvent e) {
+		        DbStorePickerDialog dialog = new DbStorePickerDialog(getShell(), mainPrefs);
+		        if(dialog.open() == Dialog.OK) {
+		            DbInfo db = dialog.getDbInfo();
+		            
+		            sfeName.setStringValue(db.dbname);
+		            sfeUser.setStringValue(db.dbuser);
+		            sfePass.setStringValue(db.dbpass);
+		            sfeHost.setStringValue(db.dbhost);
+		            ifePort.setStringValue(String.valueOf(db.dbport));
+		        }
+		    }
+        });
 		
 		if(!UIConsts.PROJ_SOURCE_TYPE_DB.equals(
 				getPreferenceStore().getString(UIConsts.PROJ_PREF_SOURCE))) {
@@ -132,6 +169,9 @@ class DbSrcPage extends FieldEditorPreferencePage {
 		}
 		
 		((GridLayout) grpSourceDb.getLayout()).marginWidth = 5;
+		((GridLayout) grpSourceDb.getLayout()).marginHeight = 5;
+		
+		noDefaultAndApplyButton();
 	}
 	
 	@Override
@@ -153,11 +193,7 @@ class DbSrcPage extends FieldEditorPreferencePage {
 				gd.exclude = !gd.exclude;
 				lblWarn.setVisible(!lblWarn.getVisible());
 
-				Shell sh =  grpSourceDb.getShell();
-				int width = sh.getSize().x;
-				int newht = sh.computeSize(width, SWT.DEFAULT).y;
-				sh.setSize(width, newht);
-
+				getShell().pack();
 				grpSourceDb.getParent().layout(false);
 			}
 		}
@@ -217,6 +253,8 @@ class SvnSettingsPage extends FieldEditorPreferencePage {
 		}
 		
 		lblWarn.setLayoutData(gd);
+		
+		noDefaultAndApplyButton();
 	}
 	
 	@Override
@@ -233,11 +271,7 @@ class SvnSettingsPage extends FieldEditorPreferencePage {
 				gd.exclude = !gd.exclude;
 				lblWarn.setVisible(!lblWarn.getVisible());
 
-				Shell sh =  lblWarn.getShell();
-				int width = sh.getSize().x;
-				int newht = sh.computeSize(width, SWT.DEFAULT).y;
-				sh.setSize(width, newht);
-
+				getShell().pack();
 				lblWarn.getParent().layout(false);
 			}
 		}
@@ -283,6 +317,8 @@ class MiscSettingPage extends FieldEditorPreferencePage {
         lblWarn.setVisible(false);
         
         lblWarn.setLayoutData(gd);
+        
+        noDefaultAndApplyButton();
 	}
 	
 	@Override
@@ -301,11 +337,7 @@ class MiscSettingPage extends FieldEditorPreferencePage {
                 gd.exclude = !show;
                 lblWarn.setVisible(show);
 
-                Shell sh =  lblWarn.getShell();
-                int width = sh.getSize().x;
-                int newht = sh.computeSize(width, SWT.DEFAULT).y;
-                sh.setSize(width, newht);
-
+                getShell().pack();
                 lblWarn.getParent().layout(false);
 	        }
 	    }

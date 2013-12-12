@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
@@ -27,7 +28,7 @@ public class DbPicker extends Group {
     public Label lblName;
     public Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort;
     
-    public DbPicker(Composite parent, int style) {
+    public DbPicker(Composite parent, int style, final IPreferenceStore prefStore) {
         super(parent, style);
         setLayout(new GridLayout(4, false));
         
@@ -55,7 +56,8 @@ public class DbPicker extends Group {
         btnStorePick.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                // TODO fill fields
+                DbStorePickerDialog dialog = new DbStorePickerDialog(getShell(), prefStore);
+                dialog.openAndSetText(txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort);
             }
         });
         

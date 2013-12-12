@@ -45,4 +45,5 @@ public interface UIConsts {
 	String FILENAME_ICONADD = "/icons/add_obj.gif";
 	String FILENAME_ICONSAVE = "/icons/save_edit.gif";
 	String FILENAME_ICONDEL = "/icons/delete_obj.gif";
+	String FILENAME_ICONEDIT = "/icons/editor.gif";
 }

@@ -58,7 +58,6 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
@@ -409,7 +408,7 @@ class PageDiff extends WizardPage implements Listener {
         radioProj.setText("Project");
         radioProj.addSelectionListener(switcher);
         
-        grpDb = new DbPicker(container, SWT.NONE);
+        grpDb = new DbPicker(container, SWT.NONE, mainPrefs);
         grpDb.setText("DB target");
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
@@ -488,11 +487,7 @@ class PageDiff extends WizardPage implements Listener {
                     gd.exclude = !gd.exclude;
                     lblWarnSvnPass.setVisible(!lblWarnSvnPass.getVisible());
                     
-                    Shell sh = container.getShell();
-                    int width = sh.getSize().x;
-                    int newht = sh.computeSize(width, SWT.DEFAULT).y;
-                    sh.setSize(width, newht);
-                    
+                    getShell().pack();
                     grpSvn.layout(false);
                 }
             }
@@ -628,11 +623,7 @@ class PageDiff extends WizardPage implements Listener {
         
         currentTargetGrp = newActive;
         
-        Shell sh = container.getShell();
-        int width = sh.getSize().x;
-        int newht = sh.computeSize(width, SWT.DEFAULT).y;
-        sh.setSize(width, newht);
-        
+        getShell().pack();
         container.layout(false);
         
         getWizard().getContainer().updateButtons();

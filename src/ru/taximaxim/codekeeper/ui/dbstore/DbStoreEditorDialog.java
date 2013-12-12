@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class DbStoreEditorDialog extends TrayDialog {
 
-    private final Map<String, DbCoords> store;
+    private final Map<String, DbInfo> store;
     
     private final IPreferenceStore prefStore;
     
@@ -46,7 +46,7 @@ public class DbStoreEditorDialog extends TrayDialog {
     };
     
     public String getPreferenceString() {
-        return DbCoords.storeToPreference(store);
+        return DbInfo.storeToPreference(store);
     }
     
     /**
@@ -75,7 +75,7 @@ public class DbStoreEditorDialog extends TrayDialog {
             IPreferenceStore prefStore) {
         super(shell);
         
-        this.store = DbCoords.preferenceToStore(preference);
+        this.store = DbInfo.preferenceToStore(preference);
         this.prefStore = prefStore;
     }
     
@@ -90,7 +90,7 @@ public class DbStoreEditorDialog extends TrayDialog {
 
                 // do pack-calling methods after open has returned
                 // otherwise shell is opened at (0,0) coordinates
-                // TODO replace computeSize calls with pack
+
                 grpDbData.setStoreEditMode();
                 
                 if(cmbDbNames.getItemCount() > 0) {
@@ -120,9 +120,9 @@ public class DbStoreEditorDialog extends TrayDialog {
         cmbDbNames.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                DbCoords db = store.get(cmbDbNames.getText());
+                DbInfo db = store.get(cmbDbNames.getText());
                 if(db == null) {
-                    db = DbCoords.getEmpty("");
+                    db = DbInfo.getEmpty("");
                 }
                 grpDbData.lblName.setText(db.name);
                 grpDbData.txtDbName.setText(db.dbname);
@@ -167,7 +167,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                         return;
                     }
                     
-                    store.put(newName, DbCoords.getEmpty(newName));
+                    store.put(newName, DbInfo.getEmpty(newName));
                     cmbDbNames.add(newName);
                     cmbDbNames.select(cmbDbNames.indexOf(newName));
                 }
@@ -196,7 +196,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                     return;
                 }
                 
-                DbCoords db = store.get(cmbDbNames.getText());
+                DbInfo db = store.get(cmbDbNames.getText());
                 
                 db.dbname = grpDbData.txtDbName.getText();
                 db.dbuser = grpDbData.txtDbUser.getText();
@@ -234,11 +234,11 @@ public class DbStoreEditorDialog extends TrayDialog {
         });
         btnDel.setEnabled(false);
         
-        grpDbData = new DbPicker(container, SWT.NONE);
+        grpDbData = new DbPicker(container, SWT.NONE, null);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1);
         gd.widthHint = 480;
         grpDbData.setLayoutData(gd);
-        grpDbData.setText("DB Coordinates");
+        grpDbData.setText("DB Info");
         
         grpDbData.txtDbName.addModifyListener(dbModified);
         grpDbData.txtDbUser.addModifyListener(dbModified);

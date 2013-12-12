@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-public class DbCoords {
+public class DbInfo {
     
     /**
      * Delimiter for spacing parts of the coordinates.
@@ -26,7 +26,7 @@ public class DbCoords {
     public String dbhost;
     public int dbport;
     
-    public DbCoords(String name, String dbname, String dbuser, String dbpass,
+    public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport) {
         this.name = name;
         this.dbname = dbname;
@@ -36,13 +36,13 @@ public class DbCoords {
         this.dbport = dbport;
     }
     
-    public DbCoords(String coords) {
+    public DbInfo(String coords) {
         String[] parts = coords.split(Pattern.quote(String.valueOf(d)), -1);
         
         try {
             if(parts.length > 6) {
                 throw new ArrayIndexOutOfBoundsException(
-                        "Too many parts in the DbCoords string (>6)!");
+                        "Too many parts in the DbInfo string (>6)!");
             }
             
             this.name = parts[0];
@@ -52,12 +52,12 @@ public class DbCoords {
             this.dbhost = parts[4];
             this.dbport = Integer.parseInt(parts[5]);
         } catch (ArrayIndexOutOfBoundsException | NumberFormatException ex) {
-            throw new IllegalArgumentException("Bad DbCoords string: " + coords, ex);
+            throw new IllegalArgumentException("Bad DbInfo string: " + coords, ex);
         }
     }
     
-    public static DbCoords getEmpty(String name) {
-        return new DbCoords(name, "", "", "", "", 0);
+    public static DbInfo getEmpty(String name) {
+        return new DbInfo(name, "", "", "", "", 0);
     }
     
     @Override
@@ -84,15 +84,15 @@ public class DbCoords {
         return sb.toString();
     }
     
-    public static Map<String, DbCoords> preferenceToStore(String preference) {
+    public static Map<String, DbInfo> preferenceToStore(String preference) {
         String[] coordStrings = preference.split(
                 Pattern.quote(String.valueOf(d_entries)));
         
         // use LinkedHashmap for insertion-order iteration
-        Map<String, DbCoords> store = new LinkedHashMap<>(coordStrings.length);
+        Map<String, DbInfo> store = new LinkedHashMap<>(coordStrings.length);
         for(String coords : coordStrings) {
             try {
-                DbCoords c = new DbCoords(coords);
+                DbInfo c = new DbInfo(coords);
                 store.put(c.name, c);
             } catch(IllegalArgumentException ex) {
                 // just ignore broken entries
@@ -104,10 +104,10 @@ public class DbCoords {
         return store;
     }
     
-    public static String storeToPreference(Map<String, DbCoords> store) {
+    public static String storeToPreference(Map<String, DbInfo> store) {
         StringBuilder sb = new StringBuilder();
         
-        Iterator<Entry<String, DbCoords>> it = store.entrySet().iterator();
+        Iterator<Entry<String, DbInfo>> it = store.entrySet().iterator();
         while(it.hasNext()) {
             sb.append(it.next().getValue());
             if(it.hasNext()) {
