@@ -36,6 +36,7 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 
 public class NewProjWizard extends Wizard implements IPageChangingListener {
 
@@ -356,14 +357,12 @@ class PageDb extends WizardPage implements Listener {
 	
 	private Button radioDb, radioDump, radioNone;
 	
-	private Group grpDb, grpDump;
+	private DbPicker grpDb;
+	private Group grpDump;
 	
 	private Label lblNoSource;
 	
-	private Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort, 
-				txtDumpPath;
-	
-	private CLabel lblWarn;
+	private Text txtDumpPath;
 	
 	public boolean isSourceDb() {
 		return radioDb.getSelection();
@@ -389,24 +388,24 @@ class PageDb extends WizardPage implements Listener {
 	}
 	
 	public String getDbName() {
-		return txtDbName.getText();
+		return grpDb.txtDbName.getText();
 	}
 	
 	public String getDbUser() {
-		return txtDbUser.getText();
+		return grpDb.txtDbUser.getText();
 	}
 	
 	public String getDbPass() {
-		return txtDbPass.getText();
+		return grpDb.txtDbPass.getText();
 	}
 	
 	public String getDbHost() {
-		return txtDbHost.getText();
+		return grpDb.txtDbHost.getText();
 	}
 	
 	public int getDbPort() {
 		try {
-			return Integer.parseInt(txtDbPort.getText());
+			return Integer.parseInt(grpDb.txtDbPort.getText());
 		} catch(NumberFormatException ex) {
 			return 0;
 		}
@@ -492,74 +491,15 @@ class PageDb extends WizardPage implements Listener {
 		radioNone.addListener(SWT.Selection, this);
 		radioNone.setSelection(true);
 		
-		grpDb = new Group(container, SWT.NONE);
-		grpDb.setText("DB Source Settings (default if empty)");
+		grpDb = new DbPicker(container, SWT.NONE);
+		grpDb.setText("DB Source Settings");
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
 		gd.exclude = true;
 		gd.verticalIndent = 12;
 		grpDb.setLayoutData(gd);
-		grpDb.setLayout(new GridLayout(4, false));
 		grpDb.setVisible(false);
 		
-		new Label(grpDb, SWT.NONE).setText("DB Name: ");
-		
-		txtDbName = new Text(grpDb, SWT.BORDER);
-		txtDbName.setLayoutData(new GridData(
-				SWT.FILL, SWT.CENTER, true, false, 3, 1));
-		
-		new Label(grpDb, SWT.NONE).setText("DB User: ");
-		
-		txtDbUser = new Text(grpDb, SWT.BORDER);
-		txtDbUser.setLayoutData(new GridData(
-				SWT.FILL, SWT.CENTER, true, false, 3, 1));
-		
-		new Label(grpDb, SWT.NONE).setText("DB Password:");
-		
-		txtDbPass = new Text(grpDb, SWT.BORDER | SWT.PASSWORD);
-		txtDbPass.setLayoutData(new GridData(
-				SWT.FILL, SWT.CENTER, true, false, 3, 1));
-		txtDbPass.addModifyListener(new ModifyListener() {
-			
-			@Override
-			public void modifyText(ModifyEvent e) {
-				GridData gd = (GridData)lblWarn.getLayoutData();
-				
-				if((txtDbPass.getText().isEmpty() && !gd.exclude)
-						|| (!txtDbPass.getText().isEmpty() && gd.exclude)) {
-					lblWarn.setVisible(!lblWarn.getVisible());
-					gd.exclude = !gd.exclude;
-					
-					Shell sh = parent.getShell();
-					int width = sh.getSize().x;
-					int newht = sh.computeSize(width, SWT.DEFAULT).y;
-					sh.setSize(width, newht);
-					
-					grpDb.layout(false);
-				}
-			}
-		});
-        
-        lblWarn = new CLabel(grpDb, SWT.NONE);
-        lblWarn.setImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(
-                        UIConsts.FILENAME_ICONWARNING)).createImage());
-        lblWarn.setText("Warning:\n"
-                + "Providing password here is insecure!\n"
-                + "Consider using .pgpass file instead.");
-        gd = new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1);
-        gd.exclude = true;
-        lblWarn.setLayoutData(gd);
-        lblWarn.setVisible(false);
-		
-		new Label(grpDb, SWT.NONE).setText("DB Host:");
-		
-		txtDbHost = new Text(grpDb, SWT.BORDER);
-		txtDbHost.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		
-		new Label(grpDb, SWT.NONE).setText("Port:");
-		
-		txtDbPort = new Text(grpDb, SWT.BORDER);
-		txtDbPort.addListener(SWT.Modify, this);
+		grpDb.txtDbPort.addListener(SWT.Modify, this);
 		
 		grpDump = new Group(container, SWT.NONE);
 		grpDump.setText("Dump File Source Settings");
@@ -606,9 +546,9 @@ class PageDb extends WizardPage implements Listener {
 				(txtDumpPath.getText().isEmpty()
 						|| !new File(txtDumpPath.getText()).isFile())) {
 			errMsg = "Select a readable DB dump file!";
-		} else if(radioDb.getSelection() && !txtDbPort.getText().isEmpty()) {
+		} else if(radioDb.getSelection() && !grpDb.txtDbPort.getText().isEmpty()) {
 			try {
-				Integer.parseInt(txtDbPort.getText());
+				Integer.parseInt(grpDb.txtDbPort.getText());
 			} catch (NumberFormatException ex) {
 				errMsg = "Port must be a number!";
 			}

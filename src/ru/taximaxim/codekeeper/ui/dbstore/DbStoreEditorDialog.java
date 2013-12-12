@@ -14,17 +14,16 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -37,8 +36,7 @@ public class DbStoreEditorDialog extends TrayDialog {
     
     private Combo cmbDbNames;
     private Button btnSave, btnDel;
-    private Label lblName;
-    private Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort;
+    private DbPicker grpDbData;
     
     private ModifyListener dbModified = new ModifyListener() {
         @Override
@@ -85,6 +83,24 @@ public class DbStoreEditorDialog extends TrayDialog {
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText("DB Store editor");
+        
+        newShell.addShellListener(new ShellAdapter() {
+            @Override
+            public void shellActivated(ShellEvent e) {
+
+                // do pack-calling methods after open has returned
+                // otherwise shell is opened at (0,0) coordinates
+                // TODO replace computeSize calls with pack
+                grpDbData.setStoreEditMode();
+                
+                if(cmbDbNames.getItemCount() > 0) {
+                    cmbDbNames.select(0); // select an element and trigger modify event
+                }
+                
+                // one-time listener, remove after first execution
+                ((Shell) e.getSource()).removeShellListener(this);
+            }
+        });
     }
     
     @Override
@@ -108,12 +124,12 @@ public class DbStoreEditorDialog extends TrayDialog {
                 if(db == null) {
                     db = DbCoords.getEmpty("");
                 }
-                lblName.setText(db.name);
-                txtDbName.setText(db.dbname);
-                txtDbUser.setText(db.dbuser);
-                txtDbPass.setText(db.dbpass);
-                txtDbHost.setText(db.dbhost);
-                txtDbPort.setText(String.valueOf(db.dbport));
+                grpDbData.lblName.setText(db.name);
+                grpDbData.txtDbName.setText(db.dbname);
+                grpDbData.txtDbUser.setText(db.dbuser);
+                grpDbData.txtDbPass.setText(db.dbpass);
+                grpDbData.txtDbHost.setText(db.dbhost);
+                grpDbData.txtDbPort.setText(String.valueOf(db.dbport));
                 
                 btnSave.setEnabled(false);
                 btnDel.setEnabled(!cmbDbNames.getText().isEmpty());
@@ -167,25 +183,25 @@ public class DbStoreEditorDialog extends TrayDialog {
                 
                 int dbport;
                 try {
-                    if(txtDbPort.getText().isEmpty()) {
+                    if(grpDbData.txtDbPort.getText().isEmpty()) {
                         dbport = 0;
                     } else {
-                        dbport = Integer.parseInt(txtDbPort.getText());
+                        dbport = Integer.parseInt(grpDbData.txtDbPort.getText());
                     }
                 } catch (NumberFormatException ex) {
                     MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
                     mb.setText("Cannot save entry!");
-                    mb.setMessage("Not valid port number: " + txtDbPort.getText());
+                    mb.setMessage("Not valid port number: " + grpDbData.txtDbPort.getText());
                     mb.open();
                     return;
                 }
                 
                 DbCoords db = store.get(cmbDbNames.getText());
                 
-                db.dbname = txtDbName.getText();
-                db.dbuser = txtDbUser.getText();
-                db.dbpass = txtDbPass.getText();
-                db.dbhost = txtDbHost.getText();
+                db.dbname = grpDbData.txtDbName.getText();
+                db.dbuser = grpDbData.txtDbUser.getText();
+                db.dbpass = grpDbData.txtDbPass.getText();
+                db.dbhost = grpDbData.txtDbHost.getText();
                 db.dbport = dbport;
                 
                 btnSave.setEnabled(false);
@@ -218,47 +234,17 @@ public class DbStoreEditorDialog extends TrayDialog {
         });
         btnDel.setEnabled(false);
         
-        Group grpDbData = new Group(container, SWT.NONE);
-        grpDbData.setLayout(new GridLayout(4, false));
+        grpDbData = new DbPicker(container, SWT.NONE);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1);
         gd.widthHint = 480;
         grpDbData.setLayoutData(gd);
         grpDbData.setText("DB Coordinates");
         
-        new Label(grpDbData, SWT.NONE).setText("Entry Name:");
-        lblName = new Label(grpDbData, SWT.BORDER);
-        lblName.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 3, 1));
-        
-        new Label(grpDbData, SWT.NONE).setText("DB Name:");
-        txtDbName = new Text(grpDbData, SWT.BORDER);
-        txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 3, 1));
-        txtDbName.addModifyListener(dbModified);
-
-        new Label(grpDbData, SWT.NONE).setText("DB User:");
-        txtDbUser = new Text(grpDbData, SWT.BORDER);
-        txtDbUser.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 3, 1));
-        txtDbUser.addModifyListener(dbModified);
-
-        new Label(grpDbData, SWT.NONE).setText("DB Pass:");
-        txtDbPass = new Text(grpDbData, SWT.BORDER);
-        txtDbPass.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 3, 1));
-        txtDbPass.addModifyListener(dbModified);
-
-        new Label(grpDbData, SWT.NONE).setText("DB Host:");
-        txtDbHost = new Text(grpDbData, SWT.BORDER);
-        txtDbHost.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtDbHost.addModifyListener(dbModified);
-
-        new Label(grpDbData, SWT.NONE).setText("Port:");
-        txtDbPort = new Text(grpDbData, SWT.BORDER);
-        gd = new GridData();
-        gd.widthHint = 60;
-        txtDbPort.setLayoutData(gd);
-        txtDbPort.addModifyListener(dbModified);
-        
-        if(cmbDbNames.getItemCount() > 0) {
-            cmbDbNames.select(0); // select an element and trigger modify event
-        }
+        grpDbData.txtDbName.addModifyListener(dbModified);
+        grpDbData.txtDbUser.addModifyListener(dbModified);
+        grpDbData.txtDbPass.addModifyListener(dbModified);
+        grpDbData.txtDbHost.addModifyListener(dbModified);
+        grpDbData.txtDbPort.addModifyListener(dbModified);
         
         return parent;
     }

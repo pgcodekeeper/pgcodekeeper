@@ -70,6 +70,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.CheckedTreeViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
@@ -217,14 +218,16 @@ class PageDiff extends WizardPage implements Listener {
     
     private Group currentTargetGrp;
     
-    private Group grpDb, grpDump, grpSvn, grpProj;
+    private DbPicker grpDb;
     
-    private Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort,
+    private Group grpDump, grpSvn, grpProj;
+    
+    private Text
         txtDumpPath,
         txtSvnUrl, txtSvnUser, txtSvnPass, txtSvnRev,
         txtProjPath, txtProjRev;
     
-    private CLabel lblWarnDbPass, lblWarnSvnPass;
+    private CLabel lblWarnSvnPass;
     
     private Combo cmbEncoding;
     
@@ -246,24 +249,24 @@ class PageDiff extends WizardPage implements Listener {
     }
     
     public String getDbName() {
-        return txtDbName.getText();
+        return grpDb.txtDbName.getText();
     }
     
     public String getDbUser() {
-        return txtDbUser.getText();
+        return grpDb.txtDbUser.getText();
     }
     
     public String getDbPass() {
-        return txtDbPass.getText();
+        return grpDb.txtDbPass.getText();
     }
     
     public String getDbHost() {
-        return txtDbHost.getText();
+        return grpDb.txtDbHost.getText();
     }
     
     public int getDbPort() {
         try {
-            return Integer.parseInt(txtDbPort.getText());
+            return Integer.parseInt(grpDb.txtDbPort.getText());
         } catch(NumberFormatException ex) {
             return 0;
         }
@@ -406,74 +409,15 @@ class PageDiff extends WizardPage implements Listener {
         radioProj.setText("Project");
         radioProj.addSelectionListener(switcher);
         
-        grpDb = new Group(container, SWT.NONE);
+        grpDb = new DbPicker(container, SWT.NONE);
         grpDb.setText("DB target");
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         grpDb.setLayoutData(gd);
-        grpDb.setLayout(new GridLayout(4, false));
         
         currentTargetGrp = grpDb;
         
-        new Label(grpDb, SWT.NONE).setText("DB Name: ");
-        
-        txtDbName = new Text(grpDb, SWT.BORDER);
-        txtDbName.setLayoutData(new GridData(
-                SWT.FILL, SWT.CENTER, true, false, 3, 1));
-        
-        new Label(grpDb, SWT.NONE).setText("DB User: ");
-        
-        txtDbUser = new Text(grpDb, SWT.BORDER);
-        txtDbUser.setLayoutData(new GridData(
-                SWT.FILL, SWT.CENTER, true, false, 3, 1));
-        
-        new Label(grpDb, SWT.NONE).setText("DB Password:");
-        
-        txtDbPass = new Text(grpDb, SWT.BORDER | SWT.PASSWORD);
-        txtDbPass.setLayoutData(new GridData(
-                SWT.FILL, SWT.CENTER, true, false, 3, 1));
-        txtDbPass.addModifyListener(new ModifyListener() {
-            
-            @Override
-            public void modifyText(ModifyEvent e) {
-                GridData gd = (GridData)lblWarnDbPass.getLayoutData();
-                
-                if((txtDbPass.getText().isEmpty() && !gd.exclude)
-                        || (!txtDbPass.getText().isEmpty() && gd.exclude)) {
-                    lblWarnDbPass.setVisible(!lblWarnDbPass.getVisible());
-                    gd.exclude = !gd.exclude;
-                    
-                    Shell sh = container.getShell();
-                    int width = sh.getSize().x;
-                    int newht = sh.computeSize(width, SWT.DEFAULT).y;
-                    sh.setSize(width, newht);
-                    
-                    grpDb.layout(false);
-                }
-            }
-        });
-        
-        lblWarnDbPass = new CLabel(grpDb, SWT.NONE);
-        lblWarnDbPass.setImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(
-                        UIConsts.FILENAME_ICONWARNING)).createImage());
-        lblWarnDbPass.setText("Warning:\n"
-                + "Providing password here is insecure!\n"
-                + "Consider using .pgpass file instead.");
-        gd = new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1);
-        gd.exclude = true;
-        lblWarnDbPass.setLayoutData(gd);
-        lblWarnDbPass.setVisible(false);
-        
-        new Label(grpDb, SWT.NONE).setText("DB Host:");
-        
-        txtDbHost = new Text(grpDb, SWT.BORDER);
-        txtDbHost.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        
-        new Label(grpDb, SWT.NONE).setText("Port:");
-        
-        txtDbPort = new Text(grpDb, SWT.BORDER);
-        txtDbPort.addListener(SWT.Modify, this);
+        grpDb.txtDbPort.addListener(SWT.Modify, this);
         
         grpDump = new Group(container, SWT.NONE);
         grpDump.setText("Dump target");
@@ -701,9 +645,9 @@ class PageDiff extends WizardPage implements Listener {
         
         switch(getTargetType()) {
         case DB:
-            if(!txtDbPort.getText().isEmpty()) {
+            if(!grpDb.txtDbPort.getText().isEmpty()) {
                 try {
-                    Integer.parseInt(txtDbPort.getText());
+                    Integer.parseInt(grpDb.txtDbPort.getText());
                 } catch(NumberFormatException ex) {
                     errMsg = "Port must be a number!";
                 }
