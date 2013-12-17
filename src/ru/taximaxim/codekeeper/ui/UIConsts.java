@@ -7,6 +7,8 @@ package ru.taximaxim.codekeeper.ui;
  * @author Alexander Levsha
  */
 public interface UIConsts {
+    
+    String VERSION = "0.0.2.dev";
 
 	String PLUGIN_ID = "ru.taximaxim.codekeeper.ui";
 	String PREF_STORE = PLUGIN_ID + ".preferenceStore";

@@ -108,7 +108,9 @@ class DbStorePrefPage extends FieldEditorPreferencePage {
 	
 	@Override
 	public boolean performOk() {
-	    getPreferenceStore().setValue(UIConsts.PREF_DB_STORE, preference);
+	    if(getPreferenceStore() != null) {
+	        getPreferenceStore().setValue(UIConsts.PREF_DB_STORE, preference);
+	    }
 	    return true;
 	}
 }

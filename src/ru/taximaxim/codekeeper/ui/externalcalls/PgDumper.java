@@ -1,11 +1,16 @@
 package ru.taximaxim.codekeeper.ui.externalcalls;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.ProcBuilderUtils;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 
 public class PgDumper {
+    
+    private final static Pattern PATTERN_VERSION = Pattern.compile(
+            "^(?:pg_dump[\\s]+\\(PostgreSQL\\)[\\s]+)([\\d]+\\.[\\d]+\\.[\\d]+)$");
 
     final private String exePgdump;
 
@@ -27,6 +32,21 @@ public class PgDumper {
         this.dumpFile = dumpFile;
     }
     
+    /**
+     * Constructs an object for simple operations,
+     * not requiring credentials and other information.
+     * 
+     * Such operations WILL THROW NPEs when performed on this object.
+     * 
+     * @param svnExec
+     */
+    public PgDumper(String exePgdump) {
+        this.exePgdump = exePgdump;
+        
+        host = user = pass = dbname = encoding = dumpFile = null;
+        port = 0;
+    }
+    
 	public void pgDump() throws IOException {
 		ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
 				"--file=" + dumpFile,
@@ -42,5 +62,16 @@ public class PgDumper {
         env.addEnv("PGCLIENTENCODING", encoding);
 		
 		StdStreamRedirector.launchAndRedirect(pgdump);
+	}
+	
+	public String getVersion() throws IOException {
+	    ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
+	            "--version", "--no-password");
+	    String version = StdStreamRedirector.launchAndRedirect(pgdump).trim();
+	    Matcher m = PATTERN_VERSION.matcher(version);
+	    if(!m.matches()) {
+	        throw new IOException("Bad pg_dump --version output: " + version);
+	    }
+	    return m.group(1);
 	}
 }

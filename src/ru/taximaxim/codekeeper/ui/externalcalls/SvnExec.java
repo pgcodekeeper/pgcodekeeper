@@ -20,6 +20,9 @@ public class SvnExec {
 	private static final Pattern PATTERN_UNVERSIONED = Pattern.compile(
 			"^(?:\\?[\\s]+)(.*)$", Pattern.MULTILINE);
 	
+	private static final Pattern PATTERN_VERSION = Pattern.compile(
+	        "^[\\d]+\\.[\\d]+\\.[\\d]+$");
+	
 	private final String svnExec;
 	
 	private final String url, user, pass;
@@ -37,6 +40,20 @@ public class SvnExec {
 	            proj.getString(UIConsts.PROJ_PREF_SVN_URL),
 	            proj.getString(UIConsts.PROJ_PREF_SVN_USER),
 	            proj.getString(UIConsts.PROJ_PREF_SVN_PASS));
+	}
+	
+	/**
+	 * Constructs an object for simple operations,
+	 * not requiring credentials and/or repository URL.
+	 * 
+	 * Such operations WILL THROW NPEs when performed on this object.
+	 * 
+	 * @param svnExec
+	 */
+	public SvnExec(String svnExec) {
+	    this.svnExec = svnExec;
+	    
+	    url = user = pass = null;
 	}
 	
 	public void svnCo(File dirTo) throws IOException {
@@ -163,5 +180,16 @@ public class SvnExec {
 		if(url != null) {
 			pb.command().add(url);
 		}
+	}
+	
+	public String svnGetVersion() throws IOException {
+	    ProcessBuilder svn = new ProcessBuilder(svnExec,
+	            "--version", "--quiet",
+	            "--non-interactive");
+	    String version = StdStreamRedirector.launchAndRedirect(svn).trim();
+	    if(!PATTERN_VERSION.matcher(version).matches()) {
+	        throw new IOException("Bad svn --version output: " + version);
+	    }
+	    return version;
 	}
 }
