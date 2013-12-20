@@ -23,6 +23,10 @@
                name="clearPersistedState"
                value="true">
          </property>
+         <property
+               name="lifeCycleURI"
+               value="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.LifeCycleHandler">
+         </property>
       </product>
    </extension>
 
