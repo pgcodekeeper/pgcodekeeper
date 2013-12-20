@@ -6,12 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.CanExecute;
-import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.ComboFieldEditor;
@@ -39,22 +37,19 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePickerDialog;
-import ru.taximaxim.codekeeper.ui.parts.ProjectPartDescriptor;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.FakePrefPageExtension;
 import ru.taximaxim.codekeeper.ui.prefs.PrefDialogFactory;
 
 public class ProjProps {
-	
-	@Inject
-	@Named(IServiceConstants.ACTIVE_PART)
-	MPart part;
-	
+
 	@Execute
 	public void execute(
             @Named(UIConsts.PREF_STORE)
             IPreferenceStore mainPrefs,
 			@Named(IServiceConstants.ACTIVE_SHELL)
-			Shell shell) {
+			Shell shell,
+			PgDbProject proj) {
 		
 		FakePrefPageExtension[] propPages = {
                 new FakePrefPageExtension("projprefs.0.pagesvn", "SVN Settings",
@@ -67,14 +62,12 @@ public class ProjProps {
 						new MiscSettingPage(), null)
 				};
 		
-		IPreferenceStore prefStore = ((ProjectPartDescriptor) part.getObject())
-				.getProject();
-		PrefDialogFactory.show(shell, prefStore, propPages);
+		PrefDialogFactory.show(shell, proj, propPages);
 	}
 	
 	@CanExecute
-	public boolean canExecute() {
-	    return part.getElementId().equals(UIConsts.PROJ_PART_DESCR_ID);
+	public boolean canExecute(PgDbProject proj) {
+	    return proj != null;
 	}
 }
 

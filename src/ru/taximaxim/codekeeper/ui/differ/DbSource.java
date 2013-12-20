@@ -215,10 +215,8 @@ class DbSourceDb extends DbSource {
     
     DbSourceDb(String exePgdump, String host, int port,
             String user, String pass, String dbname, String encoding) {
-        super((host.isEmpty() && dbname.isEmpty())? "Undisclosed DB"
-                : (host.isEmpty()? dbname + "@unknown_host"
-                        : (dbname.isEmpty() ? "unknown_db@" + host
-                                : dbname + "@" + host)));
+        super((dbname.isEmpty()? "unknown_db" : dbname)
+                + "@" + (host.isEmpty()? "unknown_host" : host));
         
         this.exePgdump = exePgdump;
         this.host = host;

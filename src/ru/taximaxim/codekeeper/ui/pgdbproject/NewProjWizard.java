@@ -58,6 +58,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
 		return props;
 	}
 	
+	// TODO if init is not selected pageDb makes no sense
 	@Override
 	public void addPages() {
         pageSvn = new PageSvn("SVN settings");

@@ -66,6 +66,7 @@ public class AddonExternalTools {
             Console.addMessage("Error while trying to run svn --version!"
                     + " Check paths in program preferences.");
             ex.printStackTrace();
+            setSvnVersion("<unknown>");
         }
         try {
             setPgdumpVersion(new PgDumper(pgdumpExec).getVersion());
@@ -73,6 +74,7 @@ public class AddonExternalTools {
             Console.addMessage("Error while tryeing to run pg_dump --version!"
                     + "Check paths in program preferences.");
             ex.printStackTrace();
+            setPgdumpVersion("<unknown>");
         }
     }
     

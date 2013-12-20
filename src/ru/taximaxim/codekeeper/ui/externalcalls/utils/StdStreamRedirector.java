@@ -24,7 +24,7 @@ public class StdStreamRedirector implements Runnable {
 	 * @param in {@link InputStream} to 
 	 */
 	private StdStreamRedirector(InputStream in) {
-		this.in = new BufferedReader(new InputStreamReader(in));
+		this.in = new BufferedReader(new InputStreamReader(in)); // TODO dispose ?
 	}
 	
 	@Override
@@ -35,7 +35,7 @@ public class StdStreamRedirector implements Runnable {
 				Console.addMessage(line);
 				storage.append(line);
 				storage.append(System.lineSeparator());
-		}
+			}
 		} catch(IOException ex) {
 			throw new IllegalStateException(
 					"Error while reading from stdout/stderr", ex);
