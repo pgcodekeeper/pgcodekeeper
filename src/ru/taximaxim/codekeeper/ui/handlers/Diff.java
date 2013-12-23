@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.handlers;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.CancellationException;
 
 import javax.inject.Named;
 
@@ -12,8 +11,6 @@ import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -29,19 +26,11 @@ public class Diff {
             Shell shell,
             @Named(UIConsts.PREF_STORE)
             IPreferenceStore prefStore) throws IOException, InvocationTargetException {
-	    try {
-	        // FIXME
-	        ProjSyncSrc.sync(proj, shell, prefStore);
-	        
-	        WizardDialog dialog = new WizardDialog(
-	                shell, new DiffWizard(proj, prefStore));
-	        dialog.open();
-	    } catch(CancellationException ex) {
-	        MessageBox mb = new MessageBox(shell, SWT.ICON_CANCEL);
-            mb.setText("Diff operation");
-            mb.setMessage("Diff operation cancelled.");
-            mb.open();
-	    }
+        if(ProjSyncSrc.sync(proj, shell, prefStore)) {
+            WizardDialog dialog = new WizardDialog(
+                    shell, new DiffWizard(proj, prefStore));
+            dialog.open();
+        }
 	}
 	
 	@CanExecute

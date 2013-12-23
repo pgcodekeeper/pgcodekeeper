@@ -4,8 +4,6 @@ package ru.taximaxim.codekeeper.ui.parts;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.charset.UnsupportedCharsetException;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -13,6 +11,9 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.swt.modeling.EMenuService;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -36,6 +37,13 @@ public class ProjectExplorer {
     
     @Inject
     private PgDbProject proj;
+    
+    @Inject
+    EModelService model;
+    @Inject
+    EPartService partService;
+    @Inject
+    MApplication app;
     
     private TreeViewer treeDb;
     
@@ -130,36 +138,26 @@ public class ProjectExplorer {
                 return imgFile;
             }
         });
-        
-        changeProject(proj);
-        
         treeDb.addDoubleClickListener(new IDoubleClickListener() {
             
             @Override
             public void doubleClick(DoubleClickEvent event) {
                 TreePath path = ((TreeSelection) event.getSelection()).getPaths()[0];
-                File f = (File) path.getLastSegment();
+                final File f = (File) path.getLastSegment();
                 
                 if(f.isDirectory()) {
                     TreeViewer viewer = (TreeViewer)event.getViewer();
                     viewer.setExpandedState(path, !viewer.getExpandedState(path));
                     viewer.refresh();
-                    return;
-                }
-                try {
-//                    txt.setText(
-                            new String(Files.readAllBytes(f.toPath()),
-                            proj.getString(UIConsts.PROJ_PREF_ENCODING))
-//                            )
-                            ;
-                } catch(IOException | UnsupportedCharsetException ex) {
-                    throw new IllegalStateException("Exception while reading file", ex);
+                } else {
+                    SqlEditorDescr.openNew(f, model, partService, app);
                 }
             }
         });
-        
         menuService.registerContextMenu(treeDb.getControl(),
-                "ru.taximaxim.codekeeper.ui.popupmenu.project");
+                UIConsts.PART_PROJXP_TREE_POPUP);
+        
+        changeProject(proj);
     }
     
     @Inject

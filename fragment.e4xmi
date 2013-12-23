@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ASCII"?>
-<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:advanced="http://www.eclipse.org/ui/2010/UIModel/application/ui/advanced" xmlns:application="http://www.eclipse.org/ui/2010/UIModel/application" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:commands="http://www.eclipse.org/ui/2010/UIModel/application/commands" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmlns:menu="http://www.eclipse.org/ui/2010/UIModel/application/ui/menu" xmi:id="_JkJ3UBkTEeOnvtl1yaIPzA">
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:advanced="http://www.eclipse.org/ui/2010/UIModel/application/ui/advanced" xmlns:application="http://www.eclipse.org/ui/2010/UIModel/application" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:basic_1="http://www.eclipse.org/ui/2010/UIModel/application/descriptor/basic" xmlns:commands="http://www.eclipse.org/ui/2010/UIModel/application/commands" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmlns:menu="http://www.eclipse.org/ui/2010/UIModel/application/ui/menu" xmi:id="_JkJ3UBkTEeOnvtl1yaIPzA">
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_BGHjQCtXEeOOlv4Y_5F9zw" featurename="addons" parentElementId="org.eclipse.e4.ide.application">
     <elements xsi:type="application:Addon" xmi:id="_EnG9wCtXEeOOlv4Y_5F9zw" elementId="ru.taximaxim.codekeeper.ui.addon.PrefLoader" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.AddonPrefLoader"/>
     <elements xsi:type="application:Addon" xmi:id="_j51ygGY_EeOS2eJJtn_juQ" elementId="ru.taximaxim.codekeeper.ui.addon.AddonExternalTools" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.AddonExternalTools"/>
@@ -17,6 +17,9 @@
       <children xsi:type="menu:Menu" xmi:id="_oZAFMCnVEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.menu.0" label="&amp;File">
         <children xsi:type="menu:HandledMenuItem" xmi:id="_fAWkQCzJEeOC9s_7P-LAEQ" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.3" label="&amp;New Project..." command="_1JlsQCzJEeOC9s_7P-LAEQ"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_e5l6wDYmEeOu39tpQ1Oozg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.5" label="&amp;Load Project..." command="_o6NrIDYmEeOu39tpQ1Oozg"/>
+        <children xsi:type="menu:MenuSeparator" xmi:id="_G68hkGlxEeO0LoNj8g6FWw" elementId="ru.taximaxim.codekeeper.ui.menuseparator.2"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_HyIoQGlxEeO0LoNj8g6FWw" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.12" label="Close Project" command="_H_VU0DfvEeOJGp3TAROjKg"/>
+        <children xsi:type="menu:MenuSeparator" xmi:id="_UgkpwGlxEeO0LoNj8g6FWw" elementId="ru.taximaxim.codekeeper.ui.menuseparator.3"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_tIyOECnVEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.2" label="E&amp;xit" command="_Zjel8CnWEeObfOm2RjyZmw"/>
       </children>
       <children xsi:type="menu:Menu" xmi:id="_wKDhsDsjEeOHuJV2eZ06pg" elementId="ru.taximaxim.codekeeper.ui.menu.3" label="&amp;Project">
@@ -103,6 +106,11 @@
           <children xsi:type="basic:Part" xmi:id="_tH1W4C_rEeOAX7xkg-kwLg" elementId="ru.taximaxim.codekeeper.ui.part.CtXp" contributionURI="bundleclass://com.opcoach.e4.contextExplorer/com.opcoach.e4.contextExplorer.parts.ContextExplorerPart" label="ContextXp"/>
         </children>
       </children>
+    </elements>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_MRaWUGl5EeO0LoNj8g6FWw" featurename="descriptors" parentElementId="org.eclipse.e4.ide.application">
+    <elements xsi:type="basic_1:PartDescriptor" xmi:id="_Qr2hUGl5EeO0LoNj8g6FWw" elementId="ru.taximaxim.codekeeper.ui.partdescriptor.SQLEditorDescr" label="{sql filename PH}" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/file_obj.gif" allowMultiple="true" closeable="true" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.SqlEditorDescr">
+      <tags>removeOnHide</tags>
     </elements>
   </fragments>
 </fragment:ModelFragments>

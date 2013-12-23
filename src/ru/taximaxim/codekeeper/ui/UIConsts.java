@@ -12,6 +12,10 @@ public interface UIConsts {
 
 	String PLUGIN_ID = "ru.taximaxim.codekeeper.ui";
 	String PREF_STORE = PLUGIN_ID + ".preferenceStore";
+	String PART_STACK_EDITORS = PLUGIN_ID + ".partstack.Editors";
+	String PART_SQL_EDITOR = PLUGIN_ID + ".partdescriptor.SQLEditorDescr";
+	String PART_SQL_EDITOR_FILENAME = PART_SQL_EDITOR + ".filename";
+	String PART_PROJXP_TREE_POPUP = PLUGIN_ID + ".popupmenu.project";
 	
 	// Preferences
 	String PREF_SVN_EXE_PATH = "prefSvnExePath";
