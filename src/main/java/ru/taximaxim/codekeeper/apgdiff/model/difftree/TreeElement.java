@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -195,5 +196,35 @@ public class TreeElement {
     
     public int countChildren() {
         return children.size();
+    }
+    
+    /**
+     * Gets corresponding {@link PgStatement} from Database model.
+     * 
+     * @param db
+     * @return
+     */
+    public PgStatement getPgStatement(PgDatabase db) {
+        switch(type) {
+        // container (if root) and database end recursion
+        // if container is not root - just pass through it
+        case CONTAINER:  return (parent == null) ? db : parent.getPgStatement(db);
+        case DATABASE:   return db;
+        
+        // other elements just get from their parent, and their parent from a parent above them etc
+        case EXTENSION:  return ((PgDatabase) parent.getPgStatement(db)).getExtension(name);
+        case SCHEMA:     return ((PgDatabase) parent.getPgStatement(db)).getSchema(name);
+        
+        case FUNCTION:   return ((PgSchema) parent.getPgStatement(db)).getFunction(name);
+        case SEQUENCE:   return ((PgSchema) parent.getPgStatement(db)).getSequence(name);
+        case VIEW:       return ((PgSchema) parent.getPgStatement(db)).getView(name);
+        case TABLE:      return ((PgSchema) parent.getPgStatement(db)).getTable(name);
+        
+        case INDEX:      return ((PgTable) parent.getPgStatement(db)).getIndex(name);
+        case TRIGGER:    return ((PgTable) parent.getPgStatement(db)).getTrigger(name);
+        case CONSTRAINT: return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
+        }
+        
+        throw new IllegalStateException("Unknown element type: " + type);
     }
 }
