@@ -6,7 +6,7 @@ import org.eclipse.e4.ui.workbench.IWorkbench;
 
 public class Exit {
 	@Execute
-	public void execute(IWorkbench wb) {
+	private void execute(IWorkbench wb) {
 		wb.close();
 	}
 }

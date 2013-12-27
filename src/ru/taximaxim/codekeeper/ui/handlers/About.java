@@ -11,7 +11,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class About {
 	@Execute
-	public void execute(Shell parentShell) {
+	private void execute(Shell parentShell) {
 		MessageBox m = new MessageBox(parentShell, SWT.ICON_INFORMATION);
 		m.setText("About pgCodeKeeper...");
 		m.setMessage(String.format(

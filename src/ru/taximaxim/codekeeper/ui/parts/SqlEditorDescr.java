@@ -25,10 +25,10 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 public class SqlEditorDescr {
     
     @Inject
-    MPart part;
+    private MPart part;
     
     @Inject
-    EPartService partService;
+    private EPartService partService;
     
     @PostConstruct
     private void postConstruct(Composite parent, PgDbProject proj)
@@ -55,16 +55,12 @@ public class SqlEditorDescr {
     private void projectChanged(PgDbProject proj) {
         File myFile = new File(
                 part.getPersistedState().get(UIConsts.PART_SQL_EDITOR_FILENAME));
-        if(!myFile.toPath().startsWith(proj.getProjectSchemaDir().toPath())) {
-            partService.hidePart(part, true);
+        if(proj == null
+                || !myFile.toPath().startsWith(proj.getProjectSchemaDir().toPath())) {
+            partService.hidePart(part);
         }
     }
     
-    /**
-     * Creates a new editor part from the part descriptor.
-     * 
-     * @param file
-     */
     public static void openNew(File file, EModelService model, EPartService partService,
             MApplication app) {
         for(MPart existingPart : model.findElements(
@@ -81,6 +77,6 @@ public class SqlEditorDescr {
         newEditor.getPersistedState().put(
                 UIConsts.PART_SQL_EDITOR_FILENAME, file.getAbsolutePath());
         ((MPartStack) model.find(UIConsts.PART_STACK_EDITORS, app)).getChildren().add(newEditor);
-        partService.activate(newEditor);
+        partService.activate(newEditor, false);
     }
 }

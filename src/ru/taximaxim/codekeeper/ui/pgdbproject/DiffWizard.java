@@ -9,44 +9,24 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.viewers.CheckboxTreeViewer;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.StyledCellLabelProvider;
-import org.eclipse.jface.viewers.TreePath;
-import org.eclipse.jface.viewers.TreeSelection;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -64,13 +44,12 @@ import org.eclipse.swt.widgets.Text;
 
 import cz.startnet.utils.pgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.CheckedTreeViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import ru.taximaxim.codekeeper.ui.differ.DiffTreeViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 
@@ -135,8 +114,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                         treediffer.getDiffTree());
                 pagePartial.layout();
             } else if(e.getCurrentPage() == pagePartial && e.getTargetPage() == pageResult) {
-                TreeElement filtered = filterDiffTree(pagePartial.getDiffTree(),
-                        (TreeElement) pagePartial.getDiffTree().getInput());
+                TreeElement filtered = pagePartial.getDiffTree().filterDiffTree();
                 
                 DbSource dbSource = DbSource.fromFilter(
                         this.dbSource, filtered, DiffSide.LEFT);
@@ -162,29 +140,6 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             e.doit = false;
             throw ex;
         }
-    }
-    
-    // recursively copy only selected tree elements into a new tree
-    private TreeElement filterDiffTree(CheckboxTreeViewer viewer,
-            TreeElement diffTree) {
-        if(diffTree.getType() != DbObjType.CONTAINER 
-                && !viewer.getChecked(diffTree)
-                && !viewer.getGrayed(diffTree)) {
-            // skip unselected non-root nodes and all their children
-            return null;
-        }
-        
-        TreeElement copy = new TreeElement(
-                diffTree.getName(), diffTree.getType(),
-                diffTree.getContainerType(), diffTree.getSide());
-        
-        for(TreeElement sub : diffTree.getChildren()) {
-            TreeElement subCopy = filterDiffTree(viewer, sub);
-            if(subCopy != null) {
-                copy.addChild(subCopy);
-            }
-        }
-        return copy;
     }
     
     @Override
@@ -690,17 +645,15 @@ class PagePartial extends WizardPage {
     
     private Label lblSource, lblTarget;
     
-    private CheckboxTreeViewer diffTree;
-    
-    private Button btnDebugView;
+    private DiffTreeViewer diffTree;
     
     public void setData(String source, String target, TreeElement root) {
         lblSource.setText(source);
         lblTarget.setText(target);
-        diffTree.setInput(root);
+        diffTree.setTreeInput(root);
     }
     
-    public CheckboxTreeViewer getDiffTree() {
+    public DiffTreeViewer getDiffTree() {
         return diffTree;
     }
     
@@ -735,217 +688,10 @@ class PagePartial extends WizardPage {
         gd.widthHint = 600;
         lblTarget.setLayoutData(gd);
         
-        diffTree = new CheckedTreeViewer(container);
+        diffTree = new DiffTreeViewer(container, SWT.NONE);
         gd = new GridData(GridData.FILL_BOTH);
         gd.verticalIndent = 12;
-        diffTree.getTree().setLayoutData(gd);
-        
-        diffTree.setContentProvider(new ITreeContentProvider() {
-            
-            @Override
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            }
-            
-            @Override
-            public void dispose() {
-            }
-            
-            @Override
-            public boolean hasChildren(Object element) {
-                return ((TreeElement) element).hasChildren();
-            }
-            
-            @Override
-            public Object getParent(Object element) {
-                return ((TreeElement) element).getParent();
-            }
-            
-            @Override
-            public Object[] getElements(Object inputElement) {
-                return ((TreeElement) inputElement).getChildren().toArray();
-            }
-            
-            @Override
-            public Object[] getChildren(Object parentElement) {
-                return getElements(parentElement);
-            }
-        });
-        diffTree.setLabelProvider(new StyledCellLabelProvider() {
-            
-            private final Map<DbObjType, Image> mapObjIcons =
-                    new HashMap<>(DbObjType.values().length);
-            private final Map<DbObjType, Image> mapContIcons = 
-                    new HashMap<>(DbObjType.values().length);
-            
-            {
-                for(DbObjType objType : DbObjType.values()) {
-                    ImageDescriptor iObj = ImageDescriptor.createFromURL(
-                            Activator.getContext().getBundle().getResource(
-                                    UIConsts.FILENAME_ICONPGADMIN
-                                    + objType.toString().toLowerCase()
-                                    + ".png"));
-                    ImageDescriptor iCont = ImageDescriptor.createFromURL(
-                            Activator.getContext().getBundle().getResource(
-                                    UIConsts.FILENAME_ICONPGADMIN
-                                    + objType.toString().toLowerCase()
-                                    + "s.png"));
-                    
-                    mapObjIcons.put(objType, iObj.createImage());
-                    mapContIcons.put(objType, iCont.createImage());
-                }
-            }
-            
-            @Override
-            public void update(ViewerCell cell) {
-                TreeElement el = (TreeElement) cell.getElement();
-                List<StyleRange> styles = new ArrayList<>();
-                Image icon = null;
-                
-                if(btnDebugView.getSelection()) {
-                    cell.setText(String.format("%s:%s:%s",
-                            el.getType(), el.getName(), el.getSide()));
-                } else {
-                    StringBuilder label = new StringBuilder(el.getName());
-                    
-                    if(el.getType() == DbObjType.CONTAINER) {
-                        label.append(" (")
-                            .append(el.countChildren())
-                            .append(") [")
-                            .append(el.countDescendants())
-                            .append(']');
-                        
-                        TextStyle styleGray = new TextStyle();
-                        styleGray.foreground = getShell().getDisplay()
-                                .getSystemColor(SWT.COLOR_GRAY);
-                        
-                        StyleRange styleCount = new StyleRange(styleGray);
-                        styleCount.start = el.getName().length();
-                        styleCount.length = label.length() - el.getName().length();
-                        
-                        styles.add(styleCount);
-                        
-                        icon = mapContIcons.get(el.getContainerType());
-                    } else {
-                        icon = mapObjIcons.get(el.getType());
-                    }
-                    
-                    cell.setText(label.toString());
-                }
-                
-                cell.setStyleRanges(styles.toArray(new StyleRange[styles.size()]));
-                cell.setImage(icon);
-                
-                super.update(cell);
-            }
-        });
-        
-        diffTree.addDoubleClickListener(new IDoubleClickListener() {
-            
-            @Override
-            public void doubleClick(DoubleClickEvent event) {
-                TreePath path = ((TreeSelection) event.getSelection()).getPaths()[0];
-                TreeViewer viewer = (TreeViewer) event.getViewer();
-                viewer.setExpandedState(path, !viewer.getExpandedState(path));
-                viewer.refresh();
-            }
-        });
-        
-        MenuManager menuMgr = new MenuManager();
-        menuMgr.add(new Action("Select Subtree") {
-            @Override
-            public void run() {
-                TreeElement el = 
-                        (TreeElement) ((TreeSelection) diffTree.getSelection())
-                            .getFirstElement();
-                diffTree.setSubtreeChecked(el, true);
-            }
-        });
-        menuMgr.add(new Action("Deselect Subtree") {
-            @Override
-            public void run() {
-                TreeElement el = 
-                        (TreeElement) ((TreeSelection) diffTree.getSelection())
-                            .getFirstElement();
-                diffTree.setSubtreeChecked(el, false);
-            }
-        });
-        menuMgr.add(new Separator());
-        menuMgr.add(new Action("Expand Subtree") {
-            @Override
-            public void run() {
-                TreePath path = ((TreeSelection) diffTree.getSelection()).getPaths()[0];
-                diffTree.expandToLevel(path, TreeViewer.ALL_LEVELS);
-            }
-        });
-        menuMgr.add(new Action("Collapse Subtree") {
-            @Override
-            public void run() {
-                TreePath path = ((TreeSelection) diffTree.getSelection()).getPaths()[0];
-                diffTree.collapseToLevel(path, TreeViewer.ALL_LEVELS);
-            }
-        });
-        
-        diffTree.getControl().setMenu(
-                menuMgr.createContextMenu(diffTree.getControl()));
-        
-        Composite contButtons = new Composite(container, SWT.NONE);
-        contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout contButtonsLayout = new GridLayout(5, false);
-        contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
-        contButtons.setLayout(contButtonsLayout);
-        
-        Button btnSelectAll = new Button(contButtons, SWT.PUSH);
-        btnSelectAll.setText("Select All");
-        btnSelectAll.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                TreeElement root = (TreeElement) diffTree.getInput();
-                for(TreeElement sub : root.getChildren()) {
-                    diffTree.setSubtreeChecked(sub, true);
-                }
-            }
-        });
-        
-        Button btnSelectNone = new Button(contButtons, SWT.PUSH);
-        btnSelectNone.setText("Select None");
-        btnSelectNone.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                TreeElement root = (TreeElement) diffTree.getInput();
-                for(TreeElement sub : root.getChildren()) {
-                    diffTree.setSubtreeChecked(sub, false);
-                }
-            }
-        });
-        
-        Button btnExpandAll = new Button(contButtons, SWT.PUSH);
-        btnExpandAll.setText("Expand All");
-        btnExpandAll.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                diffTree.expandAll();
-            }
-        });
-        
-        Button btnCollapseAll = new Button(contButtons, SWT.PUSH);
-        btnCollapseAll.setText("Collapse All");
-        btnCollapseAll.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                diffTree.collapseAll();
-            }
-        });
-        
-        btnDebugView = new Button(contButtons, SWT.CHECK);
-        btnDebugView.setText("Debug view");
-        btnDebugView.setLayoutData(new GridData(
-                GridData.HORIZONTAL_ALIGN_END | GridData.FILL_HORIZONTAL));
-        btnDebugView.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                diffTree.refresh();
-            }
-        });
+        diffTree.setLayoutData(gd);
         
         setControl(container);
     }

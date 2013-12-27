@@ -44,7 +44,7 @@ import ru.taximaxim.codekeeper.ui.prefs.PrefDialogFactory;
 public class ProjProps {
 
 	@Execute
-	public void execute(
+	private void execute(
             @Named(UIConsts.PREF_STORE)
             IPreferenceStore mainPrefs,
 			@Named(IServiceConstants.ACTIVE_SHELL)
@@ -66,7 +66,7 @@ public class ProjProps {
 	}
 	
 	@CanExecute
-	public boolean canExecute(PgDbProject proj) {
+	private boolean canExecute(PgDbProject proj) {
 	    return proj != null;
 	}
 }

@@ -25,7 +25,7 @@ public class Console {
 	}
 	
 	@PostConstruct
-	public void postConstruct(Composite parent,
+	private void postConstruct(Composite parent,
 			@Named(IServiceConstants.ACTIVE_SHELL)
 			Shell shell,
 			UISynchronize sync) {
@@ -42,7 +42,7 @@ public class Console {
 	}
 	
 	@PreDestroy
-	public void preDestroy() {
+	private void preDestroy() {
 		log.setTextControl(null);
 	}
 }

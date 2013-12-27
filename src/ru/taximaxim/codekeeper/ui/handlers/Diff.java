@@ -20,7 +20,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 public class Diff {
 
 	@Execute
-	public void execute(
+	private void execute(
 	        PgDbProject proj,
             @Named(IServiceConstants.ACTIVE_SHELL)
             Shell shell,
@@ -34,7 +34,7 @@ public class Diff {
 	}
 	
 	@CanExecute
-    public boolean canExecute(PgDbProject proj) {
+	private boolean canExecute(PgDbProject proj) {
 	    return proj != null;
 	}
 }

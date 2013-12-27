@@ -14,11 +14,11 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.dialogs.ListDialog;
+import org.eclipse.ui.dialogs.ListDialog; // TODO no o.e.ui
 
 public class SwitchPerspective {
 	@Execute
-	public void execute(
+	private void execute(
 			@Named(IServiceConstants.ACTIVE_SHELL)
 			Shell shell,
 			EModelService modelSrv, EPartService partSrv,

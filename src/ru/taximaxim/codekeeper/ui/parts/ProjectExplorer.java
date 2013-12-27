@@ -12,6 +12,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.swt.modeling.EMenuService;
@@ -24,6 +25,7 @@ import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -39,11 +41,13 @@ public class ProjectExplorer {
     private PgDbProject proj;
     
     @Inject
-    EModelService model;
+    private MPart part;
     @Inject
-    EPartService partService;
+    private EModelService model;
     @Inject
-    MApplication app;
+    private EPartService partService;
+    @Inject
+    private MApplication app;
     
     private TreeViewer treeDb;
     
@@ -52,7 +56,7 @@ public class ProjectExplorer {
             throws IOException {
         parent.setLayout(new FillLayout());
         
-        treeDb = new TreeViewer(parent);
+        treeDb = new TreeViewer(parent, SWT.BORDER);
         treeDb.setContentProvider(new ITreeContentProvider() {
             
             private final List<String> ignoredFiles = Arrays.asList(
@@ -172,5 +176,11 @@ public class ProjectExplorer {
             
             treeDb.setInput(treeInput);
         }
+        
+        String partLabel = "Project Explorer";
+        if(proj != null) {
+            partLabel += " - " + proj.getProjectName();
+        }
+        part.setLabel(partLabel);
     }
 }

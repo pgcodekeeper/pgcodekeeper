@@ -1,7 +1,7 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.ui.preferences.ScopedPreferenceStore; // TODO no o.e.ui
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
 

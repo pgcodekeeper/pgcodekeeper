@@ -25,7 +25,7 @@ import ru.taximaxim.codekeeper.ui.prefs.PrefDialogFactory;
 public class Prefs {
 	
 	@Execute
-	public void execute(
+	private void execute(
 			@Named(UIConsts.PREF_STORE)
 			IPreferenceStore prefStore,
 			@Named(IServiceConstants.ACTIVE_SHELL)

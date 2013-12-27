@@ -16,6 +16,8 @@ public interface UIConsts {
 	String PART_SQL_EDITOR = PLUGIN_ID + ".partdescriptor.SQLEditorDescr";
 	String PART_SQL_EDITOR_FILENAME = PART_SQL_EDITOR + ".filename";
 	String PART_PROJXP_TREE_POPUP = PLUGIN_ID + ".popupmenu.project";
+	String PART_SYNC = PLUGIN_ID + ".partdescriptor.Sync";
+	String PART_SYNC_ID = PART_SYNC + ".Id";
 	
 	// Preferences
 	String PREF_SVN_EXE_PATH = "prefSvnExePath";

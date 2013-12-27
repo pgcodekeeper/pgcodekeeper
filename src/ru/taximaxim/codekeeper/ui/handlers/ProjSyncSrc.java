@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 public class ProjSyncSrc {
 	
 	@Execute
-	public void execute(
+	private void execute(
 	        PgDbProject proj,
 			@Named(IServiceConstants.ACTIVE_SHELL)
 			Shell shell,
@@ -35,14 +35,19 @@ public class ProjSyncSrc {
 	    sync(proj, shell, prefStore);
 	}
 	
+	@CanExecute
+	private boolean canExecute(PgDbProject proj) {
+		return proj != null;
+	}
+	
 	/**
-	 * @return false if sync was stopped due to svn conflicts 
-	 * @throws IOException
-	 */
-	public static boolean sync(final PgDbProject proj, Shell shell,
+     * @return false if sync was stopped due to svn conflicts 
+     * @throws IOException
+     */
+    public static boolean sync(final PgDbProject proj, Shell shell,
             final IPreferenceStore mainPrefs) throws IOException, InvocationTargetException {
-	    final boolean[] conflicted = { false };
-	    IRunnableWithProgress syncRunnable = new IRunnableWithProgress() {
+        final boolean[] conflicted = { false };
+        IRunnableWithProgress syncRunnable = new IRunnableWithProgress() {
             @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException,
                     InterruptedException {
@@ -65,27 +70,21 @@ public class ProjSyncSrc {
                 }
             }
         };
-	    
-	    ProgressMonitorDialog dialog = new ProgressMonitorDialog(shell);
-	    try {
-	        dialog.run(true, false, syncRunnable);
-	    } catch(InterruptedException ex) {
-	        throw new IllegalStateException("Uncancellable thread interrupted!", ex);
-	    }
-	    
-	    if(conflicted[0]) {
+        
+        try {
+            new ProgressMonitorDialog(shell).run(true, false, syncRunnable);
+        } catch(InterruptedException ex) {
+            throw new IllegalStateException("Uncancellable thread interrupted!", ex);
+        }
+        
+        if(conflicted[0]) {
             MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR);
             mb.setText("Sync error!");
             mb.setMessage("SVN cache has conflicts!"
                     + " Resolve them manually and reload project before continuing.");
             mb.open();
-	    }
-	    
-	    return !conflicted[0];
-	}
-	
-	@CanExecute
-	public boolean canExecute(PgDbProject proj) {
-		return proj != null;
-	}
+        }
+        
+        return !conflicted[0];
+    }
 }

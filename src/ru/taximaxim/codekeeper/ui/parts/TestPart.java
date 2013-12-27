@@ -32,7 +32,7 @@ public class TestPart {
 	Text txt;
 	
 	@PostConstruct
-	public void createUI(Composite parent) {
+	private void createUI(Composite parent) {
 		parent.setLayout(new FormLayout());
 		Button btn = new Button(parent, SWT.PUSH);
 		btn.setText("qwe");
