@@ -219,4 +219,9 @@ public class PgConstraint extends PgStatementWithSearchPath {
         constraintDst.setComment(getComment());
         return constraintDst;
     }
+    
+    @Override
+    public PgConstraint deepCopy() {
+        return shallowCopy();
+    }
 }

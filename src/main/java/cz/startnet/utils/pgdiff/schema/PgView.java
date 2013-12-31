@@ -282,6 +282,26 @@ public class PgView extends PgStatementWithSearchPath {
     	
     	return eq;
     }
+    
+    @Override
+    public PgView shallowCopy() {
+        PgView viewDst = new PgView(getName(), getRawStatement(), getSearchPath());
+        viewDst.setQuery(getQuery());
+        viewDst.setComment(getComment());
+        viewDst.setColumnNames(new ArrayList<>(getColumnNames()));
+        for(PgView.DefaultValue defval : getDefaultValues()) {
+            viewDst.addColumnDefaultValue(defval.getColumnName(), defval.getDefaultValue());
+        }
+        for(PgView.ColumnComment colcomment : getColumnComments()) {
+            viewDst.addColumnComment(colcomment.getColumnName(), colcomment.getComment());
+        }
+        return viewDst;
+    }
+    
+    @Override
+    public PgView deepCopy() {
+        return shallowCopy();
+    }
 
     /**
      * Contains information about default value of column.
@@ -346,21 +366,6 @@ public class PgView extends PgStatementWithSearchPath {
         	
         	return eq;
         }
-    }
-    
-    @Override
-    public PgView shallowCopy() {
-        PgView viewDst = new PgView(getName(), getRawStatement(), getSearchPath());
-        viewDst.setQuery(getQuery());
-        viewDst.setComment(getComment());
-        viewDst.setColumnNames(new ArrayList<>(getColumnNames()));
-        for(PgView.DefaultValue defval : getDefaultValues()) {
-            viewDst.addColumnDefaultValue(defval.getColumnName(), defval.getDefaultValue());
-        }
-        for(PgView.ColumnComment colcomment : getColumnComments()) {
-            viewDst.addColumnComment(colcomment.getColumnName(), colcomment.getComment());
-        }
-        return viewDst;
     }
 
     /**

@@ -19,7 +19,9 @@ public class PgDBUtils {
 	 */
 	public static boolean listsEqual(
 			final List<?> left, final List<?> right) {
-		return (left.size() == right.size()
-				&& left.equals(right));
+		boolean eq = (left.size() == right.size() && left.equals(right));
+		// DEBUG output
+		// if(!eq) { System.out.println(left.get(0)); }
+		return eq;
 	}
 }

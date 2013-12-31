@@ -236,4 +236,21 @@ public class PgDatabase extends PgStatement {
         dbDst.setComment(getComment());
         return dbDst;
     }
+    
+    @Override
+    public PgDatabase deepCopy() {
+        PgDatabase copy = shallowCopy();
+        
+        for(PgExtension ext : extensions) {
+            copy.addExtension(ext.deepCopy());
+        }
+        for(PgSchema schema : schemas) {
+            if(schema.getName().equals("public")) {
+                copy.schemas.remove(copy.getSchema("public"));
+            }
+            copy.addSchema(schema.deepCopy());
+        }
+        
+        return copy;
+    }
 }

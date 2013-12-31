@@ -223,4 +223,9 @@ public class PgIndex extends PgStatementWithSearchPath {
         indexDst.setComment(getComment());
         return indexDst;
     }
+    
+    @Override
+    public PgIndex deepCopy() {
+        return shallowCopy();
+    }
 }

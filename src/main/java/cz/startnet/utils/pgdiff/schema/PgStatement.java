@@ -51,6 +51,13 @@ abstract public class PgStatement {
 	abstract public PgStatement shallowCopy();
 	
 	/**
+	 * Performs {@link #shallowCopy()} on this object and all its children.
+	 * 
+	 * @return a fully recursive copy of this statement.
+	 */
+	abstract public PgStatement deepCopy();
+	
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @param obj {@inheritDoc}

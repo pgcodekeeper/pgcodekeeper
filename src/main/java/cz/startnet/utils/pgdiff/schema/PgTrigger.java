@@ -453,4 +453,9 @@ public class PgTrigger extends PgStatementWithSearchPath {
         }
         return triggerDst;
     }
+    
+    @Override
+    public PgTrigger deepCopy() {
+        return shallowCopy();
+    }
 }

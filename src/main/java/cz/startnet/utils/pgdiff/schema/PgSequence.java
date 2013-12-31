@@ -356,4 +356,9 @@ public class PgSequence extends PgStatementWithSearchPath {
         sequenceDst.setComment(getComment());
         return sequenceDst;
     }
+    
+    @Override
+    public PgSequence deepCopy() {
+        return shallowCopy();
+    }
 }

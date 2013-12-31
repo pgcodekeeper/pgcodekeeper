@@ -596,4 +596,21 @@ public class PgTable extends PgStatementWithSearchPath {
         tableDst.setComment(getComment());
         return tableDst;
     }
+    
+    @Override
+    public PgTable deepCopy() {
+        PgTable copy = shallowCopy();
+        
+        for(PgConstraint constraint : constraints) {
+            copy.addConstraint(constraint.deepCopy());
+        }
+        for(PgIndex index : indexes) {
+            copy.addIndex(index.deepCopy());
+        }
+        for(PgTrigger trigger : triggers) {
+            copy.addTrigger(trigger.deepCopy());
+        }
+        
+        return copy;
+    }
 }

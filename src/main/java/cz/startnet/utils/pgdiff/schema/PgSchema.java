@@ -405,4 +405,24 @@ public class PgSchema extends PgStatement {
         schemaDst.setComment(getComment());
         return schemaDst;
     }
+    
+    @Override
+    public PgSchema deepCopy() {
+        PgSchema copy = shallowCopy();
+        
+        for(PgSequence seq : sequences) {
+            copy.addSequence(seq.deepCopy());
+        }
+        for(PgFunction func : functions) {
+            copy.addFunction(func.deepCopy());
+        }
+        for(PgView view : views) {
+            copy.addView(view.deepCopy());
+        }
+        for(PgTable table : tables) {
+            copy.addTable(table.deepCopy());
+        }
+        
+        return copy;
+    }
 }

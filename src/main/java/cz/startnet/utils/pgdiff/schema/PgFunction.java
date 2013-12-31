@@ -480,6 +480,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         }
     }
     
+    @Override
     public PgFunction shallowCopy() {
         PgFunction functionDst = new PgFunction(getRawStatement(), getSearchPath());
         functionDst.setName(getBareName());
@@ -494,5 +495,10 @@ public class PgFunction extends PgStatementWithSearchPath {
             functionDst.addArgument(argDst);
         }
         return functionDst;
-    };
+    }
+    
+    @Override
+    public PgFunction deepCopy() {
+        return shallowCopy();
+    }
 }

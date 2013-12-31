@@ -198,4 +198,9 @@ public class PgExtension extends PgStatement {
         extDst.setComment(getComment());
         return extDst;
 	}
+	
+	@Override
+	public PgExtension deepCopy() {
+	    return shallowCopy();
+	}
 }
