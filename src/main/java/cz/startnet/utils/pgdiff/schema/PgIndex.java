@@ -162,6 +162,15 @@ public class PgIndex extends PgStatementWithSearchPath {
     }
 
     /**
+     * Getter for {@link #unique}.
+     *
+     * @return {@link #unique}
+     */
+    public boolean isUnique() {
+        return unique;
+    }
+
+    /**
      * {@inheritDoc}
      *
      * @param object {@inheritDoc}
@@ -197,20 +206,21 @@ public class PgIndex extends PgStatementWithSearchPath {
     }
 
     /**
-     * Getter for {@link #unique}.
-     *
-     * @return {@link #unique}
-     */
-    public boolean isUnique() {
-        return unique;
-    }
-
-    /**
      * Setter for {@link #unique}.
      *
      * @param unique {@link #unique}
      */
     public void setUnique(final boolean unique) {
         this.unique = unique;
+    }
+    
+    @Override
+    public PgIndex shallowCopy() {
+        PgIndex indexDst = new PgIndex(getName(), getRawStatement(), getSearchPath());
+        indexDst.setDefinition(getDefinition());
+        indexDst.setTableName(getTableName());
+        indexDst.setUnique(isUnique());
+        indexDst.setComment(getComment());
+        return indexDst;
     }
 }

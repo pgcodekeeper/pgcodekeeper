@@ -342,4 +342,18 @@ public class PgSequence extends PgStatementWithSearchPath {
     	
     	return eq;
     }
+    
+    @Override
+    public PgSequence shallowCopy() {
+        PgSequence sequenceDst = new PgSequence(getName(), getRawStatement(), getSearchPath());
+        sequenceDst.setCache(getCache());
+        sequenceDst.setCycle(isCycle());
+        sequenceDst.setIncrement(getIncrement());
+        sequenceDst.setMaxValue(getMaxValue());
+        sequenceDst.setMinValue(getMinValue());
+        sequenceDst.setOwnedBy(getOwnedBy());
+        sequenceDst.setStartWith(getStartWith());
+        sequenceDst.setComment(getComment());
+        return sequenceDst;
+    }
 }

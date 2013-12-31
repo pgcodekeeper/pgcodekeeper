@@ -44,6 +44,13 @@ abstract public class PgStatement {
 	abstract public String getCreationSQL();
 	
 	/**
+	 * Copies all object properties onto a new object and leaves all its children empty.
+	 * 
+	 * @return shallow copy of a DB object.
+	 */
+	abstract public PgStatement shallowCopy();
+	
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @param obj {@inheritDoc}

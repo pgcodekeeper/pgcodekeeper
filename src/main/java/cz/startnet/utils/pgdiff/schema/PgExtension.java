@@ -188,4 +188,14 @@ public class PgExtension extends PgStatement {
 		
 		return eq;
 	}
+	
+	@Override
+	public PgExtension shallowCopy() {
+	    PgExtension extDst = new PgExtension(getName(), getRawStatement());
+        extDst.setSchema(getSchema());
+        extDst.setVersion(getVersion());
+        extDst.setOldVersion(getOldVersion());
+        extDst.setComment(getComment());
+        return extDst;
+	}
 }

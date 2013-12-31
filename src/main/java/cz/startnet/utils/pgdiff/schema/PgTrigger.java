@@ -433,4 +433,24 @@ public class PgTrigger extends PgStatementWithSearchPath {
                 + function + "|" + name + "|" + onDelete + "|" + onInsert + "|"
                 + onUpdate + "|" + onTruncate + "|" + tableName).hashCode();
     }
+    
+    @Override
+    public PgTrigger shallowCopy() {
+        PgTrigger triggerDst = new PgTrigger(getRawStatement(), getSearchPath());
+        triggerDst.setName(getName());
+        triggerDst.setBefore(isBefore());
+        triggerDst.setForEachRow(isForEachRow());
+        triggerDst.setFunction(getFunction());
+        triggerDst.setOnDelete(isOnDelete());
+        triggerDst.setOnInsert(isOnInsert());
+        triggerDst.setOnTruncate(isOnTruncate());
+        triggerDst.setOnUpdate(isOnUpdate());
+        triggerDst.setTableName(getTableName());
+        triggerDst.setWhen(getWhen());
+        triggerDst.setComment(getComment());
+        for(String updCol : getUpdateColumns()) {
+            triggerDst.addUpdateColumn(updCol);
+        }
+        return triggerDst;
+    }
 }

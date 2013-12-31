@@ -1,10 +1,7 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
-import java.util.ArrayList;
-
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
@@ -31,7 +28,7 @@ public class PgDbFilter2 {
                     "Must specify concrete filter side: LEFT or RIGHT!");
         }
         if(root.getType() != DbObjType.CONTAINER) {
-            illegalTreeStructure(root);
+            illegalTreeStructure(root, null);
         }
         
         this.db = db;
@@ -72,204 +69,86 @@ public class PgDbFilter2 {
                 break;
                 
             case DATABASE:
-                res = processDatabase(el, src, dst);
+                PgDatabase dbSrc = (PgDatabase) src;
+                PgDatabase dbDst = (PgDatabase) dst;
+                
+                dbDst.setComment(dbSrc.getComment());
+                
+                // special case: we do not create/find Db objects, they are already supplied
+                // we also do not use shallowCopy() because PgDatabase is already supplied
+                // due to limitations imposed by processElement recursion
+                res = new ProcessResult(src, dst);
                 break;
                 
             case EXTENSION:
-                processExtension(el, src, dst);
+                PgExtension extSrc = ((PgDatabase) src).getExtension(el.getName());
+                ((PgDatabase) dst).addExtension(extSrc.shallowCopy());
                 break;
                 
             case SCHEMA:
-                res = processSchema(el, src, dst);
+                PgSchema schemaSrc = ((PgDatabase) src).getSchema(el.getName());
+                PgSchema schemaDst = ((PgDatabase) dst).getSchema(schemaSrc.getName());
+                if(schemaDst == null) {
+                    schemaDst = schemaSrc.shallowCopy();
+                    ((PgDatabase) dst).addSchema(schemaDst);
+                }
+                
+                res = new ProcessResult(schemaSrc, schemaDst);
                 break;
                 
             case FUNCTION:
-                processFunction(el, src, dst);
+                PgFunction functionSrc = ((PgSchema) src).getFunction(el.getName());
+                ((PgSchema) dst).addFunction(functionSrc.shallowCopy());
                 break;
                 
             case SEQUENCE:
-                processSequence(el, src, dst);
+                PgSequence sequenceSrc = ((PgSchema) src).getSequence(el.getName());
+                ((PgSchema) dst).addSequence(sequenceSrc.shallowCopy());
                 break;
                 
             case VIEW:
-                processView(el, src, dst);
+                PgView viewSrc = ((PgSchema) src).getView(el.getName());
+                ((PgSchema) dst).addView(viewSrc.shallowCopy());
                 break;
                 
             case TABLE:
-                res = processTable(el, src, dst);
+                PgTable tableSrc = ((PgSchema) src).getTable(el.getName());
+                PgTable tableDst = ((PgSchema) dst).getTable(tableSrc.getName());
+                
+                if(tableDst == null) {
+                    tableDst = tableSrc.shallowCopy();
+                    ((PgSchema) dst).addTable(tableDst);
+                }
+                
+                res = new ProcessResult(tableSrc, tableDst);
                 break;
                 
             case INDEX:
-                processIndex(el, src, dst);
+                PgIndex indexSrc = ((PgTable) src).getIndex(el.getName());
+                ((PgTable) dst).addIndex(indexSrc.shallowCopy());
                 break;
                 
             case TRIGGER:
-                processTrigger(el, src, dst);
+                PgTrigger triggerSrc = ((PgTable) src).getTrigger(el.getName());
+                ((PgTable) dst).addTrigger(triggerSrc.shallowCopy());
                 break;
                 
             case CONSTRAINT:
-                processConstraint(el, src, dst);
+                PgConstraint constraintSrc = ((PgTable) src).getConstraint(el.getName());
+                ((PgTable) dst).addConstraint(constraintSrc.shallowCopy());
                 break;
             }
         } catch (ClassCastException ex) {
             illegalTreeStructure(el, ex);
         }
         
+        if(res == null && el.hasChildren()) {
+            illegalTreeStructure(el.getChild(0), new NullPointerException());
+        }
+        
         for(TreeElement sub : el.getChildren()) {
-            if(res == null) {
-                illegalTreeStructure(sub, new NullPointerException());
-            }
             processElement(sub, res.src, res.dst);
         }
-    }
-    
-    private ProcessResult processDatabase(TreeElement db, PgStatement src, PgStatement dst) {
-        PgDatabase dbSrc = (PgDatabase) src;
-        PgDatabase dbDst = (PgDatabase) dst;
-        
-        dbDst.setComment(dbSrc.getComment());
-        
-        // special case: we do not create/find Db objects, they are already supplied
-        return new ProcessResult(src, dst);
-    }
-    
-    private void processExtension(TreeElement extension, PgStatement src, PgStatement dst) {
-        PgExtension extSrc = ((PgDatabase) src).getExtension(extension.getName());
-        PgExtension extDst = new PgExtension(extSrc.getName(), extSrc.getRawStatement());
-        extDst.setSchema(extSrc.getSchema());
-        extDst.setVersion(extSrc.getVersion());
-        extDst.setOldVersion(extSrc.getOldVersion());
-        extDst.setComment(extSrc.getComment());
-        ((PgDatabase) dst).addExtension(extDst);
-    }
-    
-    private ProcessResult processSchema(TreeElement schema, PgStatement src, PgStatement dst) {
-        PgSchema schemaSrc = ((PgDatabase) src).getSchema(schema.getName());
-        PgSchema schemaDst = ((PgDatabase) dst).getSchema(schemaSrc.getName());
-        if(schemaDst == null) {
-            schemaDst = new PgSchema(schemaSrc.getName(), schemaSrc.getRawStatement());
-            schemaDst.setAuthorization(schemaSrc.getAuthorization());
-            schemaDst.setDefinition(schemaSrc.getDefinition());
-            schemaDst.setComment(schemaSrc.getComment());
-            ((PgDatabase) dst).addSchema(schemaDst);
-        }
-        
-        return new ProcessResult(schemaSrc, schemaDst);
-    }
-    
-    private void processFunction(TreeElement function, PgStatement src, PgStatement dst) {
-        PgFunction functionSrc = ((PgSchema) src).getFunction(function.getName());
-        PgFunction functionDst = new PgFunction(functionSrc.getRawStatement(), functionSrc.getSearchPath());
-        functionDst.setName(functionSrc.getBareName());
-        functionDst.setBody(functionSrc.getBody());
-        functionDst.setComment(functionSrc.getComment());
-        for(PgFunction.Argument argSrc : functionSrc.getArguments()) {
-            PgFunction.Argument argDst = new PgFunction.Argument();
-            argDst.setName(argSrc.getName());
-            argDst.setMode(argSrc.getMode());
-            argDst.setDataType(argSrc.getDataType());
-            argDst.setDefaultExpression(argSrc.getDefaultExpression());
-            functionDst.addArgument(argDst);
-        }
-        ((PgSchema) dst).addFunction(functionDst);
-    }
-    
-    private void processSequence(TreeElement sequence, PgStatement src, PgStatement dst) {
-        PgSequence sequenceSrc = ((PgSchema) src).getSequence(sequence.getName());
-        PgSequence sequenceDst = new PgSequence(sequenceSrc.getName(), sequenceSrc.getRawStatement(), sequenceSrc.getSearchPath());
-        sequenceDst.setCache(sequenceSrc.getCache());
-        sequenceDst.setCycle(sequenceSrc.isCycle());
-        sequenceDst.setIncrement(sequenceSrc.getIncrement());
-        sequenceDst.setMaxValue(sequenceSrc.getMaxValue());
-        sequenceDst.setMinValue(sequenceSrc.getMinValue());
-        sequenceDst.setOwnedBy(sequenceSrc.getOwnedBy());
-        sequenceDst.setStartWith(sequenceSrc.getStartWith());
-        sequenceDst.setComment(sequenceSrc.getComment());
-        ((PgSchema) dst).addSequence(sequenceDst);
-    }
-    
-    private void processView(TreeElement view, PgStatement src, PgStatement dst) {
-        PgView viewSrc = ((PgSchema) src).getView(view.getName());
-        PgView viewDst = new PgView(viewSrc.getName(), viewSrc.getRawStatement(), viewSrc.getSearchPath());
-        viewDst.setQuery(viewSrc.getQuery());
-        viewDst.setComment(viewSrc.getComment());
-        viewDst.setColumnNames(new ArrayList<>(viewSrc.getColumnNames()));
-        for(PgView.DefaultValue defval : viewSrc.getDefaultValues()) {
-            viewDst.addColumnDefaultValue(defval.getColumnName(), defval.getDefaultValue());
-        }
-        for(PgView.ColumnComment colcomment : viewSrc.getColumnComments()) {
-            viewDst.addColumnComment(colcomment.getColumnName(), colcomment.getComment());
-        }
-        ((PgSchema) dst).addView(viewDst);
-    }
-    
-    private ProcessResult processTable(TreeElement table, PgStatement src, PgStatement dst) {
-        PgTable tableSrc = ((PgSchema) src).getTable(table.getName());
-        PgTable tableDst = ((PgSchema) dst).getTable(tableSrc.getName());
-        
-        if(tableDst == null) {
-            tableDst = new PgTable(tableSrc.getName(), tableSrc.getRawStatement(), tableSrc.getSearchPath());
-            tableDst.setClusterIndexName(tableSrc.getClusterIndexName());
-            tableDst.setIgnored(tableDst.getIgnored());
-            tableDst.setTablespace(tableSrc.getTablespace());
-            tableDst.setWith(tableSrc.getWith());
-            for(String inherits : tableSrc.getInherits()) {
-                tableDst.addInherits(inherits);
-            }
-            for(PgColumn colSrc : tableSrc.getColumns()) {
-                PgColumn colDst = new PgColumn(colSrc.getName());
-                colDst.setDefaultValue(colSrc.getDefaultValue());
-                colDst.setNullValue(colSrc.getNullValue());
-                colDst.setStatistics(colSrc.getStatistics());
-                colDst.setStorage(colSrc.getStorage());
-                colDst.setType(colSrc.getType());
-                colDst.setComment(colSrc.getComment());
-                tableDst.addColumn(colDst);
-            }
-            tableDst.setComment(tableSrc.getComment());
-            ((PgSchema) dst).addTable(tableDst);
-        }
-        
-        return new ProcessResult(tableSrc, tableDst);
-    }
-    
-    private void processIndex(TreeElement index, PgStatement src, PgStatement dst) {
-        PgIndex indexSrc = ((PgTable) src).getIndex(index.getName());
-        PgIndex indexDst = new PgIndex(indexSrc.getName(), indexSrc.getRawStatement(), indexSrc.getSearchPath());
-        indexDst.setDefinition(indexSrc.getDefinition());
-        indexDst.setTableName(indexSrc.getTableName());
-        indexDst.setUnique(indexSrc.isUnique());
-        indexDst.setComment(indexSrc.getComment());
-        ((PgTable) dst).addIndex(indexDst);
-    }
-    
-    private void processTrigger(TreeElement trigger, PgStatement src, PgStatement dst) {
-        PgTrigger triggerSrc = ((PgTable) src).getTrigger(trigger.getName());
-        PgTrigger triggerDst = new PgTrigger(triggerSrc.getRawStatement(), triggerSrc.getSearchPath());
-        triggerDst.setName(triggerSrc.getName());
-        triggerDst.setBefore(triggerSrc.isBefore());
-        triggerDst.setForEachRow(triggerSrc.isForEachRow());
-        triggerDst.setFunction(triggerSrc.getFunction());
-        triggerDst.setOnDelete(triggerSrc.isOnDelete());
-        triggerDst.setOnInsert(triggerSrc.isOnInsert());
-        triggerDst.setOnTruncate(triggerSrc.isOnTruncate());
-        triggerDst.setOnUpdate(triggerSrc.isOnUpdate());
-        triggerDst.setTableName(triggerSrc.getTableName());
-        triggerDst.setWhen(triggerSrc.getWhen());
-        triggerDst.setComment(triggerSrc.getComment());
-        for(String updCol : triggerSrc.getUpdateColumns()) {
-            triggerDst.addUpdateColumn(updCol);
-        }
-        ((PgTable) dst).addTrigger(triggerDst);
-    }
-    
-    private void processConstraint(TreeElement constraint, PgStatement src, PgStatement dst) {
-        PgConstraint constraintSrc = ((PgTable) src).getConstraint(constraint.getName());
-        PgConstraint constraintDst = new PgConstraint(constraintSrc.getName(), constraintSrc.getRawStatement(), constraintSrc.getSearchPath());
-        constraintDst.setDefinition(constraintSrc.getDefinition());
-        constraintDst.setTableName(constraintSrc.getTableName());
-        constraintDst.setComment(constraintSrc.getComment());
-        ((PgTable) dst).addConstraint(constraintDst);
     }
     
     private boolean checkSide(TreeElement el) {
@@ -278,18 +157,13 @@ public class PgDbFilter2 {
     }
     
     /**
-     * Throws and ends {@link PgDbFilter} due to illegal filter tree structure.
+     * Throws and notifies about illegal diff tree structure.
      * 
-     * @param parent
      * @param illegalChild
      * 
      * @throws IllegalArgumentException
      */
-    private void illegalTreeStructure(TreeElement illegalChild) {
-        illegalTreeStructure(illegalChild, null);
-    }
-    
-    private void illegalTreeStructure(TreeElement illegalChild, Throwable cause) {
+    static void illegalTreeStructure(TreeElement illegalChild, Throwable cause) {
         TreeElement parent = illegalChild.getParent();
         throw new IllegalArgumentException(
                 String.format("Illegal child %s of type %s in the node %s of type %s",

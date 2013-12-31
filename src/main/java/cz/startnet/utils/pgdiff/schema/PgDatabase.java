@@ -47,7 +47,7 @@ public class PgDatabase extends PgStatement {
     public PgDatabase() {
         super(null);
         
-        schemas.add(new PgSchema("public", ""));
+        schemas.add(new PgSchema("public", null));
         defaultSchema = schemas.get(0);
     }
 
@@ -228,5 +228,12 @@ public class PgDatabase extends PgStatement {
     @Override
     public String getName() {
         return null;
+    }
+    
+    @Override
+    public PgDatabase shallowCopy() {
+        PgDatabase dbDst = new PgDatabase();
+        dbDst.setComment(getComment());
+        return dbDst;
     }
 }

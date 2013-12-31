@@ -176,7 +176,7 @@ public class PgTable extends PgStatementWithSearchPath {
     	// MYFIX
     	if(ignored) {
     		assert false;
-    		return "";
+    		return null;
     	}
     	
         final StringBuilder sbSQL = new StringBuilder(1000);
@@ -571,5 +571,29 @@ public class PgTable extends PgStatementWithSearchPath {
     	}
     	
     	return eq;
+    }
+    
+    @Override
+    public PgTable shallowCopy() {
+        PgTable tableDst = new PgTable(getName(), getRawStatement(), getSearchPath());
+        tableDst.setClusterIndexName(getClusterIndexName());
+        tableDst.setIgnored(tableDst.getIgnored());
+        tableDst.setTablespace(getTablespace());
+        tableDst.setWith(getWith());
+        for(String inherits : getInherits()) {
+            tableDst.addInherits(inherits);
+        }
+        for(PgColumn colSrc : getColumns()) {
+            PgColumn colDst = new PgColumn(colSrc.getName());
+            colDst.setDefaultValue(colSrc.getDefaultValue());
+            colDst.setNullValue(colSrc.getNullValue());
+            colDst.setStatistics(colSrc.getStatistics());
+            colDst.setStorage(colSrc.getStorage());
+            colDst.setType(colSrc.getType());
+            colDst.setComment(colSrc.getComment());
+            tableDst.addColumn(colDst);
+        }
+        tableDst.setComment(getComment());
+        return tableDst;
     }
 }

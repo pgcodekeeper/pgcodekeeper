@@ -479,4 +479,20 @@ public class PgFunction extends PgStatementWithSearchPath {
             return sbString.toString().hashCode();
         }
     }
+    
+    public PgFunction shallowCopy() {
+        PgFunction functionDst = new PgFunction(getRawStatement(), getSearchPath());
+        functionDst.setName(getBareName());
+        functionDst.setBody(getBody());
+        functionDst.setComment(getComment());
+        for(PgFunction.Argument argSrc : getArguments()) {
+            PgFunction.Argument argDst = new PgFunction.Argument();
+            argDst.setName(argSrc.getName());
+            argDst.setMode(argSrc.getMode());
+            argDst.setDataType(argSrc.getDataType());
+            argDst.setDefaultExpression(argSrc.getDefaultExpression());
+            functionDst.addArgument(argDst);
+        }
+        return functionDst;
+    };
 }

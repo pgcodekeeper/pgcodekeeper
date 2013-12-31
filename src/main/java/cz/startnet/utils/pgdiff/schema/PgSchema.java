@@ -396,4 +396,13 @@ public class PgSchema extends PgStatement {
     	
     	return eq;
     }
+    
+    @Override
+    public PgSchema shallowCopy() {
+        PgSchema schemaDst = new PgSchema(getName(), getRawStatement());
+        schemaDst.setAuthorization(getAuthorization());
+        schemaDst.setDefinition(getDefinition());
+        schemaDst.setComment(getComment());
+        return schemaDst;
+    }
 }

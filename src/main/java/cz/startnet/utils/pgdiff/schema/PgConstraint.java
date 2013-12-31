@@ -210,4 +210,13 @@ public class PgConstraint extends PgStatementWithSearchPath {
         return (getClass().getName() + "|" + definition + "|" + name + "|"
                 + tableName).hashCode();
     }
+    
+    @Override
+    public PgConstraint shallowCopy() {
+        PgConstraint constraintDst = new PgConstraint(getName(), getRawStatement(), getSearchPath());
+        constraintDst.setDefinition(getDefinition());
+        constraintDst.setTableName(getTableName());
+        constraintDst.setComment(getComment());
+        return constraintDst;
+    }
 }

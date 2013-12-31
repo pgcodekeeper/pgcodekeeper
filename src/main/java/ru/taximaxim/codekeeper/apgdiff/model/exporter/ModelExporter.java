@@ -52,17 +52,6 @@ public class ModelExporter {
 	
 	/**
 	 * Creates a new ModelExporter object with set {@link #outDir} and {@link #db}
-	 * and default output encoding (UTF-8).
-	 * 
-	 * @param outDir outDir, directory should be empty or not exist
-	 * @param db database
-	 */
-	public ModelExporter(final String outDir, final PgDatabase db) {
-		this(outDir, db, "UTF-8");
-	}
-	
-	/**
-	 * Creates a new ModelExporter object with set {@link #outDir} and {@link #db}
 	 * and {@link #sqlEncoding}.
 	 * 
 	 * @param outDir outDir, directory should be empty or not exist
