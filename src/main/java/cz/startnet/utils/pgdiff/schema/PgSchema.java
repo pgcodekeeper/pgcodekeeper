@@ -388,10 +388,10 @@ public class PgSchema extends PgStatement {
     				&& Objects.equals(authorization, schema.getAuthorization())
     				&& Objects.equals(definition, schema.getDefinition())
     				
-    				&& PgDBUtils.listsEqual(sequences, schema.getSequences())
-    				&& PgDBUtils.listsEqual(functions, schema.getFunctions())
-    				&& PgDBUtils.listsEqual(views, schema.getViews())
-    				&& PgDBUtils.listsEqual(tables, schema.getTables());
+    				&& PgDbUtils.listsEqual(sequences, schema.getSequences())
+    				&& PgDbUtils.listsEqual(functions, schema.getFunctions())
+    				&& PgDbUtils.listsEqual(views, schema.getViews())
+    				&& PgDbUtils.listsEqual(tables, schema.getTables());
     	}
     	
     	return eq;

@@ -213,8 +213,8 @@ public class PgDatabase extends PgStatement {
     	} else if(obj instanceof PgDatabase) {
     		PgDatabase db = (PgDatabase) obj;
     		
-    		eq = PgDBUtils.listsEqual(extensions, db.getExtensions())
-    				&& PgDBUtils.listsEqual(schemas, db.getSchemas());
+    		eq = PgDbUtils.listsEqual(extensions, db.getExtensions())
+    				&& PgDbUtils.listsEqual(schemas, db.getSchemas());
     	}
     	
     	return eq;

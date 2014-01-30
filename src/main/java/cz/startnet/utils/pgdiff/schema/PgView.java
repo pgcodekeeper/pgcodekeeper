@@ -276,8 +276,8 @@ public class PgView extends PgStatementWithSearchPath {
     		PgView view = (PgView) obj;
     		eq = Objects.equals(name, view.getName())
     				&& Objects.equals(query, view.getQuery())
-    				&& PgDBUtils.listsEqual(columnNames, view.getColumnNames())
-    				&& PgDBUtils.listsEqual(defaultValues, view.getDefaultValues());
+    				&& PgDbUtils.listsEqual(columnNames, view.getColumnNames())
+    				&& PgDbUtils.listsEqual(defaultValues, view.getDefaultValues());
     	}
     	
     	return eq;

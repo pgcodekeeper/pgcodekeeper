@@ -7,7 +7,7 @@ import java.util.List;
  * 
  * @author Alexander Levhsa
  */
-public class PgDBUtils {
+public class PgDbUtils {
 
 	/**
 	 * Compares sizes first and does List.equals(List)

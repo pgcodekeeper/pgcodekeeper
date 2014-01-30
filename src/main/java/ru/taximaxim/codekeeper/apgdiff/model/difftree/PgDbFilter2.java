@@ -159,8 +159,6 @@ public class PgDbFilter2 {
     /**
      * Throws and notifies about illegal diff tree structure.
      * 
-     * @param illegalChild
-     * 
      * @throws IllegalArgumentException
      */
     static void illegalTreeStructure(TreeElement illegalChild, Throwable cause) {

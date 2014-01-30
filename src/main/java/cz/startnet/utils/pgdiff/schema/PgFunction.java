@@ -296,7 +296,7 @@ public class PgFunction extends PgStatementWithSearchPath {
                 return false;
             }
             
-            return PgDBUtils.listsEqual(arguments, function.getArguments());
+            return PgDbUtils.listsEqual(arguments, function.getArguments());
         }
 
         return equals;

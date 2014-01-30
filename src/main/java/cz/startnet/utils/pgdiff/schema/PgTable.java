@@ -524,6 +524,16 @@ public class PgTable extends PgStatementWithSearchPath {
 
         return false;
     }
+    
+    public boolean containsTrigger(String name) {
+        for(PgTrigger trigger : triggers) {
+            if(trigger.getName().equals(name)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 
     /**
      * Returns list of columns that have statistics defined.
@@ -563,11 +573,11 @@ public class PgTable extends PgStatementWithSearchPath {
     				&& Objects.equals(tablespace, table.getTablespace())
     				&& Objects.equals(with, table.getWith())
     				
-    				&& PgDBUtils.listsEqual(inherits, table.getInherits())
-    				&& PgDBUtils.listsEqual(columns, table.getColumns())
-    				&& PgDBUtils.listsEqual(constraints, table.getConstraints())
-    				&& PgDBUtils.listsEqual(indexes, table.getIndexes())
-    				&& PgDBUtils.listsEqual(triggers, table.getTriggers());
+    				&& PgDbUtils.listsEqual(inherits, table.getInherits())
+    				&& PgDbUtils.listsEqual(columns, table.getColumns())
+    				&& PgDbUtils.listsEqual(constraints, table.getConstraints())
+    				&& PgDbUtils.listsEqual(indexes, table.getIndexes())
+    				&& PgDbUtils.listsEqual(triggers, table.getTriggers());
     	}
     	
     	return eq;
