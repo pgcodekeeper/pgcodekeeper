@@ -11,6 +11,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
@@ -74,6 +75,14 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
 	    super.createPageControls(pageContainer);
 	    
 	    ((WizardDialog) getContainer()).addPageChangingListener(this);
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage page) {
+	    if(page == pageSvn && !pageSvn.isDoInit()) {
+	        return pageMisc;
+	    }
+	    return super.getNextPage(page);
 	}
 	
 	@Override

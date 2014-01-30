@@ -66,6 +66,10 @@ public class CommitPartDescr {
     private MPart part;
     @Inject
     private EPartService partService;
+    @Inject @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
+    private String exePgdump;
+    @Inject @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
+    private String exeSvn;
     
     private Text txtCommitComment;
     private Button btnCommit;
@@ -90,10 +94,6 @@ public class CommitPartDescr {
 	        final IPreferenceStore mainPrefs,
 	        @Named(IServiceConstants.ACTIVE_SHELL)
 	        final Shell shell,
-	        @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
-	        final String exePgdump,
-	        @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
-	        final String exeSvn,
 	        final EModelService model,
 	        final MApplication app) {
 	    parent.setLayout(new GridLayout());

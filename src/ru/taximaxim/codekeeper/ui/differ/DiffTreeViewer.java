@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -28,6 +32,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.internal.handlers.IActionCommandMappingService;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
@@ -166,18 +171,16 @@ public class DiffTreeViewer extends Composite {
         menuMgr.add(new Action("Select Subtree") {
             @Override
             public void run() {
-                TreeElement el = 
-                        (TreeElement) ((TreeSelection) viewer.getSelection())
-                            .getFirstElement();
+                TreeElement el = (TreeElement) ((TreeSelection) viewer.getSelection())
+                        .getFirstElement();
                 viewer.setSubtreeChecked(el, true);
             }
         });
         menuMgr.add(new Action("Deselect Subtree") {
             @Override
             public void run() {
-                TreeElement el = 
-                        (TreeElement) ((TreeSelection) viewer.getSelection())
-                            .getFirstElement();
+                TreeElement el = (TreeElement) ((TreeSelection) viewer.getSelection())
+                        .getFirstElement();
                 viewer.setSubtreeChecked(el, false);
             }
         });
@@ -196,9 +199,20 @@ public class DiffTreeViewer extends Composite {
                 viewer.collapseToLevel(path, TreeViewer.ALL_LEVELS);
             }
         });
+        menuMgr.addMenuListener(new IMenuListener() {
+            
+            @Override
+            public void menuAboutToShow(IMenuManager manager) {
+                boolean enable = !viewer.getSelection().isEmpty();
+                for(IContributionItem item : manager.getItems()) {
+                    if(item instanceof ActionContributionItem) {
+                        ((ActionContributionItem) item).getAction().setEnabled(enable);
+                    }
+                }
+            }
+        });
         
-        viewer.getControl().setMenu(
-                menuMgr.createContextMenu(viewer.getControl()));
+        viewer.getControl().setMenu(menuMgr.createContextMenu(viewer.getControl()));
         
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -212,8 +226,10 @@ public class DiffTreeViewer extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 TreeElement root = (TreeElement) viewer.getInput();
-                for(TreeElement sub : root.getChildren()) {
-                    viewer.setSubtreeChecked(sub, true);
+                if(root != null) {
+                    for(TreeElement sub : root.getChildren()) {
+                        viewer.setSubtreeChecked(sub, true);
+                    }
                 }
             }
         });
@@ -224,8 +240,10 @@ public class DiffTreeViewer extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 TreeElement root = (TreeElement) viewer.getInput();
-                for(TreeElement sub : root.getChildren()) {
-                    viewer.setSubtreeChecked(sub, false);
+                if(root != null) {
+                    for(TreeElement sub : root.getChildren()) {
+                        viewer.setSubtreeChecked(sub, false);
+                    }
                 }
             }
         });
