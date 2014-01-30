@@ -41,7 +41,7 @@ public class ProjSyncSrc {
 	}
 	
 	/**
-     * @return false if sync was stopped due to svn conflicts 
+     * @return false if sync failed due to svn conflicts 
      * @throws IOException
      */
     public static boolean sync(final PgDbProject proj, Shell shell,
@@ -68,6 +68,7 @@ public class ProjSyncSrc {
                 } catch(IOException ex) {
                     throw new InvocationTargetException(ex);
                 }
+                monitor.done();
             }
         };
         

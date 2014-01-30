@@ -56,12 +56,10 @@ public class ProjectCreator implements IRunnableWithProgress {
             // clean repository, generate new file structure,
             // preserve and fix svn metadata, svn rm/add, commit new revision
             if(doInit) {
-                PgDatabase db;
-                String srcType = props.getString(UIConsts.PROJ_PREF_SOURCE);
-
                 SubMonitor taskpm = pm.newChild(25); // 50
-                
-                switch(srcType) {
+
+                PgDatabase db;
+                switch(props.getString(UIConsts.PROJ_PREF_SOURCE)) {
                 case UIConsts.PROJ_SOURCE_TYPE_DB:
                     db = DbSource.fromDb(exePgdump, props).get(taskpm);
                     break;
@@ -75,6 +73,8 @@ public class ProjectCreator implements IRunnableWithProgress {
                     throw new InvocationTargetException(
                             new IllegalStateException("Init requested but no Schema Source"));
                 }
+
+                pm.newChild(25).subTask("Exporting DB model..."); // 75
                 
                 try(TempDir tmpSvnMeta = new TempDir("tmp_svn_meta_")) {
                     File svnMetaProj = new File(dirSvn, ".svn");
@@ -82,7 +82,6 @@ public class ProjectCreator implements IRunnableWithProgress {
                     svnMetaProj.renameTo(svnMetaTmp);
                     Dir.deleteRecursive(dirSvn);
                     
-                    pm.newChild(25).subTask("Exporting DB model..."); // 75
                     new ModelExporter(dirSvn.getAbsolutePath(), db, 
                             props.getString(UIConsts.PROJ_PREF_ENCODING)).export();
                     

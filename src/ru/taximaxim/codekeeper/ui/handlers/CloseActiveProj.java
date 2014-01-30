@@ -11,11 +11,15 @@ public class CloseActiveProj {
     
 	@Execute
 	private void execute(IEclipseContext ctx) {
-	    ctx.modify(PgDbProject.class, null);
+	    close(ctx);
 	}
 	
 	@CanExecute
 	private boolean canExecute(PgDbProject proj) {
 	    return proj != null;
+	}
+	
+	public static void close(IEclipseContext ctx) {
+        ctx.modify(PgDbProject.class, null);
 	}
 }

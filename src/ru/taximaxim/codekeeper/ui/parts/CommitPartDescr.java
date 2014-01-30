@@ -1,6 +1,7 @@
  
 package ru.taximaxim.codekeeper.ui.parts;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
@@ -8,6 +9,8 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.core.di.extensions.Preference;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
@@ -16,6 +19,7 @@ import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -37,31 +41,47 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTreeViewer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
+import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
+import ru.taximaxim.codekeeper.ui.fileutils.Dir;
+import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
+import ru.taximaxim.codekeeper.ui.handlers.CloseActiveProj;
+import ru.taximaxim.codekeeper.ui.handlers.LoadProj;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
-public class SyncPartDescr {
+public class CommitPartDescr {
 	
     @Inject
     private MPart part;
     @Inject
     private EPartService partService;
     
+    private Text txtCommitComment;
+    private Button btnCommit;
     private DiffTreeViewer diffTree;
     private Button btnNone, btnDump, btnDb;
     private Button btnGetChanges;
     private DbPicker dbSrc;
     private Text txtDb, txtSvn;
     
+    /**
+     * Local SVN cache.
+     */
     private DbSource dbSource;
+    /**
+     * Remote DB.
+     */
     private DbSource dbTarget;
     
 	@PostConstruct
@@ -71,7 +91,11 @@ public class SyncPartDescr {
 	        @Named(IServiceConstants.ACTIVE_SHELL)
 	        final Shell shell,
 	        @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
-	        final String exePgdump) {
+	        final String exePgdump,
+	        @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
+	        final String exeSvn,
+	        final EModelService model,
+	        final MApplication app) {
 	    parent.setLayout(new GridLayout());
 	    
 	    // upper container
@@ -81,19 +105,88 @@ public class SyncPartDescr {
 	    containerUpper.setLayout(gl);
 	    containerUpper.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	    
-	    Text txtCommitComment = new Text(containerUpper, SWT.BORDER |  SWT.MULTI);
+	    txtCommitComment = new Text(containerUpper, SWT.BORDER |  SWT.MULTI);
 	    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 	    gd.heightHint = 80;
 	    txtCommitComment.setLayoutData(gd);
 	    
-	    Button btnCommit = new Button(containerUpper, SWT.PUSH);
+	    btnCommit = new Button(containerUpper, SWT.PUSH);
 	    btnCommit.setLayoutData(new GridData(SWT.DEFAULT, SWT.FILL, false, false));
 	    btnCommit.setText("Commit");
 	    btnCommit.setEnabled(false);
 	    btnCommit.addSelectionListener(new SelectionAdapter() {
 	        @Override
 	        public void widgetSelected(SelectionEvent e) {
+	            final String commitComment = txtCommitComment.getText();
+	            if(commitComment.isEmpty()) {
+	                MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
+	                mb.setMessage("Comment required");
+	                mb.setText("Please enter a comment for the commit.");
+	                mb.open();
+	                return;
+	            }
 	            
+	            final TreeElement filtered = diffTree.filterDiffTree();
+	            IRunnableWithProgress commitRunnable = new IRunnableWithProgress() {
+                    
+                    @Override
+                    public void run(IProgressMonitor monitor) throws InvocationTargetException,
+                            InterruptedException {
+                        SubMonitor pm = SubMonitor.convert(monitor, "Committing", 3);
+                        
+                        pm.newChild(1).subTask("Modifying DB model..."); // 1
+                        DiffTreeApplier applier = new DiffTreeApplier(
+                                dbSource.getDbObject(), dbTarget.getDbObject(), filtered);
+                        PgDatabase dbNew = applier.apply();
+                        
+                        pm.newChild(1).subTask("Exporting new DB model..."); // 2
+                        File dirSvn = proj.getProjectSchemaDir();
+                        try {
+                            try(TempDir tmpSvnMeta = new TempDir("tmp_svn_meta_")) {
+                                File svnMetaProj = new File(dirSvn, ".svn");
+                                File svnMetaTmp = new File(tmpSvnMeta.get(), ".svn");
+                                
+                                svnMetaProj.renameTo(svnMetaTmp);
+                                Dir.deleteRecursive(dirSvn);
+                                
+                                new ModelExporter(
+                                        dirSvn.getAbsolutePath(), dbNew, 
+                                        proj.getString(UIConsts.PROJ_PREF_ENCODING))
+                                .export();
+                                
+                                svnMetaTmp.renameTo(svnMetaProj);
+                            }
+                            
+                            pm.newChild(1).subTask("SVN committing..."); // 3
+                            SvnExec svn = new SvnExec(exeSvn, proj);
+                            svn.svnRmMissing(dirSvn);
+                            svn.svnAddAll(dirSvn);
+                            svn.svnCi(dirSvn, commitComment);
+                        } catch(IOException ex) {
+                            throw new InvocationTargetException(ex,
+                                    "IOException while modifying project!");
+                        }
+                        
+                        monitor.done();
+                    }
+                };
+                
+                try {
+                    new ProgressMonitorDialog(shell).run(true, false, commitRunnable);
+                } catch(InvocationTargetException ex) {
+                    throw new IllegalStateException(
+                            "Error in the project modifier thread", ex);
+                } catch(InterruptedException ex) {
+                    // assume run() was called as non cancelable
+                    throw new IllegalStateException(
+                            "Project modifier thread cancelled. Shouldn't happen!", ex);
+                }
+
+                Console.addMessage("SUCCESS: Project updated!");
+                
+                // reopen project because file structure has been changed
+                CloseActiveProj.close(app.getContext());
+                LoadProj.load(proj, app.getContext(), partService, model, app);
 	        }
         });
 	    // end upper commit comment container
@@ -234,10 +327,12 @@ public class SyncPartDescr {
                 
                 txtDb.setText("");
                 txtSvn.setText("");
+                
+                btnCommit.setEnabled(true);
             }
         });
 	    
-	    dbSrc = new DbPicker(containerSrc, SWT.NONE, mainPrefs);
+	    dbSrc = new DbPicker(containerSrc, SWT.NONE, mainPrefs, false);
 	    dbSrc.setText("DB Source");
 	    dbSrc.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
 	    
@@ -297,7 +392,7 @@ public class SyncPartDescr {
 	    txtSvn.setLayoutData(new GridData(GridData.FILL_BOTH));
 	    // end lower diff container
         
-	    changeProject(proj);
+	    // changeProject(proj);
 	}
 	
 	private void showDbPicker(boolean show) {

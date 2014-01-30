@@ -21,6 +21,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class DbPicker extends Group {
 
+    final private boolean allowShellResize;
+    
     private Label lblFieldName;
     private Button btnStorePick;
     private CLabel lblWarnDbPass;
@@ -28,9 +30,19 @@ public class DbPicker extends Group {
     public Label lblName;
     public Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort;
     
+    /**
+     * Constructs a control that is allowed to modify its shell size.
+     */
     public DbPicker(Composite parent, int style, final IPreferenceStore prefStore) {
+        this(parent, style, prefStore, true);
+    }
+    
+    public DbPicker(Composite parent, int style, final IPreferenceStore prefStore,
+            boolean allowShellResize) {
         super(parent, style);
         setLayout(new GridLayout(4, false));
+        
+        this.allowShellResize = allowShellResize;
         
         lblFieldName = new Label(this, SWT.NONE);
         lblFieldName.setText("Entry Name:");
@@ -81,8 +93,7 @@ public class DbPicker extends Group {
                     lblWarnDbPass.setVisible(!lblWarnDbPass.getVisible());
                     gd.exclude = !gd.exclude;
                     
-                    getShell().pack();
-                    layout(false);
+                    layout();
                 }
             }
         });
@@ -128,10 +139,19 @@ public class DbPicker extends Group {
         
         txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
         
-        getShell().pack();
-        layout(false);
+        layout();
     }
     
+    @Override
+    public void layout() {
+        if(allowShellResize) {
+            getShell().pack();
+            layout(false);
+        } else {
+            getShell().layout(true, true);
+        }
+    }
+        
     @Override
     protected void checkSubclass() {
         // allow subclassing, we just use Group as a Composite

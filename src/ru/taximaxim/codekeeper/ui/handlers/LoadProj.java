@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
-import ru.taximaxim.codekeeper.ui.parts.SyncPartDescr;
+import ru.taximaxim.codekeeper.ui.parts.CommitPartDescr;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class LoadProj {
@@ -25,7 +25,7 @@ public class LoadProj {
 			@Named(IServiceConstants.ACTIVE_SHELL)
 			Shell shell,
 	        IEclipseContext ctx, EPartService partService, EModelService model,
-	        MApplication app) throws IOException {
+	        MApplication app) {
 		DirectoryDialog dialog = new DirectoryDialog(shell);
 		String path = dialog.open();
 		if(path != null) {
@@ -46,6 +46,6 @@ public class LoadProj {
 	        EModelService model, MApplication app) {
 	    ctx.modify(PgDbProject.class, proj);
 	    
-	    SyncPartDescr.openNew(proj.getProjectDir(), partService, model, app);
+	    CommitPartDescr.openNew(proj.getProjectDir(), partService, model, app);
 	}
 }
