@@ -15,6 +15,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -137,9 +138,23 @@ public class PgDumpLoaderTest {
         
         // TODO more filter tests?
         
-        // check deepCopy mechanism
+        // test deepCopy mechanism
         Assert.assertEquals("deep copy altered", d, d.deepCopy());
         Assert.assertEquals("deep copy altered original", dbPredefined, d);
+        
+        PgDatabase oneDiff = new PgDatabase();
+        oneDiff.addSchema(new PgSchema("testschemaqwerty", null));
+        
+        TreeElement removeAll = dbTree;
+        TreeElement onlyNew = DiffTree.create(d, oneDiff);
+        TreeElement onlyOld = DiffTree.create(d, d);
+        
+        Assert.assertEquals("not empty", empty,
+                new DiffTreeApplier(d, oneDiff, removeAll).apply());
+        Assert.assertEquals("not new", oneDiff,
+                new DiffTreeApplier(d, oneDiff, onlyNew).apply());
+        Assert.assertEquals("not old", d,
+                new DiffTreeApplier(d, oneDiff, onlyOld).apply());
     }
 }
 
