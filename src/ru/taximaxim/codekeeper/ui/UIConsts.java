@@ -18,6 +18,8 @@ public interface UIConsts {
 	String PART_PROJXP_TREE_POPUP = PLUGIN_ID + ".popupmenu.project";
 	String PART_SYNC = PLUGIN_ID + ".partdescriptor.Sync";
 	String PART_SYNC_ID = PART_SYNC + ".Id";
+	String PART_DIFF = PLUGIN_ID + ".partdescriptor.Diff";
+	String PART_DIFF_ID = PART_DIFF + ".Id";
 	
 	// Preferences
 	String PREF_SVN_EXE_PATH = "prefSvnExePath";

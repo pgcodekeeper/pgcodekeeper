@@ -16,28 +16,12 @@ public class TextDialog extends MessageDialog {
 	
 	final int type;
 	
-	public TextDialog(Shell parentShell, int type,String title, String message,
-	        String text) {
-	    super(parentShell, title, null, message, type, new String[] {
-	            IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL
-	    }, 0);
+	public TextDialog(Shell parentShell, int type, String title, String message,
+	        String text, String[] buttonLabels, int defaultButton) {
+	    super(parentShell, title, null, message, type, buttonLabels, defaultButton);
 		
 		this.text = text;
 		this.type = type;
-	}
-	
-	@Override
-	protected void createButtonsForButtonBar(Composite parent) {
-	    if(type == QUESTION_WITH_CANCEL) {
-    	    createButton(parent, IDialogConstants.YES_ID,
-    	            IDialogConstants.YES_LABEL, true);
-    	    createButton(parent, IDialogConstants.NO_ID,
-    	            IDialogConstants.NO_LABEL, false);
-    	    createButton(parent, IDialogConstants.CANCEL_ID,
-    	            IDialogConstants.CANCEL_LABEL, false);
-	    } else {
-	        super.createButtonsForButtonBar(parent);
-	    }
 	}
 	
 	@Override

@@ -1,8 +1,6 @@
  
 package ru.taximaxim.codekeeper.ui.handlers;
 
-import java.io.IOException;
-
 import javax.inject.Named;
 
 import org.eclipse.e4.core.contexts.IEclipseContext;
@@ -16,6 +14,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.parts.CommitPartDescr;
+import ru.taximaxim.codekeeper.ui.parts.DiffPartDescr;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class LoadProj {
@@ -47,5 +46,6 @@ public class LoadProj {
 	    ctx.modify(PgDbProject.class, proj);
 	    
 	    CommitPartDescr.openNew(proj.getProjectDir(), partService, model, app);
+	    DiffPartDescr.openNew(proj.getProjectDir(), partService, model, app);
 	}
 }

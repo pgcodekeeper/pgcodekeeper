@@ -71,8 +71,8 @@ public class AddonExternalTools {
         try {
             setPgdumpVersion(new PgDumper(pgdumpExec).getVersion());
         } catch(IOException ex) {
-            Console.addMessage("Error while tryeing to run pg_dump --version!"
-                    + "Check paths in program preferences.");
+            Console.addMessage("Error while trying to run pg_dump --version!"
+                    + " Check paths in program preferences.");
             ex.printStackTrace();
             setPgdumpVersion("<unknown>");
         }
@@ -94,10 +94,8 @@ public class AddonExternalTools {
             String svnExec,
             @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
             String pgdumpExec) {
-        if(appHandle.getState() != ApplicationHandle.RUNNING) {
-            return;
+        if(appHandle.getState() == ApplicationHandle.RUNNING) {
+            getVersionsOnStartup(null, svnExec, pgdumpExec);
         }
-        
-        getVersionsOnStartup(null, svnExec, pgdumpExec);
     }
 }

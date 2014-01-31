@@ -19,7 +19,7 @@
     <elements xsi:type="menu:MenuContribution" xmi:id="_VH9lQCnIEeOzItlTPWWkmA" elementId="ru.taximaxim.codekeeper.ui.menucontribution.0" parentId="ru.taximaxim.codekeeper.mainapp.mainmenu">
       <children xsi:type="menu:Menu" xmi:id="_oZAFMCnVEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.menu.0" label="&amp;File">
         <children xsi:type="menu:HandledMenuItem" xmi:id="_fAWkQCzJEeOC9s_7P-LAEQ" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.3" label="&amp;New Project..." command="_1JlsQCzJEeOC9s_7P-LAEQ"/>
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_e5l6wDYmEeOu39tpQ1Oozg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.5" label="&amp;Load Project..." command="_o6NrIDYmEeOu39tpQ1Oozg"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_e5l6wDYmEeOu39tpQ1Oozg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.5" label="&amp;Open Project..." command="_o6NrIDYmEeOu39tpQ1Oozg"/>
         <children xsi:type="menu:MenuSeparator" xmi:id="_G68hkGlxEeO0LoNj8g6FWw" elementId="ru.taximaxim.codekeeper.ui.menuseparator.2"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_YrAvAGyUEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.13" label="&amp;Close" command="_DHHaoGySEeO0IptUBJxhdA"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_HyIoQGlxEeO0LoNj8g6FWw" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.12" label="Close &amp;Project" command="_H_VU0DfvEeOJGp3TAROjKg"/>
@@ -117,8 +117,9 @@
     <elements xsi:type="basic_1:PartDescriptor" xmi:id="_Qr2hUGl5EeO0LoNj8g6FWw" elementId="ru.taximaxim.codekeeper.ui.partdescriptor.SQLEditorDescr" label="{sql filename PH}" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/file_obj.gif" allowMultiple="true" closeable="true" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.SqlEditorDescr">
       <tags>removeOnHide</tags>
     </elements>
-    <elements xsi:type="basic_1:PartDescriptor" xmi:id="_eBhzsGvDEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.partdescriptor.Sync" label="Commit changes" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.CommitPartDescr">
+    <elements xsi:type="basic_1:PartDescriptor" xmi:id="_eBhzsGvDEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.partdescriptor.Sync" label="Commit changes (update project)" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/ball_blue.png" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.CommitPartDescr">
       <tags>removeOnHide</tags>
     </elements>
+    <elements xsi:type="basic_1:PartDescriptor" xmi:id="_NVim8IphEeOO5MjC53afEA" elementId="ru.taximaxim.codekeeper.ui.partdescriptor.Diff" label="Get latest (update DB)" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/ball_red.png" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.DiffPartDescr"/>
   </fragments>
 </fragment:ModelFragments>

@@ -260,7 +260,7 @@ public class CommitPartDescr {
         btnDb.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                showDbPicker(true );
+                showDbPicker(true);
                 btnGetChanges.setEnabled(true);
             }
         });
@@ -424,6 +424,5 @@ public class CommitPartDescr {
 	    MPart syncPart = partService.createPart(UIConsts.PART_SYNC);
 	    syncPart.getPersistedState().put(UIConsts.PART_SYNC_ID, projectPath);
 	    ((MPartStack) model.find(UIConsts.PART_STACK_EDITORS, app)).getChildren().add(syncPart);
-	    partService.activate(syncPart);
 	}
 }
