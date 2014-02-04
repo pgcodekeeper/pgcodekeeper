@@ -186,31 +186,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         btnSave.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                
-                int dbport;
-                try {
-                    if(grpDbData.txtDbPort.getText().isEmpty()) {
-                        dbport = 0;
-                    } else {
-                        dbport = Integer.parseInt(grpDbData.txtDbPort.getText());
-                    }
-                } catch (NumberFormatException ex) {
-                    MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
-                    mb.setText("Cannot save entry!");
-                    mb.setMessage("Not valid port number: " + grpDbData.txtDbPort.getText());
-                    mb.open();
-                    return;
-                }
-                
-                DbInfo db = store.get(cmbDbNames.getText());
-                
-                db.dbname = grpDbData.txtDbName.getText();
-                db.dbuser = grpDbData.txtDbUser.getText();
-                db.dbpass = grpDbData.txtDbPass.getText();
-                db.dbhost = grpDbData.txtDbHost.getText();
-                db.dbport = dbport;
-                
-                btnSave.setEnabled(false);
+                saveEntry();
             }
         });
         btnSave.setEnabled(false);
@@ -256,8 +232,39 @@ public class DbStoreEditorDialog extends TrayDialog {
         return parent;
     }
     
+    private void saveEntry() {
+        int dbport;
+        try {
+            if(grpDbData.txtDbPort.getText().isEmpty()) {
+                dbport = 0;
+            } else {
+                dbport = Integer.parseInt(grpDbData.txtDbPort.getText());
+            }
+        } catch (NumberFormatException ex) {
+            MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
+            mb.setText("Cannot save entry!");
+            mb.setMessage("Not valid port number: " + grpDbData.txtDbPort.getText());
+            mb.open();
+            return;
+        }
+        
+        DbInfo db = store.get(cmbDbNames.getText());
+        
+        db.dbname = grpDbData.txtDbName.getText();
+        db.dbuser = grpDbData.txtDbUser.getText();
+        db.dbpass = grpDbData.txtDbPass.getText();
+        db.dbhost = grpDbData.txtDbHost.getText();
+        db.dbport = dbport;
+        
+        btnSave.setEnabled(false);
+    }
+    
     @Override
     protected void okPressed() {
+        if(btnSave.getEnabled()) {
+            saveEntry();
+        }
+        
         if(prefStore != null) {
             String preference = getPreferenceString();
             
