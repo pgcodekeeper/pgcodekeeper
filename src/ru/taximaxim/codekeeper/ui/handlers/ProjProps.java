@@ -20,6 +20,8 @@ import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
@@ -79,6 +81,8 @@ class DbSrcPage extends FieldEditorPreferencePage {
 	
 	private CLabel lblWarn;
 	
+	private LocalResourceManager lrm;
+	
 	public DbSrcPage(IPreferenceStore mainPrefs) {
 		super(GRID);
 		
@@ -87,6 +91,9 @@ class DbSrcPage extends FieldEditorPreferencePage {
 	
 	@Override
 	protected void createFieldEditors() {
+	    this.lrm = new LocalResourceManager(JFaceResources.getResources(),
+	            getFieldEditorParent());
+	    
 		RadioGroupFieldEditor radio = new RadioGroupFieldEditor(
 				UIConsts.PROJ_PREF_SOURCE, "Source of the DB schema", 1,
 				new String[][] {
@@ -114,9 +121,9 @@ class DbSrcPage extends FieldEditorPreferencePage {
 		sfePass.getTextControl(grpSourceDb).setEchoChar('\u2022'); // •
 		
 		lblWarn = new CLabel(grpSourceDb, SWT.NONE);
-		lblWarn.setImage(ImageDescriptor.createFromURL(
-				Activator.getContext().getBundle().getResource(
-						UIConsts.FILENAME_ICONWARNING)).createImage());
+		lblWarn.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(
+                        UIConsts.FILENAME_ICONWARNING))));
 		lblWarn.setText("Warning:\n"
 				+ "Providing password here is insecure!\n"
 				+ "Consider using .pgpass file instead.");
@@ -211,12 +218,17 @@ class SvnSettingsPage extends FieldEditorPreferencePage {
 	
 	private CLabel lblWarn;
 	
+	private LocalResourceManager lrm;
+	
 	public SvnSettingsPage() {
 		super(GRID);
 	}
 	
 	@Override
 	protected void createFieldEditors() {
+	    this.lrm = new LocalResourceManager(JFaceResources.getResources(),
+	            getFieldEditorParent());
+	    
 		StringFieldEditor sfeUrl = new StringFieldEditor(
 				UIConsts.PROJ_PREF_SVN_URL, "SVN Repo URL:", getFieldEditorParent());
 		addField(sfeUrl);
@@ -231,9 +243,9 @@ class SvnSettingsPage extends FieldEditorPreferencePage {
 		sfePass.getTextControl(getFieldEditorParent()).setEchoChar('\u2022'); // •
 		
 		lblWarn = new CLabel(getFieldEditorParent(), SWT.NONE);
-		lblWarn.setImage(ImageDescriptor.createFromURL(
-				Activator.getContext().getBundle().getResource(
-						UIConsts.FILENAME_ICONWARNING)).createImage());
+		lblWarn.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(
+                        UIConsts.FILENAME_ICONWARNING))));
 		lblWarn.setText("Warning:\n"
 				+ "Providing password here is insecure!\n"
 				+ "This password WILL show up in logs!\n"
@@ -279,12 +291,17 @@ class MiscSettingPage extends FieldEditorPreferencePage {
     
     private CLabel lblWarn;
     
+    private LocalResourceManager lrm;
+    
 	public MiscSettingPage() {
 		super(GRID);
 	}
 
 	@Override
 	protected void createFieldEditors() {
+	    this.lrm = new LocalResourceManager(JFaceResources.getResources(),
+	            getFieldEditorParent());
+	    
 	    originalEncoding = getPreferenceStore().getString(UIConsts.PROJ_PREF_ENCODING);
 		
 		Set<String> charsets  = Charset.availableCharsets().keySet();
@@ -300,9 +317,9 @@ class MiscSettingPage extends FieldEditorPreferencePage {
 				getFieldEditorParent()));
 
         lblWarn = new CLabel(getFieldEditorParent(), SWT.NONE);
-        lblWarn.setImage(ImageDescriptor.createFromURL(
+        lblWarn.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(
-                        UIConsts.FILENAME_ICONWARNING)).createImage());
+                        UIConsts.FILENAME_ICONWARNING))));
         lblWarn.setText("Warning:\n"
                 + "Encoding of existing files will not be changed!");
         GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);

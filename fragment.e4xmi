@@ -4,16 +4,15 @@
     <elements xsi:type="application:Addon" xmi:id="_EnG9wCtXEeOOlv4Y_5F9zw" elementId="ru.taximaxim.codekeeper.ui.addon.PrefLoader" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.AddonPrefLoader"/>
     <elements xsi:type="application:Addon" xmi:id="_j51ygGY_EeOS2eJJtn_juQ" elementId="ru.taximaxim.codekeeper.ui.addon.AddonExternalTools" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.AddonExternalTools"/>
   </fragments>
-  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_LZDfIDfuEeOJGp3TAROjKg" featurename="bindingContexts" parentElementId="org.eclipse.e4.ide.application">
-    <elements xsi:type="commands:BindingContext" xmi:id="_TGXJEDfuEeOJGp3TAROjKg" elementId="org.eclipse.ui.contexts.window" name="Window Bindings"/>
-  </fragments>
-  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_45nS4DfuEeOJGp3TAROjKg" featurename="bindingTables" parentElementId="org.eclipse.e4.ide.application">
-    <elements xsi:type="commands:BindingTable" xmi:id="_9WV84DfuEeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.bindingtable.0" bindingContext="_TGXJEDfuEeOJGp3TAROjKg">
-      <bindings xmi:id="_d0oZ4Df_EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.keybinding.1" keySequence="CTRL+O" command="_o6NrIDYmEeOu39tpQ1Oozg"/>
-      <bindings xmi:id="_I7coYGygEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.keybinding.0" keySequence="CTRL+D" command="_ncHkEDyKEeOnONY5mbpMNQ"/>
-      <bindings xmi:id="_XbP50GygEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.keybinding.3" keySequence="CTRL+ALT+P" command="_8p39cDooEeOo66lUbQncjg"/>
-      <bindings xmi:id="_zkT2QGygEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.keybinding.4" keySequence="CTRL+Q" command="_Zjel8CnWEeObfOm2RjyZmw"/>
-    </elements>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_4R4zcI2AEeOZD4rZ-dJoXw" featurename="bindings" parentElementId="ru.taximaxim.codekeeper.mainapp.bindingtable.0">
+    <elements xsi:type="commands:KeyBinding" xmi:id="_d0oZ4Df_EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.keybinding.1" keySequence="CTRL+O" command="_o6NrIDYmEeOu39tpQ1Oozg"/>
+    <elements xsi:type="commands:KeyBinding" xmi:id="_I7coYGygEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.keybinding.0" keySequence="CTRL+D" command="_ncHkEDyKEeOnONY5mbpMNQ"/>
+    <elements xsi:type="commands:KeyBinding" xmi:id="_XbP50GygEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.keybinding.3" keySequence="CTRL+ALT+P" command="_8p39cDooEeOo66lUbQncjg"/>
+    <elements xsi:type="commands:KeyBinding" xmi:id="_zkT2QGygEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.keybinding.4" keySequence="CTRL+Q" command="_Zjel8CnWEeObfOm2RjyZmw"/>
+    <elements xsi:type="commands:KeyBinding" xmi:id="_Yyef4I14EeOZD4rZ-dJoXw" elementId="ru.taximaxim.codekeeper.ui.keybinding.2" keySequence="CTRL+P" command="_Xdq-gCpvEeOWDPrJZCzSgA"/>
+    <elements xsi:type="commands:KeyBinding" xmi:id="_ht0qQI14EeOZD4rZ-dJoXw" elementId="ru.taximaxim.codekeeper.ui.keybinding.5" keySequence="CTRL+N" command="_1JlsQCzJEeOC9s_7P-LAEQ"/>
+    <elements xsi:type="commands:KeyBinding" xmi:id="_mGM_wI14EeOZD4rZ-dJoXw" elementId="ru.taximaxim.codekeeper.ui.keybinding.6" keySequence="CTRL+SHIFT+W" command="_H_VU0DfvEeOJGp3TAROjKg"/>
+    <elements xsi:type="commands:KeyBinding" xmi:id="_rQ7_QI14EeOZD4rZ-dJoXw" elementId="ru.taximaxim.codekeeper.ui.keybinding.7" keySequence="CTRL+W" command="_DHHaoGySEeO0IptUBJxhdA"/>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_AsQLgCnHEeOhQtIacC9DUw" featurename="menuContributions" parentElementId="org.eclipse.e4.ide.application">
     <elements xsi:type="menu:MenuContribution" xmi:id="_VH9lQCnIEeOzItlTPWWkmA" elementId="ru.taximaxim.codekeeper.ui.menucontribution.0" parentId="ru.taximaxim.codekeeper.mainapp.mainmenu">
@@ -58,15 +57,15 @@
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_FAWMACnJEeOzItlTPWWkmA" featurename="commands" parentElementId="org.eclipse.e4.ide.application">
     <elements xsi:type="commands:Command" xmi:id="_s6NdACnJEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.command.About" commandName="Show About"/>
     <elements xsi:type="commands:Command" xmi:id="_Zjel8CnWEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.command.Exit" commandName="Exit"/>
-    <elements xsi:type="commands:Command" xmi:id="_Xdq-gCpvEeOWDPrJZCzSgA" elementId="org.eclipse.ui.file.print" commandName="Show Preferences"/>
-    <elements xsi:type="commands:Command" xmi:id="_1JlsQCzJEeOC9s_7P-LAEQ" elementId="org.eclipse.ui.newWizard" commandName="New Project"/>
+    <elements xsi:type="commands:Command" xmi:id="_Xdq-gCpvEeOWDPrJZCzSgA" elementId="ru.taximaxim.codekeeper.ui.command.Prefs" commandName="Show Preferences"/>
+    <elements xsi:type="commands:Command" xmi:id="_1JlsQCzJEeOC9s_7P-LAEQ" elementId="ru.taximaxim.codekeeper.ui.command.NewProj" commandName="New Project"/>
     <elements xsi:type="commands:Command" xmi:id="_UkgjUC_xEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.command.SwitchPersp" commandName="Switch Perspective"/>
     <elements xsi:type="commands:Command" xmi:id="_o6NrIDYmEeOu39tpQ1Oozg" elementId="ru.taximaxim.codekeeper.ui.command.LoadProj" commandName="Load Project"/>
-    <elements xsi:type="commands:Command" xmi:id="_H_VU0DfvEeOJGp3TAROjKg" elementId="org.eclipse.ui.file.closeAll" commandName="Close Active Project"/>
+    <elements xsi:type="commands:Command" xmi:id="_H_VU0DfvEeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.command.CloseProj" commandName="Close Active Project"/>
     <elements xsi:type="commands:Command" xmi:id="_8p39cDooEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.command.ProjProps" commandName="Project Properties"/>
     <elements xsi:type="commands:Command" xmi:id="_HhqhUDskEeOHuJV2eZ06pg" elementId="ru.taximaxim.codekeeper.ui.command.ProjSyncSrc" commandName="Project Sync to Source"/>
     <elements xsi:type="commands:Command" xmi:id="_ncHkEDyKEeOnONY5mbpMNQ" elementId="ru.taximaxim.codekeeper.ui.command.Diff" commandName="Diff"/>
-    <elements xsi:type="commands:Command" xmi:id="_DHHaoGySEeO0IptUBJxhdA" elementId="org.eclipse.ui.file.close" commandName="Close Editor"/>
+    <elements xsi:type="commands:Command" xmi:id="_DHHaoGySEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.command.CloseEditor" commandName="Close Editor"/>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_V_i7QCnNEeObfOm2RjyZmw" featurename="handlers" parentElementId="org.eclipse.e4.ide.application">
     <elements xsi:type="commands:Handler" xmi:id="_bNwFgCnNEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.handler.About" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.About" command="_s6NdACnJEeObfOm2RjyZmw"/>
@@ -120,6 +119,8 @@
     <elements xsi:type="basic_1:PartDescriptor" xmi:id="_eBhzsGvDEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.partdescriptor.Sync" label="Commit changes (update project)" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/ball_blue.png" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.CommitPartDescr">
       <tags>removeOnHide</tags>
     </elements>
-    <elements xsi:type="basic_1:PartDescriptor" xmi:id="_NVim8IphEeOO5MjC53afEA" elementId="ru.taximaxim.codekeeper.ui.partdescriptor.Diff" label="Get latest (update DB)" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/ball_red.png" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.DiffPartDescr"/>
+    <elements xsi:type="basic_1:PartDescriptor" xmi:id="_NVim8IphEeOO5MjC53afEA" elementId="ru.taximaxim.codekeeper.ui.partdescriptor.Diff" label="Get latest (update DB)" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/ball_red.png" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.DiffPartDescr">
+      <tags>removeOnHide</tags>
+    </elements>
   </fragments>
 </fragment:ModelFragments>

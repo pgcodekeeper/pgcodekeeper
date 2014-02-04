@@ -5,6 +5,8 @@ import java.util.Map;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -27,6 +29,8 @@ public class DbStorePickerDialog extends TrayDialog {
     private Map<String, DbInfo> store;
     
     private Combo cmbDbNames;
+    
+    private LocalResourceManager lrm;
     
     private String name;
     private DbInfo dbinfo;
@@ -55,6 +59,8 @@ public class DbStorePickerDialog extends TrayDialog {
     protected Control createDialogArea(Composite parent) {
         parent = (Composite) super.createDialogArea(parent);
         
+        this.lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
+        
         Composite container = new Composite(parent, SWT.NONE);
         GridLayout gridLayout = new GridLayout(2, false);
         gridLayout.marginWidth = 0;
@@ -67,8 +73,9 @@ public class DbStorePickerDialog extends TrayDialog {
         loadStore();
         
         Button btnEditStore = new Button(container, SWT.PUSH);
-        btnEditStore.setImage(ImageDescriptor.createFromURL(Activator.getContext().
-                getBundle().getResource(UIConsts.FILENAME_ICONEDIT)).createImage());
+        btnEditStore.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(
+                        UIConsts.FILENAME_ICONEDIT))));
         btnEditStore.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

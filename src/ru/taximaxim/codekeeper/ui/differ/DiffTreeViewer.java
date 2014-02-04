@@ -13,6 +13,8 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -37,6 +39,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.copiedclasses.CheckedTreeViewer;
 
 public class DiffTreeViewer extends Composite {
 
@@ -45,6 +48,8 @@ public class DiffTreeViewer extends Composite {
     
     final private Button btnDebugView;
     
+    private LocalResourceManager lrm;
+    
     public DiffTreeViewer(Composite parent, int style) {
         super(parent, style);
         
@@ -52,7 +57,8 @@ public class DiffTreeViewer extends Composite {
         gl.marginHeight = gl.marginWidth = 0;
         setLayout(gl);
         
-
+        this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
+        
         viewer = new CheckedTreeViewer(this);
         viewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
         
@@ -106,8 +112,8 @@ public class DiffTreeViewer extends Composite {
                                     + objType.toString().toLowerCase()
                                     + "s.png"));
                     
-                    mapObjIcons.put(objType, iObj.createImage());
-                    mapContIcons.put(objType, iCont.createImage());
+                    mapObjIcons.put(objType, lrm.createImage(iObj));
+                    mapContIcons.put(objType, lrm.createImage(iCont));
                 }
             }
             
@@ -115,7 +121,7 @@ public class DiffTreeViewer extends Composite {
             public void update(ViewerCell cell) {
                 TreeElement el = (TreeElement) cell.getElement();
                 List<StyleRange> styles = new ArrayList<>();
-                Image icon = null;
+                Image icon = mapObjIcons.get(el.getType());
                 
                 if(btnDebugView.getSelection()) {
                     cell.setText(String.format("%s:%s:%s",
@@ -123,7 +129,10 @@ public class DiffTreeViewer extends Composite {
                 } else {
                     StringBuilder label = new StringBuilder(el.getName());
                     
-                    if(el.getType() == DbObjType.CONTAINER) {
+                    if(el.getType() == DbObjType.CONTAINER 
+                            || el.getType() == DbObjType.DATABASE
+                            || el.getType() == DbObjType.SCHEMA
+                            || el.getType() == DbObjType.TABLE) {
                         label.append(" (")
                             .append(el.countChildren())
                             .append(") [")
@@ -140,9 +149,9 @@ public class DiffTreeViewer extends Composite {
                         
                         styles.add(styleCount);
                         
-                        icon = mapContIcons.get(el.getContainerType());
-                    } else {
-                        icon = mapObjIcons.get(el.getType());
+                        if(el.getType() == DbObjType.CONTAINER) {
+                            icon = mapContIcons.get(el.getContainerType());
+                        }
                     }
                     
                     cell.setText(label.toString());

@@ -11,6 +11,8 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -59,7 +61,6 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
 		return props;
 	}
 	
-	// TODO if init is not selected pageDb makes no sense
 	@Override
 	public void addPages() {
         pageSvn = new PageSvn("SVN settings");
@@ -169,6 +170,8 @@ class PageSvn extends WizardPage implements Listener {
     private boolean checkOverwrite = true;
     
     private CLabel lblWarnPass, lblWarnInit;
+    
+    private LocalResourceManager lrm;
 
     public String getSvnUrl() {
         return txtSvnUrl.getText();
@@ -196,6 +199,8 @@ class PageSvn extends WizardPage implements Listener {
 
     @Override
     public void createControl(final Composite parent) {
+        this.lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
+        
         container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(2, false));
         
@@ -237,9 +242,9 @@ class PageSvn extends WizardPage implements Listener {
         });
         
         lblWarnPass = new CLabel(grpSvn, SWT.NONE);
-        lblWarnPass.setImage(ImageDescriptor.createFromURL(
+        lblWarnPass.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(
-                        UIConsts.FILENAME_ICONWARNING)).createImage());
+                        UIConsts.FILENAME_ICONWARNING))));
         lblWarnPass.setText("Warning:\n"
                 + "Providing password here is insecure!"
                 + " This password WILL show up in logs!\n"
@@ -250,7 +255,7 @@ class PageSvn extends WizardPage implements Listener {
         lblWarnPass.setVisible(false);
         
         btnDoInit = new Button(container, SWT.CHECK);
-        btnDoInit.setText("Init repository from Schema Source");
+        btnDoInit.setText("Init repository from Schema Source (Live DB or dump file)");
         gd = new GridData();
         gd.horizontalSpan = 2;
         btnDoInit.setLayoutData(gd);
@@ -269,9 +274,9 @@ class PageSvn extends WizardPage implements Listener {
         btnDoInit.addListener(SWT.Selection, this);
         
         lblWarnInit = new CLabel(container, SWT.NONE);
-        lblWarnInit.setImage(ImageDescriptor.createFromURL(
+        lblWarnInit.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(
-                        UIConsts.FILENAME_ICONWARNING)).createImage());
+                        UIConsts.FILENAME_ICONWARNING))));
         lblWarnInit.setText("Warning:\n"
                 + "This will delete SVN contents and recreate them from Schema Source"
                 + " (next page).");

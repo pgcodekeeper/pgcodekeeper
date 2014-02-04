@@ -9,6 +9,8 @@ import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -37,6 +39,8 @@ public class DbStoreEditorDialog extends TrayDialog {
     private Combo cmbDbNames;
     private Button btnSave, btnDel;
     private DbPicker grpDbData;
+    
+    private LocalResourceManager lrm;
     
     private ModifyListener dbModified = new ModifyListener() {
         @Override
@@ -107,6 +111,8 @@ public class DbStoreEditorDialog extends TrayDialog {
     protected Control createDialogArea(Composite parent) {
         parent = (Composite) super.createDialogArea(parent);
         
+        this.lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
+        
         Composite container = new Composite(parent, SWT.NONE);
         GridLayout gridLayout = new GridLayout(4, false);
         gridLayout.marginWidth = 0;
@@ -137,10 +143,9 @@ public class DbStoreEditorDialog extends TrayDialog {
         });
         
         Button btnAdd = new Button(container, SWT.PUSH);
-        btnAdd.setImage(ImageDescriptor.createFromURL(Activator.getContext().
-                getBundle().getResource(UIConsts.FILENAME_ICONADD)).createImage());
-        // TODO createImage, createResource, dispose, static loading ... ?
-        // local resource manager jface ?
+        btnAdd.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(
+                        UIConsts.FILENAME_ICONADD))));
         btnAdd.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -175,8 +180,9 @@ public class DbStoreEditorDialog extends TrayDialog {
         });
         
         btnSave = new Button(container, SWT.PUSH);
-        btnSave.setImage(ImageDescriptor.createFromURL(Activator.getContext().
-                getBundle().getResource(UIConsts.FILENAME_ICONSAVE)).createImage());
+        btnSave.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(
+                        UIConsts.FILENAME_ICONSAVE))));
         btnSave.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -210,8 +216,9 @@ public class DbStoreEditorDialog extends TrayDialog {
         btnSave.setEnabled(false);
         
         btnDel = new Button(container, SWT.PUSH);
-        btnDel.setImage(ImageDescriptor.createFromURL(Activator.getContext().
-                getBundle().getResource(UIConsts.FILENAME_ICONDEL)).createImage());
+        btnDel.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(
+                        UIConsts.FILENAME_ICONDEL))));
         btnDel.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

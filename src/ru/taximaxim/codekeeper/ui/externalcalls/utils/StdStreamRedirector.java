@@ -24,7 +24,7 @@ public class StdStreamRedirector implements Runnable {
 	 * @param in {@link InputStream} to 
 	 */
 	private StdStreamRedirector(InputStream in) {
-		this.in = new BufferedReader(new InputStreamReader(in)); // TODO dispose ?
+		this.in = new BufferedReader(new InputStreamReader(in));
 	}
 	
 	@Override
@@ -64,20 +64,22 @@ public class StdStreamRedirector implements Runnable {
 		
 		StdStreamRedirector redirector = new StdStreamRedirector(
 				p.getInputStream());
-		Thread redirectorThread = new Thread(redirector);
-		redirectorThread.start();
-		try {
-			p.waitFor();
-			redirectorThread.join();
-		} catch(InterruptedException ex) {
-			throw new IllegalStateException(ex);
+		try(BufferedReader t = redirector.in) {
+    		Thread redirectorThread = new Thread(redirector);
+    		redirectorThread.start();
+    		try {
+    			p.waitFor();
+    			redirectorThread.join();
+    		} catch(InterruptedException ex) {
+    			throw new IllegalStateException(ex);
+    		}
+    		
+    		if(p.exitValue() != 0) {
+    			throw new IOException("Process returned with error: "
+    						+ p.exitValue());
+    		}
+    		
+    		return redirector.storage.toString();
 		}
-		
-		if(p.exitValue() != 0) {
-			throw new IOException("Process returned with error: "
-						+ p.exitValue());
-		}
-		
-		return redirector.storage.toString();
 	}
 }

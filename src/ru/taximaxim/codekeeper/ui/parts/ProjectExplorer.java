@@ -17,6 +17,8 @@ import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.swt.modeling.EMenuService;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -51,10 +53,14 @@ public class ProjectExplorer {
     
     private TreeViewer treeDb;
     
+    private LocalResourceManager lrm;
+    
     @PostConstruct
     private void postConstruct(Composite parent, EMenuService menuService)
             throws IOException {
         parent.setLayout(new FillLayout());
+        
+        this.lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
         
         treeDb = new TreeViewer(parent, SWT.BORDER);
         treeDb.setContentProvider(new ITreeContentProvider() {
@@ -120,13 +126,13 @@ public class ProjectExplorer {
         });
         treeDb.setLabelProvider(new LabelProvider() {
             
-            private final Image imgFolder = ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(
-                            UIConsts.FILENAME_ICONDIR)).createImage();
+            private final Image imgFolder = lrm.createImage(
+                    ImageDescriptor.createFromURL(Activator.getContext()
+                            .getBundle().getResource(UIConsts.FILENAME_ICONDIR)));
             
-            private final Image imgFile = ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(
-                            UIConsts.FILENAME_ICONFILE)).createImage();
+            private final Image imgFile = lrm.createImage(
+                    ImageDescriptor.createFromURL(Activator.getContext()
+                            .getBundle().getResource(UIConsts.FILENAME_ICONFILE)));
             
             @Override
             public String getText(Object element) {

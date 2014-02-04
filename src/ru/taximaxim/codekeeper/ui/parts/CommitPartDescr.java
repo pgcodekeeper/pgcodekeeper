@@ -18,6 +18,7 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -424,5 +425,6 @@ public class CommitPartDescr {
 	    MPart syncPart = partService.createPart(UIConsts.PART_SYNC);
 	    syncPart.getPersistedState().put(UIConsts.PART_SYNC_ID, projectPath);
 	    ((MPartStack) model.find(UIConsts.PART_STACK_EDITORS, app)).getChildren().add(syncPart);
+	    partService.showPart(syncPart, PartState.CREATE);
 	}
 }

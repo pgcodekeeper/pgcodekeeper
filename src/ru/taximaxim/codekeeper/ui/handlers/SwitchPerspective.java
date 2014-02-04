@@ -12,9 +12,9 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.dialogs.ListDialog; // TODO no o.e.ui
+
+import ru.taximaxim.codekeeper.ui.copiedclasses.ListDialog;
 
 public class SwitchPerspective {
 	@Execute

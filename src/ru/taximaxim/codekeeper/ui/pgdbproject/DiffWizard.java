@@ -16,6 +16,7 @@ import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -185,6 +186,8 @@ class PageDiff extends WizardPage implements Listener {
     
     private Combo cmbEncoding;
     
+    private LocalResourceManager lrm;
+    
     public DiffTargetType getTargetType() {
         if(radioDb.getSelection()) {
             return DiffTargetType.DB;
@@ -318,6 +321,8 @@ class PageDiff extends WizardPage implements Listener {
     
     @Override
     public void createControl(Composite parent) {
+        this.lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
+        
         container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout());
         
@@ -449,9 +454,9 @@ class PageDiff extends WizardPage implements Listener {
         });
         
         lblWarnSvnPass = new CLabel(grpSvn, SWT.NONE);
-        lblWarnSvnPass.setImage(ImageDescriptor.createFromURL(
+        lblWarnSvnPass.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(
-                        UIConsts.FILENAME_ICONWARNING)).createImage());
+                        UIConsts.FILENAME_ICONWARNING))));
         lblWarnSvnPass.setText("Warning:\n"
                 + "Providing password here is insecure!"
                 + " This password WILL show up in logs!\n"

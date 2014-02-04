@@ -14,6 +14,7 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -53,9 +54,9 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 public class DiffPartDescr {
     
     @Inject
-    MPart part;
+    private MPart part;
     @Inject
-    EPartService partService;
+    private EPartService partService;
     @Inject @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
     private String exePgdump;
     @Inject @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
@@ -357,8 +358,9 @@ public class DiffPartDescr {
             }
         }
         
-        MPart syncPart = partService.createPart(UIConsts.PART_DIFF);
-        syncPart.getPersistedState().put(UIConsts.PART_DIFF_ID, projectPath);
-        ((MPartStack) model.find(UIConsts.PART_STACK_EDITORS, app)).getChildren().add(syncPart);
+        MPart diffPart = partService.createPart(UIConsts.PART_DIFF);
+        diffPart.getPersistedState().put(UIConsts.PART_DIFF_ID, projectPath);
+        ((MPartStack) model.find(UIConsts.PART_STACK_EDITORS, app)).getChildren().add(diffPart);
+        partService.showPart(diffPart, PartState.CREATE);
     }
 }

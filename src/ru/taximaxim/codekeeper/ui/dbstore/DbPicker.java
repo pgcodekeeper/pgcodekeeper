@@ -2,6 +2,8 @@ package ru.taximaxim.codekeeper.ui.dbstore;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyEvent;
@@ -27,6 +29,8 @@ public class DbPicker extends Group {
     private Button btnStorePick;
     private CLabel lblWarnDbPass;
     
+    private LocalResourceManager lrm;
+    
     public Label lblName;
     public Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort;
     
@@ -43,6 +47,7 @@ public class DbPicker extends Group {
         setLayout(new GridLayout(4, false));
         
         this.allowShellResize = allowShellResize;
+        this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         
         lblFieldName = new Label(this, SWT.NONE);
         lblFieldName.setText("Entry Name:");
@@ -99,9 +104,9 @@ public class DbPicker extends Group {
         });
         
         lblWarnDbPass = new CLabel(this, SWT.NONE);
-        lblWarnDbPass.setImage(ImageDescriptor.createFromURL(
+        lblWarnDbPass.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(
-                        UIConsts.FILENAME_ICONWARNING)).createImage());
+                        UIConsts.FILENAME_ICONWARNING))));
         lblWarnDbPass.setText("Warning:\n"
                 + "Providing password here is insecure!\n"
                 + "Consider using .pgpass file instead.");

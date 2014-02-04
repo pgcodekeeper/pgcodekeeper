@@ -1,4 +1,6 @@
-package ru.taximaxim.codekeeper.ui.differ;
+// Modified copy of org.eclipse.ui.dialogs.ContainerCheckedTreeViewer.
+
+package ru.taximaxim.codekeeper.ui.copiedclasses;
 
 /*******************************************************************************
  * Copyright (c) 2005 IBM Corporation and others.

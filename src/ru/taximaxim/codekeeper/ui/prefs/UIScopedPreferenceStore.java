@@ -1,9 +1,9 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.ui.preferences.ScopedPreferenceStore; // TODO no o.e.ui
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.copiedclasses.ScopedPreferenceStore;
 
 /**
  * Extends {@link ScopedPreferenceStore} with app's default values.
