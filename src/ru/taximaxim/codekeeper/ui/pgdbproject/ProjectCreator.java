@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -50,7 +51,7 @@ public class ProjectCreator implements IRunnableWithProgress {
             if(dirSvn.exists()) {
                 Dir.deleteRecursive(dirSvn);
             }
-            dirSvn.mkdir();
+            Files.createDirectory(dirSvn.toPath());
             svn.svnCo(dirSvn);
             
             // clean repository, generate new file structure,
@@ -76,16 +77,17 @@ public class ProjectCreator implements IRunnableWithProgress {
 
                 pm.newChild(25).subTask("Exporting DB model..."); // 75
                 
-                try(TempDir tmpSvnMeta = new TempDir("tmp_svn_meta_")) {
+                try(TempDir tmpSvnMeta = new TempDir(props.getProjectPath(),
+                        "tmp_svn_meta_")) {
                     File svnMetaProj = new File(dirSvn, ".svn");
                     File svnMetaTmp = new File(tmpSvnMeta.get(), ".svn");
-                    svnMetaProj.renameTo(svnMetaTmp);
+                    Files.move(svnMetaProj.toPath(), svnMetaTmp.toPath());
                     Dir.deleteRecursive(dirSvn);
                     
                     new ModelExporter(dirSvn.getAbsolutePath(), db, 
                             props.getString(UIConsts.PROJ_PREF_ENCODING)).export();
                     
-                    svnMetaTmp.renameTo(svnMetaProj);
+                    Files.move(svnMetaTmp.toPath(), svnMetaProj.toPath());
                 }
                 
                 pm.newChild(25).subTask("SVN committing..."); // 100

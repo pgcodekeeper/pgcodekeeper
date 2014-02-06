@@ -4,6 +4,7 @@ package ru.taximaxim.codekeeper.ui.parts;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -143,11 +144,12 @@ public class CommitPartDescr {
                         pm.newChild(1).subTask("Exporting new DB model..."); // 2
                         File dirSvn = proj.getProjectSchemaDir();
                         try {
-                            try(TempDir tmpSvnMeta = new TempDir("tmp_svn_meta_")) {
+                            try(TempDir tmpSvnMeta = new TempDir(proj.getProjectPath(), 
+                                    "tmp_svn_meta_")) {
                                 File svnMetaProj = new File(dirSvn, ".svn");
                                 File svnMetaTmp = new File(tmpSvnMeta.get(), ".svn");
                                 
-                                svnMetaProj.renameTo(svnMetaTmp);
+                                Files.move(svnMetaProj.toPath(), svnMetaTmp.toPath());
                                 Dir.deleteRecursive(dirSvn);
                                 
                                 new ModelExporter(
@@ -155,7 +157,7 @@ public class CommitPartDescr {
                                         proj.getString(UIConsts.PROJ_PREF_ENCODING))
                                 .export();
                                 
-                                svnMetaTmp.renameTo(svnMetaProj);
+                                Files.move(svnMetaTmp.toPath(), svnMetaProj.toPath());
                             }
                             
                             pm.newChild(1).subTask("SVN committing..."); // 3

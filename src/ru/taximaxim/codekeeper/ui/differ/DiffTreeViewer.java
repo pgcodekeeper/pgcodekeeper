@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.copiedclasses.CheckedTreeViewer;
@@ -140,8 +141,8 @@ public class DiffTreeViewer extends Composite {
                             .append(']');
                         
                         TextStyle styleGray = new TextStyle();
-                        styleGray.foreground = getShell().getDisplay()
-                                .getSystemColor(SWT.COLOR_GRAY);
+                        styleGray.foreground = getDisplay().getSystemColor(
+                                SWT.COLOR_GRAY);
                         
                         StyleRange styleCount = new StyleRange(styleGray);
                         styleCount.start = el.getName().length();
@@ -152,6 +153,19 @@ public class DiffTreeViewer extends Composite {
                         if(el.getType() == DbObjType.CONTAINER) {
                             icon = mapContIcons.get(el.getContainerType());
                         }
+                    }
+                    
+                    if(el.getSide() == DiffSide.BOTH
+                            && el.getParent().getSide() != DiffSide.BOTH) {
+                        TextStyle styleDarkGray = new TextStyle();
+                        styleDarkGray.foreground = getDisplay().getSystemColor(
+                                SWT.COLOR_DARK_GRAY);
+                        
+                        StyleRange styleUnaltered = new StyleRange(styleDarkGray);
+                        styleUnaltered.start = 0;
+                        styleUnaltered.length = el.getName().length();
+                        
+                        styles.add(styleUnaltered);
                     }
                     
                     cell.setText(label.toString());
