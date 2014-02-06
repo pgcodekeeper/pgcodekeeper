@@ -136,6 +136,7 @@ public class DiffPartDescr {
         sashDb.setSashWidth(8);
         
         diffTree = new DiffTreeViewer(sashDb, SWT.NONE);
+        diffTree.setSubtreeNames("Target only", "Project only", null);
         diffTree.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {

@@ -202,6 +202,7 @@ public class CommitPartDescr {
 	    sashDb.setSashWidth(8);
 	    
 	    diffTree = new DiffTreeViewer(sashDb, SWT.NONE);
+	    diffTree.setSubtreeNames("SVN Only", null, null);
 	    diffTree.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {

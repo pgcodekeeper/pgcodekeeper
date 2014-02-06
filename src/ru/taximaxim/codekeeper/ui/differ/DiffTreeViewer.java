@@ -51,6 +51,8 @@ public class DiffTreeViewer extends Composite {
     
     private LocalResourceManager lrm;
     
+    private String subTreeLeft, subTreeRight, subTreeBoth;
+    
     public DiffTreeViewer(Composite parent, int style) {
         super(parent, style);
         
@@ -122,13 +124,33 @@ public class DiffTreeViewer extends Composite {
             public void update(ViewerCell cell) {
                 TreeElement el = (TreeElement) cell.getElement();
                 List<StyleRange> styles = new ArrayList<>();
+                
                 Image icon = mapObjIcons.get(el.getType());
+                String name = null;
+                
+                if(el.getType() == DbObjType.CONTAINER
+                        && el.getContainerType() == DbObjType.CONTAINER) {
+                    switch(el.getSide()) {
+                    case LEFT:
+                        name = subTreeLeft;
+                        break;
+                    case RIGHT:
+                        name = subTreeRight;
+                        break;
+                    case BOTH:
+                        name = subTreeBoth;
+                        break;
+                    }
+                }
+                if(name == null) {
+                    name = el.getName();
+                }
                 
                 if(btnDebugView.getSelection()) {
                     cell.setText(String.format("%s:%s:%s",
-                            el.getType(), el.getName(), el.getSide()));
+                            el.getType(), name, el.getSide()));
                 } else {
-                    StringBuilder label = new StringBuilder(el.getName());
+                    StringBuilder label = new StringBuilder(name);
                     
                     if(el.getType() == DbObjType.CONTAINER 
                             || el.getType() == DbObjType.DATABASE
@@ -145,8 +167,8 @@ public class DiffTreeViewer extends Composite {
                                 SWT.COLOR_GRAY);
                         
                         StyleRange styleCount = new StyleRange(styleGray);
-                        styleCount.start = el.getName().length();
-                        styleCount.length = label.length() - el.getName().length();
+                        styleCount.start = name.length();
+                        styleCount.length = label.length() - name.length();
                         
                         styles.add(styleCount);
                         
@@ -163,7 +185,7 @@ public class DiffTreeViewer extends Composite {
                         
                         StyleRange styleUnaltered = new StyleRange(styleDarkGray);
                         styleUnaltered.start = 0;
-                        styleUnaltered.length = el.getName().length();
+                        styleUnaltered.length = name.length();
                         
                         styles.add(styleUnaltered);
                     }
@@ -303,6 +325,15 @@ public class DiffTreeViewer extends Composite {
     public void setTreeInput(TreeElement tree) {
         this.tree = tree;
         viewer.setInput(tree);
+    }
+    
+    public void setSubtreeNames(String subTreeLeft, String subTreeRight,
+            String subTreeBoth) {
+        this.subTreeLeft = subTreeLeft;
+        this.subTreeRight = subTreeRight;
+        this.subTreeBoth = subTreeBoth;
+        
+        viewer.refresh();
     }
     
     /**
