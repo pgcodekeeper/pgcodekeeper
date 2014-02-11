@@ -136,8 +136,6 @@ public class PgDumpLoaderTest {
         Assert.assertEquals("filter altered the result", d, dbFilteredFullTree);
         Assert.assertEquals("filter altered the original", dbPredefined, d);
         
-        // TODO more filter tests?
-        
         // test deepCopy mechanism
         Assert.assertEquals("deep copy altered", d, d.deepCopy());
         Assert.assertEquals("deep copy altered original", dbPredefined, d);
@@ -145,6 +143,7 @@ public class PgDumpLoaderTest {
         PgDatabase oneDiff = new PgDatabase();
         oneDiff.addSchema(new PgSchema("testschemaqwerty", null));
         
+        // test applying one DB to another using DiffTree
         TreeElement removeAll = dbTree;
         TreeElement onlyNew = DiffTree.create(d, oneDiff);
         TreeElement onlyOld = DiffTree.create(d, d);

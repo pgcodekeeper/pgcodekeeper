@@ -170,13 +170,6 @@ public class PgIndex extends PgStatementWithSearchPath {
         return unique;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param object {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     */
     @Override
     public boolean equals(final Object object) {
         boolean equals = false;
@@ -194,15 +187,15 @@ public class PgIndex extends PgStatementWithSearchPath {
         return equals;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     */
     @Override
     public int hashCode() {
-        return (getClass().getName() + "|" + definition + "|" + name + "|"
-                + tableName + "|" + unique).hashCode();
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((definition == null) ? 0 : definition.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
+        result = prime * result + (unique ? 1231 : 1237);
+        return result;
     }
 
     /**

@@ -177,13 +177,6 @@ public class PgConstraint extends PgStatementWithSearchPath {
         return tableName;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param object {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     */
     @Override
     public boolean equals(final Object object) {
         boolean equals = false;
@@ -200,15 +193,14 @@ public class PgConstraint extends PgStatementWithSearchPath {
         return equals;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     */
     @Override
     public int hashCode() {
-        return (getClass().getName() + "|" + definition + "|" + name + "|"
-                + tableName).hashCode();
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((definition == null) ? 0 : definition.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
+        return result;
     }
     
     @Override

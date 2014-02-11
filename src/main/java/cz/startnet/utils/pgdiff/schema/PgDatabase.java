@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -23,7 +24,7 @@ public class PgDatabase extends PgStatement {
     /**
      * List of database extensions.
      */
-    private final List<PgExtension> extensions = new ArrayList<PgExtension>();
+    private final List<PgExtension> extensions = new ArrayList<PgExtension>(1);
     /**
      * Array of ignored statements.
      */
@@ -197,28 +198,6 @@ public class PgDatabase extends PgStatement {
     public void addExtension(final PgExtension extension) {
     	extensions.add(extension);
     }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @param obj {@inheritDoc}
-     * @return {@inheritDoc}
-     */
-    @Override
-    public boolean equals(Object obj) {
-    	boolean eq = false;
-    	
-    	if(this == obj) {
-    		eq = true;
-    	} else if(obj instanceof PgDatabase) {
-    		PgDatabase db = (PgDatabase) obj;
-    		
-    		eq = PgDbUtils.listsEqual(extensions, db.getExtensions())
-    				&& PgDbUtils.listsEqual(schemas, db.getSchemas());
-    	}
-    	
-    	return eq;
-    }
     
     @Override
     public String getCreationSQL() {
@@ -229,7 +208,32 @@ public class PgDatabase extends PgStatement {
     public String getName() {
         return null;
     }
-    
+
+    @Override
+    public boolean equals(Object obj) {
+        boolean eq = false;
+        
+        if(this == obj) {
+            eq = true;
+        } else if(obj instanceof PgDatabase) {
+            PgDatabase db = (PgDatabase) obj;
+            
+            eq = new HashSet<>(extensions).equals(new HashSet<>(db.extensions))
+                    && new HashSet<>(schemas).equals(new HashSet<>(db.schemas));
+        }
+        
+        return eq;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + new HashSet<>(extensions).hashCode();
+        result = prime * result + new HashSet<>(schemas).hashCode();
+        return result;
+    }
+
     @Override
     public PgDatabase shallowCopy() {
         PgDatabase dbDst = new PgDatabase();

@@ -67,9 +67,6 @@ public class CreateTableParser {
 
         while (!parser.expectOptional(";")) {
             if (parser.expectOptional("INHERITS")) {
-            	// MYFIX
-            	// ignore INHERITS tables
-            	table.setIgnored(true);
                 parseInherits(parser, table);
             } else if (parser.expectOptional("WITHOUT")) {
                 table.setWith("OIDS=false");

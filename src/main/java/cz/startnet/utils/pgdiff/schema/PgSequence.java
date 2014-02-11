@@ -316,12 +316,6 @@ public class PgSequence extends PgStatementWithSearchPath {
         this.ownedBy = ownedBy;
     }
     
-    /**
-     * {@inheritDoc}
-     * 
-     * @param obj {@inheritDoc}
-     * @return {@inheritDoc}
-     */
     @Override
     public boolean equals(Object obj) {
     	boolean eq = false;
@@ -329,7 +323,7 @@ public class PgSequence extends PgStatementWithSearchPath {
     	if(this == obj) {
     		eq = true;
     	} else if(obj instanceof PgSequence) {
-    		PgSequence seq = (PgSequence) obj;
+    		final PgSequence seq = (PgSequence) obj;
     		eq = Objects.equals(name, seq.getName())
     				&& Objects.equals(increment, seq.getIncrement())
     				&& Objects.equals(minValue, seq.getMinValue())
@@ -342,7 +336,22 @@ public class PgSequence extends PgStatementWithSearchPath {
     	
     	return eq;
     }
-    
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((cache == null) ? 0 : cache.hashCode());
+        result = prime * result + (cycle ? 1231 : 1237);
+        result = prime * result + ((increment == null) ? 0 : increment.hashCode());
+        result = prime * result + ((maxValue == null) ? 0 : maxValue.hashCode());
+        result = prime * result + ((minValue == null) ? 0 : minValue.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((ownedBy == null) ? 0 : ownedBy.hashCode());
+        result = prime * result + ((startWith == null) ? 0 : startWith.hashCode());
+        return result;
+    }
+
     @Override
     public PgSequence shallowCopy() {
         PgSequence sequenceDst = new PgSequence(getName(), getRawStatement(), getSearchPath());

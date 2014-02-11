@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Stores function information.
@@ -241,23 +242,12 @@ public class PgFunction extends PgStatementWithSearchPath {
         return sbString.toString();
     }
 
-    @Override
-    public boolean equals(final Object object) {
-        if (!(object instanceof PgFunction)) {
-            return false;
-        } else if (object == this) {
-            return true;
-        }
-
-        return equals(object, false);
-    }
-
     /**
      * Compares two objects whether they are equal. If both objects are of the
      * same class but they equal just in whitespace in {@link #body}, they are
      * considered being equal.
      *
-     * @param object                   object to be compared
+     * @param func                   object to be compared
      * @param ignoreFunctionWhitespace whether multiple whitespaces in function
      *                                 {@link #body} should be ignored
      *
@@ -265,56 +255,50 @@ public class PgFunction extends PgStatementWithSearchPath {
      *         the same when compared ignoring whitespace, otherwise returns
      *         false
      */
-    public boolean equals(final Object object,
+    public boolean equalsWhitespace(final PgFunction func,
             final boolean ignoreFunctionWhitespace) {
         boolean equals = false;
 
-        if (this == object) {
+        if (this == func) {
             equals = true;
-        } else if (object instanceof PgFunction) {
-            final PgFunction function = (PgFunction) object;
-
-            if (name == null && function.getBareName() != null
-                    || name != null && !name.equals(function.getBareName())) {
-                return false;
-            }
-
-            final String thisBody;
-            final String thatBody;
-
-            if (ignoreFunctionWhitespace) {
-                thisBody = body.replaceAll("\\s+", " ");
-                thatBody =
-                        function.getBody().replaceAll("\\s+", " ");
-            } else {
-                thisBody = body;
-                thatBody = function.getBody();
-            }
-
-            if (thisBody == null && thatBody != null
-                    || thisBody != null && !thisBody.equals(thatBody)) {
-                return false;
-            }
+        } else {
+            equals = Objects.equals(name, func.getBareName())
+                    && arguments.equals(func.arguments);
             
-            return PgDbUtils.listsEqual(arguments, function.getArguments());
+            if(equals) {
+                String thisBody, thatBody;
+                if(ignoreFunctionWhitespace) {
+                    thisBody = body.replaceAll("\\s+", " ");
+                    thatBody = func.getBody().replaceAll("\\s+", " ");
+                } else {
+                    thisBody = body;
+                    thatBody = func.getBody();
+                }
+                equals = equals && Objects.equals(thisBody, thatBody);
+            }
         }
-
         return equals;
     }
 
     @Override
-    public int hashCode() {
-        final StringBuilder sbString = new StringBuilder(500);
-        sbString.append(body);
-        sbString.append('|');
-        sbString.append(name);
-
-        for (final Argument argument : arguments) {
-            sbString.append('|');
-            sbString.append(argument.getDeclaration(true));
+    public boolean equals(final Object object) {
+        if (object == this) {
+            return true;
+        } else if (object instanceof PgFunction) {
+            return equalsWhitespace((PgFunction) object, false);
+        } else {
+            return false;
         }
+    }
 
-        return sbString.toString().hashCode();
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());
+        result = prime * result + ((body == null) ? 0 : body.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        return result;
     }
 
     /**
@@ -443,40 +427,32 @@ public class PgFunction extends PgStatementWithSearchPath {
         }
 
         @Override
-        public boolean equals(final Object obj) {
-            if (!(obj instanceof Argument)) {
-                return false;
-            } else if (this == obj) {
-                return true;
+        public boolean equals(Object obj) {
+            boolean eq = false;
+            
+            if(this == obj) {
+                eq = true;
+            } else if(obj instanceof Argument) {
+                final Argument arg = (Argument) obj;
+                eq = Objects.equals(dataType, arg.getDataType())
+                        && Objects.equals(defaultExpression, arg.getDefaultExpression())
+                        && Objects.equals(mode, arg.getMode())
+                        && Objects.equals(name, arg.getName());
             }
-
-            final Argument argument = (Argument) obj;
-
-            return (dataType == null ? argument.getDataType() == null
-                    : dataType.equalsIgnoreCase(argument.getDataType()))
-                    && (defaultExpression == null
-                    ? argument.getDefaultExpression() == null
-                    : defaultExpression.equals(defaultExpression))
-                    && (mode == null ? argument.getMode() == null
-                    : mode.equalsIgnoreCase(argument.getMode()))
-                    && (name == null ? argument.getName() == null
-                    : name.equals(argument.getName()));
+            
+            return eq;
         }
 
         @Override
         public int hashCode() {
-            final StringBuilder sbString = new StringBuilder(50);
-            sbString.append(
-                    mode == null ? null : mode.toUpperCase(Locale.ENGLISH));
-            sbString.append('|');
-            sbString.append(name);
-            sbString.append('|');
-            sbString.append(dataType == null ? null
-                    : dataType.toUpperCase(Locale.ENGLISH));
-            sbString.append('|');
-            sbString.append(defaultExpression);
-
-            return sbString.toString().hashCode();
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((dataType == null) ? 0 : dataType.hashCode());
+            result = prime * result
+                    + ((defaultExpression == null) ? 0 : defaultExpression.hashCode());
+            result = prime * result + ((mode == null) ? 0 : mode.hashCode());
+            result = prime * result + ((name == null) ? 0 : name.hashCode());
+            return result;
         }
     }
     
@@ -486,8 +462,8 @@ public class PgFunction extends PgStatementWithSearchPath {
         functionDst.setName(getBareName());
         functionDst.setBody(getBody());
         functionDst.setComment(getComment());
-        for(PgFunction.Argument argSrc : getArguments()) {
-            PgFunction.Argument argDst = new PgFunction.Argument();
+        for(Argument argSrc : arguments) {
+            Argument argDst = new Argument();
             argDst.setName(argSrc.getName());
             argDst.setMode(argSrc.getMode());
             argDst.setDataType(argSrc.getDataType());

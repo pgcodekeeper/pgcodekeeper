@@ -74,11 +74,6 @@ public class AlterTableParser {
                     Resources.getString("CannotFindObject"), tableName,
                     statement));
         }
-        
-        // MYFIX
-        if(table.getIgnored()) {
-        	return;
-        }
 
         while (!parser.expectOptional(";")) {
             if (parser.expectOptional("ALTER")) {
@@ -240,9 +235,8 @@ public class AlterTableParser {
         
         PgColumn column = table.getColumn(columnName);
         if (column == null) {
-        	
         	// костыль
-        	// ignore columns not found on inherited tables
+        	// ignore columns not found in inherited tables
         	// as they are not correctly supported
         	if(!table.getInherits().isEmpty()) {
         		// consume the statement into a fake column object
@@ -250,11 +244,11 @@ public class AlterTableParser {
         	}
         	
         	// if table is not inherited throw an error as we're supposed to
-        	else
-        	
-            throw new RuntimeException(MessageFormat.format(
-                    Resources.getString("CannotFindTableColumn"),
-                    columnName, table.getName(), parser.getString()));
+        	else {
+        	    throw new RuntimeException(MessageFormat.format(
+        	            Resources.getString("CannotFindTableColumn"),
+        	            columnName, table.getName(), parser.getString()));
+        	}
         }
 
         if (parser.expectOptional("SET")) {

@@ -57,12 +57,9 @@ abstract public class PgStatement {
 	 */
 	abstract public PgStatement deepCopy();
 	
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @param obj {@inheritDoc}
-	 * @return {@inheritDoc}
-	 */
+    @Override
 	abstract public boolean equals(Object obj);
+	
+	@Override
+	abstract public int hashCode();
 }
-
