@@ -59,7 +59,7 @@ public class TreeDiffer implements IRunnableWithProgress {
             throw new InvocationTargetException(ex);
         }
         
-        pm.newChild(34).subTask("Building diff tree"); // 100
+        pm.newChild(34).subTask("Building diff tree..."); // 100
         diffTree = DiffTree.create(dbSource, dbTarget);
         
         monitor.done();

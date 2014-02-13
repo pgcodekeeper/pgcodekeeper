@@ -15,10 +15,19 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 public class SvnExec {
 	
 	private static final Pattern PATTERN_MISSING_FILE = Pattern.compile(
-			"^(?:![\\s]+)(.*)$", Pattern.MULTILINE);
+			"^(?:!.{6}[\\s]+)(.*)$", Pattern.MULTILINE);
 	
 	private static final Pattern PATTERN_UNVERSIONED = Pattern.compile(
-			"^(?:\\?[\\s]+)(.*)$", Pattern.MULTILINE);
+			"^(?:\\?.{6}[\\s]+)(.*)$", Pattern.MULTILINE);
+	
+	private static final Pattern PATTERN_ST_CONFLICTED = Pattern.compile(
+	        "^(?:C.{6}[\\s]+)(.*)$", Pattern.MULTILINE);
+	
+	private static final Pattern PATTERN_UP_CONFLICTED = Pattern.compile(
+            "^(?:C.{3}[\\s]+)(.*)$", Pattern.MULTILINE);
+	
+	private static final Pattern PATTERN_VERSION = Pattern.compile(
+	        "^[\\d]+\\.[\\d]+\\.[\\d]+$");
 	
 	private final String svnExec;
 	
@@ -37,6 +46,20 @@ public class SvnExec {
 	            proj.getString(UIConsts.PROJ_PREF_SVN_URL),
 	            proj.getString(UIConsts.PROJ_PREF_SVN_USER),
 	            proj.getString(UIConsts.PROJ_PREF_SVN_PASS));
+	}
+	
+	/**
+	 * Constructs an object for simple operations,
+	 * not requiring credentials and/or repository URL.
+	 * 
+	 * Such operations WILL THROW NPEs when performed on this object.
+	 * 
+	 * @param svnExec
+	 */
+	public SvnExec(String svnExec) {
+	    this.svnExec = svnExec;
+	    
+	    url = user = pass = null;
 	}
 	
 	public void svnCo(File dirTo) throws IOException {
@@ -82,14 +105,8 @@ public class SvnExec {
 	}
 	
 	private List<String> svnGetMissing(File dirIn) throws IOException {
-		ProcessBuilder svn = new ProcessBuilder(svnExec,
-				"st",
-				"--non-interactive");
-		svn.directory(dirIn);
-		
 		List<String> files = new ArrayList<>();
-		Matcher m = PATTERN_MISSING_FILE.matcher(
-				StdStreamRedirector.launchAndRedirect(svn));
+		Matcher m = PATTERN_MISSING_FILE.matcher(svnStatus(dirIn));
 		while(m.find()) {
 			files.add(m.group(1));
 		}
@@ -134,18 +151,58 @@ public class SvnExec {
 	}
 	
 	private List<String> svnGetUnversioned(File dirIn) throws IOException {
-		ProcessBuilder svn = new ProcessBuilder(svnExec,
-				"st",
-				"--non-interactive");
-		svn.directory(dirIn);
-		
 		List<String> files = new ArrayList<>();
-		Matcher m = PATTERN_UNVERSIONED.matcher(
-				StdStreamRedirector.launchAndRedirect(svn));
+		Matcher m = PATTERN_UNVERSIONED.matcher(svnStatus(dirIn));
 		while(m.find()) {
 			files.add(m.group(1));
 		}
 		return files;
+	}
+	
+	public boolean hasConflicts(File dirIn) throws IOException {
+	    return !svnGetConflicted(dirIn).isEmpty();
+	}
+	
+	private List<String> svnGetConflicted(File dirIn) throws IOException {
+	    List<String> files = new ArrayList<>();
+	    Matcher m = PATTERN_ST_CONFLICTED.matcher(svnStatus(dirIn));
+	    while(m.find()) {
+	        files.add(m.group(1));
+	    }
+	    return files;
+	}
+	
+	private String svnStatus(File dirIn) throws IOException {
+	    return svnStatus(dirIn, false);
+	}
+	
+	private String svnStatus(File dirIn, boolean showUpdates) throws IOException {
+	    ProcessBuilder svn = new ProcessBuilder(svnExec,
+                "st",
+                "--non-interactive");
+	    if(showUpdates) {
+	        svn.command().add("--show-updates");
+	    }
+	    
+        svn.directory(dirIn);
+        return StdStreamRedirector.launchAndRedirect(svn);
+	}
+	
+	/**
+	 * Performs svn update on dirIn.
+	 * 
+	 * @param dirIn
+	 * @return false if opration generated item conflicts
+	 * @throws IOException
+	 */
+	public boolean svnUpdate(File dirIn) throws IOException {
+	    ProcessBuilder svn = new ProcessBuilder(svnExec,
+	            "up",
+	            "--non-interactive");
+	    svn.directory(dirIn);
+	    
+	    return !PATTERN_UP_CONFLICTED.matcher(
+	            StdStreamRedirector.launchAndRedirect(svn)).find();
 	}
 	
 	private void addCredentials(ProcessBuilder pb) {
@@ -163,5 +220,16 @@ public class SvnExec {
 		if(url != null) {
 			pb.command().add(url);
 		}
+	}
+	
+	public String svnGetVersion() throws IOException {
+	    ProcessBuilder svn = new ProcessBuilder(svnExec,
+	            "--version", "--quiet",
+	            "--non-interactive");
+	    String version = StdStreamRedirector.launchAndRedirect(svn).trim();
+	    if(!PATTERN_VERSION.matcher(version).matches()) {
+	        throw new IOException("Bad svn --version output: " + version);
+	    }
+	    return version;
 	}
 }

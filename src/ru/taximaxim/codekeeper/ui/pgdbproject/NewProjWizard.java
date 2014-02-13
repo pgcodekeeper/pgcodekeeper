@@ -6,10 +6,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.Set;
 
+import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
@@ -28,13 +34,13 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 
-public class NewProjWizard extends Wizard {
+public class NewProjWizard extends Wizard implements IPageChangingListener {
 
 	private PageDb pageDb;
 	private PageSvn pageSvn;
@@ -57,22 +63,67 @@ public class NewProjWizard extends Wizard {
 	
 	@Override
 	public void addPages() {
-		pageDb = new PageDb("DB Settings");
+        pageSvn = new PageSvn("SVN settings");
+        addPage(pageSvn);
+		pageDb = new PageDb("Schema Source Settings", mainPrefStore);
 		addPage(pageDb);
-		pageSvn = new PageSvn("SVN settings");
-		addPage(pageSvn);
 		pageMisc = new PageMisc("Miscellaneous");
 		addPage(pageMisc);
+	}
+	
+	@Override
+	public void createPageControls(Composite pageContainer) {
+	    super.createPageControls(pageContainer);
+	    
+	    ((WizardDialog) getContainer()).addPageChangingListener(this);
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage page) {
+	    if(page == pageSvn && !pageSvn.isDoInit()) {
+	        return pageMisc;
+	    }
+	    return super.getNextPage(page);
+	}
+	
+	@Override
+	public void handlePageChanging(PageChangingEvent event) {
+	    if(event.getCurrentPage() == pageSvn && event.getTargetPage() == pageDb) {
+	        boolean isInit = pageSvn.isDoInit();
+	        
+	        if(isInit && pageDb.isSourceNone()) {
+                pageDb.setSourceDb();
+	        }
+
+            pageDb.setSourceNoneEnabled(!isInit);
+	    }
+	}
+	
+	@Override
+	public boolean canFinish() {
+	    if(getContainer().getCurrentPage() == pageSvn && pageSvn.isDoInit()) {
+	        return false;
+	    }
+	    return super.canFinish();
 	}
 
 	@Override
 	public boolean performFinish() {
-		props = new PgDbProject(pageDb.getProjectPath());
+		props = new PgDbProject(pageSvn.getProjectPath());
 		
 		props.setValue(UIConsts.PROJ_PREF_ENCODING, pageMisc.getEncoding());
-		props.setValue(UIConsts.PROJ_PREF_SOURCE,
-				pageDb.isSourceDb()? UIConsts.PROJ_SOURCE_TYPE_DB : 
-					UIConsts.PROJ_SOURCE_TYPE_DUMP);
+		
+		String src;
+		if(pageDb.isSourceDb()) {
+		    src = UIConsts.PROJ_SOURCE_TYPE_DB;
+		} else if(pageDb.isSourceDump()) {
+		    src = UIConsts.PROJ_SOURCE_TYPE_DUMP;
+		} else if(pageDb.isSourceNone()) {
+		    src = UIConsts.PROJ_SOURCE_TYPE_NONE;
+		} else {
+		    throw new IllegalStateException("No Schema Source selected.");
+		}
+		props.setValue(UIConsts.PROJ_PREF_SOURCE, src);
 		
 		props.setValue(UIConsts.PROJ_PREF_DB_NAME, pageDb.getDbName());
 		props.setValue(UIConsts.PROJ_PREF_DB_USER, pageDb.getDbUser());
@@ -91,8 +142,8 @@ public class NewProjWizard extends Wizard {
 					"Error while saving project properties", ex);
 		}
 		
-		ProjectLoaderParser creator = new ProjectLoaderParser(
-				mainPrefStore, props, pageDb.getDumpPath());
+		ProjectCreator creator = new ProjectCreator(
+				mainPrefStore, props, pageDb.getDumpPath(), pageSvn.isDoInit());
 		try {
 			getContainer().run(true, false, creator);
 		} catch(InvocationTargetException ex) {
@@ -108,48 +159,261 @@ public class NewProjWizard extends Wizard {
 	}
 }
 
+class PageSvn extends WizardPage implements Listener {
+    
+    private Composite container;
+    
+    private Text txtSvnUrl, txtSvnUser, txtSvnPass, txtProjectPath;
+    
+    private Button btnDoInit;
+    
+    private boolean checkOverwrite = true;
+    
+    private CLabel lblWarnPass, lblWarnInit;
+    
+    private LocalResourceManager lrm;
+
+    public String getSvnUrl() {
+        return txtSvnUrl.getText();
+    }
+    
+    public String getSvnUser() {
+        return txtSvnUser.getText();
+    }
+    
+    public String getSvnPass() {
+        return txtSvnPass.getText();
+    }
+    
+    public String getProjectPath() {
+        return txtProjectPath.getText();
+    }
+    
+    public boolean isDoInit() {
+        return btnDoInit.getSelection();
+    }
+    
+    PageSvn(String pageName) {
+        super(pageName, pageName, null);
+    }
+
+    @Override
+    public void createControl(final Composite parent) {
+        this.lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
+        
+        container = new Composite(parent, SWT.NONE);
+        container.setLayout(new GridLayout(2, false));
+        
+        Group grpSvn = new Group(container, SWT.NONE);
+        grpSvn.setText("SVN Settings");
+        grpSvn.setLayout(new GridLayout(2, false));
+        grpSvn.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
+
+        new Label(grpSvn, SWT.NONE).setText("SVN Repo URL:");
+        
+        txtSvnUrl = new Text(grpSvn, SWT.BORDER);
+        txtSvnUrl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtSvnUrl.addListener(SWT.Modify, this);
+        
+        new Label(grpSvn, SWT.NONE).setText("SVN User:");
+        
+        txtSvnUser = new Text(grpSvn, SWT.BORDER);
+        txtSvnUser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        
+        new Label(grpSvn, SWT.NONE).setText("SVN Password:");
+        
+        txtSvnPass = new Text(grpSvn, SWT.BORDER | SWT.PASSWORD);
+        txtSvnPass.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtSvnPass.addModifyListener(new ModifyListener() {
+            
+            @Override
+            public void modifyText(ModifyEvent e) {
+                GridData gd = (GridData)lblWarnPass.getLayoutData();
+                
+                if((txtSvnPass.getText().isEmpty() && !gd.exclude)
+                        || (!txtSvnPass.getText().isEmpty() && gd.exclude)) {
+                    gd.exclude = !gd.exclude;
+                    lblWarnPass.setVisible(!lblWarnPass.getVisible());
+                    
+                    getShell().pack();
+                    container.layout(false);
+                }
+            }
+        });
+        
+        lblWarnPass = new CLabel(grpSvn, SWT.NONE);
+        lblWarnPass.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(
+                        UIConsts.FILENAME_ICONWARNING))));
+        lblWarnPass.setText("Warning:\n"
+                + "Providing password here is insecure!"
+                + " This password WILL show up in logs!\n"
+                + "Consider using SVN password store instead.");
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
+        gd.exclude = true;
+        lblWarnPass.setLayoutData(gd);
+        lblWarnPass.setVisible(false);
+        
+        btnDoInit = new Button(container, SWT.CHECK);
+        btnDoInit.setText("Init repository from Schema Source (Live DB or dump file)");
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        btnDoInit.setLayoutData(gd);
+        btnDoInit.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                GridData gd = (GridData) lblWarnInit.getLayoutData();
+                
+                gd.exclude = !btnDoInit.getSelection();
+                lblWarnInit.setVisible(btnDoInit.getSelection());
+                
+                getShell().pack();
+                container.layout(false);
+            }
+        });
+        btnDoInit.addListener(SWT.Selection, this);
+        
+        lblWarnInit = new CLabel(container, SWT.NONE);
+        lblWarnInit.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(
+                        UIConsts.FILENAME_ICONWARNING))));
+        lblWarnInit.setText("Warning:\n"
+                + "This will delete SVN contents and recreate them from Schema Source"
+                + " (next page).");
+        gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
+        gd.exclude = true;
+        lblWarnInit.setLayoutData(gd);
+        lblWarnInit.setVisible(false);
+        
+        
+        Label l = new Label(container, SWT.NONE);
+        l.setText("Project Directory (settings storage, SVN cache, etc):");
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.verticalIndent = 12;
+        l.setLayoutData(gd);
+        
+        txtProjectPath = new Text(container, SWT.BORDER);
+        txtProjectPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtProjectPath.addModifyListener(new ModifyListener() {
+            
+            @Override
+            public void modifyText(ModifyEvent e) {
+                checkOverwrite = true;
+            }
+        });
+        txtProjectPath.addListener(SWT.Modify, this);
+        
+        Button btnBrowseProj = new Button(container, SWT.PUSH);
+        btnBrowseProj.setText("Browse...");
+        btnBrowseProj.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                DirectoryDialog dialog = 
+                        new DirectoryDialog(container.getShell());
+                String path = dialog.open();
+                if(path != null) {
+                    txtProjectPath.setText(path);
+                }
+            }
+        });
+        
+        setControl(container);
+    }
+    
+    @Override
+    public boolean isPageComplete() {
+        String errMsg = null;
+        if(txtSvnUrl.getText().isEmpty()) {
+            errMsg = "Enter SVN Repo URL!";
+        } else if(txtProjectPath.getText().isEmpty()
+                || !new File(txtProjectPath.getText()).isDirectory()) {
+            errMsg = "Select Project Directory!";
+        }
+        
+        if(checkOverwrite) {
+            File proj = new File(txtProjectPath.getText(),
+                    UIConsts.FILENAME_PROJ_PREF_STORE);
+            if(proj.isFile()) {
+                if(MessageDialog.openQuestion(getShell(), "Overwrite existing?",
+                        "Overwrite existing project?\n"
+                                    + txtProjectPath.getText())) {
+                    checkOverwrite = false;
+                } else {
+                    txtProjectPath.setText("");
+                    return false;
+                }
+            }
+        }
+        
+        setErrorMessage(errMsg);
+        return errMsg == null;
+    }
+
+    @Override
+    public void handleEvent(Event event) {
+        getWizard().getContainer().updateButtons();
+        getWizard().getContainer().updateMessage();
+    }
+}
+
 class PageDb extends WizardPage implements Listener {
 	
+    private final IPreferenceStore mainPrefs;
+    
 	private Composite container;
 	
-	private Button radioDb, radioDump;
+	private Button radioDb, radioDump, radioNone;
 	
-	private Group grpDb, grpDump;
+	private DbPicker grpDb;
+	private Group grpDump;
 	
-	private Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort, 
-				txtDumpPath, txtProjectPath;
+	private Label lblNoSource;
 	
-	private CLabel lblWarn;
-	
-	private boolean checkOverwrite = true;
+	private Text txtDumpPath;
 	
 	public boolean isSourceDb() {
 		return radioDb.getSelection();
+	}
+	
+	public void setSourceDb() {
+	    radioDump.setSelection(false);
+	    radioNone.setSelection(false);
+	    radioDb.setSelection(true);
+	    radioDb.notifyListeners(SWT.Selection, new Event());
 	}
 	
 	public boolean isSourceDump() {
 		return radioDump.getSelection();
 	}
 	
+	public boolean isSourceNone() {
+	    return radioNone.getSelection();
+	}
+	
+	public void setSourceNoneEnabled(boolean enabled) {
+	    radioNone.setEnabled(enabled);
+	}
+	
 	public String getDbName() {
-		return txtDbName.getText();
+		return grpDb.txtDbName.getText();
 	}
 	
 	public String getDbUser() {
-		return txtDbUser.getText();
+		return grpDb.txtDbUser.getText();
 	}
 	
 	public String getDbPass() {
-		return txtDbPass.getText();
+		return grpDb.txtDbPass.getText();
 	}
 	
 	public String getDbHost() {
-		return txtDbHost.getText();
+		return grpDb.txtDbHost.getText();
 	}
 	
 	public int getDbPort() {
 		try {
-			return Integer.parseInt(txtDbPort.getText());
+			return Integer.parseInt(grpDb.txtDbPort.getText());
 		} catch(NumberFormatException ex) {
 			return 0;
 		}
@@ -158,40 +422,37 @@ class PageDb extends WizardPage implements Listener {
 	public String getDumpPath() {
 		return txtDumpPath.getText();
 	}
-	
-	public String getProjectPath() {
-		return txtProjectPath.getText();
-	}
 
-	PageDb(String pageName) {
+	PageDb(String pageName, IPreferenceStore mainPrefs) {
 		super(pageName, pageName, null);
+		
+		this.mainPrefs = mainPrefs;
 	}
 
 	@Override
 	public void createControl(final Composite parent) {
-
 		container = new Composite(parent, SWT.NONE);
 		container.setLayout(new GridLayout(2, false));
 
 		Group radioGrp = new Group(container, SWT.NONE);
-		radioGrp.setText("DB Schema Source");
+		radioGrp.setText("Schema Source");
 		radioGrp.setLayoutData(
 				new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-		radioGrp.setLayout(new GridLayout(2, false));
+		radioGrp.setLayout(new GridLayout(3, false));
 		
 		radioDb = new Button(radioGrp, SWT.RADIO);
-		radioDb.setText("DB Source");
-		radioDb.setLayoutData(new GridData());
-		radioDb.setSelection(true);
+		radioDb.setText("DB");
 		
 		radioDb.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 			    if(radioDb.getSelection()) {
     				grpDump.setVisible(false);
+                    lblNoSource.setVisible(false);
     				grpDb.setVisible(true);
     				
     				((GridData)grpDump.getLayoutData()).exclude = true;
+                    ((GridData)lblNoSource.getLayoutData()).exclude = true;
     				((GridData)grpDb.getLayoutData()).exclude = false;
     				
     				container.layout(false);
@@ -201,17 +462,18 @@ class PageDb extends WizardPage implements Listener {
 		radioDb.addListener(SWT.Selection, this);
 		
 		radioDump = new Button(radioGrp, SWT.RADIO);
-		radioDump.setText("Dump File Source");
-		radioDump.setLayoutData(new GridData());
+		radioDump.setText("Dump File");
 		
 		radioDump.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 			    if(radioDump.getSelection()) {
     				grpDb.setVisible(false);
+                    lblNoSource.setVisible(false);
     				grpDump.setVisible(true);
     				
     				((GridData)grpDb.getLayoutData()).exclude = true;
+                    ((GridData)lblNoSource.getLayoutData()).exclude = true;
     				((GridData)grpDump.getLayoutData()).exclude = false;
     				
     				container.layout(false);
@@ -220,72 +482,34 @@ class PageDb extends WizardPage implements Listener {
 		});
 		radioDb.addListener(SWT.Selection, this);
 		
-		grpDb = new Group(container, SWT.NONE);
-		grpDb.setText("DB Source Settings (default if empty)");
+		radioNone = new Button(radioGrp, SWT.RADIO);
+		radioNone.setText("None");
+		radioNone.addSelectionListener(new SelectionAdapter() {
+		    @Override
+		    public void widgetSelected(SelectionEvent e) {
+		        grpDb.setVisible(false);
+                grpDump.setVisible(false);
+                lblNoSource.setVisible(true);
+                
+                ((GridData)grpDb.getLayoutData()).exclude = true;
+                ((GridData)grpDump.getLayoutData()).exclude = true;
+                ((GridData)lblNoSource.getLayoutData()).exclude = false;
+                
+                container.layout(false);
+		    }
+        });
+		radioNone.addListener(SWT.Selection, this);
+		radioNone.setSelection(true);
+		
+		grpDb = new DbPicker(container, SWT.NONE, mainPrefs);
+		grpDb.setText("DB Source Settings");
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd.exclude = true;
 		gd.verticalIndent = 12;
 		grpDb.setLayoutData(gd);
-		grpDb.setLayout(new GridLayout(4, false));
+		grpDb.setVisible(false);
 		
-		new Label(grpDb, SWT.NONE).setText("DB Name: ");
-		
-		txtDbName = new Text(grpDb, SWT.BORDER);
-		txtDbName.setLayoutData(new GridData(
-				SWT.FILL, SWT.CENTER, true, false, 3, 1));
-		
-		new Label(grpDb, SWT.NONE).setText("DB User: ");
-		
-		txtDbUser = new Text(grpDb, SWT.BORDER);
-		txtDbUser.setLayoutData(new GridData(
-				SWT.FILL, SWT.CENTER, true, false, 3, 1));
-		
-		new Label(grpDb, SWT.NONE).setText("DB Password:");
-		
-		txtDbPass = new Text(grpDb, SWT.BORDER | SWT.PASSWORD);
-		txtDbPass.setLayoutData(new GridData(
-				SWT.FILL, SWT.CENTER, true, false, 3, 1));
-		txtDbPass.addModifyListener(new ModifyListener() {
-			
-			@Override
-			public void modifyText(ModifyEvent e) {
-				GridData gd = (GridData)lblWarn.getLayoutData();
-				
-				if((txtDbPass.getText().isEmpty() && !gd.exclude)
-						|| (!txtDbPass.getText().isEmpty() && gd.exclude)) {
-					lblWarn.setVisible(!lblWarn.getVisible());
-					gd.exclude = !gd.exclude;
-					
-					Shell sh = parent.getShell();
-					int width = sh.getSize().x;
-					int newht = sh.computeSize(width, SWT.DEFAULT).y;
-					sh.setSize(width, newht);
-					
-					grpDb.layout(false);
-				}
-			}
-		});
-        
-        lblWarn = new CLabel(grpDb, SWT.NONE);
-        lblWarn.setImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(
-                        UIConsts.FILENAME_ICONWARNING)).createImage());
-        lblWarn.setText("Warning:\n"
-                + "Providing password here is insecure!\n"
-                + "Consider using .pgpass file instead.");
-        gd = new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1);
-        gd.exclude = true;
-        lblWarn.setLayoutData(gd);
-        lblWarn.setVisible(false);
-		
-		new Label(grpDb, SWT.NONE).setText("DB Host:");
-		
-		txtDbHost = new Text(grpDb, SWT.BORDER);
-		txtDbHost.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		
-		new Label(grpDb, SWT.NONE).setText("Port:");
-		
-		txtDbPort = new Text(grpDb, SWT.BORDER);
-		txtDbPort.addListener(SWT.Modify, this);
+		grpDb.txtDbPort.addListener(SWT.Modify, this);
 		
 		grpDump = new Group(container, SWT.NONE);
 		grpDump.setText("Dump File Source Settings");
@@ -318,40 +542,10 @@ class PageDb extends WizardPage implements Listener {
 				}
 			}
 		});
+		
+		lblNoSource = new Label(container, SWT.NONE);
+		lblNoSource.setText("No Schema Source selected.");
 
-		l = new Label(container, SWT.NONE);
-		l.setText("Project Directory (used for settings storage,"
-				+ " SVN operations, etc):");
-		gd = new GridData();
-		gd.horizontalSpan = 2;
-		gd.verticalIndent = 12;
-		l.setLayoutData(gd);
-		
-		txtProjectPath = new Text(container, SWT.BORDER);
-		txtProjectPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		txtProjectPath.addModifyListener(new ModifyListener() {
-			
-			@Override
-			public void modifyText(ModifyEvent e) {
-				checkOverwrite = true;
-			}
-		});
-		txtProjectPath.addListener(SWT.Modify, this);
-		
-		Button btnBrowseProj = new Button(container, SWT.PUSH);
-		btnBrowseProj.setText("Browse...");
-		btnBrowseProj.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				DirectoryDialog dialog = 
-						new DirectoryDialog(container.getShell());
-				String path = dialog.open();
-				if(path != null) {
-					txtProjectPath.setText(path);
-				}
-			}
-		});
-		
 		setControl(container);
 	}
 	
@@ -362,137 +556,16 @@ class PageDb extends WizardPage implements Listener {
 				(txtDumpPath.getText().isEmpty()
 						|| !new File(txtDumpPath.getText()).isFile())) {
 			errMsg = "Select a readable DB dump file!";
-		} else if(txtProjectPath.getText().isEmpty()
-				|| !new File(txtProjectPath.getText()).isDirectory()) {
-			errMsg = "Select Project Directory!";
-		} else if(radioDb.getSelection() && !txtDbPort.getText().isEmpty()) {
+		} else if(radioDb.getSelection() && !grpDb.txtDbPort.getText().isEmpty()) {
 			try {
-				Integer.parseInt(txtDbPort.getText());
+				Integer.parseInt(grpDb.txtDbPort.getText());
 			} catch (NumberFormatException ex) {
 				errMsg = "Port must be a number!";
 			}
 		}
 
 		setErrorMessage(errMsg);
-		if(errMsg != null) {
-			return false;
-		}
-		
-		if(checkOverwrite) {
-			File proj = new File(txtProjectPath.getText(),
-					UIConsts.FILENAME_PROJ_PREF_STORE);
-			if(proj.isFile()) {
-				if(MessageDialog.openQuestion(getShell(), "Overwrite existing?",
-						"Overwrite existing project?\n"
-									+ txtProjectPath.getText())) {
-					checkOverwrite = false;
-				} else {
-					txtProjectPath.setText("");
-					return false;
-				}
-			}
-		}
-
-		return true;
-	}
-
-	@Override
-	public void handleEvent(Event event) {
-		getWizard().getContainer().updateButtons();
-		getWizard().getContainer().updateMessage();
-	}
-}
-
-class PageSvn extends WizardPage implements Listener {
-	
-	private Composite container;
-	
-	private Text txtSvnUrl, txtSvnUser, txtSvnPass;
-	
-	private CLabel lblWarn;
-
-	public String getSvnUrl() {
-		return txtSvnUrl.getText();
-	}
-	
-	public String getSvnUser() {
-		return txtSvnUser.getText();
-	}
-	
-	public String getSvnPass() {
-		return txtSvnPass.getText();
-	}
-	
-	PageSvn(String pageName) {
-		super(pageName, pageName, null);
-	}
-
-	@Override
-	public void createControl(final Composite parent) {
-		container = new Composite(parent, SWT.NONE);
-		container.setLayout(new GridLayout(2, false));
-
-		new Label(container, SWT.NONE).setText("SVN Repo URL:");
-		
-		txtSvnUrl = new Text(container, SWT.BORDER);
-		txtSvnUrl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		txtSvnUrl.addListener(SWT.Modify, this);
-		
-		new Label(container, SWT.NONE).setText("SVN User:");
-		
-		txtSvnUser = new Text(container, SWT.BORDER);
-		txtSvnUser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		
-		new Label(container, SWT.NONE).setText("SVN Password:");
-		
-		txtSvnPass = new Text(container, SWT.BORDER | SWT.PASSWORD);
-		txtSvnPass.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		txtSvnPass.addModifyListener(new ModifyListener() {
-			
-			@Override
-			public void modifyText(ModifyEvent e) {
-				GridData gd = (GridData)lblWarn.getLayoutData();
-				
-				if((txtSvnPass.getText().isEmpty() && !gd.exclude)
-						|| (!txtSvnPass.getText().isEmpty() && gd.exclude)) {
-					gd.exclude = !gd.exclude;
-					lblWarn.setVisible(!lblWarn.getVisible());
-					
-					Shell sh = parent.getShell();
-					int width = sh.getSize().x;
-					int newht = sh.computeSize(width, SWT.DEFAULT).y;
-					sh.setSize(width, newht);
-					
-					container.layout(false);
-				}
-			}
-		});
-		
-		lblWarn = new CLabel(container, SWT.NONE);
-		lblWarn.setImage(ImageDescriptor.createFromURL(
-				Activator.getContext().getBundle().getResource(
-						UIConsts.FILENAME_ICONWARNING)).createImage());
-		lblWarn.setText("Warning:\n"
-				+ "Providing password here is insecure!"
-				+ " This password WILL show up in logs!\n"
-				+ "Consider using SVN password store instead.");
-		GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
-		gd.exclude = true;
-		lblWarn.setLayoutData(gd);
-		lblWarn.setVisible(false);
-
-		setControl(container);
-	}
-	
-	@Override
-	public boolean isPageComplete() {
-		if(txtSvnUrl.getText().isEmpty()) {
-			setErrorMessage("Enter SVN Repo URL!");
-			return false;
-		}
-		
-		setErrorMessage(null);
-		return true;
+		return errMsg == null;
 	}
 
 	@Override

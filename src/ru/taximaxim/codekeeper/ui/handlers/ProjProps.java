@@ -6,13 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.CanExecute;
-import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.services.IServiceConstants;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
@@ -21,77 +20,84 @@ import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.parts.ProjectPartDescriptor;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.dbstore.DbStorePickerDialog;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.FakePrefPageExtension;
 import ru.taximaxim.codekeeper.ui.prefs.PrefDialogFactory;
 
 public class ProjProps {
-	
-	@Inject
-	@Named(IServiceConstants.ACTIVE_PART)
-	MPart part;
-	
+
 	@Execute
-	public void execute(
+	private void execute(
+            @Named(UIConsts.PREF_STORE)
+            IPreferenceStore mainPrefs,
 			@Named(IServiceConstants.ACTIVE_SHELL)
-			Shell shell) {
+			Shell shell,
+			PgDbProject proj) {
 		
 		FakePrefPageExtension[] propPages = {
-				new FakePrefPageExtension("projprefs.0.pagedbsouce", "DB Source",
-						new DbSrcPage(), null),
-				
-				new FakePrefPageExtension("projprefs.1.pagesvn", "SVN Settings",
-						new SvnSettingsPage(), null),
+                new FakePrefPageExtension("projprefs.0.pagesvn", "SVN Settings",
+                        new SvnSettingsPage(), null),
+                
+				new FakePrefPageExtension("projprefs.1.pagedbsouce", "DB Source",
+						new DbSrcPage(mainPrefs), null),
 						
 				new FakePrefPageExtension("projprefs.2.pagemisc", "Miscellaneous",
 						new MiscSettingPage(), null)
 				};
 		
-		IPreferenceStore prefStore = ((ProjectPartDescriptor) part.getObject())
-				.getProject();
-		PrefDialogFactory.show(shell, prefStore, propPages);
+		PrefDialogFactory.show(shell, proj, propPages);
 	}
 	
 	@CanExecute
-	public boolean canExecute() {
-	    return part.getElementId().equals(UIConsts.PROJ_PART_DESCR_ID);
+	private boolean canExecute(PgDbProject proj) {
+	    return proj != null;
 	}
 }
 
-class DbSrcPage
-	extends FieldEditorPreferencePage
-	implements IWorkbenchPreferencePage {
+class DbSrcPage extends FieldEditorPreferencePage {
+    
+    private final IPreferenceStore mainPrefs;
 	
 	private Group grpSourceDb;
 	
 	private CLabel lblWarn;
 	
-	public DbSrcPage() {
-		super(GRID);
-	}
+	private LocalResourceManager lrm;
 	
-	@Override
-	public void init(IWorkbench workbench) {
+	public DbSrcPage(IPreferenceStore mainPrefs) {
+		super(GRID);
+		
+		this.mainPrefs = mainPrefs;
 	}
 	
 	@Override
 	protected void createFieldEditors() {
+	    this.lrm = new LocalResourceManager(JFaceResources.getResources(),
+	            getFieldEditorParent());
+	    
 		RadioGroupFieldEditor radio = new RadioGroupFieldEditor(
 				UIConsts.PROJ_PREF_SOURCE, "Source of the DB schema", 1,
 				new String[][] {
+				        {"None", UIConsts.PROJ_SOURCE_TYPE_NONE},
 						{"Dump file", UIConsts.PROJ_SOURCE_TYPE_DUMP},
 						{"Database", UIConsts.PROJ_SOURCE_TYPE_DB}
 				}, getFieldEditorParent(), true);
@@ -101,20 +107,23 @@ class DbSrcPage
 		grpSourceDb.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 		grpSourceDb.setText("Settings for Database schema source");
 		
-		addField(new StringFieldEditor(UIConsts.PROJ_PREF_DB_NAME, "DB Name:",
-				grpSourceDb));
-		addField(new StringFieldEditor(UIConsts.PROJ_PREF_DB_USER, "DB User:",
-				grpSourceDb));
+		final StringFieldEditor sfeName = new StringFieldEditor(
+		        UIConsts.PROJ_PREF_DB_NAME, "DB Name:", grpSourceDb);
+		addField(sfeName);
 		
-		StringFieldEditor sfePass = new StringFieldEditor(
+		final StringFieldEditor sfeUser = new StringFieldEditor(
+		        UIConsts.PROJ_PREF_DB_USER, "DB User:", grpSourceDb);
+		addField(sfeUser);
+		
+		final StringFieldEditor sfePass = new StringFieldEditor(
 				UIConsts.PROJ_PREF_DB_PASS, "DB Password:", grpSourceDb);
 		addField(sfePass);
-		sfePass.getTextControl(grpSourceDb).setEchoChar((char)0x2022); // •
+		sfePass.getTextControl(grpSourceDb).setEchoChar('\u2022'); // •
 		
 		lblWarn = new CLabel(grpSourceDb, SWT.NONE);
-		lblWarn.setImage(ImageDescriptor.createFromURL(
-				Activator.getContext().getBundle().getResource(
-						UIConsts.FILENAME_ICONWARNING)).createImage());
+		lblWarn.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(
+                        UIConsts.FILENAME_ICONWARNING))));
 		lblWarn.setText("Warning:\n"
 				+ "Providing password here is insecure!\n"
 				+ "Consider using .pgpass file instead.");
@@ -127,16 +136,42 @@ class DbSrcPage
 		
 		lblWarn.setLayoutData(gd);
 		
-		addField(new StringFieldEditor(UIConsts.PROJ_PREF_DB_HOST, "DB Host:",
-				grpSourceDb));
-		addField(new IntegerFieldEditor(UIConsts.PROJ_PREF_DB_PORT, "DB Port:",
-				grpSourceDb));
+		final StringFieldEditor sfeHost = new StringFieldEditor(
+		        UIConsts.PROJ_PREF_DB_HOST, "DB Host:",grpSourceDb);
+		addField(sfeHost);
 		
-		if(UIConsts.PROJ_SOURCE_TYPE_DUMP.equals(
+		final IntegerFieldEditor ifePort = new IntegerFieldEditor(
+		        UIConsts.PROJ_PREF_DB_PORT, "DB Port:", grpSourceDb);
+		addField(ifePort);
+		
+		Button btnStorePick = new Button(grpSourceDb, SWT.PUSH);
+		btnStorePick.setText("...");
+		btnStorePick.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false, 2, 1));
+		btnStorePick.addSelectionListener(new SelectionAdapter() {
+		    @Override
+		    public void widgetSelected(SelectionEvent e) {
+		        DbStorePickerDialog dialog = new DbStorePickerDialog(getShell(), mainPrefs);
+		        if(dialog.open() == Dialog.OK) {
+		            DbInfo db = dialog.getDbInfo();
+		            
+		            sfeName.setStringValue(db.dbname);
+		            sfeUser.setStringValue(db.dbuser);
+		            sfePass.setStringValue(db.dbpass);
+		            sfeHost.setStringValue(db.dbhost);
+		            ifePort.setStringValue(String.valueOf(db.dbport));
+		        }
+		    }
+        });
+		
+		if(!UIConsts.PROJ_SOURCE_TYPE_DB.equals(
 				getPreferenceStore().getString(UIConsts.PROJ_PREF_SOURCE))) {
-			
 			recursiveSetEnabled(grpSourceDb, false);
 		}
+		
+		((GridLayout) grpSourceDb.getLayout()).marginWidth = 5;
+		((GridLayout) grpSourceDb.getLayout()).marginHeight = 5;
+		
+		noDefaultAndApplyButton();
 	}
 	
 	@Override
@@ -145,7 +180,8 @@ class DbSrcPage
 		
 		if(UIConsts.PROJ_PREF_SOURCE.equals(prefName)) {
 			if(!e.getNewValue().equals(e.getOldValue())) {
-				recursiveSetEnabled(grpSourceDb, !grpSourceDb.getEnabled());
+				recursiveSetEnabled(grpSourceDb,
+				        UIConsts.PROJ_SOURCE_TYPE_DB.equals(e.getNewValue()));
 			}
 		} else  if(UIConsts.PROJ_PREF_DB_PASS.equals(prefName)) {
 			String oldVal = (String) e.getOldValue();
@@ -157,11 +193,7 @@ class DbSrcPage
 				gd.exclude = !gd.exclude;
 				lblWarn.setVisible(!lblWarn.getVisible());
 
-				Shell sh =  grpSourceDb.getShell();
-				int width = sh.getSize().x;
-				int newht = sh.computeSize(width, SWT.DEFAULT).y;
-				sh.setSize(width, newht);
-
+				getShell().pack();
 				grpSourceDb.getParent().layout(false);
 			}
 		}
@@ -182,22 +214,21 @@ class DbSrcPage
 	}
 }
 
-class SvnSettingsPage
-	extends FieldEditorPreferencePage
-	implements IWorkbenchPreferencePage {
+class SvnSettingsPage extends FieldEditorPreferencePage {
 	
 	private CLabel lblWarn;
+	
+	private LocalResourceManager lrm;
 	
 	public SvnSettingsPage() {
 		super(GRID);
 	}
 	
 	@Override
-	public void init(IWorkbench workbench) {
-	}
-	
-	@Override
 	protected void createFieldEditors() {
+	    this.lrm = new LocalResourceManager(JFaceResources.getResources(),
+	            getFieldEditorParent());
+	    
 		StringFieldEditor sfeUrl = new StringFieldEditor(
 				UIConsts.PROJ_PREF_SVN_URL, "SVN Repo URL:", getFieldEditorParent());
 		addField(sfeUrl);
@@ -209,12 +240,12 @@ class SvnSettingsPage
 		StringFieldEditor sfePass = new StringFieldEditor(
 				UIConsts.PROJ_PREF_SVN_PASS, "SVN Pass:", getFieldEditorParent());
 		addField(sfePass);
-		sfePass.getTextControl(getFieldEditorParent()).setEchoChar((char)0x2022); // •
+		sfePass.getTextControl(getFieldEditorParent()).setEchoChar('\u2022'); // •
 		
 		lblWarn = new CLabel(getFieldEditorParent(), SWT.NONE);
-		lblWarn.setImage(ImageDescriptor.createFromURL(
-				Activator.getContext().getBundle().getResource(
-						UIConsts.FILENAME_ICONWARNING)).createImage());
+		lblWarn.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(
+                        UIConsts.FILENAME_ICONWARNING))));
 		lblWarn.setText("Warning:\n"
 				+ "Providing password here is insecure!\n"
 				+ "This password WILL show up in logs!\n"
@@ -227,6 +258,8 @@ class SvnSettingsPage
 		}
 		
 		lblWarn.setLayoutData(gd);
+		
+		noDefaultAndApplyButton();
 	}
 	
 	@Override
@@ -243,11 +276,7 @@ class SvnSettingsPage
 				gd.exclude = !gd.exclude;
 				lblWarn.setVisible(!lblWarn.getVisible());
 
-				Shell sh =  lblWarn.getShell();
-				int width = sh.getSize().x;
-				int newht = sh.computeSize(width, SWT.DEFAULT).y;
-				sh.setSize(width, newht);
-
+				getShell().pack();
 				lblWarn.getParent().layout(false);
 			}
 		}
@@ -256,24 +285,23 @@ class SvnSettingsPage
 	}
 }
 
-class MiscSettingPage
-	extends FieldEditorPreferencePage
-	implements IWorkbenchPreferencePage {
+class MiscSettingPage extends FieldEditorPreferencePage {
     
     private String originalEncoding;
     
     private CLabel lblWarn;
     
+    private LocalResourceManager lrm;
+    
 	public MiscSettingPage() {
 		super(GRID);
 	}
-	
-	@Override
-	public void init(IWorkbench workbench) {
-	}
-	
+
 	@Override
 	protected void createFieldEditors() {
+	    this.lrm = new LocalResourceManager(JFaceResources.getResources(),
+	            getFieldEditorParent());
+	    
 	    originalEncoding = getPreferenceStore().getString(UIConsts.PROJ_PREF_ENCODING);
 		
 		Set<String> charsets  = Charset.availableCharsets().keySet();
@@ -289,9 +317,9 @@ class MiscSettingPage
 				getFieldEditorParent()));
 
         lblWarn = new CLabel(getFieldEditorParent(), SWT.NONE);
-        lblWarn.setImage(ImageDescriptor.createFromURL(
+        lblWarn.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(
-                        UIConsts.FILENAME_ICONWARNING)).createImage());
+                        UIConsts.FILENAME_ICONWARNING))));
         lblWarn.setText("Warning:\n"
                 + "Encoding of existing files will not be changed!");
         GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
@@ -299,6 +327,8 @@ class MiscSettingPage
         lblWarn.setVisible(false);
         
         lblWarn.setLayoutData(gd);
+        
+        noDefaultAndApplyButton();
 	}
 	
 	@Override
@@ -317,11 +347,7 @@ class MiscSettingPage
                 gd.exclude = !show;
                 lblWarn.setVisible(show);
 
-                Shell sh =  lblWarn.getShell();
-                int width = sh.getSize().x;
-                int newht = sh.computeSize(width, SWT.DEFAULT).y;
-                sh.setSize(width, newht);
-
+                getShell().pack();
                 lblWarn.getParent().layout(false);
 	        }
 	    }

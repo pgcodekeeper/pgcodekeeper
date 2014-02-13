@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.fileutils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Wrapper for creation and automatic recursive deletion of a temp directory.
@@ -17,11 +18,11 @@ public class TempDir implements AutoCloseable {
 	public TempDir(String prefix) throws IOException {
 		this.dir = Files.createTempDirectory(prefix).toFile();
 	}
-	/*
+	
 	public TempDir(Path dir, String prefix) throws IOException {
 		this.dir = Files.createTempDirectory(dir, prefix).toFile();
 	}
-	*/
+
 	public File get() {
 		return dir;
 	}

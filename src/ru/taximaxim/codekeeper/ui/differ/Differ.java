@@ -57,7 +57,7 @@ public class Differ implements IRunnableWithProgress {
             throw new InvocationTargetException(ex);
         }
         
-        pm.newChild(25).subTask("Direct diff"); // 75
+        pm.newChild(25).subTask("Direct diff..."); // 75
         PgDiffArguments args = new PgDiffArguments();
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
         PrintWriter writer = new UnixPrintWriter(diffOut, true);
@@ -66,7 +66,7 @@ public class Differ implements IRunnableWithProgress {
         writer.flush();
         diffDirect = diffOut.toString().trim();
         
-        pm.newChild(25).subTask("Reverse diff"); // 100
+        pm.newChild(25).subTask("Reverse diff..."); // 100
         diffOut.reset();
         PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource);
         writer.flush();

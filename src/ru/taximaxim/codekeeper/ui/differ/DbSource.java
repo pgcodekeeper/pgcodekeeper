@@ -99,7 +99,7 @@ class DbSourceDirTree extends DbSource {
     
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) {
-        SubMonitor.convert(monitor, 1).newChild(1).subTask("Loading tree");
+        SubMonitor.convert(monitor, 1).newChild(1).subTask("Loading tree...");
         
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 dirTreePath, encoding, false, false);
@@ -144,10 +144,10 @@ class DbSourceSvn extends DbSource {
         try(TempDir tmpDir = new TempDir("tmp_svn_")) {
             File dir = tmpDir.get();
             
-            pm.newChild(1).subTask("SVN rev checkout");
+            pm.newChild(1).subTask("SVN rev checkout...");
             svn.svnCo(dir, rev);
             
-            pm.newChild(1).subTask("Loading tree");
+            pm.newChild(1).subTask("Loading tree...");
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                     dir.getAbsolutePath(), encoding, false, false);
         }
@@ -166,7 +166,7 @@ class DbSourceProject extends DbSource {
     
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) {
-        SubMonitor.convert(monitor, 1).newChild(1).subTask("Loading tree");
+        SubMonitor.convert(monitor, 1).newChild(1).subTask("Loading tree...");
         
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 proj.getProjectSchemaDir().getAbsolutePath(),
@@ -189,7 +189,7 @@ class DbSourceFile extends DbSource {
     
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) {
-        SubMonitor.convert(monitor, 1).newChild(1).subTask("Loading dump");
+        SubMonitor.convert(monitor, 1).newChild(1).subTask("Loading dump...");
         
         return PgDumpLoader.loadDatabaseSchemaFromDump(
                 filename, encoding, false, false);
@@ -215,10 +215,8 @@ class DbSourceDb extends DbSource {
     
     DbSourceDb(String exePgdump, String host, int port,
             String user, String pass, String dbname, String encoding) {
-        super((host.isEmpty() && dbname.isEmpty())? "Undisclosed DB"
-                : (host.isEmpty()? dbname + "@unknown_host"
-                        : (dbname.isEmpty() ? "unknown_db@" + host
-                                : dbname + "@" + host)));
+        super((dbname.isEmpty()? "unknown_db" : dbname)
+                + "@" + (host.isEmpty()? "unknown_host" : host));
         
         this.exePgdump = exePgdump;
         this.host = host;
@@ -236,14 +234,14 @@ class DbSourceDb extends DbSource {
         try(TempFile tf = new TempFile("tmp_dump_", ".sql")) {
             File dump = tf.get();
             
-            pm.newChild(1).subTask("Executing pg_dump");
+            pm.newChild(1).subTask("Executing pg_dump...");
             
             new PgDumper(exePgdump,
                     host, port, user, pass, dbname, encoding,
                     dump.getAbsolutePath())
                 .pgDump();
             
-            pm.newChild(1).subTask("Loading dump");
+            pm.newChild(1).subTask("Loading dump...");
 
             return PgDumpLoader.loadDatabaseSchemaFromDump(
                     dump.getAbsolutePath(), encoding, false, false);

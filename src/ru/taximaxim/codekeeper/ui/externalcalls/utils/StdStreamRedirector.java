@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.parts.Console;
 
 /**
@@ -35,7 +36,7 @@ public class StdStreamRedirector implements Runnable {
 				Console.addMessage(line);
 				storage.append(line);
 				storage.append(System.lineSeparator());
-		}
+			}
 		} catch(IOException ex) {
 			throw new IllegalStateException(
 					"Error while reading from stdout/stderr", ex);
@@ -57,27 +58,42 @@ public class StdStreamRedirector implements Runnable {
 			sb.append(param);
 			sb.append(' ');
 		}
-		Console.addMessage(sb.toString());
+		String cmd = sb.toString();
+		Console.addMessage(cmd);
 		
 		pb.redirectErrorStream(true);
 		Process p = pb.start();
 		
-		StdStreamRedirector redirector = new StdStreamRedirector(
-				p.getInputStream());
-		Thread redirectorThread = new Thread(redirector);
-		redirectorThread.start();
-		try {
-			p.waitFor();
-			redirectorThread.join();
-		} catch(InterruptedException ex) {
-			throw new IllegalStateException(ex);
+		StdStreamRedirector redirector = new StdStreamRedirector(p.getInputStream());
+		try(BufferedReader t = redirector.in) {
+    		Thread redirectorThread = new Thread(redirector);
+    		redirectorThread.start();
+    		
+    		try {
+    			p.waitFor();
+    			redirectorThread.join();
+    		} catch(InterruptedException ex) {
+    			throw new IllegalStateException(ex);
+    		}
+    		
+    		if(p.exitValue() != 0) {
+    			throw new IOException("Process returned with error: "
+    						+ p.exitValue());
+    		}
+    		
+    		return redirector.storage.toString();
+		} finally {
+		    StringBuilder msg = new StringBuilder(
+		            cmd.length() + redirector.storage.length() + 128);
+		    msg.append("External command:")
+		        .append(System.lineSeparator())
+		        .append(cmd)
+		        .append(System.lineSeparator())
+		        .append("Output:")
+		        .append(System.lineSeparator())
+		        .append(redirector.storage);
+		    
+		    Log.getLog().info(msg.toString());
 		}
-		
-		if(p.exitValue() != 0) {
-			throw new IOException("Process returned with error: "
-						+ p.exitValue());
-		}
-		
-		return redirector.storage.toString();
 	}
 }

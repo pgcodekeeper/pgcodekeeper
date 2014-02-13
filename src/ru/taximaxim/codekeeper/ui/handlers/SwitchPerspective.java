@@ -12,13 +12,13 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.dialogs.ListDialog;
+
+import ru.taximaxim.codekeeper.ui.copiedclasses.ListDialog;
 
 public class SwitchPerspective {
 	@Execute
-	public void execute(
+	private void execute(
 			@Named(IServiceConstants.ACTIVE_SHELL)
 			Shell shell,
 			EModelService modelSrv, EPartService partSrv,
@@ -37,7 +37,6 @@ public class SwitchPerspective {
 			}
 		});
 		
-		dialog.create();
 		if(dialog.open() == Dialog.OK) {
 			partSrv.switchPerspective((MPerspective)(dialog.getResult()[0]));
 		}

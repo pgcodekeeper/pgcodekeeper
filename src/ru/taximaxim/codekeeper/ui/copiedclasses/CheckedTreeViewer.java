@@ -1,4 +1,6 @@
-package ru.taximaxim.codekeeper.ui;
+// Modified copy of org.eclipse.ui.dialogs.ContainerCheckedTreeViewer.
+
+package ru.taximaxim.codekeeper.ui.copiedclasses;
 
 /*******************************************************************************
  * Copyright (c) 2005 IBM Corporation and others.
@@ -27,9 +29,7 @@ import org.eclipse.swt.widgets.Widget;
 
 /**
  * Modified copy of org.eclipse.ui.dialogs.ContainerCheckedTreeViewer.
- */
-
-/**
+ * <br>
  * CheckboxTreeViewer with special behaviour of the checked / gray state on 
  * container (non-leaf) nodes:
  * The grayed state is used to visualize the checked state of its children.
