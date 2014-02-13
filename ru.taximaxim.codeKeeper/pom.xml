@@ -14,6 +14,15 @@
     <module>../../com.opcoach.e4.contextExplorer</module>
     <module>../../ru.taximaxim.codekeeper.ui</module>
   </modules>
+
+  <dependencies>
+        <dependency>
+	        <groupId>org.jgrapht</groupId>
+	        <artifactId>jgrapht-core</artifactId>
+	        <version>0.9.0</version>
+        </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
