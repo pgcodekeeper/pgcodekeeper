@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,8 +27,7 @@ public class PgTable extends PgStatementWithSearchPath {
     /**
      * List of constraints defined on the table.
      */
-    private final List<PgConstraint> constraints =
-            new ArrayList<PgConstraint>();
+    private final List<PgConstraint> constraints = new ArrayList<PgConstraint>();
     /**
      * List of indexes defined on the table.
      */
@@ -61,12 +61,6 @@ public class PgTable extends PgStatementWithSearchPath {
      * Comment.
      */
     private String comment;
-    /**
-     * MYFIX
-     * Is table ignored.
-     * Expressions referencing ignored tables are ignored as well
-     */
-    private boolean ignored;
     
     /**
      * Creates a new PgTable object.
@@ -173,12 +167,6 @@ public class PgTable extends PgStatementWithSearchPath {
      * @return created SQL statement
      */
     public String getCreationSQL() {
-    	// MYFIX
-    	if(ignored) {
-    		assert false;
-    		return "";
-    	}
-    	
         final StringBuilder sbSQL = new StringBuilder(1000);
         sbSQL.append("CREATE TABLE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
@@ -368,29 +356,6 @@ public class PgTable extends PgStatementWithSearchPath {
     }
     
     /**
-     * MYFIX
-     * Setter for {@link #ignored}.
-     * 
-     * @param name {@link #ignored}
-     */
-    public void setIgnored(boolean ignored) {
-    	// TODO убрать костыль ?
-    	// было сделано для игнорирования INHERITS таблиц
-    	// вместо этого проще игнорировать только ошибки их парсинга
-    	this.ignored = false; //ignored;
-    }
-    
-    /**
-     * MYFIX
-     * Getter for {@link #ignored}.
-     * 
-     * @return {@link #ignored}
-     */
-    public boolean getIgnored() {
-    	return ignored;
-    }
-
-    /**
      * Getter for {@link #triggers}. The list cannot be modified.
      *
      * @return {@link #triggers}
@@ -524,6 +489,16 @@ public class PgTable extends PgStatementWithSearchPath {
 
         return false;
     }
+    
+    public boolean containsTrigger(String name) {
+        for(PgTrigger trigger : triggers) {
+            if(trigger.getName().equals(name)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 
     /**
      * Returns list of columns that have statistics defined.
@@ -559,17 +534,72 @@ public class PgTable extends PgStatementWithSearchPath {
     		
     		eq = Objects.equals(name, table.getName())
     				&& Objects.equals(clusterIndexName, table.getClusterIndexName())
-    				&& ignored == table.getIgnored()
     				&& Objects.equals(tablespace, table.getTablespace())
     				&& Objects.equals(with, table.getWith())
     				
-    				&& PgDBUtils.listsEqual(inherits, table.getInherits())
-    				&& PgDBUtils.listsEqual(columns, table.getColumns())
-    				&& PgDBUtils.listsEqual(constraints, table.getConstraints())
-    				&& PgDBUtils.listsEqual(indexes, table.getIndexes())
-    				&& PgDBUtils.listsEqual(triggers, table.getTriggers());
+    				&& inherits.equals(table.inherits)
+    				&& columns.equals(table.columns)
+    				&& new HashSet<>(constraints).equals(new HashSet<>(table.constraints))
+    				&& new HashSet<>(indexes).equals(new HashSet<>(table.indexes))
+    				&& new HashSet<>(triggers).equals(new HashSet<>(table.triggers));
     	}
     	
     	return eq;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((clusterIndexName == null) ? 0 : clusterIndexName.hashCode());
+        result = prime * result + ((columns == null) ? 0 : columns.hashCode());
+        result = prime * result + new HashSet<>(constraints).hashCode();
+        result = prime * result + new HashSet<>(indexes).hashCode();
+        result = prime * result + ((inherits == null) ? 0 : inherits.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((tablespace == null) ? 0 : tablespace.hashCode());
+        result = prime * result + new HashSet<>(triggers).hashCode();
+        result = prime * result + ((with == null) ? 0 : with.hashCode());
+        return result;
+    }
+
+    @Override
+    public PgTable shallowCopy() {
+        PgTable tableDst = new PgTable(getName(), getRawStatement(), getSearchPath());
+        tableDst.setClusterIndexName(getClusterIndexName());
+        tableDst.setTablespace(getTablespace());
+        tableDst.setWith(getWith());
+        for(String inh : inherits) {
+            tableDst.addInherits(inh);
+        }
+        for(PgColumn colSrc : columns) {
+            PgColumn colDst = new PgColumn(colSrc.getName());
+            colDst.setDefaultValue(colSrc.getDefaultValue());
+            colDst.setNullValue(colSrc.getNullValue());
+            colDst.setStatistics(colSrc.getStatistics());
+            colDst.setStorage(colSrc.getStorage());
+            colDst.setType(colSrc.getType());
+            colDst.setComment(colSrc.getComment());
+            tableDst.addColumn(colDst);
+        }
+        tableDst.setComment(getComment());
+        return tableDst;
+    }
+    
+    @Override
+    public PgTable deepCopy() {
+        PgTable copy = shallowCopy();
+        
+        for(PgConstraint constraint : constraints) {
+            copy.addConstraint(constraint.deepCopy());
+        }
+        for(PgIndex index : indexes) {
+            copy.addIndex(index.deepCopy());
+        }
+        for(PgTrigger trigger : triggers) {
+            copy.addTrigger(trigger.deepCopy());
+        }
+        
+        return copy;
     }
 }

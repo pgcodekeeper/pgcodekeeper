@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -410,18 +411,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
                     && (onUpdate == trigger.isOnUpdate())
                     && (onTruncate == trigger.isOnTruncate())
                     && Objects.equals(tableName, trigger.getTableName())
-                    && Objects.equals(when, trigger.getWhen());
-
-            if (equals) {
-                final List<String> sorted1 =
-                        new ArrayList<String>(updateColumns);
-                final List<String> sorted2 =
-                        new ArrayList<String>(trigger.getUpdateColumns());
-                Collections.sort(sorted1);
-                Collections.sort(sorted2);
-
-                equals = sorted1.equals(sorted2);
-            }
+                    && Objects.equals(when, trigger.getWhen())
+                    && new HashSet<>(updateColumns).equals(new HashSet<>(trigger.updateColumns));
         }
 
         return equals;
@@ -429,8 +420,44 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     @Override
     public int hashCode() {
-        return (getClass().getName() + "|" + before + "|" + forEachRow + "|"
-                + function + "|" + name + "|" + onDelete + "|" + onInsert + "|"
-                + onUpdate + "|" + onTruncate + "|" + tableName).hashCode();
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (before ? 1231 : 1237);
+        result = prime * result + (forEachRow ? 1231 : 1237);
+        result = prime * result + ((function == null) ? 0 : function.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + (onDelete ? 1231 : 1237);
+        result = prime * result + (onInsert ? 1231 : 1237);
+        result = prime * result + (onTruncate ? 1231 : 1237);
+        result = prime * result + (onUpdate ? 1231 : 1237);
+        result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
+        result = prime * result + ((when == null) ? 0 : when.hashCode());
+        result = prime * result + new HashSet<>(updateColumns).hashCode();
+        return result;
+    }
+    
+    @Override
+    public PgTrigger shallowCopy() {
+        PgTrigger triggerDst = new PgTrigger(getRawStatement(), getSearchPath());
+        triggerDst.setName(getName());
+        triggerDst.setBefore(isBefore());
+        triggerDst.setForEachRow(isForEachRow());
+        triggerDst.setFunction(getFunction());
+        triggerDst.setOnDelete(isOnDelete());
+        triggerDst.setOnInsert(isOnInsert());
+        triggerDst.setOnTruncate(isOnTruncate());
+        triggerDst.setOnUpdate(isOnUpdate());
+        triggerDst.setTableName(getTableName());
+        triggerDst.setWhen(getWhen());
+        triggerDst.setComment(getComment());
+        for(String updCol : updateColumns) {
+            triggerDst.addUpdateColumn(updCol);
+        }
+        return triggerDst;
+    }
+    
+    @Override
+    public PgTrigger deepCopy() {
+        return shallowCopy();
     }
 }

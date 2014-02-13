@@ -15,6 +15,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -106,32 +107,53 @@ public class PgDumpLoaderTest {
         this.fileIndex = fileIndex;
     }
 
-    /**
-     * Runs single test.
-     */
-    @Test(timeout = 1000)
+    @Test
     public void loadSchema() {
+        
+        // first test the dump loader itself
     	String filename = "schema_" + fileIndex + ".sql";
         PgDatabase d = PgDumpLoader.loadDatabaseSchemaFromDump(
                 getClass().getResourceAsStream(filename),
                 "UTF-8", false, false);
         
+        // then check result's validity against handmade DB object
         if(fileIndex > dbCreators.length) {        
         	Assert.fail("No predefined object for file: " + filename);
         }
+        
         PgDatabase dbPredefined = dbCreators[fileIndex - 1].getDatabase();
         PgDatabase empty = new PgDatabase();
         
         Assert.assertEquals("predefined object is not equal to file: "
         		+ filename, dbPredefined, d);
         
+        // check filtering mechanism
+        // applying full unchanged diff tree created against an empty DB
+        // should result in a fully copied or empty (depending on filter side) DB object
         TreeElement dbTree = DiffTree.create(d, empty);
         PgDatabase dbFilteredFullTree = new PgDbFilter2(d, dbTree, DiffSide.LEFT).apply();
         
         Assert.assertEquals("filter altered the result", d, dbFilteredFullTree);
         Assert.assertEquals("filter altered the original", dbPredefined, d);
         
-        // TODO more filter tests?
+        // test deepCopy mechanism
+        Assert.assertEquals("deep copy altered", d, d.deepCopy());
+        Assert.assertEquals("deep copy altered original", dbPredefined, d);
+        
+        PgDatabase oneDiff = new PgDatabase();
+        oneDiff.addSchema(new PgSchema("testschemaqwerty", null));
+        
+        // test applying one DB to another using DiffTree
+        TreeElement removeAll = dbTree;
+        TreeElement onlyNew = DiffTree.create(d, oneDiff);
+        TreeElement onlyOld = DiffTree.create(d, d);
+        
+        Assert.assertEquals("not empty", empty,
+                new DiffTreeApplier(d, oneDiff, removeAll).apply());
+        Assert.assertEquals("not new", oneDiff,
+                new DiffTreeApplier(d, oneDiff, onlyNew).apply());
+        Assert.assertEquals("not old", d,
+                new DiffTreeApplier(d, oneDiff, onlyOld).apply());
     }
 }
 

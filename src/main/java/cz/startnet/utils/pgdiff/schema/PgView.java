@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,13 +35,11 @@ public class PgView extends PgStatementWithSearchPath {
     /**
      * List of optional column default values.
      */
-    private final List<DefaultValue> defaultValues =
-            new ArrayList<DefaultValue>(0);
+    private final List<DefaultValue> defaultValues = new ArrayList<DefaultValue>(0);
     /**
      * List of optional column comments.
      */
-    private final List<ColumnComment> columnComments =
-            new ArrayList<ColumnComment>(0);
+    private final List<ColumnComment> columnComments = new ArrayList<ColumnComment>(0);
     /**
      * Comment.
      */
@@ -260,12 +259,6 @@ public class PgView extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(columnComments);
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @param obj {@inheritDoc}
-     * @return {@inheritDoc}
-     */
     @Override
     public boolean equals(Object obj) {
     	boolean eq = false;
@@ -273,14 +266,45 @@ public class PgView extends PgStatementWithSearchPath {
     	if(this == obj) {
     		eq = true;
     	} else if(obj instanceof PgView) {
-    		PgView view = (PgView) obj;
+    		final PgView view = (PgView) obj;
     		eq = Objects.equals(name, view.getName())
     				&& Objects.equals(query, view.getQuery())
-    				&& PgDBUtils.listsEqual(columnNames, view.getColumnNames())
-    				&& PgDBUtils.listsEqual(defaultValues, view.getDefaultValues());
+    				&& columnNames.equals(view.columnNames)
+    				&& new HashSet<>(defaultValues).equals(new HashSet<>(view.defaultValues));
     	}
     	
     	return eq;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((columnNames == null) ? 0 : columnNames.hashCode());
+        result = prime * result + new HashSet<>(defaultValues).hashCode();
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((query == null) ? 0 : query.hashCode());
+        return result;
+    }
+    
+    @Override
+    public PgView shallowCopy() {
+        PgView viewDst = new PgView(getName(), getRawStatement(), getSearchPath());
+        viewDst.setQuery(getQuery());
+        viewDst.setComment(getComment());
+        viewDst.setColumnNames(new ArrayList<>(columnNames));
+        for(DefaultValue defval : defaultValues) {
+            viewDst.addColumnDefaultValue(defval.getColumnName(), defval.getDefaultValue());
+        }
+        for(ColumnComment colcomment : columnComments) {
+            viewDst.addColumnComment(colcomment.getColumnName(), colcomment.getComment());
+        }
+        return viewDst;
+    }
+    
+    @Override
+    public PgView deepCopy() {
+        return shallowCopy();
     }
 
     /**
@@ -326,25 +350,28 @@ public class PgView extends PgStatementWithSearchPath {
             return defaultValue;
         }
 
-        /**
-         * {@inheritDoc}
-         * 
-         * @param obj {@inheritDoc}
-         * @return {@inheritDoc}
-         */
         @Override
         public boolean equals(Object obj) {
         	boolean eq = false;
         	
         	if(this == obj) {
         		eq = true;
-        	} else if(obj instanceof PgView.DefaultValue) {
-        		PgView.DefaultValue val = (PgView.DefaultValue) obj;
+        	} else if(obj instanceof DefaultValue) {
+        		DefaultValue val = (DefaultValue) obj;
         		eq = Objects.equals(columnName, val.getColumnName())
         				&& Objects.equals(defaultValue, val.getDefaultValue());
         	}
         	
         	return eq;
+        }
+        
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((columnName == null) ? 0 : columnName.hashCode());
+            result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
+            return result;
         }
     }
 

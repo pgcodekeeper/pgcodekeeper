@@ -44,11 +44,22 @@ abstract public class PgStatement {
 	abstract public String getCreationSQL();
 	
 	/**
-	 * {@inheritDoc}
+	 * Copies all object properties onto a new object and leaves all its children empty.
 	 * 
-	 * @param obj {@inheritDoc}
-	 * @return {@inheritDoc}
+	 * @return shallow copy of a DB object.
 	 */
+	abstract public PgStatement shallowCopy();
+	
+	/**
+	 * Performs {@link #shallowCopy()} on this object and all its children.
+	 * 
+	 * @return a fully recursive copy of this statement.
+	 */
+	abstract public PgStatement deepCopy();
+	
+    @Override
 	abstract public boolean equals(Object obj);
+	
+	@Override
+	abstract public int hashCode();
 }
-

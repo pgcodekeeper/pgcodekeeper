@@ -262,12 +262,6 @@ public class PgColumn {
         setType(string);
     }
     
-    /**
-     * {@inheritDoc}
-     * 
-     * @param obj {@inheritDoc}
-     * @return {@inheritDoc}
-     */
     @Override
     public boolean equals(Object obj) {
     	boolean eq = false;
@@ -286,5 +280,18 @@ public class PgColumn {
     	}
     	
     	return eq;
+    }
+    
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + (nullValue ? 1231 : 1237);
+        result = prime * result + ((statistics == null) ? 0 : statistics.hashCode());
+        result = prime * result + ((storage == null) ? 0 : storage.hashCode());
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        return result;
     }
 }

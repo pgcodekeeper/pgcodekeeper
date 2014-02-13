@@ -166,12 +166,6 @@ public class PgExtension extends PgStatement {
 		return sbSQL.toString();
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @param obj {@inheritDoc}
-	 * @return {@inheritDoc}
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		boolean eq = false;
@@ -187,5 +181,31 @@ public class PgExtension extends PgStatement {
 		}
 		
 		return eq;
+	}
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((oldVersion == null) ? 0 : oldVersion.hashCode());
+        result = prime * result + ((schema == null) ? 0 : schema.hashCode());
+        result = prime * result + ((version == null) ? 0 : version.hashCode());
+        return result;
+    }
+
+	@Override
+	public PgExtension shallowCopy() {
+	    PgExtension extDst = new PgExtension(getName(), getRawStatement());
+        extDst.setSchema(getSchema());
+        extDst.setVersion(getVersion());
+        extDst.setOldVersion(getOldVersion());
+        extDst.setComment(getComment());
+        return extDst;
+	}
+	
+	@Override
+	public PgExtension deepCopy() {
+	    return shallowCopy();
 	}
 }

@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -369,12 +370,6 @@ public class PgSchema extends PgStatement {
         return false;
     }
     
-    /**
-     * {@inheritDoc}
-     * 
-     * @param obj {@inheritDoc}
-     * @return {@inheritDoc}
-     */
     @Override
     public boolean equals(Object obj) {
     	boolean eq = false;
@@ -388,12 +383,55 @@ public class PgSchema extends PgStatement {
     				&& Objects.equals(authorization, schema.getAuthorization())
     				&& Objects.equals(definition, schema.getDefinition())
     				
-    				&& PgDBUtils.listsEqual(sequences, schema.getSequences())
-    				&& PgDBUtils.listsEqual(functions, schema.getFunctions())
-    				&& PgDBUtils.listsEqual(views, schema.getViews())
-    				&& PgDBUtils.listsEqual(tables, schema.getTables());
+    				&& new HashSet<>(sequences).equals(new HashSet<>(schema.sequences))
+    				&& new HashSet<>(functions).equals(new HashSet<>(schema.functions))
+    				&& new HashSet<>(views).equals(new HashSet<>(schema.views))
+    				&& new HashSet<>(tables).equals(new HashSet<>(schema.tables));
     	}
     	
     	return eq;
+    }
+    
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((authorization == null) ? 0 : authorization.hashCode());
+        result = prime * result + ((definition == null) ? 0 : definition.hashCode());
+        result = prime * result + new HashSet<>(functions).hashCode();
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + new HashSet<>(sequences).hashCode();
+        result = prime * result + new HashSet<>(tables).hashCode();
+        result = prime * result + new HashSet<>(views).hashCode();
+        return result;
+    }
+    
+    @Override
+    public PgSchema shallowCopy() {
+        PgSchema schemaDst = new PgSchema(getName(), getRawStatement());
+        schemaDst.setAuthorization(getAuthorization());
+        schemaDst.setDefinition(getDefinition());
+        schemaDst.setComment(getComment());
+        return schemaDst;
+    }
+    
+    @Override
+    public PgSchema deepCopy() {
+        PgSchema copy = shallowCopy();
+        
+        for(PgSequence seq : sequences) {
+            copy.addSequence(seq.deepCopy());
+        }
+        for(PgFunction func : functions) {
+            copy.addFunction(func.deepCopy());
+        }
+        for(PgView view : views) {
+            copy.addView(view.deepCopy());
+        }
+        for(PgTable table : tables) {
+            copy.addTable(table.deepCopy());
+        }
+        
+        return copy;
     }
 }

@@ -52,17 +52,6 @@ public class ModelExporter {
 	
 	/**
 	 * Creates a new ModelExporter object with set {@link #outDir} and {@link #db}
-	 * and default output encoding (UTF-8).
-	 * 
-	 * @param outDir outDir, directory should be empty or not exist
-	 * @param db database
-	 */
-	public ModelExporter(final String outDir, final PgDatabase db) {
-		this(outDir, db, "UTF-8");
-	}
-	
-	/**
-	 * Creates a new ModelExporter object with set {@link #outDir} and {@link #db}
 	 * and {@link #sqlEncoding}.
 	 * 
 	 * @param outDir outDir, directory should be empty or not exist
@@ -190,20 +179,6 @@ public class ModelExporter {
 		
 		for(PgStatementWithSearchPath obj : objects) {
 			String filename = obj.getName() + ".sql";
-			
-			PgTable table = null;
-			if(obj instanceof PgTable) {
-				table = (PgTable) obj;
-				
-				if(table.getIgnored()) {
-					continue;
-				}
-			}
-			
-			// this has to be after the ignore check but before
-			// dependencies export for the listing to be in the right order
-			// hence the (table != null) trick
-			
 			String sqlToDump = obj.getSearchPath()
 					+ "\n\n" + obj.getCreationSQL();
 			
@@ -214,8 +189,9 @@ public class ModelExporter {
 			
 			File objectSQL = new File(objectDir, filename);
 			dumpSQL(sqlToDump, objectSQL);
-			
-			if(table != null) {
+
+            if(obj instanceof PgTable) {
+                PgTable table = (PgTable) obj;
 				// out them to their own directory in schema, not table directory
 				processObjects(table.getConstraints(), parentOutDir, "CONSTRAINT");
 				processObjects(table.getTriggers(), parentOutDir, "TRIGGER");
