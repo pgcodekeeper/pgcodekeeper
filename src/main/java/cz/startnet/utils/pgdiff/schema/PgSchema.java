@@ -20,108 +20,43 @@ import java.util.Objects;
  */
 public class PgSchema extends PgStatement {
 
-    /**
-     * List of functions defined in the schema.
-     */
     private final List<PgFunction> functions = new ArrayList<PgFunction>();
-    /**
-     * List of sequences defined in the schema.
-     */
     private final List<PgSequence> sequences = new ArrayList<PgSequence>();
-    /**
-     * List of tables defined in the schema.
-     */
     private final List<PgTable> tables = new ArrayList<PgTable>();
-    /**
-     * List of views defined in the schema.
-     */
     private final List<PgView> views = new ArrayList<PgView>();
-    /**
-     * Name of the schema.
-     */
-    private final String name;
-    /**
-     * Schema authorization.
-     */
+
     private String authorization;
-    /**
-     * Optional definition of schema elements.
-     */
     private String definition;
-    /**
-     * Comment.
-     */
     private String comment;
 
-    /**
-     * Creates a new PgSchema object.
-     *
-     * @param name {@link #name}
-     */
-    public PgSchema(final String name, final String rawStatement) {
-    	super(rawStatement);
-        this.name = name;
+    public PgSchema(String name, String rawStatement) {
+    	super(name, rawStatement);
     }
 
-    /**
-     * Setter for {@link #authorization}.
-     *
-     * @param authorization {@link #authorization}
-     */
     public void setAuthorization(final String authorization) {
         this.authorization = authorization;
     }
 
-    /**
-     * Getter for {@link #authorization}.
-     *
-     * @return {@link #authorization}
-     */
     public String getAuthorization() {
         return authorization;
     }
 
-    /**
-     * Getter for {@link #comment}.
-     *
-     * @return {@link #comment}
-     */
     public String getComment() {
         return comment;
     }
 
-    /**
-     * Setter for {@link #comment}.
-     *
-     * @param comment {@link #comment}
-     */
     public void setComment(final String comment) {
         this.comment = comment;
     }
 
-    /**
-     * Getter for {@link #definition}.
-     *
-     * @return {@link #definition}
-     */
     public String getDefinition() {
         return definition;
     }
 
-    /**
-     * Setter for {@link #definition}.
-     *
-     * @param definition {@link #definition}
-     */
     public void setDefinition(final String definition) {
         this.definition = definition;
     }
 
-    /**
-     * Creates and returns SQL for creation of the schema.
-     *
-     * @return created SQL
-     */
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(50);
         sbSQL.append("CREATE SCHEMA ");
@@ -169,15 +104,6 @@ public class PgSchema extends PgStatement {
      */
     public List<PgFunction> getFunctions() {
         return Collections.unmodifiableList(functions);
-    }
-
-    /**
-     * Getter for {@link #name}.
-     *
-     * @return {@link #name}
-     */
-    public String getName() {
-        return name;
     }
 
     /**
@@ -258,138 +184,73 @@ public class PgSchema extends PgStatement {
         return Collections.unmodifiableList(views);
     }
 
-    /**
-     * Adds {@code function} to the list of functions.
-     *
-     * @param function function
-     */
     public void addFunction(final PgFunction function) {
         functions.add(function);
     }
 
-    /**
-     * Adds {@code sequence} to the list of sequences.
-     *
-     * @param sequence sequence
-     */
     public void addSequence(final PgSequence sequence) {
         sequences.add(sequence);
     }
 
-    /**
-     * Adds {@code table} to the list of tables.
-     *
-     * @param table table
-     */
     public void addTable(final PgTable table) {
         tables.add(table);
     }
 
-    /**
-     * Adds {@code view} to the list of views.
-     *
-     * @param view view
-     */
     public void addView(final PgView view) {
         views.add(view);
     }
 
-    /**
-     * Returns true if schema contains function with given {@code signature},
-     * otherwise false.
-     *
-     * @param signature signature of the function
-     *
-     * @return true if schema contains function with given {@code signature},
-     *         otherwise false
-     */
     public boolean containsFunction(final String signature) {
-        for (PgFunction function : functions) {
-            if (function.getSignature().equals(signature)) {
-                return true;
-            }
-        }
-
-        return false;
+        return getFunction(signature) != null;
     }
 
-    /**
-     * Returns true if schema contains sequence with given {@code name},
-     * otherwise false.
-     *
-     * @param name name of the sequence
-     *
-     * @return true if schema contains sequence with given {@code name},
-     *         otherwise false
-     */
     public boolean containsSequence(final String name) {
-        for (PgSequence sequence : sequences) {
-            if (sequence.getName().equals(name)) {
-                return true;
-            }
-        }
-
-        return false;
+        return getSequence(name) != null;
     }
 
-    /**
-     * Returns true if schema contains table with given {@code name}, otherwise
-     * false.
-     *
-     * @param name name of the table
-     *
-     * @return true if schema contains table with given {@code name}, otherwise
-     *         false.
-     */
     public boolean containsTable(final String name) {
-        for (PgTable table : tables) {
-            if (table.getName().equals(name)) {
-                return true;
-            }
-        }
-
-        return false;
+        return getTable(name) != null;
     }
 
-    /**
-     * Returns true if schema contains view with given {@code name}, otherwise
-     * false.
-     *
-     * @param name name of the view
-     *
-     * @return true if schema contains view with given {@code name}, otherwise
-     *         false.
-     */
     public boolean containsView(final String name) {
-        for (PgView view : views) {
-            if (view.getName().equals(name)) {
-                return true;
-            }
+        return getView(name) != null;
+    }
+    
+    @Override
+    public boolean compare(PgStatement obj) {
+        boolean eq = false;
+        
+        if(this == obj) {
+            eq = true;
+        } else if(obj instanceof PgSchema) {
+            PgSchema schema = (PgSchema) obj;
+            
+            eq = Objects.equals(name, schema.getName())
+                    && Objects.equals(authorization, schema.getAuthorization())
+                    && Objects.equals(definition, schema.getDefinition());
         }
-
-        return false;
+        
+        return eq;
     }
     
     @Override
     public boolean equals(Object obj) {
-    	boolean eq = false;
-    	
-    	if(this == obj) {
-    		eq = true;
-    	} else if(obj instanceof PgSchema) {
-    		PgSchema schema = (PgSchema) obj;
-    		
-    		eq = Objects.equals(name, schema.getName())
-    				&& Objects.equals(authorization, schema.getAuthorization())
-    				&& Objects.equals(definition, schema.getDefinition())
-    				
-    				&& new HashSet<>(sequences).equals(new HashSet<>(schema.sequences))
-    				&& new HashSet<>(functions).equals(new HashSet<>(schema.functions))
-    				&& new HashSet<>(views).equals(new HashSet<>(schema.views))
-    				&& new HashSet<>(tables).equals(new HashSet<>(schema.tables));
-    	}
-    	
-    	return eq;
+        boolean eq = false;
+        
+        if(this == obj) {
+            eq = true;
+        } else if(obj instanceof PgSchema) {
+            PgSchema schema = (PgSchema) obj;
+            
+            eq = super.equals(obj)
+                    
+                    && new HashSet<>(sequences).equals(new HashSet<>(schema.sequences))
+                    && new HashSet<>(functions).equals(new HashSet<>(schema.functions))
+                    && new HashSet<>(views).equals(new HashSet<>(schema.views))
+                    && new HashSet<>(tables).equals(new HashSet<>(schema.tables));
+        }
+        
+        return eq;
     }
     
     @Override

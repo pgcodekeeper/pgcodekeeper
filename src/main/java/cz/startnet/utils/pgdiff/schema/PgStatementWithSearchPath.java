@@ -12,23 +12,11 @@ abstract public class PgStatementWithSearchPath extends PgStatement {
 	 */
 	private final String searchPath;
 	
-	/**
-	 * Creates a new PgStatement object with searchPath
-	 * 
-	 * @param statement {@link #rawStatement}
-	 * @param searchPath {@link #searchPath}
-	 */
-	public PgStatementWithSearchPath(final String rawStatement, 
-			final String searchPath) {
-		super(rawStatement);
+	public PgStatementWithSearchPath(String name,
+	        String rawStatement, String searchPath) {
+		super(name, rawStatement);
 		this.searchPath = searchPath;
 	}
-
-	/**
-	 * Getter for {@link #searchPath}
-	 * 
-	 * @return {@link #searchPath}
-	 */
 	public String getSearchPath() {
 		return searchPath;
 	}	

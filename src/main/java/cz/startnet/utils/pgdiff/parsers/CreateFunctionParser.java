@@ -42,8 +42,8 @@ public class CreateFunctionParser {
                     statement));
         }
 
-        final PgFunction function = new PgFunction(statement, searchPath);
-        function.setName(ParserUtils.getObjectName(functionName));
+        final PgFunction function = new PgFunction(
+                ParserUtils.getObjectName(functionName), statement, searchPath);
         schema.addFunction(function);
         
         parser.expect("(");
