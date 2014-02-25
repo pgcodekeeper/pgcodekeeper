@@ -122,10 +122,10 @@ public class PgDumpLoaderTest {
         }
         
         PgDatabase dbPredefined = dbCreators[fileIndex - 1].getDatabase();
-        PgDatabase empty = new PgDatabase();
+        Assert.assertEquals("predefined object is not equal to file: " + filename,
+                dbPredefined, d);
         
-        Assert.assertEquals("predefined object is not equal to file: "
-        		+ filename, dbPredefined, d);
+        PgDatabase empty = new PgDatabase();
         
         // check filtering mechanism
         // applying full unchanged diff tree created against an empty DB
@@ -179,19 +179,6 @@ class PgDB1 extends PgDatabaseObjectCreator {
     	table.addConstraint(constraint);
     	constraint.setTableName("fax_boxes");
     	constraint.setDefinition("PRIMARY KEY (fax_box_id)");
-    	    	
-    	table = new PgTable("extensions", "", "");
-    	schema.addTable(table);
-    	
-    	col = new PgColumn("id");
-    	col.setType("serial");
-    	col.setNullValue(false);
-    	table.addColumn(col);
-    	
-    	constraint = new PgConstraint("extensions_fax_box_id_fkey", "", "");
-    	constraint.setDefinition("REFERENCES fax_boxes\n(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT");
-    	constraint.setTableName("extensions");
-    	table.addConstraint(constraint);
     	
     	table = new PgTable("faxes", "", "");
     	schema.addTable(table);
@@ -248,7 +235,20 @@ class PgDB1 extends PgDatabaseObjectCreator {
     	constraint.setTableName("faxes");
     	constraint.setDefinition("FOREIGN KEY (fax_box_id)\n      REFERENCES fax_boxes (fax_box_id) MATCH SIMPLE\n      ON UPDATE RESTRICT ON DELETE CASCADE");
     	table.addConstraint(constraint);
-    	
+
+        table = new PgTable("extensions", "", "");
+        schema.addTable(table);
+        
+        col = new PgColumn("id");
+        col.setType("serial");
+        col.setNullValue(false);
+        table.addColumn(col);
+        
+        constraint = new PgConstraint("extensions_fax_box_id_fkey", "", "");
+        constraint.setDefinition("REFERENCES fax_boxes\n(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT");
+        constraint.setTableName("extensions");
+        table.addConstraint(constraint);
+        
     	return d;
     }
 }
@@ -260,16 +260,16 @@ class PgDB2 extends PgDatabaseObjectCreator {
 		
     	PgSchema schema = new PgSchema("postgis", "");
     	d.addSchema(schema);
+        
+    	PgExtension ext = new PgExtension("postgis", "");
+        ext.setSchema("postgis");
+        d.addExtension(ext);
+        ext.setComment("'PostGIS geometry, geography, and raster spatial types and functions'");
     	
-    	PgExtension ext = new PgExtension("plpgsql", "");
+    	ext = new PgExtension("plpgsql", "");
     	ext.setSchema("pg_catalog");
     	d.addExtension(ext);
     	ext.setComment("'PL/pgSQL procedural language'");
-    	
-    	ext = new PgExtension("postgis", "");
-    	ext.setSchema("postgis");
-    	d.addExtension(ext);
-    	ext.setComment("'PostGIS geometry, geography, and raster spatial types and functions'");
     	
     	schema = d.getSchema("public");
     	

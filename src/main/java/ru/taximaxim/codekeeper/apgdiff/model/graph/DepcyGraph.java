@@ -4,6 +4,7 @@ import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
@@ -57,6 +58,11 @@ public class DepcyGraph {
             for(PgTable table : schema.getTables()) {
                 graph.addVertex(table);
                 graph.addEdge(table, schema);
+                
+                for(PgColumn col : table.getColumns()) {
+                    graph.addVertex(col);
+                    graph.addEdge(col, table);
+                }
                 
                 for(PgIndex idx : table.getIndexes()) {
                     graph.addVertex(idx);

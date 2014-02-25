@@ -13,9 +13,11 @@ abstract public class PgStatement {
 	
 	protected final String name;
 	
+	private PgStatement parent;
+	
 	public PgStatement(String name, String rawStatement) {
+        this.name = name;
 		this.rawStatement = rawStatement;
-		this.name = name;
 	}
 	
 	public String getRawStatement() {
@@ -24,6 +26,19 @@ abstract public class PgStatement {
 	
 	public String getName() {
 	    return name;
+	}
+	
+	public PgStatement getParent() {
+	    return parent;
+	}
+	
+	public void setParent(PgStatement parent) {
+	    if(this.parent != null) {
+	        throw new IllegalStateException("Statement already has a parent: "
+	                + this.getClass() + " Name: " + this.getName());
+	    }
+	    
+	    this.parent = parent;
 	}
 	
 	abstract public String getCreationSQL();

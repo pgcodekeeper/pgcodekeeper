@@ -295,18 +295,22 @@ public class PgTable extends PgStatementWithSearchPath {
 
     public void addColumn(final PgColumn column) {
         columns.add(column);
+        column.setParent(this);
     }
 
     public void addConstraint(final PgConstraint constraint) {
         constraints.add(constraint);
+        constraint.setParent(this);
     }
 
     public void addIndex(final PgIndex index) {
         indexes.add(index);
+        index.setParent(this);
     }
 
     public void addTrigger(final PgTrigger trigger) {
         triggers.add(trigger);
+        trigger.setParent(this);
     }
 
     public boolean containsColumn(final String name) {
@@ -406,14 +410,7 @@ public class PgTable extends PgStatementWithSearchPath {
             tableDst.addInherits(inh);
         }
         for(PgColumn colSrc : columns) {
-            PgColumn colDst = new PgColumn(colSrc.getName());
-            colDst.setDefaultValue(colSrc.getDefaultValue());
-            colDst.setNullValue(colSrc.getNullValue());
-            colDst.setStatistics(colSrc.getStatistics());
-            colDst.setStorage(colSrc.getStorage());
-            colDst.setType(colSrc.getType());
-            colDst.setComment(colSrc.getComment());
-            tableDst.addColumn(colDst);
+            tableDst.addColumn(colSrc.shallowCopy());
         }
         tableDst.setComment(getComment());
         return tableDst;

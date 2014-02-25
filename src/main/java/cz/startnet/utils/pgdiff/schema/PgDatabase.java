@@ -101,6 +101,7 @@ public class PgDatabase extends PgStatement {
 
     public void addSchema(final PgSchema schema) {
         schemas.add(schema);
+        schema.setParent(this);
     }
     
     /**
@@ -131,6 +132,7 @@ public class PgDatabase extends PgStatement {
 
     public void addExtension(final PgExtension extension) {
     	extensions.add(extension);
+        extension.setParent(this);
     }
     
     @Override
