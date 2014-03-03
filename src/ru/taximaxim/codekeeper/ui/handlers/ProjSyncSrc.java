@@ -53,7 +53,7 @@ public class ProjSyncSrc {
                     InterruptedException {
                 SubMonitor pm = SubMonitor.convert(monitor, "Syncing SVN cache", 10);
                 
-                SvnExec svn = new SvnExec(mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH),
+                SvnExec svn = new SvnExec(mainPrefs.getString(UIConsts.PREF_REPO_EXE_PATH),
                         proj);
                 File svnDir = proj.getProjectSchemaDir();
                 
@@ -63,7 +63,7 @@ public class ProjSyncSrc {
                     
                     if(!conflicted[0]) {
                         pm.newChild(8).subTask("Updating SVN cache...");
-                        conflicted[0] = !svn.svnUpdate(svnDir);
+                        conflicted[0] = !svn.repoUpdate(svnDir);
                     }
                 } catch(IOException ex) {
                     throw new InvocationTargetException(ex);

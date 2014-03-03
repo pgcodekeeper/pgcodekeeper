@@ -22,7 +22,7 @@ public interface UIConsts {
 	String PART_DIFF_ID = PART_DIFF + ".Id";
 	
 	// Preferences
-	String PREF_SVN_EXE_PATH = "prefSvnExePath";
+	String PREF_REPO_EXE_PATH = "prefRepoExePath";
 	String PREF_PGDUMP_EXE_PATH = "prefPgdumpExePath";
 	String PREF_DB_STORE = "prefDbStore";
 	
@@ -38,9 +38,10 @@ public interface UIConsts {
 	String PROJ_PREF_DB_PORT = "prefDbPort";
 	String PROJ_PREF_DB_USER = "prefDbUser";
 	String PROJ_PREF_DB_PASS = "prefDbPass";
-	String PROJ_PREF_SVN_URL = "prefSvnUrl";
-	String PROJ_PREF_SVN_USER = "prefSvnUser";
-	String PROJ_PREF_SVN_PASS = "prefSvnPass";
+	String PROJ_PREF_REPO_URL = "prefRepoUrl";
+	String PROJ_PREF_REPO_USER = "prefRepoUser";
+	String PROJ_PREF_REPO_PASS = "prefRepoPass";
+	String PROJ_PREF_REPO_TYPE = "prefRepoType";
 	
 	String FILENAME_PROJ_PREF_STORE = "pgcodekeeper.project";
 	String FILENAME_PROJ_SCHEMA_DIR = "svn";

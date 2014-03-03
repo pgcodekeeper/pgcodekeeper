@@ -230,15 +230,15 @@ class SvnSettingsPage extends FieldEditorPreferencePage {
 	            getFieldEditorParent());
 	    
 		StringFieldEditor sfeUrl = new StringFieldEditor(
-				UIConsts.PROJ_PREF_SVN_URL, "SVN Repo URL:", getFieldEditorParent());
+				UIConsts.PROJ_PREF_REPO_URL, "SVN Repo URL:", getFieldEditorParent());
 		addField(sfeUrl);
 		sfeUrl.setEmptyStringAllowed(false);
 		
-		addField(new StringFieldEditor(UIConsts.PROJ_PREF_SVN_USER, "SVN User:",
+		addField(new StringFieldEditor(UIConsts.PROJ_PREF_REPO_USER, "SVN User:",
 				getFieldEditorParent()));
 		
 		StringFieldEditor sfePass = new StringFieldEditor(
-				UIConsts.PROJ_PREF_SVN_PASS, "SVN Pass:", getFieldEditorParent());
+				UIConsts.PROJ_PREF_REPO_PASS, "SVN Pass:", getFieldEditorParent());
 		addField(sfePass);
 		sfePass.getTextControl(getFieldEditorParent()).setEchoChar('\u2022'); // •
 		
@@ -252,7 +252,7 @@ class SvnSettingsPage extends FieldEditorPreferencePage {
 				+ "Consider using SVN password store instead.");
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
 		
-		if(getPreferenceStore().getString(UIConsts.PROJ_PREF_SVN_PASS).isEmpty()) {
+		if(getPreferenceStore().getString(UIConsts.PROJ_PREF_REPO_PASS).isEmpty()) {
 			gd.exclude = true;
 			lblWarn.setVisible(false);
 		}
@@ -266,7 +266,7 @@ class SvnSettingsPage extends FieldEditorPreferencePage {
 	public void propertyChange(PropertyChangeEvent e) {
 		String prefName = ((FieldEditor) e.getSource()).getPreferenceName();
 		
-		if(UIConsts.PROJ_PREF_SVN_PASS.equals(prefName)) {
+		if(UIConsts.PROJ_PREF_REPO_PASS.equals(prefName)) {
 			String oldVal = (String) e.getOldValue();
 			String newVal = (String) e.getNewValue();
 			

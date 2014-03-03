@@ -31,7 +31,7 @@ public class ProjectCreator implements IRunnableWithProgress {
 	public ProjectCreator(final IPreferenceStore mainPrefStore,
 			final PgDbProject props, final String dumpPath, boolean doInit) {
 		this.exePgdump = mainPrefStore.getString(UIConsts.PREF_PGDUMP_EXE_PATH);
-		this.exeSvn = mainPrefStore.getString(UIConsts.PREF_SVN_EXE_PATH);
+		this.exeSvn = mainPrefStore.getString(UIConsts.PREF_REPO_EXE_PATH);
 		
 		this.props = props;
 		this.dumpPath = dumpPath;
@@ -52,7 +52,7 @@ public class ProjectCreator implements IRunnableWithProgress {
                 Dir.deleteRecursive(dirSvn);
             }
             Files.createDirectory(dirSvn.toPath());
-            svn.svnCo(dirSvn);
+            svn.repoCheckOut(dirSvn);
             
             // clean repository, generate new file structure,
             // preserve and fix svn metadata, svn rm/add, commit new revision
@@ -91,9 +91,9 @@ public class ProjectCreator implements IRunnableWithProgress {
                 }
                 
                 pm.newChild(25).subTask("SVN committing..."); // 100
-                svn.svnRmMissing(dirSvn);
-                svn.svnAddAll(dirSvn);
-                svn.svnCi(dirSvn, "new rev");
+                svn.repoRemoveMissing(dirSvn);
+                svn.repoAddAll(dirSvn);
+                svn.repoCommit(dirSvn, "new rev");
             }
             
             monitor.done();

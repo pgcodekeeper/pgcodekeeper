@@ -70,7 +70,7 @@ public class CommitPartDescr {
     private EPartService partService;
     @Inject @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
     private String exePgdump;
-    @Inject @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
+    @Inject @Preference(value=UIConsts.PREF_REPO_EXE_PATH)
     private String exeSvn;
     
     private Text txtCommitComment;
@@ -162,9 +162,9 @@ public class CommitPartDescr {
                             
                             pm.newChild(1).subTask("SVN committing..."); // 3
                             SvnExec svn = new SvnExec(exeSvn, proj);
-                            svn.svnRmMissing(dirSvn);
-                            svn.svnAddAll(dirSvn);
-                            svn.svnCi(dirSvn, commitComment);
+                            svn.repoRemoveMissing(dirSvn);
+                            svn.repoAddAll(dirSvn);
+                            svn.repoCommit(dirSvn, commitComment);
                         } catch(IOException ex) {
                             throw new InvocationTargetException(ex,
                                     "IOException while modifying project!");

@@ -59,7 +59,7 @@ public class DiffPartDescr {
     private EPartService partService;
     @Inject @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
     private String exePgdump;
-    @Inject @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
+    @Inject @Preference(value=UIConsts.PREF_REPO_EXE_PATH)
     private String exeSvn;
     
     private Button btnGetLatest;

@@ -278,7 +278,7 @@ class PageDiff extends WizardPage implements Listener {
             
         case SVN:
             dbs = DbSource.fromSvn(
-                    mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH),
+                    mainPrefs.getString(UIConsts.PREF_REPO_EXE_PATH),
                     getSvnUrl(), getSvnUser(), getSvnPass(), getSvnRev(),
                     getTargetEncoding());
             break;
@@ -296,10 +296,10 @@ class PageDiff extends WizardPage implements Listener {
                 dbs = DbSource.fromProject(fromProj);
             } else {
                 dbs = DbSource.fromSvn(
-                        mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH),
-                        fromProj.getString(UIConsts.PROJ_PREF_SVN_URL),
-                        fromProj.getString(UIConsts.PROJ_PREF_SVN_USER),
-                        fromProj.getString(UIConsts.PROJ_PREF_SVN_PASS),
+                        mainPrefs.getString(UIConsts.PREF_REPO_EXE_PATH),
+                        fromProj.getString(UIConsts.PROJ_PREF_REPO_URL),
+                        fromProj.getString(UIConsts.PROJ_PREF_REPO_USER),
+                        fromProj.getString(UIConsts.PROJ_PREF_REPO_PASS),
                         getProjRev(),
                         fromProj.getString(UIConsts.PROJ_PREF_ENCODING));
             }

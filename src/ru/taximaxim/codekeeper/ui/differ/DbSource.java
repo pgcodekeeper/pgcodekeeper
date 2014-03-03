@@ -120,9 +120,9 @@ class DbSourceSvn extends DbSource {
     
     public DbSourceSvn(String svnExec, PgDbProject proj, String rev) {
         this(svnExec,
-                proj.getString(UIConsts.PROJ_PREF_SVN_URL),
-                proj.getString(UIConsts.PROJ_PREF_SVN_USER),
-                proj.getString(UIConsts.PROJ_PREF_SVN_PASS),
+                proj.getString(UIConsts.PROJ_PREF_REPO_URL),
+                proj.getString(UIConsts.PROJ_PREF_REPO_USER),
+                proj.getString(UIConsts.PROJ_PREF_REPO_PASS),
                 proj.getString(UIConsts.PROJ_PREF_ENCODING),
                 rev);
     }
@@ -145,7 +145,7 @@ class DbSourceSvn extends DbSource {
             File dir = tmpDir.get();
             
             pm.newChild(1).subTask("SVN rev checkout...");
-            svn.svnCo(dir, rev);
+            svn.repoCheckOut(dir, rev);
             
             pm.newChild(1).subTask("Loading tree...");
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(
