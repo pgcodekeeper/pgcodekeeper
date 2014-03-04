@@ -22,7 +22,7 @@ import javax.annotation.PostConstruct;
 public class TestPart {
 	
 	@Inject
-	@Preference(value=UIConsts.PREF_REPO_EXE_PATH)
+	@Preference(value=UIConsts.PREF_SVN_EXE_PATH)
 	private String prefSvnPath;
 	
 	@Inject

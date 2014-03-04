@@ -56,7 +56,6 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
     public NewProjWizard(IPreferenceStore mainPrefStore) {
         setWindowTitle("New PgDbProject");
         setNeedsProgressMonitor(true);
-
         this.mainPrefStore = mainPrefStore;
     }
 
@@ -135,6 +134,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
         props.setValue(UIConsts.PROJ_PREF_DB_HOST, pageDb.getDbHost());
         props.setValue(UIConsts.PROJ_PREF_DB_PORT, pageDb.getDbPort());
 
+        props.setValue(UIConsts.PROJ_PREF_REPO_TYPE, pageRepo.getRepoType());
         props.setValue(UIConsts.PROJ_PREF_REPO_URL, pageRepo.getRepoUrl());
         props.setValue(UIConsts.PROJ_PREF_REPO_USER, pageRepo.getRepoUser());
         props.setValue(UIConsts.PROJ_PREF_REPO_PASS, pageRepo.getRepoPass());
@@ -181,6 +181,10 @@ class PageRepo extends WizardPage implements Listener {
 
     private LocalResourceManager lrm;
 
+    public String getRepoType(){
+        return repoTypeName;
+    }
+    
     public String getRepoUrl() {
         return txtRepoUrl.getText();
     }
@@ -337,12 +341,10 @@ class PageRepo extends WizardPage implements Listener {
             public void widgetSelected(SelectionEvent e) {
                 repoTypeName = "SVN";
                 redrawLabels (repoTypeName );
-                
             }
 
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
-                // TODO Auto-generated method stub
 
             }
         });
@@ -352,12 +354,10 @@ class PageRepo extends WizardPage implements Listener {
             public void widgetSelected(SelectionEvent e) {
                 repoTypeName = "GIT";
                 redrawLabels (repoTypeName );
-                
             }
 
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
-                // TODO Auto-generated method stub
 
             }
         });

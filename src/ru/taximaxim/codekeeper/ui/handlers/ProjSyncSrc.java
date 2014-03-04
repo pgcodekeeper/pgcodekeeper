@@ -53,7 +53,7 @@ public class ProjSyncSrc {
                     InterruptedException {
                 SubMonitor pm = SubMonitor.convert(monitor, "Syncing SVN cache", 10);
                 
-                SvnExec svn = new SvnExec(mainPrefs.getString(UIConsts.PREF_REPO_EXE_PATH),
+                SvnExec svn = new SvnExec(mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH),
                         proj);
                 File svnDir = proj.getProjectSchemaDir();
                 

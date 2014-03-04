@@ -22,7 +22,8 @@ public interface UIConsts {
 	String PART_DIFF_ID = PART_DIFF + ".Id";
 	
 	// Preferences
-	String PREF_REPO_EXE_PATH = "prefRepoExePath";
+	String PREF_SVN_EXE_PATH = "prefSvnExePath";
+	String PREF_GIT_EXE_PATH = "prefGitExePath";
 	String PREF_PGDUMP_EXE_PATH = "prefPgdumpExePath";
 	String PREF_DB_STORE = "prefDbStore";
 	

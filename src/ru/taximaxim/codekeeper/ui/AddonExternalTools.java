@@ -56,7 +56,7 @@ public class AddonExternalTools {
             @Named("__DUMMY__")
             @EventTopic(UIEvents.UILifeCycle.APP_STARTUP_COMPLETE)
             MApplication app,
-            @Preference(value=UIConsts.PREF_REPO_EXE_PATH)
+            @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
             String svnExec,
             @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
             String pgdumpExec) {
@@ -90,7 +90,7 @@ public class AddonExternalTools {
     @Optional
     private void prefsReinject(
             ApplicationHandle appHandle, // IApplicationContext actually
-            @Preference(value=UIConsts.PREF_REPO_EXE_PATH)
+            @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
             String svnExec,
             @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
             String pgdumpExec) {
