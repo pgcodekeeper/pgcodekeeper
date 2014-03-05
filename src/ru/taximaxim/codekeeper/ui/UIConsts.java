@@ -45,7 +45,7 @@ public interface UIConsts {
 	String PROJ_PREF_REPO_TYPE = "prefRepoType";
 	
 	String FILENAME_PROJ_PREF_STORE = "pgcodekeeper.project";
-	String FILENAME_PROJ_SCHEMA_DIR = "svn";
+	String FILENAME_PROJ_SCHEMA_DIR = "repo";
 	
 	String FILENAME_ICONPGADMIN = "/icons/pgadmin/";
 	String FILENAME_ICONWARNING = "/icons/warning.gif";

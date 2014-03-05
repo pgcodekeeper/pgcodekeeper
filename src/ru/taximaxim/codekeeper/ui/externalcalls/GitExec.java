@@ -53,9 +53,8 @@ public class GitExec implements IRepoWorker {
             e.printStackTrace();
         }
         git.directory(dirTo);
-
+        git.command().add(dirTo.getAbsolutePath());
         StdStreamRedirector.launchAndRedirect(git);
-
     }
 
     /**
