@@ -53,6 +53,7 @@ public class ProjectCreator implements IRunnableWithProgress {
             } else {
                 repo = new GitExec(exeGit, props);
             }
+            
             pm.newChild(doInit ? 25 : workToDo).subTask(
                     "SVN current rev checkout..."); // 25 or 100%
             File dirSvn = props.getProjectSchemaDir();
