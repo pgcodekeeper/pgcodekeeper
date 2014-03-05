@@ -32,6 +32,7 @@ public interface IRepoWorker {
      */
     public void repoRemoveMissing(File dirIn) throws IOException;
 
+    public String getRepoMetaFolder();
 //    /**
 //     * PRIVATE Remove files in directory specified
 //     */

@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.List;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
@@ -53,7 +54,7 @@ public class GitExec implements IRepoWorker {
             e.printStackTrace();
         }
         git.directory(dirTo);
-        git.command().add(dirTo.getAbsolutePath());
+        git.command().add(".");
         StdStreamRedirector.launchAndRedirect(git);
     }
 
@@ -82,8 +83,23 @@ public class GitExec implements IRepoWorker {
 
     @Override
     public void repoRemoveMissing(File dirIn) throws IOException {
-        // TODO Auto-generated method stub
+        String[] files = gitGetMissing(dirIn);
+        if (files.length > 0 && files[0].startsWith("fatal: Not a git repository (or any of the parent directories)")) {
+            ProcessBuilder git = new ProcessBuilder(gitExec, "rm");
+            for (String s : files) {
+                git.command().add(
+                        dirIn + System.getProperty("file.separator") + s);
+            }
+            git.directory(dirIn);
+            StdStreamRedirector.launchAndRedirect(git);
+        }
+    }
 
+    private String[] gitGetMissing(File dirIn) throws IOException {
+        ProcessBuilder git = new ProcessBuilder(gitExec, "ls-files", "-d");
+        git.directory(dirIn);
+        return StdStreamRedirector.launchAndRedirect(git).split(
+                System.getProperty("line.separator"));
     }
 
     @Override
@@ -108,6 +124,11 @@ public class GitExec implements IRepoWorker {
     public String repoGetVersion() throws IOException {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public String getRepoMetaFolder() {
+        return ".git";
     }
 
 }

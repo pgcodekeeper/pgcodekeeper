@@ -234,4 +234,10 @@ public class SvnExec implements IRepoWorker {
         return version;
     }
 
+    @Override
+    public String getRepoMetaFolder() {
+        
+        return ".svn";
+    }
+
 }
