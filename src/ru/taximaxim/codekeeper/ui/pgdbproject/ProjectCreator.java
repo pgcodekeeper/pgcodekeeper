@@ -63,6 +63,7 @@ public class ProjectCreator implements IRunnableWithProgress {
             }
             Files.createDirectory(dirRepo.toPath());
             repo.repoCheckOut(dirRepo);
+            ((GitExec)repo).setGitSupportNonAnsii(dirRepo);
             if (doInit) {
                 initRepoFromSource(pm, repo);
             }

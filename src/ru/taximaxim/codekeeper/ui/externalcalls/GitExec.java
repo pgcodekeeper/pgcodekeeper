@@ -84,7 +84,9 @@ public class GitExec implements IRepoWorker {
     @Override
     public void repoRemoveMissing(File dirIn) throws IOException {
         String[] files = gitGetMissing(dirIn);
-        if (files.length > 0 && files[0].startsWith("fatal: Not a git repository (or any of the parent directories)")) {
+        if (files.length > 0
+                && !files[0]
+                        .startsWith("fatal: Not a git repository (or any of the parent directories)")) {
             ProcessBuilder git = new ProcessBuilder(gitExec, "rm");
             for (String s : files) {
                 git.command().add(
@@ -104,8 +106,43 @@ public class GitExec implements IRepoWorker {
 
     @Override
     public void repoAddAll(File dirIn) throws IOException {
-        // TODO Auto-generated method stub
+        String[] files = gitGetOther(dirIn);
+        if (files.length > 0
+                && !files[0]
+                        .startsWith("fatal: Not a git repository (or any of the parent directories)")) {
+            ProcessBuilder git = new ProcessBuilder(gitExec, "add");
+            for (String s : files) {
+                String filePath = dirIn + System.getProperty("file.separator")
+                        + s;
+                filePath = filePath.replaceAll("/", "//");
+                git.command().add(filePath);
+            }
+            git.directory(dirIn);
+            StdStreamRedirector.launchAndRedirect(git);
+        }
+    }
 
+    /**
+     * Prevents git from converting russian file names to escape sequence (as in
+     * "файл" = "\321\204\320\260\320\271\320\273")
+     * 
+     * @url http://stackoverflow.com/a/4416780
+     * 
+     * @param dirIn
+     * @throws IOException
+     */
+    public void setGitSupportNonAnsii(File dirIn) throws IOException {
+        ProcessBuilder git = new ProcessBuilder(gitExec, "config",
+                "core.quotepath", "false");
+        git.directory(dirIn);
+        StdStreamRedirector.launchAndRedirect(git);
+    }
+
+    private String[] gitGetOther(File dirIn) throws IOException {
+        ProcessBuilder git = new ProcessBuilder(gitExec, "ls-files", "-o");
+        git.directory(dirIn);
+        return StdStreamRedirector.launchAndRedirect(git).split(
+                System.getProperty("line.separator"));
     }
 
     @Override
