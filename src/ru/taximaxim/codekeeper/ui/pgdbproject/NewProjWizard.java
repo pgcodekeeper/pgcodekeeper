@@ -207,10 +207,9 @@ class PageRepo extends WizardPage implements Listener {
 
     PageRepo(String pageName) {
         super(pageName, pageName, null);
-        repoTypeName = "SVN";
     }
 
-    private void redrawLabels(String repoTypeName) {
+    private void redrawLabels() {
         lblRepoUrl.setText(repoTypeName + " Repo URL:");
         lblRepoUser.setText(repoTypeName + " User:");
         lblRepoPass.setText(repoTypeName + " Password:");
@@ -340,7 +339,7 @@ class PageRepo extends WizardPage implements Listener {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 repoTypeName = "SVN";
-                redrawLabels (repoTypeName );
+                redrawLabels ();
             }
 
             @Override
@@ -348,12 +347,13 @@ class PageRepo extends WizardPage implements Listener {
 
             }
         });
+        btnSvn.notifyListeners(SWT.Selection, new Event() );
         btnGit.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 repoTypeName = "GIT";
-                redrawLabels (repoTypeName );
+                redrawLabels ();
             }
 
             @Override

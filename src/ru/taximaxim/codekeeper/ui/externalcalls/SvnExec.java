@@ -97,8 +97,7 @@ public class SvnExec implements IRepoWorker {
         StdStreamRedirector.launchAndRedirect(svn);
     }
 
-    @Override
-    public void repoRemoveMissing(File dirIn) throws IOException {
+    private void repoRemoveMissing(File dirIn) throws IOException {
         List<String> files = svnGetMissing(dirIn);
         if (!files.isEmpty()) {
             repoRemove(dirIn, files);
@@ -132,8 +131,8 @@ public class SvnExec implements IRepoWorker {
         StdStreamRedirector.launchAndRedirect(svn);
     }
 
-    @Override
-    public void repoAddAll(File dirIn) throws IOException {
+
+    private void repoAddAll(File dirIn) throws IOException {
         List<String> files = repoGetUnversioned(dirIn);
 
         while (!files.isEmpty()) {
@@ -236,8 +235,14 @@ public class SvnExec implements IRepoWorker {
 
     @Override
     public String getRepoMetaFolder() {
-        
+
         return ".svn";
+    }
+
+    @Override
+    public void repoRemoveMissingAddNew(File dirIn) throws IOException {
+        repoRemoveMissing(dirIn);
+        repoAddAll(dirIn);
     }
 
 }

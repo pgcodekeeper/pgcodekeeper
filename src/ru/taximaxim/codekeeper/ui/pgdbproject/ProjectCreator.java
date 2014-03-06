@@ -30,6 +30,8 @@ public class ProjectCreator implements IRunnableWithProgress {
 
     final private boolean doInit;
 
+    private String repoName = "";
+
     public ProjectCreator(final IPreferenceStore mainPrefStore,
             final PgDbProject props, final String dumpPath, boolean doInit) {
         this.exePgdump = mainPrefStore.getString(UIConsts.PREF_PGDUMP_EXE_PATH);
@@ -50,24 +52,23 @@ public class ProjectCreator implements IRunnableWithProgress {
             IRepoWorker repo;
             if (props.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals("SVN")) {
                 repo = new SvnExec(exeSvn, props);
+                repoName = "SVN";
             } else {
                 repo = new GitExec(exeGit, props);
+                repoName = "GIT";
             }
 
             pm.newChild(doInit ? 25 : workToDo).subTask(
-                    props.getString(UIConsts.PROJ_PREF_REPO_TYPE)
-                            + " current rev checkout..."); // 25 or 100%
+                    repoName + " current rev checkout..."); // 25 or 100%
             File dirRepo = props.getProjectSchemaDir();
             if (dirRepo.exists()) {
                 Dir.deleteRecursive(dirRepo);
             }
             Files.createDirectory(dirRepo.toPath());
             repo.repoCheckOut(dirRepo);
-            ((GitExec)repo).setGitSupportNonAnsii(dirRepo);
             if (doInit) {
                 initRepoFromSource(pm, repo);
             }
-
             monitor.done();
         } catch (IOException ex) {
             throw new InvocationTargetException(ex,
@@ -85,7 +86,6 @@ public class ProjectCreator implements IRunnableWithProgress {
      * @throws InvocationTargetException
      */
 
-    // TODO Fix to work with git
     private void initRepoFromSource(SubMonitor pm, IRepoWorker repo)
             throws IOException, InvocationTargetException {
         File dirRepo = props.getProjectSchemaDir();
@@ -123,11 +123,8 @@ public class ProjectCreator implements IRunnableWithProgress {
             Files.move(repoMetaTmp.toPath(), repoMetaProj.toPath());
         }
 
-        pm.newChild(25).subTask(
-                props.getString(UIConsts.PROJ_PREF_REPO_TYPE)
-                        + " committing..."); // 100
-        repo.repoRemoveMissing(dirRepo);
-        repo.repoAddAll(dirRepo);
+        pm.newChild(25).subTask(repoName + " committing..."); // 100
+        repo.repoRemoveMissingAddNew(dirRepo);
         repo.repoCommit(dirRepo, "new rev");
     }
 }

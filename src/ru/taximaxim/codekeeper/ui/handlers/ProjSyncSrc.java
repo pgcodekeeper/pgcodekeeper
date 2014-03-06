@@ -20,6 +20,8 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
+import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -52,18 +54,24 @@ public class ProjSyncSrc {
             public void run(IProgressMonitor monitor) throws InvocationTargetException,
                     InterruptedException {
                 SubMonitor pm = SubMonitor.convert(monitor, "Syncing SVN cache", 10);
+                IRepoWorker repo;
+                if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals("SVN")) {
+                    repo = new SvnExec(mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH), proj);
+                    //repoName = "SVN";
+                } else {
+                    repo = new GitExec(mainPrefs.getString(UIConsts.PREF_GIT_EXE_PATH), proj);
+                    //repoName = "GIT";
+                }
                 
-                SvnExec svn = new SvnExec(mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH),
-                        proj);
                 File svnDir = proj.getProjectSchemaDir();
                 
                 try {
                     pm.newChild(2).subTask("Checking conflicts...");
-                    conflicted[0] = svn.hasConflicts(svnDir);
+                    conflicted[0] = repo.hasConflicts(svnDir);
                     
                     if(!conflicted[0]) {
-                        pm.newChild(8).subTask("Updating SVN cache...");
-                        conflicted[0] = !svn.repoUpdate(svnDir);
+                        pm.newChild(8).subTask("Updating cache...");
+                        conflicted[0] = !repo.repoUpdate(svnDir);
                     }
                 } catch(IOException ex) {
                     throw new InvocationTargetException(ex);

@@ -162,8 +162,7 @@ public class CommitPartDescr {
                             
                             pm.newChild(1).subTask("SVN committing..."); // 3
                             SvnExec svn = new SvnExec(exeSvn, proj);
-                            svn.repoRemoveMissing(dirSvn);
-                            svn.repoAddAll(dirSvn);
+                            svn.repoRemoveMissingAddNew(dirSvn);
                             svn.repoCommit(dirSvn, commitComment);
                         } catch(IOException ex) {
                             throw new InvocationTargetException(ex,

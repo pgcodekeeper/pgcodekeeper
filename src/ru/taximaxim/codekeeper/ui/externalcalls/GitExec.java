@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.externalcalls;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -34,15 +35,16 @@ public class GitExec implements IRepoWorker {
     /**
      * Clones repository from server to local directory
      */
-    public void repoCheckOut(File dirTo) throws IOException {
+    public void repoCheckOut(File dirTo) throws IOException, InvocationTargetException {
         repoCheckOut(dirTo, null);
     }
 
     @Override
     /**
+     * Clones repository from server to local directory, pulls required commit
      * 
      */
-    public void repoCheckOut(File dirTo, String commitHash) throws IOException {
+    public void repoCheckOut(File dirTo, String commitHash) throws IOException, InvocationTargetException {
         ProcessBuilder git = new ProcessBuilder(gitExec, "clone");
         if (commitHash != null && !commitHash.isEmpty()) {
             // TODO implement checking out specified commit
@@ -50,11 +52,60 @@ public class GitExec implements IRepoWorker {
         try {
             git.command().add(getRepoUrlWithAuth());
         } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new InvocationTargetException(new IllegalStateException(
+                    "URISyntaxException: Error converting username:password@host to URI"));
         }
         git.directory(dirTo);
         git.command().add(".");
+        StdStreamRedirector.launchAndRedirect(git);
+        setGitSupportNonAnsii(dirTo);
+    }
+
+    @Override
+    public void repoCommit(File dirFrom, String comment) throws IOException {
+        ProcessBuilder git = new ProcessBuilder(gitExec, "commit", "-a", "-m",
+                comment);
+        git.directory(dirFrom);
+        StdStreamRedirector.launchAndRedirect(git);
+        git = new ProcessBuilder(gitExec, "push");
+        git.directory(dirFrom);
+        StdStreamRedirector.launchAndRedirect(git);
+    }
+
+    @Override
+    public boolean hasConflicts(File dirIn) throws IOException {
+        ProcessBuilder git = new ProcessBuilder(gitExec, "ls-files", "-u");
+        git.directory(dirIn);
+        if (StdStreamRedirector.launchAndRedirect(git).length() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean repoUpdate(File dirIn) throws IOException {
+        ProcessBuilder git = new ProcessBuilder(gitExec, "pull");
+        git.directory(dirIn);
+        StdStreamRedirector.launchAndRedirect(git);
+        return this.hasConflicts(dirIn);
+    }
+
+    @Override
+    public String repoGetVersion() throws IOException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getRepoMetaFolder() {
+        return ".git";
+    }
+
+    @Override
+    public void repoRemoveMissingAddNew(File dirIn) throws IOException {
+        ProcessBuilder git = new ProcessBuilder(gitExec, "add", "-A");
+        git.directory(dirIn);
         StdStreamRedirector.launchAndRedirect(git);
     }
 
@@ -75,51 +126,11 @@ public class GitExec implements IRepoWorker {
                 + uri.getPath();
     }
 
-    @Override
-    public void repoCommit(File dirFrom, String comment) throws IOException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void repoRemoveMissing(File dirIn) throws IOException {
-        String[] files = gitGetMissing(dirIn);
-        if (files.length > 0
-                && !files[0]
-                        .startsWith("fatal: Not a git repository (or any of the parent directories)")) {
-            ProcessBuilder git = new ProcessBuilder(gitExec, "rm");
-            for (String s : files) {
-                git.command().add(
-                        dirIn + System.getProperty("file.separator") + s);
-            }
-            git.directory(dirIn);
-            StdStreamRedirector.launchAndRedirect(git);
-        }
-    }
-
     private String[] gitGetMissing(File dirIn) throws IOException {
         ProcessBuilder git = new ProcessBuilder(gitExec, "ls-files", "-d");
         git.directory(dirIn);
         return StdStreamRedirector.launchAndRedirect(git).split(
                 System.getProperty("line.separator"));
-    }
-
-    @Override
-    public void repoAddAll(File dirIn) throws IOException {
-        String[] files = gitGetOther(dirIn);
-        if (files.length > 0
-                && !files[0]
-                        .startsWith("fatal: Not a git repository (or any of the parent directories)")) {
-            ProcessBuilder git = new ProcessBuilder(gitExec, "add");
-            for (String s : files) {
-                String filePath = dirIn + System.getProperty("file.separator")
-                        + s;
-                filePath = filePath.replaceAll("/", "//");
-                git.command().add(filePath);
-            }
-            git.directory(dirIn);
-            StdStreamRedirector.launchAndRedirect(git);
-        }
     }
 
     /**
@@ -131,7 +142,7 @@ public class GitExec implements IRepoWorker {
      * @param dirIn
      * @throws IOException
      */
-    public void setGitSupportNonAnsii(File dirIn) throws IOException {
+    private void setGitSupportNonAnsii(File dirIn) throws IOException {
         ProcessBuilder git = new ProcessBuilder(gitExec, "config",
                 "core.quotepath", "false");
         git.directory(dirIn);
@@ -143,29 +154,6 @@ public class GitExec implements IRepoWorker {
         git.directory(dirIn);
         return StdStreamRedirector.launchAndRedirect(git).split(
                 System.getProperty("line.separator"));
-    }
-
-    @Override
-    public boolean hasConflicts(File dirIn) throws IOException {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean repoUpdate(File dirIn) throws IOException {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public String repoGetVersion() throws IOException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getRepoMetaFolder() {
-        return ".git";
     }
 
 }
