@@ -53,6 +53,7 @@ public class ProjSyncSrc {
             @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException,
                     InterruptedException {
+                System.out.println("DEBUG Entered ProjSyncSrc");
                 SubMonitor pm = SubMonitor.convert(monitor, "Syncing SVN cache", 10);
                 IRepoWorker repo;
                 if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals("SVN")) {

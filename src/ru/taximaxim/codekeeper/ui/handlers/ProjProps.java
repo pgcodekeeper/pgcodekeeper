@@ -1,6 +1,7 @@
  
 package ru.taximaxim.codekeeper.ui.handlers;
 
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,28 +35,35 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
+import org.osgi.framework.Bundle;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePickerDialog;
+import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
+import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.FakePrefPageExtension;
 import ru.taximaxim.codekeeper.ui.prefs.PrefDialogFactory;
 
 public class ProjProps {
-
-	@Execute
+    @Execute
 	private void execute(
             @Named(UIConsts.PREF_STORE)
             IPreferenceStore mainPrefs,
 			@Named(IServiceConstants.ACTIVE_SHELL)
 			Shell shell,
 			PgDbProject proj) {
-		
-		FakePrefPageExtension[] propPages = {
-                new FakePrefPageExtension("projprefs.0.pagesvn", "SVN Settings",
-                        new SvnSettingsPage(), null),
+        String repoTypeName;
+	    if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals("SVN")) {
+            repoTypeName = "SVN";
+        } else {
+            repoTypeName = "GIT";
+        }
+	    FakePrefPageExtension[] propPages = {
+                new FakePrefPageExtension("projprefs.0.pagerepo", repoTypeName + " Settings",
+                        new RepoSettingsPage(proj), null),
                 
 				new FakePrefPageExtension("projprefs.1.pagedbsouce", "DB Source",
 						new DbSrcPage(mainPrefs), null),
@@ -214,31 +222,46 @@ class DbSrcPage extends FieldEditorPreferencePage {
 	}
 }
 
-class SvnSettingsPage extends FieldEditorPreferencePage {
+class RepoSettingsPage extends FieldEditorPreferencePage {
 	
 	private CLabel lblWarn;
-	
+	private PgDbProject proj;
 	private LocalResourceManager lrm;
 	
-	public SvnSettingsPage() {
+	public RepoSettingsPage(PgDbProject proj) {
 		super(GRID);
+		this.proj = proj;
 	}
 	
 	@Override
 	protected void createFieldEditors() {
 	    this.lrm = new LocalResourceManager(JFaceResources.getResources(),
 	            getFieldEditorParent());
-	    
+	    String repoTypeName;
+	    String warningMessage;
+	    if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals("SVN")){
+	        repoTypeName = "SVN";
+	        warningMessage = "Warning:\n"
+                + "Providing password here is insecure!\n"
+                + "This password WILL show up in logs!\n"
+                + "Consider using SVN password store instead.";	    }
+	    else {
+	        repoTypeName = "GIT";
+	        warningMessage = "Warning:\n"
+                + "Providing password here is insecure!\n"
+                + "This password WILL show up in logs!\n"
+                + "Consider using ssh authentification instead (use git@host repo url).";
+	    }
 		StringFieldEditor sfeUrl = new StringFieldEditor(
-				UIConsts.PROJ_PREF_REPO_URL, "SVN Repo URL:", getFieldEditorParent());
+				UIConsts.PROJ_PREF_REPO_URL, repoTypeName + " Repo URL:", getFieldEditorParent());
 		addField(sfeUrl);
 		sfeUrl.setEmptyStringAllowed(false);
 		
-		addField(new StringFieldEditor(UIConsts.PROJ_PREF_REPO_USER, "SVN User:",
+		addField(new StringFieldEditor(UIConsts.PROJ_PREF_REPO_USER, repoTypeName + " User:",
 				getFieldEditorParent()));
 		
 		StringFieldEditor sfePass = new StringFieldEditor(
-				UIConsts.PROJ_PREF_REPO_PASS, "SVN Pass:", getFieldEditorParent());
+				UIConsts.PROJ_PREF_REPO_PASS, repoTypeName + " Pass:", getFieldEditorParent());
 		addField(sfePass);
 		sfePass.getTextControl(getFieldEditorParent()).setEchoChar('\u2022'); // •
 		
@@ -246,10 +269,8 @@ class SvnSettingsPage extends FieldEditorPreferencePage {
 		lblWarn.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(
                         UIConsts.FILENAME_ICONWARNING))));
-		lblWarn.setText("Warning:\n"
-				+ "Providing password here is insecure!\n"
-				+ "This password WILL show up in logs!\n"
-				+ "Consider using SVN password store instead.");
+		
+		lblWarn.setText(warningMessage);
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
 		
 		if(getPreferenceStore().getString(UIConsts.PROJ_PREF_REPO_PASS).isEmpty()) {

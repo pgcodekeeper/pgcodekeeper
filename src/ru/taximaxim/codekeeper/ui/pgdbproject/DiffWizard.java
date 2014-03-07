@@ -253,6 +253,22 @@ class PageDiff extends WizardPage implements Listener {
         return txtSvnRev.getText();
     }
     
+    public String getGitUrl() {
+        return txtGitUrl.getText();
+    }
+    
+    public String getGitUser() {
+        return txtGitUser.getText();
+    }
+    
+    public String getGitPass() {
+        return txtGitPass.getText();
+    }
+    
+    public String getGitRev() {
+        return txtGitRev.getText();
+    }
+    
     public String getProjPath() {
         return txtProjPath.getText();
     }
@@ -290,7 +306,7 @@ class PageDiff extends WizardPage implements Listener {
         case GIT:
             dbs = DbSource.fromGit(
                     mainPrefs.getString(UIConsts.PREF_GIT_EXE_PATH),
-                    getSvnUrl(), getSvnUser(), getSvnPass(), getSvnRev(),
+                    getGitUrl(), getGitUser(), getGitPass(), getGitRev(),
                     getTargetEncoding());
             break;
             

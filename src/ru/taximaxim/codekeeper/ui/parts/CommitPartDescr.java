@@ -147,11 +147,19 @@ public class CommitPartDescr {
                         pm.newChild(1).subTask("Exporting new DB model..."); // 2
                         File dirSvn = proj.getProjectSchemaDir();
                         try {
-                            try(TempDir tmpSvnMeta = new TempDir(proj.getProjectPath(), 
-                                    "tmp_svn_meta_")) {
-                                File svnMetaProj = new File(dirSvn, ".svn");
-                                File svnMetaTmp = new File(tmpSvnMeta.get(), ".svn");
-                                
+                            String repoName;
+                            IRepoWorker repo;
+                            if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals("SVN")) {
+                                repo = new SvnExec(exeSvn, proj);
+                                repoName = "SVN";
+                            } else {
+                                repo = new GitExec(exeGit, proj);
+                                repoName = "GIT";
+                            }
+                            try(TempDir tmpRepoMeta = new TempDir(proj.getProjectPath(), 
+                                    "tmp_repo_meta_")) {
+                                File svnMetaProj = new File(dirSvn, repo.getRepoMetaFolder());
+                                File svnMetaTmp = new File(tmpRepoMeta.get(), repo.getRepoMetaFolder());
                                 Files.move(svnMetaProj.toPath(), svnMetaTmp.toPath());
                                 Dir.deleteRecursive(dirSvn);
                                 
@@ -162,15 +170,7 @@ public class CommitPartDescr {
                                 
                                 Files.move(svnMetaTmp.toPath(), svnMetaProj.toPath());
                             }
-                            String repoName;
-                            IRepoWorker repo;
-                            if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals("SVN")) {
-                                repo = new SvnExec(exeSvn, proj);
-                                repoName = "SVN";
-                            } else {
-                                repo = new GitExec(exeGit, proj);
-                                repoName = "GIT";
-                            }                            
+                                                        
                             pm.newChild(1).subTask(repoName + " committing..."); // 3
                             repo.repoRemoveMissingAddNew(dirSvn);
                             repo.repoCommit(dirSvn, commitComment);

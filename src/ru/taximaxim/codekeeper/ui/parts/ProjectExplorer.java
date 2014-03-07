@@ -68,6 +68,7 @@ public class ProjectExplorer {
             private final List<String> ignoredFiles = Arrays.asList(
                     new String[] {
                             ".svn",
+                            ".git",
                             "listing.lst"
                     });
             
