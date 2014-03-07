@@ -9,7 +9,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public interface IRepoWorker {
 
-    enum RepoType {
+    public enum RepoType {
         SVN, GIT
     }
 
@@ -100,4 +100,6 @@ public interface IRepoWorker {
 //    void addUrl(ProcessBuilder pb);
 
     public String repoGetVersion() throws IOException;
+    
+    public String getRepoTypeName();
 }

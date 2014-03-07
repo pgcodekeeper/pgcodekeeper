@@ -35,7 +35,6 @@ public class SvnExec implements IRepoWorker {
 
     public SvnExec(String svnExec, String url, String user, String pass) {
         this.svnExec = svnExec;
-
         this.url = url;
         this.user = user;
         this.pass = pass;
@@ -111,10 +110,6 @@ public class SvnExec implements IRepoWorker {
             files.add(m.group(1));
         }
         return files;
-    }
-
-    private void repoRemove(File dirIn, String... files) throws IOException {
-        repoRemove(dirIn, Arrays.asList(files));
     }
 
     private void repoRemove(File dirIn, List<String> files) throws IOException {
@@ -245,4 +240,8 @@ public class SvnExec implements IRepoWorker {
         repoAddAll(dirIn);
     }
 
+    @Override
+    public String getRepoTypeName() {
+        return "SVN";
+    }
 }

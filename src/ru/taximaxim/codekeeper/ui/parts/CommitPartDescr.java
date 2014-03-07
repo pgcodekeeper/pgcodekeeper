@@ -54,6 +54,8 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTreeViewer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
+import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
+import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
@@ -72,7 +74,8 @@ public class CommitPartDescr {
     private String exePgdump;
     @Inject @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
     private String exeSvn;
-    
+    @Inject @Preference(value=UIConsts.PREF_GIT_EXE_PATH)
+    private String exeGit;
     private Text txtCommitComment;
     private Button btnCommit;
     private DiffTreeViewer diffTree;
@@ -159,11 +162,18 @@ public class CommitPartDescr {
                                 
                                 Files.move(svnMetaTmp.toPath(), svnMetaProj.toPath());
                             }
-                            
-                            pm.newChild(1).subTask("SVN committing..."); // 3
-                            SvnExec svn = new SvnExec(exeSvn, proj);
-                            svn.repoRemoveMissingAddNew(dirSvn);
-                            svn.repoCommit(dirSvn, commitComment);
+                            String repoName;
+                            IRepoWorker repo;
+                            if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals("SVN")) {
+                                repo = new SvnExec(exeSvn, proj);
+                                repoName = "SVN";
+                            } else {
+                                repo = new GitExec(exeGit, proj);
+                                repoName = "GIT";
+                            }                            
+                            pm.newChild(1).subTask(repoName + " committing..."); // 3
+                            repo.repoRemoveMissingAddNew(dirSvn);
+                            repo.repoCommit(dirSvn, commitComment);
                         } catch(IOException ex) {
                             throw new InvocationTargetException(ex,
                                     "IOException while modifying project!");

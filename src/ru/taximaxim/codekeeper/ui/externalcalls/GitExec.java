@@ -18,6 +18,19 @@ public class GitExec implements IRepoWorker {
 
     private final String url, user, pass;
 
+    /**
+     * Constructs an object for simple operations, not requiring credentials
+     * and/or repository URL.
+     * 
+     * Such operations WILL THROW NPEs when performed on this object.
+     * 
+     * @param gitExec
+     */
+    public GitExec(String gitExec) {
+        this.gitExec = gitExec;
+        url = user = pass = null;
+    }
+
     public GitExec(String gitExec, PgDbProject proj) {
         this(gitExec, proj.getString(UIConsts.PROJ_PREF_REPO_URL), proj
                 .getString(UIConsts.PROJ_PREF_REPO_USER), proj
@@ -35,7 +48,8 @@ public class GitExec implements IRepoWorker {
     /**
      * Clones repository from server to local directory
      */
-    public void repoCheckOut(File dirTo) throws IOException, InvocationTargetException {
+    public void repoCheckOut(File dirTo) throws IOException,
+            InvocationTargetException {
         repoCheckOut(dirTo, null);
     }
 
@@ -44,7 +58,8 @@ public class GitExec implements IRepoWorker {
      * Clones repository from server to local directory, pulls required commit
      * 
      */
-    public void repoCheckOut(File dirTo, String commitHash) throws IOException, InvocationTargetException {
+    public void repoCheckOut(File dirTo, String commitHash) throws IOException,
+            InvocationTargetException {
         ProcessBuilder git = new ProcessBuilder(gitExec, "clone");
         if (commitHash != null && !commitHash.isEmpty()) {
             // TODO implement checking out specified commit
@@ -52,8 +67,7 @@ public class GitExec implements IRepoWorker {
         try {
             git.command().add(getRepoUrlWithAuth());
         } catch (URISyntaxException e) {
-            throw new InvocationTargetException(new IllegalStateException(
-                    "URISyntaxException: Error converting username:password@host to URI"));
+            throw new InvocationTargetException(e);
         }
         git.directory(dirTo);
         git.command().add(".");
@@ -76,11 +90,7 @@ public class GitExec implements IRepoWorker {
     public boolean hasConflicts(File dirIn) throws IOException {
         ProcessBuilder git = new ProcessBuilder(gitExec, "ls-files", "-u");
         git.directory(dirIn);
-        if (StdStreamRedirector.launchAndRedirect(git).length() > 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return StdStreamRedirector.launchAndRedirect(git).trim().length() > 0;
     }
 
     @Override
@@ -88,13 +98,17 @@ public class GitExec implements IRepoWorker {
         ProcessBuilder git = new ProcessBuilder(gitExec, "pull");
         git.directory(dirIn);
         StdStreamRedirector.launchAndRedirect(git);
-        return this.hasConflicts(dirIn);
+        return !this.hasConflicts(dirIn);
     }
 
     @Override
     public String repoGetVersion() throws IOException {
-        // TODO Auto-generated method stub
-        return null;
+        ProcessBuilder svn = new ProcessBuilder(gitExec, "version");
+        String version = StdStreamRedirector.launchAndRedirect(svn).trim();
+        if (!version.startsWith("git version")) {
+            throw new IOException("Bad git version output: " + version);
+        }
+        return version;
     }
 
     @Override
@@ -107,6 +121,11 @@ public class GitExec implements IRepoWorker {
         ProcessBuilder git = new ProcessBuilder(gitExec, "add", "-A");
         git.directory(dirIn);
         StdStreamRedirector.launchAndRedirect(git);
+    }
+
+    @Override
+    public String getRepoTypeName() {
+        return "GIT";
     }
 
     /**

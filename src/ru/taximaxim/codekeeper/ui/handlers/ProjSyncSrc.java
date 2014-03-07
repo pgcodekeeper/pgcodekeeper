@@ -57,21 +57,19 @@ public class ProjSyncSrc {
                 IRepoWorker repo;
                 if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals("SVN")) {
                     repo = new SvnExec(mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH), proj);
-                    //repoName = "SVN";
                 } else {
                     repo = new GitExec(mainPrefs.getString(UIConsts.PREF_GIT_EXE_PATH), proj);
-                    //repoName = "GIT";
                 }
                 
-                File svnDir = proj.getProjectSchemaDir();
+                File repoDir = proj.getProjectSchemaDir();
                 
                 try {
                     pm.newChild(2).subTask("Checking conflicts...");
-                    conflicted[0] = repo.hasConflicts(svnDir);
+                    conflicted[0] = repo.hasConflicts(repoDir);
                     
                     if(!conflicted[0]) {
                         pm.newChild(8).subTask("Updating cache...");
-                        conflicted[0] = !repo.repoUpdate(svnDir);
+                        conflicted[0] = !repo.repoUpdate(repoDir);
                     }
                 } catch(IOException ex) {
                     throw new InvocationTargetException(ex);
@@ -89,7 +87,7 @@ public class ProjSyncSrc {
         if(conflicted[0]) {
             MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR);
             mb.setText("Sync error!");
-            mb.setMessage("SVN cache has conflicts!"
+            mb.setMessage("Repository cache has conflicts!"
                     + " Resolve them manually and reload project before continuing.");
             mb.open();
         }

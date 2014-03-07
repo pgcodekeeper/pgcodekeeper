@@ -160,7 +160,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 class PageDiff extends WizardPage implements Listener {
     
     public enum DiffTargetType {
-        DB, DUMP, SVN, PROJ
+        DB, DUMP, SVN, GIT, PROJ
     }
     
     final private IPreferenceStore mainPrefs;
@@ -169,25 +169,26 @@ class PageDiff extends WizardPage implements Listener {
     
     private Composite container;
     
-    private Button radioDb, radioDump, radioSvn, radioProj;
+    private Button radioDb, radioDump, radioSvn, radioGit, radioProj;
     
     private Group currentTargetGrp;
     
     private DbPicker grpDb;
     
-    private Group grpDump, grpSvn, grpProj;
+    private Group grpDump, grpSvn, grpGit, grpProj;
     
     private Text
         txtDumpPath,
         txtSvnUrl, txtSvnUser, txtSvnPass, txtSvnRev,
-        txtProjPath, txtProjRev;
+        txtProjPath, txtProjRev, txtGitUrl, txtGitUser, txtGitPass ,txtGitRev;
     
-    private CLabel lblWarnSvnPass;
+    private CLabel lblWarnSvnPass, lblWarnGitPass;
     
     private Combo cmbEncoding;
     
     private LocalResourceManager lrm;
     
+    // TODO find usage, support GIT
     public DiffTargetType getTargetType() {
         if(radioDb.getSelection()) {
             return DiffTargetType.DB;
@@ -197,6 +198,9 @@ class PageDiff extends WizardPage implements Listener {
         }
         if(radioSvn.getSelection()) {
             return DiffTargetType.SVN;
+        }
+        if(radioGit.getSelection()) {
+            return DiffTargetType.GIT;
         }
         if(radioProj.getSelection()) {
             return DiffTargetType.PROJ;
@@ -282,6 +286,13 @@ class PageDiff extends WizardPage implements Listener {
                     getSvnUrl(), getSvnUser(), getSvnPass(), getSvnRev(),
                     getTargetEncoding());
             break;
+        
+        case GIT:
+            dbs = DbSource.fromGit(
+                    mainPrefs.getString(UIConsts.PREF_GIT_EXE_PATH),
+                    getSvnUrl(), getSvnUser(), getSvnPass(), getSvnRev(),
+                    getTargetEncoding());
+            break;
             
         case PROJ:
             PgDbProject fromProj = new PgDbProject(getProjPath());
@@ -329,7 +340,7 @@ class PageDiff extends WizardPage implements Listener {
         Group grpRadio = new Group(container, SWT.NONE);
         grpRadio.setText("Diff target");
         grpRadio.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        grpRadio.setLayout(new GridLayout(4, false));
+        grpRadio.setLayout(new GridLayout(5, false));
         
         SelectionListener switcher = new SelectionAdapter() {
             @Override
@@ -363,6 +374,10 @@ class PageDiff extends WizardPage implements Listener {
         radioSvn = new Button(grpRadio, SWT.RADIO);
         radioSvn.setText("SVN");
         radioSvn.addSelectionListener(switcher);
+        
+        radioGit = new Button(grpRadio, SWT.RADIO);
+        radioGit.setText("GIT");
+        radioGit.addSelectionListener(switcher);
         
         radioProj = new Button(grpRadio, SWT.RADIO);
         radioProj.setText("Project");
@@ -471,6 +486,69 @@ class PageDiff extends WizardPage implements Listener {
         txtSvnRev = new Text(grpSvn, SWT.BORDER);
         txtSvnRev.setLayoutData(new GridData());
         txtSvnRev.addListener(SWT.Modify, this);
+       
+        ///////////////////// GIT in
+        grpGit = new Group(container, SWT.NONE);
+        grpGit.setText("GIT target");
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = 12;
+        grpGit.setLayoutData(gd);
+        grpGit.setLayout(new GridLayout(2, false));
+        
+        gd.exclude = true;
+        grpGit.setVisible(false);
+        
+        new Label(grpGit, SWT.NONE).setText("Git Repo URL:");
+        
+        txtGitUrl = new Text(grpGit, SWT.BORDER);
+        txtGitUrl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtGitUrl.addListener(SWT.Modify, this);
+        
+        new Label(grpGit, SWT.NONE).setText("GIT User:");
+        
+        txtGitUser = new Text(grpGit, SWT.BORDER);
+        txtGitUser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        
+        new Label(grpGit, SWT.NONE).setText("GIT Password:");
+        
+        txtGitPass = new Text(grpGit, SWT.BORDER | SWT.PASSWORD);
+        txtGitPass.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtGitPass.addModifyListener(new ModifyListener() {
+            
+            @Override
+            public void modifyText(ModifyEvent e) {
+                GridData gd = (GridData)lblWarnGitPass.getLayoutData();
+                
+                if((txtGitPass.getText().isEmpty() && !gd.exclude)
+                        || (!txtGitPass.getText().isEmpty() && gd.exclude)) {
+                    gd.exclude = !gd.exclude;
+                    lblWarnGitPass.setVisible(!lblWarnGitPass.getVisible());
+                    
+                    getShell().pack();
+                    grpGit.layout(false);
+                }
+            }
+        });
+        
+        lblWarnGitPass = new CLabel(grpGit, SWT.NONE);
+        lblWarnGitPass.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(
+                        UIConsts.FILENAME_ICONWARNING))));
+        lblWarnGitPass.setText("Warning:\n"
+                + "Providing password here is insecure!"
+                + " This password WILL show up in logs!\n"
+                + "Consider using ssh authentification instead.");
+        gd = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
+        gd.exclude = true;
+        lblWarnGitPass.setLayoutData(gd);
+        lblWarnGitPass.setVisible(false);
+        
+        new Label(grpGit, SWT.NONE).setText("GIT commit hash:");
+        
+        txtGitRev = new Text(grpGit, SWT.BORDER);
+        txtGitRev.setLayoutData(new GridData());
+        txtGitRev.addListener(SWT.Modify, this);
+        /////////////////// GIT out
         
         grpProj = new Group(container, SWT.NONE);
         grpProj.setText("Project target");
@@ -554,6 +632,7 @@ class PageDiff extends WizardPage implements Listener {
         radioDb.setData(grpDb);
         radioDump.setData(grpDump);
         radioSvn.setData(grpSvn);
+        radioGit.setData(grpGit);
         radioProj.setData(grpProj);
         
         Group grpEncoding = new Group(container, SWT.NONE);
@@ -615,6 +694,12 @@ class PageDiff extends WizardPage implements Listener {
         case SVN:
             if(txtSvnUrl.getText().isEmpty()) {
                 errMsg = "Enter SVN Repo URL!";
+            }
+            break;
+            
+        case GIT:
+            if(txtGitUrl.getText().isEmpty()) {
+                errMsg = "Enter GIT Repo URL!";
             }
             break;
             
