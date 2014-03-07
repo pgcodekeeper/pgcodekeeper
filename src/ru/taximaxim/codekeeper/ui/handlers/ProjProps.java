@@ -1,7 +1,6 @@
  
 package ru.taximaxim.codekeeper.ui.handlers;
 
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,8 +8,8 @@ import java.util.Set;
 
 import javax.inject.Named;
 
-import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.CanExecute;
+import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.ComboFieldEditor;
@@ -35,14 +34,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
-import org.osgi.framework.Bundle;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePickerDialog;
-import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
-import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.FakePrefPageExtension;
 import ru.taximaxim.codekeeper.ui.prefs.PrefDialogFactory;

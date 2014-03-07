@@ -42,6 +42,7 @@ import org.eclipse.swt.widgets.Text;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
+import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
 
 public class NewProjWizard extends Wizard implements IPageChangingListener {
 
@@ -166,7 +167,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
 class PageRepo extends WizardPage implements Listener {
 
     private Composite container;
-    private  Group grpRepo;
+    private Group grpRepo;
     private String repoTypeName;
     private Text txtRepoUrl, txtRepoUser, txtRepoPass, txtProjectPath;
     private Label lblRepoUrl, lblRepoUser, lblRepoPass, lblProjectDir;
@@ -181,10 +182,10 @@ class PageRepo extends WizardPage implements Listener {
 
     private LocalResourceManager lrm;
 
-    public String getRepoType(){
+    public String getRepoType() {
         return repoTypeName;
     }
-    
+
     public String getRepoUrl() {
         return txtRepoUrl.getText();
     }
@@ -214,7 +215,8 @@ class PageRepo extends WizardPage implements Listener {
         lblRepoUser.setText(repoTypeName + " User:");
         lblRepoPass.setText(repoTypeName + " Password:");
         grpRepo.setText(repoTypeName + " Settings");
-        lblProjectDir.setText("Project Directory (settings storage, "+repoTypeName+" cache, etc):");
+        lblProjectDir.setText("Project Directory (settings storage, "
+                + repoTypeName + " cache, etc):");
     }
 
     @Override
@@ -259,7 +261,7 @@ class PageRepo extends WizardPage implements Listener {
             @Override
             public void modifyText(ModifyEvent e) {
                 GridData gd = (GridData) lblWarnPass.getLayoutData();
-
+                System.out.println("DEBUG   password field fired");
                 if ((txtRepoPass.getText().isEmpty() && !gd.exclude)
                         || (!txtRepoPass.getText().isEmpty() && gd.exclude)) {
                     gd.exclude = !gd.exclude;
@@ -267,6 +269,38 @@ class PageRepo extends WizardPage implements Listener {
 
                     getShell().pack();
                     container.layout(false);
+                }
+                if (!txtRepoPass.isEnabled()) {
+                    lblWarnPass.setVisible(false);
+                    gd.exclude = true;
+                    getShell().pack();
+                    container.layout(false);
+                }
+            }
+        });
+
+        txtRepoUrl.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                if (txtRepoUrl.getText().isEmpty()) {
+                    txtRepoUser.setEnabled(true);
+                    txtRepoPass.setEnabled(true);
+                    txtRepoPass.notifyListeners(SWT.Modify, new Event());
+                } else if (GitExec.PATTERN_SSH_URL
+                        .matcher(txtRepoUrl.getText()).matches()) {
+                    txtRepoUser.setEnabled(false);
+                    txtRepoPass.setEnabled(false);
+                    txtRepoPass.notifyListeners(SWT.Modify, new Event());
+                } else if (GitExec.PATTERN_HTTP_URL.matcher(
+                        txtRepoUrl.getText()).matches()) {
+                    txtRepoUser.setEnabled(true);
+                    txtRepoPass.setEnabled(true);
+                    txtRepoPass.notifyListeners(SWT.Modify, new Event());
+                } else {
+                    txtRepoUser.setEnabled(true);
+                    txtRepoPass.setEnabled(true);
+                    txtRepoPass.notifyListeners(SWT.Modify, new Event());
                 }
             }
         });
@@ -317,7 +351,8 @@ class PageRepo extends WizardPage implements Listener {
         lblWarnInit.setVisible(false);
 
         lblProjectDir = new Label(container, SWT.NONE);
-        lblProjectDir.setText("Project Directory (settings storage, SVN cache, etc):");
+        lblProjectDir
+                .setText("Project Directory (settings storage, SVN cache, etc):");
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
@@ -339,7 +374,7 @@ class PageRepo extends WizardPage implements Listener {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 repoTypeName = "SVN";
-                redrawLabels ();
+                redrawLabels();
             }
 
             @Override
@@ -347,13 +382,13 @@ class PageRepo extends WizardPage implements Listener {
 
             }
         });
-        btnSvn.notifyListeners(SWT.Selection, new Event() );
+        btnSvn.notifyListeners(SWT.Selection, new Event());
         btnGit.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 repoTypeName = "GIT";
-                redrawLabels ();
+                redrawLabels();
             }
 
             @Override

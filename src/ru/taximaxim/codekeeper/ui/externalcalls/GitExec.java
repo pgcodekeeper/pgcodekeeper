@@ -7,7 +7,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.text.ParseException;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
@@ -15,7 +17,12 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class GitExec implements IRepoWorker {
     private final String gitExec;
+    public static final Pattern PATTERN_SSH_URL = Pattern.compile(
+            "[a-zA-Z][\\w\\._-]+@[\\w\\.-]+[:]{1}[\\w\\._-]+[//]{1}[\\w\\._-]+");
+    public static final Pattern PATTERN_HTTP_URL = Pattern.compile(
+            "http://[\\w._/-]+");
 
+    
     private final String url, user, pass;
 
     /**
@@ -58,17 +65,22 @@ public class GitExec implements IRepoWorker {
      * Clones repository from server to local directory, pulls required commit
      * 
      */
-    public void repoCheckOut(File dirTo, String commitHash) throws IOException,
-            InvocationTargetException {
+    public void repoCheckOut(File dirTo, String commitHash) throws IOException {
         ProcessBuilder git = new ProcessBuilder(gitExec, "clone");
         if (commitHash != null && !commitHash.isEmpty()) {
             // TODO implement checking out specified commit
         }
-        try {
-            git.command().add(getRepoUrlWithAuth());
-        } catch (URISyntaxException e) {
-            throw new InvocationTargetException(e);
+
+        if (PATTERN_SSH_URL.matcher(url).matches()){
+            git.command().add(url);
+        }else if (PATTERN_HTTP_URL.matcher(url).matches()){
+            try {
+                git.command().add(getRepoUrlWithAuth());
+            } catch (URISyntaxException e) {
+                throw new IllegalStateException(e);
+            }
         }
+        
         git.directory(dirTo);
         git.command().add(".");
         StdStreamRedirector.launchAndRedirect(git);

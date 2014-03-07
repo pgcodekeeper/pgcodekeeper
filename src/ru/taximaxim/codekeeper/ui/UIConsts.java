@@ -33,6 +33,8 @@ public interface UIConsts {
 	String PROJ_SOURCE_TYPE_NONE = "none";
 	String PROJ_SOURCE_TYPE_DB = "db";
 	String PROJ_SOURCE_TYPE_DUMP = "dump";
+	String PROJ_REPO_TYPE_SVN = "SVN";
+	String PROJ_REPO_TYPE_GIT = "GIT";
 	
 	String PROJ_PREF_DB_NAME = "prefDbName";
 	String PROJ_PREF_DB_HOST = "prefDbHost";
