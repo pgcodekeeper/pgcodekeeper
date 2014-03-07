@@ -57,7 +57,7 @@
 
                 <artifact>
 
-                  <file>app.target</file>
+                  <file>../app.target</file>
 
                   <type>target</type>
 
