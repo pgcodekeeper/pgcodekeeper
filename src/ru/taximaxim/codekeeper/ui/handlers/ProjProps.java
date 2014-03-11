@@ -51,12 +51,7 @@ public class ProjProps {
 			@Named(IServiceConstants.ACTIVE_SHELL)
 			Shell shell,
 			PgDbProject proj) {
-        String repoTypeName;
-	    if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals("SVN")) {
-            repoTypeName = "SVN";
-        } else {
-            repoTypeName = "GIT";
-        }
+        String repoTypeName = proj.getString(UIConsts.PROJ_PREF_REPO_TYPE);
 	    FakePrefPageExtension[] propPages = {
                 new FakePrefPageExtension("projprefs.0.pagerepo", repoTypeName + " Settings",
                         new RepoSettingsPage(proj), null),
@@ -235,14 +230,14 @@ class RepoSettingsPage extends FieldEditorPreferencePage {
 	            getFieldEditorParent());
 	    String repoTypeName;
 	    String warningMessage;
-	    if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals("SVN")){
-	        repoTypeName = "SVN";
+	    if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals(UIConsts.PROJ_REPO_TYPE_SVN_NAME)){
+	        repoTypeName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
 	        warningMessage = "Warning:\n"
                 + "Providing password here is insecure!\n"
                 + "This password WILL show up in logs!\n"
                 + "Consider using SVN password store instead.";	    }
 	    else {
-	        repoTypeName = "GIT";
+	        repoTypeName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
 	        warningMessage = "Warning:\n"
                 + "Providing password here is insecure!\n"
                 + "This password WILL show up in logs!\n"

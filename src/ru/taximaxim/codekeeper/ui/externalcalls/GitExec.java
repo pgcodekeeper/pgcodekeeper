@@ -67,9 +67,6 @@ public class GitExec implements IRepoWorker {
      */
     public void repoCheckOut(File dirTo, String commitHash) throws IOException {
         ProcessBuilder git = new ProcessBuilder(gitExec, "clone");
-        if (commitHash != null && !commitHash.isEmpty()) {
-            // TODO implement checking out specified commit
-        }
 
         if (PATTERN_SSH_URL.matcher(url).matches()){
             git.command().add(url);
@@ -80,11 +77,15 @@ public class GitExec implements IRepoWorker {
                 throw new IllegalStateException(e);
             }
         }
-        
         git.directory(dirTo);
         git.command().add(".");
         StdStreamRedirector.launchAndRedirect(git);
         setGitSupportNonAnsii(dirTo);
+        if (commitHash != null && !commitHash.isEmpty()) {
+            git = new ProcessBuilder(gitExec, "checkout", commitHash, ".");
+            git.directory(dirTo);
+            StdStreamRedirector.launchAndRedirect(git);
+        }
     }
 
     @Override
@@ -120,7 +121,7 @@ public class GitExec implements IRepoWorker {
         if (!version.startsWith("git version")) {
             throw new IOException("Bad git version output: " + version);
         }
-        return version;
+        return version.replaceAll("git version ", "");
     }
 
     @Override
@@ -133,11 +134,6 @@ public class GitExec implements IRepoWorker {
         ProcessBuilder git = new ProcessBuilder(gitExec, "add", "-A");
         git.directory(dirIn);
         StdStreamRedirector.launchAndRedirect(git);
-    }
-
-    @Override
-    public String getRepoTypeName() {
-        return "GIT";
     }
 
     /**

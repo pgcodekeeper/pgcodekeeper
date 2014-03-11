@@ -217,6 +217,23 @@ class PageRepo extends WizardPage implements Listener {
         grpRepo.setText(repoTypeName + " Settings");
         lblProjectDir.setText("Project Directory (settings storage, "
                 + repoTypeName + " cache, etc):");
+        lblWarnInit.setText("Warning:\n" + "This will delete " + repoTypeName
+                + " contents and recreate them from Schema Source"
+                + " (next page).");
+        switch (repoTypeName) {
+        case UIConsts.PROJ_REPO_TYPE_SVN_NAME:
+            lblWarnPass.setText("Warning:\n"
+                    + "Providing password here is insecure!"
+                    + " This password WILL show up in logs!\n"
+                    + "Consider using SVN password store instead.");
+            break;
+        case UIConsts.PROJ_REPO_TYPE_GIT_NAME:
+            lblWarnPass
+                    .setText("Warning:\n"
+                            + "Providing password here is insecure!"
+                            + " This password WILL show up in logs!\n"
+                            + "Consider using ssh authentification instead (use git@host as repo url).");
+        }
     }
 
     @Override
@@ -224,13 +241,14 @@ class PageRepo extends WizardPage implements Listener {
         this.lrm = new LocalResourceManager(JFaceResources.getResources(),
                 parent);
 
+        repoTypeName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
         container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(2, false));
         btnSvn = new Button(container, SWT.RADIO);
-        btnSvn.setText("SVN");
+        btnSvn.setText(UIConsts.PROJ_REPO_TYPE_SVN_NAME);
         btnSvn.setSelection(true);
         btnGit = new Button(container, SWT.RADIO);
-        btnGit.setText("GIT");
+        btnGit.setText(UIConsts.PROJ_REPO_TYPE_GIT_NAME);
 
         grpRepo = new Group(container, SWT.NONE);
         grpRepo.setText(repoTypeName + " Settings");
@@ -261,7 +279,6 @@ class PageRepo extends WizardPage implements Listener {
             @Override
             public void modifyText(ModifyEvent e) {
                 GridData gd = (GridData) lblWarnPass.getLayoutData();
-                System.out.println("DEBUG   password field fired");
                 if ((txtRepoPass.getText().isEmpty() && !gd.exclude)
                         || (!txtRepoPass.getText().isEmpty() && gd.exclude)) {
                     gd.exclude = !gd.exclude;
@@ -284,6 +301,10 @@ class PageRepo extends WizardPage implements Listener {
             @Override
             public void modifyText(ModifyEvent e) {
                 if (txtRepoUrl.getText().isEmpty()) {
+                    txtRepoUser.setEnabled(true);
+                    txtRepoPass.setEnabled(true);
+                    txtRepoPass.notifyListeners(SWT.Modify, new Event());
+                } else if (btnSvn.getSelection()) {
                     txtRepoUser.setEnabled(true);
                     txtRepoPass.setEnabled(true);
                     txtRepoPass.notifyListeners(SWT.Modify, new Event());
@@ -351,8 +372,8 @@ class PageRepo extends WizardPage implements Listener {
         lblWarnInit.setVisible(false);
 
         lblProjectDir = new Label(container, SWT.NONE);
-        lblProjectDir
-                .setText("Project Directory (settings storage, SVN cache, etc):");
+        lblProjectDir.setText("Project Directory (settings storage, "
+                + repoTypeName + " cache, etc):");
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
@@ -373,7 +394,8 @@ class PageRepo extends WizardPage implements Listener {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                repoTypeName = "SVN";
+                repoTypeName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
+                txtRepoUrl.notifyListeners(SWT.Modify, new Event());
                 redrawLabels();
             }
 
@@ -382,12 +404,12 @@ class PageRepo extends WizardPage implements Listener {
 
             }
         });
-        btnSvn.notifyListeners(SWT.Selection, new Event());
         btnGit.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                repoTypeName = "GIT";
+                repoTypeName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
+                txtRepoUrl.notifyListeners(SWT.Modify, new Event());
                 redrawLabels();
             }
 
@@ -410,7 +432,7 @@ class PageRepo extends WizardPage implements Listener {
                 }
             }
         });
-
+        // btnSvn.notifyListeners(SWT.Selection, new Event());
         setControl(container);
     }
 

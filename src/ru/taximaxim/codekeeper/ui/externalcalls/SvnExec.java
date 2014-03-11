@@ -239,9 +239,4 @@ public class SvnExec implements IRepoWorker {
         repoRemoveMissing(dirIn);
         repoAddAll(dirIn);
     }
-
-    @Override
-    public String getRepoTypeName() {
-        return "SVN";
-    }
 }

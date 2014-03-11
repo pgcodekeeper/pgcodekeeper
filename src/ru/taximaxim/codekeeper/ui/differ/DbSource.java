@@ -64,7 +64,7 @@ public abstract class DbSource {
 
     public static DbSource fromSvn(String svnExec, String url, String user,
             String pass, String rev, String encoding) {
-        return new DbSourceRepo("SVN", svnExec, url, user, pass, rev, encoding);
+        return new DbSourceRepo(UIConsts.PROJ_REPO_TYPE_SVN_NAME, svnExec, url, user, pass, rev, encoding);
     }
 
     public static DbSource fromGit(String gitExec, PgDbProject proj) {
@@ -78,7 +78,7 @@ public abstract class DbSource {
 
     public static DbSource fromGit(String gitExec, String url, String user,
             String pass, String commitHash, String encoding) {
-        return new DbSourceRepo("GIT", gitExec, url, user, pass, commitHash,
+        return new DbSourceRepo(UIConsts.PROJ_REPO_TYPE_GIT_NAME, gitExec, url, user, pass, commitHash,
                 encoding);
     }
 
@@ -152,10 +152,10 @@ class DbSourceRepo extends DbSource {
             String pass, String rev, String encoding) {
         super(url + (rev.isEmpty() ? "" : "@" + rev));
         switch (repoType) {
-        case "SVN":
+        case UIConsts.PROJ_REPO_TYPE_SVN_NAME:
             repo = new SvnExec(repoExec, url, user, pass);
             break;
-        case "GIT":
+        case UIConsts.PROJ_REPO_TYPE_GIT_NAME:
             repo = new GitExec(repoExec, url, user, pass);
             break;
         default:
@@ -174,7 +174,7 @@ class DbSourceRepo extends DbSource {
         try (TempDir tmpDir = new TempDir("tmp_repo_")) {
             File dir = tmpDir.get();
 
-            pm.newChild(1).subTask(repo.getRepoTypeName() + " rev checkout...");
+            pm.newChild(1).subTask("Repository rev checkout...");
             repo.repoCheckOut(dir, rev);
 
             pm.newChild(1).subTask("Loading tree...");

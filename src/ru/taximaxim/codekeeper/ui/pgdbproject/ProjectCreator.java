@@ -50,12 +50,16 @@ public class ProjectCreator implements IRunnableWithProgress {
                     workToDo); // 0
 
             IRepoWorker repo;
-            if (props.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals("SVN")) {
+            if (props.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals(
+                    UIConsts.PROJ_REPO_TYPE_SVN_NAME)) {
                 repo = new SvnExec(exeSvn, props);
-                repoName = "SVN";
-            } else {
+                repoName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
+            } else if (props.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals(
+                    UIConsts.PROJ_REPO_TYPE_GIT_NAME)) {
                 repo = new GitExec(exeGit, props);
-                repoName = "GIT";
+                repoName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
+            } else {
+                throw new IllegalStateException("Not a SVN/GIT enabled project");
             }
 
             pm.newChild(doInit ? 25 : workToDo).subTask(

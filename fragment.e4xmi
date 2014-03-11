@@ -28,7 +28,7 @@
       </children>
       <children xsi:type="menu:Menu" xmi:id="_wKDhsDsjEeOHuJV2eZ06pg" elementId="ru.taximaxim.codekeeper.ui.menu.3" label="&amp;Project">
         <children xsi:type="menu:HandledMenuItem" xmi:id="_jrWBIDyKEeOnONY5mbpMNQ" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.10" label="&amp;Diff..." command="_ncHkEDyKEeOnONY5mbpMNQ"/>
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_9Ef-4DsjEeOHuJV2eZ06pg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.8" label="&amp;Sync SVN Cache" command="_HhqhUDskEeOHuJV2eZ06pg"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_9Ef-4DsjEeOHuJV2eZ06pg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.8" label="&amp;Sync repository Cache" command="_HhqhUDskEeOHuJV2eZ06pg"/>
         <children xsi:type="menu:MenuSeparator" xmi:id="_I52YsD1HEeO0G8IS_Wbu9A" elementId="ru.taximaxim.codekeeper.ui.menuseparator.1"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_nbtWkDooEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.6" label="&amp;Properties" command="_8p39cDooEeOo66lUbQncjg"/>
       </children>
@@ -48,7 +48,7 @@
         <children xsi:type="menu:HandledToolItem" xmi:id="_rEakADf2EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.1" label="" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/opentype.gif" tooltip="Load Project..." command="_o6NrIDYmEeOu39tpQ1Oozg"/>
         <children xsi:type="menu:ToolBarSeparator" xmi:id="_sHZD8Df2EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.toolbarseparator.0"/>
         <children xsi:type="menu:HandledToolItem" xmi:id="_WCptkFvpEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.2" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/compare_view.gif" tooltip="Diff..." command="_ncHkEDyKEeOnONY5mbpMNQ"/>
-        <children xsi:type="menu:HandledToolItem" xmi:id="_tY3JkFvqEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.3" label="" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/synch_toc_nav.gif" tooltip="Sync SVN Cache" command="_HhqhUDskEeOHuJV2eZ06pg"/>
+        <children xsi:type="menu:HandledToolItem" xmi:id="_tY3JkFvqEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.3" label="" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/synch_toc_nav.gif" tooltip="Sync repository Cache" command="_HhqhUDskEeOHuJV2eZ06pg"/>
         <children xsi:type="menu:HandledToolItem" xmi:id="_y-JXEFvqEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.4" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/properties.gif" tooltip="Project Properties" command="_8p39cDooEeOo66lUbQncjg"/>
         <children xsi:type="menu:ToolBarSeparator" xmi:id="_6-X9AFvqEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.toolbarseparator.1"/>
         <children xsi:type="menu:HandledToolItem" xmi:id="_7TBXUFvqEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.5" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/sprocket_dark_gear.png" tooltip="Preferences" command="_Xdq-gCpvEeOWDPrJZCzSgA"/>
@@ -89,7 +89,7 @@
             <children xsi:type="basic:Part" xmi:id="_qyoa4GfiEeOWppTx9KJCTg" elementId="ru.taximaxim.codekeeper.ui.part.ProjectExplorer" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.ProjectExplorer" label="{project explorer title}" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/tree_explorer.gif">
               <menus xsi:type="menu:PopupMenu" xmi:id="_TZPmcDorEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.popupmenu.project" label="Project">
                 <children xsi:type="menu:HandledMenuItem" xmi:id="_NaVWADyyEeOnONY5mbpMNQ" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.11" label="&amp;Diff..." command="_ncHkEDyKEeOnONY5mbpMNQ"/>
-                <children xsi:type="menu:HandledMenuItem" xmi:id="_3iR88DumEeOhEMin4A9R4g" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.9" label="&amp;Sync SVN Cache" command="_HhqhUDskEeOHuJV2eZ06pg"/>
+                <children xsi:type="menu:HandledMenuItem" xmi:id="_3iR88DumEeOhEMin4A9R4g" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.9" label="&amp;Sync repository Cache" command="_HhqhUDskEeOHuJV2eZ06pg"/>
                 <children xsi:type="menu:MenuSeparator" xmi:id="_EtRDgD1HEeO0G8IS_Wbu9A" elementId="ru.taximaxim.codekeeper.ui.menuseparator.0"/>
                 <children xsi:type="menu:HandledMenuItem" xmi:id="_u4_qsDosEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.7" label="&amp;Project Properties" command="_8p39cDooEeOo66lUbQncjg"/>
               </menus>

@@ -53,13 +53,14 @@ public class ProjSyncSrc {
             @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException,
                     InterruptedException {
-                System.out.println("DEBUG Entered ProjSyncSrc");
-                SubMonitor pm = SubMonitor.convert(monitor, "Syncing SVN cache", 10);
+                SubMonitor pm = SubMonitor.convert(monitor, "Syncing repository cache", 10);
                 IRepoWorker repo;
-                if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals("SVN")) {
+                if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals(UIConsts.PROJ_REPO_TYPE_SVN_NAME)) {
                     repo = new SvnExec(mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH), proj);
-                } else {
+                } else if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals(UIConsts.PROJ_REPO_TYPE_GIT_NAME)){
                     repo = new GitExec(mainPrefs.getString(UIConsts.PREF_GIT_EXE_PATH), proj);
+                } else {
+                    throw new IllegalStateException("Not a SVN/GIT enabled project");
                 }
                 
                 File repoDir = proj.getProjectSchemaDir();
