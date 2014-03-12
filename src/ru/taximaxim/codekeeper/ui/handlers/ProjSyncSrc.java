@@ -51,8 +51,7 @@ public class ProjSyncSrc {
         final boolean[] conflicted = { false };
         IRunnableWithProgress syncRunnable = new IRunnableWithProgress() {
             @Override
-            public void run(IProgressMonitor monitor) throws InvocationTargetException,
-                    InterruptedException {
+            public void run(IProgressMonitor monitor) throws InterruptedException {
                 SubMonitor pm = SubMonitor.convert(monitor, "Syncing repository cache", 10);
                 IRepoWorker repo;
                 if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals(UIConsts.PROJ_REPO_TYPE_SVN_NAME)) {
@@ -74,7 +73,7 @@ public class ProjSyncSrc {
                         conflicted[0] = !repo.repoUpdate(repoDir);
                     }
                 } catch(IOException ex) {
-                    throw new InvocationTargetException(ex);
+                    throw new IllegalStateException(ex);
                 }
                 monitor.done();
             }

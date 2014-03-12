@@ -308,8 +308,10 @@ class PageRepo extends WizardPage implements Listener {
                     txtRepoUser.setEnabled(true);
                     txtRepoPass.setEnabled(true);
                     txtRepoPass.notifyListeners(SWT.Modify, new Event());
-                } else if (GitExec.PATTERN_SSH_URL
-                        .matcher(txtRepoUrl.getText()).matches()) {
+                } else if (GitExec.PATTERN_SHORT_SSH_URL.matcher(
+                        txtRepoUrl.getText()).matches()
+                        || GitExec.PATTERN_SSH_URL
+                                .matcher(txtRepoUrl.getText()).matches()) {
                     txtRepoUser.setEnabled(false);
                     txtRepoPass.setEnabled(false);
                     txtRepoPass.notifyListeners(SWT.Modify, new Event());

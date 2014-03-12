@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -47,7 +46,7 @@ public class TreeDiffer implements IRunnableWithProgress {
     }
     
     @Override
-    public void run(IProgressMonitor monitor) throws InvocationTargetException {
+    public void run(IProgressMonitor monitor) {
         SubMonitor pm = SubMonitor.convert(monitor, "Calculating diff", 100); // 0
         
         PgDatabase dbSource, dbTarget;
@@ -56,7 +55,7 @@ public class TreeDiffer implements IRunnableWithProgress {
             dbSource = this.dbSource.get(pm.newChild(33)); // 33
             dbTarget = this.dbTarget.get(pm.newChild(33)); // 66
         } catch(IOException ex) {
-            throw new InvocationTargetException(ex);
+            throw new IllegalStateException(ex);
         }
         
         pm.newChild(34).subTask("Building diff tree..."); // 100

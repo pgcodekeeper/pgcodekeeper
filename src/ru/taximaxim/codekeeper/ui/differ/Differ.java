@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.differ;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -45,7 +44,7 @@ public class Differ implements IRunnableWithProgress {
     }
     
     @Override
-    public void run(IProgressMonitor monitor) throws InvocationTargetException {
+    public void run(IProgressMonitor monitor) {
         SubMonitor pm = SubMonitor.convert(monitor, "Calculating diff", 100); // 0
         
         PgDatabase dbSource, dbTarget;
@@ -54,7 +53,7 @@ public class Differ implements IRunnableWithProgress {
             dbSource = this.dbSource.get(pm.newChild(25)); // 25
             dbTarget = this.dbTarget.get(pm.newChild(25)); // 50
         } catch(IOException ex) {
-            throw new InvocationTargetException(ex);
+            throw new IllegalStateException(ex);
         }
         
         pm.newChild(25).subTask("Direct diff..."); // 75

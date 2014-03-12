@@ -42,7 +42,6 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
@@ -62,6 +61,7 @@ import ru.taximaxim.codekeeper.ui.handlers.CloseActiveProj;
 import ru.taximaxim.codekeeper.ui.handlers.LoadProj;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class CommitPartDescr {
 

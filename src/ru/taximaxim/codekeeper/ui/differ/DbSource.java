@@ -2,8 +2,6 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
@@ -38,7 +36,7 @@ public abstract class DbSource {
         return dbObject;
     }
 
-    public PgDatabase get(SubMonitor monitor) throws IOException, InvocationTargetException {
+    public PgDatabase get(SubMonitor monitor) throws IOException {
         dbObject = this.loadInternal(monitor);
         return dbObject;
     }
@@ -48,7 +46,7 @@ public abstract class DbSource {
     }
 
     protected abstract PgDatabase loadInternal(SubMonitor monitor)
-            throws IOException, InvocationTargetException;
+            throws IOException;
 
     public static DbSource fromDirTree(String dirTreePath, String encoding) {
         return new DbSourceDirTree(dirTreePath, encoding);
@@ -168,7 +166,7 @@ class DbSourceRepo extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException, InvocationTargetException {
+    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
         SubMonitor pm = SubMonitor.convert(monitor, 2);
 
         try (TempDir tmpDir = new TempDir("tmp_repo_")) {
@@ -293,7 +291,7 @@ class DbSourceFilter extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException, InvocationTargetException {
+    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
         PgDatabase db;
         try {
             db = src.getDbObject();

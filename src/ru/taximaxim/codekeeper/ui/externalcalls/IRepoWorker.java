@@ -2,10 +2,6 @@ package ru.taximaxim.codekeeper.ui.externalcalls;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public interface IRepoWorker {
 
@@ -13,14 +9,12 @@ public interface IRepoWorker {
      * Check out last version of the repository
      * 
      */
-    public void repoCheckOut(File dirTo) throws IOException,
-            InvocationTargetException;
+    public void repoCheckOut(File dirTo) throws IOException;
 
     /**
      * Check out specified version of the repository
      */
-    public void repoCheckOut(File dirTo, String rev) throws IOException,
-            InvocationTargetException;
+    public void repoCheckOut(File dirTo, String rev) throws IOException;
 
     /**
      * Commit (and push) changes to repository

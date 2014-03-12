@@ -3,12 +3,9 @@ package ru.taximaxim.codekeeper.ui.externalcalls;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.text.ParseException;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -17,12 +14,11 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class GitExec implements IRepoWorker {
     private final String gitExec;
-    public static final Pattern PATTERN_SSH_URL = Pattern.compile(
-            "[a-zA-Z][\\w\\._-]+@[\\w\\.-]+[:]{1}[\\w\\._-]+[//]{1}[\\w\\._-]+");
-    public static final Pattern PATTERN_HTTP_URL = Pattern.compile(
-            "http://[\\w._/-]+");
+    public static final Pattern PATTERN_SHORT_SSH_URL = Pattern
+            .compile("[\\w\\._-]+@[\\w\\.-]+:[\\w\\._-]+/[\\w\\._-]+");
+    public static final Pattern PATTERN_SSH_URL = Pattern.compile("ssh://.+");
+    public static final Pattern PATTERN_HTTP_URL = Pattern.compile("http://.+");
 
-    
     private final String url, user, pass;
 
     /**
@@ -55,8 +51,7 @@ public class GitExec implements IRepoWorker {
     /**
      * Clones repository from server to local directory
      */
-    public void repoCheckOut(File dirTo) throws IOException,
-            InvocationTargetException {
+    public void repoCheckOut(File dirTo) throws IOException {
         repoCheckOut(dirTo, null);
     }
 
@@ -68,9 +63,9 @@ public class GitExec implements IRepoWorker {
     public void repoCheckOut(File dirTo, String commitHash) throws IOException {
         ProcessBuilder git = new ProcessBuilder(gitExec, "clone");
 
-        if (PATTERN_SSH_URL.matcher(url).matches()){
+        if (PATTERN_SHORT_SSH_URL.matcher(url).matches() || PATTERN_SSH_URL.matcher(url).matches()) {
             git.command().add(url);
-        }else if (PATTERN_HTTP_URL.matcher(url).matches()){
+        } else if (PATTERN_HTTP_URL.matcher(url).matches()) {
             try {
                 git.command().add(getRepoUrlWithAuth());
             } catch (URISyntaxException e) {

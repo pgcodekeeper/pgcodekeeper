@@ -194,7 +194,6 @@ class PageDiff extends WizardPage implements Listener {
 
     private LocalResourceManager lrm;
 
-    // TODO find usage, support GIT
     public DiffTargetType getTargetType() {
         if (radioDb.getSelection()) {
             return DiffTargetType.DB;
@@ -337,8 +336,8 @@ class PageDiff extends WizardPage implements Listener {
                             fromProj.getString(UIConsts.PROJ_PREF_REPO_PASS),
                             getProjRev(),
                             fromProj.getString(UIConsts.PROJ_PREF_ENCODING));
-                }else if (fromProj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals(
-                        UIConsts.PROJ_REPO_TYPE_GIT_NAME)){
+                } else if (fromProj.getString(UIConsts.PROJ_PREF_REPO_TYPE)
+                        .equals(UIConsts.PROJ_REPO_TYPE_GIT_NAME)) {
                     dbs = DbSource.fromGit(
                             mainPrefs.getString(UIConsts.PREF_GIT_EXE_PATH),
                             fromProj.getString(UIConsts.PROJ_PREF_REPO_URL),
@@ -346,8 +345,9 @@ class PageDiff extends WizardPage implements Listener {
                             fromProj.getString(UIConsts.PROJ_PREF_REPO_PASS),
                             getProjRev(),
                             fromProj.getString(UIConsts.PROJ_PREF_ENCODING));
-                }else {
-                    throw new IllegalStateException("Not a SVN/GIT enabled project");
+                } else {
+                    throw new IllegalStateException(
+                            "Not a SVN/GIT enabled project");
                 }
             }
             break;
@@ -549,17 +549,19 @@ class PageDiff extends WizardPage implements Listener {
                     txtGitUser.setEnabled(true);
                     txtGitPass.setEnabled(true);
                     txtGitPass.notifyListeners(SWT.Modify, new Event());
-                } else if (GitExec.PATTERN_SSH_URL
-                        .matcher(txtGitUrl.getText()).matches()) {
+                } else if (GitExec.PATTERN_SHORT_SSH_URL.matcher(
+                        txtGitUrl.getText()).matches()
+                        || GitExec.PATTERN_SHORT_SSH_URL.matcher(
+                                txtGitUrl.getText()).matches()) {
                     txtGitUser.setEnabled(false);
                     txtGitPass.setEnabled(false);
                     txtGitPass.notifyListeners(SWT.Modify, new Event());
-                } else if (GitExec.PATTERN_HTTP_URL.matcher(
-                        txtGitUrl.getText()).matches()) {
+                } else if (GitExec.PATTERN_HTTP_URL
+                        .matcher(txtGitUrl.getText()).matches()) {
                     txtGitUser.setEnabled(true);
                     txtGitPass.setEnabled(true);
                     txtGitPass.notifyListeners(SWT.Modify, new Event());
-                }else{
+                } else {
                     txtGitUser.setEnabled(true);
                     txtGitPass.setEnabled(true);
                     txtGitPass.notifyListeners(SWT.Modify, new Event());
