@@ -47,31 +47,31 @@ public class PgDumper {
         port = 0;
     }
     
-	public void pgDump() throws IOException {
-		ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
-				"--file=" + dumpFile,
-				"--schema-only",
-				"--no-password");
-		
-		ProcBuilderUtils env = new ProcBuilderUtils(pgdump);
-		env.addEnv("PGHOST", host);
+    public void pgDump() throws IOException {
+        ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
+                "--file=" + dumpFile,
+                "--schema-only",
+                "--no-password");
+        
+        ProcBuilderUtils env = new ProcBuilderUtils(pgdump);
+        env.addEnv("PGHOST", host);
         env.addEnv("PGPORT", port);
         env.addEnv("PGDATABASE", dbname);
         env.addEnv("PGUSER", user);
         env.addEnv("PGPASSWORD", pass);
         env.addEnv("PGCLIENTENCODING", encoding);
-		
-		StdStreamRedirector.launchAndRedirect(pgdump);
-	}
-	
-	public String getVersion() throws IOException {
-	    ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
-	            "--version", "--no-password");
-	    String version = StdStreamRedirector.launchAndRedirect(pgdump).trim();
-	    Matcher m = PATTERN_VERSION.matcher(version);
-	    if(!m.matches()) {
-	        throw new IOException("Bad pg_dump --version output: " + version);
-	    }
-	    return m.group(1);
-	}
+        
+        StdStreamRedirector.launchAndRedirect(pgdump);
+    }
+    
+    public String getVersion() throws IOException {
+        ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
+                "--version", "--no-password");
+        String version = StdStreamRedirector.launchAndRedirect(pgdump).trim();
+        Matcher m = PATTERN_VERSION.matcher(version);
+        if(!m.matches()) {
+            throw new IOException("Bad pg_dump --version output: " + version);
+        }
+        return m.group(1);
+    }
 }

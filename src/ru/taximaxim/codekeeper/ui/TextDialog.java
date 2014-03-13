@@ -10,22 +10,22 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 public class TextDialog extends MessageDialog {
-	
-	final private String text;
-	
-	final int type;
-	
-	public TextDialog(Shell parentShell, int type, String title, String message,
-	        String text, String[] buttonLabels, int defaultButton) {
-	    super(parentShell, title, null, message, type, buttonLabels, defaultButton);
-		
-		this.text = text;
-		this.type = type;
-	}
-	
-	@Override
-	protected Control createCustomArea(Composite parent) {
-	    Text txt = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
+    
+    final private String text;
+    
+    final int type;
+    
+    public TextDialog(Shell parentShell, int type, String title, String message,
+            String text, String[] buttonLabels, int defaultButton) {
+        super(parentShell, title, null, message, type, buttonLabels, defaultButton);
+        
+        this.text = text;
+        this.type = type;
+    }
+    
+    @Override
+    protected Control createCustomArea(Composite parent) {
+        Text txt = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
                 | SWT.READ_ONLY | SWT.MULTI);
         txt.setText(text);
         
@@ -38,5 +38,5 @@ public class TextDialog extends MessageDialog {
         txt.setLayoutData(gd);
         
         return txt;
-	}
+    }
 }

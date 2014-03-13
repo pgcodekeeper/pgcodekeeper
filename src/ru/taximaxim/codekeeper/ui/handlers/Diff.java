@@ -19,9 +19,9 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class Diff {
 
-	@Execute
-	private void execute(
-	        PgDbProject proj,
+    @Execute
+    private void execute(
+            PgDbProject proj,
             @Named(IServiceConstants.ACTIVE_SHELL)
             Shell shell,
             @Named(UIConsts.PREF_STORE)
@@ -31,10 +31,10 @@ public class Diff {
                     shell, new DiffWizard(proj, prefStore));
             dialog.open();
         }
-	}
-	
-	@CanExecute
-	private boolean canExecute(PgDbProject proj) {
-	    return proj != null;
-	}
+    }
+    
+    @CanExecute
+    private boolean canExecute(PgDbProject proj) {
+        return proj != null;
+    }
 }

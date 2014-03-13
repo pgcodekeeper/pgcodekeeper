@@ -17,14 +17,14 @@ public class Welcome {
     @Inject
     private EPartService partService;
     
-	@PostConstruct
-	private void postConstruct(Composite parent) {
-	}
-	
-	@Inject
-	private void projectChanged(PgDbProject proj) {
-	    if(proj == null) {
-	        partService.activate(part);
-	    }
-	}
+    @PostConstruct
+    private void postConstruct(Composite parent) {
+    }
+    
+    @Inject
+    private void projectChanged(PgDbProject proj) {
+        if(proj == null) {
+            partService.activate(part);
+        }
+    }
 }

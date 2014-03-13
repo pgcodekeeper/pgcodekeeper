@@ -20,42 +20,42 @@ import javax.annotation.PostConstruct;
 
 
 public class TestPart {
-	
-	@Inject
-	@Preference(value=UIConsts.PREF_SVN_EXE_PATH)
-	private String prefSvnPath;
-	
-	@Inject
-	@Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
-	private String prefPgdumpPath;
-	
-	Text txt;
-	
-	@PostConstruct
-	private void createUI(Composite parent) {
-		parent.setLayout(new FormLayout());
-		Button btn = new Button(parent, SWT.PUSH);
-		btn.setText("qwe");
-		
-		FormData data = new FormData();
-		data.left = data.top = new FormAttachment(5);
-		btn.setLayoutData(data);
-		
-		btn.addSelectionListener(new SelectionAdapter() {
-			
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				txt.setText(txt.getText() + "\n"
-						+ prefSvnPath + " | " + prefPgdumpPath);
-			}
-		});
-		
-		txt = new Text(parent, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
-		data = new FormData();
-		data.left = new FormAttachment(5);
-		data.right = new FormAttachment(95);
-		data.bottom = new FormAttachment(95);
-		data.top = new FormAttachment(btn, 5);
-		txt.setLayoutData(data);
-	}
+    
+    @Inject
+    @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
+    private String prefSvnPath;
+    
+    @Inject
+    @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
+    private String prefPgdumpPath;
+    
+    Text txt;
+    
+    @PostConstruct
+    private void createUI(Composite parent) {
+        parent.setLayout(new FormLayout());
+        Button btn = new Button(parent, SWT.PUSH);
+        btn.setText("qwe");
+        
+        FormData data = new FormData();
+        data.left = data.top = new FormAttachment(5);
+        btn.setLayoutData(data);
+        
+        btn.addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                txt.setText(txt.getText() + "\n"
+                        + prefSvnPath + " | " + prefPgdumpPath);
+            }
+        });
+        
+        txt = new Text(parent, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL);
+        data = new FormData();
+        data.left = new FormAttachment(5);
+        data.right = new FormAttachment(95);
+        data.bottom = new FormAttachment(95);
+        data.top = new FormAttachment(btn, 5);
+        txt.setLayoutData(data);
+    }
 }

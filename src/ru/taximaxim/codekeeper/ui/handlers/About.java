@@ -10,17 +10,17 @@ import ru.taximaxim.codekeeper.ui.AddonExternalTools;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class About {
-	@Execute
-	private void execute(Shell parentShell) {
-		MessageBox m = new MessageBox(parentShell, SWT.ICON_INFORMATION);
-		m.setText("About pgCodeKeeper...");
-		m.setMessage(String.format(
-		        "pgCodeKeeper version %s\n\n"
-		        + "svn version: %s\n"
-		        + "pg_dump version: %s",
-		        UIConsts.VERSION,
-		        AddonExternalTools.getSvnVersion(),
-		        AddonExternalTools.getPgdumpVersion()));
-		m.open();
-	}
+    @Execute
+    private void execute(Shell parentShell) {
+        MessageBox m = new MessageBox(parentShell, SWT.ICON_INFORMATION);
+        m.setText("About pgCodeKeeper...");
+        m.setMessage(String.format(
+                "pgCodeKeeper version %s\n\n"
+                + "svn version: %s\n"
+                + "pg_dump version: %s",
+                UIConsts.VERSION,
+                AddonExternalTools.getSvnVersion(),
+                AddonExternalTools.getPgdumpVersion()));
+        m.open();
+    }
 }
