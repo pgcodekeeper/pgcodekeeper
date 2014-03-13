@@ -15,7 +15,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 public class GitExec implements IRepoWorker {
     private final String gitExec;
     public static final Pattern PATTERN_SHORT_SSH_URL = Pattern
-            .compile("[\\w\\._-]+@[\\w\\.-]+:[\\w\\._-]+/[\\w\\._-]+");
+            .compile("[\\w\\.'_-]+@[\\w\\.-]+:[\\w\\._-]+/[\\w\\._-]+");
     public static final Pattern PATTERN_SSH_URL = Pattern.compile("ssh://.+");
     public static final Pattern PATTERN_HTTP_URL = Pattern.compile("http://.+");
 

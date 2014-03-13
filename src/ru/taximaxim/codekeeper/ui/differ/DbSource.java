@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.File;
 import java.io.IOException;
+
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
@@ -15,6 +16,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -62,7 +64,8 @@ public abstract class DbSource {
 
     public static DbSource fromSvn(String svnExec, String url, String user,
             String pass, String rev, String encoding) {
-        return new DbSourceRepo(UIConsts.PROJ_REPO_TYPE_SVN_NAME, svnExec, url, user, pass, rev, encoding);
+        return new DbSourceRepo(RepoType.SVN, svnExec, url, user, pass, rev,
+                encoding);
     }
 
     public static DbSource fromGit(String gitExec, PgDbProject proj) {
@@ -76,8 +79,8 @@ public abstract class DbSource {
 
     public static DbSource fromGit(String gitExec, String url, String user,
             String pass, String commitHash, String encoding) {
-        return new DbSourceRepo(UIConsts.PROJ_REPO_TYPE_GIT_NAME, gitExec, url, user, pass, commitHash,
-                encoding);
+        return new DbSourceRepo(RepoType.GIT, gitExec, url, user, pass,
+                commitHash, encoding);
     }
 
     public static DbSource fromProject(PgDbProject proj) {
@@ -139,28 +142,26 @@ class DbSourceRepo extends DbSource {
     }
 
     public DbSourceRepo(String repoExec, PgDbProject proj, String rev) {
-        this(proj.getString(UIConsts.PROJ_PREF_REPO_TYPE), repoExec, proj
-                .getString(UIConsts.PROJ_PREF_REPO_URL), proj
-                .getString(UIConsts.PROJ_PREF_REPO_USER), proj
-                .getString(UIConsts.PROJ_PREF_REPO_PASS), proj
-                .getString(UIConsts.PROJ_PREF_ENCODING), rev);
+        this(RepoType.valueOf(proj.getString(UIConsts.PROJ_PREF_REPO_TYPE)),
+                repoExec, proj.getString(UIConsts.PROJ_PREF_REPO_URL), proj
+                        .getString(UIConsts.PROJ_PREF_REPO_USER), proj
+                        .getString(UIConsts.PROJ_PREF_REPO_PASS), proj
+                        .getString(UIConsts.PROJ_PREF_ENCODING), rev);
     }
 
-    DbSourceRepo(String repoType, String repoExec, String url, String user,
+    DbSourceRepo(RepoType repoType, String repoExec, String url, String user,
             String pass, String rev, String encoding) {
         super(url + (rev.isEmpty() ? "" : "@" + rev));
         switch (repoType) {
-        case UIConsts.PROJ_REPO_TYPE_SVN_NAME:
+        case SVN:
             repo = new SvnExec(repoExec, url, user, pass);
             break;
-        case UIConsts.PROJ_REPO_TYPE_GIT_NAME:
+        case GIT:
             repo = new GitExec(repoExec, url, user, pass);
             break;
         default:
-            repo = new SvnExec(repoExec, url, user, pass);
-            break;
+            throw new IllegalStateException("Not a GIT/SVN enabled project");
         }
-
         this.encoding = encoding;
         this.rev = rev;
     }
@@ -178,7 +179,7 @@ class DbSourceRepo extends DbSource {
             pm.newChild(1).subTask("Loading tree...");
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                     dir.getAbsolutePath(), encoding, false, false);
-        } 
+        }
 
     }
 }

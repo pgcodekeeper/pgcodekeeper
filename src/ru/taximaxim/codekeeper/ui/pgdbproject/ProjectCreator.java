@@ -19,6 +19,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 
 public class ProjectCreator implements IRunnableWithProgress {
 
@@ -50,18 +51,19 @@ public class ProjectCreator implements IRunnableWithProgress {
                     workToDo); // 0
 
             IRepoWorker repo;
-            if (props.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals(
-                    UIConsts.PROJ_REPO_TYPE_SVN_NAME)) {
+            switch (RepoType.valueOf(props.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
+            case SVN:
                 repo = new SvnExec(exeSvn, props);
                 repoName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
-            } else if (props.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals(
-                    UIConsts.PROJ_REPO_TYPE_GIT_NAME)) {
+                break;
+            case GIT:
                 repo = new GitExec(exeGit, props);
                 repoName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
-            } else {
+                break;
+            default:
                 throw new IllegalStateException("Not a SVN/GIT enabled project");
             }
-
+            
             pm.newChild(doInit ? 25 : workToDo).subTask(
                     repoName + " current rev checkout..."); // 25 or 100%
             File dirRepo = props.getProjectSchemaDir();

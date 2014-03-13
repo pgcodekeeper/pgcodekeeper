@@ -43,6 +43,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 
 public class NewProjWizard extends Wizard implements IPageChangingListener {
 
@@ -219,21 +220,23 @@ class PageRepo extends WizardPage implements Listener {
                 + repoTypeName + " cache, etc):");
         lblWarnInit.setText("Warning:\n" + "This will delete " + repoTypeName
                 + " contents and recreate them from Schema Source"
-                + " (next page).");
-        switch (repoTypeName) {
-        case UIConsts.PROJ_REPO_TYPE_SVN_NAME:
+                + " (next page)."); 
+        switch (RepoType.valueOf(repoTypeName)) {
+        case SVN:
             lblWarnPass.setText("Warning:\n"
                     + "Providing password here is insecure!"
                     + " This password WILL show up in logs!\n"
                     + "Consider using SVN password store instead.");
             break;
-        case UIConsts.PROJ_REPO_TYPE_GIT_NAME:
+        case GIT:
             lblWarnPass
                     .setText("Warning:\n"
                             + "Providing password here is insecure!"
                             + " This password WILL show up in logs!\n"
                             + "Consider using ssh authentification instead (use git@host as repo url).");
-        }
+            break;
+        default:
+            throw new IllegalStateException("Not a GIT/SVN enabled project");}
     }
 
     @Override

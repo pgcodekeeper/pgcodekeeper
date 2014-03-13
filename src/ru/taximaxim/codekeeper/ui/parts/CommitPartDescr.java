@@ -61,6 +61,7 @@ import ru.taximaxim.codekeeper.ui.handlers.CloseActiveProj;
 import ru.taximaxim.codekeeper.ui.handlers.LoadProj;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class CommitPartDescr {
@@ -151,16 +152,15 @@ public class CommitPartDescr {
                         File dirSvn = proj.getProjectSchemaDir();
                         try {
                             IRepoWorker repo;
-                            if (proj.getString(UIConsts.PROJ_PREF_REPO_TYPE)
-                                    .equals(UIConsts.PROJ_REPO_TYPE_SVN_NAME)) {
+                            switch (RepoType.valueOf(proj.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
+                            case SVN:
                                 repo = new SvnExec(exeSvn, proj);
-                            } else if (proj.getString(
-                                    UIConsts.PROJ_PREF_REPO_TYPE).equals(
-                                    UIConsts.PROJ_REPO_TYPE_GIT_NAME)) {
+                                break;
+                            case GIT:
                                 repo = new GitExec(exeGit, proj);
-                            } else {
-                                throw new IllegalStateException(
-                                        "Not a SVN/GIT enabled project");
+                                break;
+                            default:
+                                throw new IllegalStateException("Not a SVN/GIT enabled project");
                             }
                             try (TempDir tmpRepoMeta = new TempDir(proj
                                     .getProjectPath(), "tmp_repo_meta_")) {

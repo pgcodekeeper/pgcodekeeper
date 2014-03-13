@@ -54,6 +54,8 @@ import ru.taximaxim.codekeeper.ui.differ.DiffTreeViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
+import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 
 public class DiffWizard extends Wizard implements IPageChangingListener {
 
@@ -327,8 +329,9 @@ class PageDiff extends WizardPage implements Listener {
             if (getProjRev().isEmpty()) {
                 dbs = DbSource.fromProject(fromProj);
             } else {
-                if (fromProj.getString(UIConsts.PROJ_PREF_REPO_TYPE).equals(
-                        UIConsts.PROJ_REPO_TYPE_SVN_NAME)) {
+                switch (RepoType.valueOf(fromProj
+                        .getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
+                case SVN:
                     dbs = DbSource.fromSvn(
                             mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH),
                             fromProj.getString(UIConsts.PROJ_PREF_REPO_URL),
@@ -336,8 +339,8 @@ class PageDiff extends WizardPage implements Listener {
                             fromProj.getString(UIConsts.PROJ_PREF_REPO_PASS),
                             getProjRev(),
                             fromProj.getString(UIConsts.PROJ_PREF_ENCODING));
-                } else if (fromProj.getString(UIConsts.PROJ_PREF_REPO_TYPE)
-                        .equals(UIConsts.PROJ_REPO_TYPE_GIT_NAME)) {
+                    break;
+                case GIT:
                     dbs = DbSource.fromGit(
                             mainPrefs.getString(UIConsts.PREF_GIT_EXE_PATH),
                             fromProj.getString(UIConsts.PROJ_PREF_REPO_URL),
@@ -345,7 +348,8 @@ class PageDiff extends WizardPage implements Listener {
                             fromProj.getString(UIConsts.PROJ_PREF_REPO_PASS),
                             getProjRev(),
                             fromProj.getString(UIConsts.PROJ_PREF_ENCODING));
-                } else {
+                    break;
+                default:
                     throw new IllegalStateException(
                             "Not a SVN/GIT enabled project");
                 }
