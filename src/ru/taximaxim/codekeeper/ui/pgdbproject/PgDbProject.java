@@ -11,7 +11,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 public class PgDbProject extends PreferenceStore {
 
     public enum RepoType {
-        SVN("SVN"), GIT("GIT"), ZIC("ZIC");
+        SVN("SVN"), GIT("GIT");
         private String repoType;
 
         private RepoType(String repoType) {
