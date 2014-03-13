@@ -6,6 +6,7 @@
 package cz.startnet.utils.pgdiff.parsers;
 
 import cz.startnet.utils.pgdiff.Resources;
+
 import java.text.MessageFormat;
 import java.util.Locale;
 
@@ -129,15 +130,22 @@ public final class Parser {
      * @return parsed identifier
      */
     public String parseIdentifier() {
-        String identifier = parseIdentifierInternal();
-
-        if (string.charAt(position) == '.') {
-            position++;
-            identifier += '.' + parseIdentifierInternal();
-        }
-
-        skipWhitespace();
-
+        String identifier = "";
+        boolean firstPass = true;
+        
+        do {
+            if(firstPass) {
+                firstPass = false;
+            } else {
+                position++;
+                skipWhitespace();
+                identifier += '.';
+            }
+            
+            identifier += parseIdentifierInternal();
+            skipWhitespace();
+        } while (position < string.length() && string.charAt(position) == '.');
+        
         return identifier;
     }
 
@@ -147,10 +155,24 @@ public final class Parser {
      * @return parsed identifier
      */
     private String parseIdentifierInternal() {
-        final boolean quoted = string.charAt(position) == '"';
-
-        if (quoted) {
-            final int endPos = string.indexOf('"', position + 1);
+        // quoted identifier
+        if (string.charAt(position) == '"') {
+            int endPos = position - 1; // see comment below
+            
+            do {
+                // the purpose of this loop is to check for escaped quotes (doubled quotes)
+                
+                // if we do more than one iteration
+                // it means we need to skip TWO quotes (escaped quotes)
+                // hence (position - 1) above
+                endPos += 2;
+                endPos = string.indexOf('"', endPos);
+            } while(string.charAt(endPos) != '"' // checks endPos != -1
+                    
+                    // check for doubled quotes (escaped quote) ""
+                    // if the quote is escaped (doubled) - ignore this one look for the next
+                    || (endPos + 1 < string.length() && string.charAt(endPos + 1) == '"'));
+            
             final String result = string.substring(position, endPos + 1);
             position = endPos + 1;
 
@@ -344,20 +366,23 @@ public final class Parser {
         for (; charPos < string.length(); charPos++) {
             final char chr = string.charAt(charPos);
 
-            if (chr == '(') {
-                bracesCount++;
-            } else if (chr == ')') {
-                if (bracesCount == 0) {
-                    break;
-                } else {
-                    bracesCount--;
-                }
-            } else if (chr == '\'') {
+            if (chr == '\'') {
                 singleQuoteOn = !singleQuoteOn;
-            } else if ((chr == ',') && !singleQuoteOn && (bracesCount == 0)) {
-                break;
-            } else if (chr == ';' && bracesCount == 0 && !singleQuoteOn) {
-                break;
+                continue;
+            }
+
+            if(!singleQuoteOn) {
+                if (chr == '(') {
+                    bracesCount++;
+                } else if (chr == ')') {
+                    if (bracesCount == 0) {
+                        break;
+                    } else {
+                        bracesCount--;
+                    }
+                } else if ((chr == ',' || chr == ';') && bracesCount == 0) {
+                    break;
+                }
             }
         }
 
