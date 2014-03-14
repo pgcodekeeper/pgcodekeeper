@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="app" sequenceNumber="21">
+<?pde version="3.8"?><target name="app" sequenceNumber="26">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.jdt.feature.group" version="3.9.1.v20130911-1000"/>
@@ -15,13 +15,7 @@
 <repository location="http://download.eclipse.org/e4/downloads/drops/S-0.15-201401152200/repository"/>
 </location>
 </locations>
-<environment>
-<os>linux</os>
-<ws>gtk</ws>
-<arch>x86</arch>
-<nl>en_US</nl>
-</environment>
 <launcherArgs>
-<vmArgs>-Djava.library.path=/usr/lib/i386-linux-gnu/jni -Dosgi.requiredJavaVersion=1.6 -XX:MaxPermSize=256m -Xms40m -Xmx512m</vmArgs>
+<vmArgs>-Dosgi.requiredJavaVersion=1.6 -XX:MaxPermSize=256m -Xms40m -Xmx512m</vmArgs>
 </launcherArgs>
 </target>
