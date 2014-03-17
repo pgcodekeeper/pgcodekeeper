@@ -4,6 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ru.taximaxim.codekeeper.ui"/>
-	<classpathentry kind="lib" path="/home/ryabinin_av/Mockito 1.9.5/mockito-all-1.9.5-rc1.jar"/>
+	<classpathentry kind="lib" path="mockito-all-1.9.5-rc1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
