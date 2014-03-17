@@ -7,12 +7,13 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
-    <module>..</module>
     <module>../targetplatform</module>
-    <module>../product</module>
-    <module>../../apgdiff/pom_tycho.xml</module>
     <module>../../com.opcoach.e4.contextExplorer</module>
+    <module>../../apgdiff/pom_tycho.xml</module>
     <module>../../ru.taximaxim.codekeeper.ui</module>
+    <module>..</module>
+    <module>../../../ru.taximaxim.codekeeper.ui.tests</module>
+    <module>../product</module>
   </modules>
 
   <properties>
@@ -24,6 +25,12 @@
 	        <groupId>org.jgrapht</groupId>
 	        <artifactId>jgrapht-core</artifactId>
 	        <version>0.9.0</version>
+        </dependency>
+        <dependency>
+        	<groupId>org.mockito</groupId>
+        	<artifactId>mockito-core</artifactId>
+        	<version>1.9.5</version>
+        	<scope>test</scope>
         </dependency>
   </dependencies>
 
