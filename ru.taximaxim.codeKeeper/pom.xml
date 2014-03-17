@@ -8,7 +8,6 @@
   <packaging>pom</packaging>
   <modules>
     <module>..</module>
-    <module>../targetplatform</module>
     <module>../product</module>
     <module>../../apgdiff/pom_tycho.xml</module>
     <module>../../com.opcoach.e4.contextExplorer</module>
@@ -58,9 +57,9 @@
 
                   <groupId>ru.taximaxim.codeKeeper</groupId>
 
-                  <artifactId>ru.taximaxim.codeKeeper.target</artifactId>
+                  <artifactId>ru.taximaxim.codeKeeper</artifactId>
 
-                  <version>1.0.0-SNAPSHOT</version>
+                  <version>0.0.1-SNAPSHOT</version>
 
                   <classifier>../app</classifier>
 
