@@ -34,11 +34,16 @@ CREATE TYPE testtt AS (
 
 ALTER TYPE public.testtt OWNER TO madej;
 
+-- garbled identifier test
+
+CREATE SCHEMA "``54'253-=9!@#$%^&*()__<>?:""{}[];',./";
+
+
 --
--- Name: .x(integer); Type: FUNCTION; Schema: public; Owner: madej
+-- Name: "``54'253-=9!@#$%^&*()__<>?:""{}[];',./".".x.."(integer); Type: FUNCTION; Schema: public; Owner: madej
 --
 
-CREATE FUNCTION ".x"(integer) RETURNS boolean
+CREATE FUNCTION "``54'253-=9!@#$%^&*()__<>?:""{}[];',./".".x"".""""."(integer) RETURNS boolean
     AS $_$
 declare
 begin
@@ -49,7 +54,7 @@ $_$
     LANGUAGE plpgsql;
 
 
-ALTER FUNCTION public.".x"(integer) OWNER TO madej;
+ALTER FUNCTION "``54'253-=9!@#$%^&*()__<>?:""{}[];',./".".x.."(integer) OWNER TO madej;
 
 --
 -- PostgreSQL database dump complete

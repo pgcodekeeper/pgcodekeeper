@@ -1,4 +1,4 @@
 
 DROP INDEX testindex;
 
-CREATE INDEX testindex ON testtable USING btree (field3);
+CREATE INDEX """idxф.garbage=:;\""""." ON testtable USING btree (field3);

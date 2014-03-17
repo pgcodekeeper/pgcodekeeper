@@ -567,7 +567,10 @@ class PgDB8 extends PgDatabaseObjectCreator {
 		PgSchema schema = d.getDefaultSchema();
 		schema.setComment("'Standard public schema'");
 		
-		PgFunction func = new PgFunction(".x", "", "");
+		schema = new PgSchema("``54'253-=9!@#$%^&*()__<>?:\"{}[];',./", "");
+		d.addSchema(schema);
+		
+		PgFunction func = new PgFunction(".x\".\"\".", "", "");
 		func.setBody("RETURNS boolean\n    AS $_$\ndeclare\nbegin\nraise notice 'inside: %', $1;\nreturn true;\nend;\n$_$\n    LANGUAGE plpgsql");
 		schema.addFunction(func);
 		
