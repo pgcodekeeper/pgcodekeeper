@@ -62,15 +62,14 @@ public class GitExec implements IRepoWorker {
      */
     public void repoCheckOut(File dirTo, String commitHash) throws IOException {
         ProcessBuilder git = new ProcessBuilder(gitExec, "clone");
-
-        if (PATTERN_SHORT_SSH_URL.matcher(url).matches() || PATTERN_SSH_URL.matcher(url).matches()) {
-            git.command().add(url);
-        } else if (PATTERN_HTTP_URL.matcher(url).matches()) {
+        if (PATTERN_HTTP_URL.matcher(url).matches()) {
             try {
                 git.command().add(getRepoUrlWithAuth());
             } catch (URISyntaxException e) {
                 throw new IllegalStateException(e);
             }
+        }else{
+            git.command().add(url);
         }
         git.directory(dirTo);
         git.command().add(".");
