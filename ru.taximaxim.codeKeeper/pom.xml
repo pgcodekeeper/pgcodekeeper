@@ -7,13 +7,12 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
-    <module>../targetplatform</module>
-    <module>../../com.opcoach.e4.contextExplorer</module>
-    <module>../../apgdiff/pom_tycho.xml</module>
-    <module>../../ru.taximaxim.codekeeper.ui</module>
     <module>..</module>
-    <module>../../../ru.taximaxim.codekeeper.ui.tests</module>
     <module>../product</module>
+    <module>../../apgdiff/pom_tycho.xml</module>
+    <module>../../com.opcoach.e4.contextExplorer</module>
+    <module>../../ru.taximaxim.codekeeper.ui</module>
+    <module>../../ru.taximaxim.codekeeper.ui.tests</module>
   </modules>
 
   <properties>
@@ -65,9 +64,9 @@
 
                   <groupId>ru.taximaxim.codeKeeper</groupId>
 
-                  <artifactId>ru.taximaxim.codeKeeper.target</artifactId>
+                  <artifactId>ru.taximaxim.codeKeeper</artifactId>
 
-                  <version>1.0.0-SNAPSHOT</version>
+                  <version>0.0.1-SNAPSHOT</version>
 
                   <classifier>../app</classifier>
 
