@@ -268,15 +268,12 @@ public final class Parser {
         final boolean quoted = string.charAt(position) == '\'';
 
         if (quoted) {
-            boolean escape = false;
             int endPos = position + 1;
 
             for (; endPos < string.length(); endPos++) {
                 final char chr = string.charAt(endPos);
 
-                if (chr == '\\') {
-                    escape = !escape;
-                } else if (!escape && chr == '\'') {
+                if (chr == '\'') {
                     if (endPos + 1 < string.length()
                             && string.charAt(endPos + 1) == '\'') {
                         endPos++;
