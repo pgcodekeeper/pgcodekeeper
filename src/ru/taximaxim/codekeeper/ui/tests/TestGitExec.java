@@ -48,7 +48,6 @@ public class TestGitExec {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		prepareRepository();
-		//String s = mock (String.class);
 		Logger log = mock(Logger.class);
 		Log.setLog(log);
 	}
@@ -145,13 +144,18 @@ public class TestGitExec {
 		}
 	}
 
-	private String runGit(File dirRepo, String... params) {
+	/**
+	 * Runs git command with specified params, returns output of command
+	 * Assumes that git binary file is git (should work for UNIX/Windows)
+	 *  
+	 */
+	private String runGit(File workingDir, String... params) {
 		ProcessBuilder git = new ProcessBuilder("git");
 		for (int i = 0; i < params.length; i++) {
 			git.command().add(params[i]);
 		}
 		git.redirectErrorStream(true);
-		git.directory(dirRepo);
+		git.directory(workingDir);
 
 		try {
 			Process p = git.start();
@@ -174,13 +178,12 @@ public class TestGitExec {
 		}
 	}
 	
-	@Ignore
 	@Test
 	public void testRepoCommit() {
-		try (PrintWriter printWriter = new PrintWriter(new BufferedWriter(
-				new FileWriter(pathToWorking.toString()
-						+ System.getProperty("file.separator")
-						+ "EXTENSIONS/file1.sql", true)))) {
+		try {
+			PrintWriter printWriter = new PrintWriter(new BufferedWriter(
+					new FileWriter(pathToWorking.toString()+System.getProperty("file.separator")
+							+ "EXTENSIONS/file1.sql", true)));
 			printWriter.println("added");
 			printWriter.close();
 			File dirRepo = new File(pathToWorking.toString());

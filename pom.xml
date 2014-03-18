@@ -22,16 +22,8 @@
 	 	    <configuration>
 	 	      <testSuite>ru.taximaxim.codekeeper.ui.tests</testSuite>
 	 	      <testClass>ru.taximaxim.codekeeper.ui.tests.TestGitExec</testClass>
-	 	      <!-- useUIHarness>true</useUIHarness-->
 	 	      <product>ru.taximaxim.codeKeeper</product>
 	 	    </configuration>
-	 	    <dependencies>
-	 	      <dependency>
-        	    <groupId>org.mockito</groupId>
-        	    <artifactId>mockito-all</artifactId>
-        	    <version>1.9.5</version>
-              </dependency>
-            </dependencies>
 	 	  </plugin>
 	 </plugins>
  </build>
