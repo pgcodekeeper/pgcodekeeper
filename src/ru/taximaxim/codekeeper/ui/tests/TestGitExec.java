@@ -38,7 +38,7 @@ public class TestGitExec {
 
     private IRepoWorker repo;
     private Path pathToWorking;
-    private static Path pathToOrigin;
+    private Path pathToOrigin;
     // TODO fix platform-dependent filenames
     private final static String[] fileNames = { "resources/EXTENSION/file1.sql",
             "resources/EXTENSION/file2.sql", "resources/EXTENSION/file3.sql",
@@ -47,18 +47,35 @@ public class TestGitExec {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        prepareRepository();
         Logger log = mock(Logger.class);
         Log.setLog(log);
     }
 
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+        
+    }
+    
+    @Before
+    public void setUp() throws Exception {
+        prepareRepository();
+        repo = new GitExec("git", pathToOrigin.toString(), "", "");
+        pathToWorking = Files.createTempDirectory("a-working");
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        destroyRepository(pathToWorking);
+        destroyRepository(pathToOrigin);
+    }
+    
     /**
      * Creates temporary dir pathToOrigin, copies files from resources there,
      * inits git repo there and commits copied files
      */
-    private static void prepareRepository() {
+    private void prepareRepository() {
         try {
-            pathToOrigin = Files.createTempDirectory("");
+            pathToOrigin = Files.createTempDirectory("a-origin");
             final Path source = FileSystems.getDefault().getPath("resources");
             Files.walkFileTree(source, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
                      new SimpleFileVisitor<Path>() {
@@ -83,52 +100,78 @@ public class TestGitExec {
                              return FileVisitResult.CONTINUE;
                          }
                      });
-            ProcessBuilder git = new ProcessBuilder("git", "init");
-            git.directory(new File (pathToOrigin.toString()));
-            Process p = git.start();
-            p.waitFor();
-            
-            git = new ProcessBuilder("git", "add", ".");
-            git.directory(new File (pathToOrigin.toString()));
-            p = git.start();
-            p.waitFor();
-            
-            git = new ProcessBuilder("git", "commit", "-m", "initial");
-            git.directory(new File (pathToOrigin.toString()));
-            p = git.start();
-            p.waitFor();
+            File dirRepo = new File (pathToOrigin.toString());
+            runGit(dirRepo, "init");
+            runGit(dirRepo, "add", ".");
+            runGit(dirRepo, "commit", "-m", "initial");
+            runGit(dirRepo, "config", "--bool", "core.bare", "true");
             System.out.println("Repository created at " + pathToOrigin);
         } catch (IOException e) {
-            fail("Error initializing original repository at " + pathToOrigin);
-            throw new IllegalStateException(e);
-        } catch (InterruptedException e) {
             fail("Error initializing original repository at " + pathToOrigin);
             throw new IllegalStateException(e);
         }
     }
 
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-        destroyRepository();
+    /**
+     * Removes file tree with starting point at start 
+     */
+    private void destroyRepository(Path start) throws IOException {
+        Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file,
+                    BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException e)
+                    throws IOException {
+                if (e == null) {
+                    Files.delete(dir);
+                    return FileVisitResult.CONTINUE;
+                } else {
+                    // directory iteration failed
+                    throw e;
+                }
+            }
+        });
     }
 
-    private static void destroyRepository() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        repo = new GitExec("git", pathToOrigin.toString(), "", "");
-        pathToWorking = Files.createTempDirectory("");
-    }
-
-    @After
-    public void tearDown() throws Exception {
+    /**
+     * Runs git command with specified params, returns output of command
+     * Assumes that git binary file is git (should work for UNIX/Windows)
+     *  
+     */
+    private String runGit(File workingDir, String... params) {
+        ProcessBuilder git = new ProcessBuilder("git");
+        for (int i = 0; i < params.length; i++) {
+            git.command().add(params[i]);
+        }
+        git.redirectErrorStream(true);
+        git.directory(workingDir);
+    
+        try {
+            Process p = git.start();
+            StringBuilder sb = new StringBuilder();
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    p.getInputStream()));
+            p.waitFor();
+            String line;
+            while ((line = in.readLine()) != null) {
+                sb.append(line);
+            }
+            return sb.toString();
+        } catch (IOException ex) {
+            fail("IOException while running git command");
+            return null;
+        } catch (InterruptedException e) {
+            fail("InterruptedException while running git command");
+            return null;
+        }
     }
 
     @Test
-    public void testGitExecCheckOutFileString() {
+    public void testGitExecCheckOut() {
         try {
             File dirRepo = new File(pathToWorking.toString());
             repo.repoCheckOut(dirRepo, null);
@@ -145,55 +188,48 @@ public class TestGitExec {
     }
 
     /**
-     * Runs git command with specified params, returns output of command
-     * Assumes that git binary file is git (should work for UNIX/Windows)
-     *  
+     * Test behaviour of checkOut from non-existent origin
      */
-    private String runGit(File workingDir, String... params) {
-        ProcessBuilder git = new ProcessBuilder("git");
-        for (int i = 0; i < params.length; i++) {
-            git.command().add(params[i]);
+    @Test
+    public void testGitExecCheckOutWrongUrl() {
+       File dirRepo = new File(pathToWorking.toString());
+       try {
+            repo = new GitExec("git", Files.createTempDirectory("").toString(),
+                    "", "");
+        } catch (IOException e) {
+            fail("IOException while creating temp dir" + e.getMessage());
         }
-        git.redirectErrorStream(true);
-        git.directory(workingDir);
-
+       
         try {
-            Process p = git.start();
-            StringBuilder sb = new StringBuilder();
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    p.getInputStream()));
-            p.waitFor();
-            String line;
-            while ((line = in.readLine()) != null) {
-                sb.append(line);
-            }
-            return sb.toString();
-        } catch (IOException ex) {
-            fail("IOException while running git command");
-            return null;
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            fail("InterruptedException while running git command");
-            return null;
+            repo.repoCheckOut(dirRepo, null);
+        } catch (IOException e) {
+           if (e.getMessage().startsWith("Process returned with error:")){
+               assertTrue(true);
+           }else {
+               fail("Some IOError at repoCheckOut");
+           }
         }
     }
     
     @Test
     public void testRepoCommit() {
         try {
-            PrintWriter printWriter = new PrintWriter(new BufferedWriter(
-                    new FileWriter(pathToWorking.toString()+System.getProperty("file.separator")
-                            + "EXTENSIONS/file1.sql", true)));
-            printWriter.println("added");
-            printWriter.close();
             File dirRepo = new File(pathToWorking.toString());
             String out = runGit (dirRepo, "clone", pathToOrigin.toString(), ".");
-            
             // check if cloned successfully
             out = runGit(dirRepo, "status", "--porcelain", ".");
             assertTrue("Not empty git status --porcelain", out.equals(""));
+            // modify file in repo
+            FileWriter fw = new FileWriter(pathToWorking.toString()+System.getProperty("file.separator")
+                    + "EXTENSION/file1.sql", true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter printWriter = new PrintWriter(bw);
+            printWriter.println("added");
+            printWriter.close();
+            repo.repoCommit(dirRepo, "test");
+            assertTrue("Not empty git status --porcelain", runGit(dirRepo, "status", "--porcelain").equals(""));
         } catch (IOException e) {
-            fail("IOException at testRepoCommit");
+            fail("IOException at testRepoCommit" + e.getMessage());
         }
     }
 
