@@ -12,5 +12,5 @@ Require-Bundle: org.junit,
  org.mockito.mockito-all;resolution:=optional,
  ru.taximaxim.codekeeper.ui,
  org.eclipse.e4.core.services;bundle-version="1.1.0"
- 
-
+Bundle-ClassPath: lib/mockito-all-1.9.5.jar,
+ .
