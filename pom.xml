@@ -21,7 +21,8 @@
 	 	    <version>0.19.0</version>
 	 	    <configuration>
 	 	      <testSuite>ru.taximaxim.codekeeper.ui.tests</testSuite>
-	 	      <testClass>ru.taximaxim.codekeeper.ui.tests.TestGitExec</testClass>
+	 	      <testClass>ru.taximaxim.codekeeper.ui.tests.TestGit</testClass>
+	 	      <!-- testClass>ru.taximaxim.codekeeper.ui.tests.TestSvn</testClass-->
 	 	      <product>ru.taximaxim.codeKeeper</product>
 	 	    </configuration>
 	 	  </plugin>
