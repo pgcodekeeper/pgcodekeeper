@@ -166,10 +166,33 @@ public abstract class TestIRepoWorker {
         fail("Not yet implemented");
     }
 
-    @Ignore
     @Test
     public void testRepoUpdate() {
-        fail("Not yet implemented");
+        try {
+            File dirRepo = pathToWorking.toFile();
+            repo.repoCheckOut(dirRepo);
+            File dirTempRepo = Files.createTempDirectory("a-origin").toFile();
+            repo.repoCheckOut(dirTempRepo);
+            // modify file in repo temp
+            FileWriter fw = new FileWriter(dirTempRepo.toString()
+                    + System.getProperty("file.separator") + "EXTENSION"
+                    + System.getProperty("file.separator") + "file1.sql", true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter printWriter = new PrintWriter(bw);
+            printWriter.println("added");
+            printWriter.close();
+            repo.repoCommit(dirTempRepo, "test");
+            repo.repoUpdate(dirRepo);
+            Files.walkFileTree(pathToOrigin, EnumSet
+                    .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+                    new CompareHashFileVisitor(dirTempRepo.toPath(), dirRepo.toPath()));
+            Files.walkFileTree(pathToOrigin, EnumSet
+                    .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+                    new CompareHashFileVisitor(dirRepo.toPath(), dirTempRepo.toPath()));
+            assertTrue(true);
+        } catch (IOException e) {
+            fail("IOException at testRepoCommit" + e.getMessage());
+        }
     }
 
     @Ignore

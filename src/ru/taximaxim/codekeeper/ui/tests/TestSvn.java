@@ -9,7 +9,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 
 public class TestSvn extends TestIRepoWorker{
 
-    @Before
+   // @Before
     public void setUp() throws Exception {
         copyFilesToOrigin();
         // init a git repo at pathToOrigin
