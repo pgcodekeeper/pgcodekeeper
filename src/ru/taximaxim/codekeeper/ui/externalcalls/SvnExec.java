@@ -29,6 +29,9 @@ public class SvnExec implements IRepoWorker {
     private static final Pattern PATTERN_VERSION = Pattern
             .compile("^[\\d]+\\.[\\d]+\\.[\\d]+$");
 
+    private static final Pattern PATTERN_SVN_URL = Pattern.compile("svn(\\+ssh)?://.+");
+    private static final Pattern PATTERN_HTTP_URL = Pattern.compile("http(s)?://.+");
+    
     private final String svnExec;
 
     private final String url, user, pass;
@@ -212,8 +215,10 @@ public class SvnExec implements IRepoWorker {
     }
 
     private void addUrl(ProcessBuilder pb) {
-        if (url != null) {
+        if (url != null && (PATTERN_SVN_URL.matcher(url).matches() || PATTERN_HTTP_URL.matcher(url).matches())) {
             pb.command().add(url);
+        }else if (url != null){
+            pb.command().add("file://" + url);
         }
     }
 
