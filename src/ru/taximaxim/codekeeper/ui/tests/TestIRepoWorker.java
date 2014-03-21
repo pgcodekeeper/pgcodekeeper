@@ -47,6 +47,7 @@ public abstract class TestIRepoWorker {
     protected IRepoWorker repo;
     protected Path pathToWorking;
     protected Path pathToOrigin;
+    private File dirTempRepo;
     
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -68,19 +69,20 @@ public abstract class TestIRepoWorker {
     public void tearDown() throws IOException {
         Dir.deleteRecursive(pathToWorking.toFile());
         Dir.deleteRecursive(pathToOrigin.toFile());
+        if(dirTempRepo != null)
+            Dir.deleteRecursive(dirTempRepo);
     }
     
     /**
      * Creates temporary dir pathToOrigin, copies files from resources there,
      * inits git repo there and commits copied files
      */
-    protected void copyFilesToOrigin() {
+    protected void copyFilesToPath(Path destination) {
         try {
-            pathToOrigin = Files.createTempDirectory("a-origin");
             final Path source = FileSystems.getDefault().getPath("resources");
-            Files.walkFileTree(source, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new CopyFileVisitor(source));
+            Files.walkFileTree(source, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new CopyFileVisitor(source, destination));
         } catch (IOException e) {
-            fail("Error copying files to " + pathToOrigin);
+            fail("Error copying files to " + destination);
         }
     }
 
@@ -115,17 +117,30 @@ public abstract class TestIRepoWorker {
         }
     }
 
+    private void appendToFile(String file, String textToAppend) throws IOException{
+        FileWriter fw = new FileWriter(file, true);
+        BufferedWriter bw = new BufferedWriter(fw);
+        PrintWriter printWriter = new PrintWriter(bw);
+        printWriter.println(textToAppend);
+        printWriter.close();
+        bw.close();
+        fw.close();
+    }
+
     @Test
     public void testRepoCheckOut() {
         try {
-            File dirRepo = pathToWorking.toFile();
-            repo.repoCheckOut(dirRepo, null);
-            Files.walkFileTree(pathToOrigin, EnumSet
+            repo.repoCheckOut(pathToWorking.toFile(), null);
+            Path pathToOriginalFiles = FileSystems.getDefault().getPath("resources").toAbsolutePath();
+            
+            Files.walkFileTree(pathToOriginalFiles, EnumSet
                     .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
-                    new CompareHashFileVisitor(pathToOrigin, pathToWorking));
-            Files.walkFileTree(pathToOrigin, EnumSet
+                    new CompareHashFileVisitor(pathToOriginalFiles, pathToWorking));
+            
+            Files.walkFileTree(pathToWorking, EnumSet
                     .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
-                    new CompareHashFileVisitor(pathToWorking, pathToOrigin));
+                    new CompareHashFileVisitor(pathToWorking, pathToOriginalFiles));
+            
             assertTrue(true);
         } catch (IOException e) {
             fail("IOException at testRepoCheckOut " + e.getMessage());
@@ -138,32 +153,60 @@ public abstract class TestIRepoWorker {
             File dirRepo = new File(pathToWorking.toString());
             repo.repoCheckOut(dirRepo);
             // modify file in repo
-            FileWriter fw = new FileWriter(pathToWorking.toString()
+            appendToFile(pathToWorking.toString()
                     + System.getProperty("file.separator") + "EXTENSION"
-                    + System.getProperty("file.separator") + "file1.sql", true);
-            BufferedWriter bw = new BufferedWriter(fw);
-            PrintWriter printWriter = new PrintWriter(bw);
-            printWriter.println("added");
-            printWriter.close();
+                    + System.getProperty("file.separator") + "file1.sql", "added");
             repo.repoCommit(dirRepo, "test");
-            File dirTempRepo = Files.createTempDirectory("a-origin").toFile();
+            dirTempRepo = Files.createTempDirectory("a-origin").toFile();
             repo.repoCheckOut(dirTempRepo);
-            Files.walkFileTree(pathToOrigin, EnumSet
+            
+            Files.walkFileTree(dirTempRepo.toPath(), EnumSet
                     .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
                     new CompareHashFileVisitor(dirTempRepo.toPath(), pathToWorking));
-            Files.walkFileTree(pathToOrigin, EnumSet
+            
+            Files.walkFileTree(pathToWorking, EnumSet
                     .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
                     new CompareHashFileVisitor(pathToWorking, dirTempRepo.toPath()));
+            
             assertTrue(true);
         } catch (IOException e) {
             fail("IOException at testRepoCommit" + e.getMessage());
         }
     }
     
-    @Ignore
     @Test
     public void testHasConflicts() {
-        fail("Not yet implemented");
+        try {
+            File dirRepoA = pathToWorking.toFile();
+            repo.repoCheckOut(dirRepoA);
+            dirTempRepo = Files.createTempDirectory("a-origin").toFile();
+            repo.repoCheckOut(dirTempRepo);
+            appendToFile(dirRepoA.toString()
+                    + System.getProperty("file.separator") + "EXTENSION"
+                    + System.getProperty("file.separator") + "file1.sql", "A");
+            appendToFile(
+                    dirTempRepo.toString() + System.getProperty("file.separator")
+                            + "EXTENSION"
+                            + System.getProperty("file.separator")
+                            + "file1.sql", "B");
+            // commit changes from A to origin
+            repo.repoCommit(dirRepoA, "AAA");
+            // Throws IOException, since there is conflict
+            // We call it, because it's the only way for GitExec to call "git commit -a" 
+            try {
+                repo.repoCommit(dirTempRepo, "BBB");
+            } catch (IOException e) {
+                try {
+                    repo.repoUpdate(dirTempRepo);
+                } catch (IOException ex) {
+                }
+
+                boolean bool = repo.hasConflicts(dirTempRepo);
+                assertTrue(bool);
+            }
+        } catch (IOException e) {
+            fail("IOException at testHasConflicts" + e.getMessage());
+        }
     }
 
     @Test
@@ -171,24 +214,23 @@ public abstract class TestIRepoWorker {
         try {
             File dirRepo = pathToWorking.toFile();
             repo.repoCheckOut(dirRepo);
-            File dirTempRepo = Files.createTempDirectory("a-origin").toFile();
+            dirTempRepo = Files.createTempDirectory("a-origin").toFile();
             repo.repoCheckOut(dirTempRepo);
             // modify file in repo temp
-            FileWriter fw = new FileWriter(dirTempRepo.toString()
+            appendToFile(dirTempRepo.toString()
                     + System.getProperty("file.separator") + "EXTENSION"
-                    + System.getProperty("file.separator") + "file1.sql", true);
-            BufferedWriter bw = new BufferedWriter(fw);
-            PrintWriter printWriter = new PrintWriter(bw);
-            printWriter.println("added");
-            printWriter.close();
+                    + System.getProperty("file.separator") + "file1.sql", "added");
             repo.repoCommit(dirTempRepo, "test");
             repo.repoUpdate(dirRepo);
-            Files.walkFileTree(pathToOrigin, EnumSet
+            
+            Files.walkFileTree(dirTempRepo.toPath(), EnumSet
                     .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
                     new CompareHashFileVisitor(dirTempRepo.toPath(), dirRepo.toPath()));
-            Files.walkFileTree(pathToOrigin, EnumSet
+            
+            Files.walkFileTree(dirRepo.toPath(), EnumSet
                     .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
                     new CompareHashFileVisitor(dirRepo.toPath(), dirTempRepo.toPath()));
+            
             assertTrue(true);
         } catch (IOException e) {
             fail("IOException at testRepoCommit" + e.getMessage());
@@ -215,17 +257,19 @@ public abstract class TestIRepoWorker {
 
     class CopyFileVisitor extends SimpleFileVisitor<Path>{
         private Path source;
-
-        CopyFileVisitor(Path source) {
+        private Path destination;
+        
+        CopyFileVisitor(Path source, Path destination) {
             super();
             this.source = source;
+            this.destination = destination;
         }
         
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
             throws IOException
         {
-            Path targetdir = pathToOrigin.resolve(source.relativize(dir));
+            Path targetdir = destination.resolve(source.relativize(dir));
             try {
                 Files.copy(dir, targetdir);
             } catch (FileAlreadyExistsException e) {
@@ -238,7 +282,7 @@ public abstract class TestIRepoWorker {
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
             throws IOException
         {
-            Files.copy(file, pathToOrigin.resolve(source.relativize(file)));
+            Files.copy(file, destination.resolve(source.relativize(file)));
             return FileVisitResult.CONTINUE;
         }
     }

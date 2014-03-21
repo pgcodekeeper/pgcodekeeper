@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.tests;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.ArrayList;
 
 import org.junit.Before;
 
@@ -12,7 +11,8 @@ public class TestGit extends TestIRepoWorker{
 
     @Before
     public void setUp() throws Exception {
-        copyFilesToOrigin();
+        pathToOrigin = Files.createTempDirectory("a-origin");
+        copyFilesToPath(pathToOrigin);
         // init a git repo at pathToOrigin
         File dirRepo = new File (pathToOrigin.toString());
         runRepoBinary("git", dirRepo, "init");

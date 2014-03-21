@@ -2,23 +2,26 @@ package ru.taximaxim.codekeeper.ui.tests;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.junit.Before;
 
 import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
+import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 
 public class TestSvn extends TestIRepoWorker{
 
-   // @Before
+    @Before
     public void setUp() throws Exception {
-        copyFilesToOrigin();
+        Path temp = Files.createTempDirectory("");
+        pathToOrigin = Files.createTempDirectory("a-origin");
+        copyFilesToPath(temp);
         // init a git repo at pathToOrigin
-        File dirRepo = new File (pathToOrigin.toString());
-        runRepoBinary("svn", dirRepo, "init");
-        runRepoBinary("svn", dirRepo, "add", ".");
-        runRepoBinary("svn", dirRepo, "commit", "-m", "initial");
-        runRepoBinary("svn", dirRepo, "config", "--bool", "core.bare", "true");
+        runRepoBinary("svnadmin", pathToOrigin.toFile(), "create", pathToOrigin.toString());
+        // import resources to repository at pathToOrigin 
+        runRepoBinary("svn", temp.toFile(), "import", "file://" + pathToOrigin.toString(), "-m", "\"init\"");
         repo = new SvnExec("svn", pathToOrigin.toString(), "", "");
         pathToWorking = Files.createTempDirectory("a-working");
+        Dir.deleteRecursive(temp.toFile());
     }
 }
