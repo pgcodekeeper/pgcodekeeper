@@ -11,7 +11,7 @@ public class TestGit extends TestIRepoWorker{
 
     @Before
     public void setUp() throws Exception {
-        pathToOrigin = Files.createTempDirectory("a-origin");
+        pathToOrigin = Files.createTempDirectory("");
         copyFilesToPath(pathToOrigin);
         // init a git repo at pathToOrigin
         File dirRepo = new File (pathToOrigin.toString());
@@ -21,6 +21,6 @@ public class TestGit extends TestIRepoWorker{
         runRepoBinary("git", dirRepo, "config", "--bool", "core.bare", "true");
         //System.out.println("Git repository created at " + pathToOrigin);
         repo = new GitExec("git", pathToOrigin.toString(), "", "");
-        pathToWorking = Files.createTempDirectory("a-working");
+        pathToWorking = Files.createTempDirectory("");
     }
 }

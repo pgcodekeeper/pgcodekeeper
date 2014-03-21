@@ -14,14 +14,14 @@ public class TestSvn extends TestIRepoWorker{
     @Before
     public void setUp() throws Exception {
         Path temp = Files.createTempDirectory("");
-        pathToOrigin = Files.createTempDirectory("a-origin");
+        pathToOrigin = Files.createTempDirectory("");
         copyFilesToPath(temp);
         // init a git repo at pathToOrigin
         runRepoBinary("svnadmin", pathToOrigin.toFile(), "create", pathToOrigin.toString());
         // import resources to repository at pathToOrigin 
         runRepoBinary("svn", temp.toFile(), "import", "file://" + pathToOrigin.toString(), "-m", "\"init\"");
         repo = new SvnExec("svn", pathToOrigin.toString(), "", "");
-        pathToWorking = Files.createTempDirectory("a-working");
+        pathToWorking = Files.createTempDirectory("");
         Dir.deleteRecursive(temp.toFile());
     }
 }

@@ -132,15 +132,7 @@ public abstract class TestIRepoWorker {
         try {
             repo.repoCheckOut(pathToWorking.toFile(), null);
             Path pathToOriginalFiles = FileSystems.getDefault().getPath("resources").toAbsolutePath();
-            
-            Files.walkFileTree(pathToOriginalFiles, EnumSet
-                    .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
-                    new CompareHashFileVisitor(pathToOriginalFiles, pathToWorking));
-            
-            Files.walkFileTree(pathToWorking, EnumSet
-                    .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
-                    new CompareHashFileVisitor(pathToWorking, pathToOriginalFiles));
-            
+            compareFilesInPaths(pathToOriginalFiles, pathToWorking);
             assertTrue(true);
         } catch (IOException e) {
             fail("IOException at testRepoCheckOut " + e.getMessage());
@@ -157,17 +149,9 @@ public abstract class TestIRepoWorker {
                     + System.getProperty("file.separator") + "EXTENSION"
                     + System.getProperty("file.separator") + "file1.sql", "added");
             repo.repoCommit(dirRepo, "test");
-            dirTempRepo = Files.createTempDirectory("a-origin").toFile();
+            dirTempRepo = Files.createTempDirectory("").toFile();
             repo.repoCheckOut(dirTempRepo);
-            
-            Files.walkFileTree(dirTempRepo.toPath(), EnumSet
-                    .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
-                    new CompareHashFileVisitor(dirTempRepo.toPath(), pathToWorking));
-            
-            Files.walkFileTree(pathToWorking, EnumSet
-                    .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
-                    new CompareHashFileVisitor(pathToWorking, dirTempRepo.toPath()));
-            
+            compareFilesInPaths(dirTempRepo.toPath(), pathToWorking); 
             assertTrue(true);
         } catch (IOException e) {
             fail("IOException at testRepoCommit" + e.getMessage());
@@ -179,7 +163,7 @@ public abstract class TestIRepoWorker {
         try {
             File dirRepoA = pathToWorking.toFile();
             repo.repoCheckOut(dirRepoA);
-            dirTempRepo = Files.createTempDirectory("a-origin").toFile();
+            dirTempRepo = Files.createTempDirectory("").toFile();
             repo.repoCheckOut(dirTempRepo);
             appendToFile(dirRepoA.toString()
                     + System.getProperty("file.separator") + "EXTENSION"
@@ -214,7 +198,7 @@ public abstract class TestIRepoWorker {
         try {
             File dirRepo = pathToWorking.toFile();
             repo.repoCheckOut(dirRepo);
-            dirTempRepo = Files.createTempDirectory("a-origin").toFile();
+            dirTempRepo = Files.createTempDirectory("").toFile();
             repo.repoCheckOut(dirTempRepo);
             // modify file in repo temp
             appendToFile(dirTempRepo.toString()
@@ -222,37 +206,55 @@ public abstract class TestIRepoWorker {
                     + System.getProperty("file.separator") + "file1.sql", "added");
             repo.repoCommit(dirTempRepo, "test");
             repo.repoUpdate(dirRepo);
-            
-            Files.walkFileTree(dirTempRepo.toPath(), EnumSet
-                    .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
-                    new CompareHashFileVisitor(dirTempRepo.toPath(), dirRepo.toPath()));
-            
-            Files.walkFileTree(dirRepo.toPath(), EnumSet
-                    .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
-                    new CompareHashFileVisitor(dirRepo.toPath(), dirTempRepo.toPath()));
-            
+            compareFilesInPaths(dirTempRepo.toPath(), dirRepo.toPath());
             assertTrue(true);
         } catch (IOException e) {
             fail("IOException at testRepoCommit" + e.getMessage());
         }
     }
 
-    @Ignore
-    @Test
-    public void testRepoGetVersion() {
-        fail("Not yet implemented");
-    }
-
-    @Ignore
     @Test
     public void testGetRepoMetaFolder() {
-        fail("Not yet implemented");
+        if (repo.getRepoMetaFolder().equals(".git") || repo.getRepoMetaFolder().equals(".svn")){
+            assertTrue(true);
+        }else{
+            fail("Repo meta folder differs from .svn or .git");
+        }
     }
 
-    @Ignore
     @Test
     public void testRepoRemoveMissingAddNew() {
-        fail("Not yet implemented");
+        try {
+            File dirRepoA = pathToWorking.toFile();
+            repo.repoCheckOut(dirRepoA);
+            Files.delete(pathToWorking.resolve(new File("EXTENSION"
+                    + System.getProperty("file.separator") + "file1.sql")
+                    .toPath()));
+            
+            Path path = pathToWorking.resolve(new File("EXTENSION"
+                    + System.getProperty("file.separator") + "newfile")
+                    .toPath());
+            Files.createFile(path);
+            repo.repoRemoveMissingAddNew(dirRepoA);
+            repo.repoCommit(dirRepoA, "1 removed, 1 added");
+            
+            dirTempRepo = Files.createTempDirectory("").toFile();
+            repo.repoCheckOut(dirTempRepo);
+            compareFilesInPaths(dirRepoA.toPath(), dirTempRepo.toPath());
+
+            assertTrue(true);
+        } catch (IOException e) {
+            fail("IOException at testRepoRemoveMissingAddNew");
+        }
+    }
+    
+    private void compareFilesInPaths(Path path1, Path path2) throws IOException{
+        Files.walkFileTree(path1, EnumSet
+                .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+                new CompareHashFileVisitor(path1, path2));
+        Files.walkFileTree(path2, EnumSet
+                .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+                new CompareHashFileVisitor(path2, path1));
     }
 
     class CopyFileVisitor extends SimpleFileVisitor<Path>{
