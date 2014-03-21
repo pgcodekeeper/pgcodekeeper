@@ -147,13 +147,6 @@ public class GitExec implements IRepoWorker {
                 + uri.getPath();
     }
 
-    private String[] gitGetMissing(File dirIn) throws IOException {
-        ProcessBuilder git = new ProcessBuilder(gitExec, "ls-files", "-d");
-        git.directory(dirIn);
-        return StdStreamRedirector.launchAndRedirect(git).split(
-                System.getProperty("line.separator"));
-    }
-
     /**
      * Prevents git from converting russian file names to escape sequence (as in
      * "файл" = "\321\204\320\260\320\271\320\273")
