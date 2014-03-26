@@ -10,8 +10,10 @@ import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
+import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
+@Deprecated
 public class GitExec implements IRepoWorker {
     private final String gitExec;
     public static final Pattern PATTERN_SHORT_SSH_URL = Pattern
@@ -69,6 +71,7 @@ public class GitExec implements IRepoWorker {
                 throw new IllegalStateException(e);
             }
         }else{
+            isSshAuthentificated();
             git.command().add(url);
         }
         git.directory(dirTo);
@@ -79,6 +82,27 @@ public class GitExec implements IRepoWorker {
             git = new ProcessBuilder(gitExec, "checkout", commitHash, ".");
             git.directory(dirTo);
             StdStreamRedirector.launchAndRedirect(git);
+        }
+    }
+
+    /**
+     * Tries to connect to remote server via ssh to check whether ssh rsa key is stored
+     * TODO replace git@dev.core below by parsed host address
+     *  
+     * @throws IOException
+     */
+    private void isSshAuthentificated() throws IOException{
+        try(TempDir td = new TempDir("")){
+            ProcessBuilder ssh = new ProcessBuilder("ssh", "-o", "NumberOfPasswordPrompts=0", "-o","StrictHostKeyChecking=yes","git@dev.core");
+            ssh.redirectErrorStream(true);
+            ssh.directory(td.get());
+            Process p = ssh.start();
+            p.waitFor(); 
+            if (p.exitValue() != 0){
+                throw new IllegalStateException ("Error connecting to server through ssh. Exit code is " + p.exitValue());
+            }
+        }catch(InterruptedException e){
+            throw new IllegalStateException ("Error connecting to server through ssh.");
         }
     }
 
@@ -162,12 +186,4 @@ public class GitExec implements IRepoWorker {
         git.directory(dirIn);
         StdStreamRedirector.launchAndRedirect(git);
     }
-
-    private String[] gitGetOther(File dirIn) throws IOException {
-        ProcessBuilder git = new ProcessBuilder(gitExec, "ls-files", "-o");
-        git.directory(dirIn);
-        return StdStreamRedirector.launchAndRedirect(git).split(
-                System.getProperty("line.separator"));
-    }
-
 }
