@@ -19,7 +19,7 @@ public class GitExec implements IRepoWorker {
     public static final Pattern PATTERN_SHORT_SSH_URL = Pattern
             .compile("[\\w\\.'_-]+@[\\w\\.-]+:[\\w\\._-]+/[\\w\\._-]+");
     public static final Pattern PATTERN_SSH_URL = Pattern.compile("ssh://.+");
-    public static final Pattern PATTERN_HTTP_URL = Pattern.compile("http://.+");
+    public static final Pattern PATTERN_HTTP_URL = Pattern.compile("http(s)?://.+");
 
     private final String url, user, pass;
 
@@ -65,13 +65,10 @@ public class GitExec implements IRepoWorker {
     public void repoCheckOut(File dirTo, String commitHash) throws IOException {
         ProcessBuilder git = new ProcessBuilder(gitExec, "clone");
         if (PATTERN_HTTP_URL.matcher(url).matches()) {
-            try {
-                git.command().add(getRepoUrlWithAuth());
-            } catch (URISyntaxException e) {
-                throw new IllegalStateException(e);
-            }
-        }else{
-            isSshAuthentificated();
+            git.command().add(getRepoUrlWithAuth());
+        } else {
+            if (PATTERN_SSH_URL.matcher(url).matches() || PATTERN_SHORT_SSH_URL.matcher(url).matches())
+                checkSshAuthentificated();
             git.command().add(url);
         }
         git.directory(dirTo);
@@ -91,13 +88,13 @@ public class GitExec implements IRepoWorker {
      *  
      * @throws IOException
      */
-    private void isSshAuthentificated() throws IOException{
+    private void checkSshAuthentificated() throws IOException{
         try(TempDir td = new TempDir("")){
             ProcessBuilder ssh = new ProcessBuilder("ssh", "-o", "NumberOfPasswordPrompts=0", "-o","StrictHostKeyChecking=yes","git@dev.core");
             ssh.redirectErrorStream(true);
             ssh.directory(td.get());
             Process p = ssh.start();
-            p.waitFor(); 
+            p.waitFor();
             if (p.exitValue() != 0){
                 throw new IllegalStateException ("Error connecting to server through ssh. Exit code is " + p.exitValue());
             }
@@ -161,14 +158,17 @@ public class GitExec implements IRepoWorker {
      * @throws URISyntaxException
      * @throws UnsupportedEncodingException
      */
-    private String getRepoUrlWithAuth() throws URISyntaxException,
-            UnsupportedEncodingException {
-        URI uri = new URI(url);
-        // requires URI encoding for uname and password when those contain
-        // special signs
-        return uri.getScheme() + "://" + URLEncoder.encode(user, "UTF8") + ":"
-                + URLEncoder.encode(pass, "UTF8") + "@" + uri.getHost()
-                + uri.getPath();
+    private String getRepoUrlWithAuth(){
+        try {
+            URI uri = new URI(url);
+            return uri.getScheme() + "://" + URLEncoder.encode(user, "UTF8") + ":"
+                    + URLEncoder.encode(pass, "UTF8") + "@" + uri.getHost()
+                    + uri.getPath();
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("Unsupported encoding: " + e.getMessage());
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Wrong URI syntax: " + e.getMessage());
+        }
     }
 
     /**
