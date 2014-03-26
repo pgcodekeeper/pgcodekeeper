@@ -13,7 +13,7 @@ import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.osgi.service.application.ApplicationHandle;
 
-import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
+import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.parts.Console;
@@ -75,7 +75,7 @@ public class AddonExternalTools {
             setSvnVersion("<unknown>");
         }
         try {
-            setGitVersion(new GitExec(gitExec).repoGetVersion());
+            setGitVersion(new JGitExec().repoGetVersion());
         } catch(IOException ex) {
             Console.addMessage("Error while trying to run git version!"
                     + " Check paths in program preferences.");

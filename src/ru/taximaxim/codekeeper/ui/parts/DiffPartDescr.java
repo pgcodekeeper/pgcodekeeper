@@ -41,6 +41,7 @@ import org.eclipse.swt.widgets.Text;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.TextDialog;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
@@ -263,12 +264,12 @@ public class DiffPartDescr {
                     new ProgressMonitorDialog(shell).run(true, false,
                             treediffer);
                 } catch (InvocationTargetException ex) {
-                    throw new IllegalStateException("Error in differ thread",
-                            ex);
+                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException("Error in differ thread",
+                            ex), shell);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    throw new IllegalStateException(
-                            "Differ thread cancelled. Shouldn't happen!", ex);
+                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
+                            "Differ thread cancelled. Shouldn't happen!", ex), shell);
                 }
 
                 diffTree.setTreeInput(treediffer.getDiffTree());

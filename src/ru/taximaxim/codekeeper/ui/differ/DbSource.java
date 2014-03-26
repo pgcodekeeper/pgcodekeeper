@@ -9,8 +9,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
+import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
@@ -157,7 +157,7 @@ class DbSourceRepo extends DbSource {
             repo = new SvnExec(repoExec, url, user, pass);
             break;
         case GIT:
-            repo = new GitExec(repoExec, url, user, pass);
+            repo = new JGitExec(url, user, pass);
             break;
         default:
             throw new IllegalStateException("Not a GIT/SVN enabled project");

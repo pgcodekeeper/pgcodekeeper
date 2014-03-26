@@ -7,20 +7,10 @@ import java.util.regex.Pattern;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult.MergeStatus;
+import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
-import org.eclipse.jgit.api.errors.CanceledException;
-import org.eclipse.jgit.api.errors.ConcurrentRefUpdateException;
-import org.eclipse.jgit.api.errors.DetachedHeadException;
+import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidConfigurationException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.NoFilepatternException;
-import org.eclipse.jgit.api.errors.NoHeadException;
-import org.eclipse.jgit.api.errors.NoMessageException;
-import org.eclipse.jgit.api.errors.RefNotFoundException;
-import org.eclipse.jgit.api.errors.TransportException;
-import org.eclipse.jgit.api.errors.UnmergedPathsException;
-import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
 import org.eclipse.jgit.lib.IndexDiff;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
@@ -65,7 +55,7 @@ public class JGitExec implements IRepoWorker{
         try {
             cloneCom.setURI(url).setDirectory(dirTo).call();
         } catch (GitAPIException e) {
-            throw new IllegalStateException ("Exception thrown at JGit clone: " + e.getMessage());
+            throw new IOException ("Exception thrown at JGit clone.", e);
         }
     }
 
@@ -74,17 +64,19 @@ public class JGitExec implements IRepoWorker{
         Git git = Git.open(dirFrom);
         try {
             git.commit().setMessage(comment).setAll(true).call();
-            for (PushResult pushRes : git.push().call()){
+            PushCommand pushCom = git.push();
+            if (PATTERN_HTTP_URL.matcher(url).matches()) {
+                pushCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
+            }
+            for (PushResult pushRes : pushCom.call()){
                 for (RemoteRefUpdate b : pushRes.getRemoteUpdates()){
                     if (b.getStatus() !=  RemoteRefUpdate.Status.OK && b.getStatus() !=  RemoteRefUpdate.Status.UP_TO_DATE){
-                        throw new IllegalStateException ("Exception thrown at JGit commit: status is not ok or up_to_date");
+                        throw new IOException ("Exception thrown at JGit commit: status is not ok or up_to_date");
                     }
                 }
             }
-        } catch (WrongRepositoryStateException | ConcurrentRefUpdateException | UnmergedPathsException | NoHeadException | NoMessageException e) {
-            throw new IllegalStateException ("Exception thrown at JGit commit: " + e.getMessage());
-        }catch (GitAPIException e){
-            throw new IllegalStateException ("Exception thrown at JGit commit: " + e.getMessage());
+        } catch (GitAPIException e){
+            throw new IOException ("Exception thrown at JGit commit: ", e);
         }
     }
 
@@ -94,12 +86,9 @@ public class JGitExec implements IRepoWorker{
         try {
             git.add().addFilepattern(".").setUpdate(true).call();
             git.add().addFilepattern(".").call();
-        } catch (NoFilepatternException e) {
-            throw new IllegalStateException(
-                    "Exception thrown at JGit repoRemoveMissingAddNew: " + e.getMessage());
         } catch (GitAPIException e) {
-            throw new IllegalStateException(
-                    "Exception thrown at JGit repoRemoveMissingAddNew: " + e.getMessage());
+            throw new IOException(
+                    "Exception thrown at JGit repoRemoveMissingAddNew.", e);
         }
 
     }
@@ -121,15 +110,14 @@ public class JGitExec implements IRepoWorker{
     @Override
     public boolean repoUpdate(File dirIn) throws IOException  {
         try {
-            PullResult pr =  Git.open(dirIn).pull().call();
+            PullCommand pullCom = Git.open(dirIn).pull();
+            if (PATTERN_HTTP_URL.matcher(url).matches()) {
+                pullCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
+            }
+            PullResult pr =  pullCom.call();
             return pr.getMergeResult().getMergeStatus() == MergeStatus.MERGED || pr.getMergeResult().getMergeStatus() == MergeStatus.ALREADY_UP_TO_DATE;
-        } catch (WrongRepositoryStateException | InvalidConfigurationException
-                | DetachedHeadException | InvalidRemoteException
-                | CanceledException | RefNotFoundException | NoHeadException
-                | TransportException e) {
-            return false;
-        }catch (GitAPIException e){
-            return false;
+        } catch (GitAPIException e){
+            throw new IOException("Exception thrown at JGit repoUpdate.", e);
         }
     }
 

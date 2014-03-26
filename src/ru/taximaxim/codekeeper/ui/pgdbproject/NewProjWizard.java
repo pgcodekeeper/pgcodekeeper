@@ -2,11 +2,11 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.Set;
-
-import javax.swing.ButtonGroup;
 
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -40,9 +40,10 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
-import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
+import ru.taximaxim.codekeeper.ui.parts.Console;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 
 public class NewProjWizard extends Wizard implements IPageChangingListener {
@@ -60,7 +61,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
         setNeedsProgressMonitor(true);
         this.mainPrefStore = mainPrefStore;
     }
-
+    
     public PgDbProject getProject() {
         return props;
     }
@@ -153,14 +154,13 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
         try {
             getContainer().run(true, false, creator);
         } catch (InvocationTargetException ex) {
-            throw new IllegalStateException(
-                    "Error in the project creator thread", ex);
+            ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
+                    "Error in the project creator thread", ex), getShell());
         } catch (InterruptedException ex) {
             // assume run() was called as non cancelable
-            throw new IllegalStateException(
-                    "Project creator thread cancelled. Shouldn't happen!", ex);
+            ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
+                    "Project creator thread cancelled. Shouldn't happen!", ex), getShell());
         }
-
         return true;
     }
 }
@@ -247,10 +247,16 @@ class PageRepo extends WizardPage implements Listener {
         repoTypeName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
         container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(2, false));
-        btnSvn = new Button(container, SWT.RADIO);
+        
+        Group repoType = new Group(container,SWT.NONE); 
+        repoType.setLayout(new GridLayout(2, false));
+        repoType.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2,
+                1));
+        repoType.setText("Select Control Version System");
+        btnSvn = new Button(repoType, SWT.RADIO);
         btnSvn.setText(UIConsts.PROJ_REPO_TYPE_SVN_NAME);
         btnSvn.setSelection(true);
-        btnGit = new Button(container, SWT.RADIO);
+        btnGit = new Button(repoType, SWT.RADIO);
         btnGit.setText(UIConsts.PROJ_REPO_TYPE_GIT_NAME);
 
         grpRepo = new Group(container, SWT.NONE);
@@ -295,38 +301,6 @@ class PageRepo extends WizardPage implements Listener {
                     gd.exclude = true;
                     getShell().pack();
                     container.layout(false);
-                }
-            }
-        });
-
-        txtRepoUrl.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                if (txtRepoUrl.getText().isEmpty()) {
-                    txtRepoUser.setEnabled(true);
-                    txtRepoPass.setEnabled(true);
-                    txtRepoPass.notifyListeners(SWT.Modify, new Event());
-                } else if (btnSvn.getSelection()) {
-                    txtRepoUser.setEnabled(true);
-                    txtRepoPass.setEnabled(true);
-                    txtRepoPass.notifyListeners(SWT.Modify, new Event());
-                } else if (GitExec.PATTERN_SHORT_SSH_URL.matcher(
-                        txtRepoUrl.getText()).matches()
-                        || GitExec.PATTERN_SSH_URL
-                                .matcher(txtRepoUrl.getText()).matches()) {
-                    txtRepoUser.setEnabled(false);
-                    txtRepoPass.setEnabled(false);
-                    txtRepoPass.notifyListeners(SWT.Modify, new Event());
-                } else if (GitExec.PATTERN_HTTP_URL.matcher(
-                        txtRepoUrl.getText()).matches()) {
-                    txtRepoUser.setEnabled(true);
-                    txtRepoPass.setEnabled(true);
-                    txtRepoPass.notifyListeners(SWT.Modify, new Event());
-                } else {
-                    txtRepoUser.setEnabled(true);
-                    txtRepoPass.setEnabled(true);
-                    txtRepoPass.notifyListeners(SWT.Modify, new Event());
                 }
             }
         });

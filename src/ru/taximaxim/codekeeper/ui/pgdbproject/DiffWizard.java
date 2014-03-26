@@ -47,6 +47,7 @@ import cz.startnet.utils.pgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -106,12 +107,12 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 try {
                     getContainer().run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
-                    throw new IllegalStateException("Error in differ thread",
-                            ex);
+                    ExceptionNotifyHelper.notifyAndThrow( new IllegalStateException("Error in differ thread",
+                            ex), getContainer().getShell());
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    throw new IllegalStateException(
-                            "Differ thread cancelled. Shouldn't happen!", ex);
+                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
+                            "Differ thread cancelled. Shouldn't happen!", ex), getContainer().getShell());
                 }
 
                 dbSource = treediffer.getDbSource();
@@ -134,12 +135,12 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 try {
                     getContainer().run(true, false, differ);
                 } catch (InvocationTargetException ex) {
-                    throw new IllegalStateException("Error in differ thread",
-                            ex);
+                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException("Error in differ thread",
+                            ex), getContainer().getShell());
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    throw new IllegalStateException(
-                            "Differ thread cancelled. Shouldn't happen!", ex);
+                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
+                            "Differ thread cancelled. Shouldn't happen!", ex),getContainer().getShell());
                 }
 
                 pageResult.setData(dbSource.getOrigin(), dbTarget.getOrigin(),
@@ -545,33 +546,6 @@ class PageDiff extends WizardPage implements Listener {
         txtGitUrl = new Text(grpGit, SWT.BORDER);
         txtGitUrl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtGitUrl.addListener(SWT.Modify, this);
-        txtGitUrl.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                if (txtGitUrl.getText().isEmpty()) {
-                    txtGitUser.setEnabled(true);
-                    txtGitPass.setEnabled(true);
-                    txtGitPass.notifyListeners(SWT.Modify, new Event());
-                } else if (GitExec.PATTERN_SHORT_SSH_URL.matcher(
-                        txtGitUrl.getText()).matches()
-                        || GitExec.PATTERN_SHORT_SSH_URL.matcher(
-                                txtGitUrl.getText()).matches()) {
-                    txtGitUser.setEnabled(false);
-                    txtGitPass.setEnabled(false);
-                    txtGitPass.notifyListeners(SWT.Modify, new Event());
-                } else if (GitExec.PATTERN_HTTP_URL
-                        .matcher(txtGitUrl.getText()).matches()) {
-                    txtGitUser.setEnabled(true);
-                    txtGitPass.setEnabled(true);
-                    txtGitPass.notifyListeners(SWT.Modify, new Event());
-                } else {
-                    txtGitUser.setEnabled(true);
-                    txtGitPass.setEnabled(true);
-                    txtGitPass.notifyListeners(SWT.Modify, new Event());
-                }
-            }
-        });
         new Label(grpGit, SWT.NONE).setText("GIT User:");
 
         txtGitUser = new Text(grpGit, SWT.BORDER);
