@@ -2,9 +2,7 @@ package ru.taximaxim.codekeeper.ui.tests;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
-
-import org.eclipse.e4.core.services.log.Logger;
+import static org.mockito.Mockito.mock;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -22,26 +20,24 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.List;
 
+import org.eclipse.e4.core.services.log.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
+import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
-import ru.taximaxim.codekeeper.ui.Log;
-
-import java.nio.file.attribute.*;
 public abstract class TestIRepoWorker {
 
     protected IRepoWorker repo;
@@ -117,7 +113,7 @@ public abstract class TestIRepoWorker {
         }
     }
 
-    private void appendToFile(String file, String textToAppend) throws IOException{
+    private static void appendToFile(String file, String textToAppend) throws IOException{
         FileWriter fw = new FileWriter(file, true);
         BufferedWriter bw = new BufferedWriter(fw);
         PrintWriter printWriter = new PrintWriter(bw);
@@ -175,19 +171,22 @@ public abstract class TestIRepoWorker {
                             + "file1.sql", "B");
             // commit changes from A to origin
             repo.repoCommit(dirRepoA, "AAA");
-            // Throws IOException, since there is conflict
-            // We call it, because it's the only way for GitExec to call "git commit -a" 
-            try {
-                repo.repoCommit(dirTempRepo, "BBB");
-            } catch (IOException e) {
+            // Throws Exception, since there is conflict. We call it, because it's the 
+            // only way for GitExec to stage files using IRepoWorker available methods
+            if (repo instanceof GitExec | repo instanceof JGitExec) {
                 try {
-                    repo.repoUpdate(dirTempRepo);
-                } catch (IOException ex) {
+                    repo.repoCommit(dirTempRepo, "BBB");
+                } catch (IllegalStateException | IOException e ) {
+                    // Exception expected
                 }
-
-                boolean bool = repo.hasConflicts(dirTempRepo);
-                assertTrue(bool);
             }
+            
+            try {
+                repo.repoUpdate(dirTempRepo);
+            } catch (IOException e) {
+                //IO exception expected if (repo instanceof GitExec)
+            }
+            assertTrue(repo.hasConflicts(dirTempRepo));
         } catch (IOException e) {
             fail("IOException at testHasConflicts" + e.getMessage());
         }
@@ -200,7 +199,6 @@ public abstract class TestIRepoWorker {
             repo.repoCheckOut(dirRepo);
             dirTempRepo = Files.createTempDirectory("").toFile();
             repo.repoCheckOut(dirTempRepo);
-            // modify file in repo temp
             appendToFile(dirTempRepo.toString()
                     + System.getProperty("file.separator") + "EXTENSION"
                     + System.getProperty("file.separator") + "file1.sql", "added");
@@ -237,7 +235,6 @@ public abstract class TestIRepoWorker {
             Files.createFile(path);
             repo.repoRemoveMissingAddNew(dirRepoA);
             repo.repoCommit(dirRepoA, "1 removed, 1 added");
-            
             dirTempRepo = Files.createTempDirectory("").toFile();
             repo.repoCheckOut(dirTempRepo);
             compareFilesInPaths(dirRepoA.toPath(), dirTempRepo.toPath());
@@ -257,7 +254,7 @@ public abstract class TestIRepoWorker {
                 new CompareHashFileVisitor(path2, path1));
     }
 
-    class CopyFileVisitor extends SimpleFileVisitor<Path>{
+    private class CopyFileVisitor extends SimpleFileVisitor<Path>{
         private Path source;
         private Path destination;
         
@@ -289,7 +286,7 @@ public abstract class TestIRepoWorker {
         }
     }
     
-    class CompareHashFileVisitor extends SimpleFileVisitor<Path>{
+    private class CompareHashFileVisitor extends SimpleFileVisitor<Path>{
         private Path pathToBeCompared;
         private Path pathToCompareTo;
         

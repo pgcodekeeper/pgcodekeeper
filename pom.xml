@@ -20,15 +20,8 @@
 	 	    <artifactId>tycho-surefire-plugin</artifactId>
 	 	    <version>0.19.0</version>
 	 	    <configuration>
-	 	      <!-- >testSuite>ru.taximaxim.codekeeper.ui.tests</testSuite-->
-	 	      <!-- >testClass>ru.taximaxim.codekeeper.ui.tests.TestGit</testClass>
-	 	      <testClass>ru.taximaxim.codekeeper.ui.tests.TestSvn</testClass-->
 	 	      <product>ru.taximaxim.codeKeeper</product>
-	          <!-- >includes>
-                <include>TestSvn.java</include>
-                <include>TestGit.java</include>
-              </includes-->
-	 	    </configuration>
+	        </configuration>
 	 	  </plugin>
 	 </plugins>
  </build>
