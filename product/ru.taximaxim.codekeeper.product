@@ -25,7 +25,9 @@
    <plugins>
       <plugin id="apgdiff"/>
       <plugin id="com.ibm.icu"/>
+      <plugin id="com.jcraft.jsch"/>
       <plugin id="com.opcoach.e4.contextExplorer"/>
+      <plugin id="javaewah"/>
       <plugin id="javax.annotation"/>
       <plugin id="javax.inject"/>
       <plugin id="javax.xml"/>
@@ -90,6 +92,7 @@
       <plugin id="org.eclipse.jface"/>
       <plugin id="org.eclipse.jface.databinding"/>
       <plugin id="org.eclipse.jface.text"/>
+      <plugin id="org.eclipse.jgit"/>
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.osgi.services"/>
       <plugin id="org.eclipse.swt"/>
