@@ -71,8 +71,9 @@ public final class Parser {
                 || string.charAt(wordEnd) == ')'
                 || string.charAt(wordEnd) == ','
                 || string.charAt(wordEnd) == '['
-                || "(".equals(word) || ",".equals(word) || "[".equals(word)
-                || "]".equals(word))) {
+                || string.charAt(wordEnd) == '('
+                || "(".equals(word) || ")".equals(word) || ",".equals(word)
+                || "[".equals(word) || "]".equals(word))) {
             position = wordEnd;
             skipWhitespace();
 
@@ -85,7 +86,7 @@ public final class Parser {
 
         throw new ParserException(MessageFormat.format(
                 Resources.getString("CannotParseStringExpectedWord"), string,
-                word, position + 1, string.substring(position, position + 20)));
+                word, position + 1, string.substring(position, position + 20))); // FIXME what if length < position+20 ? All occurrences of this
     }
 
     /**
@@ -328,10 +329,13 @@ public final class Parser {
      * Returns expression that is ended either with ',', ')' or with end of the
      * string. If expression is empty then exception is thrown.
      *
+     * @param terminationWords optional additional termination words.
+     *                          Words may consist only of letters.
+     *
      * @return expression string
      */
-    public String getExpression() {
-        final int endPos = getExpressionEnd();
+    public String getExpression(String... terminationWords) {
+        final int endPos = getExpressionEnd(terminationWords);
 
         if (position == endPos) {
             throw new ParserException(MessageFormat.format(
@@ -352,33 +356,69 @@ public final class Parser {
      * (like CREATE TABLE). Last character is either ',' or ')'. If no such
      * character is found and method reaches the end of the command then
      * position after the last character in the command is returned.
+     * 
+     * @param terminationWords optional additional termination words.
+     *                          Words may consist only of letters.
      *
      * @return end position of the command
      */
-    private int getExpressionEnd() {
+    protected int getExpressionEnd(String... terminationWords) {
         int bracesCount = 0;
-        boolean singleQuoteOn = false;
+        boolean singleQuoteOn = false,
+                doubleQuoteOn = false;
         int charPos = position;
 
         for (; charPos < string.length(); charPos++) {
             final char chr = string.charAt(charPos);
 
-            if (chr == '\'') {
+            if (chr == '\'' && !doubleQuoteOn) {
                 singleQuoteOn = !singleQuoteOn;
                 continue;
             }
+            if (chr == '"' && !singleQuoteOn) {
+                doubleQuoteOn = !doubleQuoteOn;
+                continue;
+            }
 
-            if(!singleQuoteOn) {
+            if(!singleQuoteOn && !doubleQuoteOn) {
                 if (chr == '(') {
                     bracesCount++;
-                } else if (chr == ')') {
-                    if (bracesCount == 0) {
+                } else if (bracesCount == 0) {
+                    if (chr == ',' || chr == ';' || chr == ')') {
                         break;
-                    } else {
-                        bracesCount--;
                     }
-                } else if ((chr == ',' || chr == ';') && bracesCount == 0) {
-                    break;
+                    
+                    boolean wordReached = false;
+                    
+                    for (String word : terminationWords) {
+                        
+                        // first, check if the word is properly delimited
+                        // and is not a part of a bigger word
+                        // any non-letter character delimits the word
+                        if (charPos - 1 > -1 &&
+                                Character.isLetter(string.charAt(
+                                        charPos - 1))) {
+                            // current char continues another word, skip this word
+                            continue;
+                        }
+                        if (charPos < string.length() - word.length()
+                                && Character.isLetter(string.charAt(
+                                        charPos + word.length()))) {
+                            // char after the word continues it, skip this word
+                            continue;
+                        }
+                        
+                        // now check if the word is actually there
+                        if (string.regionMatches(true, charPos, word, 0, word.length())) {
+                            wordReached = true;
+                            break;
+                        }
+                    }
+                    if (wordReached) {
+                        break;
+                    }
+                } else if (chr == ')') {
+                    bracesCount--;
                 }
             }
         }

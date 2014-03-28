@@ -18,7 +18,7 @@ public class PgDiffUtils {
      * Array of reserved keywords. Non-reserved keywords are excluded. Source
      * http://www.postgresql.org/docs/9.0/static/sql-keywords-appendix.html.
      */
-    private static final String[] KEYWORDS = new String[]{
+    private static final String[] KEYWORDS = {
         "ABS",
         "ABSOLUTE",
         "ACTION",

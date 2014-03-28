@@ -21,7 +21,7 @@ public class DepcyGraph {
     
     /**
      * Направление связей в графе:<br>
-     * зависимость <-- зависящий объект
+     * зависимость &lt;-- зависящий объект
      */
     private final DirectedGraph<PgStatement, DefaultEdge> graph = 
             new SimpleDirectedGraph<>(DefaultEdge.class);

@@ -48,8 +48,7 @@ public final class CreateViewParser {
         		statement, searchPath);
         view.setColumnNames(columnNames);
         view.setQuery(query);
-        
-        parseSelect(query, view);
+        view.setSelect(SelectParser.parse(database, query, searchPath));
 
         final String schemaName = ParserUtils.getSchemaName(viewName, database);
         final PgSchema schema = database.getSchema(schemaName);
@@ -61,21 +60,6 @@ public final class CreateViewParser {
         }
 
         schema.addView(view);
-    }
-
-    private static void parseSelect(String select, PgView view) {
-        Parser parser = new Parser(select + ';');
-        int parens = 0;
-        
-        if(parser.expectOptional("(")) {
-            ++parens;
-        }
-        
-        parser.expect("SELECT");
-        
-        do {
-            
-        } while(parser.expectOptional(","));
     }
     
     private CreateViewParser() {
