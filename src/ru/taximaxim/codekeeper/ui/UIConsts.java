@@ -26,6 +26,7 @@ public interface UIConsts {
     String PREF_GIT_EXE_PATH = "prefGitExePath";
     String PREF_PGDUMP_EXE_PATH = "prefPgdumpExePath";
     String PREF_DB_STORE = "prefDbStore";
+    String PREF_GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile";
     
     // Project preferences
     String PROJ_PREF_ENCODING = "prefGeneralEncoding";

@@ -33,8 +33,11 @@ public class ProjectCreator implements IRunnableWithProgress {
 
     private String repoName = "";
 
+    private final IPreferenceStore mainPrefStore;
+    
     public ProjectCreator(final IPreferenceStore mainPrefStore,
             final PgDbProject props, final String dumpPath, boolean doInit) {
+        this.mainPrefStore = mainPrefStore;
         this.exePgdump = mainPrefStore.getString(UIConsts.PREF_PGDUMP_EXE_PATH);
         this.exeSvn = mainPrefStore.getString(UIConsts.PREF_SVN_EXE_PATH);
         this.props = props;
@@ -56,7 +59,7 @@ public class ProjectCreator implements IRunnableWithProgress {
                 repoName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
                 break;
             case GIT:
-                repo = new JGitExec(props);
+                repo = new JGitExec(props, mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
                 repoName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
                 break;
             default:

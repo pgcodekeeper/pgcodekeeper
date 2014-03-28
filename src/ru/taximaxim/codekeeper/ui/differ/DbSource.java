@@ -55,32 +55,32 @@ public abstract class DbSource {
     }
 
     public static DbSource fromSvn(String svnExec, PgDbProject proj) {
-        return new DbSourceRepo(svnExec, proj);
+        return new DbSourceRepo(svnExec, proj, null);
     }
 
     public static DbSource fromSvn(String svnExec, PgDbProject proj, String rev) {
-        return new DbSourceRepo(svnExec, proj, rev);
+        return new DbSourceRepo(svnExec, proj, rev, null);
     }
 
     public static DbSource fromSvn(String svnExec, String url, String user,
             String pass, String rev, String encoding) {
         return new DbSourceRepo(RepoType.SVN, svnExec, url, user, pass, rev,
-                encoding);
+                encoding, null);
     }
 
-    public static DbSource fromGit(String gitExec, PgDbProject proj) {
-        return new DbSourceRepo(gitExec, proj);
+    public static DbSource fromGit(String gitExec, PgDbProject proj, String privateKeyFile) {
+        return new DbSourceRepo(gitExec, proj, privateKeyFile);
     }
 
     public static DbSource fromGit(String gitExec, PgDbProject proj,
-            String commitHash) {
-        return new DbSourceRepo(gitExec, proj, commitHash);
+            String commitHash, String privateKeyFile) {
+        return new DbSourceRepo(gitExec, proj, commitHash, privateKeyFile);
     }
 
     public static DbSource fromGit(String gitExec, String url, String user,
-            String pass, String commitHash, String encoding) {
+            String pass, String commitHash, String encoding, String privateKeyFile) {
         return new DbSourceRepo(RepoType.GIT, gitExec, url, user, pass,
-                commitHash, encoding);
+                commitHash, encoding, privateKeyFile);
     }
 
     public static DbSource fromProject(PgDbProject proj) {
@@ -137,27 +137,27 @@ class DbSourceRepo extends DbSource {
 
     final private String rev;
 
-    DbSourceRepo(String repoExec, PgDbProject proj) {
-        this(repoExec, proj, null);
+    DbSourceRepo(String repoExec, PgDbProject proj, String privateKeyFile) {
+        this(repoExec, proj, null, privateKeyFile);
     }
 
-    public DbSourceRepo(String repoExec, PgDbProject proj, String rev) {
+    public DbSourceRepo(String repoExec, PgDbProject proj, String rev, String privateKeyFile) {
         this(RepoType.valueOf(proj.getString(UIConsts.PROJ_PREF_REPO_TYPE)),
                 repoExec, proj.getString(UIConsts.PROJ_PREF_REPO_URL), proj
                         .getString(UIConsts.PROJ_PREF_REPO_USER), proj
-                        .getString(UIConsts.PROJ_PREF_REPO_PASS), proj
-                        .getString(UIConsts.PROJ_PREF_ENCODING), rev);
+                        .getString(UIConsts.PROJ_PREF_REPO_PASS), rev, proj
+                        .getString(UIConsts.PROJ_PREF_ENCODING), privateKeyFile);
     }
 
     DbSourceRepo(RepoType repoType, String repoExec, String url, String user,
-            String pass, String rev, String encoding) {
+            String pass, String rev, String encoding, String privateKeyFile) {
         super(url + (rev.isEmpty() ? "" : "@" + rev));
         switch (repoType) {
         case SVN:
             repo = new SvnExec(repoExec, url, user, pass);
             break;
         case GIT:
-            repo = new JGitExec(url, user, pass);
+            repo = new JGitExec(url, user, pass, privateKeyFile);
             break;
         default:
             throw new IllegalStateException("Not a GIT/SVN enabled project");

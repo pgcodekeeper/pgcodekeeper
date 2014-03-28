@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.externalcalls;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.regex.Pattern;
 
 import org.eclipse.jgit.api.CloneCommand;
@@ -12,30 +13,43 @@ import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.IndexDiff;
+import org.eclipse.jgit.transport.JschConfigSessionFactory;
+import org.eclipse.jgit.transport.OpenSshConfig;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
+import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
+import org.eclipse.jgit.util.FS;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.KeyPair;
+import com.jcraft.jsch.Session;
 
 public class JGitExec implements IRepoWorker{
 
     private final String url, user, pass;
     public static final Pattern PATTERN_HTTP_URL = Pattern.compile("http(s)?://.+");
+    public static final Pattern PATTERN_FILE_URL = Pattern.compile("(file://)?"+System.getProperty("file.separator")+".*");
+    private static final int RSA_KEY_LENGTH = 4096;
     
     public JGitExec() {
         url = user = pass = null;
     }
 
-    public JGitExec(PgDbProject proj) {
+    public JGitExec(PgDbProject proj, String privateKeyFile) {
         this(proj.getString(UIConsts.PROJ_PREF_REPO_URL), proj
                 .getString(UIConsts.PROJ_PREF_REPO_USER), proj
-                .getString(UIConsts.PROJ_PREF_REPO_PASS));
+                .getString(UIConsts.PROJ_PREF_REPO_PASS), privateKeyFile);
     }
 
-    public JGitExec(String url, String user, String pass) {
+    public JGitExec(String url, String user, String pass, String privateKeyFile) {
+        CustomJschConfigSessionFactory jschConfigSessionFactory = new CustomJschConfigSessionFactory(privateKeyFile);
+        SshSessionFactory.setInstance(jschConfigSessionFactory);        
         this.url = url;
         this.user = user;
         this.pass = pass;
@@ -51,6 +65,8 @@ public class JGitExec implements IRepoWorker{
         CloneCommand cloneCom = new CloneCommand();
         if (PATTERN_HTTP_URL.matcher(url).matches()) {
             cloneCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
+        }else{
+            
         }
         try {
             cloneCom.setURI(url).setDirectory(dirTo).call();
@@ -125,5 +141,41 @@ public class JGitExec implements IRepoWorker{
     public String repoGetVersion() throws IOException {
         // TODO return Eclipse plugin version
         return "JGit version";
+    }
+    
+    public static void genKeys(String privateFileName, String publicFileName)
+            throws JSchException, IOException {
+        JSch jsch = new JSch();
+        KeyPair keys = KeyPair.genKeyPair(jsch, KeyPair.RSA, RSA_KEY_LENGTH);
+        File privateKeyFile = new File(privateFileName);
+        File publicKeyFile = new File(publicFileName);
+        Files.deleteIfExists(privateKeyFile.toPath());
+        Files.deleteIfExists(publicKeyFile.toPath());
+        privateKeyFile.createNewFile();
+        publicKeyFile.createNewFile();
+        keys.writePrivateKey(privateKeyFile.getAbsolutePath());
+        keys.writePublicKey(publicKeyFile.getAbsolutePath(), "");
+        jsch.addIdentity(privateFileName);
+    }
+    
+    class CustomJschConfigSessionFactory extends JschConfigSessionFactory {
+        private String privateKeyFile;
+        
+        public CustomJschConfigSessionFactory(String privateKeyFile) {
+            super();
+            this.privateKeyFile = privateKeyFile;
+        }
+        
+        @Override
+        protected void configure(OpenSshConfig.Host host, Session session) {
+            session.setConfig("StrictHostKeyChecking", "no");
+        }
+        @Override
+        protected JSch getJSch(final OpenSshConfig.Host hc, FS fs) throws JSchException {
+            JSch jsch = super.getJSch(hc, fs);
+            jsch.removeAllIdentity();
+            jsch.addIdentity(privateKeyFile);
+            return jsch;
+        }
     }
 }
