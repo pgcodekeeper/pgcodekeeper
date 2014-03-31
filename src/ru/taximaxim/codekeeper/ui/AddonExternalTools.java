@@ -21,18 +21,20 @@ import ru.taximaxim.codekeeper.ui.parts.Console;
 public class AddonExternalTools {
     
     private static volatile String svnVersion = "<unknown>";
-    private static volatile String gitVersion = "<unknown>";
+    private static volatile String jGitVersion = "<unknown>";
     private static volatile String pgdumpVersion = "<unknown>";
     
     public static String getSvnVersion() {
         return svnVersion;
     }
-    
+    public static String getJGitVersion() {
+        return jGitVersion;
+    }
     public static void setSvnVersion(String svnVersion) {
         AddonExternalTools.svnVersion = svnVersion;
     }
-        public static void setGitVersion(String gitVersion) {
-        AddonExternalTools.gitVersion = gitVersion;
+        public static void setJGitVersion(String jGitVersion) {
+        AddonExternalTools.jGitVersion = jGitVersion;
     }
     public static String getPgdumpVersion() {
         return pgdumpVersion;
@@ -75,7 +77,7 @@ public class AddonExternalTools {
             setSvnVersion("<unknown>");
         }
         try {
-            setGitVersion(new JGitExec().repoGetVersion());
+            setJGitVersion(new JGitExec().repoGetVersion());
         } catch(IOException ex) {
             Console.addMessage("Error while trying to run git version!"
                     + " Check paths in program preferences.");

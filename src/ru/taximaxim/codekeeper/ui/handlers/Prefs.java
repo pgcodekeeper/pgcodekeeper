@@ -137,8 +137,8 @@ class DbStorePrefPage extends FieldEditorPreferencePage {
 }
 
 class GitPrefPage extends FieldEditorPreferencePage {
-    Button genKeysButt;
-    Button copyPublicKeyButt;
+    private Button genKeysButt;
+    private Button copyPublicKeyButt;
     private Text privateFileText;
     
     public GitPrefPage() {
@@ -167,9 +167,8 @@ class GitPrefPage extends FieldEditorPreferencePage {
                 fd.setText("Save private key to a file...");
                 fd.setOverwrite(true);
                 String privateFileName = fd.open();
-                String publicFileName = privateFileName + ".pub";
                 try {
-                    JGitExec.genKeys(privateFileName, publicFileName);
+                    JGitExec.genKeys(privateFileName);
                     privateFileText.setText(privateFileName);
                 } catch (IOException | JSchException ex) {
                     ExceptionNotifyHelper.notifyAndThrow(
@@ -185,19 +184,17 @@ class GitPrefPage extends FieldEditorPreferencePage {
             public void widgetSelected(SelectionEvent e) {
                 String publicFileName = privateFileText.getText() + ".pub";
                 File publicKey = new File (publicFileName);
-                try {
-                    BufferedReader reader = new BufferedReader( new FileReader (publicKey));
+                try (BufferedReader reader = new BufferedReader( new FileReader (publicKey))){
                     StringBuilder  sBuilder = new StringBuilder();
                     String line;
                     while((line = reader.readLine()) != null){
                         sBuilder.append(line + "\n");
                     }
-                    reader.close();
                     Object [] data = new Object [] {sBuilder.toString()};
                     new Clipboard(parent.getDisplay()).setContents (data, new Transfer[]{TextTransfer.getInstance()});
                 } catch (IOException e1) {
                     new MessageDialog(parent.getShell(),"Error",
-                            null,"Public key file either does not exist or inaccessible.",
+                            null,"Public key file " + privateFileText.getText() + ".pub"+" either does not exist or inaccessible.",
                             MessageDialog.ERROR, new String[] { "OK" }, 0).open();
                 }
             }

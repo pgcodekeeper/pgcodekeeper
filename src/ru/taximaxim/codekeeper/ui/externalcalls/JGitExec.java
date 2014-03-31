@@ -21,7 +21,9 @@ import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.util.FS;
+import org.osgi.framework.Bundle;
 
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -49,7 +51,7 @@ public class JGitExec implements IRepoWorker{
 
     public JGitExec(String url, String user, String pass, String privateKeyFile) {
         CustomJschConfigSessionFactory jschConfigSessionFactory = new CustomJschConfigSessionFactory(privateKeyFile);
-        SshSessionFactory.setInstance(jschConfigSessionFactory);        
+        SshSessionFactory.setInstance(jschConfigSessionFactory);
         this.url = url;
         this.user = user;
         this.pass = pass;
@@ -65,11 +67,9 @@ public class JGitExec implements IRepoWorker{
         CloneCommand cloneCom = new CloneCommand();
         if (PATTERN_HTTP_URL.matcher(url).matches()) {
             cloneCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
-        }else{
-            
         }
         try {
-            cloneCom.setURI(url).setDirectory(dirTo).call();
+            cloneCom.setURI(url).setDirectory(dirTo).call().close();
         } catch (GitAPIException e) {
             throw new IOException ("Exception thrown at JGit clone.", e);
         }
@@ -93,6 +93,8 @@ public class JGitExec implements IRepoWorker{
             }
         } catch (GitAPIException e){
             throw new IOException ("Exception thrown at JGit commit: ", e);
+        }finally{
+            git.close();
         }
     }
 
@@ -105,8 +107,9 @@ public class JGitExec implements IRepoWorker{
         } catch (GitAPIException e) {
             throw new IOException(
                     "Exception thrown at JGit repoRemoveMissingAddNew.", e);
+        }finally{
+            git.close();
         }
-
     }
 
     @Override
@@ -117,16 +120,21 @@ public class JGitExec implements IRepoWorker{
     @Override
     public boolean hasConflicts(File dirIn) throws IOException {
         Git git = Git.open(dirIn);
-        IndexDiff id = new IndexDiff(git.getRepository(), "HEAD",
-                new FileTreeIterator(git.getRepository()));
-        id.diff();
-        return !id.getConflicting().isEmpty();
+        try {
+            IndexDiff id = new IndexDiff(git.getRepository(), "HEAD",
+                    new FileTreeIterator(git.getRepository()));
+            id.diff();
+            return !id.getConflicting().isEmpty();
+        } finally {
+            git.close();
+        }
     }
 
     @Override
     public boolean repoUpdate(File dirIn) throws IOException  {
+        Git git = Git.open(dirIn); 
         try {
-            PullCommand pullCom = Git.open(dirIn).pull();
+            PullCommand pullCom = git.pull();
             if (PATTERN_HTTP_URL.matcher(url).matches()) {
                 pullCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
             }
@@ -134,28 +142,33 @@ public class JGitExec implements IRepoWorker{
             return pr.getMergeResult().getMergeStatus() == MergeStatus.MERGED || pr.getMergeResult().getMergeStatus() == MergeStatus.ALREADY_UP_TO_DATE;
         } catch (GitAPIException e){
             throw new IOException("Exception thrown at JGit repoUpdate.", e);
+        }finally{
+            git.close();
         }
     }
 
     @Override
     public String repoGetVersion() throws IOException {
-        // TODO return Eclipse plugin version
-        return "JGit version";
+        for (Bundle b : Activator.getContext().getBundles()){
+            if (b.getSymbolicName().startsWith("org.eclipse.jgit")){
+                return b.getVersion().toString();
+            }
+        }
+        return null;
     }
     
-    public static void genKeys(String privateFileName, String publicFileName)
+    public static void genKeys(String privateFileName)
             throws JSchException, IOException {
         JSch jsch = new JSch();
         KeyPair keys = KeyPair.genKeyPair(jsch, KeyPair.RSA, RSA_KEY_LENGTH);
         File privateKeyFile = new File(privateFileName);
-        File publicKeyFile = new File(publicFileName);
+        File publicKeyFile = new File(privateFileName + ".pub");
         Files.deleteIfExists(privateKeyFile.toPath());
         Files.deleteIfExists(publicKeyFile.toPath());
         privateKeyFile.createNewFile();
         publicKeyFile.createNewFile();
         keys.writePrivateKey(privateKeyFile.getAbsolutePath());
         keys.writePublicKey(publicKeyFile.getAbsolutePath(), "");
-        jsch.addIdentity(privateFileName);
     }
     
     class CustomJschConfigSessionFactory extends JschConfigSessionFactory {
@@ -170,6 +183,7 @@ public class JGitExec implements IRepoWorker{
         protected void configure(OpenSshConfig.Host host, Session session) {
             session.setConfig("StrictHostKeyChecking", "no");
         }
+        
         @Override
         protected JSch getJSch(final OpenSshConfig.Host hc, FS fs) throws JSchException {
             JSch jsch = super.getJSch(hc, fs);
