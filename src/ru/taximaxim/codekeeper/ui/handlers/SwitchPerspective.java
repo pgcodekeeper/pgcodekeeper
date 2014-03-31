@@ -17,28 +17,28 @@ import org.eclipse.swt.widgets.Shell;
 import ru.taximaxim.codekeeper.ui.copiedclasses.ListDialog;
 
 public class SwitchPerspective {
-	@Execute
-	private void execute(
-			@Named(IServiceConstants.ACTIVE_SHELL)
-			Shell shell,
-			EModelService modelSrv, EPartService partSrv,
-			MApplication app) {
-		ListDialog dialog = new ListDialog(shell);
-		dialog.setTitle("Open Perspective");
-		
-		dialog.setContentProvider(ArrayContentProvider.getInstance());
-		dialog.setInput(modelSrv.findElements(
-				app, null, MPerspective.class, null));
-		
-		dialog.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				return ((MPerspective) element).getLabel();
-			}
-		});
-		
-		if(dialog.open() == Dialog.OK) {
-			partSrv.switchPerspective((MPerspective)(dialog.getResult()[0]));
-		}
-	}
+    @Execute
+    private void execute(
+            @Named(IServiceConstants.ACTIVE_SHELL)
+            Shell shell,
+            EModelService modelSrv, EPartService partSrv,
+            MApplication app) {
+        ListDialog dialog = new ListDialog(shell);
+        dialog.setTitle("Open Perspective");
+        
+        dialog.setContentProvider(ArrayContentProvider.getInstance());
+        dialog.setInput(modelSrv.findElements(
+                app, null, MPerspective.class, null));
+        
+        dialog.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                return ((MPerspective) element).getLabel();
+            }
+        });
+        
+        if(dialog.open() == Dialog.OK) {
+            partSrv.switchPerspective((MPerspective)(dialog.getResult()[0]));
+        }
+    }
 }

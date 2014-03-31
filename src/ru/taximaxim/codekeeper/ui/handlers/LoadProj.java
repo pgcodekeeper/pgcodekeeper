@@ -19,33 +19,33 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class LoadProj {
     
-	@Execute
-	private void execute(
-			@Named(IServiceConstants.ACTIVE_SHELL)
-			Shell shell,
-	        IEclipseContext ctx, EPartService partService, EModelService model,
-	        MApplication app) {
-		DirectoryDialog dialog = new DirectoryDialog(shell);
-		String path = dialog.open();
-		if(path != null) {
-			PgDbProject proj = new PgDbProject(path);
-			if(proj.getProjectPropsFile().isFile()) {
-			    load(proj, ctx, partService, model, app);
-			} else {
-			    MessageBox mb = new MessageBox(shell);
-			    mb.setText("Load failed");
-			    mb.setMessage("Directory is not a valid project!"
-			            + " Properties file not found!");
-			    mb.open();
-			}
-		}
-	}
-	
-	public static void load(PgDbProject proj, IEclipseContext ctx, EPartService partService,
-	        EModelService model, MApplication app) {
-	    ctx.modify(PgDbProject.class, proj);
-	    
-	    CommitPartDescr.openNew(proj.getProjectDir(), partService, model, app);
-	    DiffPartDescr.openNew(proj.getProjectDir(), partService, model, app);
-	}
+    @Execute
+    private void execute(
+            @Named(IServiceConstants.ACTIVE_SHELL)
+            Shell shell,
+            IEclipseContext ctx, EPartService partService, EModelService model,
+            MApplication app) {
+        DirectoryDialog dialog = new DirectoryDialog(shell);
+        String path = dialog.open();
+        if(path != null) {
+            PgDbProject proj = new PgDbProject(path);
+            if(proj.getProjectPropsFile().isFile()) {
+                load(proj, ctx, partService, model, app);
+            } else {
+                MessageBox mb = new MessageBox(shell);
+                mb.setText("Load failed");
+                mb.setMessage("Directory is not a valid project!"
+                        + " Properties file not found!");
+                mb.open();
+            }
+        }
+    }
+    
+    public static void load(PgDbProject proj, IEclipseContext ctx, EPartService partService,
+            EModelService model, MApplication app) {
+        ctx.modify(PgDbProject.class, proj);
+        
+        CommitPartDescr.openNew(proj.getProjectDir(), partService, model, app);
+        DiffPartDescr.openNew(proj.getProjectDir(), partService, model, app);
+    }
 }

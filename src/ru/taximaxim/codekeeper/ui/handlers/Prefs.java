@@ -23,94 +23,96 @@ import ru.taximaxim.codekeeper.ui.prefs.FakePrefPageExtension;
 import ru.taximaxim.codekeeper.ui.prefs.PrefDialogFactory;
 
 public class Prefs {
-	
-	@Execute
-	private void execute(
-			@Named(UIConsts.PREF_STORE)
-			IPreferenceStore prefStore,
-			@Named(IServiceConstants.ACTIVE_SHELL)
-			Shell shell) {
-		FakePrefPageExtension[] pages = {
-				
-				new FakePrefPageExtension("page.0.general", "General",
-				        new GeneralPrefPage(), null),
-						
-				new FakePrefPageExtension("page.1.dbstore", "DB Store",
-				        new DbStorePrefPage(), "page.0.general")
-		};
-		
-		PrefDialogFactory.show(shell, prefStore, pages);
-	}
+    
+    @Execute
+    private void execute(
+            @Named(UIConsts.PREF_STORE)
+            IPreferenceStore prefStore,
+            @Named(IServiceConstants.ACTIVE_SHELL)
+            Shell shell) {
+        FakePrefPageExtension[] pages = {
+                
+                new FakePrefPageExtension("page.0.general", "General",
+                        new GeneralPrefPage(), null),
+                        
+                new FakePrefPageExtension("page.1.dbstore", "DB Store",
+                        new DbStorePrefPage(), "page.0.general")
+        };
+        
+        PrefDialogFactory.show(shell, prefStore, pages);
+    }
 }
 
 class GeneralPrefPage extends FieldEditorPreferencePage {
 
-	public GeneralPrefPage() {
-		super(GRID);
-	}
-	
-	@Override
-	protected void createFieldEditors() {
-		addField(new ExecutableFileFieldEditor(UIConsts.PREF_SVN_EXE_PATH,
-				"svn executable", getFieldEditorParent()));
-		addField(new ExecutableFileFieldEditor(UIConsts.PREF_PGDUMP_EXE_PATH,
-				"pg_dump executable", getFieldEditorParent()));
-	}
+    public GeneralPrefPage() {
+        super(GRID);
+    }
+    
+    @Override
+    protected void createFieldEditors() {
+        addField(new ExecutableFileFieldEditor(UIConsts.PREF_GIT_EXE_PATH,
+                "git executable", getFieldEditorParent()));
+        addField(new ExecutableFileFieldEditor(UIConsts.PREF_SVN_EXE_PATH,
+                "svn executable", getFieldEditorParent()));
+        addField(new ExecutableFileFieldEditor(UIConsts.PREF_PGDUMP_EXE_PATH,
+                "pg_dump executable", getFieldEditorParent()));
+    }
 }
 
 class DbStorePrefPage extends FieldEditorPreferencePage {
     
     private String preference;
 
-	public DbStorePrefPage() {
-		super(GRID);
-	}
-	
-	@Override
-	protected void createFieldEditors() {
-	    // this is our "hidden field editor"
-	    preference = getPreferenceStore().getString(UIConsts.PREF_DB_STORE);
-	}
-	
-	@Override
-	public void createControl(Composite parent) {
-	    super.createControl(parent);
-	    getDefaultsButton().setText("Clear DB Store");
-	}
-	
-	@Override
-	protected Control createContents(Composite parent) {
-		Button btnDbStore = new Button(parent, SWT.PUSH);
-		btnDbStore.setText("Edit Db Store...");
-		btnDbStore.addSelectionListener(new SelectionAdapter() {
-		    @Override
-		    public void widgetSelected(SelectionEvent e) {
-		        DbStoreEditorDialog dialog = new DbStoreEditorDialog(
-		                getShell(), preference);
-		        
-		        if(dialog.open() == Dialog.OK) {
-		            preference = dialog.getPreferenceString();
-		            
-		            if(preference.trim().isEmpty()) {
-		                performDefaults();
-		            }
-		        }
-		    }
+    public DbStorePrefPage() {
+        super(GRID);
+    }
+    
+    @Override
+    protected void createFieldEditors() {
+        // this is our "hidden field editor"
+        preference = getPreferenceStore().getString(UIConsts.PREF_DB_STORE);
+    }
+    
+    @Override
+    public void createControl(Composite parent) {
+        super.createControl(parent);
+        getDefaultsButton().setText("Clear DB Store");
+    }
+    
+    @Override
+    protected Control createContents(Composite parent) {
+        Button btnDbStore = new Button(parent, SWT.PUSH);
+        btnDbStore.setText("Edit Db Store...");
+        btnDbStore.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                DbStoreEditorDialog dialog = new DbStoreEditorDialog(
+                        getShell(), preference);
+                
+                if(dialog.open() == Dialog.OK) {
+                    preference = dialog.getPreferenceString();
+                    
+                    if(preference.trim().isEmpty()) {
+                        performDefaults();
+                    }
+                }
+            }
         });
-		
-		return super.createContents(parent);
-	}
-	
-	@Override
-	protected void performDefaults() {
-	    preference = getPreferenceStore().getDefaultString(UIConsts.PREF_DB_STORE);
-	}
-	
-	@Override
-	public boolean performOk() {
-	    if(getPreferenceStore() != null) {
-	        getPreferenceStore().setValue(UIConsts.PREF_DB_STORE, preference);
-	    }
-	    return true;
-	}
+        
+        return super.createContents(parent);
+    }
+    
+    @Override
+    protected void performDefaults() {
+        preference = getPreferenceStore().getDefaultString(UIConsts.PREF_DB_STORE);
+    }
+    
+    @Override
+    public boolean performOk() {
+        if(getPreferenceStore() != null) {
+            getPreferenceStore().setValue(UIConsts.PREF_DB_STORE, preference);
+        }
+        return true;
+    }
 }

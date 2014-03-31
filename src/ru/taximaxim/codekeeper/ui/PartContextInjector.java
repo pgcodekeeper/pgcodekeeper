@@ -23,60 +23,60 @@ import org.osgi.service.event.EventHandler;
  */
 public class PartContextInjector implements EventHandler {
 
-	final private MPart part;
-	
-	final private Map<Object, Object> values;
-	
-	final private IEventBroker events;
-	
-	public PartContextInjector(MPart part, Map<Object, Object> values,
-			IEventBroker events) {
-		if(values.isEmpty()) {
-			throw new IllegalArgumentException("Empty values map!");
-		}
-		
-		this.part = part;
-		this.values = values;
-		this.events = events;
-	}
+    final private MPart part;
+    
+    final private Map<Object, Object> values;
+    
+    final private IEventBroker events;
+    
+    public PartContextInjector(MPart part, Map<Object, Object> values,
+            IEventBroker events) {
+        if(values.isEmpty()) {
+            throw new IllegalArgumentException("Empty values map!");
+        }
+        
+        this.part = part;
+        this.values = values;
+        this.events = events;
+    }
 
-	@Override
-	public void handleEvent(Event e) {
-		Object origin = e.getProperty(UIEvents.EventTags.ELEMENT);
-		Object ctxObj = e.getProperty(UIEvents.EventTags.NEW_VALUE);
-		
-		if((origin instanceof MHandlerContainer)
-			&& UIEvents.EventTypes.SET.equals(e.getProperty(UIEvents.EventTags.TYPE))
-			&& (ctxObj instanceof IEclipseContext)) {
-				IEclipseContext ctx = (IEclipseContext) ctxObj;
-				MPart part = ctx.get(MPart.class);
-				
-				if(this.part == part) {
-					try {
-						for(Map.Entry<Object, Object> entry : values.entrySet()) {
-							Object key = entry.getKey();
-							
-							if(key instanceof Class) {
-								contextSetGenericsWorkaround(
-										(Class<?>) key, entry.getValue(), ctx);
-							} else if(key instanceof String) {
-								ctx.set((String) key, entry.getValue());
-							} else {
-								throw new IllegalArgumentException(
-										"Only Class<?> and String are allowed"
-										+ " as keys in IEclipseContext");
-							}
-						}
-					} finally {
-						// we tried to inject the data, we shouldn't listen anymore
-						events.unsubscribe(this);
-					}
-				}
-			}
-	}
-	
-	private <T> void contextSetGenericsWorkaround(Class<T> clazz, Object v,
-			IEclipseContext ctx) {
-		ctx.set(clazz, clazz.cast(v));
-	}
+    @Override
+    public void handleEvent(Event e) {
+        Object origin = e.getProperty(UIEvents.EventTags.ELEMENT);
+        Object ctxObj = e.getProperty(UIEvents.EventTags.NEW_VALUE);
+        
+        if((origin instanceof MHandlerContainer)
+            && UIEvents.EventTypes.SET.equals(e.getProperty(UIEvents.EventTags.TYPE))
+            && (ctxObj instanceof IEclipseContext)) {
+                IEclipseContext ctx = (IEclipseContext) ctxObj;
+                MPart part = ctx.get(MPart.class);
+                
+                if(this.part == part) {
+                    try {
+                        for(Map.Entry<Object, Object> entry : values.entrySet()) {
+                            Object key = entry.getKey();
+                            
+                            if(key instanceof Class) {
+                                contextSetGenericsWorkaround(
+                                        (Class<?>) key, entry.getValue(), ctx);
+                            } else if(key instanceof String) {
+                                ctx.set((String) key, entry.getValue());
+                            } else {
+                                throw new IllegalArgumentException(
+                                        "Only Class<?> and String are allowed"
+                                        + " as keys in IEclipseContext");
+                            }
+                        }
+                    } finally {
+                        // we tried to inject the data, we shouldn't listen anymore
+                        events.unsubscribe(this);
+                    }
+                }
+            }
+    }
+    
+    private <T> void contextSetGenericsWorkaround(Class<T> clazz, Object v,
+            IEclipseContext ctx) {
+        ctx.set(clazz, clazz.cast(v));
+    }
 }

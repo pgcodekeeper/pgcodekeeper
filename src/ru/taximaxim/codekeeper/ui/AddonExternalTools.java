@@ -13,6 +13,7 @@ import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.osgi.service.application.ApplicationHandle;
 
+import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.parts.Console;
@@ -20,6 +21,7 @@ import ru.taximaxim.codekeeper.ui.parts.Console;
 public class AddonExternalTools {
     
     private static volatile String svnVersion = "<unknown>";
+    private static volatile String gitVersion = "<unknown>";
     private static volatile String pgdumpVersion = "<unknown>";
     
     public static String getSvnVersion() {
@@ -29,7 +31,9 @@ public class AddonExternalTools {
     public static void setSvnVersion(String svnVersion) {
         AddonExternalTools.svnVersion = svnVersion;
     }
-    
+        public static void setGitVersion(String gitVersion) {
+        AddonExternalTools.gitVersion = gitVersion;
+    }
     public static String getPgdumpVersion() {
         return pgdumpVersion;
     }
@@ -58,12 +62,22 @@ public class AddonExternalTools {
             MApplication app,
             @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
             String svnExec,
+            @Preference(value=UIConsts.PREF_GIT_EXE_PATH)
+            String gitExec,
             @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
             String pgdumpExec) {
         try {
-            setSvnVersion(new SvnExec(svnExec).svnGetVersion());
+            setSvnVersion(new SvnExec(svnExec).repoGetVersion());
         } catch(IOException ex) {
             Console.addMessage("Error while trying to run svn --version!"
+                    + " Check paths in program preferences.");
+            ex.printStackTrace();
+            setSvnVersion("<unknown>");
+        }
+        try {
+            setGitVersion(new GitExec(gitExec).repoGetVersion());
+        } catch(IOException ex) {
+            Console.addMessage("Error while trying to run git version!"
                     + " Check paths in program preferences.");
             ex.printStackTrace();
             setSvnVersion("<unknown>");
@@ -92,10 +106,12 @@ public class AddonExternalTools {
             ApplicationHandle appHandle, // IApplicationContext actually
             @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
             String svnExec,
+            @Preference(value=UIConsts.PREF_GIT_EXE_PATH)
+            String gitExec,
             @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
             String pgdumpExec) {
         if(appHandle.getState() == ApplicationHandle.RUNNING) {
-            getVersionsOnStartup(null, svnExec, pgdumpExec);
+            getVersionsOnStartup(null, svnExec, gitExec, pgdumpExec);
         }
     }
 }

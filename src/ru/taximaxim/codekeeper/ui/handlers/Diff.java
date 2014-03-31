@@ -6,8 +6,8 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.inject.Named;
 
-import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.CanExecute;
+import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -19,9 +19,9 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class Diff {
 
-	@Execute
-	private void execute(
-	        PgDbProject proj,
+    @Execute
+    private void execute(
+            PgDbProject proj,
             @Named(IServiceConstants.ACTIVE_SHELL)
             Shell shell,
             @Named(UIConsts.PREF_STORE)
@@ -31,10 +31,10 @@ public class Diff {
                     shell, new DiffWizard(proj, prefStore));
             dialog.open();
         }
-	}
-	
-	@CanExecute
-	private boolean canExecute(PgDbProject proj) {
-	    return proj != null;
-	}
+    }
+    
+    @CanExecute
+    private boolean canExecute(PgDbProject proj) {
+        return proj != null;
+    }
 }

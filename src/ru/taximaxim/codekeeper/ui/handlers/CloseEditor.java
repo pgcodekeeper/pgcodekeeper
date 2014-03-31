@@ -18,14 +18,14 @@ public class CloseEditor {
     @Named(IServiceConstants.ACTIVE_PART)
     private MPart part;
     
-	@Execute
-	private void execute(EPartService partService) {
-	    partService.hidePart(part);
-	}
-	
-	@CanExecute
-	private boolean canExecute() {
-	    String id = part.getElementId();
-	    return id.equals(UIConsts.PART_SQL_EDITOR);
-	}
+    @Execute
+    private void execute(EPartService partService) {
+        partService.hidePart(part);
+    }
+    
+    @CanExecute
+    private boolean canExecute() {
+        String id = part.getElementId();
+        return id.equals(UIConsts.PART_SQL_EDITOR);
+    }
 }

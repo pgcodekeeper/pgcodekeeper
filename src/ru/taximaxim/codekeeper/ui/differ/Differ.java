@@ -45,7 +45,7 @@ public class Differ implements IRunnableWithProgress {
     }
     
     @Override
-    public void run(IProgressMonitor monitor) throws InvocationTargetException {
+    public void run(IProgressMonitor monitor) throws InvocationTargetException{
         SubMonitor pm = SubMonitor.convert(monitor, "Calculating diff", 100); // 0
         
         PgDatabase dbSource, dbTarget;

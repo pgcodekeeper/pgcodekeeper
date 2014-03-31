@@ -21,18 +21,18 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard;
 
 public class NewProj {
 
-	@Execute
-	private void execute(
-			@Named(UIConsts.PREF_STORE)
-			IPreferenceStore prefStore,
-			@Named(IServiceConstants.ACTIVE_SHELL)
-			Shell shell,
-			IEclipseContext ctx, EPartService partService, EModelService model,
-			MApplication app) throws IOException {
-		NewProjWizard newProj = new NewProjWizard(prefStore);
-		WizardDialog dialog = new WizardDialog(shell, newProj);
-		if(dialog.open() == Dialog.OK) {
-			LoadProj.load(newProj.getProject(), ctx, partService, model, app);
-		}
-	}
+    @Execute
+    private void execute(
+            @Named(UIConsts.PREF_STORE)
+            IPreferenceStore prefStore,
+            @Named(IServiceConstants.ACTIVE_SHELL)
+            Shell shell,
+            IEclipseContext ctx, EPartService partService, EModelService model,
+            MApplication app) throws IOException {
+        NewProjWizard newProj = new NewProjWizard(prefStore);
+        WizardDialog dialog = new WizardDialog(shell, newProj);
+        if(dialog.open() == Dialog.OK) {
+            LoadProj.load(newProj.getProject(), ctx, partService, model, app);
+        }
+    }
 }

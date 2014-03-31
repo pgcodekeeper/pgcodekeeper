@@ -15,69 +15,69 @@ import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.resource.JFaceResources;
 
 public class Console {
-	
-	private static LogSync log;
-	
-	public static void addMessage(String msg) {
-		if(log != null) {
-			log.addMessage(msg);
-		}
-	}
-	
-	@PostConstruct
-	private void postConstruct(Composite parent,
-			@Named(IServiceConstants.ACTIVE_SHELL)
-			Shell shell,
-			UISynchronize sync) {
-		log = new LogSync(sync);
-		
-		parent.setLayout(new FillLayout());
-		
-		Text consoleLog = new Text(parent, SWT.MULTI
-				| SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
-		consoleLog.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-		consoleLog.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
-		
-		log.setTextControl(consoleLog);
-	}
-	
-	@PreDestroy
-	private void preDestroy() {
-		log.setTextControl(null);
-	}
+    
+    private static LogSync log;
+    
+    public static void addMessage(String msg) {
+        if(log != null) {
+            log.addMessage(msg);
+        }
+    }
+    
+    @PostConstruct
+    private void postConstruct(Composite parent,
+            @Named(IServiceConstants.ACTIVE_SHELL)
+            Shell shell,
+            UISynchronize sync) {
+        log = new LogSync(sync);
+        
+        parent.setLayout(new FillLayout());
+        
+        Text consoleLog = new Text(parent, SWT.MULTI
+                | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
+        consoleLog.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+        consoleLog.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        
+        log.setTextControl(consoleLog);
+    }
+    
+    @PreDestroy
+    private void preDestroy() {
+        log.setTextControl(null);
+    }
 }
 
 class LogSync {
-	private final UISynchronize sync;
-	
-	private final Object syncLog = new Object();
-	
-	private Text consoleLog;
-	
-	LogSync(UISynchronize sync) {
-		this.sync = sync;
-	}
-	
-	void setTextControl(Text text) {
-		synchronized (syncLog) {
-			consoleLog = text;
-		}
-	}
-	
-	void addMessage(final String msg) {
-		sync.asyncExec(new Runnable() {
-			
-			@Override
-			public void run() {
-				synchronized (syncLog) {
-					if(consoleLog == null) {
-						return;
-					}
-					
-					consoleLog.append(msg);
-					consoleLog.append(System.lineSeparator());
-				}
-			}
-		});
-	} 
+    private final UISynchronize sync;
+    
+    private final Object syncLog = new Object();
+    
+    private Text consoleLog;
+    
+    LogSync(UISynchronize sync) {
+        this.sync = sync;
+    }
+    
+    void setTextControl(Text text) {
+        synchronized (syncLog) {
+            consoleLog = text;
+        }
+    }
+    
+    void addMessage(final String msg) {
+        sync.asyncExec(new Runnable() {
+            
+            @Override
+            public void run() {
+                synchronized (syncLog) {
+                    if(consoleLog == null) {
+                        return;
+                    }
+                    
+                    consoleLog.append(msg);
+                    consoleLog.append(System.lineSeparator());
+                }
+            }
+        });
+    } 
 }

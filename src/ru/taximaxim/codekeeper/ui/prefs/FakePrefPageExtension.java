@@ -9,36 +9,36 @@ import org.eclipse.jface.preference.IPreferencePage;
  * @author Alexander Levsha
  */
 public class FakePrefPageExtension {
-	
-	private final String id;
-	
-	private final String name;
-	
-	private final IPreferencePage page;
-	
-	private final String category;
-	
-	public FakePrefPageExtension(String id, String name, IPreferencePage page,
-			String category) {
-		this.id = id;
-		this.name = name;
-		this.page = page;
-		this.category = category;
-	}
-	
-	public String getId() {
-		return id;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public IPreferencePage getPage() {
-		return page;
-	}
-	
-	public String getCat() {
-		return category;
-	}
+    
+    private final String id;
+    
+    private final String name;
+    
+    private final IPreferencePage page;
+    
+    private final String category;
+    
+    public FakePrefPageExtension(String id, String name, IPreferencePage page,
+            String category) {
+        this.id = id;
+        this.name = name;
+        this.page = page;
+        this.category = category;
+    }
+    
+    public String getId() {
+        return id;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public IPreferencePage getPage() {
+        return page;
+    }
+    
+    public String getCat() {
+        return category;
+    }
 }

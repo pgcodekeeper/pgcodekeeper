@@ -12,23 +12,23 @@ import java.nio.file.Path;
  * @author Alexander Levsha
  */
 public class TempDir implements AutoCloseable {
-	
-	private final File dir;
-	
-	public TempDir(String prefix) throws IOException {
-		this.dir = Files.createTempDirectory(prefix).toFile();
-	}
-	
-	public TempDir(Path dir, String prefix) throws IOException {
-		this.dir = Files.createTempDirectory(dir, prefix).toFile();
-	}
+    
+    private final File dir;
+    
+    public TempDir(String prefix) throws IOException {
+        this.dir = Files.createTempDirectory(prefix).toFile();
+    }
+    
+    public TempDir(Path dir, String prefix) throws IOException {
+        this.dir = Files.createTempDirectory(dir, prefix).toFile();
+    }
 
-	public File get() {
-		return dir;
-	}
-	
-	@Override
-	public void close() throws IOException {
-		Dir.deleteRecursive(dir);
-	}
+    public File get() {
+        return dir;
+    }
+    
+    @Override
+    public void close() throws IOException {
+        Dir.deleteRecursive(dir);
+    }
 }

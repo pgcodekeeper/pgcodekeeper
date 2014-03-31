@@ -14,92 +14,123 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
+import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 
 public class ProjectCreator implements IRunnableWithProgress {
-	
-	final private String exePgdump, exeSvn; 
-	
-	final private PgDbProject props;
-	
-	final private String dumpPath;
-	
-	final private boolean doInit;
-	
-	public ProjectCreator(final IPreferenceStore mainPrefStore,
-			final PgDbProject props, final String dumpPath, boolean doInit) {
-		this.exePgdump = mainPrefStore.getString(UIConsts.PREF_PGDUMP_EXE_PATH);
-		this.exeSvn = mainPrefStore.getString(UIConsts.PREF_SVN_EXE_PATH);
-		
-		this.props = props;
-		this.dumpPath = dumpPath;
-		this.doInit = doInit;
-	}
-	
-	@Override
+
+    final private String exePgdump, exeSvn, exeGit;
+
+    final private PgDbProject props;
+
+    final private String dumpPath;
+
+    final private boolean doInit;
+
+    private String repoName = "";
+
+    public ProjectCreator(final IPreferenceStore mainPrefStore,
+            final PgDbProject props, final String dumpPath, boolean doInit) {
+        this.exePgdump = mainPrefStore.getString(UIConsts.PREF_PGDUMP_EXE_PATH);
+        this.exeSvn = mainPrefStore.getString(UIConsts.PREF_SVN_EXE_PATH);
+        this.exeGit = mainPrefStore.getString(UIConsts.PREF_GIT_EXE_PATH);
+        this.props = props;
+        this.dumpPath = dumpPath;
+        this.doInit = doInit;
+    }
+
+    @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException {
         try {
-            int workToDo = doInit? 100 : 1;
-            SubMonitor pm = SubMonitor.convert(monitor, "Creating project...", workToDo); // 0
-            
-            SvnExec svn = new SvnExec(exeSvn, props);
-            
-            pm.newChild(doInit? 25 : workToDo).subTask("SVN current rev checkout..."); // 25 or 100%
-            File dirSvn = props.getProjectSchemaDir();
-            if(dirSvn.exists()) {
-                Dir.deleteRecursive(dirSvn);
-            }
-            Files.createDirectory(dirSvn.toPath());
-            svn.svnCo(dirSvn);
-            
-            // clean repository, generate new file structure,
-            // preserve and fix svn metadata, svn rm/add, commit new revision
-            if(doInit) {
-                SubMonitor taskpm = pm.newChild(25); // 50
+            int workToDo = doInit ? 100 : 1;
+            SubMonitor pm = SubMonitor.convert(monitor, "Creating project...",
+                    workToDo); // 0
 
-                PgDatabase db;
-                switch(props.getString(UIConsts.PROJ_PREF_SOURCE)) {
-                case UIConsts.PROJ_SOURCE_TYPE_DB:
-                    db = DbSource.fromDb(exePgdump, props).get(taskpm);
-                    break;
-                    
-                case UIConsts.PROJ_SOURCE_TYPE_DUMP:
-                    db = DbSource.fromFile(dumpPath,
-                            props.getString(UIConsts.PROJ_PREF_ENCODING)).get(taskpm);
-                    break;
-                    
-                default:
-                    throw new InvocationTargetException(
-                            new IllegalStateException("Init requested but no Schema Source"));
-                }
-
-                pm.newChild(25).subTask("Exporting DB model..."); // 75
-                
-                try(TempDir tmpSvnMeta = new TempDir(props.getProjectPath(),
-                        "tmp_svn_meta_")) {
-                    File svnMetaProj = new File(dirSvn, ".svn");
-                    File svnMetaTmp = new File(tmpSvnMeta.get(), ".svn");
-                    Files.move(svnMetaProj.toPath(), svnMetaTmp.toPath());
-                    Dir.deleteRecursive(dirSvn);
-                    
-                    new ModelExporter(dirSvn.getAbsolutePath(), db, 
-                            props.getString(UIConsts.PROJ_PREF_ENCODING)).export();
-                    
-                    Files.move(svnMetaTmp.toPath(), svnMetaProj.toPath());
-                }
-                
-                pm.newChild(25).subTask("SVN committing..."); // 100
-                svn.svnRmMissing(dirSvn);
-                svn.svnAddAll(dirSvn);
-                svn.svnCi(dirSvn, "new rev");
+            IRepoWorker repo;
+            switch (RepoType.valueOf(props.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
+            case SVN:
+                repo = new SvnExec(exeSvn, props);
+                repoName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
+                break;
+            case GIT:
+                repo = new GitExec(exeGit, props);
+                repoName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
+                break;
+            default:
+                throw new IllegalStateException("Not a SVN/GIT enabled project");
             }
             
+            pm.newChild(doInit ? 25 : workToDo).subTask(
+                    repoName + " current rev checkout..."); // 25 or 100%
+            File dirRepo = props.getProjectSchemaDir();
+            if (dirRepo.exists()) {
+                Dir.deleteRecursive(dirRepo);
+            }
+            Files.createDirectory(dirRepo.toPath());
+            repo.repoCheckOut(dirRepo);
+            if (doInit) {
+                initRepoFromSource(pm, repo);
+            }
             monitor.done();
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             throw new InvocationTargetException(ex,
                     "IOException while creating project!");
         }
+    }
+
+    /**
+     * clean repository, generate new file structure, preserve and fix repo
+     * metadata, repo rm/add, commit new revision
+     * 
+     * @param pm
+     * @param repo
+     * @throws IOException
+     * @throws InvocationTargetException
+     */
+
+    private void initRepoFromSource(SubMonitor pm, IRepoWorker repo)
+            throws IOException, InvocationTargetException {
+        File dirRepo = props.getProjectSchemaDir();
+        SubMonitor taskpm = pm.newChild(25); // 50
+
+        PgDatabase db;
+        switch (props.getString(UIConsts.PROJ_PREF_SOURCE)) {
+        case UIConsts.PROJ_SOURCE_TYPE_DB:
+            db = DbSource.fromDb(exePgdump, props).get(taskpm);
+            break;
+
+        case UIConsts.PROJ_SOURCE_TYPE_DUMP:
+            db = DbSource.fromFile(dumpPath,
+                    props.getString(UIConsts.PROJ_PREF_ENCODING)).get(taskpm);
+            break;
+
+        default:
+            throw new InvocationTargetException(new IllegalStateException(
+                    "Init requested but no Schema Source"));
+        }
+
+        pm.newChild(25).subTask("Exporting DB model..."); // 75
+
+        try (TempDir tmpRepoMeta = new TempDir(props.getProjectPath(),
+                "tmp_repo_meta_")) {
+            File repoMetaProj = new File(dirRepo, repo.getRepoMetaFolder());
+            File repoMetaTmp = new File(tmpRepoMeta.get(),
+                    repo.getRepoMetaFolder());
+            Files.move(repoMetaProj.toPath(), repoMetaTmp.toPath());
+            Dir.deleteRecursive(dirRepo);
+
+            new ModelExporter(dirRepo.getAbsolutePath(), db,
+                    props.getString(UIConsts.PROJ_PREF_ENCODING)).export();
+
+            Files.move(repoMetaTmp.toPath(), repoMetaProj.toPath());
+        }
+
+        pm.newChild(25).subTask(repoName + " committing..."); // 100
+        repo.repoRemoveMissingAddNew(dirRepo);
+        repo.repoCommit(dirRepo, "new rev");
     }
 }
