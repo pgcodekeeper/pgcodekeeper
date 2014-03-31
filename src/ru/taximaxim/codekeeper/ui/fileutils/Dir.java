@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.fileutils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 
 public class Dir {
 
@@ -18,6 +17,6 @@ public class Dir {
                 deleteRecursive(sub);
             }
         }
-        Files.delete(f.toPath());
+        ReadOnlyFileRemover.remove(f.toPath());
     }
 }

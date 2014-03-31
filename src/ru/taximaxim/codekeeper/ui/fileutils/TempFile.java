@@ -28,6 +28,6 @@ public class TempFile implements AutoCloseable {
     
     @Override
     public void close() throws IOException {
-        Files.delete(f.toPath());
+        ReadOnlyFileRemover.remove(f.toPath());
     }
 }
