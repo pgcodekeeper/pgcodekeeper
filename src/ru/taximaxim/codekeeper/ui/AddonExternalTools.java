@@ -13,7 +13,6 @@ import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.osgi.service.application.ApplicationHandle;
 
-import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.parts.Console;
@@ -21,19 +20,16 @@ import ru.taximaxim.codekeeper.ui.parts.Console;
 public class AddonExternalTools {
     
     private static volatile String svnVersion = "<unknown>";
-    private static volatile String gitVersion = "<unknown>";
     private static volatile String pgdumpVersion = "<unknown>";
     
     public static String getSvnVersion() {
         return svnVersion;
     }
-    
+
     public static void setSvnVersion(String svnVersion) {
         AddonExternalTools.svnVersion = svnVersion;
     }
-        public static void setGitVersion(String gitVersion) {
-        AddonExternalTools.gitVersion = gitVersion;
-    }
+
     public static String getPgdumpVersion() {
         return pgdumpVersion;
     }
@@ -74,14 +70,7 @@ public class AddonExternalTools {
             ex.printStackTrace();
             setSvnVersion("<unknown>");
         }
-        try {
-            setGitVersion(new GitExec(gitExec).repoGetVersion());
-        } catch(IOException ex) {
-            Console.addMessage("Error while trying to run git version!"
-                    + " Check paths in program preferences.");
-            ex.printStackTrace();
-            setSvnVersion("<unknown>");
-        }
+
         try {
             setPgdumpVersion(new PgDumper(pgdumpExec).getVersion());
         } catch(IOException ex) {

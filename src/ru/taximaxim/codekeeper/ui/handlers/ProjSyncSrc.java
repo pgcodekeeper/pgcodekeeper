@@ -8,8 +8,8 @@ import javax.inject.Named;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.CanExecute;
+import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -18,9 +18,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
+import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
@@ -53,7 +54,7 @@ public class ProjSyncSrc {
                     repo = new SvnExec(mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH), proj);
                     break;
                 case GIT:
-                    repo = new GitExec(mainPrefs.getString(UIConsts.PREF_GIT_EXE_PATH), proj);
+                    repo = new JGitExec(proj, mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
                     break;
                 default:
                     throw new IllegalStateException("Not a SVN/GIT enabled project");
@@ -79,7 +80,8 @@ public class ProjSyncSrc {
         try {
             new ProgressMonitorDialog(shell).run(true, false, syncRunnable);
         } catch (InterruptedException ex) {
-            throw new IllegalStateException("Uncancellable thread interrupted!", ex);
+            ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
+                    "Uncancellable thread interrupted!", ex), shell);
         }
 
         if (conflicted[0]) {

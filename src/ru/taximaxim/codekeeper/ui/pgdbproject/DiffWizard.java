@@ -43,19 +43,19 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 
-import cz.startnet.utils.pgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTreeViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
-import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
-import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
+import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
+import cz.startnet.utils.pgdiff.UnixPrintWriter;
 
 public class DiffWizard extends Wizard implements IPageChangingListener {
 
@@ -106,12 +106,12 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 try {
                     getContainer().run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
-                    throw new IllegalStateException("Error in differ thread",
-                            ex);
+                    ExceptionNotifyHelper.notifyAndThrow( new IllegalStateException("Error in differ thread",
+                            ex), getContainer().getShell());
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    throw new IllegalStateException(
-                            "Differ thread cancelled. Shouldn't happen!", ex);
+                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
+                            "Differ thread cancelled. Shouldn't happen!", ex), getContainer().getShell());
                 }
 
                 dbSource = treediffer.getDbSource();
@@ -134,12 +134,12 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 try {
                     getContainer().run(true, false, differ);
                 } catch (InvocationTargetException ex) {
-                    throw new IllegalStateException("Error in differ thread",
-                            ex);
+                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException("Error in differ thread",
+                            ex), getContainer().getShell());
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    throw new IllegalStateException(
-                            "Differ thread cancelled. Shouldn't happen!", ex);
+                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
+                            "Differ thread cancelled. Shouldn't happen!", ex),getContainer().getShell());
                 }
 
                 pageResult.setData(dbSource.getOrigin(), dbTarget.getOrigin(),
@@ -314,7 +314,7 @@ class PageDiff extends WizardPage implements Listener {
             dbs = DbSource.fromGit(
                     mainPrefs.getString(UIConsts.PREF_GIT_EXE_PATH),
                     getGitUrl(), getGitUser(), getGitPass(), getGitRev(),
-                    getTargetEncoding());
+                    getTargetEncoding(), mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
             break;
 
         case PROJ:
@@ -347,7 +347,8 @@ class PageDiff extends WizardPage implements Listener {
                             fromProj.getString(UIConsts.PROJ_PREF_REPO_USER),
                             fromProj.getString(UIConsts.PROJ_PREF_REPO_PASS),
                             getProjRev(),
-                            fromProj.getString(UIConsts.PROJ_PREF_ENCODING));
+                            fromProj.getString(UIConsts.PROJ_PREF_ENCODING),
+                            mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
                     break;
                 default:
                     throw new IllegalStateException(
@@ -529,7 +530,6 @@ class PageDiff extends WizardPage implements Listener {
         txtSvnRev.setLayoutData(new GridData());
         txtSvnRev.addListener(SWT.Modify, this);
 
-        // /////////////////// GIT in
         grpGit = new Group(container, SWT.NONE);
         grpGit.setText("GIT target");
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -552,26 +552,31 @@ class PageDiff extends WizardPage implements Listener {
                 if (txtGitUrl.getText().isEmpty()) {
                     txtGitUser.setEnabled(true);
                     txtGitPass.setEnabled(true);
+                    txtGitPass.notifyListeners(SWT.Modify, new Event());                    
+                } else if (JGitExec.PATTERN_HTTP_URL.matcher(
+                        txtGitUrl.getText()).matches()) {
+                    txtGitUser.setEnabled(true);
+                    txtGitPass.setEnabled(true);
+                    lblWarnGitPass.setText("Warning:\n"
+                            + "Providing password here is insecure!"
+                            + " This password WILL show up in logs!\n"
+                            + "Consider using ssh authentification instead.");
                     txtGitPass.notifyListeners(SWT.Modify, new Event());
-                } else if (GitExec.PATTERN_SHORT_SSH_URL.matcher(
-                        txtGitUrl.getText()).matches()
-                        || GitExec.PATTERN_SHORT_SSH_URL.matcher(
-                                txtGitUrl.getText()).matches()) {
+                } else if (JGitExec.PATTERN_FILE_URL.matcher(
+                        txtGitUrl.getText()).matches()) {
                     txtGitUser.setEnabled(false);
                     txtGitPass.setEnabled(false);
                     txtGitPass.notifyListeners(SWT.Modify, new Event());
-                } else if (GitExec.PATTERN_HTTP_URL
-                        .matcher(txtGitUrl.getText()).matches()) {
-                    txtGitUser.setEnabled(true);
-                    txtGitPass.setEnabled(true);
-                    txtGitPass.notifyListeners(SWT.Modify, new Event());
-                } else {
-                    txtGitUser.setEnabled(true);
-                    txtGitPass.setEnabled(true);
+                }else {
+                    txtGitUser.setEnabled(false);
+                    txtGitPass.setEnabled(false);
+                    lblWarnGitPass.setText("Make sure you have private and public keys\n"
+                            + "filenames entered in application preferences.");
                     txtGitPass.notifyListeners(SWT.Modify, new Event());
                 }
             }
         });
+        
         new Label(grpGit, SWT.NONE).setText("GIT User:");
 
         txtGitUser = new Text(grpGit, SWT.BORDER);
@@ -586,21 +591,22 @@ class PageDiff extends WizardPage implements Listener {
             @Override
             public void modifyText(ModifyEvent e) {
                 GridData gd = (GridData) lblWarnGitPass.getLayoutData();
-
                 if ((txtGitPass.getText().isEmpty() && !gd.exclude)
                         || (!txtGitPass.getText().isEmpty() && gd.exclude)) {
                     gd.exclude = !gd.exclude;
                     lblWarnGitPass.setVisible(!lblWarnGitPass.getVisible());
-
-                    getShell().pack();
-                    grpGit.layout(false);
-                }
-                if (!txtGitPass.isEnabled()) {
-                    lblWarnGitPass.setVisible(false);
-                    gd.exclude = true;
-                    getShell().pack();
                     container.layout(false);
                 }
+                if (!txtGitUrl.getText().isEmpty() &&  !JGitExec.PATTERN_HTTP_URL.matcher(txtGitUrl.getText()).matches() && !JGitExec.PATTERN_FILE_URL.matcher(txtGitUrl.getText()).matches()){
+                    lblWarnGitPass.setVisible(true);
+                    gd.exclude = false;
+                    container.layout(true);
+                }else if (!txtGitPass.isEnabled()) {
+                    lblWarnGitPass.setVisible(false);
+                    gd.exclude = true;
+                    container.layout(false);
+                }
+                getShell().pack();
             }
         });
 
@@ -622,7 +628,6 @@ class PageDiff extends WizardPage implements Listener {
         txtGitRev = new Text(grpGit, SWT.BORDER);
         txtGitRev.setLayoutData(new GridData());
         txtGitRev.addListener(SWT.Modify, this);
-        // ///////////////// GIT out
 
         grpProj = new Group(container, SWT.NONE);
         grpProj.setText("Project target");
