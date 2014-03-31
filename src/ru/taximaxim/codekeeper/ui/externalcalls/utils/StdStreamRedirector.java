@@ -25,6 +25,7 @@ public class StdStreamRedirector implements Runnable {
 	 * @param in {@link InputStream} to 
 	 */
 	private StdStreamRedirector(InputStream in) {
+	    // TODO encoding, windows?
 		this.in = new BufferedReader(new InputStreamReader(in));
 	}
 	

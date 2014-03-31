@@ -4,6 +4,8 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 public class Activator implements BundleActivator {
+    
+    private static final String EQUINOX_LOGGER = "org.eclipse.equinox.logger";
 
 	private static BundleContext context;
 
