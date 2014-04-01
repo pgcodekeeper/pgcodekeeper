@@ -34,7 +34,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.externalcalls.GitExec;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
@@ -173,7 +172,7 @@ public abstract class TestIRepoWorker {
             repo.repoCommit(dirRepoA, "AAA");
             // Throws Exception, since there is conflict. We call it, because it's the 
             // only way for GitExec to stage files using IRepoWorker available methods
-            if (repo instanceof GitExec | repo instanceof JGitExec) {
+            if (repo instanceof JGitExec) {
                 try {
                     repo.repoCommit(dirTempRepo, "BBB");
                 } catch (IllegalStateException | IOException e ) {
