@@ -22,7 +22,8 @@ public class TestSvn extends TestIRepoWorker{
         // init a git repo at pathToOrigin
         runRepoBinary("svnadmin", pathToOrigin.toFile(), "create", pathToOrigin.toString());
         // import resources to repository at pathToOrigin 
-        runRepoBinary("svn", temp.toFile(), "import", "file://" + pathToOrigin.toString(), "-m", "\"init\"");
+        runRepoBinary("svn", temp.toFile(), "import", 
+        		"file:///" + pathToOrigin.toString(), "-m", "\"init\"");
         repo = new SvnExec("svn", pathToOrigin.toString(), "", "");
         pathToWorking = Files.createTempDirectory("");
         Dir.deleteRecursive(temp.toFile());
