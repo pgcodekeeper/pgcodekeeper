@@ -144,8 +144,9 @@ class GitPrefPage extends FieldEditorPreferencePage {
 
     @Override
     protected void createFieldEditors() {
-        editorPrivate = new FileFieldEditor(UIConsts.PREF_GIT_KEY_PRIVATE_FILE,
-                "Private key", getFieldEditorParent());
+        editorPrivate = new FileFieldEditor(UIConsts.PREF_GIT_KEY_PRIVATE_FILE, 
+                "Private key", true, FileFieldEditor.VALIDATE_ON_KEY_STROKE,
+                getFieldEditorParent());
         addField(editorPrivate);
     }
     
