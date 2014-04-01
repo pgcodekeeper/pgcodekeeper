@@ -6,6 +6,7 @@ import java.nio.file.Files;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
+import org.eclipse.jgit.lib.Config;
 import org.junit.Before;
 
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
@@ -23,8 +24,9 @@ public class TestJGit extends TestIRepoWorker{
         Git git = Git.open(dirRepo);
         git.add().addFilepattern(".").call();
         git.commit().setMessage("init").setAll(true).call();
-        //TODO replace external git call
-        runRepoBinary("git", dirRepo, "config", "--bool", "core.bare", "true");
+        Config conf = git.getRepository().getConfig();
+        conf.setString("core", "", "bare", "true");
+        git.close();
         repo = new JGitExec(pathToOrigin.toString(), "", "", "");
         pathToWorking = Files.createTempDirectory("");
     }
