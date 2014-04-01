@@ -11,7 +11,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitOption;
@@ -69,20 +68,15 @@ public abstract class TestIRepoWorker {
     }
     
     @Test
-    public void testRepoCheckOut() {
-        try {
+    public void testRepoCheckOut() throws IOException {
             repo.repoCheckOut(pathToWorking.toFile(), null);
             Path pathToOriginalFiles = FileSystems.getDefault().getPath("resources").toAbsolutePath();
             compareFilesInPaths(pathToOriginalFiles, pathToWorking);
             assertTrue(true);
-        } catch (IOException e) {
-            fail("IOException at testRepoCheckOut: " + getExceptionDetails(e));
-        }
     }
     
     @Test
-    public void testRepoCommit() {
-        try {
+    public void testRepoCommit() throws IOException {
             File dirRepo = new File(pathToWorking.toString());
             repo.repoCheckOut(dirRepo);
             // modify file in repo
@@ -94,14 +88,10 @@ public abstract class TestIRepoWorker {
             repo.repoCheckOut(dirTempRepo);
             compareFilesInPaths(dirTempRepo.toPath(), pathToWorking); 
             assertTrue(true);
-        } catch (IOException e) {
-            fail("IOException at testRepoCommit: " + getExceptionDetails(e));
-        }
     }
     
     @Test
-    public void testHasConflicts() {
-        try {
+    public void testHasConflicts() throws IOException {
             File dirRepoA = pathToWorking.toFile();
             repo.repoCheckOut(dirRepoA);
             dirTempRepo = Files.createTempDirectory("").toFile();
@@ -125,21 +115,12 @@ public abstract class TestIRepoWorker {
                     // Exception expected
                 }
             }
-            
-            try {
-                repo.repoUpdate(dirTempRepo);
-            } catch (IOException e) {
-                //IO exception expected if (repo instanceof GitExec)
-            }
+            repo.repoUpdate(dirTempRepo);
             assertTrue(repo.hasConflicts(dirTempRepo));
-        } catch (IOException e) {
-            fail("IOException at testHasConflicts" + getExceptionDetails(e));
-        }
     }
 
     @Test
-    public void testRepoUpdate() {
-        try {
+    public void testRepoUpdate() throws IOException {
             File dirRepo = pathToWorking.toFile();
             repo.repoCheckOut(dirRepo);
             dirTempRepo = Files.createTempDirectory("").toFile();
@@ -151,9 +132,6 @@ public abstract class TestIRepoWorker {
             repo.repoUpdate(dirRepo);
             compareFilesInPaths(dirTempRepo.toPath(), dirRepo.toPath());
             assertTrue(true);
-        } catch (IOException e) {
-            fail("IOException at testRepoCommit: " + getExceptionDetails(e));
-        }
     }
 
     @Test
@@ -166,8 +144,7 @@ public abstract class TestIRepoWorker {
     }
 
     @Test
-    public void testRepoRemoveMissingAddNew() {
-        try {
+    public void testRepoRemoveMissingAddNew() throws IOException {
             File dirRepoA = pathToWorking.toFile();
             repo.repoCheckOut(dirRepoA);
             Files.delete(pathToWorking.resolve(new File("EXTENSION"
@@ -183,20 +160,9 @@ public abstract class TestIRepoWorker {
             dirTempRepo = Files.createTempDirectory("").toFile();
             repo.repoCheckOut(dirTempRepo);
             compareFilesInPaths(dirRepoA.toPath(), dirTempRepo.toPath());
-
             assertTrue(true);
-        } catch (IOException e) {
-            fail("IOException at testRepoRemoveMissingAddNew: " + getExceptionDetails(e));
-        }
     }
-    
-    protected String getExceptionDetails(Exception e){
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        return e.getMessage() + "\n" + sw.toString();
-    }
-    
+       
     private void compareFilesInPaths(Path path1, Path path2) throws IOException{
         Files.walkFileTree(path1, EnumSet
                 .of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
@@ -209,14 +175,12 @@ public abstract class TestIRepoWorker {
     /**
      * Creates temporary dir pathToOrigin, copies files from resources there,
      * inits git repo there and commits copied files
+     * @throws IOException 
      */
-    protected void copyFilesToPath(Path destination) {
-        try {
-            final Path source = FileSystems.getDefault().getPath("resources");
-            Files.walkFileTree(source, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE, new CopyFileVisitor(source, destination));
-        } catch (IOException e) {
-            fail("Error copying files to " + destination + ":" + getExceptionDetails(e));
-        }
+    protected void copyFilesToPath(Path destination) throws IOException {
+        final Path source = FileSystems.getDefault().getPath("resources");
+        Files.walkFileTree(source, EnumSet.of(FileVisitOption.FOLLOW_LINKS),
+                Integer.MAX_VALUE, new CopyFileVisitor(source, destination));
     }
 
     private static void appendToFile(String file, String textToAppend) throws IOException{
