@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgSelect.SelectColumn;
@@ -70,7 +71,9 @@ public class SelectParser {
         try {
             parseSelectRecursive(statement);
         } catch (Exception ex) {
-            // TODO log
+            Log.log(Log.LOG_WARNING,
+                    "Exception while trying to parse following SELECT statement\n"
+                            + statement, ex);
         }
         
         // return at least what we were able to parse
@@ -97,13 +100,16 @@ public class SelectParser {
             
             p.expect("SELECT");
             do {
-                Matcher m = VALID_SELECT_COLUMN.matcher(p.getExpression(CLAUSES));
+                String column = p.getExpression(CLAUSES);
+                Matcher m = VALID_SELECT_COLUMN.matcher(column);
                 
                 if (m.matches()) {
                     columns.add(new SelectColumn(m.group(GRP_SCHEMA),
                             m.group(GRP_TABLE), m.group(GRP_COLUMN)));
                 } else {
-                    // TODO log
+                    Log.log(Log.LOG_WARNING, "SELECT column didn't match the pattern"
+                            + " while parseing statement:\n" + statement
+                            + "\ncolumn:\n" + column);
                 }
             } while (p.expectOptional(","));
             
@@ -139,6 +145,7 @@ public class SelectParser {
                 parseSelectRecursive(p.getRest());
             }
             
+            // resolve aliased columns
             for (SelectColumn column : columns) {
                 if (column.schema == null && column.table != null) {
                     String unaliased = tableAliases.get(column.table);
@@ -149,6 +156,8 @@ public class SelectParser {
                                 column.column);
                     }
                 }
+                
+                // and add them to the accumulating object
                 select.addColumn(column);
             }
         } while (parens > 0);

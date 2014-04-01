@@ -104,13 +104,19 @@ public class PgSelect extends PgStatementWithSearchPath {
             if (this == obj) {
                 eq = true;
             } else if (obj instanceof SelectColumn) {
-                SelectColumn column = (SelectColumn) obj;
-                eq = Objects.equals(schema, column.schema)
-                        && Objects.equals(table, column.table)
-                        && Objects.equals(column, column.column);
+                SelectColumn col = (SelectColumn) obj;
+                eq = Objects.equals(schema, col.schema)
+                        && Objects.equals(table, col.table)
+                        && Objects.equals(column, col.column);
             }
             
             return eq;
+        }
+        
+        @Override
+        public String toString() {
+            return "schema: \"" + schema + "\"; table: \"" + table
+                    + "\"; column: \"" + column + "\";";
         }
     }
 }

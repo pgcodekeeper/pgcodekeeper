@@ -20,6 +20,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.schema.*;
+import cz.startnet.utils.pgdiff.schema.PgSelect.SelectColumn;
 
 /**
  * An abstract 'factory' that creates 'artificial'
@@ -618,6 +619,13 @@ class PgDB9 extends PgDatabaseObjectCreator {
 		view.addColumnDefaultValue("created", "now()");
 		schema.addView(view);
 		
+		PgSelect select = new PgSelect("", "");
+		select.addColumn(new SelectColumn("user_data", "id"));
+		select.addColumn(new SelectColumn("user_data", "email"));
+		select.addColumn(new SelectColumn("user_data", "created"));
+		
+		view.setSelect(select);
+		
 		return d;
 	}
 }
@@ -824,6 +832,12 @@ class PgDB14 extends PgDatabaseObjectCreator {
 		
 		view.setComment("'test view'");
 		view.addColumnComment("id", "'view id col'");
+		
+		PgSelect select = new PgSelect("", "");
+		select.addColumn(new SelectColumn("test", "id"));
+		select.addColumn(new SelectColumn("test", "text"));
+		
+		view.setSelect(select);
 		
 		PgTrigger trigger = new PgTrigger("test_trigger", "", "");
 		trigger.setBefore(true);

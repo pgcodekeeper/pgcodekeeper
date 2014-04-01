@@ -65,6 +65,7 @@ public class Log {
             if (ex != null) {
                 ex.printStackTrace();
             }
+            System.out.println();
         }
     }
 }
