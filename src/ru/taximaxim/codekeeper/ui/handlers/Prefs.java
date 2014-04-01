@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -137,7 +136,7 @@ class DbStorePrefPage extends FieldEditorPreferencePage {
 class GitPrefPage extends FieldEditorPreferencePage {
     private Button genKeysButt;
     private Button copyPublicKeyButt;
-    private Text privateFileText;
+    private FileFieldEditor editorPrivate;
     
     public GitPrefPage() {
         super(GRID);
@@ -145,10 +144,9 @@ class GitPrefPage extends FieldEditorPreferencePage {
 
     @Override
     protected void createFieldEditors() {
-        FileFieldEditor editorPrivate = new FileFieldEditor(UIConsts.PREF_GIT_KEY_PRIVATE_FILE,
+        editorPrivate = new FileFieldEditor(UIConsts.PREF_GIT_KEY_PRIVATE_FILE,
                 "Private key", getFieldEditorParent());
         addField(editorPrivate);
-        privateFileText = editorPrivate.getTextControl(getFieldEditorParent());
     }
     
     @Override
@@ -168,7 +166,8 @@ class GitPrefPage extends FieldEditorPreferencePage {
                 if (privateFileName != null)
                     try {
                         JGitExec.genKeys(privateFileName);
-                        privateFileText.setText(privateFileName);
+                        editorPrivate.setStringValue(privateFileName);
+                        GitPrefPage.this.checkState();
                     } catch (IOException | JSchException ex) {
                         ExceptionNotifyHelper
                                 .notifyAndThrow(
@@ -183,7 +182,7 @@ class GitPrefPage extends FieldEditorPreferencePage {
         copyPublicKeyButt.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                String publicFileName = privateFileText.getText() + ".pub";
+                String publicFileName = editorPrivate.getTextControl(getFieldEditorParent()).getText() + ".pub";
                 File publicKey = new File (publicFileName);
                 try (BufferedReader reader = new BufferedReader( new FileReader (publicKey))){
                     StringBuilder  sBuilder = new StringBuilder();
@@ -195,7 +194,7 @@ class GitPrefPage extends FieldEditorPreferencePage {
                     new Clipboard(parent.getDisplay()).setContents (data, new Transfer[]{TextTransfer.getInstance()});
                 } catch (IOException e1) {
                     MessageBox box = new MessageBox(parent.getShell(), SWT.ERROR);
-                    box.setMessage("Public key file " + privateFileText.getText() + 
+                    box.setMessage("Public key file " + editorPrivate.getTextControl(getFieldEditorParent()).getText() + 
                             ".pub"+" either does not exist or inaccessible.");
                     box.open();
                 }
