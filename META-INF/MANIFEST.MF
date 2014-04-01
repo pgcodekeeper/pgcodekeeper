@@ -13,3 +13,9 @@ Require-Bundle: org.hamcrest.core,
  org.junit,
  org.jgrapht
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: ru.taximaxim.codekeeper.apgdiff.Activator
+Import-Package: org.eclipse.equinox.log;version="1.0.0",
+ org.osgi.framework;version="1.7.0",
+ org.osgi.service.log;version="1.3.0",
+ org.osgi.util.tracker;version="1.5.1"
