@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.startnet</groupId>
@@ -100,7 +101,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib</classpathPrefix>
+                            <!-- classpathPrefix>lib</classpathPrefix -->
                             <mainClass>cz.startnet.utils.pgdiff.Main</mainClass>
                         </manifest>
                     </archive>
@@ -143,6 +144,29 @@
                         <descriptor>${basedir}/src/main/assembly/bin.xml</descriptor>
                         <descriptor>${basedir}/src/main/assembly/src.xml</descriptor>
                     </descriptors>
+                </configuration>
+            </plugin>
+            <plugin>
+            	<groupId>org.apache.maven.plugins</groupId>
+            	<artifactId>maven-dependency-plugin</artifactId>
+            	<executions>
+            	   <execution>
+            	       <phase>package</phase>
+            	       <goals>
+            	           <goal>copy</goal>
+           	           </goals>
+            	   </execution>
+            	</executions>
+                <configuration>
+                    <artifactItems>
+                        <artifactItem>
+                            <groupId>org.jgrapht</groupId>
+				            <artifactId>jgrapht-core</artifactId>
+				            <version>0.9.0</version>
+				            <type>jar</type>
+                            <outputDirectory>${project.build.directory}</outputDirectory>    
+                        </artifactItem>
+                    </artifactItems>
                 </configuration>
             </plugin>
         </plugins>
