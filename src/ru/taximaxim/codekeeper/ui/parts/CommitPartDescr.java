@@ -76,9 +76,6 @@ public class CommitPartDescr {
     @Inject
     @Preference(value = UIConsts.PREF_SVN_EXE_PATH)
     private String exeSvn;
-    @Inject
-    @Preference(value = UIConsts.PREF_GIT_EXE_PATH)
-    private String exeGit;
     private Text txtCommitComment;
     private Button btnCommit;
     private DiffTreeViewer diffTree;

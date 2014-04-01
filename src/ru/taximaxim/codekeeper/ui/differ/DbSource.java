@@ -64,22 +64,22 @@ public abstract class DbSource {
 
     public static DbSource fromSvn(String svnExec, String url, String user,
             String pass, String rev, String encoding) {
-        return new DbSourceRepo(RepoType.SVN, svnExec, url, user, pass, rev,
+        return new DbSourceRepo(svnExec, RepoType.SVN, url, user, pass, rev,
                 encoding, null);
     }
 
-    public static DbSource fromGit(String gitExec, PgDbProject proj, String privateKeyFile) {
-        return new DbSourceRepo(gitExec, proj, privateKeyFile);
+    public static DbSource fromGit(PgDbProject proj, String privateKeyFile) {
+        return new DbSourceRepo(null, proj, privateKeyFile);
     }
 
-    public static DbSource fromGit(String gitExec, PgDbProject proj,
+    public static DbSource fromGit(PgDbProject proj,
             String commitHash, String privateKeyFile) {
-        return new DbSourceRepo(gitExec, proj, commitHash, privateKeyFile);
+        return new DbSourceRepo(null, proj, commitHash, privateKeyFile);
     }
 
-    public static DbSource fromGit(String gitExec, String url, String user,
+    public static DbSource fromGit(String url, String user,
             String pass, String commitHash, String encoding, String privateKeyFile) {
-        return new DbSourceRepo(RepoType.GIT, gitExec, url, user, pass,
+        return new DbSourceRepo(null, RepoType.GIT, url, user, pass,
                 commitHash, encoding, privateKeyFile);
     }
 
@@ -142,14 +142,14 @@ class DbSourceRepo extends DbSource {
     }
 
     public DbSourceRepo(String repoExec, PgDbProject proj, String rev, String privateKeyFile) {
-        this(RepoType.valueOf(proj.getString(UIConsts.PROJ_PREF_REPO_TYPE)),
-                repoExec, proj.getString(UIConsts.PROJ_PREF_REPO_URL), proj
+        this(repoExec, RepoType.valueOf(proj.getString(UIConsts.PROJ_PREF_REPO_TYPE)),
+                 proj.getString(UIConsts.PROJ_PREF_REPO_URL), proj
                         .getString(UIConsts.PROJ_PREF_REPO_USER), proj
                         .getString(UIConsts.PROJ_PREF_REPO_PASS), rev, proj
                         .getString(UIConsts.PROJ_PREF_ENCODING), privateKeyFile);
     }
 
-    DbSourceRepo(RepoType repoType, String repoExec, String url, String user,
+    DbSourceRepo(String repoExec, RepoType repoType, String url, String user,
             String pass, String rev, String encoding, String privateKeyFile) {
         super(url + (rev.isEmpty() ? "" : "@" + rev));
         switch (repoType) {

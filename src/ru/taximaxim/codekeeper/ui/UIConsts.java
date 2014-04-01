@@ -23,7 +23,6 @@ public interface UIConsts {
     
     // Preferences
     String PREF_SVN_EXE_PATH = "prefSvnExePath";
-    String PREF_GIT_EXE_PATH = "prefGitExePath";
     String PREF_PGDUMP_EXE_PATH = "prefPgdumpExePath";
     String PREF_DB_STORE = "prefDbStore";
     String PREF_GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile";

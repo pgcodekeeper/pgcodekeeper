@@ -312,7 +312,6 @@ class PageDiff extends WizardPage implements Listener {
 
         case GIT:
             dbs = DbSource.fromGit(
-                    mainPrefs.getString(UIConsts.PREF_GIT_EXE_PATH),
                     getGitUrl(), getGitUser(), getGitPass(), getGitRev(),
                     getTargetEncoding(), mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
             break;
@@ -342,7 +341,6 @@ class PageDiff extends WizardPage implements Listener {
                     break;
                 case GIT:
                     dbs = DbSource.fromGit(
-                            mainPrefs.getString(UIConsts.PREF_GIT_EXE_PATH),
                             fromProj.getString(UIConsts.PROJ_PREF_REPO_URL),
                             fromProj.getString(UIConsts.PROJ_PREF_REPO_USER),
                             fromProj.getString(UIConsts.PROJ_PREF_REPO_PASS),

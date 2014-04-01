@@ -58,8 +58,6 @@ public class AddonExternalTools {
             MApplication app,
             @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
             String svnExec,
-            @Preference(value=UIConsts.PREF_GIT_EXE_PATH)
-            String gitExec,
             @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
             String pgdumpExec) {
         try {
@@ -95,12 +93,10 @@ public class AddonExternalTools {
             ApplicationHandle appHandle, // IApplicationContext actually
             @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
             String svnExec,
-            @Preference(value=UIConsts.PREF_GIT_EXE_PATH)
-            String gitExec,
             @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
             String pgdumpExec) {
         if(appHandle.getState() == ApplicationHandle.RUNNING) {
-            getVersionsOnStartup(null, svnExec, gitExec, pgdumpExec);
+            getVersionsOnStartup(null, svnExec, pgdumpExec);
         }
     }
 }
