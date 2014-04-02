@@ -528,9 +528,42 @@ public class PgDiffUtils {
         return getQuotedName(name, false);
     }
 
-    /**
-     * Creates a new PgDiffUtils object.
-     */
+    public static String normalizeWhitespaceExceptQuoted(String string) {
+        StringBuilder sb = new StringBuilder(string.length());
+        
+        boolean quote = false,
+                doubleQuote = false,
+                whitespace = false;
+        for (int pos = 0; pos < string.length(); ++pos) {
+            char ch = string.charAt(pos);
+            
+            if (ch == '\'') {
+                if (!doubleQuote) {
+                    quote = !quote;
+                }
+            } else if (string.charAt(pos) == '"') {
+                if (!quote) {
+                    doubleQuote = !doubleQuote;
+                }
+            } else if (Character.isWhitespace(ch) && !quote && !doubleQuote) {
+                if (!whitespace) {
+                    ch = ' '; // append single space
+                    whitespace = true; // and set skip flag
+                } else {
+                    // skip continued whitespace
+                    continue;
+                }
+            } else {
+                whitespace = false;
+            }
+            
+            // append unskipped characters
+            sb.append(ch);
+        }
+        
+        return sb.toString();
+    }
+    
     private PgDiffUtils() {
     }
 }
