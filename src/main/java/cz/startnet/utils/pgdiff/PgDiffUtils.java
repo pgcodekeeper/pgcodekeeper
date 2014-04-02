@@ -528,12 +528,12 @@ public class PgDiffUtils {
         return getQuotedName(name, false);
     }
 
-    public static String normalizeWhitespaceExceptQuoted(String string) {
+    public static String normalizeWhitespaceUnquoted(String string) {
         StringBuilder sb = new StringBuilder(string.length());
         
         boolean quote = false,
-                doubleQuote = false,
-                whitespace = false;
+                doubleQuote = false;
+        int currentWhitespaceStart = -1;
         for (int pos = 0; pos < string.length(); ++pos) {
             char ch = string.charAt(pos);
             
@@ -546,15 +546,37 @@ public class PgDiffUtils {
                     doubleQuote = !doubleQuote;
                 }
             } else if (Character.isWhitespace(ch) && !quote && !doubleQuote) {
-                if (!whitespace) {
-                    ch = ' '; // append single space
-                    whitespace = true; // and set skip flag
-                } else {
-                    // skip continued whitespace
-                    continue;
+                if (currentWhitespaceStart < 0) {
+                    currentWhitespaceStart = pos;
                 }
+                
+                // do not add whitespace while iterating over it
+                continue;
             } else {
-                whitespace = false;
+                // if we interrupted some whitespace
+                if (currentWhitespaceStart >= 0) {
+                    // check whitespace boundaries, if it was delimited by a
+                    // special character do not separate that character - add nothing
+                    // if whitespace was necessary (e.g. delimited words) - add one space
+                    boolean removeWhitespace = false;
+                    
+                    if (currentWhitespaceStart - 1 >= 0) {
+                        char preW = string.charAt(currentWhitespaceStart - 1);
+                        removeWhitespace |= preW == '(' || preW == ')'
+                                || preW == ',';
+                    }
+                    if (pos + 1 < string.length()) {
+                        char postW = string.charAt(pos + 1);
+                        removeWhitespace |= postW == '(' || postW == ')'
+                                || postW == ',';
+                    }
+                    
+                    // reset whitespace flag
+                    currentWhitespaceStart = -1;
+                    if (!removeWhitespace) {
+                        sb.append(' ');
+                    }
+                }
             }
             
             // append unskipped characters

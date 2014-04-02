@@ -81,8 +81,12 @@ public class PgDiffViews {
         List<String> oldColumnNames = oldView.getColumnNames();
         List<String> newColumnNames = newView.getColumnNames();
 
+        // TODO faulty logic?
+        // TODO review PgDiff compare methods against PgStatements' compare methods
         if(oldColumnNames.isEmpty() && newColumnNames.isEmpty()) {
-        	return !oldView.getQuery().trim().equals(newView.getQuery().trim());
+            String nOldQuery = PgDiffUtils.normalizeWhitespaceUnquoted(oldView.getQuery());
+            String nNewQuery = PgDiffUtils.normalizeWhitespaceUnquoted(newView.getQuery());
+        	return !nOldQuery.equals(nNewQuery);
         } else {
         	return !oldColumnNames.equals(newColumnNames);
         }

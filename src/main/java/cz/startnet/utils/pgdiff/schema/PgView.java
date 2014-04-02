@@ -177,9 +177,20 @@ public class PgView extends PgStatementWithSearchPath {
         } else if(obj instanceof PgView) {
             PgView view = (PgView) obj;
             eq = Objects.equals(name, view.getName())
-                    && Objects.equals(query, view.getQuery())
                     && columnNames.equals(view.columnNames)
                     && new HashSet<>(defaultValues).equals(new HashSet<>(view.defaultValues));
+                    
+            if (eq) {
+                String queryOther = view.getQuery();
+                
+                if (query != null && queryOther != null) {
+                    String nQuery = PgDiffUtils.normalizeWhitespaceUnquoted(query);
+                    String nQueryOther = PgDiffUtils.normalizeWhitespaceUnquoted(queryOther);
+                    eq &= nQuery.equals(nQueryOther);
+                } else {
+                    eq &= query == queryOther;
+                }
+            }
         }
         
         return eq;
@@ -192,7 +203,8 @@ public class PgView extends PgStatementWithSearchPath {
         result = prime * result + ((columnNames == null) ? 0 : columnNames.hashCode());
         result = prime * result + new HashSet<>(defaultValues).hashCode();
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((query == null) ? 0 : query.hashCode());
+        result = prime * result + ((query == null) ? 0 :
+            PgDiffUtils.normalizeWhitespaceUnquoted(query).hashCode());
         return result;
     }
     

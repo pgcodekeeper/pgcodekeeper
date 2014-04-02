@@ -611,8 +611,12 @@ class PgDB9 extends PgDatabaseObjectCreator {
 		schema.addSequence(seq);
 		
 		PgView view = new PgView("user", "", "");
-		view.setQuery("SELECT user_data.id, user_data.email, user_data.created FROM user_data");
+		view.setQuery("(SELECT user_data.id, user_data.email, user_data.created FROM user_data)");
 		view.addColumnDefaultValue("created", "now()");
+		schema.addView(view);
+		
+		view = new PgView("ws_test", "", "");
+		view.setQuery("SELECT ud.id \"   i   d   \" FROM user_data ud");
 		schema.addView(view);
 		
 		return d;
