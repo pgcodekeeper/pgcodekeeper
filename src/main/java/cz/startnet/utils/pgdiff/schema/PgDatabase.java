@@ -16,110 +16,54 @@ import java.util.List;
  * @author fordfrog
  */
 public class PgDatabase extends PgStatement {
-
-    /**
-     * List of database schemas.
-     */
-    private final List<PgSchema> schemas = new ArrayList<PgSchema>(1);
-    /**
-     * List of database extensions.
-     */
-    private final List<PgExtension> extensions = new ArrayList<PgExtension>(1);
-    /**
-     * Array of ignored statements.
-     */
-    private final List<String> ignoredStatements = new ArrayList<String>();
-    /**
-     * Array of ignored data statements.
-     */
-    private final List<String> ignoredDataStatements = new ArrayList<String>();
     /**
      * Current default schema.
      */
     private PgSchema defaultSchema;
-    /**
-     * Comment.
-     */
+    
+    private final List<PgSchema> schemas = new ArrayList<PgSchema>(1);
+    private final List<PgExtension> extensions = new ArrayList<PgExtension>();
+    
+    private final List<String> ignoredStatements = new ArrayList<String>();
+    private final List<String> ignoredDataStatements = new ArrayList<String>();
+    
     private String comment;
 
-    /**
-     * Creates a new PgDatabase object.
-     */
     public PgDatabase() {
-        super(null);
+        super("DB_name_placeholder", null);
         
-        schemas.add(new PgSchema("public", null));
+        addSchema(new PgSchema("public", null));
         defaultSchema = schemas.get(0);
     }
 
-    /**
-     * Getter for {@link #comment}.
-     *
-     * @return {@link #comment}
-     */
     public String getComment() {
         return comment;
     }
 
-    /**
-     * Setter for {@link #comment}.
-     *
-     * @param comment {@link #comment}
-     */
     public void setComment(final String comment) {
         this.comment = comment;
     }
 
-    /**
-     * Sets default schema according to the {@code name} of the schema.
-     *
-     * @param name name of the schema
-     */
     public void setDefaultSchema(final String name) {
         defaultSchema = getSchema(name);
     }
 
-    /**
-     * Getter for {@link #defaultSchema}.
-     *
-     * @return {@link #defaultSchema}
-     */
     public PgSchema getDefaultSchema() {
         return defaultSchema;
     }
 
-    /**
-     * Getter for {@link #ignoredStatements}.
-     *
-     * @return {@link #ignoredStatements}
-     */
     public List<String> getIgnoredStatements() {
         return Collections.unmodifiableList(ignoredStatements);
     }
-    
-    /**
-     * Getter for {@link #ignoredDataStatements}.
-     *
-     * @return {@link #ignoredDataStatements}
-     */
+
     public List<String> getIgnoredDataStatements() {
         return Collections.unmodifiableList(ignoredDataStatements);
     }
 
-    /**
-     * Adds ignored statement to the list of ignored statements.
-     *
-     * @param ignoredStatement ignored statement
-     */
     public void addIgnoredStatement(final String ignoredStatement) {
         ignoredStatements.add(ignoredStatement);
     }
-    
-    /**
-     * Adds ignored data statement to the list of ignored data statements.
-     *
-     * @param ignoredDataStatement ignored data statement
-     */
+
     public void addIgnoredDataStatement(final String ignoredDataStatement) {
         ignoredDataStatements.add(ignoredDataStatement);
     }
@@ -155,11 +99,6 @@ public class PgDatabase extends PgStatement {
         return Collections.unmodifiableList(schemas);
     }
 
-    /**
-     * Adds {@code schema} to the list of schemas.
-     *
-     * @param schema schema
-     */
     public void addSchema(final PgSchema schema) {
         schemas.add(schema);
     }
@@ -189,12 +128,7 @@ public class PgDatabase extends PgStatement {
     public List<PgExtension> getExtensions() {
     	return Collections.unmodifiableList(extensions);
     }
-    
-    /**
-     * Adds {@code #extension} to the list of extension.
-     * 
-     *  @param extension extension
-     */
+
     public void addExtension(final PgExtension extension) {
     	extensions.add(extension);
     }
@@ -205,8 +139,9 @@ public class PgDatabase extends PgStatement {
     }
     
     @Override
-    public String getName() {
-        return null;
+    public boolean compare(PgStatement obj) {
+        // for now all instances of PgDatabase considered to be shallow equal
+        return obj instanceof PgDatabase;
     }
 
     @Override
@@ -218,7 +153,8 @@ public class PgDatabase extends PgStatement {
         } else if(obj instanceof PgDatabase) {
             PgDatabase db = (PgDatabase) obj;
             
-            eq = new HashSet<>(extensions).equals(new HashSet<>(db.extensions))
+            eq = // super.equals(obj) && // redundant here
+                    new HashSet<>(extensions).equals(new HashSet<>(db.extensions))
                     && new HashSet<>(schemas).equals(new HashSet<>(db.schemas));
         }
         

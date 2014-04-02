@@ -20,53 +20,22 @@ import java.util.Objects;
  */
 public class PgFunction extends PgStatementWithSearchPath {
 
-    /**
-     * Name of the function including argument types.
-     */
-    private String name;
-    /**
-     * List of arguments.
-     */
     private final List<Argument> arguments = new ArrayList<Argument>();
-    /**
-     * Whole definition of the function from RETURNS keyword.
-     */
     private String body;
-    /**
-     * Comment.
-     */
     private String comment;
     
-    /**
-     * Create a new PgFunction object
-     */
-    public PgFunction(final String rawStatement, final String searchPath) {
-    	super(rawStatement, searchPath);
+    public PgFunction(String name, String rawStatement, String searchPath) {
+    	super(name, rawStatement, searchPath);
     }
 
-    /**
-     * Getter for {@link #comment}.
-     *
-     * @return {@link #comment}
-     */
     public String getComment() {
         return comment;
     }
 
-    /**
-     * Setter for {@link #comment}.
-     *
-     * @param comment {@link #comment}
-     */
     public void setComment(final String comment) {
         this.comment = comment;
     }
 
-    /**
-     * Returns creation SQL of the function.
-     *
-     * @return creation SQL
-     */
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(500);
         sbSQL.append("CREATE OR REPLACE FUNCTION ");
@@ -114,29 +83,14 @@ public class PgFunction extends PgStatementWithSearchPath {
         return sbSQL.toString();
     }
 
-    /**
-     * Setter for {@link #body}.
-     *
-     * @param body {@link #body}
-     */
     public void setBody(final String body) {
         this.body = body;
     }
 
-    /**
-     * Getter for {@link #body}.
-     *
-     * @return {@link #body}
-     */
     public String getBody() {
         return body;
     }
 
-    /**
-     * Creates and returns SQL for dropping the function.
-     *
-     * @return created SQL
-     */
     public String getDropSQL() {
         final StringBuilder sbString = new StringBuilder(100);
         sbString.append("DROP FUNCTION ");
@@ -165,15 +119,6 @@ public class PgFunction extends PgStatementWithSearchPath {
     }
 
     /**
-     * Setter for {@link #name}.
-     *
-     * @param name {@link #name}
-     */
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-    /**
      * Alias for {@link #getSignature()} which provides a unique function ID.
      * 
      * Use {@link #getBareName()} to get just the function name.
@@ -187,7 +132,6 @@ public class PgFunction extends PgStatementWithSearchPath {
      * 
      * @return {@link #name}
      */
-    
     public String getBareName() {
         return name;
     }
@@ -201,11 +145,6 @@ public class PgFunction extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(arguments);
     }
 
-    /**
-     * Adds argument to the list of arguments.
-     *
-     * @param argument argument
-     */
     public void addArgument(final Argument argument) {
         arguments.add(argument);
     }
@@ -247,16 +186,15 @@ public class PgFunction extends PgStatementWithSearchPath {
      * same class but they equal just in whitespace in {@link #body}, they are
      * considered being equal.
      *
-     * @param func                   object to be compared
+     * @param func                     object to be compared
      * @param ignoreFunctionWhitespace whether multiple whitespaces in function
      *                                 {@link #body} should be ignored
      *
-     * @return true if {@code object} is pg function and the function code is
+     * @return true if {@code object} is PgFunction and the function code is
      *         the same when compared ignoring whitespace, otherwise returns
      *         false
      */
-    public boolean equalsWhitespace(final PgFunction func,
-            final boolean ignoreFunctionWhitespace) {
+    public boolean equalsWhitespace(PgFunction func, boolean ignoreFunctionWhitespace) {
         boolean equals = false;
 
         if (this == func) {
@@ -279,16 +217,17 @@ public class PgFunction extends PgStatementWithSearchPath {
         }
         return equals;
     }
-
+    
     @Override
-    public boolean equals(final Object object) {
-        if (object == this) {
+    public boolean compare(PgStatement obj) {
+        if (this == obj) {
             return true;
-        } else if (object instanceof PgFunction) {
-            return equalsWhitespace((PgFunction) object, false);
-        } else {
-            return false;
         }
+        
+        if (obj instanceof PgFunction) {
+            return equalsWhitespace((PgFunction) obj, false);
+        }
+        return false;
     }
 
     @Override
@@ -301,107 +240,45 @@ public class PgFunction extends PgStatementWithSearchPath {
         return result;
     }
 
-    /**
-     * Function argument information.
-     */
     public static class Argument {
 
-        /**
-         * Argument mode.
-         */
         private String mode = "IN";
-        /**
-         * Argument name.
-         */
         private String name;
-        /**
-         * Argument data type.
-         */
         private String dataType;
-        /**
-         * Argument default expression.
-         */
         private String defaultExpression;
 
-        /**
-         * Getter for {@link #dataType}.
-         *
-         * @return {@link #dataType}
-         */
         public String getDataType() {
             return dataType;
         }
 
-        /**
-         * Setter for {@link #dataType}.
-         *
-         * @param dataType {@link #dataType}
-         */
         public void setDataType(final String dataType) {
             this.dataType = dataType;
         }
 
-        /**
-         * Getter for {@link #defaultExpression}.
-         *
-         * @return {@link #defaultExpression}
-         */
         public String getDefaultExpression() {
             return defaultExpression;
         }
 
-        /**
-         * Setter for {@link #defaultExpression}.
-         *
-         * @param defaultExpression {@link #defaultExpression}
-         */
         public void setDefaultExpression(final String defaultExpression) {
             this.defaultExpression = defaultExpression;
         }
 
-        /**
-         * Getter for {@link #mode}.
-         *
-         * @return {@link #mode}
-         */
         public String getMode() {
             return mode;
         }
 
-        /**
-         * Setter for {@link #mode}.
-         *
-         * @param mode {@link #mode}
-         */
         public void setMode(final String mode) {
             this.mode = mode == null || mode.isEmpty() ? "IN" : mode;
         }
 
-        /**
-         * Getter for {@link #name}.
-         *
-         * @return {@link #name}
-         */
         public String getName() {
             return name;
         }
 
-        /**
-         * Setter for {@link #name}.
-         *
-         * @param name {@link #name}
-         */
         public void setName(final String name) {
             this.name = name;
         }
 
-        /**
-         * Creates argument declaration.
-         *
-         * @param includeDefaultValue whether to include default value
-         *
-         * @return argument declaration
-         */
         public String getDeclaration(final boolean includeDefaultValue) {
             final StringBuilder sbString = new StringBuilder(50);
 
@@ -458,8 +335,8 @@ public class PgFunction extends PgStatementWithSearchPath {
     
     @Override
     public PgFunction shallowCopy() {
-        PgFunction functionDst = new PgFunction(getRawStatement(), getSearchPath());
-        functionDst.setName(getBareName());
+        PgFunction functionDst =
+                new PgFunction(getBareName(),getRawStatement(), getSearchPath());
         functionDst.setBody(getBody());
         functionDst.setComment(getComment());
         for(Argument argSrc : arguments) {
