@@ -20,73 +20,29 @@ import java.util.Objects;
  */
 public class PgTable extends PgStatementWithSearchPath {
 
-    /**
-     * List of columns defined on the table.
-     */
     private final List<PgColumn> columns = new ArrayList<PgColumn>();
-    /**
-     * List of constraints defined on the table.
-     */
-    private final List<PgConstraint> constraints = new ArrayList<PgConstraint>();
-    /**
-     * List of indexes defined on the table.
-     */
-    private final List<PgIndex> indexes = new ArrayList<PgIndex>();
-    /**
-     * List of triggers defined on the table.
-     */
-    private final List<PgTrigger> triggers = new ArrayList<PgTrigger>();
-    /**
-     * Name of the index on which the table is clustered
-     */
-    private String clusterIndexName;
-    /**
-     * List of names of inherited tables.
-     */
     private final List<String> inherits = new ArrayList<String>();
-    /**
-     * Name of the table.
-     */
-    private String name;
+    private final List<PgConstraint> constraints = new ArrayList<PgConstraint>();
+    private final List<PgIndex> indexes = new ArrayList<PgIndex>();
+    private final List<PgTrigger> triggers = new ArrayList<PgTrigger>();
+
+    private String clusterIndexName;
     /**
      * WITH clause. If value is null then it is not set, otherwise can be set to
      * OIDS=true, OIDS=false, or storage parameters can be set.
      */
     private String with;
-    /**
-     * Tablespace value.
-     */
     private String tablespace;
-    /**
-     * Comment.
-     */
     private String comment;
     
-    /**
-     * Creates a new PgTable object.
-     *
-     * @param name {@link #name}
-     */
-    public PgTable(final String name, final String rawStatement,
-    		final String searchPath) {
-    	super(rawStatement, searchPath);
-        this.name = name;
+    public PgTable(String name, String rawStatement, String searchPath) {
+    	super(name, rawStatement, searchPath);
     }
 
-    /**
-     * Setter for {@link #clusterIndexName}.
-     *
-     * @param name {@link #clusterIndexName}
-     */
     public void setClusterIndexName(final String name) {
         clusterIndexName = name;
     }
 
-    /**
-     * Getter for {@link #clusterIndexName}.
-     *
-     * @return {@link #clusterIndexName}
-     */
     public String getClusterIndexName() {
         return clusterIndexName;
     }
@@ -117,20 +73,10 @@ public class PgTable extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(columns);
     }
 
-    /**
-     * Getter for {@link #comment}.
-     *
-     * @return {@link #comment}
-     */
     public String getComment() {
         return comment;
     }
 
-    /**
-     * Setter for {@link #comment}.
-     *
-     * @param comment {@link #comment}
-     */
     public void setComment(final String comment) {
         this.comment = comment;
     }
@@ -161,11 +107,6 @@ public class PgTable extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(constraints);
     }
 
-    /**
-     * Creates and returns SQL for creation of the table.
-     *
-     * @return created SQL statement
-     */
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(1000);
         sbSQL.append("CREATE TABLE ");
@@ -267,11 +208,6 @@ public class PgTable extends PgStatementWithSearchPath {
         return sbSQL.toString();
     }
 
-    /**
-     * Creates and returns SQL statement for dropping the table.
-     *
-     * @return created SQL statement
-     */
     public String getDropSQL() {
         return "DROP TABLE " + PgDiffUtils.getQuotedName(getName()) + ";";
     }
@@ -319,11 +255,6 @@ public class PgTable extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(indexes);
     }
 
-    /**
-     * Setter for {@link #inherits}.
-     *
-     * @param tableName name of inherited table
-     */
     public void addInherits(final String tableName) {
         inherits.add(tableName);
     }
@@ -338,24 +269,6 @@ public class PgTable extends PgStatementWithSearchPath {
     }
 
     /**
-     * Setter for {@link #name}.
-     *
-     * @param name {@link #name}
-     */
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-    /**
-     * Getter for {@link #name}.
-     *
-     * @return {@link #name}
-     */
-    public String getName() {
-        return name;
-    }
-    
-    /**
      * Getter for {@link #triggers}. The list cannot be modified.
      *
      * @return {@link #triggers}
@@ -364,146 +277,56 @@ public class PgTable extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(triggers);
     }
 
-    /**
-     * Setter for {@link #with}.
-     *
-     * @param with {@link #with}
-     */
     public void setWith(final String with) {
         this.with = with;
     }
 
-    /**
-     * Getter for {@link #with}
-     *
-     * @return {@link #with}
-     */
     public String getWith() {
         return with;
     }
 
-    /**
-     * Getter for {@link #tablespace}.
-     *
-     * @return {@link #tablespace}
-     */
     public String getTablespace() {
         return tablespace;
     }
 
-    /**
-     * Setter for {@link #tablespace}.
-     *
-     * @param tablespace {@link #tablespace}
-     */
     public void setTablespace(final String tablespace) {
         this.tablespace = tablespace;
     }
 
-    /**
-     * Adds {@code column} to the list of columns.
-     *
-     * @param column column
-     */
     public void addColumn(final PgColumn column) {
         columns.add(column);
     }
 
-    /**
-     * Adds {@code constraint} to the list of constraints.
-     *
-     * @param constraint constraint
-     */
     public void addConstraint(final PgConstraint constraint) {
         constraints.add(constraint);
     }
 
-    /**
-     * Adds {@code index} to the list of indexes.
-     *
-     * @param index index
-     */
     public void addIndex(final PgIndex index) {
         indexes.add(index);
     }
 
-    /**
-     * Adds {@code trigger} to the list of triggers.
-     *
-     * @param trigger trigger
-     */
     public void addTrigger(final PgTrigger trigger) {
         triggers.add(trigger);
     }
 
-    /**
-     * Returns true if table contains given column {@code name}, otherwise
-     * false.
-     *
-     * @param name name of the column
-     *
-     * @return true if table contains given column {@code name}, otherwise false
-     */
     public boolean containsColumn(final String name) {
-        for (PgColumn column : columns) {
-            if (column.getName().equals(name)) {
-                return true;
-            }
-        }
-
-        return false;
+        return getColumn(name) != null;
     }
 
-    /**
-     * Returns true if table contains given constraint {@code name}, otherwise
-     * false.
-     *
-     * @param name name of the constraint
-     *
-     * @return true if table contains given constraint {@code name}, otherwise
-     *         false
-     */
     public boolean containsConstraint(final String name) {
-        for (PgConstraint constraint : constraints) {
-            if (constraint.getName().equals(name)) {
-                return true;
-            }
-        }
-
-        return false;
+        return getConstraint(name) != null;
     }
 
-    /**
-     * Returns true if table contains given index {@code name}, otherwise false.
-     *
-     * @param name name of the index
-     *
-     * @return true if table contains given index {@code name}, otherwise false
-     */
     public boolean containsIndex(final String name) {
-        for (PgIndex index : indexes) {
-            if (index.getName().equals(name)) {
-                return true;
-            }
-        }
-
-        return false;
+        return getIndex(name) != null;
     }
     
     public boolean containsTrigger(String name) {
-        for(PgTrigger trigger : triggers) {
-            if(trigger.getName().equals(name)) {
-                return true;
-            }
-        }
-        
-        return false;
+        return getTrigger(name) != null;
     }
 
     /**
      * Returns list of columns that have statistics defined.
-     *
-     * @return list of columns that have statistics defined
      */
     private List<PgColumn> getColumnsWithStatistics() {
         final List<PgColumn> list = new ArrayList<PgColumn>();
@@ -517,34 +340,44 @@ public class PgTable extends PgStatementWithSearchPath {
         return list;
     }
     
-    /**
-     * {@inheritDoc}
-     * 
-     * @param obj {@inheritDoc}
-     * @return {@inheritDoc}
-     */
+    @Override
+    public boolean compare(PgStatement obj) {
+        boolean eq = false;
+        
+        if(this == obj) {
+            eq = true;
+        } else if(obj instanceof PgTable) {
+            PgTable table = (PgTable) obj;
+            
+            eq = Objects.equals(name, table.getName())
+                    && Objects.equals(clusterIndexName, table.getClusterIndexName())
+                    && Objects.equals(tablespace, table.getTablespace())
+                    && Objects.equals(with, table.getWith())
+                    
+                    && inherits.equals(table.inherits)
+                    && columns.equals(table.columns);
+        }
+        
+        return eq;
+    }
+    
     @Override
     public boolean equals(Object obj) {
-    	boolean eq = false;
-    	
-    	if(this == obj) {
-    		eq = true;
-    	} else if(obj instanceof PgTable) {
-    		PgTable table = (PgTable) obj;
-    		
-    		eq = Objects.equals(name, table.getName())
-    				&& Objects.equals(clusterIndexName, table.getClusterIndexName())
-    				&& Objects.equals(tablespace, table.getTablespace())
-    				&& Objects.equals(with, table.getWith())
-    				
-    				&& inherits.equals(table.inherits)
-    				&& columns.equals(table.columns)
-    				&& new HashSet<>(constraints).equals(new HashSet<>(table.constraints))
-    				&& new HashSet<>(indexes).equals(new HashSet<>(table.indexes))
-    				&& new HashSet<>(triggers).equals(new HashSet<>(table.triggers));
-    	}
-    	
-    	return eq;
+        boolean eq = false;
+        
+        if(this == obj) {
+            eq = true;
+        } else if(obj instanceof PgTable) {
+            PgTable table = (PgTable) obj;
+            
+            eq = super.equals(obj)
+                    
+                    && new HashSet<>(constraints).equals(new HashSet<>(table.constraints))
+                    && new HashSet<>(indexes).equals(new HashSet<>(table.indexes))
+                    && new HashSet<>(triggers).equals(new HashSet<>(table.triggers));
+        }
+        
+        return eq;
     }
 
     @Override

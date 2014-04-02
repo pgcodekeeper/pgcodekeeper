@@ -20,47 +20,16 @@ import java.util.Objects;
  */
 public class PgView extends PgStatementWithSearchPath {
 
-    /**
-     * List of column names.
-     */
-    private List<String> columnNames = new ArrayList<>(1);
-    /**
-     * Name of the view.
-     */
-    private final String name;
-    /**
-     * SQL query of the view.
-     */
     private String query;
-    /**
-     * List of optional column default values.
-     */
+    private List<String> columnNames = new ArrayList<>(1);
     private final List<DefaultValue> defaultValues = new ArrayList<DefaultValue>(0);
-    /**
-     * List of optional column comments.
-     */
     private final List<ColumnComment> columnComments = new ArrayList<ColumnComment>(0);
-    /**
-     * Comment.
-     */
     private String comment;
 
-    /**
-     * Creates a new PgView object.
-     *
-     * @param name {@link #name}
-     */
-    public PgView(final String name, final String rawStatement,
-    		final String searchPath) {
-    	super(rawStatement, searchPath);
-        this.name = name;
+    public PgView(String name, String rawStatement, String searchPath) {
+    	super(name, rawStatement, searchPath);
     }
 
-    /**
-     * Setter for {@link #columnNames}.
-     *
-     * @param columnNames {@link #columnNames}
-     */
     public void setColumnNames(final List<String> columnNames) {
         this.columnNames = columnNames;
     }
@@ -74,29 +43,14 @@ public class PgView extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(columnNames);
     }
 
-    /**
-     * Getter for {@link #comment}.
-     *
-     * @return {@link #comment}
-     */
     public String getComment() {
         return comment;
     }
 
-    /**
-     * Setter for {@link #comment}.
-     *
-     * @param comment {@link #comment}
-     */
     public void setComment(final String comment) {
         this.comment = comment;
     }
 
-    /**
-     * Creates and returns SQL for creation of the view.
-     *
-     * @return created SQL statement
-     */
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(query.length() * 2);
         sbSQL.append("CREATE VIEW ");
@@ -153,47 +107,20 @@ public class PgView extends PgStatementWithSearchPath {
         return sbSQL.toString();
     }
 
-    /**
-     * Creates and returns SQL statement for dropping the view.
-     *
-     * @return created SQL statement
-     */
     public String getDropSQL() {
         return "DROP VIEW " + PgDiffUtils.getQuotedName(getName()) + ";";
     }
 
-    /**
-     * Getter for {@link #name}.
-     *
-     * @return {@link #name}
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Setter for {@link #query}.
-     *
-     * @param query {@link #query}
-     */
     public void setQuery(final String query) {
         this.query = query;
     }
 
-    /**
-     * Getter for {@link #query}.
-     *
-     * @return {@link #query}
-     */
     public String getQuery() {
         return query;
     }
 
     /**
      * Adds/replaces column default value specification.
-     *
-     * @param columnName   column name
-     * @param defaultValue default value
      */
     public void addColumnDefaultValue(final String columnName,
             final String defaultValue) {
@@ -201,11 +128,6 @@ public class PgView extends PgStatementWithSearchPath {
         defaultValues.add(new DefaultValue(columnName, defaultValue));
     }
 
-    /**
-     * Removes column default value if present.
-     *
-     * @param columnName column name
-     */
     public void removeColumnDefaultValue(final String columnName) {
         for (final DefaultValue item : defaultValues) {
             if (item.getColumnName().equals(columnName)) {
@@ -226,9 +148,6 @@ public class PgView extends PgStatementWithSearchPath {
 
     /**
      * Adds/replaces column comment.
-     *
-     * @param columnName column name
-     * @param comment    comment
      */
     public void addColumnComment(final String columnName,
             final String comment) {
@@ -236,11 +155,6 @@ public class PgView extends PgStatementWithSearchPath {
         columnComments.add(new ColumnComment(columnName, comment));
     }
 
-    /**
-     * Removes column comment if present.
-     *
-     * @param columnName column name
-     */
     public void removeColumnComment(final String columnName) {
         for (final ColumnComment item : columnComments) {
             if (item.getColumnName().equals(columnName)) {
@@ -250,30 +164,25 @@ public class PgView extends PgStatementWithSearchPath {
         }
     }
 
-    /**
-     * Getter for {@link #columnComments}.
-     *
-     * @return {@link #columnComments}
-     */
     public List<ColumnComment> getColumnComments() {
         return Collections.unmodifiableList(columnComments);
     }
 
     @Override
-    public boolean equals(Object obj) {
-    	boolean eq = false;
-    	
-    	if(this == obj) {
-    		eq = true;
-    	} else if(obj instanceof PgView) {
-    		final PgView view = (PgView) obj;
-    		eq = Objects.equals(name, view.getName())
-    				&& Objects.equals(query, view.getQuery())
-    				&& columnNames.equals(view.columnNames)
-    				&& new HashSet<>(defaultValues).equals(new HashSet<>(view.defaultValues));
-    	}
-    	
-    	return eq;
+    public boolean compare(PgStatement obj) {
+        boolean eq = false;
+        
+        if(this == obj) {
+            eq = true;
+        } else if(obj instanceof PgView) {
+            PgView view = (PgView) obj;
+            eq = Objects.equals(name, view.getName())
+                    && Objects.equals(query, view.getQuery())
+                    && columnNames.equals(view.columnNames)
+                    && new HashSet<>(defaultValues).equals(new HashSet<>(view.defaultValues));
+        }
+        
+        return eq;
     }
 
     @Override
@@ -312,40 +221,18 @@ public class PgView extends PgStatementWithSearchPath {
      */
     public class DefaultValue {
 
-        /**
-         * Column name.
-         */
         private final String columnName;
-        /**
-         * Default value.
-         */
         private final String defaultValue;
 
-        /**
-         * Creates new instance of DefaultValue.
-         *
-         * @param columnName   {@link #columnName}
-         * @param defaultValue {@link #defaultValue}
-         */
         DefaultValue(final String columnName, final String defaultValue) {
             this.columnName = columnName;
             this.defaultValue = defaultValue;
         }
 
-        /**
-         * Getter for {@link #columnName}.
-         *
-         * @return {@link #columnName}
-         */
         public String getColumnName() {
             return columnName;
         }
 
-        /**
-         * Getter for {@link #defaultValue}.
-         *
-         * @return {@link #defaultValue}
-         */
         public String getDefaultValue() {
             return defaultValue;
         }
@@ -380,40 +267,18 @@ public class PgView extends PgStatementWithSearchPath {
      */
     public class ColumnComment {
 
-        /**
-         * Column name.
-         */
         private final String columnName;
-        /**
-         * Comment.
-         */
         private final String comment;
 
-        /**
-         * Creates new instance of ColumnComment.
-         *
-         * @param columnName {@link #columnName}
-         * @param comment    {@link #comment}
-         */
         ColumnComment(final String columnName, final String comment) {
             this.columnName = columnName;
             this.comment = comment;
         }
 
-        /**
-         * Getter for {@link #columnName}.
-         *
-         * @return {@link #columnName}
-         */
         public String getColumnName() {
             return columnName;
         }
 
-        /**
-         * Getter for {@link #comment}.
-         *
-         * @return {@link #comment}
-         */
         public String getComment() {
             return comment;
         }

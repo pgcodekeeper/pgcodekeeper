@@ -22,41 +22,15 @@ public class PgConstraint extends PgStatementWithSearchPath {
      */
     private static final Pattern PATTERN_PRIMARY_KEY =
             Pattern.compile(".*PRIMARY[\\s]+KEY.*", Pattern.CASE_INSENSITIVE);
-    /**
-     * Definition of the constraint.
-     */
+
     private String definition;
-    /**
-     * Name of the constraint.
-     */
-    private String name;
-    /**
-     * Name of the table the constraint is defined on.
-     */
     private String tableName;
-    /**
-     * Comment.
-     */
     private String comment;
 
-    /**
-     * Creates a new PgConstraint object.
-     *
-     * @param name {@link #name}
-     * @param rawStatement {@link #rawStatement}
-     * @param searchPath {@link #searchPath}
-     */
-    public PgConstraint(final String name, final String rawStatement,
-    		final String searchPath) {
-    	super(rawStatement, searchPath);
-        this.name = name;
+    public PgConstraint(String name, String rawStatement, String searchPath) {
+    	super(name, rawStatement, searchPath);
     }
 
-    /**
-     * Creates and returns SQL for creation of the constraint.
-     *
-     * @return created SQL
-     */
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(100);
         sbSQL.append("ALTER TABLE ");
@@ -80,47 +54,22 @@ public class PgConstraint extends PgStatementWithSearchPath {
         return sbSQL.toString();
     }
 
-    /**
-     * Getter for {@link #comment}.
-     *
-     * @return {@link #comment}
-     */
     public String getComment() {
         return comment;
     }
 
-    /**
-     * Setter for {@link #comment}.
-     *
-     * @param comment {@link #comment}
-     */
     public void setComment(final String comment) {
         this.comment = comment;
     }
 
-    /**
-     * Setter for {@link #definition}.
-     *
-     * @param definition {@link #definition}
-     */
     public void setDefinition(final String definition) {
         this.definition = definition;
     }
 
-    /**
-     * Getter for {@link #definition}.
-     *
-     * @return {@link #definition}
-     */
     public String getDefinition() {
         return definition;
     }
 
-    /**
-     * Creates and returns SQL for dropping the constraint.
-     *
-     * @return created SQL
-     */
     public String getDropSQL() {
         final StringBuilder sbSQL = new StringBuilder(100);
         sbSQL.append("ALTER TABLE ");
@@ -132,65 +81,32 @@ public class PgConstraint extends PgStatementWithSearchPath {
         return sbSQL.toString();
     }
 
-    /**
-     * Setter for {@link #name}.
-     *
-     * @param name {@link #name}
-     */
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-    /**
-     * Getter for {@link #name}.
-     *
-     * @return {@link #name}
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Returns true if this is a PRIMARY KEY constraint, otherwise false.
-     *
-     * @return true if this is a PRIMARY KEY constraint, otherwise false
-     */
     public boolean isPrimaryKeyConstraint() {
         return PATTERN_PRIMARY_KEY.matcher(definition).matches();
     }
 
-    /**
-     * Setter for {@link #tableName}.
-     *
-     * @param tableName {@link #tableName}
-     */
     public void setTableName(final String tableName) {
         this.tableName = tableName;
     }
 
-    /**
-     * Getter for {@link #tableName}.
-     *
-     * @return {@link #tableName}
-     */
     public String getTableName() {
         return tableName;
     }
 
     @Override
-    public boolean equals(final Object object) {
-        boolean equals = false;
+    public boolean compare(PgStatement obj) {
+        boolean eq = false;
 
-        if (this == object) {
-            equals = true;
-        } else if (object instanceof PgConstraint) {
-            final PgConstraint constraint = (PgConstraint) object;
-            equals = Objects.equals(definition, constraint.getDefinition())
+        if (this == obj) {
+            eq = true;
+        } else if (obj instanceof PgConstraint) {
+            PgConstraint constraint = (PgConstraint) obj;
+            eq = Objects.equals(definition, constraint.getDefinition())
                     && Objects.equals(name, constraint.getName())
                     && Objects.equals(tableName, constraint.getTableName());
         }
 
-        return equals;
+        return eq;
     }
 
     @Override

@@ -16,61 +16,23 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  */
 public class PgIndex extends PgStatementWithSearchPath {
 
-    /**
-     * Definition of the index.
-     */
     private String definition;
-    /**
-     * Name of the index.
-     */
-    private String name;
-    /**
-     * Table name the index is defined on.
-     */
     private String tableName;
-    /**
-     * Whether the index is unique.
-     */
     private boolean unique;
-    /**
-     * Comment.
-     */
     private String comment;
 
-    /**
-     * Creates a new PgIndex object.
-     *
-     * @param name {@link #name}
-     */
-    public PgIndex(final String name, final String rawStatement,
-    		final String searchPath) {
-    	super(rawStatement, searchPath);
-        this.name = name;
+    public PgIndex(String name, String rawStatement, String searchPath) {
+    	super(name, rawStatement, searchPath);
     }
 
-    /**
-     * Getter for {@link #comment}.
-     *
-     * @return {@link #comment}
-     */
     public String getComment() {
         return comment;
     }
 
-    /**
-     * Setter for {@link #comment}.
-     *
-     * @param comment {@link #comment}
-     */
     public void setComment(final String comment) {
         this.comment = comment;
     }
 
-    /**
-     * Creates and returns SQL for creation of the index.
-     *
-     * @return created SQL
-     */
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(100);
         sbSQL.append("CREATE ");
@@ -98,86 +60,42 @@ public class PgIndex extends PgStatementWithSearchPath {
         return sbSQL.toString();
     }
 
-    /**
-     * Setter for {@link #definition}.
-     *
-     * @param definition {@link #definition}
-     */
     public void setDefinition(final String definition) {
         this.definition = definition;
     }
 
-    /**
-     * Getter for {@link #definition}.
-     *
-     * @return {@link #definition}
-     */
     public String getDefinition() {
         return definition;
     }
 
-    /**
-     * Creates and returns SQL statement for dropping the index.
-     *
-     * @return created SQL statement
-     */
     public String getDropSQL() {
         return "DROP INDEX " + PgDiffUtils.getQuotedName(getName()) + ";";
     }
 
-    /**
-     * Setter for {@link #name}.
-     *
-     * @param name {@link #name}
-     */
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-    /**
-     * Getter for {@link #name}.
-     *
-     * @return {@link #name}
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Setter for {@link #tableName}.
-     *
-     * @param tableName {@link #tableName}
-     */
     public void setTableName(final String tableName) {
         this.tableName = tableName;
     }
 
-    /**
-     * Getter for {@link #tableName}.
-     *
-     * @return {@link #tableName}
-     */
     public String getTableName() {
         return tableName;
     }
 
-    /**
-     * Getter for {@link #unique}.
-     *
-     * @return {@link #unique}
-     */
     public boolean isUnique() {
         return unique;
     }
 
+    public void setUnique(final boolean unique) {
+        this.unique = unique;
+    }
+
     @Override
-    public boolean equals(final Object object) {
+    public boolean compare(PgStatement obj) {
         boolean equals = false;
 
-        if (this == object) {
+        if (this == obj) {
             equals = true;
-        } else if (object instanceof PgIndex) {
-            final PgIndex index = (PgIndex) object;
+        } else if (obj instanceof PgIndex) {
+            PgIndex index = (PgIndex) obj;
             equals = Objects.equals(definition, index.getDefinition())
                     && Objects.equals(name, index.getName())
                     && Objects.equals(tableName, index.getTableName())
@@ -196,15 +114,6 @@ public class PgIndex extends PgStatementWithSearchPath {
         result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
         result = prime * result + (unique ? 1231 : 1237);
         return result;
-    }
-
-    /**
-     * Setter for {@link #unique}.
-     *
-     * @param unique {@link #unique}
-     */
-    public void setUnique(final boolean unique) {
-        this.unique = unique;
     }
     
     @Override

@@ -33,8 +33,7 @@ public class CreateTriggerParser {
         final String triggerName = parser.parseIdentifier();
         final String objectName = ParserUtils.getObjectName(triggerName);
 
-        final PgTrigger trigger = new PgTrigger(statement, searchPath);
-        trigger.setName(objectName);
+        final PgTrigger trigger = new PgTrigger(objectName, statement, searchPath);
 
         if (parser.expectOptional("BEFORE")) {
             trigger.setBefore(true);

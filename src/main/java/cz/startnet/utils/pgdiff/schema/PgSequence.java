@@ -16,95 +16,35 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  */
 public class PgSequence extends PgStatementWithSearchPath {
 
-    /**
-     * Value for CACHE or null if no value is specified.
-     */
     private String cache;
-    /**
-     * Value for INCREMENT BY or null if no value is specified.
-     */
     private String increment;
-    /**
-     * Value for MAXVALUE or null if no value is specified.
-     */
     private String maxValue;
-    /**
-     * Value for MINVALUE or null if no value is specified.
-     */
     private String minValue;
-    /**
-     * Name of the sequence.
-     */
-    private String name;
-    /**
-     * Value for START WITH or null if no value is specified.
-     */
     private String startWith;
-    /**
-     * True if CYCLE, false if NO CYCLE.
-     */
     private boolean cycle;
-    /**
-     * Column the sequence is owned by.
-     */
     private String ownedBy;
-    /**
-     * Comment.
-     */
     private String comment;
 
-    /**
-     * Creates a new PgSequence object.
-     *
-     * @param name name of the sequence
-     */
-    public PgSequence(final String name, final String rawStatement,
-    		final String searchPath) {
-    	super(rawStatement, searchPath);
-        this.name = name;
+    public PgSequence(String name, String rawStatement, String searchPath) {
+    	super(name, rawStatement, searchPath);
     }
 
-    /**
-     * Setter for {@link #cache}.
-     *
-     * @param cache {@link #cache}
-     */
     public void setCache(final String cache) {
         this.cache = cache;
     }
 
-    /**
-     * Getter for {@link #cache}.
-     *
-     * @return {@link #cache}
-     */
     public String getCache() {
         return cache;
     }
 
-    /**
-     * Getter for {@link #comment}.
-     *
-     * @return {@link #comment}
-     */
     public String getComment() {
         return comment;
     }
 
-    /**
-     * Setter for {@link #comment}.
-     *
-     * @param comment {@link #comment}
-     */
     public void setComment(final String comment) {
         this.comment = comment;
     }
 
-    /**
-     * Creates and returns SQL statement for creation of the sequence.
-     *
-     * @return created SQL statement
-     */
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(100);
         sbSQL.append("CREATE SEQUENCE ");
@@ -161,9 +101,7 @@ public class PgSequence extends PgStatementWithSearchPath {
     }
 
     /**
-     * Creates and returns SQL statement for modification "OWNED BY" parameter.
-     *
-     * @return created SQL statement
+     * Creates SQL statement for modification "OWNED BY" parameter.
      */
     public String getOwnedBySQL() {
         final StringBuilder sbSQL = new StringBuilder(100);
@@ -181,160 +119,77 @@ public class PgSequence extends PgStatementWithSearchPath {
         return sbSQL.toString();
     }
 
-    /**
-     * Setter for {@link #cycle}.
-     *
-     * @param cycle {@link #cycle}
-     */
     public void setCycle(final boolean cycle) {
         this.cycle = cycle;
     }
 
-    /**
-     * Getter for {@link #cycle}.
-     *
-     * @return {@link #cycle}
-     */
     public boolean isCycle() {
         return cycle;
     }
 
-    /**
-     * Creates and returns SQL statement for dropping the sequence.
-     *
-     * @return created SQL
-     */
     public String getDropSQL() {
         return "DROP SEQUENCE " + PgDiffUtils.getQuotedName(getName()) + ";";
     }
 
-    /**
-     * Setter for {@link #increment}.
-     *
-     * @param increment {@link #increment}
-     */
     public void setIncrement(final String increment) {
         this.increment = increment;
     }
 
-    /**
-     * Getter for {@link #increment}.
-     *
-     * @return {@link #increment}
-     */
     public String getIncrement() {
         return increment;
     }
 
-    /**
-     * Setter for {@link #maxValue}.
-     *
-     * @param maxValue {@link #maxValue}
-     */
     public void setMaxValue(final String maxValue) {
         this.maxValue = maxValue;
     }
 
-    /**
-     * Getter for {@link #maxValue}.
-     *
-     * @return {@link #maxValue}
-     */
     public String getMaxValue() {
         return maxValue;
     }
 
-    /**
-     * Setter for {@link #minValue}.
-     *
-     * @param minValue {@link #minValue}
-     */
     public void setMinValue(final String minValue) {
         this.minValue = minValue;
     }
 
-    /**
-     * Getter for {@link #minValue}.
-     *
-     * @return {@link #minValue}
-     */
     public String getMinValue() {
         return minValue;
     }
 
-    /**
-     * Setter for {@link #name}.
-     *
-     * @param name {@link #name}
-     */
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-    /**
-     * Getter for {@link #name}.
-     *
-     * @return {@link #name}
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Setter for {@link #startWith}.
-     *
-     * @param startWith {@link #startWith}
-     */
     public void setStartWith(final String startWith) {
         this.startWith = startWith;
     }
 
-    /**
-     * Getter for {@link #startWith}.
-     *
-     * @return {@link #startWith}
-     */
     public String getStartWith() {
         return startWith;
     }
 
-    /**
-     * Getter for {@link #ownedBy}.
-     *
-     * @return {@link #ownedBy}
-     */
     public String getOwnedBy() {
         return ownedBy;
     }
 
-    /**
-     * Setter for {@link #ownedBy}.
-     *
-     * @param ownedBy {@link #ownedBy}
-     */
     public void setOwnedBy(final String ownedBy) {
         this.ownedBy = ownedBy;
     }
     
     @Override
-    public boolean equals(Object obj) {
-    	boolean eq = false;
-    	
-    	if(this == obj) {
-    		eq = true;
-    	} else if(obj instanceof PgSequence) {
-    		final PgSequence seq = (PgSequence) obj;
-    		eq = Objects.equals(name, seq.getName())
-    				&& Objects.equals(increment, seq.getIncrement())
-    				&& Objects.equals(minValue, seq.getMinValue())
-    				&& Objects.equals(maxValue, seq.getMaxValue())
-    				&& Objects.equals(startWith, seq.getStartWith())
-    				&& Objects.equals(cache, seq.getCache())
-    				&& cycle == seq.isCycle()
-    				&& Objects.equals(ownedBy, seq.getOwnedBy());
-    	}
-    	
-    	return eq;
+    public boolean compare(PgStatement obj) {
+        boolean eq = false;
+        
+        if(this == obj) {
+            eq = true;
+        } else if(obj instanceof PgSequence) {
+            PgSequence seq = (PgSequence) obj;
+            eq = Objects.equals(name, seq.getName())
+                    && Objects.equals(increment, seq.getIncrement())
+                    && Objects.equals(minValue, seq.getMinValue())
+                    && Objects.equals(maxValue, seq.getMaxValue())
+                    && Objects.equals(startWith, seq.getStartWith())
+                    && Objects.equals(cache, seq.getCache())
+                    && cycle == seq.isCycle()
+                    && Objects.equals(ownedBy, seq.getOwnedBy());
+        }
+        
+        return eq;
     }
 
     @Override

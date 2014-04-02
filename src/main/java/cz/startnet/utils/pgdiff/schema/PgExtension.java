@@ -10,129 +10,48 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  * @author Alexander Levsha
  */
 public class PgExtension extends PgStatement {
-	
-	/**
-	 * Name of the extension.	
-	 */
-	private final String name;
-	
-	/**
-	 * Schema of the extension.
-	 */
-	private String schema;
-	
-	/**
-	 * Version.
-	 */
-	private String version;
 
-	/**
-	 * From old version.
-	 */
+	private String schema;
+	private String version;
 	private String oldVersion;
-	
-	/**
-	 * Comment
-	 */
 	private String comment;
-	
-	/**
-	 * Creates a new PgExtension object.
-	 * 	
-	 * @param name {@link #name}
-	 * @param rawStatement {@link #rawStatement}
-	 */
-	public PgExtension(final String name, final String rawStatement) {
-		super(rawStatement);
-		this.name = name;
+
+	public PgExtension(String name, String rawStatement) {
+		super(name, rawStatement);
 	}
 	
-	/**
-	 * Getter for {@link #name}.
-	 * 
-	 * @return {@link #name}
-	 */
-	public String getName() {
-		return name;
-	}
-	
-	/**
-	 * Getter for {@link #schema}.
-	 * 
-	 * @return {@link #schema}
-	 */
 	public String getSchema() {
 		return schema;
 	}
 	
-	/**
-	 * Setter for {@link #schema}.
-	 * 
-	 * @param schema {@link #schema}
-	 */
 	public void setSchema(final String schema) {
 		this.schema = schema;
 	}
 	
-	/**
-	 * Getter for {@link #version}.
-	 * 
-	 * @return {@link #version}
-	 */
 	public String getVersion() {
 		return version;
 	}
 	
-	/**
-	 * Setter for {@link #version}.
-	 * 
-	 * @param version {@link #version}
-	 */
 	public void setVersion(final String version) {
 		this.version = version;
 	}
 	
-	/**
-	 * Getter for {@link #oldVersion}.
-	 * 
-	 * @return {@link #oldVersion}
-	 */
 	public String getOldVersion() {
 		return oldVersion;
 	}
 	
-	/**
-	 * Setter for {@link #oldVersion}.
-	 * 
-	 * @param oldVersion {@link #oldVersion}
-	 */
 	public void setOldVersion(final String oldVersion) {
 		this.oldVersion = oldVersion;
 	}
 	
-	/**
-	 * Getter for {@link #comment}.
-	 * 
-	 * @return {@link #comment}
-	 */
 	public String getComment() {
 		return comment;
 	}
 	
-	/**
-	 * Setter for {@link #comment}.
-	 * 
-	 * @param comment {@link #comment}
-	 */
 	public void setComment(final String comment) {
 		this.comment = comment;
 	}
 	
-	/**
-	 * Creates and returns SQL for creation of the extension.
-	 * 
-	 * @return created SQL
-	 */
 	public String getCreationSQL() {
 		final StringBuilder sbSQL = new StringBuilder(50);
 		sbSQL.append("CREATE EXTENSION ");
@@ -167,20 +86,20 @@ public class PgExtension extends PgStatement {
 	}
 	
 	@Override
-	public boolean equals(Object obj) {
-		boolean eq = false;
-		
-		if(this == obj) {
-			eq = true;
-		} else if(obj instanceof PgExtension) {
-			final PgExtension ext = (PgExtension) obj;
-			eq = Objects.equals(name, ext.getName()) 
-					&& Objects.equals(schema, ext.getSchema())
-					&& Objects.equals(version, ext.getVersion())
-					&& Objects.equals(oldVersion, ext.getOldVersion());
-		}
-		
-		return eq;
+	public boolean compare(PgStatement obj) {
+        boolean eq = false;
+        
+        if(this == obj) {
+            eq = true;
+        } else if(obj instanceof PgExtension) {
+            PgExtension ext = (PgExtension) obj;
+            eq = Objects.equals(name, ext.getName()) 
+                    && Objects.equals(schema, ext.getSchema())
+                    && Objects.equals(version, ext.getVersion())
+                    && Objects.equals(oldVersion, ext.getOldVersion());
+        }
+        
+        return eq;
 	}
 
     @Override

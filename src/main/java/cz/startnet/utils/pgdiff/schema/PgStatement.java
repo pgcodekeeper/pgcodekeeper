@@ -11,40 +11,25 @@ abstract public class PgStatement {
 	 */
 	private final String rawStatement;
 	
-	/**
-	 * Creates a new PgStatement object
-	 * 
-	 * @param statement {@link #rawStatement}
-	 */
-	public PgStatement(final String rawStatement) {
+	protected final String name;
+	
+	public PgStatement(String name, String rawStatement) {
 		this.rawStatement = rawStatement;
+		this.name = name;
 	}
 	
-	/**
-	 * Getter for {@link #rawStatement}
-	 * 
-	 * @return {@link #rawStatement}
-	 */
 	public String getRawStatement() {
 		return rawStatement;
 	}
 	
-	/**
-	 * Abstraction to get name of the object statement defines.
-	 * 
-	 *  @return object's name
-	 */
-	abstract public String getName();
+	public String getName() {
+	    return name;
+	}
 	
-	/**
-	 * Abstraction for creating SQL for creation of the object.
-     *
-     * @return created SQL
-	 */
 	abstract public String getCreationSQL();
 	
 	/**
-	 * Copies all object properties onto a new object and leaves all its children empty.
+	 * Copies all object properties into a new object and leaves all its children empty.
 	 * 
 	 * @return shallow copy of a DB object.
 	 */
@@ -57,8 +42,23 @@ abstract public class PgStatement {
 	 */
 	abstract public PgStatement deepCopy();
 	
-    @Override
-	abstract public boolean equals(Object obj);
+	/**
+	 * This method does not account for nested child PgStatements.
+	 * Shallow {@link #equals(Object)}
+	 */
+	abstract public boolean compare(PgStatement obj);
+	
+	/**
+     * Compares this object and all its children with another statement.<br>
+     * This default version falls back to {@link #compare(PgStatement)}.
+     * Override for any object with children!<br><br>
+     * 
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj){
+	    return (obj instanceof PgStatement)? this.compare((PgStatement) obj) : false;
+	}
 	
 	@Override
 	abstract public int hashCode();
