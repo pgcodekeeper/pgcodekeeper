@@ -168,7 +168,6 @@ class GitPrefPage extends FieldEditorPreferencePage {
                     try {
                         JGitExec.genKeys(privateFileName);
                         editorPrivate.setStringValue(privateFileName);
-                        GitPrefPage.this.checkState();
                     } catch (IOException | JSchException ex) {
                         ExceptionNotifyHelper
                                 .notifyAndThrow(
