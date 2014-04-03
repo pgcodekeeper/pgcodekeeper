@@ -242,6 +242,16 @@ public class DiffTableViewer extends Composite {
             }
         });
         
+        Button btnTestFilter = new Button(contButtons, SWT.PUSH);
+        btnTestFilter.setText("Test filter");
+        btnTestFilter.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                TreeElement x = filterDiffTree();
+                System.out.println(x);
+            }
+        });
+        
         
     }
 
@@ -292,7 +302,10 @@ public class DiffTableViewer extends Composite {
      */
     private TreeElement findSameInTree(TreeElement target,  TreeElement root){
         if (root.equals(target)) {
-            return root;
+            if ((target.getParent() != null && target.getParent().equals(root.getParent())) || 
+                    (target.getParent() == null && root.getParent() == null)){
+                return root;
+            }
         }
         for (TreeElement child : root.getChildren()) {
             TreeElement e = findSameInTree(target, child);
