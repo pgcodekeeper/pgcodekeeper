@@ -1,14 +1,24 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -16,19 +26,18 @@ import org.eclipse.swt.widgets.Table;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class DiffTableViewer extends Composite {
-
-    private enum Status {
-        NEW, EDIT, DELETE
-    }
 
     private TreeElement tree;
     private CheckboxTableViewer viewer;
 
     public DiffTableViewer(Composite parent, int style) {
         super(parent, style);
+        final LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
         setLayout(gl);
@@ -38,7 +47,7 @@ public class DiffTableViewer extends Composite {
         viewer = new CheckboxTableViewer(baseTable);
         viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         viewer.getTable().setLinesVisible(true);
-        
+        baseTable.setDragDetect(true);
         TableViewerColumn columnName = new TableViewerColumn(viewer, SWT.LEFT);
         TableViewerColumn columnType = new TableViewerColumn(viewer, SWT.LEFT);
         TableViewerColumn columnChange = new TableViewerColumn(viewer, SWT.LEFT);
@@ -50,39 +59,108 @@ public class DiffTableViewer extends Composite {
                 return tree.getName();
             }
         });
-        
-        columnType.setLabelProvider(new ColumnLabelProvider(){
-            @Override
-            public String getText(Object element) {
-                TreeElement tree = (TreeElement) element;
-                return tree.getType().name();
+
+        columnType.setLabelProvider(new StyledCellLabelProvider() {
+
+            private final Map<DbObjType, Image> mapObjIcons = new HashMap<>(
+                    DbObjType.values().length);
+            private final Map<DbObjType, Image> mapContIcons = new HashMap<>(
+                    DbObjType.values().length);
+
+            {
+                for (DbObjType objType : DbObjType.values()) {
+                    ImageDescriptor iObj = ImageDescriptor
+                            .createFromURL(Activator
+                                    .getContext()
+                                    .getBundle()
+                                    .getResource(
+                                            UIConsts.FILENAME_ICONPGADMIN
+                                                    + objType.toString()
+                                                            .toLowerCase()
+                                                    + ".png"));
+                    ImageDescriptor iCont = ImageDescriptor
+                            .createFromURL(Activator
+                                    .getContext()
+                                    .getBundle()
+                                    .getResource(
+                                            UIConsts.FILENAME_ICONPGADMIN
+                                                    + objType.toString()
+                                                            .toLowerCase()
+                                                    + "s.png"));
+
+                    mapObjIcons.put(objType, lrm.createImage(iObj));
+                    mapContIcons.put(objType, lrm.createImage(iCont));
+                }
             }
-            
-            public Image getImage(Object element){
-                return null;
+
+            @Override
+            public void update(ViewerCell cell) {
+                TreeElement el = (TreeElement) cell.getElement();
+                List<StyleRange> styles = new ArrayList<>();
+
+                Image icon = mapObjIcons.get(el.getType());
+                String name = el.getType().name();
+
+                StringBuilder label = new StringBuilder(name);
+
+                if (el.getType() == DbObjType.CONTAINER
+                        || el.getType() == DbObjType.DATABASE
+                        || el.getType() == DbObjType.SCHEMA
+                        || el.getType() == DbObjType.TABLE) {
+                    label.append(" (").append(el.countChildren()).append(") [")
+                            .append(el.countDescendants()).append(']');
+
+                    TextStyle styleGray = new TextStyle();
+                    styleGray.foreground = getDisplay().getSystemColor(
+                            SWT.COLOR_GRAY);
+
+                    StyleRange styleCount = new StyleRange(styleGray);
+                    styleCount.start = name.length();
+                    styleCount.length = label.length() - name.length();
+
+                    styles.add(styleCount);
+                }
+
+                cell.setText(label.toString());
+
+                cell.setStyleRanges(styles.toArray(new StyleRange[styles.size()]));
+                cell.setImage(icon);
+
+                super.update(cell);
             }
         });
-        
-        columnChange.setLabelProvider(new ColumnLabelProvider(){
+
+        columnChange.setLabelProvider(new StyledCellLabelProvider() {           
             @Override
-            public String getText(Object element) {
-                TreeElement tree = (TreeElement) element;
-                String change = "";
-                switch (tree.getSide()) {
+            public void update(ViewerCell cell) {
+                TreeElement el = (TreeElement) cell.getElement();
+                Image icon = null;
+                String name = "";
+                switch (el.getSide()) {
                 case BOTH:
-                    change = "edit";
+                    name = "edit";
+                    icon = lrm.createImage(ImageDescriptor.createFromURL(
+                            Activator.getContext().getBundle().getResource(
+                                    UIConsts.FILENAME_ICONEDIT)));
                     break;
                 case LEFT:
-                    change = "delete";
+                    name = "delete";
+                    icon = lrm.createImage(ImageDescriptor.createFromURL(
+                            Activator.getContext().getBundle().getResource(
+                                    UIConsts.FILENAME_ICONDEL)));
                     break;
                 case RIGHT:
-                    change = "new";
+                    name = "new";
+                    icon = lrm.createImage(ImageDescriptor.createFromURL(
+                            Activator.getContext().getBundle().getResource(
+                                    UIConsts.FILENAME_ICONADD)));
                     break;
                 }
-                return change;
+                cell.setText(name);
+                cell.setImage(icon);
+                super.update(cell);
             }
         });
-        
         columnName.getColumn().setText("Object name");
         columnName.getColumn().setResizable(true);
         
@@ -125,9 +203,15 @@ public class DiffTableViewer extends Composite {
                         visit(child, list);
                     }
                 }
-                if (subtree.getType() != DbObjType.CONTAINER) {
-                    list.add(subtree);
+
+                if ((subtree.getSide() == DiffSide.BOTH && subtree.getParent()
+                        .getSide() != DiffSide.BOTH)
+                        || subtree.getType() == DbObjType.CONTAINER
+                        || subtree.getType() == DbObjType.DATABASE) {
+                    return;
                 }
+
+                list.add(subtree);
             }
         });
     }
