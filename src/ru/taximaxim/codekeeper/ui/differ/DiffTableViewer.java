@@ -17,10 +17,13 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 
@@ -34,7 +37,7 @@ public class DiffTableViewer extends Composite {
 
     private TreeElement tree;
     private CheckboxTableViewer viewer;
-
+    
     public DiffTableViewer(Composite parent, int style) {
         super(parent, style);
         final LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources(), this);
@@ -42,7 +45,7 @@ public class DiffTableViewer extends Composite {
         gl.marginHeight = gl.marginWidth = 0;
         setLayout(gl);
         
-        final Table baseTable = new Table(this, SWT.CHECK | SWT.SINGLE
+        final Table baseTable = new Table(this, SWT.CHECK | SWT.MULTI
                 | SWT.FULL_SELECTION);
         viewer = new CheckboxTableViewer(baseTable);
         viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -214,10 +217,89 @@ public class DiffTableViewer extends Composite {
                 list.add(subtree);
             }
         });
+
+        Composite contButtons = new Composite(this, SWT.NONE);
+        contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridLayout contButtonsLayout = new GridLayout(5, false);
+        contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
+        contButtons.setLayout(contButtonsLayout);
+        
+        Button btnSelectAll = new Button(contButtons, SWT.PUSH);
+        btnSelectAll.setText("Select all");
+        btnSelectAll.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                viewer.setAllChecked(true);
+            }
+        });
+        
+        Button btnSelectNone = new Button(contButtons, SWT.PUSH);
+        btnSelectNone.setText("Select None");
+        btnSelectNone.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                viewer.setAllChecked(false);
+            }
+        });
+        
+        
     }
 
     public void setInput(TreeElement tree) {
         this.tree = tree;
         viewer.setInput(tree);
     }
+    
+    public TreeElement filterDiffTree() {
+        if (tree == null){
+            return null;
+        }
+        Object[] checked = viewer.getCheckedElements();
+        TreeElement rootOfCopy = new TreeElement(
+                tree.getName(), tree.getType(),
+                tree.getContainerType(), tree.getSide());
+        for (Object e : checked){
+            TreeElement current = (TreeElement)e;
+            addToTree(current, rootOfCopy);
+        }
+        return rootOfCopy;
+    }
+
+    private TreeElement addToTree(TreeElement current, TreeElement rootOfCopy) {
+        TreeElement parentOfCurrent = findSameInTree(current.getParent(), rootOfCopy);
+        if (parentOfCurrent != null){
+            TreeElement xxx = new TreeElement(
+                    current.getName(), current.getType(),
+                    current.getContainerType(), current.getSide());
+            parentOfCurrent.addChild(xxx);
+            return xxx;
+        }else {
+            TreeElement hhh = new TreeElement(
+                    current.getName(), current.getType(),
+                    current.getContainerType(), current.getSide());
+            addToTree(current.getParent(), rootOfCopy).addChild(hhh);
+            return hhh;
+        }
+    }
+    
+    /**
+     * walk through the tree, represented as copy root, and find same element, 
+     * as target. If found, returns it, otherwise returns null.
+     * 
+     * @param target
+     * @param root
+     * @return
+     */
+    private TreeElement findSameInTree(TreeElement target,  TreeElement root){
+        if (root.equals(target)) {
+            return root;
+        }
+        for (TreeElement child : root.getChildren()) {
+            TreeElement e = findSameInTree(target, child);
+            if (e != null){
+                return e;
+            }
+        }
+        return null;
+    }   
 }
