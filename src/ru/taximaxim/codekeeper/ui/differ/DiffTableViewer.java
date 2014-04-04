@@ -229,24 +229,6 @@ public class DiffTableViewer extends Composite {
 
                 StringBuilder label = new StringBuilder(name);
 
-                if (el.getType() == DbObjType.CONTAINER
-                        || el.getType() == DbObjType.DATABASE
-                        || el.getType() == DbObjType.SCHEMA
-                        || el.getType() == DbObjType.TABLE) {
-                    label.append(" (").append(el.countChildren()).append(") [")
-                            .append(el.countDescendants()).append(']');
-
-                    TextStyle styleGray = new TextStyle();
-                    styleGray.foreground = getDisplay().getSystemColor(
-                            SWT.COLOR_GRAY);
-
-                    StyleRange styleCount = new StyleRange(styleGray);
-                    styleCount.start = name.length();
-                    styleCount.length = label.length() - name.length();
-
-                    styles.add(styleCount);
-                }
-
                 cell.setText(label.toString());
 
                 cell.setStyleRanges(styles.toArray(new StyleRange[styles.size()]));
