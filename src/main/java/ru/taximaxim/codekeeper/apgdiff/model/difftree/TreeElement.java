@@ -28,7 +28,17 @@ public class TreeElement {
     }
     
     public enum DiffSide {
-        LEFT, RIGHT, BOTH
+        LEFT("delete"), RIGHT("new"), BOTH("edit");
+        private String changeType;
+
+        private DiffSide(String changeType) {
+            this.changeType = changeType;
+        }
+        
+        @Override
+        public String toString() {
+            return changeType;
+        }
     }
     
     final private String name;
