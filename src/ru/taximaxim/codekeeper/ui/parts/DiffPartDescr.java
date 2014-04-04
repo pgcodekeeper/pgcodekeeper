@@ -132,34 +132,35 @@ public class DiffPartDescr {
         sashDb.setSashWidth(8);
         // ВКЛАДКА Get latest
         diffTree = new DiffTableViewer(sashDb, SWT.NONE);
-      diffTree.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-          @Override
-          public void selectionChanged(SelectionChangedEvent event) {
-              StructuredSelection selection = ((StructuredSelection) event
-                      .getSelection());
-              if (selection.size() != 1) {
-                  txtSvn.setText("");
-                  txtDb.setText("");
-                  return;
-              }
-              TreeElement el = (TreeElement) selection.toArray()[0];
-              
-              if (el.getSide() == DiffSide.LEFT
-                      || el.getSide() == DiffSide.BOTH) {
-                  txtDb.setText(el.getPgStatement(
-                          dbSource.getDbObject()).getCreationSQL());
-              } else {
-                  txtDb.setText("");
-              }
-              if (el.getSide() == DiffSide.RIGHT
-                      || el.getSide() == DiffSide.BOTH) {
-                  txtSvn.setText(el.getPgStatement(
-                          dbTarget.getDbObject()).getCreationSQL());
-              } else {
-                  txtSvn.setText("");
-              }
-          }
-      });
+        diffTree.viewer
+                .addSelectionChangedListener(new ISelectionChangedListener() {
+                    @Override
+                    public void selectionChanged(SelectionChangedEvent event) {
+                        StructuredSelection selection = ((StructuredSelection) event
+                                .getSelection());
+                        if (selection.size() != 1) {
+                            txtSvn.setText("");
+                            txtDb.setText("");
+                            return;
+                        }
+                        TreeElement el = (TreeElement) selection.toArray()[0];
+
+                        if (el.getSide() == DiffSide.LEFT
+                                || el.getSide() == DiffSide.BOTH) {
+                            txtDb.setText(el.getPgStatement(
+                                    dbSource.getDbObject()).getCreationSQL());
+                        } else {
+                            txtDb.setText("");
+                        }
+                        if (el.getSide() == DiffSide.RIGHT
+                                || el.getSide() == DiffSide.BOTH) {
+                            txtSvn.setText(el.getPgStatement(
+                                    dbTarget.getDbObject()).getCreationSQL());
+                        } else {
+                            txtSvn.setText("");
+                        }
+                    }
+                });
         // middle right container
         Composite containerSrc = new Composite(sashDb, SWT.NONE);
         gl = new GridLayout(2, false);

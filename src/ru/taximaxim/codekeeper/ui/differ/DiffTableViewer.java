@@ -12,7 +12,10 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
@@ -61,6 +64,19 @@ public class DiffTableViewer extends Composite {
         viewer.setComparator(comparator);
         
         initColumns();
+    
+        viewer.addDoubleClickListener(new IDoubleClickListener() {
+            @Override
+            public void doubleClick(DoubleClickEvent e) {
+                CheckboxTableViewer viewer = (CheckboxTableViewer) e
+                        .getViewer();
+                TreeElement el = (TreeElement) ((IStructuredSelection) e
+                        .getSelection()).getFirstElement();
+                if (el != null) {
+                    viewer.setChecked(el, !viewer.getChecked(el));
+                }
+            }
+        });
         
         viewer.setContentProvider(new IStructuredContentProvider() {
             @Override
