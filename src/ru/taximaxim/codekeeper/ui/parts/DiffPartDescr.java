@@ -21,8 +21,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.TreePath;
-import org.eclipse.jface.viewers.TreeSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -39,7 +38,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.TextDialog;
@@ -47,7 +45,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
-import ru.taximaxim.codekeeper.ui.differ.DiffTreeViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
@@ -99,7 +96,7 @@ public class DiffPartDescr {
         btnGetLatest.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                final TreeElement filtered = null;//diffTree.filterDiffTree();
+                final TreeElement filtered = diffTree.filterDiffTree();
 
                 Differ differ = new Differ(DbSource.fromFilter(dbSource,
                         filtered, DiffSide.LEFT), DbSource.fromFilter(dbTarget,
@@ -135,42 +132,34 @@ public class DiffPartDescr {
         sashDb.setSashWidth(8);
         // ВКЛАДКА Get latest
         diffTree = new DiffTableViewer(sashDb, SWT.NONE);
-//        diffTree = new DiffTreeViewer(sashDb, SWT.NONE);
-//        diffTree.setSubtreeNames("Target onlyAAA", "Project only", null);
-//        diffTree.viewer
-//                .addSelectionChangedListener(new ISelectionChangedListener() {
-//                    @Override
-//                    public void selectionChanged(SelectionChangedEvent event) {
-//                        TreePath[] paths = ((TreeSelection) event
-//                                .getSelection()).getPaths();
-//                        if (paths.length < 1) {
-//                            return;
-//                        }
-//
-//                        TreeElement el = (TreeElement) paths[0]
-//                                .getLastSegment();
-//                        if (el.getType() == DbObjType.CONTAINER
-//                                || el.getType() == DbObjType.DATABASE) {
-//                            return;
-//                        }
-//
-//                        if (el.getSide() == DiffSide.LEFT
-//                                || el.getSide() == DiffSide.BOTH) {
-//                            txtDb.setText(el.getPgStatement(
-//                                    dbSource.getDbObject()).getCreationSQL());
-//                        } else {
-//                            txtDb.setText("");
-//                        }
-//                        if (el.getSide() == DiffSide.RIGHT
-//                                || el.getSide() == DiffSide.BOTH) {
-//                            txtSvn.setText(el.getPgStatement(
-//                                    dbTarget.getDbObject()).getCreationSQL());
-//                        } else {
-//                            txtSvn.setText("");
-//                        }
-//                    }
-//                });
-
+      diffTree.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+          @Override
+          public void selectionChanged(SelectionChangedEvent event) {
+              StructuredSelection selection = ((StructuredSelection) event
+                      .getSelection());
+              if (selection.size() != 1) {
+                  txtSvn.setText("");
+                  txtDb.setText("");
+                  return;
+              }
+              TreeElement el = (TreeElement) selection.toArray()[0];
+              
+              if (el.getSide() == DiffSide.LEFT
+                      || el.getSide() == DiffSide.BOTH) {
+                  txtDb.setText(el.getPgStatement(
+                          dbSource.getDbObject()).getCreationSQL());
+              } else {
+                  txtDb.setText("");
+              }
+              if (el.getSide() == DiffSide.RIGHT
+                      || el.getSide() == DiffSide.BOTH) {
+                  txtSvn.setText(el.getPgStatement(
+                          dbTarget.getDbObject()).getCreationSQL());
+              } else {
+                  txtSvn.setText("");
+              }
+          }
+      });
         // middle right container
         Composite containerSrc = new Composite(sashDb, SWT.NONE);
         gl = new GridLayout(2, false);
