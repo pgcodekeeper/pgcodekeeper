@@ -5,21 +5,6 @@
  */
 package cz.startnet.utils.pgdiff.loader;
 
-import cz.startnet.utils.pgdiff.Resources;
-import cz.startnet.utils.pgdiff.parsers.AlterSequenceParser;
-import cz.startnet.utils.pgdiff.parsers.AlterTableParser;
-import cz.startnet.utils.pgdiff.parsers.AlterViewParser;
-import cz.startnet.utils.pgdiff.parsers.CommentParser;
-import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
-import cz.startnet.utils.pgdiff.parsers.CreateIndexParser;
-import cz.startnet.utils.pgdiff.parsers.CreateSchemaParser;
-import cz.startnet.utils.pgdiff.parsers.CreateSequenceParser;
-import cz.startnet.utils.pgdiff.parsers.CreateTableParser;
-import cz.startnet.utils.pgdiff.parsers.CreateTriggerParser;
-import cz.startnet.utils.pgdiff.parsers.CreateViewParser;
-import cz.startnet.utils.pgdiff.parsers.CreateExtensionParser;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,9 +13,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import cz.startnet.utils.pgdiff.Resources;
+import cz.startnet.utils.pgdiff.parsers.AlterSequenceParser;
+import cz.startnet.utils.pgdiff.parsers.AlterTableParser;
+import cz.startnet.utils.pgdiff.parsers.AlterViewParser;
+import cz.startnet.utils.pgdiff.parsers.CommentParser;
+import cz.startnet.utils.pgdiff.parsers.CreateExtensionParser;
+import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
+import cz.startnet.utils.pgdiff.parsers.CreateIndexParser;
+import cz.startnet.utils.pgdiff.parsers.CreateSchemaParser;
+import cz.startnet.utils.pgdiff.parsers.CreateSequenceParser;
+import cz.startnet.utils.pgdiff.parsers.CreateTableParser;
+import cz.startnet.utils.pgdiff.parsers.CreateTriggerParser;
+import cz.startnet.utils.pgdiff.parsers.CreateViewParser;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -247,47 +250,70 @@ public class PgDumpLoader { //NOPMD
      *
      * @return database schema
      */
-    public static PgDatabase loadDatabaseSchemaFromDirTree(final String dirPath,
-            final String charsetName, final boolean outputIgnoredStatements,
+    public static PgDatabase loadDatabaseSchemaFromDirTree(
+            final String dirPath, final String charsetName,
+            final boolean outputIgnoredStatements,
             final boolean ignoreSlonyTriggers) {
         final PgDatabase db = new PgDatabase();
-        
-        File dir = new File(dirPath);    	
-        File listing = new File(dir, "listing.lst");
-        
-        try(BufferedReader readerListing = new BufferedReader(
-    			new InputStreamReader(
-    					new FileInputStream(listing), charsetName))) {
-        	String listingLine = null;
-        	
-        	while((listingLine = readerListing.readLine()) != null) {
-        		listingLine = listingLine.trim();
-        		if(listingLine.isEmpty()) {
-        			continue;
-        		}
-        		File listingFile = new File(dir, listingLine);
-        		
-        		try(FileInputStream inputStream = new FileInputStream(listingFile)) {
-        			loadDatabaseSchemaCore(inputStream, charsetName,
-        					outputIgnoredStatements, ignoreSlonyTriggers, db);
-        		} catch(FileNotFoundException ex) {
-        			throw new FileException(MessageFormat.format(
-                            Resources.getString("FileNotFound"), listingFile.getAbsolutePath()), ex);
-        		}
-        	}
-        } catch(FileNotFoundException ex) {
-        	throw new FileException(MessageFormat.format(
-                    Resources.getString("FileNotFound"), listing.getAbsolutePath()), ex);
-        } catch(UnsupportedEncodingException ex) {
-            throw new UnsupportedOperationException(
-                    Resources.getString("UnsupportedEncoding") + ": " + charsetName, ex);
-        } catch(IOException ex) {
-        	throw new FileException("An unexpected IOException", ex);
+        final String[] walkOrder = new String[] { "SEQUENCE", "FUNCTION",
+                "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW" };
+        File dir = new File(dirPath);
+
+        // step 1
+        // read files in schema folder, add schemas to db
+
+        walkSubdirsRunCore(dir, charsetName, outputIgnoredStatements,
+                ignoreSlonyTriggers, new String[] { "SCHEMA", "EXTENSION" }, db);
+
+        // step 2
+        // read out schemas names, and work in loop on each
+        for (PgSchema schema : db.getSchemas()) {
+            File schemaFolder = new File(new File(dir, "SCHEMA"),
+                    getHash(schema.getName()));
+            walkSubdirsRunCore(schemaFolder, charsetName,
+                    outputIgnoredStatements, ignoreSlonyTriggers, walkOrder, db);
         }
-        
         return db;
     }
     
+    private static void walkSubdirsRunCore(final File dir, final String charsetName,
+            final boolean outputIgnoredStatements,
+            final boolean ignoreSlonyTriggers, String[] subDir, PgDatabase db) {
+        for (String s : subDir) {
+            File folder = new File(dir, s);
+            for (File f : folder.listFiles()) {
+                if (f.exists() && !f.isDirectory()) {
+                    try (FileInputStream inputStream = new FileInputStream(f)) {
+                        loadDatabaseSchemaCore(inputStream, charsetName,
+                                outputIgnoredStatements, ignoreSlonyTriggers,
+                                db);
+                    } catch (FileNotFoundException ex) {
+                        throw new FileException(MessageFormat.format(
+                                Resources.getString("FileNotFound"),
+                                f.getAbsolutePath()), ex);
+                    } catch (IOException ex) {
+                        throw new FileException("An unexpected IOException", ex);
+                    }
+                }
+            }
+        }
+    }
+    
+    private static String getHash(String s) {
+        try {
+            byte[] bytesOfMessage = s.getBytes("UTF-8");
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] thedigest = md.digest(bytesOfMessage);
+            return new String(thedigest, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("UnsupportedEncodingException thrown while "
+                            + "getting hash", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("NoSuchAlgorithmException thrown while "
+                            + "getting hash",e);
+        }
+    }
+
     /**
      * Loads database schema from dump file.
      *
