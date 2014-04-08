@@ -276,35 +276,43 @@ public class PgDumpLoader { //NOPMD
         return db;
     }
     
-    private static void walkSubdirsRunCore(final File dir, final String charsetName,
-            final boolean outputIgnoredStatements,
+    private static void walkSubdirsRunCore(final File dir,
+            final String charsetName, final boolean outputIgnoredStatements,
             final boolean ignoreSlonyTriggers, String[] subDir, PgDatabase db) {
         for (String s : subDir) {
             File folder = new File(dir, s);
-            for (File f : folder.listFiles()) {
-                if (f.exists() && !f.isDirectory()) {
-                    try (FileInputStream inputStream = new FileInputStream(f)) {
-                        loadDatabaseSchemaCore(inputStream, charsetName,
-                                outputIgnoredStatements, ignoreSlonyTriggers,
-                                db);
-                    } catch (FileNotFoundException ex) {
-                        throw new FileException(MessageFormat.format(
-                                Resources.getString("FileNotFound"),
-                                f.getAbsolutePath()), ex);
-                    } catch (IOException ex) {
-                        throw new FileException("An unexpected IOException", ex);
+            if (folder.exists() && folder.isDirectory()) {
+                for (File f : folder.listFiles()) {
+                    if (f.exists() && !f.isDirectory()) {
+                        try (FileInputStream inputStream = new FileInputStream(
+                                f)) {
+                            loadDatabaseSchemaCore(inputStream, charsetName,
+                                    outputIgnoredStatements,
+                                    ignoreSlonyTriggers, db);
+                        } catch (FileNotFoundException ex) {
+                            throw new FileException(MessageFormat.format(
+                                    Resources.getString("FileNotFound"),
+                                    f.getAbsolutePath()), ex);
+                        } catch (IOException ex) {
+                            throw new FileException(
+                                    "An unexpected IOException", ex);
+                        }
                     }
                 }
             }
         }
     }
     
-    private static String getHash(String s) {
+    public static String getHash(String s) {
         try {
             byte[] bytesOfMessage = s.getBytes("UTF-8");
             MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] thedigest = md.digest(bytesOfMessage);
-            return new String(thedigest, "UTF-8");
+            byte[] hash = md.digest(bytesOfMessage);
+            StringBuilder sb = new StringBuilder(2 * hash.length);
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b & 0xff));
+            }
+            return sb.toString();
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException("UnsupportedEncodingException thrown while "
                             + "getting hash", e);

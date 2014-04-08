@@ -10,6 +10,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 
 import cz.startnet.utils.pgdiff.UnixPrintWriter;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -100,7 +101,7 @@ public class ModelExporter {
 			if(schema.getName().equals("public")) {
             	continue;
             }
-			File schemaSQL = new File(schemasSharedDir, schema.getName() + ".sql");
+			File schemaSQL = new File(schemasSharedDir, PgDumpLoader.getHash(schema.getName()) + ".sql");
 			dumpSQL(schema.getCreationSQL(), schemaSQL);
 		}
 		
@@ -112,13 +113,13 @@ public class ModelExporter {
 		}
 		
 		for(PgExtension ext : db.getExtensions()) {
-			File extSQL = new File(extensionsDir, ext.getName() + ".sql");
+			File extSQL = new File(extensionsDir, PgDumpLoader.getHash(ext.getName()) + ".sql");
 			dumpSQL(ext.getCreationSQL(), extSQL);
 		}
 		
 		// exporting schemas contents
 		for(PgSchema schema : db.getSchemas()) {
-			File schemaDir = new File(schemasSharedDir, schema.getName());
+			File schemaDir = new File(schemasSharedDir, PgDumpLoader.getHash(schema.getName()));
 			if(!schemaDir.mkdir()) {
 				throw new DirectoryException("Could not create schema directory:"
 						+ schemaDir.getAbsolutePath());
@@ -130,18 +131,6 @@ public class ModelExporter {
 			processObjects(schema.getViews(), schemaDir, "VIEW");
 			
 			// indexes, triggers, constraints are saved when tables are processed
-		}
-		
-		
-		// dump the list of written files
-		File listing = new File(outDir, "listing.lst");
-		if(!listing.createNewFile()) {
-			throw new FileException("Cannot create listing file:"
-					+ listing.getAbsolutePath());
-		}
-		
-		try(PrintWriter listingOut = new UnixPrintWriter(listing, sqlEncoding)) {
-			listingOut.println(writtenFiles.toString().replace('\\', '/'));
 		}
 	}
 	
@@ -178,7 +167,7 @@ public class ModelExporter {
 		}
 		
 		for(PgStatementWithSearchPath obj : objects) {
-			String filename = obj.getName() + ".sql";
+			String filename = PgDumpLoader.getHash(obj.getName()) + ".sql";
 			String sqlToDump = obj.getSearchPath()
 					+ "\n\n" + obj.getCreationSQL();
 			
