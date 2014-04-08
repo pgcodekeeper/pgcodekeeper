@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -26,7 +25,6 @@ import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -288,44 +286,6 @@ public class DiffTableViewer extends Composite {
         return selectionAdapter;
     }
     
-    private TreeElement addToTree(TreeElement current, TreeElement rootOfCopy) {
-        TreeElement parentOfCurrent = findSameInTree(current.getParent(), rootOfCopy);
-        if (parentOfCurrent != null){
-            TreeElement currentCopy = new TreeElement(
-                    current.getName(), current.getType(),
-                    current.getContainerType(), current.getSide());
-            parentOfCurrent.addChild(currentCopy);
-            return currentCopy;
-        }else {
-            TreeElement currentCopy = new TreeElement(
-                    current.getName(), current.getType(),
-                    current.getContainerType(), current.getSide());
-            addToTree(current.getParent(), rootOfCopy).addChild(currentCopy);
-            return currentCopy;
-        }
-    }
-    
-    /**
-     * walk through the tree, represented as copy subtree root, and find same 
-     * element, as target. If found, return it, otherwise return null.
-     * 
-     * @param target
-     * @param root
-     * @return
-     */
-    private TreeElement findSameInTree(TreeElement target,  TreeElement root){
-        if (root.equals(target) && Objects.equals(target, root)) {   
-            return root;
-        }
-        for (TreeElement child : root.getChildren()) {
-            TreeElement e = findSameInTree(target, child);
-            if (e != null){
-                return e;
-            }
-        }
-        return null;
-    }
-
     public void setInput(TreeElement tree) {
         this.tree = tree;
         viewer.setInput(tree);
@@ -334,20 +294,17 @@ public class DiffTableViewer extends Composite {
             c.pack();
         }
     }
-
+    
     public TreeElement filterDiffTree() {
         if (tree == null){
             return null;
         }
         Object[] checked = viewer.getCheckedElements();
-        TreeElement rootOfCopy = new TreeElement(
-                tree.getName(), tree.getType(),
-                tree.getContainerType(), tree.getSide());
-        for (Object e : checked){
-            TreeElement current = (TreeElement)e;
-            addToTree(current, rootOfCopy);
+        List<TreeElement> l = new ArrayList<TreeElement>(checked.length);
+        for (Object o : checked){
+            l.add((TreeElement)o);
         }
-        return rootOfCopy;
+        return tree.getFilteredCopy(l);
     }
 }
 
