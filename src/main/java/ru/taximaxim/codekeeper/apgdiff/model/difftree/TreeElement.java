@@ -238,6 +238,28 @@ public class TreeElement {
         
         throw new IllegalStateException("Unknown element type: " + type);
     }
+
+    /**
+     * Recursively walk a tree, copying nodes that exist in filterSubset to returned tree
+     */
+    public TreeElement getFilteredCopy(List<TreeElement> filterSubset){
+        TreeElement copy = null;
+        for(TreeElement e : children){
+            TreeElement child = e.getFilteredCopy(filterSubset);
+            
+            if (child != null) {
+                if (copy == null){
+                    copy = new TreeElement(getName(), getType(), getContainerType(), getSide());
+                }
+                copy.addChild(child);
+            }
+        }
+        
+        if (filterSubset.contains(this) && copy == null){
+            copy = new TreeElement(getName(), getType(), getContainerType(), getSide());
+        }
+        return copy;
+    }
     
     @Override
     public int hashCode() {
