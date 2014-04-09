@@ -5,6 +5,9 @@
  */
 package cz.startnet.utils.pgdiff;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
 /**
@@ -584,6 +587,28 @@ public class PgDiffUtils {
         }
         
         return sb.toString();
+    }
+
+    /**
+     * @return lowercase hex MD5 for UTF-8 representation of given string.
+     */
+    public static String md5(String s) {
+        try {
+            byte[] bytesOfMessage = s.getBytes("UTF-8");
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] hash = md.digest(bytesOfMessage);
+            StringBuilder sb = new StringBuilder(2 * hash.length);
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b & 0xff));
+            }
+            return sb.toString();
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("UnsupportedEncodingException thrown while "
+                            + "getting hash", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("NoSuchAlgorithmException thrown while "
+                            + "getting hash",e);
+        }
     }
     
     private PgDiffUtils() {

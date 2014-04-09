@@ -9,8 +9,8 @@ import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.UnixPrintWriter;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -101,7 +101,7 @@ public class ModelExporter {
 			if(schema.getName().equals("public")) {
             	continue;
             }
-			File schemaSQL = new File(schemasSharedDir, PgDumpLoader.getHash(schema.getName()) + ".sql");
+			File schemaSQL = new File(schemasSharedDir, PgDiffUtils.md5(schema.getName()) + ".sql");
 			dumpSQL(schema.getCreationSQL(), schemaSQL);
 		}
 		
@@ -113,13 +113,13 @@ public class ModelExporter {
 		}
 		
 		for(PgExtension ext : db.getExtensions()) {
-			File extSQL = new File(extensionsDir, PgDumpLoader.getHash(ext.getName()) + ".sql");
+			File extSQL = new File(extensionsDir, PgDiffUtils.md5(ext.getName()) + ".sql");
 			dumpSQL(ext.getCreationSQL(), extSQL);
 		}
 		
 		// exporting schemas contents
 		for(PgSchema schema : db.getSchemas()) {
-			File schemaDir = new File(schemasSharedDir, PgDumpLoader.getHash(schema.getName()));
+			File schemaDir = new File(schemasSharedDir, PgDiffUtils.md5(schema.getName()));
 			if(!schemaDir.mkdir()) {
 				throw new DirectoryException("Could not create schema directory:"
 						+ schemaDir.getAbsolutePath());
@@ -167,7 +167,7 @@ public class ModelExporter {
 		}
 		
 		for(PgStatementWithSearchPath obj : objects) {
-			String filename = PgDumpLoader.getHash(obj.getName()) + ".sql";
+			String filename = PgDiffUtils.md5(obj.getName()) + ".sql";
 			String sqlToDump = obj.getSearchPath()
 					+ "\n\n" + obj.getCreationSQL();
 			

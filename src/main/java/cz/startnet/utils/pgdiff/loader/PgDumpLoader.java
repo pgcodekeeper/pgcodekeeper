@@ -13,12 +13,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.parsers.AlterSequenceParser;
 import cz.startnet.utils.pgdiff.parsers.AlterTableParser;
@@ -41,6 +40,12 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
  * @author fordfrog
  */
 public class PgDumpLoader { //NOPMD
+    
+    /**
+     * Loading order and directory names of the objects in exported DB schemas.
+     */
+    private static final String[] walkOrder = new String[] { "SEQUENCE",
+        "FUNCTION", "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW" };
 
     /**
      * Pattern for testing whether it is CREATE SCHEMA statement.
@@ -255,8 +260,6 @@ public class PgDumpLoader { //NOPMD
             final boolean outputIgnoredStatements,
             final boolean ignoreSlonyTriggers) {
         final PgDatabase db = new PgDatabase();
-        final String[] walkOrder = new String[] { "SEQUENCE", "FUNCTION",
-                "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW" };
         File dir = new File(dirPath);
 
         // step 1
@@ -269,7 +272,7 @@ public class PgDumpLoader { //NOPMD
         // read out schemas names, and work in loop on each
         for (PgSchema schema : db.getSchemas()) {
             File schemaFolder = new File(new File(dir, "SCHEMA"),
-                    getHash(schema.getName()));
+                    PgDiffUtils.md5(schema.getName()));
             walkSubdirsRunCore(schemaFolder, charsetName,
                     outputIgnoredStatements, ignoreSlonyTriggers, walkOrder, db);
         }
@@ -281,11 +284,11 @@ public class PgDumpLoader { //NOPMD
             final boolean ignoreSlonyTriggers, String[] subDir, PgDatabase db) {
         for (String s : subDir) {
             File folder = new File(dir, s);
+            
             if (folder.exists() && folder.isDirectory()) {
                 for (File f : folder.listFiles()) {
                     if (f.exists() && !f.isDirectory()) {
-                        try (FileInputStream inputStream = new FileInputStream(
-                                f)) {
+                        try (FileInputStream inputStream = new FileInputStream(f)) {
                             loadDatabaseSchemaCore(inputStream, charsetName,
                                     outputIgnoredStatements,
                                     ignoreSlonyTriggers, db);
@@ -303,25 +306,6 @@ public class PgDumpLoader { //NOPMD
         }
     }
     
-    public static String getHash(String s) {
-        try {
-            byte[] bytesOfMessage = s.getBytes("UTF-8");
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] hash = md.digest(bytesOfMessage);
-            StringBuilder sb = new StringBuilder(2 * hash.length);
-            for (byte b : hash) {
-                sb.append(String.format("%02x", b & 0xff));
-            }
-            return sb.toString();
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("UnsupportedEncodingException thrown while "
-                            + "getting hash", e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("NoSuchAlgorithmException thrown while "
-                            + "getting hash",e);
-        }
-    }
-
     /**
      * Loads database schema from dump file.
      *
