@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -242,7 +243,7 @@ public class TreeElement {
     /**
      * Recursively walk a tree, copying nodes that exist in filterSubset to returned tree
      */
-    public TreeElement getFilteredCopy(List<TreeElement> filterSubset){
+    public TreeElement getFilteredCopy(Set<TreeElement> filterSubset){
         TreeElement copy = null;
         for(TreeElement e : children){
             TreeElement child = e.getFilteredCopy(filterSubset);
@@ -270,6 +271,7 @@ public class TreeElement {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((side == null) ? 0 : side.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
+        result = prime * result + System.identityHashCode(parent);
         return result;
     }
 
@@ -282,7 +284,8 @@ public class TreeElement {
             return Objects.equals(name, other.getName())
                     && Objects.equals(type, other.getType())
                     && Objects.equals(containerType, other.getContainerType())
-                    && Objects.equals(side, other.getSide());
+                    && Objects.equals(side, other.getSide())
+                    && this.parent == other.parent;
         }
         return false;
     }
