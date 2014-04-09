@@ -3,8 +3,10 @@ package ru.taximaxim.codekeeper.ui.differ;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -299,12 +301,17 @@ public class DiffTableViewer extends Composite {
         if (tree == null){
             return null;
         }
+        
         Object[] checked = viewer.getCheckedElements();
-        List<TreeElement> l = new ArrayList<TreeElement>(checked.length);
-        for (Object o : checked){
-            l.add((TreeElement)o);
+        Set<TreeElement> checkedSet = new HashSet<>(checked.length);
+        
+        for (Object o : checked) {
+            if (!checkedSet.add((TreeElement) o)) {
+                throw new IllegalStateException("Tried to add equal elements to checkedSet!");
+            }
         }
-        return tree.getFilteredCopy(l);
+        
+        return tree.getFilteredCopy(checkedSet);
     }
 }
 

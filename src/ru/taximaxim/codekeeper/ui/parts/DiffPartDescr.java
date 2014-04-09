@@ -143,7 +143,7 @@ public class DiffPartDescr {
                             txtDb.setText("");
                             return;
                         }
-                        TreeElement el = (TreeElement) selection.toArray()[0];
+                        TreeElement el = (TreeElement) selection.getFirstElement();
 
                         if (el.getSide() == DiffSide.LEFT
                                 || el.getSide() == DiffSide.BOTH) {
