@@ -38,20 +38,4 @@ public class DynamicMenu {
             }
         }
 	}
-	
-	@Inject
-    @Optional
-    private void prefsReinject(
-            @Preference(value=UIConsts.PREF_RECENT_PROJECTS)
-            String prefRecent) {
-	    System.out.println("DEBUG reinjection " + prefRecent);
-//        if(appHandle.getState() == ApplicationHandle.RUNNING) {
-//            getVersionsOnStartup(null, svnExec, pgdumpExec);
-//        }
-    }
-	
-	@AboutToHide
-	public void aboutToHide(List<MMenuElement> items) {
-	    
-	}
 }

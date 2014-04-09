@@ -46,6 +46,7 @@ public class OpenRecent {
                     + " Properties file not found!");
             mb.open();
             RecentProjects.deleteRecent(menuItem.getLabel(), mainPrefs);
+            menuItem.setEnabled(false);
         }
     }
 }
