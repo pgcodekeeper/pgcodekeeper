@@ -206,7 +206,7 @@ public class CommitPartDescr {
 
                 // reopen project because file structure has been changed
                 CloseActiveProj.close(app.getContext());
-                LoadProj.load(proj, app.getContext(), partService, model, app);
+                LoadProj.load(proj, app.getContext(), partService, model, app, mainPrefs);
             }
         });
         // end upper commit comment container
