@@ -11,6 +11,7 @@ import javax.inject.Named;
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -73,6 +74,9 @@ class GeneralPrefPage extends FieldEditorPreferencePage {
                 "svn executable", getFieldEditorParent()));
         addField(new ExecutableFileFieldEditor(UIConsts.PREF_PGDUMP_EXE_PATH,
                 "pg_dump executable", getFieldEditorParent()));
+        addField(new BooleanFieldEditor(UIConsts.PREF_OPEN_LAST_ON_START, 
+                "Open last project on start", FileFieldEditor.VALIDATE_ON_KEY_STROKE,
+                getFieldEditorParent()));   
     }
 }
 

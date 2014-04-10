@@ -4,6 +4,7 @@
     <elements xsi:type="application:Addon" xmi:id="_EnG9wCtXEeOOlv4Y_5F9zw" elementId="ru.taximaxim.codekeeper.ui.addon.PrefLoader" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.AddonPrefLoader"/>
     <elements xsi:type="application:Addon" xmi:id="_j51ygGY_EeOS2eJJtn_juQ" elementId="ru.taximaxim.codekeeper.ui.addon.ExternalTools" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.AddonExternalTools"/>
     <elements xsi:type="application:Addon" xmi:id="_CZrqYI2jEeO4ie8GiiWKfQ" elementId="ru.taximaxim.codekeeper.ui.addon.JFaceExceptionHandler" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.AddonJFaceExceptionHandler"/>
+    <elements xsi:type="application:Addon" xmi:id="_b8C_4MBwEeOSZbC7pMAOxQ" elementId="ru.taximaxim.codekeeper.ui.addon.OpenLast" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.AddonOpenLast"/>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_4R4zcI2AEeOZD4rZ-dJoXw" featurename="bindings" parentElementId="ru.taximaxim.codekeeper.mainapp.bindingtable.0">
     <elements xsi:type="commands:KeyBinding" xmi:id="_d0oZ4Df_EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.keybinding.1" keySequence="CTRL+O" command="_o6NrIDYmEeOu39tpQ1Oozg"/>
