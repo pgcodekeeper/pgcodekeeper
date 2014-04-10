@@ -15,11 +15,12 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
-import ru.taximaxim.codekeeper.ui.RecentProjects;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.recentprojs.RecentProjects;
 
 public class OpenRecent {
+    
     private MMenuItem menuItem;
     @Inject
     private EPartService partService;
@@ -37,7 +38,7 @@ public class OpenRecent {
         CloseActiveProj.close(app.getContext());
         PgDbProject proj = new PgDbProject(menuItem.getLabel());
         
-        if(proj.getProjectPropsFile().isFile()) {
+        if (proj.getProjectPropsFile().isFile()) {
             LoadProj.load(proj, app.getContext(), partService, model, app, mainPrefs);
         } else {
             MessageBox mb = new MessageBox(shell);

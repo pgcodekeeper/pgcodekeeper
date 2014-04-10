@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.recentprojs;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -9,11 +9,13 @@ import java.util.regex.Pattern;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 
+import ru.taximaxim.codekeeper.ui.UIConsts;
+
 public class RecentProjects {
     
     public static String [] getRecent(String prefRecent){
-        if (prefRecent == null){
-            return new String []{""};
+        if (prefRecent == null || prefRecent.isEmpty()){
+            return null;
         }
         return prefRecent.split(Pattern.quote("*"));
     }
@@ -23,7 +25,7 @@ public class RecentProjects {
         if (!l.contains(recent)){
             l.addFirst(recent);
         }
-        if (l.size() > 10){
+        while (l.size() > 10){
             l.removeLast();
         }
         writePref(l, prefStore);

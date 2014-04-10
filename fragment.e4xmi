@@ -25,7 +25,7 @@
         <children xsi:type="menu:HandledMenuItem" xmi:id="_HyIoQGlxEeO0LoNj8g6FWw" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.12" label="Close &amp;Project" command="_H_VU0DfvEeOJGp3TAROjKg"/>
         <children xsi:type="menu:MenuSeparator" xmi:id="_UgkpwGlxEeO0LoNj8g6FWw" elementId="ru.taximaxim.codekeeper.ui.menuseparator.3"/>
         <children xsi:type="menu:Menu" xmi:id="_-ZeoAL-tEeOwLZ0qTYI49g" elementId="ru.taximaxim.codekeeper.ui.menu.4" label="Recent projects">
-          <children xsi:type="menu:DynamicMenuContribution" xmi:id="_rWdOkL-jEeOwLZ0qTYI49g" elementId="ru.taximaxim.codekeeper.ui.dynamicmenucontribution.0" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.DynamicMenu"/>
+          <children xsi:type="menu:DynamicMenuContribution" xmi:id="_rWdOkL-jEeOwLZ0qTYI49g" elementId="ru.taximaxim.codekeeper.ui.dynamicmenucontribution.0" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.recentprojs.DynamicMenuRecent"/>
         </children>
         <children xsi:type="menu:MenuSeparator" xmi:id="_FzVxgL-uEeOwLZ0qTYI49g" elementId="ru.taximaxim.codekeeper.ui.menuseparator.4"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_tIyOECnVEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.2" label="E&amp;xit" command="_Zjel8CnWEeObfOm2RjyZmw"/>

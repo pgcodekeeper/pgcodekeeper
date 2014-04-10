@@ -14,11 +14,11 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
-import ru.taximaxim.codekeeper.ui.RecentProjects;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.parts.CommitPartDescr;
 import ru.taximaxim.codekeeper.ui.parts.DiffPartDescr;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.recentprojs.RecentProjects;
 
 public class LoadProj {
     

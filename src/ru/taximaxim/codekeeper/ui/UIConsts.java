@@ -21,6 +21,9 @@ public interface UIConsts {
     String PART_DIFF = PLUGIN_ID + ".partdescriptor.Diff";
     String PART_DIFF_ID = PART_DIFF + ".Id";
     
+    String HANDLER_RECENT_PROJ = "bundleclass://" + PLUGIN_ID + "/" + PLUGIN_ID
+            + ".handlers.OpenRecent";
+    
     // Preferences
     String PREF_SVN_EXE_PATH = "prefSvnExePath";
     String PREF_PGDUMP_EXE_PATH = "prefPgdumpExePath";
