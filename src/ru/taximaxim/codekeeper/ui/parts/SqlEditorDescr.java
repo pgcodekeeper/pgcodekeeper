@@ -62,7 +62,7 @@ public class SqlEditorDescr {
     }
     
     public static void openNew(File file, EModelService model, EPartService partService,
-            MApplication app) {
+            MApplication app, String nameToDisplay) {
         for(MPart existingPart : model.findElements(
                 app, UIConsts.PART_SQL_EDITOR, MPart.class, null)) {
             if(file.getAbsolutePath().equals(
@@ -73,7 +73,8 @@ public class SqlEditorDescr {
         }
         
         MPart newEditor = partService.createPart(UIConsts.PART_SQL_EDITOR);
-        newEditor.setLabel(file.getName());
+        newEditor.setLabel(nameToDisplay);
+        newEditor.setTooltip(file.getAbsolutePath());
         newEditor.getPersistedState().put(
                 UIConsts.PART_SQL_EDITOR_FILENAME, file.getAbsolutePath());
         ((MPartStack) model.find(UIConsts.PART_STACK_EDITORS, app)).getChildren().add(newEditor);

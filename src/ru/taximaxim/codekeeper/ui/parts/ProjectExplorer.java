@@ -6,6 +6,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -32,9 +33,14 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 
 public class ProjectExplorer {
@@ -54,22 +60,25 @@ public class ProjectExplorer {
     private TreeViewer treeDb;
     
     private LocalResourceManager lrm;
+    // key-value pairs to store hash vs db object name
+    private HashMap<String, String> fileNamesHash;
     
     @PostConstruct
-    private void postConstruct(Composite parent, EMenuService menuService)
+    private void postConstruct(Composite parent, EMenuService menuService, PgDbProject projs)
             throws IOException {
         parent.setLayout(new FillLayout());
         
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
         
+        fileNamesHash = new HashMap<String, String>();
+
         treeDb = new TreeViewer(parent, SWT.BORDER);
         treeDb.setContentProvider(new ITreeContentProvider() {
             
             private final List<String> ignoredFiles = Arrays.asList(
                     new String[] {
                             ".svn",
-                            ".git",
-                            "listing.lst"
+                            ".git"
                     });
             
             private final FilenameFilter filter = new FilenameFilter() {
@@ -137,7 +146,7 @@ public class ProjectExplorer {
             
             @Override
             public String getText(Object element) {
-                return ((File) element).getName();
+                return getFileNameFromHash((File) element);
             }
             
             @Override
@@ -153,7 +162,8 @@ public class ProjectExplorer {
             
             @Override
             public void doubleClick(DoubleClickEvent event) {
-                TreePath path = ((TreeSelection) event.getSelection()).getPaths()[0];
+                TreePath []p = ((TreeSelection) event.getSelection()).getPaths();
+                TreePath path = p[0];
                 final File f = (File) path.getLastSegment();
                 
                 if(f.isDirectory()) {
@@ -161,7 +171,7 @@ public class ProjectExplorer {
                     viewer.setExpandedState(path, !viewer.getExpandedState(path));
                     viewer.refresh();
                 } else {
-                    SqlEditorDescr.openNew(f, model, partService, app);
+                    SqlEditorDescr.openNew(f, model, partService, app, getFileNameFromHash(f));
                 }
             }
         });
@@ -171,6 +181,41 @@ public class ProjectExplorer {
         changeProject(proj);
     }
     
+    private String getFileNameFromHash(File f){
+        String filename = f.getName();
+        if (filename.length() > 31){
+            filename = filename.substring(0, 32);
+        }
+        
+        String res = fileNamesHash.get(filename);
+        if(res == null){
+            res = filename;
+        }
+        return res;
+    }
+    
+    private void initialHash(PgDbProject proj) {
+        String s = proj.getProjectSchemaDir().toString();
+        PgDatabase sourceDb = PgDumpLoader.loadDatabaseSchemaFromDirTree(s,
+                proj.getString(UIConsts.PROJ_PREF_ENCODING), false, false);
+        PgDatabase targetDb = new PgDatabase();
+        TreeElement a = DiffTree.create(sourceDb, targetDb);
+        visit(a);
+    }
+    
+    private void visit(TreeElement subtree) {
+        if (subtree.hasChildren()) {
+            for (TreeElement child : subtree.getChildren()) {
+                visit(child);
+            }
+        }
+        if (subtree.getContainerType() == TreeElement.DbObjType.DATABASE
+                || subtree.getType() == TreeElement.DbObjType.DATABASE) {
+            return;
+        }
+        fileNamesHash.put(PgDiffUtils.md5(subtree.getName()), subtree.getName());
+    }
+
     @Inject
     private void changeProject(PgDbProject proj) throws IOException {
         if(treeDb != null) {
@@ -179,6 +224,9 @@ public class ProjectExplorer {
             if(proj != null) {
                 proj.load();
                 treeInput = proj.getProjectSchemaDir();
+                
+                
+                initialHash(proj);
             }
             
             treeDb.setInput(treeInput);
