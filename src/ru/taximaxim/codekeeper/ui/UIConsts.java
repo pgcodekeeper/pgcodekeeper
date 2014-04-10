@@ -30,6 +30,7 @@ public interface UIConsts {
     String PREF_DB_STORE = "prefDbStore";
     String PREF_GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile";
     String PREF_RECENT_PROJECTS = "prefRecentProject";
+    String PREF_OPEN_LAST_ON_START = "prefOpenLastOnStart";
     
     // Project preferences
     String PROJ_PREF_ENCODING = "prefGeneralEncoding";
