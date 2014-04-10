@@ -18,7 +18,7 @@ public class DynamicMenuRecent {
     @Preference(value=UIConsts.PREF_RECENT_PROJECTS)
     String prefRecent;
     
-	@AboutToShow
+    @AboutToShow
     public void aboutToShow(List<MMenuElement> items) {
         String[] recent = RecentProjects.getRecent(prefRecent);
         if (recent == null) {
@@ -34,5 +34,5 @@ public class DynamicMenuRecent {
                 items.add(dynamicItem);
             }
         }
-	}
+    }
 }

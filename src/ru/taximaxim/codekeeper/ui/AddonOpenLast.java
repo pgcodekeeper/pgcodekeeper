@@ -16,10 +16,11 @@ import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.ui.handlers.LoadProj;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.recentprojs.RecentProjects;
 
 public class AddonOpenLast {
-	
-	@Inject
+
+ @Inject
     @Optional
     private void openLast(
             // FIXME workaround, see http://www.eclipse.org/forums/index.php/t/351144/
@@ -41,13 +42,15 @@ public class AddonOpenLast {
             @Preference(value = UIConsts.PREF_RECENT_PROJECTS) String prefRecentProjects,
             
             UISynchronize sync) {
-        if (prefOpenLast.equals("true")) {
-            String last = RecentProjects.getRecent(prefRecentProjects)[0];
-            if (last.equals("")) {
+        if (prefOpenLast != null && prefOpenLast.equals("true")) {
+            String[] recent = RecentProjects.getRecent(prefRecentProjects);
+            if (recent == null) {
                 return;
             }
             
+            String last = recent[0];
             final PgDbProject proj = new PgDbProject(last);
+            
             if (proj.getProjectPropsFile().isFile()) {
                 sync.asyncExec(new Runnable() {
                     
@@ -57,8 +60,8 @@ public class AddonOpenLast {
                                 mainPrefs);
                     }
                 });
-            }else{
-                RecentProjects.deleteRecent(last, mainPrefs);
+            } else {
+                // fail silently
             }
         }
     }

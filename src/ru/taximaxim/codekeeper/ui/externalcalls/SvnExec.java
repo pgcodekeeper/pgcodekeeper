@@ -215,11 +215,11 @@ public class SvnExec implements IRepoWorker {
 
     private void addUrl(ProcessBuilder pb) {
         if (url != null && !url.isEmpty()) {
-        	if (PATTERN_SVN_URL.matcher(url).matches() || PATTERN_HTTP_URL.matcher(url).matches()) {
-        		pb.command().add(url);
-	        } else {
-	            pb.command().add("file:///" + url);
-	        }
+            if (PATTERN_SVN_URL.matcher(url).matches() || PATTERN_HTTP_URL.matcher(url).matches()) {
+                pb.command().add(url);
+            } else {
+                pb.command().add("file:///" + url);
+            }
         }
     }
 
