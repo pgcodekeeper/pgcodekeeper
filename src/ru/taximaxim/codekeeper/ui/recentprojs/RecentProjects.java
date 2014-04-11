@@ -22,12 +22,8 @@ public class RecentProjects {
     
     public static void addRecent(String recent, IPreferenceStore prefStore){
         LinkedList<String> l = getList(prefStore.getString(UIConsts.PREF_RECENT_PROJECTS));
-        if (!l.contains(recent)){
-            l.addFirst(recent);
-        }else{
-            l.remove(recent);
-            l.addFirst(recent);
-        }
+        l.remove(recent);
+        l.addFirst(recent);
         while (l.size() > 10){
             l.removeLast();
         }

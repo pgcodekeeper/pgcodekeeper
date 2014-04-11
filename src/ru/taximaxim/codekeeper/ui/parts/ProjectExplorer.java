@@ -4,6 +4,7 @@ package ru.taximaxim.codekeeper.ui.parts;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -13,11 +14,15 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.swt.modeling.EMenuService;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
@@ -37,6 +42,7 @@ import org.eclipse.swt.widgets.Composite;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -63,11 +69,13 @@ public class ProjectExplorer {
     // key-value pairs to store hash vs db object name
     private Map<String, String> fileNamesHash = new HashMap<>();
     
+    private Composite parent;
+    
     @PostConstruct
     private void postConstruct(Composite parent, EMenuService menuService, PgDbProject projs)
             throws IOException {
         parent.setLayout(new FillLayout());
-        
+        this.parent = parent;
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
 
         treeDb = new TreeViewer(parent, SWT.BORDER);
@@ -214,18 +222,39 @@ public class ProjectExplorer {
     }
 
     @Inject
-    private void changeProject(PgDbProject proj) throws IOException {
+    private void changeProject(final PgDbProject proj) throws IOException {
         if(treeDb != null) {
-            File treeInput = null;
+            final File []treeInput = new File[]{null};
             
             if(proj != null) {
-                proj.load();
-                treeInput = proj.getProjectSchemaDir();
-                
-                initialHash(proj);
+                IRunnableWithProgress loadRunnable = new IRunnableWithProgress() {
+                    @Override
+                    public void run(IProgressMonitor monitor)
+                            throws InvocationTargetException,
+                            InterruptedException {
+                        SubMonitor pm = SubMonitor.convert(monitor,
+                                "Loading project", 10);
+                        try {
+                            proj.load();
+                            treeInput[0] = proj.getProjectSchemaDir();
+                            pm.newChild(2).subTask("Building tree and hash...");
+                            initialHash(proj);
+                        } catch (IOException e) {
+                            ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
+                                    "IOException while opening project!", e), parent.getShell());
+                        }
+                        monitor.done();
+                    }
+                };
+
+                try {
+                    new ProgressMonitorDialog(parent.getShell()).run(true, false, loadRunnable);
+                } catch (InterruptedException | InvocationTargetException ex) {
+                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
+                            "Error opening project!", ex), parent.getShell());
+                }
             }
-            
-            treeDb.setInput(treeInput);
+            treeDb.setInput(treeInput[0]);
         }
         
         String partLabel = "Project Explorer";
