@@ -445,9 +445,10 @@ public class CommitPartDescr {
                 || !proj.getProjectDir().equals(
                         part.getPersistedState().get(UIConsts.PART_SYNC_ID))) {
             partService.hidePart(part);
-        }
-        if (proj2 != null) {
+        } else if (proj2 != null) {
             diffTable.setInput(null);
+            txtDb.setText("");
+            txtSvn.setText("");
             txtCommitComment.setText("");
             btnCommit.setEnabled(false);
         }

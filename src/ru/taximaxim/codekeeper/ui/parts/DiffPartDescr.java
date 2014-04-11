@@ -357,9 +357,10 @@ public class DiffPartDescr {
                 || !proj.getProjectDir().equals(
                         part.getPersistedState().get(UIConsts.PART_DIFF_ID))) {
             partService.hidePart(part);
-        }
-        if (proj2 != null) {
+        } else if (proj2 != null) {
             diffTable.setInput(null);
+            txtDb.setText("");
+            txtSvn.setText("");
         }
     }
 
