@@ -11,7 +11,9 @@ import javax.inject.Named;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.extensions.Preference;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
@@ -55,8 +57,6 @@ import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
-import ru.taximaxim.codekeeper.ui.handlers.CloseActiveProj;
-import ru.taximaxim.codekeeper.ui.handlers.LoadProj;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
@@ -82,6 +82,8 @@ public class CommitPartDescr {
     private DbPicker dbSrc;
     private Text txtDb, txtSvn;
     private String repoName;
+    @Inject
+    private IEventBroker events;
     /**
      * Local repository cache.
      */
@@ -205,8 +207,10 @@ public class CommitPartDescr {
                 Console.addMessage("SUCCESS: Project updated!");
 
                 // reopen project because file structure has been changed
-                CloseActiveProj.close(app.getContext());
-                LoadProj.load(proj, app.getContext(), partService, model, app, mainPrefs);
+                events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
+                diffTable.setInput(null);
+                txtCommitComment.setText("");
+                btnCommit.setEnabled(false);
             }
         });
         // end upper commit comment container

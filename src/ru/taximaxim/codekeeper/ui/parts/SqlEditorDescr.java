@@ -7,7 +7,10 @@ import java.nio.file.Files;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Named;
 
+import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
@@ -52,11 +55,13 @@ public class SqlEditorDescr {
      * @param proj
      */
     @Inject
-    private void projectChanged(PgDbProject proj) {
+    private void projectChanged(PgDbProject proj,
+            @Optional @Named("__DUMMY__") @EventTopic(UIConsts.EVENT_REOPEN_PROJECT)
+            PgDbProject proj2) {
         File myFile = new File(
                 part.getPersistedState().get(UIConsts.PART_SQL_EDITOR_FILENAME));
         if(proj == null
-                || !myFile.toPath().startsWith(proj.getProjectSchemaDir().toPath())) {
+                || !myFile.toPath().startsWith(proj.getProjectSchemaDir().toPath()) || !myFile.exists()) {
             partService.hidePart(part);
         }
     }

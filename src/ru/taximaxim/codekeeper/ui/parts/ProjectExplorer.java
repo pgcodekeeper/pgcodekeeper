@@ -13,9 +13,12 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
@@ -183,7 +186,7 @@ public class ProjectExplorer {
         menuService.registerContextMenu(treeDb.getControl(),
                 UIConsts.PART_PROJXP_TREE_POPUP);
         
-        changeProject(proj);
+        changeProject(proj, proj);
     }
     
     private String getFileNameFromHash(File f){
@@ -221,9 +224,10 @@ public class ProjectExplorer {
     }
 
     @Inject
-    private void changeProject(final PgDbProject proj) throws IOException,
-            InterruptedException, InvocationTargetException {
-        if(treeDb != null) {
+    private void changeProject(final PgDbProject proj,
+            @Optional @Named("__DUMMY__") @EventTopic(UIConsts.EVENT_REOPEN_PROJECT) PgDbProject proj2)
+            throws IOException, InvocationTargetException, InterruptedException {
+        if (treeDb != null) {
             File treeInput = null;
             
             if(proj != null) {
@@ -243,7 +247,6 @@ public class ProjectExplorer {
                         monitor.done();
                     }
                 };
-
                 new ProgressMonitorDialog(parent.getShell())
                         .run(true, false, loadRunnable);
             }

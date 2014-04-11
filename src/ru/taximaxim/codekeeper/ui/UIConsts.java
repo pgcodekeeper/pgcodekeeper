@@ -62,4 +62,6 @@ public interface UIConsts {
     String FILENAME_ICONSAVE = "/icons/save_edit.gif";
     String FILENAME_ICONDEL = "/icons/delete_obj.gif";
     String FILENAME_ICONEDIT = "/icons/editor.gif";
+    
+    String EVENT_REOPEN_PROJECT = "ru/taximaxim/codekeeper/ui/project/changed";
 }
