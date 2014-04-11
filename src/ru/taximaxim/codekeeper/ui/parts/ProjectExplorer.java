@@ -119,11 +119,12 @@ public class ProjectExplorer {
                     @Override
                     public int compare(File o1, File o2) {
                         if(o1.isDirectory()) {
-                            return o2.isDirectory()? o1.compareTo(o2) : -1;
+                            return o2.isDirectory()? getFileNameFromHash(o1).compareTo(
+                                    getFileNameFromHash(o2)) : -1;
                         } else if(o2.isDirectory()) {
                             return 1;
                         } else {
-                            return o1.compareTo(o2);
+                            return getFileNameFromHash(o1).compareTo(getFileNameFromHash(o2));
                         }
                     }
                 });
