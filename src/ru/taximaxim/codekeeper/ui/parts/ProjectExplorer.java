@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -42,7 +43,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
-
 public class ProjectExplorer {
     
     @Inject
@@ -61,7 +61,7 @@ public class ProjectExplorer {
     
     private LocalResourceManager lrm;
     // key-value pairs to store hash vs db object name
-    private HashMap<String, String> fileNamesHash;
+    private Map<String, String> fileNamesHash = new HashMap<>();
     
     @PostConstruct
     private void postConstruct(Composite parent, EMenuService menuService, PgDbProject projs)
@@ -69,8 +69,6 @@ public class ProjectExplorer {
         parent.setLayout(new FillLayout());
         
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
-        
-        fileNamesHash = new HashMap<String, String>();
 
         treeDb = new TreeViewer(parent, SWT.BORDER);
         treeDb.setContentProvider(new ITreeContentProvider() {
@@ -209,11 +207,10 @@ public class ProjectExplorer {
                 visit(child);
             }
         }
-        if (subtree.getContainerType() == TreeElement.DbObjType.DATABASE
-                || subtree.getType() == TreeElement.DbObjType.DATABASE) {
-            return;
+        if (subtree.getType() != TreeElement.DbObjType.CONTAINER
+                && subtree.getType() != TreeElement.DbObjType.DATABASE) {
+            fileNamesHash.put(PgDiffUtils.md5(subtree.getName()), subtree.getName());
         }
-        fileNamesHash.put(PgDiffUtils.md5(subtree.getName()), subtree.getName());
     }
 
     @Inject
@@ -224,7 +221,6 @@ public class ProjectExplorer {
             if(proj != null) {
                 proj.load();
                 treeInput = proj.getProjectSchemaDir();
-                
                 
                 initialHash(proj);
             }
