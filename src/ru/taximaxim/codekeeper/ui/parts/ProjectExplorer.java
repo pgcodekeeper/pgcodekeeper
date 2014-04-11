@@ -42,7 +42,6 @@ import org.eclipse.swt.widgets.Composite;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -72,8 +71,8 @@ public class ProjectExplorer {
     private Composite parent;
     
     @PostConstruct
-    private void postConstruct(Composite parent, EMenuService menuService, PgDbProject projs)
-            throws IOException {
+    private void postConstruct(Composite parent, EMenuService menuService)
+            throws IOException, InterruptedException, InvocationTargetException {
         parent.setLayout(new FillLayout());
         this.parent = parent;
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
@@ -222,39 +221,33 @@ public class ProjectExplorer {
     }
 
     @Inject
-    private void changeProject(final PgDbProject proj) throws IOException {
+    private void changeProject(final PgDbProject proj) throws IOException,
+            InterruptedException, InvocationTargetException {
         if(treeDb != null) {
-            final File []treeInput = new File[]{null};
+            File treeInput = null;
             
             if(proj != null) {
+                proj.load();
+                treeInput = proj.getProjectSchemaDir();
+                
                 IRunnableWithProgress loadRunnable = new IRunnableWithProgress() {
                     @Override
                     public void run(IProgressMonitor monitor)
                             throws InvocationTargetException,
                             InterruptedException {
-                        SubMonitor pm = SubMonitor.convert(monitor,
-                                "Loading project", 10);
-                        try {
-                            proj.load();
-                            treeInput[0] = proj.getProjectSchemaDir();
-                            pm.newChild(2).subTask("Building tree and hash...");
-                            initialHash(proj);
-                        } catch (IOException e) {
-                            ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
-                                    "IOException while opening project!", e), parent.getShell());
-                        }
+                        SubMonitor pm = SubMonitor.convert(monitor, "Loading project", 10);
+                        pm.newChild(5).subTask("Building DB tree...");
+                        
+                        initialHash(proj);
+                        
                         monitor.done();
                     }
                 };
 
-                try {
-                    new ProgressMonitorDialog(parent.getShell()).run(true, false, loadRunnable);
-                } catch (InterruptedException | InvocationTargetException ex) {
-                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
-                            "Error opening project!", ex), parent.getShell());
-                }
+                new ProgressMonitorDialog(parent.getShell())
+                        .run(true, false, loadRunnable);
             }
-            treeDb.setInput(treeInput[0]);
+            treeDb.setInput(treeInput);
         }
         
         String partLabel = "Project Explorer";
