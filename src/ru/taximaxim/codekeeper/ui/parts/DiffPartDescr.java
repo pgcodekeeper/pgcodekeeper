@@ -7,6 +7,8 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.di.extensions.Preference;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
@@ -61,7 +63,7 @@ public class DiffPartDescr {
     private String exePgdump;
 
     private Button btnGetLatest;
-    private DiffTableViewer diffTree;
+    private DiffTableViewer diffTable;
     private Button btnNone, btnDump, btnDb;
     private Button btnGetChanges;
     private DbPicker dbSrc;
@@ -96,7 +98,7 @@ public class DiffPartDescr {
         btnGetLatest.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                final TreeElement filtered = diffTree.filterDiffTree();
+                final TreeElement filtered = diffTable.filterDiffTree();
 
                 Differ differ = new Differ(DbSource.fromFilter(dbSource,
                         filtered, DiffSide.LEFT), DbSource.fromFilter(dbTarget,
@@ -131,8 +133,8 @@ public class DiffPartDescr {
         SashForm sashDb = new SashForm(sashOuter, SWT.HORIZONTAL | SWT.SMOOTH);
         sashDb.setSashWidth(8);
         // ВКЛАДКА Get latest
-        diffTree = new DiffTableViewer(sashDb, SWT.NONE);
-        diffTree.viewer
+        diffTable = new DiffTableViewer(sashDb, SWT.NONE);
+        diffTable.viewer
                 .addSelectionChangedListener(new ISelectionChangedListener() {
                     @Override
                     public void selectionChanged(SelectionChangedEvent event) {
@@ -264,7 +266,7 @@ public class DiffPartDescr {
                             "Differ thread cancelled. Shouldn't happen!", ex), shell);
                 }
 
-                diffTree.setInput(treediffer.getDiffTree());
+                diffTable.setInput(treediffer.getDiffTree());
 
                 txtDb.setText("");
                 txtSvn.setText("");
@@ -349,11 +351,15 @@ public class DiffPartDescr {
     }
 
     @Inject
-    private void changeProject(PgDbProject proj) {
+    private void changeProject(PgDbProject proj, @Optional @Named("__DUMMY__")
+                @EventTopic(UIConsts.EVENT_REOPEN_PROJECT) PgDbProject proj2) {
         if (proj == null
                 || !proj.getProjectDir().equals(
                         part.getPersistedState().get(UIConsts.PART_DIFF_ID))) {
             partService.hidePart(part);
+        }
+        if (proj2 != null) {
+            diffTable.setInput(null);
         }
     }
 

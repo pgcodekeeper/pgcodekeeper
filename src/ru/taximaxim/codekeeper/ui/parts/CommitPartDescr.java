@@ -11,7 +11,8 @@ import javax.inject.Named;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.di.extensions.Preference;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.MApplication;
@@ -208,9 +209,6 @@ public class CommitPartDescr {
 
                 // reopen project because file structure has been changed
                 events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
-                diffTable.setInput(null);
-                txtCommitComment.setText("");
-                btnCommit.setEnabled(false);
             }
         });
         // end upper commit comment container
@@ -441,11 +439,17 @@ public class CommitPartDescr {
     }
 
     @Inject
-    private void changeProject(PgDbProject proj) {
+    private void changeProject(PgDbProject proj, @Optional @Named("__DUMMY__")
+                @EventTopic(UIConsts.EVENT_REOPEN_PROJECT) PgDbProject proj2) {
         if (proj == null
                 || !proj.getProjectDir().equals(
                         part.getPersistedState().get(UIConsts.PART_SYNC_ID))) {
             partService.hidePart(part);
+        }
+        if (proj2 != null) {
+            diffTable.setInput(null);
+            txtCommitComment.setText("");
+            btnCommit.setEnabled(false);
         }
     }
 
