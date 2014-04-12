@@ -13,13 +13,11 @@
    <windowImages/>
 
    <launcher name="pgcodekeeper">
+   <linux icon="icons/product.xpm"/>
       <solaris/>
-      <win useIco="false">
-         <bmp
-            winSmallHigh="/ru.taximaxim.codekeeper.mainapp/icons/product_16.bmp"
-            winMediumHigh="/ru.taximaxim.codekeeper.mainapp/icons/product_32.bmp"
-            winLargeHigh="/ru.taximaxim.codekeeper.mainapp/icons/product_48.bmp"
-            winExtraLargeHigh="/ru.taximaxim.codekeeper.mainapp/icons/product_256.bmp"/>
+      <win useIco="true">
+         <ico path="icons/product.ico"/>
+         <bmp/>
       </win>
    </launcher>
 
