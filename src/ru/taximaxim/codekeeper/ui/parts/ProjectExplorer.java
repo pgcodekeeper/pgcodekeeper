@@ -44,10 +44,12 @@ import org.eclipse.swt.widgets.Composite;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -122,12 +124,12 @@ public class ProjectExplorer {
                     @Override
                     public int compare(File o1, File o2) {
                         if(o1.isDirectory()) {
-                            return o2.isDirectory()? getFileNameFromHash(o1).compareTo(
-                                    getFileNameFromHash(o2)) : -1;
+                            return o2.isDirectory()? getObjNameFromHash(o1).compareTo(
+                                    getObjNameFromHash(o2)) : -1;
                         } else if(o2.isDirectory()) {
                             return 1;
                         } else {
-                            return getFileNameFromHash(o1).compareTo(getFileNameFromHash(o2));
+                            return getObjNameFromHash(o1).compareTo(getObjNameFromHash(o2));
                         }
                     }
                 });
@@ -155,7 +157,7 @@ public class ProjectExplorer {
             
             @Override
             public String getText(Object element) {
-                return getFileNameFromHash((File) element);
+                return getObjNameFromHash((File) element);
             }
             
             @Override
@@ -180,7 +182,7 @@ public class ProjectExplorer {
                     viewer.setExpandedState(path, !viewer.getExpandedState(path));
                     viewer.refresh();
                 } else {
-                    SqlEditorDescr.openNew(f, model, partService, app, getFileNameFromHash(f));
+                    SqlEditorDescr.openNew(f, model, partService, app, getObjNameFromHash(f));
                 }
             }
         });
@@ -190,7 +192,7 @@ public class ProjectExplorer {
         changeProject(proj, proj);
     }
     
-    private String getFileNameFromHash(File f){
+    private String getObjNameFromHash(File f){
         String filename = f.getName();
         final String extension = ".sql";
         int indexOfExt = filename.lastIndexOf(extension);
@@ -204,13 +206,23 @@ public class ProjectExplorer {
         return res;
     }
     
-    private void initialHash(PgDbProject proj) {
-        String s = proj.getProjectSchemaDir().toString();
-        PgDatabase sourceDb = PgDumpLoader.loadDatabaseSchemaFromDirTree(s,
-                proj.getString(UIConsts.PROJ_PREF_ENCODING), false, false);
-        PgDatabase targetDb = new PgDatabase();
-        TreeElement a = DiffTree.create(sourceDb, targetDb);
-        visit(a, sourceDb);
+    private void initialHash(PgDbProject proj, SubMonitor monitor) 
+            throws InvocationTargetException {
+        SubMonitor pm = SubMonitor.convert(monitor, 10);
+        DbSource src = DbSource.fromProject(proj);
+        TreeDiffer differ = new TreeDiffer(src, new DbSource("empty db") {
+            
+            @Override
+            protected PgDatabase loadInternal(SubMonitor monitor) {
+                return new PgDatabase();
+            }
+        });
+        
+        differ.run(pm.newChild(6));
+        
+        pm.newChild(4).subTask("Generating object hashes...");
+        TreeElement a = differ.getDiffTree();
+        visit(a, src.getDbObject());
     }
     
     private void visit(TreeElement subtree, PgDatabase source) {
@@ -221,8 +233,9 @@ public class ProjectExplorer {
         }
         if (subtree.getType() != TreeElement.DbObjType.CONTAINER
                 && subtree.getType() != TreeElement.DbObjType.DATABASE) {
-            fileNamesHash.put(subtree.getPgStatement(source).getBareName() + "_" + 
-                PgDiffUtils.md5(subtree.getName()), subtree.getName());
+            fileNamesHash.put(
+                    ModelExporter.getExportedFilename(subtree.getPgStatement(source)),
+                    subtree.getName());
         }
     }
 
@@ -240,12 +253,9 @@ public class ProjectExplorer {
                 IRunnableWithProgress loadRunnable = new IRunnableWithProgress() {
                     @Override
                     public void run(IProgressMonitor monitor)
-                            throws InvocationTargetException,
-                            InterruptedException {
+                            throws InvocationTargetException, InterruptedException {
                         SubMonitor pm = SubMonitor.convert(monitor, "Loading project", 10);
-                        pm.newChild(5).subTask("Building DB tree...");
-                        
-                        initialHash(proj);
+                        initialHash(proj, pm.newChild(10));
                         
                         monitor.done();
                     }
