@@ -44,7 +44,7 @@ public class DiffTableViewer extends Composite {
 
     private TreeElement tree;
     public final CheckboxTableViewer viewer;
-    private TableViewerColumn columnCheck, columnType, columnChange, columnName;
+    private TableViewerColumn columnCheck, columnType, columnChange, columnName, columnLocation;
     private final LocalResourceManager lrm;
     private TableViewerComparator comparator;
     
@@ -145,6 +145,7 @@ public class DiffTableViewer extends Composite {
         columnType = new TableViewerColumn(viewer, SWT.LEFT);
         columnChange = new TableViewerColumn(viewer, SWT.LEFT);
         columnName = new TableViewerColumn(viewer, SWT.LEFT);
+        columnLocation = new TableViewerColumn(viewer, SWT.LEFT);
         
         columnName.getColumn().setText("Object name");
         columnName.getColumn().setResizable(true);
@@ -161,11 +162,16 @@ public class DiffTableViewer extends Composite {
         columnCheck.getColumn().setResizable(false);
         columnCheck.getColumn().setText(" ");
         columnCheck.getColumn().setMoveable(true);
+
+        columnLocation.getColumn().setResizable(false);
+        columnLocation.getColumn().setText("Located at");
+        columnLocation.getColumn().setMoveable(true);
         
         columnName.getColumn().addSelectionListener(getSelectionAdapter(columnName.getColumn(), 1));
         columnType.getColumn().addSelectionListener(getSelectionAdapter(columnType.getColumn(), 2));
         columnCheck.getColumn().addSelectionListener(getSelectionAdapter(columnCheck.getColumn(), 0));
         columnChange.getColumn().addSelectionListener(getSelectionAdapter(columnChange.getColumn(), 3));
+        columnLocation.getColumn().addSelectionListener(getSelectionAdapter(columnLocation.getColumn(), 4));
         
         for (TableColumn c : viewer.getTable().getColumns()){
             c.pack();
@@ -266,10 +272,37 @@ public class DiffTableViewer extends Composite {
             }
         });
         
+        columnLocation.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                return getLocationColumntText(element);
+            }
+        });
+        
         viewer.getTable().setSortColumn(columnName.getColumn());
         viewer.getTable().setSortDirection(SWT.UP);
     }
 
+    public static String getLocationColumntText(Object element) {
+        TreeElement e = (TreeElement)element;
+        if (e.getType() == DbObjType.EXTENSION){
+            return "Extension";
+        }else if (e.getType() == DbObjType.SCHEMA){
+            return "Schemas";
+        }
+        String path = "";
+        TreeElement parent = e.getParent();
+        while(parent != null){
+            path = parent.getName() + " > " + path;
+            if (parent.getType() == DbObjType.CONTAINER &&
+                    parent.getName().equalsIgnoreCase("Schemas")){
+                break;
+            }
+            parent = parent.getParent();
+        }
+        return path;
+    }
+    
     private SelectionAdapter getSelectionAdapter(final TableColumn column,
             final int index) {
         SelectionAdapter selectionAdapter = new SelectionAdapter() {
@@ -368,6 +401,10 @@ class TableViewerComparator extends ViewerComparator {
             break;
         case 3:
             rc = p1.getSide().toString().compareTo(p2.getSide().toString());
+            break;
+        case 4:
+            rc = DiffTableViewer.getLocationColumntText(p1).compareTo(
+                    DiffTableViewer.getLocationColumntText(p2));
             break;
         default:
             rc = 0;
