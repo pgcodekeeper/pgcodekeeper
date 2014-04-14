@@ -192,10 +192,11 @@ public class ProjectExplorer {
     
     private String getFileNameFromHash(File f){
         String filename = f.getName();
-        if (filename.length() > 31){
-            filename = filename.substring(0, 32);
+        final String extension = ".sql";
+        int indexOfExt = filename.lastIndexOf(extension);
+        if (indexOfExt != -1 && filename.length() - indexOfExt == extension.length()){
+            filename = filename.substring(0, indexOfExt);
         }
-        
         String res = fileNamesHash.get(filename);
         if(res == null){
             res = filename;
@@ -209,18 +210,19 @@ public class ProjectExplorer {
                 proj.getString(UIConsts.PROJ_PREF_ENCODING), false, false);
         PgDatabase targetDb = new PgDatabase();
         TreeElement a = DiffTree.create(sourceDb, targetDb);
-        visit(a);
+        visit(a, sourceDb);
     }
     
-    private void visit(TreeElement subtree) {
+    private void visit(TreeElement subtree, PgDatabase source) {
         if (subtree.hasChildren()) {
             for (TreeElement child : subtree.getChildren()) {
-                visit(child);
+                visit(child, source);
             }
         }
         if (subtree.getType() != TreeElement.DbObjType.CONTAINER
                 && subtree.getType() != TreeElement.DbObjType.DATABASE) {
-            fileNamesHash.put(PgDiffUtils.md5(subtree.getName()), subtree.getName());
+            fileNamesHash.put(subtree.getPgStatement(source).getBareName() + "_" + 
+                PgDiffUtils.md5(subtree.getName()), subtree.getName());
         }
     }
 
