@@ -1,22 +1,21 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
-import java.util.List;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.NotDirectoryException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
+import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.UnixPrintWriter;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgExtension;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 
 /**
@@ -169,14 +168,8 @@ public class ModelExporter {
 		
 		for(PgStatementWithSearchPath obj : objects) {
 			String filename = null;
-			if (obj instanceof PgFunction){
-			    filename = ((PgFunction)obj).getBareName() + "_" + PgDiffUtils.md5(obj.getName()) + ".sql";    
-			}else {
-			    filename = obj.getName() + "_" + PgDiffUtils.md5(obj.getName()) + ".sql";
-			}
-			
-			String sqlToDump = obj.getSearchPath()
-					+ "\n\n" + obj.getCreationSQL();
+            filename = obj.getBareName() + "_" + PgDiffUtils.md5(obj.getName()) + ".sql";
+			String sqlToDump = obj.getSearchPath() + "\n\n" + obj.getCreationSQL();
 			
 			// OWNED BY is exported as a separate statement for SEQUENCE
 			if(obj instanceof PgSequence) {
