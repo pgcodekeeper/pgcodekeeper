@@ -17,6 +17,7 @@ import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.parsers.AlterSequenceParser;
@@ -272,7 +273,7 @@ public class PgDumpLoader { //NOPMD
         // read out schemas names, and work in loop on each
         for (PgSchema schema : db.getSchemas()) {
             File schemaFolder = new File(new File(dir, "SCHEMA"),
-                    schema.getName()+"_"+PgDiffUtils.md5(schema.getName()));
+                    ModelExporter.getExportedFilename(schema));
             walkSubdirsRunCore(schemaFolder, charsetName,
                     outputIgnoredStatements, ignoreSlonyTriggers, walkOrder, db);
         }

@@ -15,6 +15,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 
@@ -101,7 +102,7 @@ public class ModelExporter {
 			if(schema.getName().equals("public")) {
             	continue;
             }
-			File schemaSQL = new File(schemasSharedDir, schema.getName() + "_" + PgDiffUtils.md5(schema.getName()) + ".sql");
+			File schemaSQL = new File(schemasSharedDir, getExportedFilename(schema)+ ".sql");
 			dumpSQL(schema.getCreationSQL(), schemaSQL);
 		}
 		
@@ -113,13 +114,13 @@ public class ModelExporter {
 		}
 		
 		for(PgExtension ext : db.getExtensions()) {
-			File extSQL = new File(extensionsDir, ext.getName() + "_" + PgDiffUtils.md5(ext.getName()) + ".sql");
+			File extSQL = new File(extensionsDir, getExportedFilename(ext) + ".sql");
 			dumpSQL(ext.getCreationSQL(), extSQL);
 		}
 		
 		// exporting schemas contents
 		for(PgSchema schema : db.getSchemas()) {
-			File schemaDir = new File(schemasSharedDir, schema.getName() + "_" + PgDiffUtils.md5(schema.getName()));
+			File schemaDir = new File(schemasSharedDir, getExportedFilename(schema));
 			if(!schemaDir.mkdir()) {
 				throw new DirectoryException("Could not create schema directory:"
 						+ schemaDir.getAbsolutePath());
@@ -168,7 +169,7 @@ public class ModelExporter {
 		
 		for(PgStatementWithSearchPath obj : objects) {
 			String filename = null;
-            filename = obj.getBareName() + "_" + PgDiffUtils.md5(obj.getName()) + ".sql";
+            filename = getExportedFilename(obj) + ".sql";
 			String sqlToDump = obj.getSearchPath() + "\n\n" + obj.getCreationSQL();
 			
 			// OWNED BY is exported as a separate statement for SEQUENCE
@@ -214,5 +215,13 @@ public class ModelExporter {
 		}
 		
 		writtenFiles.append(outPath.relativize(file.toPath())).append('\n');
+	}
+	
+	/**
+	 * @return a statement's exported file name
+	 */
+	public static String getExportedFilename(PgStatement statement) {
+	    return statement.getBareName()
+	            + "_" + PgDiffUtils.md5(statement.getName());
 	}
 }
