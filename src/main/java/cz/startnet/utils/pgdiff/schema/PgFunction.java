@@ -128,15 +128,6 @@ public class PgFunction extends PgStatementWithSearchPath {
     }
     
     /**
-     * Getter for {@link #name}.
-     * 
-     * @return {@link #name}
-     */
-    public String getBareName() {
-        return name;
-    }
-
-    /**
      * Getter for {@link #arguments}. List cannot be modified.
      *
      * @return {@link #arguments}

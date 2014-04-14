@@ -26,6 +26,13 @@ abstract public class PgStatement {
 	    return name;
 	}
 	
+	/**
+	 * @return Always returns just the object's name.
+	 */
+	public final String getBareName() {
+	    return name;
+	}
+	
 	abstract public String getCreationSQL();
 	
 	/**
