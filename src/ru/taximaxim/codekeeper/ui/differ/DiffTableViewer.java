@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -164,7 +165,7 @@ public class DiffTableViewer extends Composite {
         columnCheck.getColumn().setMoveable(true);
 
         columnLocation.getColumn().setResizable(false);
-        columnLocation.getColumn().setText("Located at");
+        columnLocation.getColumn().setText("Container");
         columnLocation.getColumn().setMoveable(true);
         
         columnName.getColumn().addSelectionListener(getSelectionAdapter(columnName.getColumn(), 1));
@@ -285,18 +286,21 @@ public class DiffTableViewer extends Composite {
 
     public static String getLocationColumntText(Object element) {
         TreeElement e = (TreeElement)element;
-        if (e.getType() == DbObjType.EXTENSION){
-            return "Extension";
-        }else if (e.getType() == DbObjType.SCHEMA){
-            return "Schemas";
+        if (e.getType() == DbObjType.EXTENSION || e.getType() == DbObjType.SCHEMA){
+            return "";
         }
-        String path = "";
+        String path = null;
         TreeElement parent = e.getParent();
         while(parent != null){
-            path = parent.getName() + " > " + path;
-            if (parent.getType() == DbObjType.CONTAINER &&
-                    parent.getName().equalsIgnoreCase("Schemas")){
-                break;
+            if (parent.getType() == DbObjType.CONTAINER || 
+                    parent.getType() == DbObjType.DATABASE){
+                parent = parent.getParent();
+                continue;
+            }
+            if (path == null){
+                path = PgDiffUtils.getQuotedName(parent.getName(), true);
+            } else {
+                path = PgDiffUtils.getQuotedName(parent.getName(), true) + "." + path;
             }
             parent = parent.getParent();
         }
@@ -325,9 +329,12 @@ public class DiffTableViewer extends Composite {
         this.tree = tree;
         viewer.setInput(tree);
         
+        int widthOfColumns = 0;
         for (TableColumn c : viewer.getTable().getColumns()){
             c.pack();
+            widthOfColumns += c.getWidth();
         }
+        columnName.getColumn().setWidth(widthOfColumns-viewer.getTable().getSize().x);
     }
     
     public TreeElement filterDiffTree() {
