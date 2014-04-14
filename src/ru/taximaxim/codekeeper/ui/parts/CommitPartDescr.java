@@ -26,6 +26,8 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
+import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -122,6 +124,13 @@ public class CommitPartDescr {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 final String commitComment = txtCommitComment.getText();
+                if (diffTable.viewer.getCheckedElements().length < 1){
+                    MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
+                    mb.setMessage("Please, check at least one row.");
+                    mb.setText("Empty selection");
+                    mb.open();
+                    return;
+                }
                 if (commitComment.isEmpty()) {
                     MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
                     mb.setMessage("Comment required");

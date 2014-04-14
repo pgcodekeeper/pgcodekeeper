@@ -98,6 +98,13 @@ public class DiffPartDescr {
         btnGetLatest.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                if (diffTable.viewer.getCheckedElements().length < 1){
+                    MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
+                    mb.setMessage("Please, check at least one row.");
+                    mb.setText("Empty selection");
+                    mb.open();
+                    return;
+                }
                 final TreeElement filtered = diffTable.filterDiffTree();
 
                 Differ differ = new Differ(DbSource.fromFilter(dbSource,
