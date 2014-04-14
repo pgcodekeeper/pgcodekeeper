@@ -18,7 +18,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.parsers.AlterSequenceParser;
 import cz.startnet.utils.pgdiff.parsers.AlterTableParser;
