@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.UnixPrintWriter;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -101,7 +102,7 @@ public class ModelExporter {
 			if(schema.getName().equals("public")) {
             	continue;
             }
-			File schemaSQL = new File(schemasSharedDir, PgDiffUtils.md5(schema.getName()) + ".sql");
+			File schemaSQL = new File(schemasSharedDir, schema.getName() + "_" + PgDiffUtils.md5(schema.getName()) + ".sql");
 			dumpSQL(schema.getCreationSQL(), schemaSQL);
 		}
 		
@@ -113,13 +114,13 @@ public class ModelExporter {
 		}
 		
 		for(PgExtension ext : db.getExtensions()) {
-			File extSQL = new File(extensionsDir, PgDiffUtils.md5(ext.getName()) + ".sql");
+			File extSQL = new File(extensionsDir, ext.getName() + "_" + PgDiffUtils.md5(ext.getName()) + ".sql");
 			dumpSQL(ext.getCreationSQL(), extSQL);
 		}
 		
 		// exporting schemas contents
 		for(PgSchema schema : db.getSchemas()) {
-			File schemaDir = new File(schemasSharedDir, PgDiffUtils.md5(schema.getName()));
+			File schemaDir = new File(schemasSharedDir, schema.getName() + "_" + PgDiffUtils.md5(schema.getName()));
 			if(!schemaDir.mkdir()) {
 				throw new DirectoryException("Could not create schema directory:"
 						+ schemaDir.getAbsolutePath());
@@ -167,7 +168,13 @@ public class ModelExporter {
 		}
 		
 		for(PgStatementWithSearchPath obj : objects) {
-			String filename = PgDiffUtils.md5(obj.getName()) + ".sql";
+			String filename = null;
+			if (obj instanceof PgFunction){
+			    filename = ((PgFunction)obj).getBareName() + "_" + PgDiffUtils.md5(obj.getName()) + ".sql";    
+			}else {
+			    filename = obj.getName() + "_" + PgDiffUtils.md5(obj.getName()) + ".sql";
+			}
+			
 			String sqlToDump = obj.getSearchPath()
 					+ "\n\n" + obj.getCreationSQL();
 			

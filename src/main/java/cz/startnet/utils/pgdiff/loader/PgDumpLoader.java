@@ -272,7 +272,7 @@ public class PgDumpLoader { //NOPMD
         // read out schemas names, and work in loop on each
         for (PgSchema schema : db.getSchemas()) {
             File schemaFolder = new File(new File(dir, "SCHEMA"),
-                    PgDiffUtils.md5(schema.getName()));
+                    schema.getName()+"_"+PgDiffUtils.md5(schema.getName()));
             walkSubdirsRunCore(schemaFolder, charsetName,
                     outputIgnoredStatements, ignoreSlonyTriggers, walkOrder, db);
         }
