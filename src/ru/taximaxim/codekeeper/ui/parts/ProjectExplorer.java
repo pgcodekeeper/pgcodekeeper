@@ -42,7 +42,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -50,7 +49,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class ProjectExplorer {
@@ -221,8 +219,7 @@ public class ProjectExplorer {
         differ.run(pm.newChild(6));
         
         pm.newChild(4).subTask("Generating object hashes...");
-        TreeElement a = differ.getDiffTree();
-        visit(a, src.getDbObject());
+        visit(differ.getDiffTree(), src.getDbObject());
     }
     
     private void visit(TreeElement subtree, PgDatabase source) {
