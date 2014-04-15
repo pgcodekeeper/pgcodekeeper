@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,18 +54,16 @@ public class TreeElementTest {
         }
 
         TreeElement tree_full = DiffTree.create(dbFull, new PgDatabase());
+        
         Set<TreeElement> checked = new HashSet<TreeElement>();
         visitAndFindNew(tree_full, checked);
         
-        TreeElement filtered_tree = tree_full.getFilteredCopy(checked);
+        TreeElement tree_filtered = tree_full.getFilteredCopy(checked);
         
-        PgDatabase filtered = new PgDbFilter2(dbFull, filtered_tree, DiffSide.LEFT).apply();
+        PgDatabase dbFiltered = new PgDbFilter2(dbFull, tree_filtered, DiffSide.LEFT).apply();
         
-        if (dbPartial.equals(filtered)){
-            assertTrue(true);
-        }else {
-            fail("DBs are NOT equal");
-        }
+        assertEquals("filtered database is not equal to the reference one",
+                dbPartial, dbFiltered);
     }
     
     private void visitAndFindNew (TreeElement element, Set<TreeElement> set){
