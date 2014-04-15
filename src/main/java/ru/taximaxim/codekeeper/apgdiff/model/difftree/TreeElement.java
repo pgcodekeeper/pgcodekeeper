@@ -241,7 +241,9 @@ public class TreeElement {
     }
 
     /**
-     * Recursively walk a tree, copying nodes that exist in filterSubset to returned tree
+     * Recursively walk a tree, copying nodes that exist in filterSubset to returned tree.
+     * Important: filterSubset should be a subset of this tree
+     * (because TreeElement equals method compares references of parents)
      */
     public TreeElement getFilteredCopy(Set<TreeElement> filterSubset){
         TreeElement copy = null;
