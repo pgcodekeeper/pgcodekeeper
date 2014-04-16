@@ -11,7 +11,10 @@ import javax.inject.Named;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.di.extensions.Preference;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
@@ -25,8 +28,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.TreePath;
-import org.eclipse.jface.viewers.TreeSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -44,21 +46,18 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
-import ru.taximaxim.codekeeper.ui.differ.DiffTreeViewer;
+import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
-import ru.taximaxim.codekeeper.ui.handlers.CloseActiveProj;
-import ru.taximaxim.codekeeper.ui.handlers.LoadProj;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
@@ -76,17 +75,16 @@ public class CommitPartDescr {
     @Inject
     @Preference(value = UIConsts.PREF_SVN_EXE_PATH)
     private String exeSvn;
-    @Inject
-    @Preference(value = UIConsts.PREF_GIT_EXE_PATH)
-    private String exeGit;
     private Text txtCommitComment;
     private Button btnCommit;
-    private DiffTreeViewer diffTree;
+    private DiffTableViewer diffTable;
     private Button btnNone, btnDump, btnDb;
     private Button btnGetChanges;
     private DbPicker dbSrc;
     private Text txtDb, txtSvn;
     private String repoName;
+    @Inject
+    private IEventBroker events;
     /**
      * Local repository cache.
      */
@@ -124,6 +122,13 @@ public class CommitPartDescr {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 final String commitComment = txtCommitComment.getText();
+                if (diffTable.viewer.getCheckedElements().length < 1){
+                    MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
+                    mb.setMessage("Please, check at least one row.");
+                    mb.setText("Empty selection");
+                    mb.open();
+                    return;
+                }
                 if (commitComment.isEmpty()) {
                     MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
                     mb.setMessage("Comment required");
@@ -132,7 +137,7 @@ public class CommitPartDescr {
                     return;
                 }
 
-                final TreeElement filtered = diffTree.filterDiffTree();
+                final TreeElement filtered = diffTable.filterDiffTree();
                 IRunnableWithProgress commitRunnable = new IRunnableWithProgress() {
 
                     @Override
@@ -210,8 +215,7 @@ public class CommitPartDescr {
                 Console.addMessage("SUCCESS: Project updated!");
 
                 // reopen project because file structure has been changed
-                CloseActiveProj.close(app.getContext());
-                LoadProj.load(proj, app.getContext(), partService, model, app);
+                events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
             }
         });
         // end upper commit comment container
@@ -223,25 +227,20 @@ public class CommitPartDescr {
         SashForm sashDb = new SashForm(sashOuter, SWT.HORIZONTAL | SWT.SMOOTH);
         sashDb.setSashWidth(8);
 
-        diffTree = new DiffTreeViewer(sashDb, SWT.NONE);
-        diffTree.setSubtreeNames(repoName + " Only", null, null);
-        diffTree.viewer
+        diffTable = new DiffTableViewer(sashDb, SWT.NONE);
+        diffTable.viewer
                 .addSelectionChangedListener(new ISelectionChangedListener() {
                     @Override
                     public void selectionChanged(SelectionChangedEvent event) {
-                        TreePath[] paths = ((TreeSelection) event
-                                .getSelection()).getPaths();
-                        if (paths.length < 1) {
+                        StructuredSelection selection = ((StructuredSelection) event
+                                .getSelection());
+                        if (selection.size() != 1) {
+                            txtSvn.setText("");
+                            txtDb.setText("");
                             return;
                         }
 
-                        TreeElement el = (TreeElement) paths[0]
-                                .getLastSegment();
-                        if (el.getType() == DbObjType.CONTAINER
-                                || el.getType() == DbObjType.DATABASE) {
-                            return;
-                        }
-
+                        TreeElement el = (TreeElement) selection.getFirstElement();
                         if (el.getSide() == DiffSide.LEFT
                                 || el.getSide() == DiffSide.BOTH) {
                             txtSvn.setText(el.getPgStatement(
@@ -362,7 +361,7 @@ public class CommitPartDescr {
                             "Differ thread cancelled. Shouldn't happen!", ex);
                 }
 
-                diffTree.setTreeInput(treediffer.getDiffTree());
+                diffTable.setInput(treediffer.getDiffTree());
 
                 txtDb.setText("");
                 txtSvn.setText("");
@@ -447,11 +446,18 @@ public class CommitPartDescr {
     }
 
     @Inject
-    private void changeProject(PgDbProject proj) {
+    private void changeProject(PgDbProject proj, @Optional @Named("__DUMMY__")
+                @EventTopic(UIConsts.EVENT_REOPEN_PROJECT) PgDbProject proj2) {
         if (proj == null
                 || !proj.getProjectDir().equals(
                         part.getPersistedState().get(UIConsts.PART_SYNC_ID))) {
             partService.hidePart(part);
+        } else if (proj2 != null) {
+            diffTable.setInput(null);
+            txtDb.setText("");
+            txtSvn.setText("");
+            txtCommitComment.setText("");
+            btnCommit.setEnabled(false);
         }
     }
 

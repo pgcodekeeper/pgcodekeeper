@@ -11,7 +11,7 @@ import javax.inject.Named;
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -25,8 +25,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -70,12 +70,13 @@ class GeneralPrefPage extends FieldEditorPreferencePage {
     
     @Override
     protected void createFieldEditors() {
-        addField(new ExecutableFileFieldEditor(UIConsts.PREF_GIT_EXE_PATH,
-                "git executable", getFieldEditorParent()));
         addField(new ExecutableFileFieldEditor(UIConsts.PREF_SVN_EXE_PATH,
                 "svn executable", getFieldEditorParent()));
         addField(new ExecutableFileFieldEditor(UIConsts.PREF_PGDUMP_EXE_PATH,
                 "pg_dump executable", getFieldEditorParent()));
+        addField(new BooleanFieldEditor(UIConsts.PREF_OPEN_LAST_ON_START, 
+                "Open last project on start", FileFieldEditor.VALIDATE_ON_KEY_STROKE,
+                getFieldEditorParent()));   
     }
 }
 
@@ -139,7 +140,7 @@ class DbStorePrefPage extends FieldEditorPreferencePage {
 class GitPrefPage extends FieldEditorPreferencePage {
     private Button genKeysButt;
     private Button copyPublicKeyButt;
-    private Text privateFileText;
+    private FileFieldEditor editorPrivate;
     
     public GitPrefPage() {
         super(GRID);
@@ -147,10 +148,10 @@ class GitPrefPage extends FieldEditorPreferencePage {
 
     @Override
     protected void createFieldEditors() {
-        FileFieldEditor editorPrivate = new FileFieldEditor(UIConsts.PREF_GIT_KEY_PRIVATE_FILE,
-                "Private key", getFieldEditorParent());
+        editorPrivate = new FileFieldEditor(UIConsts.PREF_GIT_KEY_PRIVATE_FILE, 
+                "Private key", true, FileFieldEditor.VALIDATE_ON_KEY_STROKE,
+                getFieldEditorParent());
         addField(editorPrivate);
-        privateFileText = editorPrivate.getTextControl(getFieldEditorParent());
     }
     
     @Override
@@ -160,21 +161,24 @@ class GitPrefPage extends FieldEditorPreferencePage {
         genKeysButt.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                MessageDialog dialog = new MessageDialog(parent.getShell(), "rsa-keys", null,
-                       "Select file to save private key", MessageDialog.INFORMATION, new String[] { "OK" }, 0);
+                MessageBox dialog = new MessageBox(getShell(), SWT.OK);
+                dialog.setMessage("Select file to save private key");
                 dialog.open();
                 FileDialog fd = new FileDialog(parent.getShell(), SWT.SAVE);
                 fd.setText("Save private key to a file...");
                 fd.setOverwrite(true);
                 String privateFileName = fd.open();
-                try {
-                    JGitExec.genKeys(privateFileName);
-                    privateFileText.setText(privateFileName);
-                } catch (IOException | JSchException ex) {
-                    ExceptionNotifyHelper.notifyAndThrow(
-                                    new IllegalStateException("Some error occured during RSA keys creation and writing to files",
-                                            ex), parent.getShell());
-                }
+                if (privateFileName != null)
+                    try {
+                        JGitExec.genKeys(privateFileName);
+                        editorPrivate.setStringValue(privateFileName);
+                    } catch (IOException | JSchException ex) {
+                        ExceptionNotifyHelper
+                                .notifyAndThrow(
+                                        new IllegalStateException(
+                                                "Some error occured during RSA keys creation and writing to files",
+                                                ex), parent.getShell());
+                    }
             }
         });
         copyPublicKeyButt = new Button(parent, SWT.PUSH);
@@ -182,7 +186,7 @@ class GitPrefPage extends FieldEditorPreferencePage {
         copyPublicKeyButt.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                String publicFileName = privateFileText.getText() + ".pub";
+                String publicFileName = editorPrivate.getTextControl(getFieldEditorParent()).getText() + ".pub";
                 File publicKey = new File (publicFileName);
                 try (BufferedReader reader = new BufferedReader( new FileReader (publicKey))){
                     StringBuilder  sBuilder = new StringBuilder();
@@ -193,9 +197,10 @@ class GitPrefPage extends FieldEditorPreferencePage {
                     Object [] data = new Object [] {sBuilder.toString()};
                     new Clipboard(parent.getDisplay()).setContents (data, new Transfer[]{TextTransfer.getInstance()});
                 } catch (IOException e1) {
-                    new MessageDialog(parent.getShell(),"Error",
-                            null,"Public key file " + privateFileText.getText() + ".pub"+" either does not exist or inaccessible.",
-                            MessageDialog.ERROR, new String[] { "OK" }, 0).open();
+                    MessageBox box = new MessageBox(parent.getShell(), SWT.ERROR);
+                    box.setMessage("Public key file " + editorPrivate.getTextControl(getFieldEditorParent()).getText() + 
+                            ".pub"+" either does not exist or inaccessible.");
+                    box.open();
                 }
             }
         });

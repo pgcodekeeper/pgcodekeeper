@@ -35,22 +35,26 @@ import com.jcraft.jsch.Session;
 public class JGitExec implements IRepoWorker{
 
     private final String url, user, pass;
-    public static final Pattern PATTERN_HTTP_URL = Pattern.compile("http(s)?://.+");
-    public static final Pattern PATTERN_FILE_URL = Pattern.compile("(file://)?"+System.getProperty("file.separator")+".*");
-    private static final int RSA_KEY_LENGTH = 4096;
+    public static final Pattern PATTERN_HTTP_URL = Pattern.compile(
+            "http(s)?://.+", Pattern.CASE_INSENSITIVE);
+    public static final Pattern PATTERN_FILE_URL = Pattern.compile("(file://)?"
+            + System.getProperty("file.separator") + ".*",
+            Pattern.CASE_INSENSITIVE);
+    private static final int RSA_KEY_LENGTH = 2048;
     
     public JGitExec() {
         url = user = pass = null;
     }
 
     public JGitExec(PgDbProject proj, String privateKeyFile) {
-        this(proj.getString(UIConsts.PROJ_PREF_REPO_URL), proj
-                .getString(UIConsts.PROJ_PREF_REPO_USER), proj
-                .getString(UIConsts.PROJ_PREF_REPO_PASS), privateKeyFile);
+        this(proj.getString(UIConsts.PROJ_PREF_REPO_URL),
+                proj.getString(UIConsts.PROJ_PREF_REPO_USER),
+                proj.getString(UIConsts.PROJ_PREF_REPO_PASS), privateKeyFile);
     }
 
     public JGitExec(String url, String user, String pass, String privateKeyFile) {
-        CustomJschConfigSessionFactory jschConfigSessionFactory = new CustomJschConfigSessionFactory(privateKeyFile);
+        CustomJschConfigSessionFactory jschConfigSessionFactory = 
+                new CustomJschConfigSessionFactory(privateKeyFile);
         SshSessionFactory.setInstance(jschConfigSessionFactory);
         this.url = url;
         this.user = user;
@@ -86,8 +90,10 @@ public class JGitExec implements IRepoWorker{
             }
             for (PushResult pushRes : pushCom.call()){
                 for (RemoteRefUpdate b : pushRes.getRemoteUpdates()){
-                    if (b.getStatus() !=  RemoteRefUpdate.Status.OK && b.getStatus() !=  RemoteRefUpdate.Status.UP_TO_DATE){
-                        throw new IOException ("Exception thrown at JGit commit: status is not ok or up_to_date");
+                    if (b.getStatus() !=  RemoteRefUpdate.Status.OK && 
+                            b.getStatus() !=  RemoteRefUpdate.Status.UP_TO_DATE){
+                        throw new IOException(
+                                "Exception thrown at JGit commit: status is not ok or up_to_date");
                     }
                 }
             }
@@ -139,7 +145,8 @@ public class JGitExec implements IRepoWorker{
                 pullCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
             }
             PullResult pr =  pullCom.call();
-            return pr.getMergeResult().getMergeStatus() == MergeStatus.MERGED || pr.getMergeResult().getMergeStatus() == MergeStatus.ALREADY_UP_TO_DATE;
+            return pr.getMergeResult().getMergeStatus() == MergeStatus.MERGED ||
+                    pr.getMergeResult().getMergeStatus() == MergeStatus.ALREADY_UP_TO_DATE;
         } catch (GitAPIException e){
             throw new IOException("Exception thrown at JGit repoUpdate.", e);
         }finally{

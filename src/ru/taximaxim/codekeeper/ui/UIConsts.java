@@ -21,12 +21,16 @@ public interface UIConsts {
     String PART_DIFF = PLUGIN_ID + ".partdescriptor.Diff";
     String PART_DIFF_ID = PART_DIFF + ".Id";
     
+    String HANDLER_RECENT_PROJ = "bundleclass://" + PLUGIN_ID + "/" + PLUGIN_ID
+            + ".handlers.OpenRecent";
+    
     // Preferences
     String PREF_SVN_EXE_PATH = "prefSvnExePath";
-    String PREF_GIT_EXE_PATH = "prefGitExePath";
     String PREF_PGDUMP_EXE_PATH = "prefPgdumpExePath";
     String PREF_DB_STORE = "prefDbStore";
     String PREF_GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile";
+    String PREF_RECENT_PROJECTS = "prefRecentProject";
+    String PREF_OPEN_LAST_ON_START = "prefOpenLastOnStart";
     
     // Project preferences
     String PROJ_PREF_ENCODING = "prefGeneralEncoding";
@@ -58,4 +62,6 @@ public interface UIConsts {
     String FILENAME_ICONSAVE = "/icons/save_edit.gif";
     String FILENAME_ICONDEL = "/icons/delete_obj.gif";
     String FILENAME_ICONEDIT = "/icons/editor.gif";
+    
+    String EVENT_REOPEN_PROJECT = "ru/taximaxim/codekeeper/ui/project/changed";
 }

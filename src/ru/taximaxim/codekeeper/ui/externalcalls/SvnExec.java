@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.externalcalls;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -215,10 +214,12 @@ public class SvnExec implements IRepoWorker {
     }
 
     private void addUrl(ProcessBuilder pb) {
-        if (url != null && (PATTERN_SVN_URL.matcher(url).matches() || PATTERN_HTTP_URL.matcher(url).matches())) {
-            pb.command().add(url);
-        }else if (url != null){
-            pb.command().add("file://" + url);
+        if (url != null && !url.isEmpty()) {
+            if (PATTERN_SVN_URL.matcher(url).matches() || PATTERN_HTTP_URL.matcher(url).matches()) {
+                pb.command().add(url);
+            } else {
+                pb.command().add("file:///" + url);
+            }
         }
     }
 
