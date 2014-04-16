@@ -11,6 +11,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
@@ -48,6 +49,9 @@ public class ProjectCreator implements IRunnableWithProgress {
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException {
         try {
+            Log.log(Log.LOG_INFO, "Creating project at " + props.getProjectPropsFile());
+            Log.log(Log.LOG_INFO, "Repo url is " + props.getString((UIConsts.PROJ_PREF_REPO_URL)));
+            
             int workToDo = doInit ? 100 : 1;
             SubMonitor pm = SubMonitor.convert(monitor, "Creating project...",
                     workToDo); // 0

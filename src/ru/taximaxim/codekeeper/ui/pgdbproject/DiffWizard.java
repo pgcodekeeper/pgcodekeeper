@@ -47,6 +47,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -99,6 +100,8 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         try {
             if (e.getCurrentPage() == pageDiff
                     && e.getTargetPage() == pagePartial) {
+                Log.log(Log.LOG_INFO, "Building diff tree of project "
+                    + proj.getProjectPropsFile() + " with " + pageDiff.getTargetType());
                 TreeDiffer treediffer = new TreeDiffer(
                         DbSource.fromProject(proj),
                         pageDiff.getTargetDbSource());
@@ -122,8 +125,8 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 pagePartial.layout();
             } else if (e.getCurrentPage() == pagePartial
                     && e.getTargetPage() == pageResult) {
-                TreeElement filtered = pagePartial.getDiffTree()
-                        .filterDiffTree();
+                Log.log(Log.LOG_INFO, "Building filtered tree");
+                TreeElement filtered = pagePartial.getDiffTree().filterDiffTree();
 
                 DbSource dbSource = DbSource.fromFilter(this.dbSource,
                         filtered, DiffSide.LEFT);

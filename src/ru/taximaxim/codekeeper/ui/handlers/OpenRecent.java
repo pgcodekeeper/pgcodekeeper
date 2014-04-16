@@ -15,6 +15,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.recentprojs.RecentProjects;
@@ -41,6 +42,9 @@ public class OpenRecent {
         if (proj.getProjectPropsFile().isFile()) {
             LoadProj.load(proj, app.getContext(), partService, model, app, mainPrefs);
         } else {
+            Log.log(Log.LOG_WARNING, "Couldn't open project at "
+                    + proj.getProjectPropsFile()
+                    + ". Project pref store either doesn't exist or not a file.");
             MessageBox mb = new MessageBox(shell);
             mb.setText("Load failed");
             mb.setMessage("Directory is not a valid project!"

@@ -48,6 +48,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -200,6 +201,8 @@ public class CommitPartDescr {
                 };
 
                 try {
+                    Log.log(Log.LOG_INFO, "Commit button pressed. Commiting to " +
+                            proj.getString(UIConsts.PROJ_PREF_REPO_URL));
                     new ProgressMonitorDialog(shell).run(true, false,
                             commitRunnable);
                 } catch (InvocationTargetException ex) {
@@ -315,12 +318,14 @@ public class CommitPartDescr {
                             ex);
                 }
                 dbSource = DbSource.fromProject(proj);
-
+                Log.log(Log.LOG_INFO, "Getting changes for project at " + 
+                        proj.getString(UIConsts.PROJ_PREF_REPO_URL));
                 if (btnDump.getSelection()) {
                     FileDialog dialog = new FileDialog(shell);
                     dialog.setText("Choose dump file with changes...");
                     String dumpfile = dialog.open();
                     if (dumpfile != null) {
+                        Log.log(Log.LOG_INFO, "Getting changes from dump at " + dumpfile);
                         dbTarget = DbSource.fromFile(dumpfile,
                                 proj.getString(UIConsts.PROJ_PREF_ENCODING));
                     } else {
@@ -336,7 +341,7 @@ public class CommitPartDescr {
                         mb.setMessage("Port must be a number!");
                         return;
                     }
-
+                    Log.log(Log.LOG_INFO, "Getting changes from DB " + dbSrc.txtDbName.getText());
                     dbTarget = DbSource.fromDb(exePgdump,
                             dbSrc.txtDbHost.getText(), port,
                             dbSrc.txtDbUser.getText(),
@@ -347,7 +352,7 @@ public class CommitPartDescr {
                     throw new IllegalStateException(
                             "Undefined source for DB changes!");
                 }
-
+                Log.log(Log.LOG_INFO, "Building diff tree");
                 TreeDiffer treediffer = new TreeDiffer(dbSource, dbTarget);
                 try {
                     new ProgressMonitorDialog(shell).run(true, false,

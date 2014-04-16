@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.parts.CommitPartDescr;
 import ru.taximaxim.codekeeper.ui.parts.DiffPartDescr;
@@ -46,6 +47,7 @@ public class LoadProj {
     
     public static void load(PgDbProject proj, IEclipseContext ctx, EPartService partService,
             EModelService model, MApplication app, IPreferenceStore mainPrefs) {
+        Log.log(Log.LOG_INFO, "Opening project at " + proj.getProjectPropsFile());
         ctx.modify(PgDbProject.class, proj);
         
         CommitPartDescr.openNew(proj.getProjectDir(), partService, model, app);

@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
@@ -43,6 +44,8 @@ public class ProjSyncSrc {
      * @throws IOException
      */
     public static boolean sync(final PgDbProject proj, Shell shell, final IPreferenceStore mainPrefs) throws IOException, InvocationTargetException {
+        Log.log(Log.LOG_INFO, "Syncing project " + proj.getProjectPropsFile() +
+                " with repo url " + proj.getString(UIConsts.PROJ_PREF_REPO_URL));
         final boolean[] conflicted = { false };
         IRunnableWithProgress syncRunnable = new IRunnableWithProgress() {
             @Override

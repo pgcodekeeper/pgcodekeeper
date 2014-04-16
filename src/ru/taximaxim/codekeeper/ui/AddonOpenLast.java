@@ -61,7 +61,9 @@ public class AddonOpenLast {
                     }
                 });
             } else {
-                // fail silently
+                Log.log(Log.LOG_WARNING, "Couldn't open last project at "
+                        + proj.getProjectPropsFile()
+                        + ". Project pref store either doesn't exist or not a file.");
             }
         }
     }
