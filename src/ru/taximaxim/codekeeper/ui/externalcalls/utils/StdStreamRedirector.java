@@ -94,7 +94,7 @@ public class StdStreamRedirector implements Runnable {
                 .append(System.lineSeparator())
                 .append(redirector.storage);
             
-            Log.getLog().info(msg.toString());
+            Log.log(Log.LOG_INFO, msg.toString());
         }
     }
 }

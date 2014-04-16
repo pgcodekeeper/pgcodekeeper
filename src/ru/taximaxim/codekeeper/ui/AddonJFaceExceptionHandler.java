@@ -18,6 +18,6 @@ public class AddonJFaceExceptionHandler implements IExceptionHandler{
         if(t instanceof Error) {
             throw (Error) t; // do not handle Errors
         }
-        Log.getLog().error(t); // TODO finally { t.printStackTrace(); } ?
+        Log.log(t);
     }
 }
