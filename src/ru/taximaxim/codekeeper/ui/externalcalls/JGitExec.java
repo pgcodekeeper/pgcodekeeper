@@ -24,6 +24,7 @@ import org.eclipse.jgit.util.FS;
 import org.osgi.framework.Bundle;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -72,6 +73,9 @@ public class JGitExec implements IRepoWorker{
         if (PATTERN_HTTP_URL.matcher(url).matches()) {
             cloneCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
         }
+        
+        Log.log(Log.LOG_INFO, "git clone " + url);
+        
         try {
             cloneCom.setURI(url).setDirectory(dirTo).call().close();
         } catch (GitAPIException e) {
@@ -83,11 +87,16 @@ public class JGitExec implements IRepoWorker{
     public void repoCommit(File dirFrom, String comment) throws IOException {
         Git git = Git.open(dirFrom);
         try {
+            Log.log(Log.LOG_INFO, "git commit " + url);
+            
             git.commit().setMessage(comment).setAll(true).call();
             PushCommand pushCom = git.push();
             if (PATTERN_HTTP_URL.matcher(url).matches()) {
                 pushCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
             }
+
+            Log.log(Log.LOG_INFO, "git push " + url);
+            
             for (PushResult pushRes : pushCom.call()){
                 for (RemoteRefUpdate b : pushRes.getRemoteUpdates()){
                     if (b.getStatus() !=  RemoteRefUpdate.Status.OK && 
@@ -108,7 +117,13 @@ public class JGitExec implements IRepoWorker{
     public void repoRemoveMissingAddNew(File dirIn) throws IOException {
         Git git = Git.open(dirIn);
         try {
+
+            Log.log(Log.LOG_INFO, "git add update " + url);
+            
             git.add().addFilepattern(".").setUpdate(true).call();
+
+            Log.log(Log.LOG_INFO, "git add " + url);
+            
             git.add().addFilepattern(".").call();
         } catch (GitAPIException e) {
             throw new IOException(
@@ -129,6 +144,9 @@ public class JGitExec implements IRepoWorker{
         try {
             IndexDiff id = new IndexDiff(git.getRepository(), "HEAD",
                     new FileTreeIterator(git.getRepository()));
+
+            Log.log(Log.LOG_INFO, "git indexdiff " + url);
+            
             id.diff();
             return !id.getConflicting().isEmpty();
         } finally {
@@ -144,6 +162,9 @@ public class JGitExec implements IRepoWorker{
             if (PATTERN_HTTP_URL.matcher(url).matches()) {
                 pullCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
             }
+
+            Log.log(Log.LOG_INFO, "git pull " + url);
+            
             PullResult pr =  pullCom.call();
             return pr.getMergeResult().getMergeStatus() == MergeStatus.MERGED ||
                     pr.getMergeResult().getMergeStatus() == MergeStatus.ALREADY_UP_TO_DATE;
@@ -167,7 +188,13 @@ public class JGitExec implements IRepoWorker{
     public static void genKeys(String privateFileName)
             throws JSchException, IOException {
         JSch jsch = new JSch();
+
+        Log.log(Log.LOG_INFO, "Generating RSA key pair");
+        
         KeyPair keys = KeyPair.genKeyPair(jsch, KeyPair.RSA, RSA_KEY_LENGTH);
+        
+        Log.log(Log.LOG_INFO, "Writing RSA key pair");
+        
         File privateKeyFile = new File(privateFileName);
         File publicKeyFile = new File(privateFileName + ".pub");
         Files.deleteIfExists(privateKeyFile.toPath());
@@ -178,7 +205,7 @@ public class JGitExec implements IRepoWorker{
         keys.writePublicKey(publicKeyFile.getAbsolutePath(), "");
     }
     
-    class CustomJschConfigSessionFactory extends JschConfigSessionFactory {
+    private static class CustomJschConfigSessionFactory extends JschConfigSessionFactory {
         private String privateKeyFile;
         
         public CustomJschConfigSessionFactory(String privateKeyFile) {
@@ -188,6 +215,7 @@ public class JGitExec implements IRepoWorker{
         
         @Override
         protected void configure(OpenSshConfig.Host host, Session session) {
+            // TODO strict known_hosts check
             session.setConfig("StrictHostKeyChecking", "no");
         }
         

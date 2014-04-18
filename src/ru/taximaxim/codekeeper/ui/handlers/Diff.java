@@ -13,6 +13,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.DiffWizard;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -27,6 +28,8 @@ public class Diff {
             @Named(UIConsts.PREF_STORE)
             IPreferenceStore prefStore) throws IOException, InvocationTargetException {
         if(ProjSyncSrc.sync(proj, shell, prefStore)) {
+            Log.log(Log.LOG_DEBUG, "Diff wizard about to show");
+            
             WizardDialog dialog = new WizardDialog(
                     shell, new DiffWizard(proj, prefStore));
             dialog.open();

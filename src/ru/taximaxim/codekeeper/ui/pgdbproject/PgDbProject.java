@@ -36,6 +36,7 @@ public class PgDbProject extends PreferenceStore {
         this.projectName = Paths.get(projectDir).getFileName().toString();
     }
 
+    // TODO commented code??
 //    public RepoType getRepoType() {
 //        return null;
 //    }

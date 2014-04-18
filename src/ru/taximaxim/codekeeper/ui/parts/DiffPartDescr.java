@@ -227,15 +227,13 @@ public class DiffPartDescr {
                             "Unexpected error while trying to sync repository cache!",
                             ex);
                 }
+                
                 dbTarget = DbSource.fromProject(proj);
-                Log.log(Log.LOG_INFO, "Getting changes for project at " + 
-                        proj.getString(UIConsts.PROJ_PREF_REPO_URL));
                 if (btnDump.getSelection()) {
                     FileDialog dialog = new FileDialog(shell);
                     dialog.setText("Choose dump file with changes...");
                     String dumpfile = dialog.open();
                     if (dumpfile != null) {
-                        Log.log(Log.LOG_INFO, "Getting changes to dump at " + dumpfile);
                         dbSource = DbSource.fromFile(dumpfile,
                                 proj.getString(UIConsts.PROJ_PREF_ENCODING));
                     } else {
@@ -251,7 +249,7 @@ public class DiffPartDescr {
                         mb.setMessage("Port must be a number!");
                         return;
                     }
-                    Log.log(Log.LOG_INFO, "Getting changes to DB " + dbSrc.txtDbName.getText());
+
                     dbSource = DbSource.fromDb(exePgdump,
                             dbSrc.txtDbHost.getText(), port,
                             dbSrc.txtDbUser.getText(),
@@ -262,7 +260,8 @@ public class DiffPartDescr {
                     throw new IllegalStateException(
                             "Undefined source for DB changes!");
                 }
-                Log.log(Log.LOG_INFO, "Building diff tree");
+                
+                Log.log(Log.LOG_INFO, "Getting changes to generate script");
                 TreeDiffer treediffer = new TreeDiffer(dbSource, dbTarget);
                 try {
                     new ProgressMonitorDialog(shell).run(true, false,

@@ -16,6 +16,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard;
 
@@ -29,6 +30,8 @@ public class NewProj {
             Shell shell,
             IEclipseContext ctx, EPartService partService, EModelService model,
             MApplication app) throws IOException {
+        Log.log(Log.LOG_DEBUG, "New Project Wizard about to show");
+        
         NewProjWizard newProj = new NewProjWizard(prefStore);
         WizardDialog dialog = new WizardDialog(shell, newProj);
         if(dialog.open() == Dialog.OK) {

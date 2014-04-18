@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.UnixPrintWriter;
@@ -57,6 +58,9 @@ public class Differ implements IRunnableWithProgress {
             throw new InvocationTargetException(ex);
         }
         
+        Log.log(Log.LOG_INFO, "Diff from: " + this.dbSource.getOrigin()
+                + " to: " + this.dbTarget.getOrigin());
+        
         pm.newChild(25).subTask("Direct diff..."); // 75
         PgDiffArguments args = new PgDiffArguments();
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
@@ -65,6 +69,9 @@ public class Differ implements IRunnableWithProgress {
         PgDiff.diffDatabaseSchemas(writer, args, dbSource, dbTarget);
         writer.flush();
         diffDirect = diffOut.toString().trim();
+
+        Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin()
+                + " to: " + this.dbSource.getOrigin());
         
         pm.newChild(25).subTask("Reverse diff..."); // 100
         diffOut.reset();

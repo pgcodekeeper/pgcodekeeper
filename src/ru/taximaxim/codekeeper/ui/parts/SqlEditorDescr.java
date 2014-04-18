@@ -22,6 +22,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -76,6 +77,8 @@ public class SqlEditorDescr {
                 return;
             }
         }
+        
+        Log.log(Log.LOG_DEBUG, "About to show editor: " + file.getAbsolutePath());
         
         MPart newEditor = partService.createPart(UIConsts.PART_SQL_EDITOR);
         newEditor.setLabel(nameToDisplay);

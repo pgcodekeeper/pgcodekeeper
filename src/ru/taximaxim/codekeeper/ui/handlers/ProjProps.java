@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePickerDialog;
@@ -59,6 +60,8 @@ public class ProjProps {
                 new FakePrefPageExtension("projprefs.2.pagemisc",
                         "Miscellaneous", new MiscSettingPage(), null) };
 
+        Log.log(Log.LOG_DEBUG, "About to show proj props dialog");
+        
         PrefDialogFactory.show(shell, proj, propPages);
     }
 

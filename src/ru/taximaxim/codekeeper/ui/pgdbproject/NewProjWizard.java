@@ -39,6 +39,7 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
@@ -114,6 +115,9 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
     @Override
     public boolean performFinish() {
         props = new PgDbProject(pageRepo.getProjectPath());
+
+        Log.log(Log.LOG_INFO, "Creating new project properties at "
+                + props.getProjectPropsFile());
 
         props.setValue(UIConsts.PROJ_PREF_ENCODING, pageMisc.getEncoding());
 

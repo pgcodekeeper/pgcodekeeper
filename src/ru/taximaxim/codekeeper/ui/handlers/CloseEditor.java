@@ -10,6 +10,7 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class CloseEditor {
@@ -20,6 +21,9 @@ public class CloseEditor {
     
     @Execute
     private void execute(EPartService partService) {
+        Log.log(Log.LOG_DEBUG, "Editor about to close: "
+                        + part.getPersistedState().get(UIConsts.PART_SQL_EDITOR_FILENAME));
+        
         partService.hidePart(part);
     }
     

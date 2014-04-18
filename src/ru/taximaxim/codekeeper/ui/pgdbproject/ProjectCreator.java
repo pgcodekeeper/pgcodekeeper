@@ -22,6 +22,7 @@ import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
+// TODO log new creation process, log more
 public class ProjectCreator implements IRunnableWithProgress {
 
     final private String exePgdump, exeSvn;
@@ -50,7 +51,6 @@ public class ProjectCreator implements IRunnableWithProgress {
     public void run(IProgressMonitor monitor) throws InvocationTargetException {
         try {
             Log.log(Log.LOG_INFO, "Creating project at " + props.getProjectPropsFile());
-            Log.log(Log.LOG_INFO, "Repo url is " + props.getString((UIConsts.PROJ_PREF_REPO_URL)));
             
             int workToDo = doInit ? 100 : 1;
             SubMonitor pm = SubMonitor.convert(monitor, "Creating project...",

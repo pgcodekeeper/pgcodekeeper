@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
@@ -39,6 +40,8 @@ public abstract class DbSource {
     }
 
     public PgDatabase get(SubMonitor monitor) throws IOException {
+        Log.log(Log.LOG_INFO, "Loading DB from " + origin);
+        
         dbObject = this.loadInternal(monitor);
         return dbObject;
     }

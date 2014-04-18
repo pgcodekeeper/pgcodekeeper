@@ -39,6 +39,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.copiedclasses.CheckedTreeViewer;
 
@@ -340,9 +341,16 @@ public class DiffTreeViewer extends Composite {
      * Recursively copy only selected tree elements into a new tree
      */
     public TreeElement filterDiffTree() {
-        return (tree == null)? null : filterDiffTree(tree);
+        if (tree == null) {
+            return null;
+        }
+        
+        Log.log(Log.LOG_INFO, "Filtering diff tree based on GUI selection");
+        
+        return filterDiffTree(tree);
     }
     
+    // TODO move away from using GUI logic and use TreeElement.getFilteredCopy instead
     private TreeElement filterDiffTree(TreeElement tree) {
         if(tree.getType() != DbObjType.CONTAINER 
                 && !viewer.getChecked(tree)

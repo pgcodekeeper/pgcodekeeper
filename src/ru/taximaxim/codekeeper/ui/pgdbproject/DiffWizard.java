@@ -47,7 +47,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -98,10 +97,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     @Override
     public void handlePageChanging(PageChangingEvent e) {
         try {
-            if (e.getCurrentPage() == pageDiff
-                    && e.getTargetPage() == pagePartial) {
-                Log.log(Log.LOG_INFO, "Building diff tree of project "
-                    + proj.getProjectPropsFile() + " with " + pageDiff.getTargetType());
+            if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
                 TreeDiffer treediffer = new TreeDiffer(
                         DbSource.fromProject(proj),
                         pageDiff.getTargetDbSource());
@@ -123,9 +119,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 pagePartial.setData(dbSource.getOrigin(), dbTarget.getOrigin(),
                         treediffer.getDiffTree());
                 pagePartial.layout();
-            } else if (e.getCurrentPage() == pagePartial
-                    && e.getTargetPage() == pageResult) {
-                Log.log(Log.LOG_INFO, "Building filtered tree");
+            } else if (e.getCurrentPage() == pagePartial && e.getTargetPage() == pageResult) {
                 TreeElement filtered = pagePartial.getDiffTree().filterDiffTree();
 
                 DbSource dbSource = DbSource.fromFilter(this.dbSource,
@@ -532,7 +526,7 @@ class PageDiff extends WizardPage implements Listener {
         txtSvnRev.addListener(SWT.Modify, this);
 
         grpGit = new Group(container, SWT.NONE);
-        grpGit.setText("GIT target");
+        grpGit.setText("Git target");
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         grpGit.setLayoutData(gd);
@@ -578,12 +572,12 @@ class PageDiff extends WizardPage implements Listener {
             }
         });
         
-        new Label(grpGit, SWT.NONE).setText("GIT User:");
+        new Label(grpGit, SWT.NONE).setText("Git User:");
 
         txtGitUser = new Text(grpGit, SWT.BORDER);
         txtGitUser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        new Label(grpGit, SWT.NONE).setText("GIT Password:");
+        new Label(grpGit, SWT.NONE).setText("Git Password:");
 
         txtGitPass = new Text(grpGit, SWT.BORDER | SWT.PASSWORD);
         txtGitPass.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -624,7 +618,7 @@ class PageDiff extends WizardPage implements Listener {
         lblWarnGitPass.setLayoutData(gd);
         lblWarnGitPass.setVisible(false);
 
-        new Label(grpGit, SWT.NONE).setText("GIT commit hash:");
+        new Label(grpGit, SWT.NONE).setText("Git commit hash:");
 
         txtGitRev = new Text(grpGit, SWT.BORDER);
         txtGitRev.setLayoutData(new GridData());
@@ -784,7 +778,7 @@ class PageDiff extends WizardPage implements Listener {
 
         case GIT:
             if (txtGitUrl.getText().isEmpty()) {
-                errMsg = "Enter GIT Repo URL!";
+                errMsg = "Enter Git Repo URL!";
             }
             break;
 

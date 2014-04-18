@@ -39,6 +39,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class DiffTableViewer extends Composite {
@@ -341,6 +342,8 @@ public class DiffTableViewer extends Composite {
         if (tree == null){
             return null;
         }
+        
+        Log.log(Log.LOG_INFO, "Filtering diff tree based on GUI selection");
         
         Object[] checked = viewer.getCheckedElements();
         Set<TreeElement> checkedSet = new HashSet<>(checked.length);

@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
@@ -54,9 +55,11 @@ public class Prefs {
                 new FakePrefPageExtension("page.1.dbstore", "DB Store",
                         new DbStorePrefPage(), "page.0.general"),
                         
-                new FakePrefPageExtension("page.0.git", "GIT",
+                new FakePrefPageExtension("page.0.git", "Git+SSH",
                                 new GitPrefPage(), null)
         };
+        
+        Log.log(Log.LOG_DEBUG, "About to show app prefs dialog");
         
         PrefDialogFactory.show(shell, prefStore, pages);
     }

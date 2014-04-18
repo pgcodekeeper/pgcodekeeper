@@ -36,7 +36,6 @@ public class OpenRecent {
     public void execute(final MApplication app, final EModelService model, 
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs,
             @Named(IServiceConstants.ACTIVE_SHELL) Shell shell) {
-        CloseActiveProj.close(app.getContext());
         PgDbProject proj = new PgDbProject(menuItem.getLabel());
         
         if (proj.getProjectPropsFile().isFile()) {
@@ -45,11 +44,13 @@ public class OpenRecent {
             Log.log(Log.LOG_WARNING, "Couldn't open project at "
                     + proj.getProjectPropsFile()
                     + ". Project pref store either doesn't exist or not a file.");
+            
             MessageBox mb = new MessageBox(shell);
             mb.setText("Load failed");
             mb.setMessage("Directory is not a valid project!"
                     + " Properties file not found!");
             mb.open();
+            
             RecentProjects.deleteRecent(menuItem.getLabel(), mainPrefs);
             menuItem.setEnabled(false);
         }

@@ -30,7 +30,11 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 public class ProjSyncSrc {
 
     @Execute
-    private void execute(PgDbProject proj, @Named(IServiceConstants.ACTIVE_SHELL) Shell shell, @Named(UIConsts.PREF_STORE) IPreferenceStore prefStore) throws IOException, InvocationTargetException {
+    private void execute(
+            PgDbProject proj,
+            @Named(IServiceConstants.ACTIVE_SHELL) Shell shell,
+            @Named(UIConsts.PREF_STORE) IPreferenceStore prefStore)
+                    throws IOException, InvocationTargetException {
         sync(proj, shell, prefStore);
     }
 
@@ -40,12 +44,16 @@ public class ProjSyncSrc {
     }
 
     /**
-     * @return false if sync failed due to svn conflicts
-     * @throws IOException
+     * @return false if sync fails due to version control conflicts
      */
-    public static boolean sync(final PgDbProject proj, Shell shell, final IPreferenceStore mainPrefs) throws IOException, InvocationTargetException {
+    public static boolean sync(
+            final PgDbProject proj,
+            Shell shell,
+            final IPreferenceStore mainPrefs)
+                    throws IOException, InvocationTargetException {
         Log.log(Log.LOG_INFO, "Syncing project " + proj.getProjectPropsFile() +
                 " with repo url " + proj.getString(UIConsts.PROJ_PREF_REPO_URL));
+        
         final boolean[] conflicted = { false };
         IRunnableWithProgress syncRunnable = new IRunnableWithProgress() {
             @Override

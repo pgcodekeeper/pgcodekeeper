@@ -7,7 +7,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 public class Activator implements BundleActivator {
 
-    private static ServiceTracker<ExtendedLogService, ExtendedLogService> tracker;
+    private static ServiceTracker<ExtendedLogService, ExtendedLogService> logTracker;
     
     private static BundleContext context;
 
@@ -16,7 +16,7 @@ public class Activator implements BundleActivator {
     }
 
     public static ServiceTracker<ExtendedLogService,ExtendedLogService> getLogTracker() {
-        return tracker;
+        return logTracker;
     }
 
     /*
@@ -25,8 +25,8 @@ public class Activator implements BundleActivator {
      */
     public void start(BundleContext bundleContext) throws Exception {
         Activator.context = bundleContext;
-        tracker = new ServiceTracker<>(context, ExtendedLogService.class, null);
-        tracker.open();
+        logTracker = new ServiceTracker<>(context, ExtendedLogService.class, null);
+        logTracker.open();
     }
 
     /*
@@ -35,8 +35,8 @@ public class Activator implements BundleActivator {
      */
     public void stop(BundleContext bundleContext) throws Exception {
         Activator.context = null;
-        if (tracker != null){
-            tracker.close();
+        if (logTracker != null){
+            logTracker.close();
         }
     }
 

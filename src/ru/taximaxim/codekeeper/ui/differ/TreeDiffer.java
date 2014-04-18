@@ -9,6 +9,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.ui.Log;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class TreeDiffer implements IRunnableWithProgress {
@@ -58,6 +59,9 @@ public class TreeDiffer implements IRunnableWithProgress {
         } catch(IOException ex) {
             throw new InvocationTargetException(ex);
         }
+        
+        Log.log(Log.LOG_INFO, "Generating diff tree between src: " + this.dbSource.getOrigin()
+                + " tgt: " + this.dbTarget.getOrigin());
         
         pm.newChild(34).subTask("Building diff tree..."); // 100
         diffTree = DiffTree.create(dbSource, dbTarget);

@@ -14,6 +14,7 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.copiedclasses.ListDialog;
 
 public class SwitchPerspective {
@@ -38,6 +39,8 @@ public class SwitchPerspective {
         });
         
         if(dialog.open() == Dialog.OK) {
+            Log.log(Log.LOG_DEBUG, "About to switch perspective");
+            
             partSrv.switchPerspective((MPerspective)(dialog.getResult()[0]));
         }
     }

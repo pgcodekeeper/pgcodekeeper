@@ -5,6 +5,7 @@ import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.core.di.annotations.Execute;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class CloseActiveProj {
@@ -20,6 +21,9 @@ public class CloseActiveProj {
     }
     
     public static void close(IEclipseContext ctx) {
+        PgDbProject projClosed = ctx.get(PgDbProject.class);
+        Log.log(Log.LOG_INFO, "Project about to close: " + projClosed.getProjectPropsFile());
+        
         ctx.modify(PgDbProject.class, null);
     }
 }
