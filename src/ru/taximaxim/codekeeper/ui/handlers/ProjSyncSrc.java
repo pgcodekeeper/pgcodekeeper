@@ -4,12 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.core.di.annotations.Execute;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -27,7 +29,9 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 
 public class ProjSyncSrc {
-
+    @Inject
+    private static IEventBroker events;
+    
     @Execute
     private void execute(PgDbProject proj, @Named(IServiceConstants.ACTIVE_SHELL) Shell shell, @Named(UIConsts.PREF_STORE) IPreferenceStore prefStore) throws IOException, InvocationTargetException {
         sync(proj, shell, prefStore);
@@ -89,6 +93,8 @@ public class ProjSyncSrc {
             mb.setText("Sync error!");
             mb.setMessage("Repository cache has conflicts!" + " Resolve them manually and reload project before continuing.");
             mb.open();
+        }else{
+            events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
         }
 
         return !conflicted[0];

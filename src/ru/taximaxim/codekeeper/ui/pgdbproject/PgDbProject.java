@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -27,18 +28,29 @@ public class PgDbProject extends PreferenceStore {
 
     private final String projectName;
 
-    public PgDbProject(String projectDir) {
-        super(new File(projectDir, UIConsts.FILENAME_PROJ_PREF_STORE)
-                .getAbsolutePath());
-
-        this.projectDir = projectDir;
-
-        this.projectName = Paths.get(projectDir).getFileName().toString();
+    private final String projectFile;
+    
+    public PgDbProject(String projectFile) {
+        super(projectFile);
+        this.projectFile = projectFile;
+        try {
+            load();
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Unexpected error while reading project file!", e);
+        }
+        this.projectDir = new File(getString(UIConsts.PROJ_PREF_REPO_PATH), 
+                getString(UIConsts.PROJ_PREF_WORKING_DIR_PATH)).toString();
+        
+        String fileName = Paths.get(projectFile).getFileName().toString();
+        
+        if (fileName.endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)){
+            this.projectName = fileName.substring(0, fileName.length() - 
+                    UIConsts.FILENAME_PROJ_PREF_STORE.length());
+        }else {
+            this.projectName = fileName;
+        }
     }
-
-//    public RepoType getRepoType() {
-//        return null;
-//    }
 
     public String getProjectName() {
         return projectName;
@@ -57,10 +69,10 @@ public class PgDbProject extends PreferenceStore {
     }
 
     public File getProjectPropsFile() {
-        return new File(projectDir, UIConsts.FILENAME_PROJ_PREF_STORE);
+        return new File(projectFile);
     }
 
     public File getProjectSchemaDir() {
-        return new File(projectDir, UIConsts.FILENAME_PROJ_SCHEMA_DIR);
+        return new File(projectDir);
     }
 }
