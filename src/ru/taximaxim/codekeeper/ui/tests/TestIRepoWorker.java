@@ -45,8 +45,9 @@ public abstract class TestIRepoWorker {
     
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        Logger log = mock(Logger.class);
-        Log.setLog(log);
+        // not necessary with new OSGi logger
+        /*Logger log = mock(Logger.class);
+        Log.setLog(log);*/
     }
 
     @AfterClass
