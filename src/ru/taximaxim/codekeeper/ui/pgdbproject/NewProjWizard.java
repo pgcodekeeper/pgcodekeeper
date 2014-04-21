@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
 
@@ -137,9 +138,17 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
 
     @Override
     public boolean performFinish() {
-        props = new PgDbProject(pageRepo.getRepoRootPath());
+        props = new PgDbProject(pageRepo.getProjectFile());
 
         props.setValue(UIConsts.PROJ_PREF_ENCODING, pageMisc.getEncoding());
+
+        props.setValue(UIConsts.PROJ_PREF_REPO_PATH, pageRepo.getRepoRootPath());
+
+        props.setValue(
+                UIConsts.PROJ_PREF_WORKING_DIR_PATH,
+                Paths.get(pageRepo.getRepoRootPath())
+                        .relativize(Paths.get(pageSubdir.getRepoSubdir()))
+                        .toString());
 
         String src;
         if (pageDb.isSourceDb()) {
@@ -194,7 +203,8 @@ class PageRepo extends WizardPage implements Listener {
     private String repoTypeName;
     private Text txtRepoUrl, txtRepoUser, txtRepoPass, txtRepoRoot;
     private Label lblRepoUrl, lblRepoUser, lblRepoPass, lblRepoRoot;
-
+    private Text txtProjectFile;
+    private Label lblProjectFile;
     private Button btnGit;
     private Button btnSvn;
 
@@ -223,7 +233,11 @@ class PageRepo extends WizardPage implements Listener {
     public String getRepoRootPath() {
         return txtRepoRoot.getText();
     }
-
+    
+    public String getProjectFile() {
+        return txtProjectFile.getText();
+    }
+    
     PageRepo(String pageName) {
         super(pageName, pageName, null);
     }
@@ -382,6 +396,45 @@ class PageRepo extends WizardPage implements Listener {
         });
         txtRepoRoot.addListener(SWT.Modify, this);
 
+        Button btnBrowseRepo = new Button(container, SWT.PUSH);
+        btnBrowseRepo.setText("Browse...");
+        btnBrowseRepo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                DirectoryDialog dialog = new DirectoryDialog(container
+                        .getShell());
+                String path = dialog.open();
+                if (path != null) {
+                    txtRepoRoot.setText(path);
+                }
+            }
+        });
+        
+        lblProjectFile = new Label(container, SWT.NONE);
+        lblProjectFile.setText("Select project filename");
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.verticalIndent = 12;
+        lblProjectFile.setLayoutData(gd);
+        txtProjectFile = new Text(container, SWT.BORDER);
+        txtProjectFile.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtProjectFile.addListener(SWT.Modify, this);
+        
+        Button btnBrowseProj = new Button(container, SWT.PUSH);
+        btnBrowseProj.setText("Browse...");
+        btnBrowseProj.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                FileDialog dialog = new FileDialog(container.getShell(),SWT.SAVE);
+                dialog.setFilterExtensions(new String [] {"*.project"});
+                dialog.setOverwrite(true);
+                String path = dialog.open();
+                if (path != null) {
+                    txtProjectFile.setText(path);
+                }
+            }
+        });
+        
         btnSvn.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -411,19 +464,7 @@ class PageRepo extends WizardPage implements Listener {
             }
         });
 
-        Button btnBrowseProj = new Button(container, SWT.PUSH);
-        btnBrowseProj.setText("Browse...");
-        btnBrowseProj.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                DirectoryDialog dialog = new DirectoryDialog(container
-                        .getShell());
-                String path = dialog.open();
-                if (path != null) {
-                    txtRepoRoot.setText(path);
-                }
-            }
-        });
+
         setControl(container);
         btnSvn.setEnabled(false);
         btnGit.setSelection(true);
@@ -442,6 +483,8 @@ class PageRepo extends WizardPage implements Listener {
                 new File(txtRepoRoot.getText()).list().length != 0){
             errMsg = "Selected directory should be either empty or root directory of\n"
                     + " existing git repository (should contain .git subdirectory)";
+        }else if(getProjectFile().isEmpty() || !getProjectFile().endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)){
+            errMsg = "Select project filename!";
         }
 
         if (checkOverwrite) {

@@ -167,9 +167,9 @@ public class CommitPartDescr {
                             default:
                                 throw new IllegalStateException("Not a SVN/GIT enabled project");
                             }
-                            try (TempDir tmpRepoMeta = new TempDir(proj.getProjectPath(), 
+                            try (TempDir tmpRepoMeta = new TempDir(proj.getProjectPath().getParent(), 
                                     "tmp_repo_meta_")) {
-                                File svnMetaProj = new File(dirSvn, repo.getRepoMetaFolder());
+                                File svnMetaProj = new File(proj.getRootDir(), repo.getRepoMetaFolder());
                                 File svnMetaTmp = new File(tmpRepoMeta.get(), repo.getRepoMetaFolder());
                                 Files.move(svnMetaProj.toPath(), svnMetaTmp.toPath());
                                 Dir.deleteRecursive(dirSvn);

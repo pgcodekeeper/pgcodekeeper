@@ -52,7 +52,7 @@ public class ProjectCreator implements IRunnableWithProgress {
             SubMonitor pm = SubMonitor.convert(monitor, "Creating project...",
                     workToDo); // 0
 
-            IRepoWorker repo;
+            /*IRepoWorker repo;
             switch (RepoType.valueOf(props.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
             case SVN:
                 repo = new SvnExec(exeSvn, props);
@@ -73,9 +73,9 @@ public class ProjectCreator implements IRunnableWithProgress {
                 Dir.deleteRecursive(dirRepo);
             }
             Files.createDirectory(dirRepo.toPath());
-            repo.repoCheckOut(dirRepo);
+            repo.repoCheckOut(dirRepo);*/
             if (doInit) {
-                initRepoFromSource(pm, repo);
+                initRepoFromSource(pm, null);
             }
             monitor.done();
         } catch (IOException ex) {

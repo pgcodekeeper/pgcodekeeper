@@ -24,7 +24,7 @@ public class PgDbProject extends PreferenceStore {
         }
     }
 
-    private final String projectDir;
+    private String projectDir = "";
 
     private final String projectName;
 
@@ -33,17 +33,8 @@ public class PgDbProject extends PreferenceStore {
     public PgDbProject(String projectFile) {
         super(projectFile);
         this.projectFile = projectFile;
-        try {
-            load();
-        } catch (IOException e) {
-            throw new IllegalStateException(
-                    "Unexpected error while reading project file!", e);
-        }
-        this.projectDir = new File(getString(UIConsts.PROJ_PREF_REPO_PATH), 
-                getString(UIConsts.PROJ_PREF_WORKING_DIR_PATH)).toString();
         
         String fileName = Paths.get(projectFile).getFileName().toString();
-        
         if (fileName.endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)){
             this.projectName = fileName.substring(0, fileName.length() - 
                     UIConsts.FILENAME_PROJ_PREF_STORE.length());
@@ -52,6 +43,13 @@ public class PgDbProject extends PreferenceStore {
         }
     }
 
+    @Override
+    public void load() throws IOException{
+        super.load();
+        projectDir = new File(getString(UIConsts.PROJ_PREF_REPO_PATH), 
+                getString(UIConsts.PROJ_PREF_WORKING_DIR_PATH)).toString();
+    }
+    
     public String getProjectName() {
         return projectName;
     }
@@ -74,5 +72,9 @@ public class PgDbProject extends PreferenceStore {
 
     public File getProjectSchemaDir() {
         return new File(projectDir);
+    }
+    
+    public File getRootDir(){
+        return new File (getString(UIConsts.PROJ_PREF_REPO_PATH));
     }
 }
