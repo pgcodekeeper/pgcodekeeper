@@ -148,7 +148,7 @@ public class JGitExec implements IRepoWorker{
     @Override
     public boolean repoUpdate(File dirIn) throws IOException  {
         File gitRoot = getGitRoot(dirIn);
-        Git git = Git.open(gitRoot); 
+        Git git = Git.open(gitRoot);
         try {
             PullCommand pullCom = git.pull();
             if (PATTERN_HTTP_URL.matcher(url).matches()) {
@@ -171,6 +171,15 @@ public class JGitExec implements IRepoWorker{
             }
         }
         return null;
+    }
+    
+    public static boolean isGitRepo(String path){
+        try {
+            Git git = Git.open(new File(path));
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
     
     public static void genKeys(String privateFileName)
