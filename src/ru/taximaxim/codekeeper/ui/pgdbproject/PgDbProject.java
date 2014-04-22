@@ -47,10 +47,10 @@ public class PgDbProject extends PreferenceStore {
             
             @Override
             public void propertyChange(PropertyChangeEvent event) {
-                if(event.getProperty().equals(UIConsts.PROJ_PREF_REPO_PATH) || 
-                        event.getProperty().equals(UIConsts.PROJ_PREF_WORKING_DIR_PATH)){
-                    projectDir = new File(getString(UIConsts.PROJ_PREF_REPO_PATH), 
-                            getString(UIConsts.PROJ_PREF_WORKING_DIR_PATH)).toString();
+                if(event.getProperty().equals(UIConsts.PROJ_PREF_REPO_ROOT_PATH) || 
+                        event.getProperty().equals(UIConsts.PROJ_PREF_REPO_SUBDIR_PATH)){
+                    projectDir = new File(getString(UIConsts.PROJ_PREF_REPO_ROOT_PATH), 
+                            getString(UIConsts.PROJ_PREF_REPO_SUBDIR_PATH)).toString();
                 }
             }
         });
@@ -59,35 +59,31 @@ public class PgDbProject extends PreferenceStore {
     @Override
     public void load() throws IOException{
         super.load();
-        projectDir = new File(getString(UIConsts.PROJ_PREF_REPO_PATH), 
-                getString(UIConsts.PROJ_PREF_WORKING_DIR_PATH)).toString();
+        projectDir = new File(getString(UIConsts.PROJ_PREF_REPO_ROOT_PATH), 
+                getString(UIConsts.PROJ_PREF_REPO_SUBDIR_PATH)).toString();
     }
     
     public String getProjectName() {
         return projectName;
     }
-
-    public String getProjectDir() {
+    
+    public File getProjectPropsFile() {
+        return new File(projectFile);
+    }
+    
+    public File getRepoRootDir(){
+        return new File (getString(UIConsts.PROJ_PREF_REPO_ROOT_PATH));
+    }
+    
+    public String getProjectDirName() {
         return projectDir;
     }
-
+    
     public File getProjectDirFile() {
         return new File(projectDir);
     }
 
-    public Path getProjectPath() {
+    public Path getProjectDirPath() {
         return getProjectDirFile().toPath();
-    }
-
-    public File getProjectPropsFile() {
-        return new File(projectFile);
-    }
-
-    public File getProjectSchemaDir() {
-        return new File(projectDir);
-    }
-    
-    public File getRootDir(){
-        return new File (getString(UIConsts.PROJ_PREF_REPO_PATH));
     }
 }

@@ -61,7 +61,7 @@ public class SqlEditorDescr {
         File myFile = new File(
                 part.getPersistedState().get(UIConsts.PART_SQL_EDITOR_FILENAME));
         if(proj == null
-                || !myFile.toPath().startsWith(proj.getProjectSchemaDir().toPath()) || !myFile.exists()) {
+                || !myFile.toPath().startsWith(proj.getProjectDirFile().toPath()) || !myFile.exists()) {
             partService.hidePart(part);
         }
     }

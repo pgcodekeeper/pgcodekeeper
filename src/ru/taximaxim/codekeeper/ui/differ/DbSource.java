@@ -199,7 +199,7 @@ class DbSourceProject extends DbSource {
         SubMonitor.convert(monitor, 1).newChild(1).subTask("Loading tree...");
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(proj
-                .getProjectSchemaDir().getAbsolutePath(), proj
+                .getProjectDirFile().getAbsolutePath(), proj
                 .getString(UIConsts.PROJ_PREF_ENCODING), false, false);
     }
 }

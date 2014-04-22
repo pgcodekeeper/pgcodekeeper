@@ -154,7 +154,7 @@ public class CommitPartDescr {
                         PgDatabase dbNew = applier.apply();
 
                         pm.newChild(1).subTask("Exporting new DB model..."); // 2
-                        File dirSvn = proj.getProjectSchemaDir();
+                        File dirSvn = proj.getProjectDirFile();
                         try {
                             IRepoWorker repo;
                             switch (RepoType.valueOf(proj.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
@@ -167,9 +167,9 @@ public class CommitPartDescr {
                             default:
                                 throw new IllegalStateException("Not a SVN/GIT enabled project");
                             }
-                            try (TempDir tmpRepoMeta = new TempDir(proj.getProjectPath().getParent(), 
+                            try (TempDir tmpRepoMeta = new TempDir(proj.getProjectDirPath().getParent(), 
                                     "tmp_repo_meta_")) {
-                                File svnMetaProj = new File(proj.getRootDir(), repo.getRepoMetaFolder());
+                                File svnMetaProj = new File(proj.getRepoRootDir(), repo.getRepoMetaFolder());
                                 File svnMetaTmp = new File(tmpRepoMeta.get(), repo.getRepoMetaFolder());
                                 Files.move(svnMetaProj.toPath(), svnMetaTmp.toPath());
                                 Dir.deleteRecursive(dirSvn);
@@ -446,7 +446,7 @@ public class CommitPartDescr {
     private void changeProject(PgDbProject proj, @Optional @Named("__DUMMY__")
                 @EventTopic(UIConsts.EVENT_REOPEN_PROJECT) PgDbProject proj2) {
         if (proj == null
-                || !proj.getProjectDir().equals(
+                || !proj.getProjectDirName().equals(
                         part.getPersistedState().get(UIConsts.PART_SYNC_ID))) {
             partService.hidePart(part);
         } else if (proj2 != null) {

@@ -64,7 +64,7 @@ public class ProjSyncSrc {
                     throw new IllegalStateException("Not a SVN/GIT enabled project");
                 }
 
-                File repoDir = proj.getProjectSchemaDir();
+                File repoDir = proj.getProjectDirFile();
 
                 try {
                     pm.newChild(2).subTask("Checking conflicts...");

@@ -52,8 +52,8 @@ public class LoadProj {
             EModelService model, MApplication app, IPreferenceStore mainPrefs) {
         ctx.modify(PgDbProject.class, proj);
         
-        CommitPartDescr.openNew(proj.getProjectDir(), partService, model, app);
-        DiffPartDescr.openNew(proj.getProjectDir(), partService, model, app);
+        CommitPartDescr.openNew(proj.getProjectDirName(), partService, model, app);
+        DiffPartDescr.openNew(proj.getProjectDirName(), partService, model, app);
         RecentProjects.addRecent(proj.getProjectPropsFile().toString(), mainPrefs);
     }
 }

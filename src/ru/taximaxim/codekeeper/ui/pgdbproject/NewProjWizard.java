@@ -167,10 +167,10 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
 
         props.setValue(UIConsts.PROJ_PREF_ENCODING, pageMisc.getEncoding());
 
-        props.setValue(UIConsts.PROJ_PREF_REPO_PATH, pageRepo.getRepoRootPath());
+        props.setValue(UIConsts.PROJ_PREF_REPO_ROOT_PATH, pageRepo.getRepoRootPath());
 
         props.setValue(
-                UIConsts.PROJ_PREF_WORKING_DIR_PATH,
+                UIConsts.PROJ_PREF_REPO_SUBDIR_PATH,
                 Paths.get(pageRepo.getRepoRootPath())
                         .relativize(Paths.get(pageSubdir.getRepoSubdir()))
                         .toString());

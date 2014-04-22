@@ -644,7 +644,7 @@ class PageDiff extends WizardPage implements Listener {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (btnThis.getSelection()) {
-                    txtProjPath.setText(proj.getProjectDir());
+                    txtProjPath.setText(proj.getProjectDirName());
                     txtProjPath.setEnabled(false);
                 } else {
                     txtProjPath.setEnabled(true);
@@ -965,7 +965,7 @@ class PageResult extends WizardPage {
                         + " diff...");
                 saveDialog.setOverwrite(true);
                 saveDialog.setFilterExtensions(new String[] { "*.sql", "*" });
-                saveDialog.setFilterPath(proj.getProjectDir());
+                saveDialog.setFilterPath(proj.getProjectDirName());
 
                 String saveTo = saveDialog.open();
                 if (saveTo != null) {
