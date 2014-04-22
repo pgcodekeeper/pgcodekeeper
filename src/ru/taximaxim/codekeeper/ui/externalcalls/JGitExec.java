@@ -175,7 +175,7 @@ public class JGitExec implements IRepoWorker{
     
     public static boolean isGitRepo(String path){
         try {
-            Git git = Git.open(new File(path));
+            Git.open(new File(path));
             return true;
         } catch (IOException e) {
             return false;

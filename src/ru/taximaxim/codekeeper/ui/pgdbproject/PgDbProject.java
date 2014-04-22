@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.eclipse.jface.preference.PreferenceStore;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
 
@@ -41,6 +43,17 @@ public class PgDbProject extends PreferenceStore {
         }else {
             this.projectName = fileName;
         }
+        addPropertyChangeListener(new IPropertyChangeListener() {
+            
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                if(event.getProperty().equals(UIConsts.PROJ_PREF_REPO_PATH) || 
+                        event.getProperty().equals(UIConsts.PROJ_PREF_WORKING_DIR_PATH)){
+                    projectDir = new File(getString(UIConsts.PROJ_PREF_REPO_PATH), 
+                            getString(UIConsts.PROJ_PREF_WORKING_DIR_PATH)).toString();
+                }
+            }
+        });
     }
 
     @Override

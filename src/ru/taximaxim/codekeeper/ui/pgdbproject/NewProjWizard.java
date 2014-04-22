@@ -4,13 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PageChangingEvent;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -113,14 +116,36 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                             + "Do you want to clone repository \""
                             + pageRepo.getRepoUrl()
                             + "\" to selected directory now?")) {
-                JGitExec git = new JGitExec(pageRepo.getRepoUrl(),
-                        pageRepo.getRepoUser(), pageRepo.getRepoPass(),
-                        mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+
+                final String repoUrl = pageRepo.getRepoUrl();
+                final String repoUser = pageRepo.getRepoUser();
+                final String repoPass = pageRepo.getRepoPass();
+                final String repoPath = pageRepo.getRepoRootPath();
+                IRunnableWithProgress cloneRunnable = new IRunnableWithProgress() {
+                    @Override
+                    public void run(IProgressMonitor monitor)
+                            throws InvocationTargetException,
+                            InterruptedException {
+                        SubMonitor pm = SubMonitor.convert(monitor,
+                                "Cloning GIT repository", 2);
+                        final JGitExec git = new JGitExec(repoUrl,repoUser, repoPass,
+                                mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+                        pm.worked(1);
+                        try {
+                            git.repoCheckOut(new File(repoPath));
+                        } catch (IOException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                        monitor.done();
+                    }
+                };
                 try {
-                    git.repoCheckOut(new File(pageRepo.getRepoRootPath()));
-                } catch (IOException e) {
-                    ExceptionNotifyHelper.notifyAndThrow(
-                            new IllegalStateException(e), this.getShell());
+                    new ProgressMonitorDialog(pageRepo.getShell()).run(true,
+                            false, cloneRunnable);
+                } catch (InvocationTargetException | InterruptedException e) {
+                    event.doit = false;
+                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(e), 
+                            this.getShell());
                 }
             } else {
                 event.doit = false;

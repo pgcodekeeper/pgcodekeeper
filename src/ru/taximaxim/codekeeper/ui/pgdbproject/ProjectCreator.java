@@ -52,30 +52,22 @@ public class ProjectCreator implements IRunnableWithProgress {
             SubMonitor pm = SubMonitor.convert(monitor, "Creating project...",
                     workToDo); // 0
 
-            /*IRepoWorker repo;
-            switch (RepoType.valueOf(props.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
-            case SVN:
-                repo = new SvnExec(exeSvn, props);
-                repoName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
-                break;
-            case GIT:
-                repo = new JGitExec(props, mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
-                repoName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
-                break;
-            default:
-                throw new IllegalStateException("Not a SVN/GIT enabled project");
-            }
-            
-            pm.newChild(doInit ? 25 : workToDo).subTask(
-                    repoName + " current rev checkout..."); // 25 or 100%
-            File dirRepo = props.getProjectSchemaDir();
-            if (dirRepo.exists()) {
-                Dir.deleteRecursive(dirRepo);
-            }
-            Files.createDirectory(dirRepo.toPath());
-            repo.repoCheckOut(dirRepo);*/
             if (doInit) {
-                initRepoFromSource(pm, null);
+                IRepoWorker repo;
+                switch (RepoType.valueOf(props.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
+                case SVN:
+                    repo = new SvnExec(exeSvn, props);
+                    repoName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
+                    break;
+                case GIT:
+                    repo = new JGitExec(props, mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+                    repoName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
+                    break;
+                default:
+                    throw new IllegalStateException("Not a SVN/GIT enabled project");
+                }
+                
+                initRepoFromSource(pm, repo);
             }
             monitor.done();
         } catch (IOException ex) {
@@ -117,11 +109,10 @@ public class ProjectCreator implements IRunnableWithProgress {
 
         pm.newChild(25).subTask("Exporting DB model..."); // 75
 
-        try (TempDir tmpRepoMeta = new TempDir(props.getProjectPath(),
+        try (TempDir tmpRepoMeta = new TempDir(props.getProjectPath().getParent(),
                 "tmp_repo_meta_")) {
-            File repoMetaProj = new File(dirRepo, repo.getRepoMetaFolder());
-            File repoMetaTmp = new File(tmpRepoMeta.get(),
-                    repo.getRepoMetaFolder());
+            File repoMetaProj = new File(props.getRootDir(), repo.getRepoMetaFolder());
+            File repoMetaTmp = new File(tmpRepoMeta.get(), repo.getRepoMetaFolder());
             Files.move(repoMetaProj.toPath(), repoMetaTmp.toPath());
             Dir.deleteRecursive(dirRepo);
 
