@@ -1,6 +1,9 @@
  
 package ru.taximaxim.codekeeper.ui.handlers;
 
+import java.io.File;
+import java.io.IOException;
+
 import javax.inject.Named;
 
 import org.eclipse.e4.core.contexts.IEclipseContext;
@@ -9,11 +12,13 @@ import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.ui.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.parts.CommitPartDescr;
 import ru.taximaxim.codekeeper.ui.parts.DiffPartDescr;
@@ -31,6 +36,7 @@ public class LoadProj {
         FileDialog dialog = new FileDialog(shell);
         dialog.setText("Open project file");
         dialog.setOverwrite(false);
+        dialog.setFilterPath(mainPrefs.getString(UIConsts.PREF_LAST_OPENED_LOCATION));
         dialog.setFilterExtensions(new String[] { "*.project", "*" });
         
         String path = dialog.open();
@@ -38,6 +44,7 @@ public class LoadProj {
             PgDbProject proj = new PgDbProject(path);
             if(proj.getProjectPropsFile().isFile()) {
                 load(proj, ctx, partService, model, app, mainPrefs);
+                AddonPrefLoader.savePreference(mainPrefs, UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());
             } else {
                 MessageBox mb = new MessageBox(shell);
                 mb.setText("Load failed");

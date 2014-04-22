@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
@@ -71,7 +72,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
 
     @Override
     public void addPages() {
-        pageRepo = new PageRepo("Repository settings");
+        pageRepo = new PageRepo("Repository settings", mainPrefStore);
         addPage(pageRepo);
         pageSubdir = new PageSubdir("Subdirectory select");
         addPage(pageSubdir);
@@ -238,6 +239,7 @@ class PageRepo extends WizardPage implements Listener {
     private LocalResourceManager lrm;
     
     private CLabel lblWarnPass;
+    private final IPreferenceStore mainPrefStore;
 
     public String getRepoType() {
         return repoTypeName;
@@ -263,8 +265,9 @@ class PageRepo extends WizardPage implements Listener {
         return txtProjectFile.getText();
     }
     
-    PageRepo(String pageName) {
+    PageRepo(String pageName, IPreferenceStore mainPrefStore) {
         super(pageName, pageName, null);
+        this.mainPrefStore = mainPrefStore;
     }
     
     private void redrawLabels() {
@@ -428,9 +431,11 @@ class PageRepo extends WizardPage implements Listener {
             public void widgetSelected(SelectionEvent e) {
                 DirectoryDialog dialog = new DirectoryDialog(container
                         .getShell());
+                dialog.setFilterPath(mainPrefStore.getString(UIConsts.PREF_LAST_OPENED_LOCATION));
                 String path = dialog.open();
                 if (path != null) {
                     txtRepoRoot.setText(path);
+                    AddonPrefLoader.savePreference(mainPrefStore, UIConsts.PREF_LAST_OPENED_LOCATION, path);
                 }
             }
         });
@@ -453,9 +458,11 @@ class PageRepo extends WizardPage implements Listener {
                 FileDialog dialog = new FileDialog(container.getShell(),SWT.SAVE);
                 dialog.setFilterExtensions(new String [] {"*.project"});
                 dialog.setOverwrite(true);
+                dialog.setFilterPath(mainPrefStore.getString(UIConsts.PREF_LAST_OPENED_LOCATION));
                 String path = dialog.open();
                 if (path != null) {
                     txtProjectFile.setText(path);
+                    AddonPrefLoader.savePreference(mainPrefStore, UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());
                 }
             }
         });

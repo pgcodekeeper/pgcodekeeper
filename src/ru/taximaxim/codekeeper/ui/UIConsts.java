@@ -65,4 +65,6 @@ public interface UIConsts {
     String FILENAME_ICONEDIT = "/icons/editor.gif";
     
     String EVENT_REOPEN_PROJECT = "ru/taximaxim/codekeeper/ui/project/changed";
+
+    String PREF_LAST_OPENED_LOCATION = "";
 }

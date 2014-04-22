@@ -1,9 +1,13 @@
  
 package ru.taximaxim.codekeeper.ui;
 
+import java.io.IOException;
+
 import javax.annotation.PostConstruct;
 
 import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.jface.preference.IPersistentPreferenceStore;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.ui.prefs.UIScopedPreferenceStore;
 
@@ -14,4 +18,15 @@ public class AddonPrefLoader {
         ctx.set(UIConsts.PREF_STORE, new UIScopedPreferenceStore());
     }
     
+    public static void savePreference(IPreferenceStore mainPrefs, String preference, String value){
+        mainPrefs.setValue(preference, value);
+      if(mainPrefs.needsSaving() && mainPrefs instanceof IPersistentPreferenceStore) {
+          try {
+              ((IPersistentPreferenceStore) mainPrefs).save();
+          } catch (IOException ex) {
+              throw new IllegalStateException(
+                      "Unexpected error while saving preferences!", ex);
+          }
+      }
+    } 
 }
