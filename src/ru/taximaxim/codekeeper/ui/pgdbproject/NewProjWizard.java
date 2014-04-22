@@ -510,6 +510,8 @@ class PageRepo extends WizardPage implements Listener {
                     + " existing git repository (should contain .git subdirectory)";
         }else if(getProjectFile().isEmpty() || !getProjectFile().endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)){
             errMsg = "Select project filename!";
+        }else if (new File (txtRepoRoot.getText()).toPath().getNameCount() == 0){
+            errMsg = "Select Project Directory (should not be root)!";
         }
 
         if (checkOverwrite) {

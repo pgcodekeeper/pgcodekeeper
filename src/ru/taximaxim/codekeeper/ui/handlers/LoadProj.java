@@ -54,6 +54,6 @@ public class LoadProj {
         
         CommitPartDescr.openNew(proj.getProjectDir(), partService, model, app);
         DiffPartDescr.openNew(proj.getProjectDir(), partService, model, app);
-        RecentProjects.addRecent(proj.getProjectDir(), mainPrefs);
+        RecentProjects.addRecent(proj.getProjectPropsFile().toString(), mainPrefs);
     }
 }

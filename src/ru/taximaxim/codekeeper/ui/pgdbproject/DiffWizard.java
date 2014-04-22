@@ -33,7 +33,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
@@ -670,20 +669,17 @@ class PageDiff extends WizardPage implements Listener {
             public void modifyText(ModifyEvent e) {
                 String dir = txtProjPath.getText();
 
-                if (!dir.isEmpty() && new File(dir).isDirectory()) {
+                if (!dir.isEmpty() && new File(dir).isFile() &&
+                        dir.endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)) {
                     PgDbProject tmpProj = new PgDbProject(dir);
-
-                    if (tmpProj.getProjectPropsFile().isFile()) {
-                        try {
-                            tmpProj.load();
-                        } catch (IOException ex) {
-                            throw new IllegalStateException(
-                                    "Unexpected error while reading targetproject",
-                                    ex);
-                        }
-                        cmbEncoding.select(cmbEncoding.indexOf(tmpProj
-                                .getString(UIConsts.PROJ_PREF_ENCODING)));
+                    try {
+                        tmpProj.load();
+                    } catch (IOException ex) {
+                        throw new IllegalStateException(
+                                "Unexpected error while reading targetproject", ex);
                     }
+                    cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getString(
+                            UIConsts.PROJ_PREF_ENCODING)));
                 }
             }
         });
@@ -694,8 +690,10 @@ class PageDiff extends WizardPage implements Listener {
         btnBrowseProj.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DirectoryDialog dialog = new DirectoryDialog(container
-                        .getShell());
+                FileDialog dialog = new FileDialog(container.getShell());
+                dialog.setText("Open project file");
+                dialog.setOverwrite(false);
+                dialog.setFilterExtensions(new String[] { "*.project", "*" });
                 String path = dialog.open();
                 if (path != null) {
                     txtProjPath.setText(path);
@@ -788,9 +786,9 @@ class PageDiff extends WizardPage implements Listener {
         case PROJ:
             String dir = txtProjPath.getText();
 
-            if (dir.isEmpty() || !new File(dir).isDirectory()
-                    || !new PgDbProject(dir).getProjectPropsFile().isFile()) {
-                errMsg = "Select a valid project directory!";
+            if (dir.isEmpty() || !dir.endsWith(UIConsts.FILENAME_PROJ_PREF_STORE) 
+                    || !new File(dir).isFile()) {
+                errMsg = "Select a valid project file!";
             }
 
             break;
