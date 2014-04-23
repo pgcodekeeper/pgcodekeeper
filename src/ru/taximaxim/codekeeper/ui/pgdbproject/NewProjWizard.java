@@ -355,7 +355,10 @@ class PageRepo extends WizardPage implements Listener {
                     lblWarnPass.setVisible(!lblWarnPass.getVisible());
                     container.layout(false);
                 }
-                if (!txtRepoUrl.getText().isEmpty() && RepoType.valueOf(repoTypeName).equals(RepoType.GIT) && !JGitExec.PATTERN_HTTP_URL.matcher(txtRepoUrl.getText()).matches() && !JGitExec.PATTERN_FILE_URL.matcher(txtRepoUrl.getText()).matches()){
+                if (!txtRepoUrl.getText().isEmpty() && 
+                        RepoType.valueOf(repoTypeName).equals(RepoType.GIT) && 
+                        !JGitExec.PATTERN_HTTP_URL.matcher(txtRepoUrl.getText()).matches() && 
+                        !JGitExec.PATTERN_FILE_URL.matcher(txtRepoUrl.getText()).matches()){
                     lblWarnPass.setVisible(true);
                     gd.exclude = false;
                     container.layout(true);
@@ -407,7 +410,8 @@ class PageRepo extends WizardPage implements Listener {
         gd = new GridData();
         gd.horizontalSpan = 2;
         lblRepoRoot = new Label(container, SWT.NONE);
-        lblRepoRoot.setText("Select GIT repository root directory (either empty folder or existing repository)");
+        lblRepoRoot.setText("Select GIT repository root directory "
+                + "(either empty folder or existing repository)");
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
@@ -462,7 +466,8 @@ class PageRepo extends WizardPage implements Listener {
                 String path = dialog.open();
                 if (path != null) {
                     txtProjectFile.setText(path);
-                    AddonPrefLoader.savePreference(mainPrefStore, UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());
+                    AddonPrefLoader.savePreference(mainPrefStore,
+                            UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());
                 }
             }
         });
@@ -515,7 +520,8 @@ class PageRepo extends WizardPage implements Listener {
                 new File(txtRepoRoot.getText()).list().length != 0){
             errMsg = "Selected directory should be either empty or root directory of\n"
                     + " existing git repository (should contain .git subdirectory)";
-        }else if(getProjectFile().isEmpty() || !getProjectFile().endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)){
+        }else if(getProjectFile().isEmpty() ||
+                !getProjectFile().endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)){
             errMsg = "Select project filename!";
         }else if (new File (txtRepoRoot.getText()).toPath().getNameCount() == 0){
             errMsg = "Select Project Directory (should not be root)!";
@@ -580,18 +586,14 @@ class PageSubdir extends WizardPage implements Listener {
         GridData gd = new GridData();
         gd.horizontalSpan = 2;
         btnDoInit = new Button(container, SWT.CHECK);
-        btnDoInit
-                .setText("Init repository from Schema Source (Live DB or dump file)");
+        btnDoInit.setText("Init subdirectory from Schema Source (DB or dump file)");
         btnDoInit.setLayoutData(gd);
-        
         btnDoInit.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 GridData gd = (GridData) lblWarnInit.getLayoutData();
-
                 gd.exclude = !btnDoInit.getSelection();
                 lblWarnInit.setVisible(btnDoInit.getSelection());
-
                 getShell().pack();
                 container.layout(false);
             }
@@ -599,11 +601,11 @@ class PageSubdir extends WizardPage implements Listener {
         btnDoInit.addListener(SWT.Selection, this);
         
         lblWarnInit = new CLabel(container, SWT.NONE);
-        lblWarnInit.setImage(lrm.createImage(ImageDescriptor
-                .createFromURL(Activator.getContext().getBundle()
-                        .getResource(UIConsts.FILENAME_ICONWARNING))));
-        lblWarnInit.setText("Warning:\n" + "This will delete repo contents and recreate them from Schema Source"
-                + " (next page).");        
+        lblWarnInit.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                        Activator.getContext().getBundle().getResource(UIConsts.FILENAME_ICONWARNING))));
+        lblWarnInit.setText("Warning:\n" + 
+                        "This will delete repo contents and recreate them from Schema Source"
+                        + " (next page).");        
         gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
         gd.exclude = true;
         lblWarnInit.setLayoutData(gd);
@@ -611,7 +613,8 @@ class PageSubdir extends WizardPage implements Listener {
         
 
         lblRepoSubdir = new Label(container, SWT.NONE);
-        lblRepoSubdir.setText("Point to a directory inside the repository, that will contain DB schemas and constraints\n"
+        lblRepoSubdir.setText("Point to a directory inside the repository, "
+                + "that will contain DB schemas and constraints\n"
                 + "(leave unchanged to use root)");
         gd = new GridData();
         gd.horizontalSpan = 2;

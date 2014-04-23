@@ -31,6 +31,7 @@ public interface UIConsts {
     String PREF_GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile";
     String PREF_RECENT_PROJECTS = "prefRecentProject";
     String PREF_OPEN_LAST_ON_START = "prefOpenLastOnStart";
+    String PREF_LAST_OPENED_LOCATION = "prefLastOpenedLocation";
     
     // Project preferences
     String PROJ_PREF_ENCODING = "prefGeneralEncoding";
@@ -65,6 +66,4 @@ public interface UIConsts {
     String FILENAME_ICONEDIT = "/icons/editor.gif";
     
     String EVENT_REOPEN_PROJECT = "ru/taximaxim/codekeeper/ui/project/changed";
-
-    String PREF_LAST_OPENED_LOCATION = "";
 }
