@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.tests;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -24,14 +23,12 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.EnumSet;
 
-import org.eclipse.e4.core.services.log.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
@@ -84,6 +81,7 @@ public abstract class TestIRepoWorker {
             appendToFile(pathToWorking.toString()
                     + System.getProperty("file.separator") + "EXTENSION"
                     + System.getProperty("file.separator") + "file1.sql", "added");
+            repo.repoRemoveMissingAddNew(dirRepo);
             repo.repoCommit(dirRepo, "test");
             dirTempRepo = Files.createTempDirectory("").toFile();
             repo.repoCheckOut(dirTempRepo);
@@ -106,11 +104,13 @@ public abstract class TestIRepoWorker {
                             + System.getProperty("file.separator")
                             + "file1.sql", "B");
             // commit changes from A to origin
+            repo.repoRemoveMissingAddNew(dirRepoA);
             repo.repoCommit(dirRepoA, "AAA");
             // Throws Exception, since there is conflict. We call it, because it's the 
             // only way for GitExec to stage files using IRepoWorker available methods
             if (repo instanceof JGitExec) {
                 try {
+                    repo.repoRemoveMissingAddNew(dirTempRepo);
                     repo.repoCommit(dirTempRepo, "BBB");
                 } catch (IllegalStateException | IOException e ) {
                     // Exception expected
@@ -129,6 +129,7 @@ public abstract class TestIRepoWorker {
             appendToFile(dirTempRepo.toString()
                     + System.getProperty("file.separator") + "EXTENSION"
                     + System.getProperty("file.separator") + "file1.sql", "added");
+            repo.repoRemoveMissingAddNew(dirTempRepo);
             repo.repoCommit(dirTempRepo, "test");
             repo.repoUpdate(dirRepo);
             compareFilesInPaths(dirTempRepo.toPath(), dirRepo.toPath());
