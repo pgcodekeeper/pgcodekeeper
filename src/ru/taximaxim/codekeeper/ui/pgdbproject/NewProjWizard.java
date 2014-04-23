@@ -364,7 +364,10 @@ class PageRepo extends WizardPage implements Listener {
                     lblWarnPass.setVisible(!lblWarnPass.getVisible());
                     container.layout(false);
                 }
-                if (!txtRepoUrl.getText().isEmpty() && RepoType.valueOf(repoTypeName).equals(RepoType.GIT) && !JGitExec.PATTERN_HTTP_URL.matcher(txtRepoUrl.getText()).matches() && !JGitExec.PATTERN_FILE_URL.matcher(txtRepoUrl.getText()).matches()){
+                if (!txtRepoUrl.getText().isEmpty() && 
+                        RepoType.valueOf(repoTypeName).equals(RepoType.GIT) && 
+                        !JGitExec.PATTERN_HTTP_URL.matcher(txtRepoUrl.getText()).matches() && 
+                        !JGitExec.PATTERN_FILE_URL.matcher(txtRepoUrl.getText()).matches()){
                     lblWarnPass.setVisible(true);
                     gd.exclude = false;
                     container.layout(true);
@@ -415,7 +418,8 @@ class PageRepo extends WizardPage implements Listener {
         lblWarnPass.setVisible(false);
 
         lblRepoRoot = new Label(container, SWT.NONE);
-        lblRepoRoot.setText("Select Git repository root directory (either empty folder or existing repository)");
+        lblRepoRoot.setText("Select Git repository root directory "
+                + "(either empty folder or existing repository)");
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
@@ -470,7 +474,8 @@ class PageRepo extends WizardPage implements Listener {
                 String path = dialog.open();
                 if (path != null) {
                     txtProjectFile.setText(path);
-                    AddonPrefLoader.savePreference(mainPrefStore, UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());
+                    AddonPrefLoader.savePreference(mainPrefStore,
+                            UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());
                 }
             }
         });
@@ -503,7 +508,6 @@ class PageRepo extends WizardPage implements Listener {
 
             }
         });
-
 
         setControl(container);
         btnSvn.setEnabled(false);
@@ -591,8 +595,7 @@ class PageSubdir extends WizardPage implements Listener {
         GridData gd = new GridData();
         gd.horizontalSpan = 2;
         btnDoInit = new Button(container, SWT.CHECK);
-        btnDoInit
-                .setText("Init repository from Schema Source (Live DB or dump file)");
+        btnDoInit.setText("Init project subdirectory from Schema Source (Live DB or dump file)");
         btnDoInit.setLayoutData(gd);
         
         btnDoInit.addSelectionListener(new SelectionAdapter() {

@@ -177,6 +177,7 @@ class DbSourceRepo extends DbSource {
             repo.repoCheckOut(dir, rev);
 
             pm.newChild(1).subTask("Loading tree...");
+            // TODO Implement reading subdir to be passed to loadDBSchema...
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                     dir.getAbsolutePath(), encoding, false, false);
         }

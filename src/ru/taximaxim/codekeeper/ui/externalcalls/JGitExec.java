@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.externalcalls;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 import org.eclipse.jgit.api.CloneCommand;
@@ -78,11 +77,15 @@ public class JGitExec implements IRepoWorker{
         }
     }
 
+    /**
+     * This method does not stage changes in the working copy.<br>
+     * {@link #repoRemoveMissingAddNew(File)} does that.
+     */
     @Override
     public void repoCommit(File dirIn, String comment) throws IOException {
         Git git = Git.open(getGitRoot(dirIn));
         try {
-            git.commit().setMessage(comment).setAll(true).call();
+            git.commit().setMessage(comment).call();
             PushCommand pushCom = git.push();
             if (PATTERN_HTTP_URL.matcher(url).matches()) {
                 pushCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
@@ -105,14 +108,21 @@ public class JGitExec implements IRepoWorker{
 
     @Override
     public void repoRemoveMissingAddNew(File dirIn) throws IOException {
-        Git git = Git.open(getGitRoot(dirIn));
+        File gitRoot = getGitRoot(dirIn);
+        Git git = Git.open(gitRoot);
+        
+        String subDir = gitRoot.toPath().relativize(dirIn.toPath()).toString();
+        if (subDir.isEmpty()) {
+            subDir = ".";
+        }
+        
         try {
-            git.add().addFilepattern(".").setUpdate(true).call();
-            git.add().addFilepattern(".").call();
+            git.add().addFilepattern(subDir).setUpdate(true).call();
+            git.add().addFilepattern(subDir).call();
         } catch (GitAPIException e) {
             throw new IOException(
                     "Exception thrown at JGit repoRemoveMissingAddNew.", e);
-        }finally{
+        } finally {
             git.close();
         }
     }
@@ -131,15 +141,7 @@ public class JGitExec implements IRepoWorker{
             IndexDiff id = new IndexDiff(git.getRepository(), "HEAD",
                     new FileTreeIterator(git.getRepository()));
             id.diff();
-            
-            Path subFolder = gitRoot.toPath().relativize(dirIn.toPath());
-            
-            for (String conflicted : id.getConflicting()){
-                if (conflicted.startsWith(subFolder.toString())){
-                    return true;
-                }
-            }
-            return false;
+            return !id.getConflicting().isEmpty();
         } finally {
             git.close();
         }

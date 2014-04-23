@@ -2,7 +2,6 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
 import java.io.File;
-import java.io.IOException;
 
 import javax.inject.Named;
 
@@ -12,7 +11,6 @@ import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
-import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
@@ -44,7 +42,8 @@ public class LoadProj {
             PgDbProject proj = new PgDbProject(path);
             if(proj.getProjectPropsFile().isFile()) {
                 load(proj, ctx, partService, model, app, mainPrefs);
-                AddonPrefLoader.savePreference(mainPrefs, UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());
+                AddonPrefLoader.savePreference(mainPrefs, 
+                        UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());
             } else {
                 MessageBox mb = new MessageBox(shell);
                 mb.setText("Load failed");
@@ -59,8 +58,10 @@ public class LoadProj {
             EModelService model, MApplication app, IPreferenceStore mainPrefs) {
         ctx.modify(PgDbProject.class, proj);
         
-        CommitPartDescr.openNew(proj.getProjectDirName(), partService, model, app);
-        DiffPartDescr.openNew(proj.getProjectDirName(), partService, model, app);
+        CommitPartDescr.openNew(proj.getProjectPropsFile().toString(),
+                partService, model, app);
+        DiffPartDescr.openNew(proj.getProjectPropsFile().toString(),
+                partService, model, app);
         RecentProjects.addRecent(proj.getProjectPropsFile().toString(), mainPrefs);
     }
 }
