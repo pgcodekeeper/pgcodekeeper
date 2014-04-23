@@ -968,7 +968,7 @@ class PageResult extends WizardPage {
                         + " diff...");
                 saveDialog.setOverwrite(true);
                 saveDialog.setFilterExtensions(new String[] { "*.sql", "*" });
-                saveDialog.setFilterPath(proj.getProjectDirName());
+                saveDialog.setFilterPath(proj.getProjectDirName()); // TODO save diff where
 
                 String saveTo = saveDialog.open();
                 if (saveTo != null) {

@@ -169,6 +169,7 @@ public class CommitPartDescr {
                             }
                             try (TempDir tmpRepoMeta = new TempDir(proj.getProjectDirPath().getParent(), 
                                     "tmp_repo_meta_")) {
+                                // TODO not necessary if dirSvn != gitRoot
                                 File svnMetaProj = new File(proj.getRepoRootDir(), repo.getRepoMetaFolder());
                                 File svnMetaTmp = new File(tmpRepoMeta.get(), repo.getRepoMetaFolder());
                                 Files.move(svnMetaProj.toPath(), svnMetaTmp.toPath());
@@ -446,7 +447,7 @@ public class CommitPartDescr {
     private void changeProject(PgDbProject proj, @Optional @Named("__DUMMY__")
                 @EventTopic(UIConsts.EVENT_REOPEN_PROJECT) PgDbProject proj2) {
         if (proj == null
-                || !proj.getProjectDirName().equals(
+                || !proj.getProjectPropsFile().toString().equals(
                         part.getPersistedState().get(UIConsts.PART_SYNC_ID))) {
             partService.hidePart(part);
         } else if (proj2 != null) {

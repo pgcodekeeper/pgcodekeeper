@@ -9,6 +9,8 @@ package ru.taximaxim.codekeeper.ui;
 public interface UIConsts {
     
     String VERSION = "0.0.2.dev";
+    
+    String JGIT_PLUGIN_ID = "org.eclipse.jgit";
 
     String PLUGIN_ID = "ru.taximaxim.codekeeper.ui";
     String PREF_STORE = PLUGIN_ID + ".preferenceStore";

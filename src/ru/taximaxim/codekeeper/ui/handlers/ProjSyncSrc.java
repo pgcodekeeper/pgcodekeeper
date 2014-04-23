@@ -29,11 +29,16 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 
 public class ProjSyncSrc {
+    
     @Inject
     private static IEventBroker events;
     
     @Execute
-    private void execute(PgDbProject proj, @Named(IServiceConstants.ACTIVE_SHELL) Shell shell, @Named(UIConsts.PREF_STORE) IPreferenceStore prefStore) throws IOException, InvocationTargetException {
+    private void execute(
+            PgDbProject proj,
+            @Named(IServiceConstants.ACTIVE_SHELL) Shell shell,
+            @Named(UIConsts.PREF_STORE) IPreferenceStore prefStore)
+                    throws IOException, InvocationTargetException {
         sync(proj, shell, prefStore);
     }
 
@@ -46,9 +51,14 @@ public class ProjSyncSrc {
      * @return false if sync failed due to svn conflicts
      * @throws IOException
      */
-    public static boolean sync(final PgDbProject proj, Shell shell, final IPreferenceStore mainPrefs) throws IOException, InvocationTargetException {
+    public static boolean sync(final PgDbProject proj,
+            Shell shell,
+            final IPreferenceStore mainPrefs) 
+                    throws IOException, InvocationTargetException {
         final boolean[] conflicted = { false };
+        
         IRunnableWithProgress syncRunnable = new IRunnableWithProgress() {
+            
             @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 SubMonitor pm = SubMonitor.convert(monitor, "Syncing repository cache", 10);

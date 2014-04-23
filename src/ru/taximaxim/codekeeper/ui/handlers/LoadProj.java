@@ -34,7 +34,7 @@ public class LoadProj {
             IEclipseContext ctx, EPartService partService, EModelService model,
             MApplication app, @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs) {
         FileDialog dialog = new FileDialog(shell);
-        dialog.setText("Open project file");
+        dialog.setText("Open project...");
         dialog.setOverwrite(false);
         dialog.setFilterPath(mainPrefs.getString(UIConsts.PREF_LAST_OPENED_LOCATION));
         dialog.setFilterExtensions(new String[] { "*.project", "*" });

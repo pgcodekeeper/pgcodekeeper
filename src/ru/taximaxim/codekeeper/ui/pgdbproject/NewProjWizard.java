@@ -49,11 +49,12 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
+
 public class NewProjWizard extends Wizard implements IPageChangingListener {
 
-    private PageDb pageDb;
     private PageRepo pageRepo;
     private PageSubdir pageSubdir;
+    private PageDb pageDb;
     private PageMisc pageMisc;
 
     final IPreferenceStore mainPrefStore;
@@ -74,7 +75,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
     public void addPages() {
         pageRepo = new PageRepo("Repository settings", mainPrefStore);
         addPage(pageRepo);
-        pageSubdir = new PageSubdir("Subdirectory select");
+        pageSubdir = new PageSubdir("Working directory settings");
         addPage(pageSubdir);
         pageDb = new PageDb("Schema Source Settings", mainPrefStore);
         addPage(pageDb);
@@ -102,18 +103,23 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
         if (event.getCurrentPage() == pageSubdir
                 && event.getTargetPage() == pageDb) {
             boolean isInit = pageSubdir.isDoInit();
+            
             if (isInit && pageDb.isSourceNone()) {
                 pageDb.setSourceDb();
             }
+            
             pageDb.setSourceNoneEnabled(!isInit);
-        } else if (event.getCurrentPage() == pageRepo) {
-            pageSubdir.setRepoSubdir(pageRepo.getRepoRootPath());
-            if (JGitExec.isGitRepo(pageRepo.getRepoRootPath()) || event.getTargetPage() instanceof PageRepo){
+        } else if (event.getCurrentPage() == pageRepo
+                && event.getTargetPage() == pageSubdir) {
+            pageSubdir.setRepoRoot(pageRepo.getRepoRootPath());
+            
+            if (JGitExec.isGitRepo(pageRepo.getRepoRootPath())){
                 return;
             }
+            
             if (MessageDialog.openQuestion(getShell(), "Selected directory is empty",
                             "Targer directory is not a GIT repository root directory.\n"
-                            + "You need to clone the repo first in order to select subfolder to work in.\n"
+                            + "You need to clone the repo first in order to select working directory.\n"
                             + "Do you want to clone repository \""
                             + pageRepo.getRepoUrl()
                             + "\" to selected directory now?")) {
@@ -122,7 +128,9 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                 final String repoUser = pageRepo.getRepoUser();
                 final String repoPass = pageRepo.getRepoPass();
                 final String repoPath = pageRepo.getRepoRootPath();
+                
                 IRunnableWithProgress cloneRunnable = new IRunnableWithProgress() {
+                    
                     @Override
                     public void run(IProgressMonitor monitor)
                             throws InvocationTargetException,
@@ -140,6 +148,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                         monitor.done();
                     }
                 };
+                
                 try {
                     new ProgressMonitorDialog(pageRepo.getShell()).run(true,
                             false, cloneRunnable);
@@ -149,6 +158,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                             this.getShell());
                 }
             } else {
+                // didn't clone the repo; can't proceed without it
                 event.doit = false;
             }
         }
@@ -170,9 +180,8 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
 
         props.setValue(UIConsts.PROJ_PREF_REPO_ROOT_PATH, pageRepo.getRepoRootPath());
 
-        props.setValue(
-                UIConsts.PROJ_PREF_REPO_SUBDIR_PATH,
-                Paths.get(pageRepo.getRepoRootPath())
+        props.setValue(UIConsts.PROJ_PREF_REPO_SUBDIR_PATH,
+                        Paths.get(pageRepo.getRepoRootPath())
                         .relativize(Paths.get(pageSubdir.getRepoSubdir()))
                         .toString());
 
@@ -404,10 +413,9 @@ class PageRepo extends WizardPage implements Listener {
         gd.exclude = true;
         lblWarnPass.setLayoutData(gd);
         lblWarnPass.setVisible(false);
-        gd = new GridData();
-        gd.horizontalSpan = 2;
+
         lblRepoRoot = new Label(container, SWT.NONE);
-        lblRepoRoot.setText("Select GIT repository root directory (either empty folder or existing repository)");
+        lblRepoRoot.setText("Select Git repository root directory (either empty folder or existing repository)");
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
@@ -504,23 +512,25 @@ class PageRepo extends WizardPage implements Listener {
 
     @Override
     public boolean isPageComplete() {
-        //TODO enable Next even if git repo is empty
+        // TODO enable Next even if git repo url is empty
         String errMsg = null;
-        if (txtRepoUrl.getText().isEmpty()) {
+        
+        if (getRepoUrl().isEmpty()) {
             errMsg = "Enter " + repoTypeName + " Repo URL!";
-        } else if (txtRepoRoot.getText().isEmpty()
-                || !new File(txtRepoRoot.getText()).isDirectory()) {
-            errMsg = "Select Project Directory!";
-        }else if (!JGitExec.isGitRepo(getRepoRootPath()) && 
-                new File(txtRepoRoot.getText()).list().length != 0){
-            errMsg = "Selected directory should be either empty or root directory of\n"
-                    + " existing git repository (should contain .git subdirectory)";
-        }else if(getProjectFile().isEmpty() || !getProjectFile().endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)){
+        } else if (getRepoRootPath().isEmpty()
+                || !new File(getRepoRootPath()).isDirectory()) {
+            errMsg = "Select repo root directory!";
+        } else if (!JGitExec.isGitRepo(getRepoRootPath())
+                && new File(txtRepoRoot.getText()).list().length != 0) {
+            errMsg = "Selected directory must be empty or be a root directory of"
+                    + " existing git repository (must contain .git subdirectory)";
+        } else if (getProjectFile().isEmpty()
+                || !getProjectFile().endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)) {
             errMsg = "Select project filename!";
-        }else if (new File (txtRepoRoot.getText()).toPath().getNameCount() == 0){
+        } else if (new File(getRepoRootPath()).toPath().getNameCount() == 0) {
             errMsg = "Select Project Directory (should not be root)!";
         }
-
+/*
         if (checkOverwrite) {
             File proj = new File(txtRepoRoot.getText(),
                     UIConsts.FILENAME_PROJ_PREF_STORE);
@@ -535,7 +545,7 @@ class PageRepo extends WizardPage implements Listener {
                 }
             }
         }
-
+*/
         setErrorMessage(errMsg);
         return errMsg == null;
     }
@@ -548,24 +558,25 @@ class PageRepo extends WizardPage implements Listener {
 }
 
 class PageSubdir extends WizardPage implements Listener {
+
+    private LocalResourceManager lrm;
+    
     private Button btnDoInit;
     private Composite container;
     private CLabel lblWarnInit;
     private Text txtRepoSubdir;
+    private Label lblRepoSubdir;
+    
+    private String repoRoot;
     
     public String getRepoSubdir() {
         return txtRepoSubdir.getText();
     }
 
-    public void setRepoSubdir(String repoRoot) {
+    public void setRepoRoot(String repoRoot) {
         this.repoRoot = repoRoot;
         this.txtRepoSubdir.setText(repoRoot);
     }
-
-    private Label lblRepoSubdir;
-    
-    private LocalResourceManager lrm;
-    private String repoRoot = "";
     
     PageSubdir(String pageName) {
         super(pageName, pageName, null);
@@ -602,17 +613,18 @@ class PageSubdir extends WizardPage implements Listener {
         lblWarnInit.setImage(lrm.createImage(ImageDescriptor
                 .createFromURL(Activator.getContext().getBundle()
                         .getResource(UIConsts.FILENAME_ICONWARNING))));
-        lblWarnInit.setText("Warning:\n" + "This will delete repo contents and recreate them from Schema Source"
-                + " (next page).");        
+        lblWarnInit.setText("Warning:\n"
+                        + "This will delete repo contents and recreate them "
+                        + "from Schema Source (next page).");        
         gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
         gd.exclude = true;
         lblWarnInit.setLayoutData(gd);
         lblWarnInit.setVisible(false);
         
-
         lblRepoSubdir = new Label(container, SWT.NONE);
-        lblRepoSubdir.setText("Point to a directory inside the repository, that will contain DB schemas and constraints\n"
-                + "(leave unchanged to use root)");
+        lblRepoSubdir.setText("Select a directory inside the repository,"
+                            + " that will contain DB schemas and constraints\n"
+                            + "(leave unchanged to use root)");
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
@@ -653,10 +665,13 @@ class PageSubdir extends WizardPage implements Listener {
     public boolean isPageComplete() {
         String repoSubdir = txtRepoSubdir.getText();
         String errMsg = null;
+        
+        // TODO check if not empty, move overwrite check here?
         if (repoSubdir.isEmpty() || !new File(repoSubdir).exists() || 
                 !Paths.get(repoSubdir).startsWith(Paths.get(repoRoot))) {
             errMsg = "Select correct subdir of the GIT repository";
         }
+        
         setErrorMessage(errMsg);
         return errMsg == null;
     }

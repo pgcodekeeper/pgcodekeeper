@@ -119,7 +119,7 @@ public class JGitExec implements IRepoWorker{
 
     @Override
     public String getRepoMetaFolder() {
-        // TODO replase magic strings ".git" by call to this method
+        // TODO replace magic strings ".git" by call to this method
         return ".git";
     }
 
@@ -166,7 +166,7 @@ public class JGitExec implements IRepoWorker{
     @Override
     public String repoGetVersion() throws IOException {
         for (Bundle b : Activator.getContext().getBundles()){
-            if (b.getSymbolicName().startsWith("org.eclipse.jgit")){
+            if (b.getSymbolicName().equals(UIConsts.JGIT_PLUGIN_ID)){
                 return b.getVersion().toString();
             }
         }
@@ -207,7 +207,7 @@ public class JGitExec implements IRepoWorker{
             }
         }
         throw new IllegalStateException("Could not find .git repository in " 
-                                            + subDir + " and below");
+                                            + subDir + " and higher");
     }
     
     class CustomJschConfigSessionFactory extends JschConfigSessionFactory {

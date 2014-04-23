@@ -14,6 +14,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 public class PgDbProject extends PreferenceStore {
 
     public enum RepoType {
+        
         SVN("SVN"), GIT("GIT");
         private String repoType;
 
@@ -40,7 +41,7 @@ public class PgDbProject extends PreferenceStore {
         if (fileName.endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)){
             this.projectName = fileName.substring(0, fileName.length() - 
                     UIConsts.FILENAME_PROJ_PREF_STORE.length());
-        }else {
+        } else {
             this.projectName = fileName;
         }
         addPropertyChangeListener(new IPropertyChangeListener() {
