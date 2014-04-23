@@ -51,7 +51,7 @@ public class AddonOpenLast {
             String last = recent[0];
             final PgDbProject proj = new PgDbProject(last);
             
-            if (proj.getProjectPropsFile().isFile()) {
+            if (proj.getProjectFile().isFile()) {
                 sync.asyncExec(new Runnable() {
                     
                     @Override

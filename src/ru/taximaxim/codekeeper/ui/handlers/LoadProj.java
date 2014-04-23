@@ -40,7 +40,7 @@ public class LoadProj {
         String path = dialog.open();
         if(path != null) {
             PgDbProject proj = new PgDbProject(path);
-            if(proj.getProjectPropsFile().isFile()) {
+            if(proj.getProjectFile().isFile()) {
                 load(proj, ctx, partService, model, app, mainPrefs);
                 AddonPrefLoader.savePreference(mainPrefs, 
                         UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());
@@ -58,10 +58,10 @@ public class LoadProj {
             EModelService model, MApplication app, IPreferenceStore mainPrefs) {
         ctx.modify(PgDbProject.class, proj);
         
-        CommitPartDescr.openNew(proj.getProjectPropsFile().toString(),
+        CommitPartDescr.openNew(proj.getProjectFile().toString(),
                 partService, model, app);
-        DiffPartDescr.openNew(proj.getProjectPropsFile().toString(),
+        DiffPartDescr.openNew(proj.getProjectFile().toString(),
                 partService, model, app);
-        RecentProjects.addRecent(proj.getProjectPropsFile().toString(), mainPrefs);
+        RecentProjects.addRecent(proj.getProjectFile().toString(), mainPrefs);
     }
 }

@@ -38,7 +38,7 @@ public class OpenRecent {
         CloseActiveProj.close(app.getContext());
         PgDbProject proj = new PgDbProject(menuItem.getLabel());
         
-        if (proj.getProjectPropsFile().isFile()) {
+        if (proj.getProjectFile().isFile()) {
             LoadProj.load(proj, app.getContext(), partService, model, app, mainPrefs);
         } else {
             MessageBox mb = new MessageBox(shell);

@@ -88,7 +88,7 @@ public class ProjectCreator implements IRunnableWithProgress {
 
     private void initRepoFromSource(SubMonitor pm, IRepoWorker repo)
             throws IOException, InvocationTargetException {
-        File dirRepo = props.getProjectDirFile();
+        File dirRepo = props.getProjectWorkingDir();
         SubMonitor taskpm = pm.newChild(25); // 50
 
         PgDatabase db;
@@ -109,9 +109,10 @@ public class ProjectCreator implements IRunnableWithProgress {
 
         pm.newChild(25).subTask("Exporting DB model..."); // 75
 
-        try (TempDir tmpRepoMeta = new TempDir(props.getProjectDirPath().getParent(),
+        try (TempDir tmpRepoMeta = new TempDir(
+                props.getProjectWorkingDir().toPath().getParent(),
                 "tmp_repo_meta_")) {
-            File repoMetaProj = new File(props.getRepoRootDir(), repo.getRepoMetaFolder());
+            File repoMetaProj = new File(props.getRepoRoot(), repo.getRepoMetaFolder());
             File repoMetaTmp = new File(tmpRepoMeta.get(), repo.getRepoMetaFolder());
             Files.move(repoMetaProj.toPath(), repoMetaTmp.toPath());
             Dir.deleteRecursive(dirRepo);

@@ -25,12 +25,11 @@ public class PgDbProject extends PreferenceStore {
     }
 
     private final String projectName;
-
-    private final String projectFile;
+    private final File projectFile;
     
     public PgDbProject(String projectFile) {
         super(projectFile);
-        this.projectFile = projectFile;
+        this.projectFile = new File(projectFile);
         
         String fileName = Paths.get(projectFile).getFileName().toString();
         if (fileName.endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)){
@@ -45,25 +44,16 @@ public class PgDbProject extends PreferenceStore {
         return projectName;
     }
     
-    public File getProjectPropsFile() {
-        return new File(projectFile);
+    public File getProjectFile() {
+        return projectFile;
     }
     
-    public File getRepoRootDir(){
-        return new File (getString(UIConsts.PROJ_PREF_REPO_ROOT_PATH));
+    public File getRepoRoot(){
+        return new File(getString(UIConsts.PROJ_PREF_REPO_ROOT_PATH));
     }
     
-    public String getProjectDirName() {
-        return new File(getString(UIConsts.PROJ_PREF_REPO_ROOT_PATH), 
-                getString(UIConsts.PROJ_PREF_REPO_SUBDIR_PATH)).toString();
-    }
-    
-    public File getProjectDirFile() {
+    public File getProjectWorkingDir() {
         return new File(getString(UIConsts.PROJ_PREF_REPO_ROOT_PATH), 
                 getString(UIConsts.PROJ_PREF_REPO_SUBDIR_PATH));
-    }
-
-    public Path getProjectDirPath() {
-        return getProjectDirFile().toPath();
     }
 }
