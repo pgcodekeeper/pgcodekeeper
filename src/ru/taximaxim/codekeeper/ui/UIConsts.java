@@ -8,7 +8,9 @@ package ru.taximaxim.codekeeper.ui;
  */
 public interface UIConsts {
     
-    String VERSION = "0.0.2.dev";
+    String VERSION = "0.0.3.dev";
+    
+    String JGIT_PLUGIN_ID = "org.eclipse.jgit";
 
     String PLUGIN_ID = "ru.taximaxim.codekeeper.ui";
     String PREF_STORE = PLUGIN_ID + ".preferenceStore";
@@ -31,6 +33,7 @@ public interface UIConsts {
     String PREF_GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile";
     String PREF_RECENT_PROJECTS = "prefRecentProject";
     String PREF_OPEN_LAST_ON_START = "prefOpenLastOnStart";
+    String PREF_LAST_OPENED_LOCATION = "prefLastOpenedLocation";
     
     // Project preferences
     String PROJ_PREF_ENCODING = "prefGeneralEncoding";
@@ -50,9 +53,10 @@ public interface UIConsts {
     String PROJ_PREF_REPO_USER = "prefRepoUser";
     String PROJ_PREF_REPO_PASS = "prefRepoPass";
     String PROJ_PREF_REPO_TYPE = "prefRepoType";
+    String PROJ_PREF_REPO_SUBDIR_PATH = "prefWorkingDirPath";
+    String PROJ_PREF_REPO_ROOT_PATH = "prefRepoPath";
     
-    String FILENAME_PROJ_PREF_STORE = "pgcodekeeper.project";
-    String FILENAME_PROJ_SCHEMA_DIR = "repo";
+    String FILENAME_PROJ_PREF_STORE = ".project";
     
     String FILENAME_ICONPGADMIN = "/icons/pgadmin/";
     String FILENAME_ICONWARNING = "/icons/warning.gif";

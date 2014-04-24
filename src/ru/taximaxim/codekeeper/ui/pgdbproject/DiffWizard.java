@@ -33,7 +33,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
@@ -46,6 +45,7 @@ import org.eclipse.swt.widgets.Text;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
@@ -642,7 +642,7 @@ class PageDiff extends WizardPage implements Listener {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (btnThis.getSelection()) {
-                    txtProjPath.setText(proj.getProjectDir());
+                    txtProjPath.setText(proj.getProjectWorkingDir().toString());
                     txtProjPath.setEnabled(false);
                 } else {
                     txtProjPath.setEnabled(true);
@@ -667,20 +667,17 @@ class PageDiff extends WizardPage implements Listener {
             public void modifyText(ModifyEvent e) {
                 String dir = txtProjPath.getText();
 
-                if (!dir.isEmpty() && new File(dir).isDirectory()) {
+                if (!dir.isEmpty() && new File(dir).isFile() &&
+                        dir.endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)) {
                     PgDbProject tmpProj = new PgDbProject(dir);
-
-                    if (tmpProj.getProjectPropsFile().isFile()) {
-                        try {
-                            tmpProj.load();
-                        } catch (IOException ex) {
-                            throw new IllegalStateException(
-                                    "Unexpected error while reading targetproject",
-                                    ex);
-                        }
-                        cmbEncoding.select(cmbEncoding.indexOf(tmpProj
-                                .getString(UIConsts.PROJ_PREF_ENCODING)));
+                    try {
+                        tmpProj.load();
+                    } catch (IOException ex) {
+                        throw new IllegalStateException(
+                                "Unexpected error while reading targetproject", ex);
                     }
+                    cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getString(
+                            UIConsts.PROJ_PREF_ENCODING)));
                 }
             }
         });
@@ -691,13 +688,17 @@ class PageDiff extends WizardPage implements Listener {
         btnBrowseProj.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DirectoryDialog dialog = new DirectoryDialog(container
-                        .getShell());
+                FileDialog dialog = new FileDialog(container.getShell());
+                dialog.setText("Open project file");
+                dialog.setOverwrite(false);
+                dialog.setFilterExtensions(new String[] { "*.project", "*" });
+                dialog.setFilterPath(mainPrefs.getString(UIConsts.PREF_LAST_OPENED_LOCATION));
                 String path = dialog.open();
                 if (path != null) {
                     txtProjPath.setText(path);
                     txtProjPath.setEnabled(true);
                     btnThis.setSelection(false);
+                    AddonPrefLoader.savePreference(mainPrefs, UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());
                 }
             }
         });
@@ -785,9 +786,9 @@ class PageDiff extends WizardPage implements Listener {
         case PROJ:
             String dir = txtProjPath.getText();
 
-            if (dir.isEmpty() || !new File(dir).isDirectory()
-                    || !new PgDbProject(dir).getProjectPropsFile().isFile()) {
-                errMsg = "Select a valid project directory!";
+            if (dir.isEmpty() || !dir.endsWith(UIConsts.FILENAME_PROJ_PREF_STORE) 
+                    || !new File(dir).isFile()) {
+                errMsg = "Select a valid project file!";
             }
 
             break;
@@ -964,7 +965,7 @@ class PageResult extends WizardPage {
                         + " diff...");
                 saveDialog.setOverwrite(true);
                 saveDialog.setFilterExtensions(new String[] { "*.sql", "*" });
-                saveDialog.setFilterPath(proj.getProjectDir());
+                saveDialog.setFilterPath(proj.getProjectFile().getParent());
 
                 String saveTo = saveDialog.open();
                 if (saveTo != null) {

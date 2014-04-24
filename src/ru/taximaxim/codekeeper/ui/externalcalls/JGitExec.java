@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.MergeResult.MergeStatus;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
@@ -38,8 +37,7 @@ public class JGitExec implements IRepoWorker{
     private final String url, user, pass;
     public static final Pattern PATTERN_HTTP_URL = Pattern.compile(
             "http(s)?://.+", Pattern.CASE_INSENSITIVE);
-    public static final Pattern PATTERN_FILE_URL = Pattern.compile("(file://)?"
-            + System.getProperty("file.separator") + ".*",
+    public static final Pattern PATTERN_FILE_URL = Pattern.compile("(file://).*",
             Pattern.CASE_INSENSITIVE);
     private static final int RSA_KEY_LENGTH = 2048;
     
@@ -83,13 +81,17 @@ public class JGitExec implements IRepoWorker{
         }
     }
 
+    /**
+     * This method does not stage changes in the working copy.<br>
+     * {@link #repoRemoveMissingAddNew(File)} does that.
+     */
     @Override
-    public void repoCommit(File dirFrom, String comment) throws IOException {
-        Git git = Git.open(dirFrom);
+    public void repoCommit(File dirIn, String comment) throws IOException {
+        Git git = Git.open(getGitRoot(dirIn));
         try {
             Log.log(Log.LOG_INFO, "git commit " + url);
             
-            git.commit().setMessage(comment).setAll(true).call();
+            git.commit().setMessage(comment).call();
             PushCommand pushCom = git.push();
             if (PATTERN_HTTP_URL.matcher(url).matches()) {
                 pushCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
@@ -115,32 +117,41 @@ public class JGitExec implements IRepoWorker{
 
     @Override
     public void repoRemoveMissingAddNew(File dirIn) throws IOException {
-        Git git = Git.open(dirIn);
+        File gitRoot = getGitRoot(dirIn);
+        Git git = Git.open(gitRoot);
+        
+        String subDir = gitRoot.toPath().relativize(dirIn.toPath()).toString();
+        if (subDir.isEmpty()) {
+            subDir = ".";
+        }
+        
         try {
 
             Log.log(Log.LOG_INFO, "git add update " + url);
             
-            git.add().addFilepattern(".").setUpdate(true).call();
+            git.add().addFilepattern(subDir).setUpdate(true).call();
 
             Log.log(Log.LOG_INFO, "git add " + url);
             
-            git.add().addFilepattern(".").call();
+            git.add().addFilepattern(subDir).call();
         } catch (GitAPIException e) {
             throw new IOException(
                     "Exception thrown at JGit repoRemoveMissingAddNew.", e);
-        }finally{
+        } finally {
             git.close();
         }
     }
 
     @Override
     public String getRepoMetaFolder() {
+        // TODO replace magic strings ".git" by call to this method
         return ".git";
     }
 
     @Override
     public boolean hasConflicts(File dirIn) throws IOException {
-        Git git = Git.open(dirIn);
+        File gitRoot = getGitRoot(dirIn);
+        Git git = Git.open(gitRoot);
         try {
             IndexDiff id = new IndexDiff(git.getRepository(), "HEAD",
                     new FileTreeIterator(git.getRepository()));
@@ -156,7 +167,8 @@ public class JGitExec implements IRepoWorker{
 
     @Override
     public boolean repoUpdate(File dirIn) throws IOException  {
-        Git git = Git.open(dirIn); 
+        File gitRoot = getGitRoot(dirIn);
+        Git git = Git.open(gitRoot);
         try {
             PullCommand pullCom = git.pull();
             if (PATTERN_HTTP_URL.matcher(url).matches()) {
@@ -166,8 +178,7 @@ public class JGitExec implements IRepoWorker{
             Log.log(Log.LOG_INFO, "git pull " + url);
             
             PullResult pr =  pullCom.call();
-            return pr.getMergeResult().getMergeStatus() == MergeStatus.MERGED ||
-                    pr.getMergeResult().getMergeStatus() == MergeStatus.ALREADY_UP_TO_DATE;
+            return pr.getMergeResult().getMergeStatus().isSuccessful();
         } catch (GitAPIException e){
             throw new IOException("Exception thrown at JGit repoUpdate.", e);
         }finally{
@@ -178,11 +189,20 @@ public class JGitExec implements IRepoWorker{
     @Override
     public String repoGetVersion() throws IOException {
         for (Bundle b : Activator.getContext().getBundles()){
-            if (b.getSymbolicName().startsWith("org.eclipse.jgit")){
+            if (b.getSymbolicName().equals(UIConsts.JGIT_PLUGIN_ID)){
                 return b.getVersion().toString();
             }
         }
         return null;
+    }
+    
+    public static boolean isGitRepo(String path){
+        try {
+            Git.open(new File(path));
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
     
     public static void genKeys(String privateFileName)
@@ -203,6 +223,20 @@ public class JGitExec implements IRepoWorker{
         publicKeyFile.createNewFile();
         keys.writePrivateKey(privateKeyFile.getAbsolutePath());
         keys.writePublicKey(publicKeyFile.getAbsolutePath(), "");
+    }
+
+    private File getGitRoot(File subDir) {
+        File gitSubDir = subDir;
+        while (gitSubDir != null) {
+            gitSubDir = new File(gitSubDir, ".git");
+            if (gitSubDir.exists()) {
+                return gitSubDir.getParentFile();
+            } else {
+                gitSubDir = gitSubDir.getParentFile().getParentFile();
+            }
+        }
+        throw new IllegalStateException("Could not find .git repository in " 
+                                            + subDir + " and higher");
     }
     
     private static class CustomJschConfigSessionFactory extends JschConfigSessionFactory {

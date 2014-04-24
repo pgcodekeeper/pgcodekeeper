@@ -22,7 +22,7 @@ public class CloseActiveProj {
     
     public static void close(IEclipseContext ctx) {
         PgDbProject projClosed = ctx.get(PgDbProject.class);
-        Log.log(Log.LOG_INFO, "Project about to close: " + projClosed.getProjectPropsFile());
+        Log.log(Log.LOG_INFO, "Project about to close: " + projClosed.getProjectFile());
         
         ctx.modify(PgDbProject.class, null);
     }

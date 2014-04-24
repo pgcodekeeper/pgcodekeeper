@@ -155,7 +155,7 @@ public class CommitPartDescr {
                         PgDatabase dbNew = applier.apply();
 
                         pm.newChild(1).subTask("Exporting new DB model..."); // 2
-                        File dirSvn = proj.getProjectSchemaDir();
+                        File dirSvn = proj.getProjectWorkingDir();
                         try {
                             IRepoWorker repo;
                             switch (RepoType.valueOf(proj.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
@@ -168,14 +168,13 @@ public class CommitPartDescr {
                             default:
                                 throw new IllegalStateException("Not a SVN/GIT enabled project");
                             }
-                            try (TempDir tmpRepoMeta = new TempDir(proj
-                                    .getProjectPath(), "tmp_repo_meta_")) {
-                                File svnMetaProj = new File(dirSvn, repo
-                                        .getRepoMetaFolder());
-                                File svnMetaTmp = new File(tmpRepoMeta.get(),
-                                        repo.getRepoMetaFolder());
-                                Files.move(svnMetaProj.toPath(),
-                                        svnMetaTmp.toPath());
+                            try (TempDir tmpRepoMeta = new TempDir(
+                                    proj.getProjectWorkingDir().toPath().getParent(), 
+                                    "tmp_repo_meta_")) {
+                                // TODO not necessary if dirSvn != gitRoot
+                                File svnMetaProj = new File(proj.getRepoRoot(), repo.getRepoMetaFolder());
+                                File svnMetaTmp = new File(tmpRepoMeta.get(), repo.getRepoMetaFolder());
+                                Files.move(svnMetaProj.toPath(), svnMetaTmp.toPath());
                                 Dir.deleteRecursive(dirSvn);
 
                                 new ModelExporter(
@@ -452,7 +451,7 @@ public class CommitPartDescr {
     private void changeProject(PgDbProject proj, @Optional @Named("__DUMMY__")
                 @EventTopic(UIConsts.EVENT_REOPEN_PROJECT) PgDbProject proj2) {
         if (proj == null
-                || !proj.getProjectDir().equals(
+                || !proj.getProjectFile().toString().equals(
                         part.getPersistedState().get(UIConsts.PART_SYNC_ID))) {
             partService.hidePart(part);
         } else if (proj2 != null) {

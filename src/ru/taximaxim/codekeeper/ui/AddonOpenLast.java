@@ -51,7 +51,7 @@ public class AddonOpenLast {
             String last = recent[0];
             final PgDbProject proj = new PgDbProject(last);
             
-            if (proj.getProjectPropsFile().isFile()) {
+            if (proj.getProjectFile().isFile()) {
                 sync.asyncExec(new Runnable() {
                     
                     @Override
@@ -62,7 +62,7 @@ public class AddonOpenLast {
                 });
             } else {
                 Log.log(Log.LOG_WARNING, "Couldn't open last project at "
-                        + proj.getProjectPropsFile()
+                        + proj.getProjectFile()
                         + ". Project pref store either doesn't exist or not a file.");
             }
         }

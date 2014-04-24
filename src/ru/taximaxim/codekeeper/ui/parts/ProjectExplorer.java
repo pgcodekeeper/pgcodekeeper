@@ -245,7 +245,7 @@ public class ProjectExplorer {
             
             if(proj != null) {
                 proj.load();
-                treeInput = proj.getProjectSchemaDir();
+                treeInput = proj.getProjectWorkingDir();
                 
                 IRunnableWithProgress loadRunnable = new IRunnableWithProgress() {
                     @Override

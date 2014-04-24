@@ -38,11 +38,11 @@ public class OpenRecent {
             @Named(IServiceConstants.ACTIVE_SHELL) Shell shell) {
         PgDbProject proj = new PgDbProject(menuItem.getLabel());
         
-        if (proj.getProjectPropsFile().isFile()) {
+        if (proj.getProjectFile().isFile()) {
             LoadProj.load(proj, app.getContext(), partService, model, app, mainPrefs);
         } else {
             Log.log(Log.LOG_WARNING, "Couldn't open project at "
-                    + proj.getProjectPropsFile()
+                    + proj.getProjectFile()
                     + ". Project pref store either doesn't exist or not a file.");
             
             MessageBox mb = new MessageBox(shell);

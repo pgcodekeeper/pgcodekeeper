@@ -363,7 +363,7 @@ public class DiffPartDescr {
     private void changeProject(PgDbProject proj, @Optional @Named("__DUMMY__")
                 @EventTopic(UIConsts.EVENT_REOPEN_PROJECT) PgDbProject proj2) {
         if (proj == null
-                || !proj.getProjectDir().equals(
+                || !proj.getProjectFile().toString().equals(
                         part.getPersistedState().get(UIConsts.PART_DIFF_ID))) {
             partService.hidePart(part);
         } else if (proj2 != null) {

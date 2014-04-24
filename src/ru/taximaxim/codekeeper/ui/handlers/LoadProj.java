@@ -1,6 +1,8 @@
  
 package ru.taximaxim.codekeeper.ui.handlers;
 
+import java.io.File;
+
 import javax.inject.Named;
 
 import org.eclipse.e4.core.contexts.IEclipseContext;
@@ -10,11 +12,12 @@ import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.parts.CommitPartDescr;
 import ru.taximaxim.codekeeper.ui.parts.DiffPartDescr;
@@ -29,12 +32,19 @@ public class LoadProj {
             Shell shell,
             IEclipseContext ctx, EPartService partService, EModelService model,
             MApplication app, @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs) {
-        DirectoryDialog dialog = new DirectoryDialog(shell);
+        FileDialog dialog = new FileDialog(shell);
+        dialog.setText("Open project...");
+        dialog.setOverwrite(false);
+        dialog.setFilterPath(mainPrefs.getString(UIConsts.PREF_LAST_OPENED_LOCATION));
+        dialog.setFilterExtensions(new String[] { "*.project", "*" });
+        
         String path = dialog.open();
         if(path != null) {
             PgDbProject proj = new PgDbProject(path);
-            if(proj.getProjectPropsFile().isFile()) {
+            if(proj.getProjectFile().isFile()) {
                 load(proj, ctx, partService, model, app, mainPrefs);
+                AddonPrefLoader.savePreference(mainPrefs, 
+                        UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());
             } else {
                 MessageBox mb = new MessageBox(shell);
                 mb.setText("Load failed");
@@ -47,11 +57,13 @@ public class LoadProj {
     
     public static void load(PgDbProject proj, IEclipseContext ctx, EPartService partService,
             EModelService model, MApplication app, IPreferenceStore mainPrefs) {
-        Log.log(Log.LOG_INFO, "Opening project at " + proj.getProjectPropsFile());
+        Log.log(Log.LOG_INFO, "Opening project at " + proj.getProjectFile());
         ctx.modify(PgDbProject.class, proj);
         
-        CommitPartDescr.openNew(proj.getProjectDir(), partService, model, app);
-        DiffPartDescr.openNew(proj.getProjectDir(), partService, model, app);
-        RecentProjects.addRecent(proj.getProjectDir(), mainPrefs);
+        CommitPartDescr.openNew(proj.getProjectFile().toString(),
+                partService, model, app);
+        DiffPartDescr.openNew(proj.getProjectFile().toString(),
+                partService, model, app);
+        RecentProjects.addRecent(proj.getProjectFile().toString(), mainPrefs);
     }
 }

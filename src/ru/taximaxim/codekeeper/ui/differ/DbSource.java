@@ -180,6 +180,7 @@ class DbSourceRepo extends DbSource {
             repo.repoCheckOut(dir, rev);
 
             pm.newChild(1).subTask("Loading tree...");
+            // TODO Implement reading subdir to be passed to loadDBSchema...
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                     dir.getAbsolutePath(), encoding, false, false);
         }
@@ -192,7 +193,7 @@ class DbSourceProject extends DbSource {
     final private PgDbProject proj;
 
     DbSourceProject(PgDbProject proj) {
-        super(proj.getProjectPropsFile().getAbsolutePath());
+        super(proj.getProjectFile().getAbsolutePath());
 
         this.proj = proj;
     }
@@ -202,7 +203,7 @@ class DbSourceProject extends DbSource {
         SubMonitor.convert(monitor, 1).newChild(1).subTask("Loading tree...");
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(proj
-                .getProjectSchemaDir().getAbsolutePath(), proj
+                .getProjectWorkingDir().getAbsolutePath(), proj
                 .getString(UIConsts.PROJ_PREF_ENCODING), false, false);
     }
 }

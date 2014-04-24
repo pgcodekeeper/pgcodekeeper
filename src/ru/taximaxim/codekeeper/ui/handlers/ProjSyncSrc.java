@@ -4,12 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.core.di.annotations.Execute;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -28,7 +30,10 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 
 public class ProjSyncSrc {
-
+    
+    @Inject
+    private static IEventBroker events;
+    
     @Execute
     private void execute(
             PgDbProject proj,
@@ -51,11 +56,12 @@ public class ProjSyncSrc {
             Shell shell,
             final IPreferenceStore mainPrefs)
                     throws IOException, InvocationTargetException {
-        Log.log(Log.LOG_INFO, "Syncing project " + proj.getProjectPropsFile() +
+        Log.log(Log.LOG_INFO, "Syncing project " + proj.getProjectFile() +
                 " with repo url " + proj.getString(UIConsts.PROJ_PREF_REPO_URL));
         
         final boolean[] conflicted = { false };
         IRunnableWithProgress syncRunnable = new IRunnableWithProgress() {
+            
             @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 SubMonitor pm = SubMonitor.convert(monitor, "Syncing repository cache", 10);
@@ -71,7 +77,7 @@ public class ProjSyncSrc {
                     throw new IllegalStateException("Not a SVN/GIT enabled project");
                 }
 
-                File repoDir = proj.getProjectSchemaDir();
+                File repoDir = proj.getProjectWorkingDir();
 
                 try {
                     pm.newChild(2).subTask("Checking conflicts...");
@@ -100,6 +106,8 @@ public class ProjSyncSrc {
             mb.setText("Sync error!");
             mb.setMessage("Repository cache has conflicts!" + " Resolve them manually and reload project before continuing.");
             mb.open();
+        }else{
+            events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
         }
 
         return !conflicted[0];

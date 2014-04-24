@@ -50,35 +50,27 @@ public class ProjectCreator implements IRunnableWithProgress {
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException {
         try {
-            Log.log(Log.LOG_INFO, "Creating project at " + props.getProjectPropsFile());
+            Log.log(Log.LOG_INFO, "Creating project at " + props.getProjectFile());
             
             int workToDo = doInit ? 100 : 1;
             SubMonitor pm = SubMonitor.convert(monitor, "Creating project...",
                     workToDo); // 0
 
-            IRepoWorker repo;
-            switch (RepoType.valueOf(props.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
-            case SVN:
-                repo = new SvnExec(exeSvn, props);
-                repoName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
-                break;
-            case GIT:
-                repo = new JGitExec(props, mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
-                repoName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
-                break;
-            default:
-                throw new IllegalStateException("Not a SVN/GIT enabled project");
-            }
-            
-            pm.newChild(doInit ? 25 : workToDo).subTask(
-                    repoName + " current rev checkout..."); // 25 or 100%
-            File dirRepo = props.getProjectSchemaDir();
-            if (dirRepo.exists()) {
-                Dir.deleteRecursive(dirRepo);
-            }
-            Files.createDirectory(dirRepo.toPath());
-            repo.repoCheckOut(dirRepo);
             if (doInit) {
+                IRepoWorker repo;
+                switch (RepoType.valueOf(props.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
+                case SVN:
+                    repo = new SvnExec(exeSvn, props);
+                    repoName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
+                    break;
+                case GIT:
+                    repo = new JGitExec(props, mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+                    repoName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
+                    break;
+                default:
+                    throw new IllegalStateException("Not a SVN/GIT enabled project");
+                }
+                
                 initRepoFromSource(pm, repo);
             }
             monitor.done();
@@ -100,7 +92,7 @@ public class ProjectCreator implements IRunnableWithProgress {
 
     private void initRepoFromSource(SubMonitor pm, IRepoWorker repo)
             throws IOException, InvocationTargetException {
-        File dirRepo = props.getProjectSchemaDir();
+        File dirRepo = props.getProjectWorkingDir();
         SubMonitor taskpm = pm.newChild(25); // 50
 
         PgDatabase db;
@@ -121,11 +113,11 @@ public class ProjectCreator implements IRunnableWithProgress {
 
         pm.newChild(25).subTask("Exporting DB model..."); // 75
 
-        try (TempDir tmpRepoMeta = new TempDir(props.getProjectPath(),
+        try (TempDir tmpRepoMeta = new TempDir(
+                props.getProjectWorkingDir().toPath().getParent(),
                 "tmp_repo_meta_")) {
-            File repoMetaProj = new File(dirRepo, repo.getRepoMetaFolder());
-            File repoMetaTmp = new File(tmpRepoMeta.get(),
-                    repo.getRepoMetaFolder());
+            File repoMetaProj = new File(props.getRepoRoot(), repo.getRepoMetaFolder());
+            File repoMetaTmp = new File(tmpRepoMeta.get(), repo.getRepoMetaFolder());
             Files.move(repoMetaProj.toPath(), repoMetaTmp.toPath());
             Dir.deleteRecursive(dirRepo);
 
