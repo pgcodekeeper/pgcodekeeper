@@ -40,7 +40,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePickerDialog;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 import ru.taximaxim.codekeeper.ui.prefs.FakePrefPageExtension;
 import ru.taximaxim.codekeeper.ui.prefs.PrefDialogFactory;
 
@@ -49,9 +48,9 @@ public class ProjProps {
     private void execute(
             @Named(UIConsts.PREF_STORE) IPreferenceStore mainPrefs,
             @Named(IServiceConstants.ACTIVE_SHELL) Shell shell, PgDbProject proj) {
-        String repoTypeName = proj.getString(UIConsts.PROJ_PREF_REPO_TYPE);
         FakePrefPageExtension[] propPages = {
-                new FakePrefPageExtension("projprefs.0.pagerepo", repoTypeName
+                new FakePrefPageExtension("projprefs.0.pagerepo", 
+                        proj.getString(UIConsts.PROJ_PREF_REPO_TYPE)
                         + " Settings", new RepoSettingsPage(proj), null),
 
                 new FakePrefPageExtension("projprefs.1.pagedbsouce",

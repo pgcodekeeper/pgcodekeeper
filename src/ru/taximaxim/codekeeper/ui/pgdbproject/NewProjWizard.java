@@ -48,7 +48,6 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 
 public class NewProjWizard extends Wizard implements IPageChangingListener {
 
@@ -337,8 +336,7 @@ class PageRepo extends WizardPage implements Listener {
                     lblWarnPass.setVisible(!lblWarnPass.getVisible());
                     container.layout(false);
                 }
-                if (!txtRepoUrl.getText().isEmpty() && 
-                        RepoType.valueOf(repoTypeName).equals(RepoType.GIT) && 
+                if (!txtRepoUrl.getText().isEmpty() &&  
                         !JGitExec.PATTERN_HTTP_URL.matcher(txtRepoUrl.getText()).matches() && 
                         !JGitExec.PATTERN_FILE_URL.matcher(txtRepoUrl.getText()).matches()){
                     lblWarnPass.setVisible(true);

@@ -25,9 +25,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
-import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 
 public class ProjSyncSrc {
     
@@ -65,17 +63,8 @@ public class ProjSyncSrc {
             @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 SubMonitor pm = SubMonitor.convert(monitor, "Syncing repository cache", 10);
-                IRepoWorker repo;
-                switch (RepoType.valueOf(proj.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
-                case SVN:
-                    repo = new SvnExec(mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH), proj);
-                    break;
-                case GIT:
-                    repo = new JGitExec(proj, mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
-                    break;
-                default:
-                    throw new IllegalStateException("Not a SVN/GIT enabled project");
-                }
+                IRepoWorker repo = new JGitExec(proj, 
+                        mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
 
                 File repoDir = proj.getProjectWorkingDir();
 

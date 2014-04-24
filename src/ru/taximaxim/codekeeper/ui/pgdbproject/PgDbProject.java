@@ -9,20 +9,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class PgDbProject extends PreferenceStore {
 
-    public enum RepoType {
-        
-        SVN("SVN"), GIT("GIT");
-        private String repoType;
-
-        private RepoType(String repoType) {
-            this.repoType = repoType;
-        }
-        @Override
-        public String toString() {
-            return repoType;
-        }
-    }
-
     private final String projectName;
     private final File projectFile;
     
