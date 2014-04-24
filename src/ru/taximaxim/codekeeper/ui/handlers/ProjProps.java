@@ -51,7 +51,7 @@ public class ProjProps {
         FakePrefPageExtension[] propPages = {
                 new FakePrefPageExtension("projprefs.0.pagerepo", 
                         proj.getString(UIConsts.PROJ_PREF_REPO_TYPE)
-                        + " Settings", new RepoSettingsPage(proj), null),
+                        + " Settings", new RepoSettingsPage(), null),
 
                 new FakePrefPageExtension("projprefs.1.pagedbsouce",
                         "DB Source", new DbSrcPage(mainPrefs), null),
@@ -215,12 +215,10 @@ class DbSrcPage extends FieldEditorPreferencePage {
 class RepoSettingsPage extends FieldEditorPreferencePage {
 
     private CLabel lblWarn;
-    private PgDbProject proj;
     private LocalResourceManager lrm;
 
-    public RepoSettingsPage(PgDbProject proj) {
+    public RepoSettingsPage() {
         super(GRID);
-        this.proj = proj;
     }
 
     @Override
