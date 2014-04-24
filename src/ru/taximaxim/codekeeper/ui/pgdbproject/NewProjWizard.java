@@ -28,7 +28,6 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -244,8 +243,6 @@ class PageRepo extends WizardPage implements Listener {
     private Label lblRepoUrl, lblRepoUser, lblRepoPass, lblRepoRoot;
     private Text txtProjectFile;
     private Label lblProjectFile;
-    private Button btnGit;
-    private Button btnSvn;
 
     private boolean checkOverwrite = true;
 
@@ -284,19 +281,6 @@ class PageRepo extends WizardPage implements Listener {
     }
     
     private void redrawLabels() {
-        lblRepoUrl.setText(repoTypeName + " Repo URL:");
-        lblRepoUser.setText(repoTypeName + " User:");
-        lblRepoPass.setText(repoTypeName + " Password:");
-        grpRepo.setText(repoTypeName + " Settings");
-
-        switch (RepoType.valueOf(repoTypeName)) {
-        case SVN:
-            lblWarnPass.setText("Warning:\n"
-                    + "Providing password here is insecure!"
-                    + " This password WILL show up in logs!\n"
-                    + "Consider using SVN password store instead.");
-            break;
-        case GIT:
             if (JGitExec.PATTERN_HTTP_URL.matcher(txtRepoUrl.getText()).matches()){
                 lblWarnPass
                 .setText("Warning:\n"
@@ -309,9 +293,6 @@ class PageRepo extends WizardPage implements Listener {
                 lblWarnPass.setText("Make sure you have private and public keys\n"
                         + "filenames entered in application preferences.");
             }
-            break;
-        default:
-            throw new IllegalStateException("Not a GIT/SVN enabled project");}
     }
 
     @Override
@@ -322,22 +303,10 @@ class PageRepo extends WizardPage implements Listener {
         container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(2, false));
         
-        Group repoType = new Group(container,SWT.NONE); 
-        repoType.setLayout(new GridLayout(2, false));
-        repoType.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2,
-                1));
-        repoType.setText("Select Control Version System");
-        btnSvn = new Button(repoType, SWT.RADIO);
-        btnSvn.setText(UIConsts.PROJ_REPO_TYPE_SVN_NAME);
-        
-        btnGit = new Button(repoType, SWT.RADIO);
-        btnGit.setText(UIConsts.PROJ_REPO_TYPE_GIT_NAME);
-        
         grpRepo = new Group(container, SWT.NONE);
         grpRepo.setText(repoTypeName + " Settings");
         grpRepo.setLayout(new GridLayout(2, false));
-        grpRepo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2,
-                1));
+        grpRepo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
 
         lblRepoUrl = new Label(grpRepo, SWT.NONE);
         lblRepoUrl.setText(repoTypeName + " Repo URL:");
@@ -388,7 +357,7 @@ class PageRepo extends WizardPage implements Listener {
 
             @Override
             public void modifyText(ModifyEvent e) {
-                if (txtRepoUrl.getText().isEmpty() || btnSvn.getSelection()) {
+                if (txtRepoUrl.getText().isEmpty()) {
                     txtRepoUser.setEnabled(true);
                     txtRepoPass.setEnabled(true);
                     redrawLabels();
@@ -412,10 +381,6 @@ class PageRepo extends WizardPage implements Listener {
         lblWarnPass.setImage(lrm.createImage(ImageDescriptor
                 .createFromURL(Activator.getContext().getBundle()
                         .getResource(UIConsts.FILENAME_ICONWARNING))));
-        lblWarnPass.setText("Warning:\n"
-                + "Providing password here is insecure!"
-                + " This password WILL show up in logs!\n"
-                + "Consider using SVN password store instead.");
         GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
         gd.exclude = true;
         lblWarnPass.setLayoutData(gd);
@@ -484,38 +449,7 @@ class PageRepo extends WizardPage implements Listener {
             }
         });
         
-        btnSvn.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                repoTypeName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
-                txtRepoUrl.notifyListeners(SWT.Modify, new Event());
-                redrawLabels();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-
-            }
-        });
-        btnGit.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                repoTypeName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
-                txtRepoUrl.notifyListeners(SWT.Modify, new Event());
-                redrawLabels();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-
-            }
-        });
-
         setControl(container);
-        btnSvn.setEnabled(false);
-        btnGit.setSelection(true);
     }
 
     @Override

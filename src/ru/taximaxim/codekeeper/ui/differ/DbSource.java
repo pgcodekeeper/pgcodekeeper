@@ -155,16 +155,7 @@ class DbSourceRepo extends DbSource {
     DbSourceRepo(String repoExec, RepoType repoType, String url, String user,
             String pass, String rev, String encoding, String privateKeyFile) {
         super(url + (rev.isEmpty() ? "" : "@" + rev));
-        switch (repoType) {
-        case SVN:
-            repo = new SvnExec(repoExec, url, user, pass);
-            break;
-        case GIT:
-            repo = new JGitExec(url, user, pass, privateKeyFile);
-            break;
-        default:
-            throw new IllegalStateException("Not a GIT/SVN enabled project");
-        }
+        repo = new JGitExec(url, user, pass, privateKeyFile);
         this.encoding = encoding;
         this.rev = rev;
     }

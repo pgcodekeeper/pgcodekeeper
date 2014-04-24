@@ -24,11 +24,9 @@ public class About {
         } 
         m.setMessage(String.format(
                 "pgCodeKeeper version %s\n\n"
-                + "svn version: %s\n"
                 + "pg_dump version: %s\n"
                 + "jgit version: %s",
                 UIConsts.VERSION,
-                AddonExternalTools.getSvnVersion(),
                 AddonExternalTools.getPgdumpVersion(),
                 jGitVersion));
         m.open();

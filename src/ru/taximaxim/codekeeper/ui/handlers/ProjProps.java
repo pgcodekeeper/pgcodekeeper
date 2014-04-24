@@ -230,25 +230,10 @@ class RepoSettingsPage extends FieldEditorPreferencePage {
                 getFieldEditorParent());
         String repoTypeName;
         String warningMessage;
-        switch (RepoType.valueOf(proj.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
-        case SVN:
-            repoTypeName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
-            warningMessage = "Warning:\n"
-                    + "Providing password here is insecure!\n"
-                    + "This password WILL show up in logs!\n"
-                    + "Consider using SVN password store instead.";
-            break;
-        case GIT:
-            repoTypeName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
-            warningMessage = "Warning:\n"
-                    + "Providing password here is insecure!\n"
-                    + "This password WILL show up in logs!\n"
-                    + "Consider using ssh authentification instead (use git@host repo url).";
-            break;
-        default:
-            throw new IllegalStateException("Not a SVN/GIT enabled project");
-        }
-
+        repoTypeName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
+        warningMessage = "Warning:\n Providing password here is insecure!\n"
+                + "This password WILL show up in logs!\n"
+                + "Consider using ssh authentification instead (use git@host repo url).";
         StringFieldEditor sfeUrl = new StringFieldEditor(
                 UIConsts.PROJ_PREF_REPO_URL, repoTypeName + " Repo URL:",
                 getFieldEditorParent());

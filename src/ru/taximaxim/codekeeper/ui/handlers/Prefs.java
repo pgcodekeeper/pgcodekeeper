@@ -73,8 +73,6 @@ class GeneralPrefPage extends FieldEditorPreferencePage {
     
     @Override
     protected void createFieldEditors() {
-        addField(new ExecutableFileFieldEditor(UIConsts.PREF_SVN_EXE_PATH,
-                "svn executable", getFieldEditorParent()));
         addField(new ExecutableFileFieldEditor(UIConsts.PREF_PGDUMP_EXE_PATH,
                 "pg_dump executable", getFieldEditorParent()));
         addField(new BooleanFieldEditor(UIConsts.PREF_OPEN_LAST_ON_START, 
