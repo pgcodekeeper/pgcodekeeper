@@ -11,7 +11,10 @@ import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.IndexDiff;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
 import org.eclipse.jgit.transport.PushResult;
@@ -89,20 +92,30 @@ public class JGitExec implements IRepoWorker{
     public void repoCommit(File dirIn, String comment) throws IOException {
         Git git = Git.open(getGitRoot(dirIn));
         try {
-            Log.log(Log.LOG_INFO, "git commit " + url);
+            StoredConfig config = git.getRepository().getConfig();
+            String urlRepo = config.getString("remote", "origin", "url");
+
+            Log.log(Log.LOG_INFO, "git commit " + urlRepo);
             
             git.commit().setMessage(comment).call();
             PushCommand pushCom = git.push();
             if (PATTERN_HTTP_URL.matcher(url).matches()) {
                 pushCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
             }
-
-            Log.log(Log.LOG_INFO, "git push " + url);
+            Ref head = git.getRepository().getRef(Constants.HEAD);
+            if (head != null){
+                pushCom.add(head);
+            }
+            Log.log(Log.LOG_INFO, "git push " + urlRepo);
             
             for (PushResult pushRes : pushCom.call()){
                 for (RemoteRefUpdate b : pushRes.getRemoteUpdates()){
                     if (b.getStatus() !=  RemoteRefUpdate.Status.OK && 
                             b.getStatus() !=  RemoteRefUpdate.Status.UP_TO_DATE){
+                        Log.log(Log.LOG_ERROR, "git push failed. Cause: " + 
+                            b.getRemoteName() + 
+                            "\n                Status: " + b.getStatus() + 
+                            "\n               Message: " + b.getMessage());
                         throw new IOException(
                                 "Exception thrown at JGit commit: status is not ok or up_to_date");
                     }
