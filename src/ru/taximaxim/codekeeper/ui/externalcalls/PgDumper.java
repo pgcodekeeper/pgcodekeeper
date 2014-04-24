@@ -38,7 +38,7 @@ public class PgDumper {
      * 
      * Such operations WILL THROW NPEs when performed on this object.
      * 
-     * @param svnExec
+     * @param exePgdump
      */
     public PgDumper(String exePgdump) {
         this.exePgdump = exePgdump;

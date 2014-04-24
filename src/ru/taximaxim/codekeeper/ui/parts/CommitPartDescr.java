@@ -56,12 +56,10 @@ import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
-import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class CommitPartDescr {
@@ -73,16 +71,13 @@ public class CommitPartDescr {
     @Inject
     @Preference(value = UIConsts.PREF_PGDUMP_EXE_PATH)
     private String exePgdump;
-    @Inject
-    @Preference(value = UIConsts.PREF_SVN_EXE_PATH)
-    private String exeSvn;
     private Text txtCommitComment;
     private Button btnCommit;
     private DiffTableViewer diffTable;
     private Button btnNone, btnDump, btnDb;
     private Button btnGetChanges;
     private DbPicker dbSrc;
-    private Text txtDb, txtSvn;
+    private Text txtDb, txtRepo;
     private String repoName;
     @Inject
     private IEventBroker events;
@@ -155,41 +150,31 @@ public class CommitPartDescr {
                         PgDatabase dbNew = applier.apply();
 
                         pm.newChild(1).subTask("Exporting new DB model..."); // 2
-                        File dirSvn = proj.getProjectWorkingDir();
+                        File workingDir = proj.getProjectWorkingDir();
                         try {
-                            IRepoWorker repo;
-                            switch (RepoType.valueOf(proj.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
-                            case SVN:
-                                repo = new SvnExec(exeSvn, proj);
-                                break;
-                            case GIT:
-                                repo = new JGitExec(proj, mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
-                                break;
-                            default:
-                                throw new IllegalStateException("Not a SVN/GIT enabled project");
-                            }
+                            IRepoWorker repo = new JGitExec(proj, mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
                             try (TempDir tmpRepoMeta = new TempDir(
                                     proj.getProjectWorkingDir().toPath().getParent(), 
                                     "tmp_repo_meta_")) {
-                                // TODO not necessary if dirSvn != gitRoot
-                                File svnMetaProj = new File(proj.getRepoRoot(), repo.getRepoMetaFolder());
-                                File svnMetaTmp = new File(tmpRepoMeta.get(), repo.getRepoMetaFolder());
-                                Files.move(svnMetaProj.toPath(), svnMetaTmp.toPath());
-                                Dir.deleteRecursive(dirSvn);
+                                // TODO not necessary if workingDir != gitRoot
+                                File repoMetaProj = new File(proj.getRepoRoot(), repo.getRepoMetaFolder());
+                                File repoMetaTmp = new File(tmpRepoMeta.get(), repo.getRepoMetaFolder());
+                                Files.move(repoMetaProj.toPath(), repoMetaTmp.toPath());
+                                Dir.deleteRecursive(workingDir);
 
                                 new ModelExporter(
-                                        dirSvn.getAbsolutePath(),
+                                        workingDir.getAbsolutePath(),
                                         dbNew,
                                         proj.getString(UIConsts.PROJ_PREF_ENCODING))
                                         .export();
 
-                                Files.move(svnMetaTmp.toPath(),
-                                        svnMetaProj.toPath());
+                                Files.move(repoMetaTmp.toPath(),
+                                        repoMetaProj.toPath());
                             }
 
                             pm.newChild(1).subTask(repoName + " committing..."); // 3
-                            repo.repoRemoveMissingAddNew(dirSvn);
-                            repo.repoCommit(dirSvn, commitComment);
+                            repo.repoRemoveMissingAddNew(workingDir);
+                            repo.repoCommit(workingDir, commitComment);
                         } catch (IOException ex) {
                             throw new InvocationTargetException(ex,
                                     "IOException while modifying project!");
@@ -237,7 +222,7 @@ public class CommitPartDescr {
                         StructuredSelection selection = ((StructuredSelection) event
                                 .getSelection());
                         if (selection.size() != 1) {
-                            txtSvn.setText("");
+                            txtRepo.setText("");
                             txtDb.setText("");
                             return;
                         }
@@ -245,10 +230,10 @@ public class CommitPartDescr {
                         TreeElement el = (TreeElement) selection.getFirstElement();
                         if (el.getSide() == DiffSide.LEFT
                                 || el.getSide() == DiffSide.BOTH) {
-                            txtSvn.setText(el.getPgStatement(
+                            txtRepo.setText(el.getPgStatement(
                                     dbSource.getDbObject()).getCreationSQL());
                         } else {
-                            txtSvn.setText("");
+                            txtRepo.setText("");
                         }
                         if (el.getSide() == DiffSide.RIGHT
                                 || el.getSide() == DiffSide.BOTH) {
@@ -366,7 +351,7 @@ public class CommitPartDescr {
                 diffTable.setInput(treediffer.getDiffTree());
 
                 txtDb.setText("");
-                txtSvn.setText("");
+                txtRepo.setText("");
 
                 btnCommit.setEnabled(true);
             }
@@ -429,12 +414,12 @@ public class CommitPartDescr {
 
         new Label(containerRight, SWT.NONE).setText("> " + repoName
                 + " version");
-        txtSvn = new Text(containerRight, SWT.BORDER | SWT.H_SCROLL
+        txtRepo = new Text(containerRight, SWT.BORDER | SWT.H_SCROLL
                 | SWT.V_SCROLL | SWT.MULTI | SWT.READ_ONLY);
-        txtSvn.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        txtSvn.setBackground(shell.getDisplay().getSystemColor(
+        txtRepo.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+        txtRepo.setBackground(shell.getDisplay().getSystemColor(
                 SWT.COLOR_LIST_BACKGROUND));
-        txtSvn.setLayoutData(new GridData(GridData.FILL_BOTH));
+        txtRepo.setLayoutData(new GridData(GridData.FILL_BOTH));
         // end lower diff container
 
         // changeProject(proj);
@@ -457,7 +442,7 @@ public class CommitPartDescr {
         } else if (proj2 != null) {
             diffTable.setInput(null);
             txtDb.setText("");
-            txtSvn.setText("");
+            txtRepo.setText("");
             txtCommitComment.setText("");
             btnCommit.setEnabled(false);
         }

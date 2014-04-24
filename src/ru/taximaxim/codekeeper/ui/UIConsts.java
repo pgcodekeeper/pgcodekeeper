@@ -27,7 +27,6 @@ public interface UIConsts {
             + ".handlers.OpenRecent";
     
     // Preferences
-    String PREF_SVN_EXE_PATH = "prefSvnExePath";
     String PREF_PGDUMP_EXE_PATH = "prefPgdumpExePath";
     String PREF_DB_STORE = "prefDbStore";
     String PREF_GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile";
@@ -41,7 +40,6 @@ public interface UIConsts {
     String PROJ_SOURCE_TYPE_NONE = "none";
     String PROJ_SOURCE_TYPE_DB = "db";
     String PROJ_SOURCE_TYPE_DUMP = "dump";
-    String PROJ_REPO_TYPE_SVN_NAME = "SVN";
     String PROJ_REPO_TYPE_GIT_NAME = "GIT";
     
     String PROJ_PREF_DB_NAME = "prefDbName";

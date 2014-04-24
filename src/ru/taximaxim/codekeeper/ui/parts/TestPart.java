@@ -1,6 +1,7 @@
 
 package ru.taximaxim.codekeeper.ui.parts;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.eclipse.e4.core.di.extensions.Preference;
@@ -16,15 +17,8 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
 
-import javax.annotation.PostConstruct;
-
 
 public class TestPart {
-    
-    @Inject
-    @Preference(value=UIConsts.PREF_SVN_EXE_PATH)
-    private String prefSvnPath;
-    
     @Inject
     @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
     private String prefPgdumpPath;
@@ -46,7 +40,7 @@ public class TestPart {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 txt.setText(txt.getText() + "\n"
-                        + prefSvnPath + " | " + prefPgdumpPath);
+                        + prefPgdumpPath);
             }
         });
         

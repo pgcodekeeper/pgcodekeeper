@@ -40,7 +40,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStorePickerDialog;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 import ru.taximaxim.codekeeper.ui.prefs.FakePrefPageExtension;
 import ru.taximaxim.codekeeper.ui.prefs.PrefDialogFactory;
 
@@ -49,10 +48,10 @@ public class ProjProps {
     private void execute(
             @Named(UIConsts.PREF_STORE) IPreferenceStore mainPrefs,
             @Named(IServiceConstants.ACTIVE_SHELL) Shell shell, PgDbProject proj) {
-        String repoTypeName = proj.getString(UIConsts.PROJ_PREF_REPO_TYPE);
         FakePrefPageExtension[] propPages = {
-                new FakePrefPageExtension("projprefs.0.pagerepo", repoTypeName
-                        + " Settings", new RepoSettingsPage(proj), null),
+                new FakePrefPageExtension("projprefs.0.pagerepo", 
+                        proj.getString(UIConsts.PROJ_PREF_REPO_TYPE)
+                        + " Settings", new RepoSettingsPage(), null),
 
                 new FakePrefPageExtension("projprefs.1.pagedbsouce",
                         "DB Source", new DbSrcPage(mainPrefs), null),
@@ -216,12 +215,10 @@ class DbSrcPage extends FieldEditorPreferencePage {
 class RepoSettingsPage extends FieldEditorPreferencePage {
 
     private CLabel lblWarn;
-    private PgDbProject proj;
     private LocalResourceManager lrm;
 
-    public RepoSettingsPage(PgDbProject proj) {
+    public RepoSettingsPage() {
         super(GRID);
-        this.proj = proj;
     }
 
     @Override
@@ -230,25 +227,10 @@ class RepoSettingsPage extends FieldEditorPreferencePage {
                 getFieldEditorParent());
         String repoTypeName;
         String warningMessage;
-        switch (RepoType.valueOf(proj.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
-        case SVN:
-            repoTypeName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
-            warningMessage = "Warning:\n"
-                    + "Providing password here is insecure!\n"
-                    + "This password WILL show up in logs!\n"
-                    + "Consider using SVN password store instead.";
-            break;
-        case GIT:
-            repoTypeName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
-            warningMessage = "Warning:\n"
-                    + "Providing password here is insecure!\n"
-                    + "This password WILL show up in logs!\n"
-                    + "Consider using ssh authentification instead (use git@host repo url).";
-            break;
-        default:
-            throw new IllegalStateException("Not a SVN/GIT enabled project");
-        }
-
+        repoTypeName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
+        warningMessage = "Warning:\n Providing password here is insecure!\n"
+                + "This password WILL show up in logs!\n"
+                + "Consider using ssh authentification instead (use git@host repo url).";
         StringFieldEditor sfeUrl = new StringFieldEditor(
                 UIConsts.PROJ_PREF_REPO_URL, repoTypeName + " Repo URL:",
                 getFieldEditorParent());

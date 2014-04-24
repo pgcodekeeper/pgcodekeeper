@@ -54,7 +54,6 @@ import ru.taximaxim.codekeeper.ui.differ.DiffTreeViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 import cz.startnet.utils.pgdiff.UnixPrintWriter;
 
 public class DiffWizard extends Wizard implements IPageChangingListener {
@@ -166,7 +165,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 class PageDiff extends WizardPage implements Listener {
 
     public enum DiffTargetType {
-        DB, DUMP, SVN, GIT, PROJ
+        DB, DUMP, /*SVN, */GIT, PROJ
     }
 
     final private IPreferenceStore mainPrefs;
@@ -175,19 +174,18 @@ class PageDiff extends WizardPage implements Listener {
 
     private Composite container;
 
-    private Button radioDb, radioDump, radioSvn, radioGit, radioProj;
+    private Button radioDb, radioDump, radioGit, radioProj;
 
     private Group currentTargetGrp;
 
     private DbPicker grpDb;
 
-    private Group grpDump, grpSvn, grpGit, grpProj;
+    private Group grpDump, grpGit, grpProj;
 
-    private Text txtDumpPath, txtSvnUrl, txtSvnUser, txtSvnPass, txtSvnRev,
-            txtProjPath, txtProjRev, txtGitUrl, txtGitUser, txtGitPass,
-            txtGitRev;
+    private Text txtDumpPath, txtProjPath, txtProjRev, txtGitUrl, txtGitUser, 
+                    txtGitPass, txtGitRev;
 
-    private CLabel lblWarnSvnPass, lblWarnGitPass;
+    private CLabel lblWarnGitPass;
 
     private Combo cmbEncoding;
 
@@ -199,9 +197,6 @@ class PageDiff extends WizardPage implements Listener {
         }
         if (radioDump.getSelection()) {
             return DiffTargetType.DUMP;
-        }
-        if (radioSvn.getSelection()) {
-            return DiffTargetType.SVN;
         }
         if (radioGit.getSelection()) {
             return DiffTargetType.GIT;
@@ -239,22 +234,6 @@ class PageDiff extends WizardPage implements Listener {
 
     public String getDumpPath() {
         return txtDumpPath.getText();
-    }
-
-    public String getSvnUrl() {
-        return txtSvnUrl.getText();
-    }
-
-    public String getSvnUser() {
-        return txtSvnUser.getText();
-    }
-
-    public String getSvnPass() {
-        return txtSvnPass.getText();
-    }
-
-    public String getSvnRev() {
-        return txtSvnRev.getText();
     }
 
     public String getGitUrl() {
@@ -300,13 +279,6 @@ class PageDiff extends WizardPage implements Listener {
             dbs = DbSource.fromFile(getDumpPath(), getTargetEncoding());
             break;
 
-        case SVN:
-            dbs = DbSource.fromSvn(
-                    mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH),
-                    getSvnUrl(), getSvnUser(), getSvnPass(), getSvnRev(),
-                    getTargetEncoding());
-            break;
-
         case GIT:
             dbs = DbSource.fromGit(
                     getGitUrl(), getGitUser(), getGitPass(), getGitRev(),
@@ -325,33 +297,15 @@ class PageDiff extends WizardPage implements Listener {
             if (getProjRev().isEmpty()) {
                 dbs = DbSource.fromProject(fromProj);
             } else {
-                switch (RepoType.valueOf(fromProj
-                        .getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
-                case SVN:
-                    dbs = DbSource.fromSvn(
-                            mainPrefs.getString(UIConsts.PREF_SVN_EXE_PATH),
-                            fromProj.getString(UIConsts.PROJ_PREF_REPO_URL),
-                            fromProj.getString(UIConsts.PROJ_PREF_REPO_USER),
-                            fromProj.getString(UIConsts.PROJ_PREF_REPO_PASS),
-                            getProjRev(),
-                            fromProj.getString(UIConsts.PROJ_PREF_ENCODING));
-                    break;
-                case GIT:
-                    dbs = DbSource.fromGit(
-                            fromProj.getString(UIConsts.PROJ_PREF_REPO_URL),
-                            fromProj.getString(UIConsts.PROJ_PREF_REPO_USER),
-                            fromProj.getString(UIConsts.PROJ_PREF_REPO_PASS),
-                            getProjRev(),
-                            fromProj.getString(UIConsts.PROJ_PREF_ENCODING),
-                            mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
-                    break;
-                default:
-                    throw new IllegalStateException(
-                            "Not a SVN/GIT enabled project");
-                }
+                dbs = DbSource.fromGit(
+                                fromProj.getString(UIConsts.PROJ_PREF_REPO_URL),
+                                fromProj.getString(UIConsts.PROJ_PREF_REPO_USER),
+                                fromProj.getString(UIConsts.PROJ_PREF_REPO_PASS),
+                                getProjRev(),
+                                fromProj.getString(UIConsts.PROJ_PREF_ENCODING),
+                                mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
             }
             break;
-
         default:
             throw new IllegalStateException("Unexpected target type value!");
         }
@@ -408,11 +362,6 @@ class PageDiff extends WizardPage implements Listener {
         radioDump = new Button(grpRadio, SWT.RADIO);
         radioDump.setText("Dump");
         radioDump.addSelectionListener(switcher);
-
-        radioSvn = new Button(grpRadio, SWT.RADIO);
-        radioSvn.setText(UIConsts.PROJ_REPO_TYPE_SVN_NAME);
-        radioSvn.addSelectionListener(switcher);
-
         radioGit = new Button(grpRadio, SWT.RADIO);
         radioGit.setText(UIConsts.PROJ_REPO_TYPE_GIT_NAME);
         radioGit.addSelectionListener(switcher);
@@ -463,68 +412,7 @@ class PageDiff extends WizardPage implements Listener {
                 }
             }
         });
-
-        grpSvn = new Group(container, SWT.NONE);
-        grpSvn.setText("SVN target");
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.verticalIndent = 12;
-        grpSvn.setLayoutData(gd);
-        grpSvn.setLayout(new GridLayout(2, false));
-
-        gd.exclude = true;
-        grpSvn.setVisible(false);
-
-        new Label(grpSvn, SWT.NONE).setText("SVN Repo URL:");
-
-        txtSvnUrl = new Text(grpSvn, SWT.BORDER);
-        txtSvnUrl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtSvnUrl.addListener(SWT.Modify, this);
-
-        new Label(grpSvn, SWT.NONE).setText("SVN User:");
-
-        txtSvnUser = new Text(grpSvn, SWT.BORDER);
-        txtSvnUser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        new Label(grpSvn, SWT.NONE).setText("SVN Password:");
-
-        txtSvnPass = new Text(grpSvn, SWT.BORDER | SWT.PASSWORD);
-        txtSvnPass.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtSvnPass.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                GridData gd = (GridData) lblWarnSvnPass.getLayoutData();
-
-                if ((txtSvnPass.getText().isEmpty() && !gd.exclude)
-                        || (!txtSvnPass.getText().isEmpty() && gd.exclude)) {
-                    gd.exclude = !gd.exclude;
-                    lblWarnSvnPass.setVisible(!lblWarnSvnPass.getVisible());
-
-                    getShell().pack();
-                    grpSvn.layout(false);
-                }
-            }
-        });
-
-        lblWarnSvnPass = new CLabel(grpSvn, SWT.NONE);
-        lblWarnSvnPass.setImage(lrm.createImage(ImageDescriptor
-                .createFromURL(Activator.getContext().getBundle()
-                        .getResource(UIConsts.FILENAME_ICONWARNING))));
-        lblWarnSvnPass.setText("Warning:\n"
-                + "Providing password here is insecure!"
-                + " This password WILL show up in logs!\n"
-                + "Consider using SVN password store instead.");
-        gd = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
-        gd.exclude = true;
-        lblWarnSvnPass.setLayoutData(gd);
-        lblWarnSvnPass.setVisible(false);
-
-        new Label(grpSvn, SWT.NONE).setText("SVN Revision:");
-
-        txtSvnRev = new Text(grpSvn, SWT.BORDER);
-        txtSvnRev.setLayoutData(new GridData());
-        txtSvnRev.addListener(SWT.Modify, this);
-
+        
         grpGit = new Group(container, SWT.NONE);
         grpGit.setText("Git target");
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -711,7 +599,6 @@ class PageDiff extends WizardPage implements Listener {
 
         radioDb.setData(grpDb);
         radioDump.setData(grpDump);
-        radioSvn.setData(grpSvn);
         radioGit.setData(grpGit);
         radioProj.setData(grpProj);
 
@@ -768,12 +655,6 @@ class PageDiff extends WizardPage implements Listener {
             if (txtDumpPath.getText().isEmpty()
                     || !new File(txtDumpPath.getText()).isFile()) {
                 errMsg = "Select a readable DB dump file!";
-            }
-            break;
-
-        case SVN:
-            if (txtSvnUrl.getText().isEmpty()) {
-                errMsg = "Enter SVN Repo URL!";
             }
             break;
 

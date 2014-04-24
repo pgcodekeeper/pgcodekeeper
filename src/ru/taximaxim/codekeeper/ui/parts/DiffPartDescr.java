@@ -68,14 +68,14 @@ public class DiffPartDescr {
     private Button btnNone, btnDump, btnDb;
     private Button btnGetChanges;
     private DbPicker dbSrc;
-    private Text txtDb, txtSvn;
-    private String repoTypeName;
+    private Text txtDb, txtRepo;
+
     /**
      * Remote DB.
      */
     private DbSource dbSource;
     /**
-     * Local SVN cache.
+     * Local repo cache.
      */
     private DbSource dbTarget;
 
@@ -85,7 +85,6 @@ public class DiffPartDescr {
             @Named(IServiceConstants.ACTIVE_SHELL) final Shell shell,
             final EModelService model, final MApplication app) {
         parent.setLayout(new GridLayout());
-        repoTypeName = proj.getString(UIConsts.PROJ_PREF_REPO_TYPE);
         // upper container
         Composite containerUpper = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
@@ -149,7 +148,7 @@ public class DiffPartDescr {
                         StructuredSelection selection = ((StructuredSelection) event
                                 .getSelection());
                         if (selection.size() != 1) {
-                            txtSvn.setText("");
+                            txtRepo.setText("");
                             txtDb.setText("");
                             return;
                         }
@@ -164,10 +163,10 @@ public class DiffPartDescr {
                         }
                         if (el.getSide() == DiffSide.RIGHT
                                 || el.getSide() == DiffSide.BOTH) {
-                            txtSvn.setText(el.getPgStatement(
+                            txtRepo.setText(el.getPgStatement(
                                     dbTarget.getDbObject()).getCreationSQL());
                         } else {
-                            txtSvn.setText("");
+                            txtRepo.setText("");
                         }
                     }
                 });
@@ -278,7 +277,7 @@ public class DiffPartDescr {
                 diffTable.setInput(treediffer.getDiffTree());
 
                 txtDb.setText("");
-                txtSvn.setText("");
+                txtRepo.setText("");
 
                 btnGetLatest.setEnabled(true);
             }
@@ -339,17 +338,15 @@ public class DiffPartDescr {
         gl.marginHeight = gl.marginWidth = 0;
         containerRight.setLayout(gl);
 
-        new Label(containerRight, SWT.NONE).setText("< " + repoTypeName
-                + " version");
-        txtSvn = new Text(containerRight, SWT.BORDER | SWT.H_SCROLL
+        new Label(containerRight, SWT.NONE).setText("< " + 
+                proj.getString(UIConsts.PROJ_PREF_REPO_TYPE) + " version");
+        txtRepo = new Text(containerRight, SWT.BORDER | SWT.H_SCROLL
                 | SWT.V_SCROLL | SWT.MULTI | SWT.READ_ONLY);
-        txtSvn.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        txtSvn.setBackground(shell.getDisplay().getSystemColor(
+        txtRepo.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+        txtRepo.setBackground(shell.getDisplay().getSystemColor(
                 SWT.COLOR_LIST_BACKGROUND));
-        txtSvn.setLayoutData(new GridData(GridData.FILL_BOTH));
+        txtRepo.setLayoutData(new GridData(GridData.FILL_BOTH));
         // end lower diff container
-
-        // changeProject(proj);
     }
 
     private void showDbPicker(boolean show) {
@@ -369,7 +366,7 @@ public class DiffPartDescr {
         } else if (proj2 != null) {
             diffTable.setInput(null);
             txtDb.setText("");
-            txtSvn.setText("");
+            txtRepo.setText("");
         }
     }
 

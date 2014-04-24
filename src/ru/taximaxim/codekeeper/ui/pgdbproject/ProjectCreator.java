@@ -16,16 +16,14 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
-import ru.taximaxim.codekeeper.ui.externalcalls.SvnExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject.RepoType;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 // TODO log new creation process, log more
 public class ProjectCreator implements IRunnableWithProgress {
 
-    final private String exePgdump, exeSvn;
+    final private String exePgdump;
 
     final private PgDbProject props;
 
@@ -41,7 +39,6 @@ public class ProjectCreator implements IRunnableWithProgress {
             final PgDbProject props, final String dumpPath, boolean doInit) {
         this.mainPrefStore = mainPrefStore;
         this.exePgdump = mainPrefStore.getString(UIConsts.PREF_PGDUMP_EXE_PATH);
-        this.exeSvn = mainPrefStore.getString(UIConsts.PREF_SVN_EXE_PATH);
         this.props = props;
         this.dumpPath = dumpPath;
         this.doInit = doInit;
@@ -57,20 +54,9 @@ public class ProjectCreator implements IRunnableWithProgress {
                     workToDo); // 0
 
             if (doInit) {
-                IRepoWorker repo;
-                switch (RepoType.valueOf(props.getString(UIConsts.PROJ_PREF_REPO_TYPE))) {
-                case SVN:
-                    repo = new SvnExec(exeSvn, props);
-                    repoName = UIConsts.PROJ_REPO_TYPE_SVN_NAME;
-                    break;
-                case GIT:
-                    repo = new JGitExec(props, mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
-                    repoName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
-                    break;
-                default:
-                    throw new IllegalStateException("Not a SVN/GIT enabled project");
-                }
-                
+                IRepoWorker repo = new JGitExec(props, 
+                        mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+                repoName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
                 initRepoFromSource(pm, repo);
             }
             monitor.done();
