@@ -23,9 +23,8 @@ import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.util.FS;
-import org.osgi.framework.Bundle;
 
-import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.AddonExternalTools;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -201,12 +200,7 @@ public class JGitExec implements IRepoWorker{
 
     @Override
     public String repoGetVersion() throws IOException {
-        for (Bundle b : Activator.getContext().getBundles()){
-            if (b.getSymbolicName().equals(UIConsts.JGIT_PLUGIN_ID)){
-                return b.getVersion().toString();
-            }
-        }
-        return null;
+        return AddonExternalTools.getPluginsVersion(new String[]{UIConsts.JGIT_PLUGIN_ID})[0];
     }
     
     public static boolean isGitRepo(String path){

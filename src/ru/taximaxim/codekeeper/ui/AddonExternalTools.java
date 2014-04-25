@@ -11,6 +11,7 @@ import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.di.extensions.Preference;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.UIEvents;
+import org.osgi.framework.Bundle;
 import org.osgi.service.application.ApplicationHandle;
 
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
@@ -74,5 +75,22 @@ public class AddonExternalTools {
         if(appHandle.getState() == ApplicationHandle.RUNNING) {
             getVersionsOnStartup(null, pgdumpExec);
         }
+    }
+    
+    public static String [] getPluginsVersion (String [] plugins){
+        String [] versions = new String[plugins.length];
+        for (int i = 0; i < plugins.length; i++){
+            String plugin = plugins [i];
+            String productVersion = "unknown";
+            for (Bundle b : Activator.getContext().getBundles()) {
+                System.out.println(b.getSymbolicName());
+                if (b.getSymbolicName().equals(plugin)) {
+                    productVersion = b.getVersion().toString();
+                    continue;
+                }
+            }
+            versions[i] = productVersion;
+        }
+        return versions;
     }
 }
