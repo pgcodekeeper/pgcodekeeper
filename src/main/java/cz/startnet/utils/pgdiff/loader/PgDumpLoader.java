@@ -5,21 +5,6 @@
  */
 package cz.startnet.utils.pgdiff.loader;
 
-import cz.startnet.utils.pgdiff.Resources;
-import cz.startnet.utils.pgdiff.parsers.AlterSequenceParser;
-import cz.startnet.utils.pgdiff.parsers.AlterTableParser;
-import cz.startnet.utils.pgdiff.parsers.AlterViewParser;
-import cz.startnet.utils.pgdiff.parsers.CommentParser;
-import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
-import cz.startnet.utils.pgdiff.parsers.CreateIndexParser;
-import cz.startnet.utils.pgdiff.parsers.CreateSchemaParser;
-import cz.startnet.utils.pgdiff.parsers.CreateSequenceParser;
-import cz.startnet.utils.pgdiff.parsers.CreateTableParser;
-import cz.startnet.utils.pgdiff.parsers.CreateTriggerParser;
-import cz.startnet.utils.pgdiff.parsers.CreateViewParser;
-import cz.startnet.utils.pgdiff.parsers.CreateExtensionParser;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,12 +17,35 @@ import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import cz.startnet.utils.pgdiff.Resources;
+import cz.startnet.utils.pgdiff.parsers.AlterSequenceParser;
+import cz.startnet.utils.pgdiff.parsers.AlterTableParser;
+import cz.startnet.utils.pgdiff.parsers.AlterViewParser;
+import cz.startnet.utils.pgdiff.parsers.CommentParser;
+import cz.startnet.utils.pgdiff.parsers.CreateExtensionParser;
+import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
+import cz.startnet.utils.pgdiff.parsers.CreateIndexParser;
+import cz.startnet.utils.pgdiff.parsers.CreateSchemaParser;
+import cz.startnet.utils.pgdiff.parsers.CreateSequenceParser;
+import cz.startnet.utils.pgdiff.parsers.CreateTableParser;
+import cz.startnet.utils.pgdiff.parsers.CreateTriggerParser;
+import cz.startnet.utils.pgdiff.parsers.CreateViewParser;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
+
 /**
  * Loads PostgreSQL dump into classes.
  *
  * @author fordfrog
  */
 public class PgDumpLoader { //NOPMD
+    
+    /**
+     * Loading order and directory names of the objects in exported DB schemas.
+     */
+    private static final String[] walkOrder = new String[] { "SEQUENCE",
+        "FUNCTION", "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW" };
 
     /**
      * Pattern for testing whether it is CREATE SCHEMA statement.
@@ -248,45 +256,55 @@ public class PgDumpLoader { //NOPMD
      *
      * @return database schema
      */
-    public static PgDatabase loadDatabaseSchemaFromDirTree(final String dirPath,
-            final String charsetName, final boolean outputIgnoredStatements,
+    public static PgDatabase loadDatabaseSchemaFromDirTree(
+            final String dirPath, final String charsetName,
+            final boolean outputIgnoredStatements,
             final boolean ignoreSlonyTriggers) {
         final PgDatabase db = new PgDatabase();
-        
-        File dir = new File(dirPath);    	
-        File listing = new File(dir, "listing.lst");
-        
-        try(BufferedReader readerListing = new BufferedReader(
-    			new InputStreamReader(
-    					new FileInputStream(listing), charsetName))) {
-        	String listingLine = null;
-        	
-        	while((listingLine = readerListing.readLine()) != null) {
-        		listingLine = listingLine.trim();
-        		if(listingLine.isEmpty()) {
-        			continue;
-        		}
-        		File listingFile = new File(dir, listingLine);
-        		
-        		try(FileInputStream inputStream = new FileInputStream(listingFile)) {
-        			loadDatabaseSchemaCore(inputStream, charsetName,
-        					outputIgnoredStatements, ignoreSlonyTriggers, db);
-        		} catch(FileNotFoundException ex) {
-        			throw new FileException(MessageFormat.format(
-                            Resources.getString("FileNotFound"), listingFile.getAbsolutePath()), ex);
-        		}
-        	}
-        } catch(FileNotFoundException ex) {
-        	throw new FileException(MessageFormat.format(
-                    Resources.getString("FileNotFound"), listing.getAbsolutePath()), ex);
-        } catch(UnsupportedEncodingException ex) {
-            throw new UnsupportedOperationException(
-                    Resources.getString("UnsupportedEncoding") + ": " + charsetName, ex);
-        } catch(IOException ex) {
-        	throw new FileException("An unexpected IOException", ex);
+        File dir = new File(dirPath);
+
+        // step 1
+        // read files in schema folder, add schemas to db
+
+        walkSubdirsRunCore(dir, charsetName, outputIgnoredStatements,
+                ignoreSlonyTriggers, new String[] { "SCHEMA", "EXTENSION" }, db);
+
+        // step 2
+        // read out schemas names, and work in loop on each
+        for (PgSchema schema : db.getSchemas()) {
+            File schemaFolder = new File(new File(dir, "SCHEMA"),
+                    ModelExporter.getExportedFilename(schema));
+            walkSubdirsRunCore(schemaFolder, charsetName,
+                    outputIgnoredStatements, ignoreSlonyTriggers, walkOrder, db);
         }
-        
         return db;
+    }
+    
+    private static void walkSubdirsRunCore(final File dir,
+            final String charsetName, final boolean outputIgnoredStatements,
+            final boolean ignoreSlonyTriggers, String[] subDir, PgDatabase db) {
+        for (String s : subDir) {
+            File folder = new File(dir, s);
+            
+            if (folder.exists() && folder.isDirectory()) {
+                for (File f : folder.listFiles()) {
+                    if (f.exists() && !f.isDirectory()) {
+                        try (FileInputStream inputStream = new FileInputStream(f)) {
+                            loadDatabaseSchemaCore(inputStream, charsetName,
+                                    outputIgnoredStatements,
+                                    ignoreSlonyTriggers, db);
+                        } catch (FileNotFoundException ex) {
+                            throw new FileException(MessageFormat.format(
+                                    Resources.getString("FileNotFound"),
+                                    f.getAbsolutePath()), ex);
+                        } catch (IOException ex) {
+                            throw new FileException(
+                                    "An unexpected IOException", ex);
+                        }
+                    }
+                }
+            }
+        }
     }
     
     /**

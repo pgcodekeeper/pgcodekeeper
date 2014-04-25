@@ -1,4 +1,5 @@
 <assembly>
+<!-- unused! -->
     <id>bin</id>
     <formats>
         <format>zip</format>

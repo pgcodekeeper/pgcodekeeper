@@ -3,6 +3,8 @@ package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -27,7 +29,17 @@ public class TreeElement {
     }
     
     public enum DiffSide {
-        LEFT, RIGHT, BOTH
+        LEFT("delete"), RIGHT("new"), BOTH("edit");
+        private String changeType;
+
+        private DiffSide(String changeType) {
+            this.changeType = changeType;
+        }
+        
+        @Override
+        public String toString() {
+            return changeType;
+        }
     }
     
     final private String name;
@@ -226,5 +238,57 @@ public class TreeElement {
         }
         
         throw new IllegalStateException("Unknown element type: " + type);
+    }
+
+    /**
+     * Recursively walk a tree, copying nodes that exist in filterSubset to returned tree.
+     * Important: filterSubset should be a subset of this tree
+     * (because TreeElement equals method compares references of parents)
+     */
+    public TreeElement getFilteredCopy(Set<TreeElement> filterSubset){
+        TreeElement copy = null;
+        for(TreeElement e : children){
+            TreeElement child = e.getFilteredCopy(filterSubset);
+            
+            if (child != null) {
+                if (copy == null){
+                    copy = new TreeElement(getName(), getType(), getContainerType(), getSide());
+                }
+                copy.addChild(child);
+            }
+        }
+        
+        if (filterSubset.contains(this) && copy == null){
+            copy = new TreeElement(getName(), getType(), getContainerType(), getSide());
+        }
+        return copy;
+    }
+    
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((containerType == null) ? 0 : containerType.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((side == null) ? 0 : side.hashCode());
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        result = prime * result + System.identityHashCode(parent);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }else if(obj instanceof TreeElement) {
+            TreeElement other = (TreeElement) obj;
+            return Objects.equals(name, other.getName())
+                    && Objects.equals(type, other.getType())
+                    && Objects.equals(containerType, other.getContainerType())
+                    && Objects.equals(side, other.getSide())
+                    && this.parent == other.parent;
+        }
+        return false;
     }
 }

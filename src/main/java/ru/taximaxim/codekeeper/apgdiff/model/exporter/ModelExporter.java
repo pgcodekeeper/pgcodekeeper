@@ -1,20 +1,22 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
-import java.util.List;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.NotDirectoryException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
+import java.util.List;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.UnixPrintWriter;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSequence;
-import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgSequence;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 
 /**
@@ -100,7 +102,7 @@ public class ModelExporter {
 			if(schema.getName().equals("public")) {
             	continue;
             }
-			File schemaSQL = new File(schemasSharedDir, schema.getName() + ".sql");
+			File schemaSQL = new File(schemasSharedDir, getExportedFilename(schema)+ ".sql");
 			dumpSQL(schema.getCreationSQL(), schemaSQL);
 		}
 		
@@ -112,13 +114,13 @@ public class ModelExporter {
 		}
 		
 		for(PgExtension ext : db.getExtensions()) {
-			File extSQL = new File(extensionsDir, ext.getName() + ".sql");
+			File extSQL = new File(extensionsDir, getExportedFilename(ext) + ".sql");
 			dumpSQL(ext.getCreationSQL(), extSQL);
 		}
 		
 		// exporting schemas contents
 		for(PgSchema schema : db.getSchemas()) {
-			File schemaDir = new File(schemasSharedDir, schema.getName());
+			File schemaDir = new File(schemasSharedDir, getExportedFilename(schema));
 			if(!schemaDir.mkdir()) {
 				throw new DirectoryException("Could not create schema directory:"
 						+ schemaDir.getAbsolutePath());
@@ -130,18 +132,6 @@ public class ModelExporter {
 			processObjects(schema.getViews(), schemaDir, "VIEW");
 			
 			// indexes, triggers, constraints are saved when tables are processed
-		}
-		
-		
-		// dump the list of written files
-		File listing = new File(outDir, "listing.lst");
-		if(!listing.createNewFile()) {
-			throw new FileException("Cannot create listing file:"
-					+ listing.getAbsolutePath());
-		}
-		
-		try(PrintWriter listingOut = new UnixPrintWriter(listing, sqlEncoding)) {
-			listingOut.println(writtenFiles.toString().replace('\\', '/'));
 		}
 	}
 	
@@ -178,9 +168,9 @@ public class ModelExporter {
 		}
 		
 		for(PgStatementWithSearchPath obj : objects) {
-			String filename = obj.getName() + ".sql";
-			String sqlToDump = obj.getSearchPath()
-					+ "\n\n" + obj.getCreationSQL();
+			String filename = null;
+            filename = getExportedFilename(obj) + ".sql";
+			String sqlToDump = obj.getSearchPath() + "\n\n" + obj.getCreationSQL();
 			
 			// OWNED BY is exported as a separate statement for SEQUENCE
 			if(obj instanceof PgSequence) {
@@ -225,5 +215,13 @@ public class ModelExporter {
 		}
 		
 		writtenFiles.append(outPath.relativize(file.toPath())).append('\n');
+	}
+	
+	/**
+	 * @return a statement's exported file name
+	 */
+	public static String getExportedFilename(PgStatement statement) {
+	    return statement.getBareName()
+	            + "_" + PgDiffUtils.md5(statement.getName());
 	}
 }

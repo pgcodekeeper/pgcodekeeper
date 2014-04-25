@@ -108,7 +108,7 @@ public class SelectParser {
                             m.group(GRP_TABLE), m.group(GRP_COLUMN)));
                 } else {
                     Log.log(Log.LOG_WARNING, "SELECT column didn't match the pattern"
-                            + " while parseing statement:\n" + statement
+                            + " while parsing statement:\n" + statement
                             + "\ncolumn:\n" + column);
                 }
             } while (p.expectOptional(","));

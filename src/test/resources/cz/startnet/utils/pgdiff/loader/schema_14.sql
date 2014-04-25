@@ -134,7 +134,19 @@ COMMENT ON SEQUENCE test_id_seq IS 'test table sequence';
 --
 
 CREATE VIEW test_view AS
-    SELECT test.id, test.text FROM test;
+    SELECT 
+        test.id, 
+        test.text 
+
+
+
+
+
+
+
+                                                            FROM
+
+ test;
 
 
 ALTER TABLE public.test_view OWNER TO fordfrog;

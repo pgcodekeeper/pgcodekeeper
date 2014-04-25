@@ -5,6 +5,9 @@
  */
 package cz.startnet.utils.pgdiff;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
 /**
@@ -532,9 +535,86 @@ public class PgDiffUtils {
         return getQuotedName(name, false);
     }
 
+    public static String normalizeWhitespaceUnquoted(String string) {
+        StringBuilder sb = new StringBuilder(string.length());
+        
+        boolean quote = false,
+                doubleQuote = false;
+        int currentWhitespaceStart = -1;
+        for (int pos = 0; pos < string.length(); ++pos) {
+            char ch = string.charAt(pos);
+            
+            if (ch == '\'') {
+                if (!doubleQuote) {
+                    quote = !quote;
+                }
+            } else if (string.charAt(pos) == '"') {
+                if (!quote) {
+                    doubleQuote = !doubleQuote;
+                }
+            } else if (Character.isWhitespace(ch) && !quote && !doubleQuote) {
+                if (currentWhitespaceStart < 0) {
+                    currentWhitespaceStart = pos;
+                }
+                
+                // do not add whitespace while iterating over it
+                continue;
+            } else {
+                // if we interrupted some whitespace
+                if (currentWhitespaceStart >= 0) {
+                    // check whitespace boundaries, if it was delimited by a
+                    // special character do not separate that character - add nothing
+                    // if whitespace was necessary (e.g. delimited words) - add one space
+                    boolean removeWhitespace = false;
+                    
+                    if (currentWhitespaceStart - 1 >= 0) {
+                        char preW = string.charAt(currentWhitespaceStart - 1);
+                        removeWhitespace |= preW == '(' || preW == ')'
+                                || preW == ',';
+                    }
+                    if (pos + 1 < string.length()) {
+                        char postW = string.charAt(pos + 1);
+                        removeWhitespace |= postW == '(' || postW == ')'
+                                || postW == ',';
+                    }
+                    
+                    // reset whitespace flag
+                    currentWhitespaceStart = -1;
+                    if (!removeWhitespace) {
+                        sb.append(' ');
+                    }
+                }
+            }
+            
+            // append unskipped characters
+            sb.append(ch);
+        }
+        
+        return sb.toString();
+    }
+
     /**
-     * Creates a new PgDiffUtils object.
+     * @return lowercase hex MD5 for UTF-8 representation of given string.
      */
+    public static String md5(String s) {
+        try {
+            byte[] bytesOfMessage = s.getBytes("UTF-8");
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] hash = md.digest(bytesOfMessage);
+            StringBuilder sb = new StringBuilder(2 * hash.length);
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b & 0xff));
+            }
+            return sb.toString();
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("UnsupportedEncodingException thrown while "
+                            + "getting hash", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("NoSuchAlgorithmException thrown while "
+                            + "getting hash",e);
+        }
+    }
+    
     private PgDiffUtils() {
     }
 }

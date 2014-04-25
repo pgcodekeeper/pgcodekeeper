@@ -1,4 +1,5 @@
 <assembly>
+<!-- unused! -->
     <id>src</id>
     <formats>
         <format>zip</format>
@@ -13,7 +14,6 @@
             <directory>${basedir}</directory>
             <outputDirectory></outputDirectory>
             <includes>
-                <include>build.xml</include>
                 <include>pom.xml</include>
                 <include>README.md</include>
                 <include>license.txt</include>
