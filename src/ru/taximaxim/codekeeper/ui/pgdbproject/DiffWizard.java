@@ -552,6 +552,7 @@ class PageDiff extends WizardPage implements Listener {
                 if (!dir.isEmpty() && new File(dir).isFile() &&
                         dir.endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)) {
                     PgDbProject tmpProj = new PgDbProject(dir);
+                    tmpProj.load();
                     cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getString(
                             UIConsts.PROJ_PREF_ENCODING)));
                 }
