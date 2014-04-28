@@ -22,6 +22,7 @@ public interface UIConsts {
     String PART_SYNC_ID = PART_SYNC + ".Id";
     String PART_DIFF = PLUGIN_ID + ".partdescriptor.Diff";
     String PART_DIFF_ID = PART_DIFF + ".Id";
+    String MAIN_WINDOW_ID = "ru.taximaxim.codekeeper.mainapp.mainwindow";
     
     String HANDLER_RECENT_PROJ = "bundleclass://" + PLUGIN_ID + "/" + PLUGIN_ID
             + ".handlers.OpenRecent";

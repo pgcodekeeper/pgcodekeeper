@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui;
 
 import java.io.IOException;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -22,10 +21,6 @@ public class AddonWindowLabel {
     @Inject
     EModelService service;
     
-    @PostConstruct
-    private void blah(){
-        
-    }
     
     @Inject
     private void updateLabel(
@@ -33,10 +28,10 @@ public class AddonWindowLabel {
             @Optional @Named("__DUMMY__") @EventTopic(UIConsts.EVENT_REOPEN_PROJECT) PgDbProject proj2,
             MApplication app, EModelService service) throws IOException {
         String windowLabel = "pgCodekeeper";
-        MWindow find = (MWindow) service.find("ru.taximaxim.codekeeper.mainapp.mainwindow", app);
+        MWindow find = (MWindow) service.find(UIConsts.MAIN_WINDOW_ID, app);
         if (proj != null) {
             String p = proj.getRepoRoot().toString();
-            windowLabel += "   " + proj.getProjectWorkingDir() + "   [branch: " + 
+            windowLabel += "  —  " + proj.getProjectWorkingDir() + " [branch: " + 
                     new JGitExec().getCurrentBranch(p) + "]";
         }
         if (find != null) {

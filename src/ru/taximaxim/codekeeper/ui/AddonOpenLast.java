@@ -20,7 +20,7 @@ import ru.taximaxim.codekeeper.ui.recentprojs.RecentProjects;
 
 public class AddonOpenLast {
 
- @Inject
+    @Inject
     @Optional
     private void openLast(
             // FIXME workaround, see http://www.eclipse.org/forums/index.php/t/351144/
@@ -52,7 +52,6 @@ public class AddonOpenLast {
             final PgDbProject proj = new PgDbProject(last);
             
             if (proj.getProjectFile().isFile()) {
-                proj.load();
                 sync.asyncExec(new Runnable() {
                     
                     @Override

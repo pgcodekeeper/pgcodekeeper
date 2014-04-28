@@ -42,7 +42,6 @@ public class LoadProj {
         if(path != null) {
             PgDbProject proj = new PgDbProject(path);
             if(proj.getProjectFile().isFile()) {
-                proj.load();
                 load(proj, ctx, partService, model, app, mainPrefs);
                 AddonPrefLoader.savePreference(mainPrefs, 
                         UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());
@@ -59,6 +58,8 @@ public class LoadProj {
     public static void load(PgDbProject proj, IEclipseContext ctx, EPartService partService,
             EModelService model, MApplication app, IPreferenceStore mainPrefs) {
         Log.log(Log.LOG_INFO, "Opening project at " + proj.getProjectFile());
+        
+        proj.load();
         ctx.modify(PgDbProject.class, proj);
         
         CommitPartDescr.openNew(proj.getProjectFile().toString(),
