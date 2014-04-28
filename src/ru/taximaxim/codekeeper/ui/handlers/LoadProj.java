@@ -16,8 +16,8 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.AddonPrefLoader;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.parts.CommitPartDescr;
 import ru.taximaxim.codekeeper.ui.parts.DiffPartDescr;
@@ -42,6 +42,7 @@ public class LoadProj {
         if(path != null) {
             PgDbProject proj = new PgDbProject(path);
             if(proj.getProjectFile().isFile()) {
+                proj.load();
                 load(proj, ctx, partService, model, app, mainPrefs);
                 AddonPrefLoader.savePreference(mainPrefs, 
                         UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());

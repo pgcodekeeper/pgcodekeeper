@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 
 import org.eclipse.jface.preference.PreferenceStore;
@@ -22,6 +23,15 @@ public class PgDbProject extends PreferenceStore {
                     UIConsts.FILENAME_PROJ_PREF_STORE.length());
         } else {
             this.projectName = fileName;
+        }
+    }
+    
+    @Override
+    public void load(){
+        try {
+            super.load();
+        } catch (IOException e) {
+            throw new IllegalStateException("Error loading project file. ", e);
         }
     }
     

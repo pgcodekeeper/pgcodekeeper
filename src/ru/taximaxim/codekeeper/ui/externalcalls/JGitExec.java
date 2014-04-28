@@ -232,6 +232,11 @@ public class JGitExec implements IRepoWorker{
         keys.writePublicKey(publicKeyFile.getAbsolutePath(), "");
     }
 
+    public String getCurrentBranch(String repoRoot) throws IOException{
+        Git git = Git.open(new File(repoRoot));
+        return git.getRepository().getBranch();
+    }
+    
     private File getGitRoot(File subDir) {
         File gitSubDir = subDir;
         while (gitSubDir != null) {

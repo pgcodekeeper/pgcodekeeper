@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -287,12 +286,7 @@ class PageDiff extends WizardPage implements Listener {
 
         case PROJ:
             PgDbProject fromProj = new PgDbProject(getProjPath());
-            try {
-                fromProj.load();
-            } catch (IOException ex) {
-                throw new IllegalStateException(
-                        "Unexpected error while reading target project!", ex);
-            }
+            fromProj.load();
 
             if (getProjRev().isEmpty()) {
                 dbs = DbSource.fromProject(fromProj);
@@ -558,12 +552,6 @@ class PageDiff extends WizardPage implements Listener {
                 if (!dir.isEmpty() && new File(dir).isFile() &&
                         dir.endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)) {
                     PgDbProject tmpProj = new PgDbProject(dir);
-                    try {
-                        tmpProj.load();
-                    } catch (IOException ex) {
-                        throw new IllegalStateException(
-                                "Unexpected error while reading targetproject", ex);
-                    }
                     cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getString(
                             UIConsts.PROJ_PREF_ENCODING)));
                 }
