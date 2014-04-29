@@ -27,11 +27,11 @@ public class AddonWindowLabel {
             final PgDbProject proj,
             @Optional @Named("__DUMMY__") @EventTopic(UIConsts.EVENT_REOPEN_PROJECT) PgDbProject proj2,
             MApplication app, EModelService service) throws IOException {
-        String windowLabel = "pgCodekeeper";
+        String windowLabel = "pgCodeKeeper";
         MWindow find = (MWindow) service.find(UIConsts.MAIN_WINDOW_ID, app);
         if (proj != null) {
             String p = proj.getRepoRoot().toString();
-            windowLabel += "  —  " + proj.getProjectWorkingDir() + " [branch: " + 
+            windowLabel += "  \u2014  " + proj.getProjectWorkingDir() + " [branch: " + 
                     new JGitExec().getCurrentBranch(p) + "]";
         }
         if (find != null) {
