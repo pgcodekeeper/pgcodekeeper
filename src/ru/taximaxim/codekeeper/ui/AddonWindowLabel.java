@@ -16,26 +16,32 @@ import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class AddonWindowLabel {
+    
     @Inject
     IEventBroker eventBroker;
+    
     @Inject
     EModelService service;
     
+    @Inject
+    MApplication app;
     
     @Inject
     private void updateLabel(
-            final PgDbProject proj,
-            @Optional @Named("__DUMMY__") @EventTopic(UIConsts.EVENT_REOPEN_PROJECT) PgDbProject proj2,
-            MApplication app, EModelService service) throws IOException {
+            PgDbProject proj,
+            @Optional @Named("__DUMMY__") @EventTopic(UIConsts.EVENT_REOPEN_PROJECT)
+            PgDbProject proj2) throws IOException {
         String windowLabel = "pgCodeKeeper";
-        MWindow find = (MWindow) service.find(UIConsts.MAIN_WINDOW_ID, app);
+        
         if (proj != null) {
             String p = proj.getRepoRoot().toString();
             windowLabel += "  \u2014  " + proj.getProjectWorkingDir() + " [branch: " + 
                     new JGitExec().getCurrentBranch(p) + "]";
         }
-        if (find != null) {
-            find.setLabel(windowLabel);
+
+        MWindow window = (MWindow) service.find(UIConsts.MAIN_WINDOW_ID, app);
+        if (window != null) {
+            window.setLabel(windowLabel);
         }
     }
 }

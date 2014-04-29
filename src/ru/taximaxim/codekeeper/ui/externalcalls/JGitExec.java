@@ -234,7 +234,11 @@ public class JGitExec implements IRepoWorker{
 
     public String getCurrentBranch(String repoRoot) throws IOException{
         Git git = Git.open(new File(repoRoot));
-        return git.getRepository().getBranch();
+        try {
+            return git.getRepository().getBranch();
+        } finally {
+            git.close();
+        }
     }
     
     private File getGitRoot(File subDir) {
