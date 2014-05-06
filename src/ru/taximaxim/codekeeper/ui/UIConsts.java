@@ -22,6 +22,7 @@ public interface UIConsts {
     String PART_SYNC_ID = PART_SYNC + ".Id";
     String PART_DIFF = PLUGIN_ID + ".partdescriptor.Diff";
     String PART_DIFF_ID = PART_DIFF + ".Id";
+    String PART_WELCOME = PLUGIN_ID + ".part.Welcome";
     
     String HANDLER_RECENT_PROJ = "bundleclass://" + PLUGIN_ID + "/" + PLUGIN_ID
             + ".handlers.OpenRecent";
@@ -66,4 +67,5 @@ public interface UIConsts {
     String FILENAME_ICONEDIT = "/icons/editor.gif";
     
     String EVENT_REOPEN_PROJECT = "ru/taximaxim/codekeeper/ui/project/changed";
+    String EVENT_WELCOME_ACTIVE = "ru/taximaxim/codekeeper/ui/welcome/activated";
 }

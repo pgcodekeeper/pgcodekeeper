@@ -38,11 +38,6 @@ public class AddonExternalTools {
     @Inject
     @Optional
     private void getVersionsOnStartup(
-            // FIXME workaround, see http://www.eclipse.org/forums/index.php/t/351144/
-            // and https://bugs.eclipse.org/bugs/show_bug.cgi?id=378694
-            // without @Named it doesn't register @EventTopic annotation,
-            // calls the method on Addon creation and doesn't do anything afterwards
-            @Named("__DUMMY__")
             @EventTopic(UIEvents.UILifeCycle.APP_STARTUP_COMPLETE)
             MApplication app,
             @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)

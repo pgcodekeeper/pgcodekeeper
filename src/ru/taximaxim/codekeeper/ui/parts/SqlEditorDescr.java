@@ -56,8 +56,10 @@ public class SqlEditorDescr {
      * @param proj
      */
     @Inject
-    private void projectChanged(PgDbProject proj,
-            @Optional @Named("__DUMMY__") @EventTopic(UIConsts.EVENT_REOPEN_PROJECT)
+    private void projectChanged(
+            PgDbProject proj,
+            @Optional
+            @EventTopic(UIConsts.EVENT_REOPEN_PROJECT)
             PgDbProject proj2) {
         File myFile = new File(
                 part.getPersistedState().get(UIConsts.PART_SQL_EDITOR_FILENAME));

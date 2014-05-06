@@ -44,6 +44,7 @@ import ru.taximaxim.codekeeper.ui.prefs.FakePrefPageExtension;
 import ru.taximaxim.codekeeper.ui.prefs.PrefDialogFactory;
 
 public class ProjProps {
+    
     @Execute
     private void execute(
             @Named(UIConsts.PREF_STORE) IPreferenceStore mainPrefs,

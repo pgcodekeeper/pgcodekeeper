@@ -23,6 +23,7 @@ import ru.taximaxim.codekeeper.ui.recentprojs.RecentProjects;
 public class OpenRecent {
     
     private MMenuItem menuItem;
+    
     @Inject
     private EPartService partService;
     

@@ -10,10 +10,10 @@ import javax.inject.Named;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.di.extensions.Preference;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
-import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
@@ -57,12 +57,17 @@ public class DiffPartDescr {
 
     @Inject
     private MPart part;
+    
     @Inject
     private EPartService partService;
+    
     @Inject
     @Preference(value = UIConsts.PREF_PGDUMP_EXE_PATH)
     private String exePgdump;
 
+    @Inject
+    private IEventBroker events;
+    
     private Button btnGetLatest;
     private DiffTableViewer diffTable;
     private Button btnNone, btnDump, btnDb;
@@ -82,8 +87,9 @@ public class DiffPartDescr {
     @PostConstruct
     private void postConstruct(Composite parent, final PgDbProject proj,
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs,
-            @Named(IServiceConstants.ACTIVE_SHELL) final Shell shell,
             final EModelService model, final MApplication app) {
+        final Shell shell = parent.getShell();
+        
         parent.setLayout(new GridLayout());
         // upper container
         Composite containerUpper = new Composite(parent, SWT.NONE);
@@ -329,8 +335,7 @@ public class DiffPartDescr {
         txtDb = new Text(containerLeft, SWT.BORDER | SWT.H_SCROLL
                 | SWT.V_SCROLL | SWT.MULTI | SWT.READ_ONLY);
         txtDb.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        txtDb.setBackground(shell.getDisplay().getSystemColor(
-                SWT.COLOR_LIST_BACKGROUND));
+        txtDb.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         txtDb.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Composite containerRight = new Composite(sashDiff, SWT.NONE);
@@ -343,8 +348,7 @@ public class DiffPartDescr {
         txtRepo = new Text(containerRight, SWT.BORDER | SWT.H_SCROLL
                 | SWT.V_SCROLL | SWT.MULTI | SWT.READ_ONLY);
         txtRepo.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        txtRepo.setBackground(shell.getDisplay().getSystemColor(
-                SWT.COLOR_LIST_BACKGROUND));
+        txtRepo.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         txtRepo.setLayoutData(new GridData(GridData.FILL_BOTH));
         // end lower diff container
     }
@@ -357,8 +361,11 @@ public class DiffPartDescr {
     }
 
     @Inject
-    private void changeProject(PgDbProject proj, @Optional @Named("__DUMMY__")
-                @EventTopic(UIConsts.EVENT_REOPEN_PROJECT) PgDbProject proj2) {
+    private void changeProject(
+            PgDbProject proj,
+            @Optional
+            @EventTopic(UIConsts.EVENT_REOPEN_PROJECT)
+            PgDbProject proj2) {
         if (proj == null
                 || !proj.getProjectFile().toString().equals(
                         part.getPersistedState().get(UIConsts.PART_DIFF_ID))) {
