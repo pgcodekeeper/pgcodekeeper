@@ -1,24 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
 <plugin>
 
    <extension
-         id="product"
+         id="application"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="ru.taximaxim.codekeeper.mainapp.Application">
+         </run>
+      </application>
+   </extension>
+   <extension
+         id="product_codekeeper"
          point="org.eclipse.core.runtime.products">
       <product
-            name="ru.taximaxim.codekeeper"
-            application="org.eclipse.e4.ui.workbench.swt.E4Application">
-         <property
-               name="applicationCSS"
-               value="platform:/plugin/ru.taximaxim.codekeeper.mainapp/css/default.css">
-         </property>
+            application="ru.taximaxim.codekeeper.mainapp.application"
+            name="pgCodeKeeper">
          <property
                name="appName"
-               value="ru.taximaxim.codekeeper">
+               value="pgCodeKeeper">
          </property>
-         <property
+         <!--property
                name="persistState"
                value="false">
-         </property>
+         </property-->
          <property
                name="clearPersistedState"
                value="true">
@@ -26,6 +32,9 @@
          <property
                name="lifeCycleURI"
                value="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.LifeCycleHandler">
+         </property>
+         <property
+               name="applicationXMI" value="ru.taximaxim.codekeeper.mainapp/Application.e4xmi">
          </property>
       </product>
    </extension>
