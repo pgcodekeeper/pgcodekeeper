@@ -59,6 +59,7 @@ public class PgDiffViews {
         for (final PgView oldView : oldSchema.getViews()) {
             final PgView newView = newSchema.getView(oldView.getName());
 
+            // Add here checking if dependencies of oldView modified
             if (newView == null || isViewModified(oldView, newView)) {
                 searchPathHelper.outputSearchPath(writer);
                 writer.println();

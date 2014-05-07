@@ -8,12 +8,14 @@ Export-Package: cz.startnet.utils.pgdiff,
  cz.startnet.utils.pgdiff.schema,
  ru.taximaxim.codekeeper.apgdiff.model.difftree,
  ru.taximaxim.codekeeper.apgdiff.model.exporter;uses:="cz.startnet.utils.pgdiff.schema",
- ru.taximaxim.codekeeper.apgdiff.model.graph
+ ru.taximaxim.codekeeper.apgdiff.model.graph;uses:="org.jgrapht,cz.startnet.utils.pgdiff.schema"
 Require-Bundle: org.hamcrest.core,
  org.junit
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: lib/jgrapht-core-0.9.0.jar,
- .
+ .,
+ lib/jgrapht-ext-0.9.0.jar,
+ lib/jgraph-5.13.0.0.jar
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: ru.taximaxim.codekeeper.apgdiff.Activator
 Import-Package: org.eclipse.equinox.log;version="1.0.0",

@@ -113,6 +113,8 @@ public class SelectParser {
                 }
             } while (p.expectOptional(","));
             
+            // TODO FROM SELECT вьюха public.v_i18n_resources
+            // FROM JOIN тоже не парсится
             if (p.expectOptional("FROM")) {
                 do {
                     from(new Parser(p.getExpression(CLAUSES)), tableAliases);

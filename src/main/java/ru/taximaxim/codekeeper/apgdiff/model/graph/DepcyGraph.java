@@ -1,9 +1,13 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -11,6 +15,7 @@ import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgSelect.SelectColumn;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -25,7 +30,13 @@ public class DepcyGraph {
      */
     private final DirectedGraph<PgStatement, DefaultEdge> graph = 
             new SimpleDirectedGraph<>(DefaultEdge.class);
+
+    private final List<String> ignoredColumns = Arrays.asList(new String[]{"oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"});
             
+    public DirectedGraph<PgStatement, DefaultEdge> getGraph() {
+        return graph;
+    }
+    
     /**
      * Copied database, graph source.<br>
      * <b>Do not modify</b> any elements in this as it will break 
@@ -38,6 +49,7 @@ public class DepcyGraph {
         create();
     }
     
+    @SuppressWarnings("unused")
     private void create() {
         graph.addVertex(db);
         
@@ -83,6 +95,46 @@ public class DepcyGraph {
             for(PgView view : schema.getViews()) {
                 graph.addVertex(view);
                 graph.addEdge(view, schema);
+                
+                // for all selected columns
+                for (SelectColumn col : view.getSelect().getColumns()){
+                    String scmName = col.schema;
+                    String tblName = col.table;
+                    String clmnName = col.column;
+                    
+                    if (scmName == null){
+                        scmName = view.getParent().getName();
+                    }
+                    
+                    PgSchema scm = db.getSchema(scmName);
+                    PgTable tbl = scm.getTable(tblName);
+                    if (tbl != null) {
+                        PgColumn clmn = tbl.getColumn(clmnName);
+                        if (ignoredColumns.contains(clmnName)){
+                            graph.addEdge(view, tbl);
+                            Log.log(Log.LOG_INFO, "Added view <-> table edge to depcy graph: " + view.getName() + " <-> " + tbl.getName());
+                            continue;
+                        }
+                        if (clmn != null){
+                            // column vertex 's been added already
+                            graph.addEdge(view, clmn);
+                            Log.log(Log.LOG_INFO, "Added view <-> column edge to depcy graph: " + view.getName() + " <-> " + clmn.getName());
+                        }else{
+                            Log.log(Log.LOG_WARNING, "No column " + clmnName + " found at " + tblName);
+                        }
+                    } else {
+                        PgView vw = scm.getView(tblName);
+                        if (vw != null){
+                            graph.addVertex(vw);
+                            graph.addEdge(view, vw);
+                            Log.log(Log.LOG_INFO, "Added view <-> view edge to depcy graph: " + view.getName() + " <-> " + vw.getName());
+                        }else{
+                            Log.log(Log.LOG_WARNING, "Couldn't parse view \"" + view.getName() + "\": table name \"" + tblName + "\" not found.\n"
+                                    + "View raw statement is as follows: \n" /*+ view.getRawStatement()*/);
+                        continue;
+                        }
+                    }
+                }
             }
         }
         
@@ -90,5 +142,7 @@ public class DepcyGraph {
             graph.addVertex(ext);
             graph.addEdge(ext, db);
         }
+        
+        //DirGraDrawer.draw(graph);
     }
 }

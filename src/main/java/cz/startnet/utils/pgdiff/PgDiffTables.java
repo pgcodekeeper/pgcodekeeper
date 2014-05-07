@@ -7,14 +7,22 @@ package cz.startnet.utils.pgdiff;
 
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumnUtils;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jgrapht.DirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
+
+import ru.taximaxim.codekeeper.apgdiff.Log;
 
 /**
  * Diffs tables.
@@ -472,12 +480,22 @@ public class PgDiffTables {
     public static void dropTables(final PrintWriter writer,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
+        DirectedGraph<PgStatement, DefaultEdge> oldDepcyGraph = null;
+        DirectedGraph<PgStatement, DefaultEdge> newDepcyGraph = null;
+        
         if (oldSchema == null) {
             return;
         }
         
         for (final PgTable table : oldSchema.getTables()) {
             if (!newSchema.containsTable(table.getName())) {
+                
+/*                ArrayList<PgStatement> dependants = new ArrayList<PgStatement>(10);
+                for (PgStatement depnt : getDependantsAsList(table, oldDepcyGraph, dependants)){
+                    if (!containsChild(table, depnt)){
+                        
+                    }
+                }*/
                 searchPathHelper.outputSearchPath(writer);
                 writer.println();
                 writer.println(table.getDropSQL());
