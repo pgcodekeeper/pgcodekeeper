@@ -9,6 +9,9 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.eclipse.compare.CompareConfiguration;
+import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
+import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.core.di.annotations.Optional;
@@ -24,21 +27,25 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.source.CompositeRuler;
+import org.eclipse.jface.text.source.LineNumberRulerColumn;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -82,7 +89,7 @@ public class CommitPartDescr {
     private Button btnNone, btnDump, btnDb;
     private Button btnGetChanges;
     private DbPicker dbSrc;
-    private Text txtDb, txtRepo;
+    private TextMergeViewer diffPane;
     private String repoName;
     /**
      * Local repository cache.
@@ -219,32 +226,18 @@ public class CommitPartDescr {
         sashDb.setSashWidth(8);
 
         diffTable = new DiffTableViewer(sashDb, SWT.NONE);
-        diffTable.viewer
-                .addSelectionChangedListener(new ISelectionChangedListener() {
+        diffTable.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+                    
                     @Override
                     public void selectionChanged(SelectionChangedEvent event) {
                         StructuredSelection selection = ((StructuredSelection) event
                                 .getSelection());
+                        
                         if (selection.size() != 1) {
-                            txtRepo.setText("");
-                            txtDb.setText("");
-                            return;
-                        }
-
-                        TreeElement el = (TreeElement) selection.getFirstElement();
-                        if (el.getSide() == DiffSide.LEFT
-                                || el.getSide() == DiffSide.BOTH) {
-                            txtRepo.setText(el.getPgStatement(
-                                    dbSource.getDbObject()).getCreationSQL());
+                            diffPane.setInput(null);
                         } else {
-                            txtRepo.setText("");
-                        }
-                        if (el.getSide() == DiffSide.RIGHT
-                                || el.getSide() == DiffSide.BOTH) {
-                            txtDb.setText(el.getPgStatement(
-                                    dbTarget.getDbObject()).getCreationSQL());
-                        } else {
-                            txtDb.setText("");
+                            TreeElement el = (TreeElement) selection.getFirstElement();
+                            diffPane.setInput(el);
                         }
                     }
                 });
@@ -354,10 +347,7 @@ public class CommitPartDescr {
                 }
 
                 diffTable.setInput(treediffer.getDiffTree());
-
-                txtDb.setText("");
-                txtRepo.setText("");
-
+                diffPane.setInput(null);
                 btnCommit.setEnabled(true);
             }
         });
@@ -393,39 +383,115 @@ public class CommitPartDescr {
         sashDb.setWeights(new int[] { 7750, 2250 });
         // end middle container
 
-        // lower diff container
-        SashForm sashDiff = new SashForm(sashOuter, SWT.HORIZONTAL | SWT.SMOOTH);
-        sashDiff.setSashWidth(8);
-
-        Composite containerLeft = new Composite(sashDiff, SWT.NONE);
-        gl = new GridLayout();
-        gl.marginHeight = gl.marginWidth = 0;
-        containerLeft.setLayout(gl);
-
-        Label l = new Label(containerLeft, SWT.RIGHT);
-        l.setText("Database version >  >");
-        l.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false));
-        txtDb = new Text(containerLeft, SWT.BORDER | SWT.H_SCROLL
-                | SWT.V_SCROLL | SWT.MULTI | SWT.READ_ONLY);
-        txtDb.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        txtDb.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
-        txtDb.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        Composite containerRight = new Composite(sashDiff, SWT.NONE);
-        gl = new GridLayout();
-        gl.marginHeight = gl.marginWidth = 0;
-        containerRight.setLayout(gl);
-
-        new Label(containerRight, SWT.NONE).setText("> " + repoName
-                + " version");
-        txtRepo = new Text(containerRight, SWT.BORDER | SWT.H_SCROLL
-                | SWT.V_SCROLL | SWT.MULTI | SWT.READ_ONLY);
-        txtRepo.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        txtRepo.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
-        txtRepo.setLayoutData(new GridData(GridData.FILL_BOTH));
-        // end lower diff container
-
-        // changeProject(proj);
+        CompareConfiguration conf = new CompareConfiguration();
+        conf.setLeftEditable(false);
+        conf.setRightEditable(false);
+        
+        diffPane = new TextMergeViewer(sashOuter, SWT.BORDER, conf) {
+            
+            @Override
+            protected SourceViewer createSourceViewer(Composite parent, int textOrientation) {
+                CompositeRuler ruler = new CompositeRuler();
+                ruler.addDecorator(0, new LineNumberRulerColumn());
+                
+                return new SourceViewer(parent, ruler,
+                        textOrientation | SWT.H_SCROLL | SWT.V_SCROLL);
+            }
+        };
+        diffPane.setContentProvider(new IMergeViewerContentProvider() {
+            
+            @Override
+            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+            }
+            
+            @Override
+            public void dispose() {
+            }
+            
+            @Override
+            public boolean showAncestor(Object input) {
+                return false;
+            }
+            
+            @Override
+            public void saveRightContent(Object input, byte[] bytes) {
+            }
+            
+            @Override
+            public void saveLeftContent(Object input, byte[] bytes) {
+            }
+            
+            @Override
+            public boolean isRightEditable(Object input) {
+                return false;
+            }
+            
+            @Override
+            public boolean isLeftEditable(Object input) {
+                return false;
+            }
+            
+            @Override
+            public String getRightLabel(Object input) {
+                return "To: " + repoName;
+            }
+            
+            @Override
+            public Image getRightImage(Object input) {
+                return null;
+            }
+            
+            @Override
+            public Object getRightContent(Object input) {
+                TreeElement el = (TreeElement) input;
+                if (el != null && (el.getSide() == DiffSide.LEFT
+                        || el.getSide() == DiffSide.BOTH)) {
+                    return new Document(
+                            el.getPgStatement(dbSource.getDbObject())
+                                    .getCreationSQL());
+                } else {
+                    return new Document();
+                }
+            }
+            
+            @Override
+            public String getLeftLabel(Object input) {
+                return "From: Database";
+            }
+            
+            @Override
+            public Image getLeftImage(Object input) {
+                return null;
+            }
+            
+            @Override
+            public Object getLeftContent(Object input) {
+                TreeElement el = (TreeElement) input;
+                if (el != null && (el.getSide() == DiffSide.RIGHT
+                        || el.getSide() == DiffSide.BOTH)) {
+                    return new Document(
+                            el.getPgStatement(dbTarget.getDbObject())
+                                .getCreationSQL());
+                } else {
+                    return new Document();
+                }
+            }
+            
+            @Override
+            public String getAncestorLabel(Object input) {
+                return null;
+            }
+            
+            @Override
+            public Image getAncestorImage(Object input) {
+                return null;
+            }
+            
+            @Override
+            public Object getAncestorContent(Object input) {
+                return null;
+            }
+        });
     }
 
     private void showDbPicker(boolean show) {
@@ -447,8 +513,7 @@ public class CommitPartDescr {
             partService.hidePart(part);
         } else if (proj2 != null) {
             diffTable.setInput(null);
-            txtDb.setText("");
-            txtRepo.setText("");
+            diffPane.setInput(null);
             txtCommitComment.setText("");
             btnCommit.setEnabled(false);
         }

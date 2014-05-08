@@ -4,7 +4,6 @@ package ru.taximaxim.codekeeper.ui;
 import java.io.IOException;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
