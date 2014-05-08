@@ -21,10 +21,6 @@
                name="appName"
                value="pgCodeKeeper">
          </property>
-         <!--property
-               name="persistState"
-               value="false">
-         </property-->
          <property
                name="clearPersistedState"
                value="true">

@@ -1,0 +1,74 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>ru.taximaxim.codeKeeper</groupId>
+  <artifactId>ru.taximaxim.codekeeper.repo</artifactId>
+  <version>0.2.0-SNAPSHOT</version>
+  <packaging>eclipse-repository</packaging>
+
+  <parent>
+    <artifactId>ru.taximaxim.codeKeeper</artifactId>
+    <groupId>ru.taximaxim.codeKeeper</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../ru.taximaxim.codeKeeper/</relativePath>
+  </parent>
+
+  <build>
+       <extensions>
+        <extension>
+           <groupId>org.apache.maven.wagon</groupId>
+           <artifactId>wagon-ssh</artifactId>
+           <version>2.6</version>
+         </extension>
+       </extensions>
+
+      <plugins>
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-p2-director-plugin</artifactId>
+          <version>0.19.0</version>
+          <executions>
+            <execution>
+              <id>materialize-products</id>
+              <goals>
+                <goal>materialize-products</goal>
+                <goal>archive-products</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <products>
+              <product>
+                <id>ru.taximaxim.codekeeper.product</id>
+                <archiveFileName>pgCodeKeeper-${unqualifiedVersion}.${buildQualifier}</archiveFileName>
+              </product>
+            </products>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>wagon-maven-plugin</artifactId>
+          <version>1.0-beta-5</version>
+          <executions>
+           <execution>
+            <id>upload-repo</id>
+            <phase>deploy</phase>
+            <goals>
+             <goal>upload</goal>
+            </goals>
+            <configuration>
+             <serverId>placeholder</serverId>
+             <fromDir>${project.build.directory}/products/</fromDir>
+             <includes>*.zip</includes>
+             <url>scp://codekeeper@storage/home/codekeeper/webroot</url>
+            </configuration>
+           </execution>
+          </executions>
+        </plugin>
+
+      </plugins>
+  </build>
+</project>

@@ -11,6 +11,7 @@ import org.eclipse.ui.internal.StartupThreading;
 import org.eclipse.ui.internal.UISynchronizer;
 import org.eclipse.ui.internal.StartupThreading.StartupRunnable;
 
+@SuppressWarnings("restriction")
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
@@ -22,6 +23,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 	}
 	
 	@Override
+    @SuppressWarnings("unchecked")
 	public boolean openWindows() {
 		final Display display = PlatformUI.getWorkbench().getDisplay();
 		final boolean result [] = new boolean[1];
@@ -34,7 +36,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		final Throwable [] error = new Throwable[1];
 		Thread initThread = new Thread() {
 			
-			public void run() {
+            public void run() {
 				try {
 					//declare us to be a startup thread so that our syncs will be executed 
 					UISynchronizer.startupThread.set(Boolean.TRUE);
