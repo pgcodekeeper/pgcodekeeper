@@ -23,7 +23,6 @@ import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.util.FS;
-import org.osgi.framework.Bundle;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -201,12 +200,7 @@ public class JGitExec implements IRepoWorker{
 
     @Override
     public String repoGetVersion() throws IOException {
-        for (Bundle b : Activator.getContext().getBundles()){
-            if (b.getSymbolicName().equals(UIConsts.JGIT_PLUGIN_ID)){
-                return b.getVersion().toString();
-            }
-        }
-        return null;
+        return Activator.getPluginVersions().get(UIConsts.JGIT_PLUGIN_ID).get(0);
     }
     
     public static boolean isGitRepo(String path){
@@ -238,6 +232,15 @@ public class JGitExec implements IRepoWorker{
         keys.writePublicKey(publicKeyFile.getAbsolutePath(), "");
     }
 
+    public String getCurrentBranch(String repoRoot) throws IOException{
+        Git git = Git.open(new File(repoRoot));
+        try {
+            return git.getRepository().getBranch();
+        } finally {
+            git.close();
+        }
+    }
+    
     private File getGitRoot(File subDir) {
         File gitSubDir = subDir;
         while (gitSubDir != null) {

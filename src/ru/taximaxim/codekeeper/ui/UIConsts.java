@@ -8,9 +8,9 @@ package ru.taximaxim.codekeeper.ui;
  */
 public interface UIConsts {
     
-    String VERSION = "0.0.3.dev";
-    
     String JGIT_PLUGIN_ID = "org.eclipse.jgit";
+    String MAINAPP_PLUGIN_ID = "ru.taximaxim.codekeeper.mainapp";
+    String APGDIFF_PLUGIN_ID = "apgdiff";
 
     String PLUGIN_ID = "ru.taximaxim.codekeeper.ui";
     String PREF_STORE = PLUGIN_ID + ".preferenceStore";
@@ -23,6 +23,7 @@ public interface UIConsts {
     String PART_DIFF = PLUGIN_ID + ".partdescriptor.Diff";
     String PART_DIFF_ID = PART_DIFF + ".Id";
     String PART_WELCOME = PLUGIN_ID + ".part.Welcome";
+    String WINDOW_MAIN_ID = "ru.taximaxim.codekeeper.mainapp.mainwindow";
     
     String HANDLER_RECENT_PROJ = "bundleclass://" + PLUGIN_ID + "/" + PLUGIN_ID
             + ".handlers.OpenRecent";

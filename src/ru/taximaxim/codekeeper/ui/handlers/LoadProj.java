@@ -58,6 +58,8 @@ public class LoadProj {
     public static void load(PgDbProject proj, IEclipseContext ctx, EPartService partService,
             EModelService model, MApplication app, IPreferenceStore mainPrefs) {
         Log.log(Log.LOG_INFO, "Opening project at " + proj.getProjectFile());
+        
+        proj.load();
         ctx.modify(PgDbProject.class, proj);
         
         CommitPartDescr.openNew(proj.getProjectFile().toString(),

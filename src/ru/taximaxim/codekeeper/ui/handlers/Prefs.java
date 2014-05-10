@@ -33,7 +33,6 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
-import ru.taximaxim.codekeeper.ui.prefs.ExecutableFileFieldEditor;
 import ru.taximaxim.codekeeper.ui.prefs.FakePrefPageExtension;
 import ru.taximaxim.codekeeper.ui.prefs.PrefDialogFactory;
 
@@ -73,11 +72,19 @@ class GeneralPrefPage extends FieldEditorPreferencePage {
     
     @Override
     protected void createFieldEditors() {
-        addField(new ExecutableFileFieldEditor(UIConsts.PREF_PGDUMP_EXE_PATH,
-                "pg_dump executable", getFieldEditorParent()));
-        addField(new BooleanFieldEditor(UIConsts.PREF_OPEN_LAST_ON_START, 
-                "Open last project on start", FileFieldEditor.VALIDATE_ON_KEY_STROKE,
-                getFieldEditorParent()));   
+        addField(
+                new FileFieldEditor(UIConsts.PREF_PGDUMP_EXE_PATH, "pg_dump executable", getFieldEditorParent()){
+                    @Override
+                    protected boolean checkState() {
+                        return true;
+                    }
+                }
+        );
+        BooleanFieldEditor openLast = new BooleanFieldEditor(
+                UIConsts.PREF_OPEN_LAST_ON_START, "Open last project on startup",
+                FileFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());
+        addField(openLast);
+        openLast.setEnabled(false, getFieldEditorParent());
     }
 }
 

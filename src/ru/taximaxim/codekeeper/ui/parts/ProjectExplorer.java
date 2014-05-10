@@ -245,7 +245,6 @@ public class ProjectExplorer {
             File treeInput = null;
             
             if(proj != null) {
-                proj.load();
                 treeInput = proj.getProjectWorkingDir();
                 
                 IRunnableWithProgress loadRunnable = new IRunnableWithProgress() {

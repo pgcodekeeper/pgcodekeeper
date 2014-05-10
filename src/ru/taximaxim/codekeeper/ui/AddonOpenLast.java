@@ -24,7 +24,6 @@ public class AddonOpenLast {
             @Preference(value = UIConsts.PREF_RECENT_PROJECTS) String prefRecentProjects,
             
             UISynchronize sync) {
-        
         if (prefOpenLast != null && prefOpenLast.equals("true")) {
             String[] recent = RecentProjects.getRecent(prefRecentProjects);
             if (recent == null) {

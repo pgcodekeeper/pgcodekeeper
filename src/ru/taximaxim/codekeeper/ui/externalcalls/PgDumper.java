@@ -10,7 +10,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 public class PgDumper {
     
     private final static Pattern PATTERN_VERSION = Pattern.compile(
-            "^(?:pg_dump[\\s]+\\(PostgreSQL\\)[\\s]+)([\\d]+\\.[\\d]+\\.[\\d]+)$");
+            "^(?:pg_dump[\\s]+\\(PostgreSQL.*\\)[\\s]+)([\\d]+\\.[\\d]+\\.[\\d]+)$");
 
     final private String exePgdump;
 

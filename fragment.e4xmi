@@ -6,6 +6,7 @@
     <elements xsi:type="application:Addon" xmi:id="_CZrqYI2jEeO4ie8GiiWKfQ" elementId="ru.taximaxim.codekeeper.ui.addon.JFaceExceptionHandler" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.AddonJFaceExceptionHandler"/>
     <elements xsi:type="application:Addon" xmi:id="_b8C_4MBwEeOSZbC7pMAOxQ" elementId="ru.taximaxim.codekeeper.ui.addon.OpenLast" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.AddonOpenLast"/>
     <elements xsi:type="application:Addon" xmi:id="_HnX9MNTyEeOnt8M80Fkklg" elementId="ru.taximaxim.codekeeper.ui.addon.AddonBindingConflict" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.AddonBindingConflict"/>
+    <elements xsi:type="application:Addon" xmi:id="_KI7uwM7CEeOwUvs9OWQ4pg" elementId="ru.taximaxim.codekeeper.ui.addon.WindowLable" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.AddonWindowLabel"/>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_4R4zcI2AEeOZD4rZ-dJoXw" featurename="bindings" parentElementId="ru.taximaxim.codekeeper.mainapp.bindingtable.0">
     <elements xsi:type="commands:KeyBinding" xmi:id="_d0oZ4Df_EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.keybinding.1" keySequence="CTRL+O" command="_o6NrIDYmEeOu39tpQ1Oozg"/>
@@ -71,11 +72,11 @@
     <elements xsi:type="commands:Command" xmi:id="_1JlsQCzJEeOC9s_7P-LAEQ" elementId="ru.taximaxim.codekeeper.ui.command.NewProj" commandName="New Project"/>
     <elements xsi:type="commands:Command" xmi:id="_UkgjUC_xEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.command.SwitchPersp" commandName="Switch Perspective"/>
     <elements xsi:type="commands:Command" xmi:id="_o6NrIDYmEeOu39tpQ1Oozg" elementId="ru.taximaxim.codekeeper.ui.command.LoadProj" commandName="Load Project"/>
-    <elements xsi:type="commands:Command" xmi:id="_H_VU0DfvEeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.command.CloseActiveProj" commandName="Close Active Proj" description=""/>
+    <elements xsi:type="commands:Command" xmi:id="_H_VU0DfvEeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.command.CloseActiveProj" commandName="Close Active Project"/>
     <elements xsi:type="commands:Command" xmi:id="_8p39cDooEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.command.ProjProps" commandName="Project Properties"/>
     <elements xsi:type="commands:Command" xmi:id="_HhqhUDskEeOHuJV2eZ06pg" elementId="ru.taximaxim.codekeeper.ui.command.ProjSyncSrc" commandName="Project Sync to Source"/>
     <elements xsi:type="commands:Command" xmi:id="_ncHkEDyKEeOnONY5mbpMNQ" elementId="ru.taximaxim.codekeeper.ui.command.Diff" commandName="Diff"/>
-    <elements xsi:type="commands:Command" xmi:id="_DHHaoGySEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.command.CloseEditor" commandName="Close Editor" description=""/>
+    <elements xsi:type="commands:Command" xmi:id="_DHHaoGySEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.command.CloseEditor" commandName="Close Editor"/>
     <elements xsi:type="commands:Command" xmi:id="_uDcrML-hEeOwLZ0qTYI49g" elementId="ru.taximaxim.codekeeper.ui.command.openRecent1" commandName="Open recent 1"/>
     <elements xsi:type="commands:Command" xmi:id="_iGyVkMx-EeOZIMdXYGGhLA" elementId="org.eclipse.ui.help.aboutAction" commandName="About2"/>
   </fragments>
