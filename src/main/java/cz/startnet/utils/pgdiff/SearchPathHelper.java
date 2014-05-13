@@ -20,14 +20,16 @@ public class SearchPathHelper {
      * Flag determining whether the statement was already output.
      */
     private boolean wasOutput;
+    private String schemaName;
 
     /**
      * Creates new instance of SearchPathHelper.
      *
-     * @param searchPath {@link #searchPath}
+     * @param schemaName {@link #searchPath}
      */
-    public SearchPathHelper(final String searchPath) {
-        this.searchPath = searchPath;
+    public SearchPathHelper(final String schemaName) {
+        this.schemaName = schemaName;
+        this.searchPath = "SET search_path = " + schemaName + ", pg_catalog;";
     }
 
     /**
@@ -36,10 +38,22 @@ public class SearchPathHelper {
      * @param writer writer
      */
     public void outputSearchPath(final PrintWriter writer) {
-        if (!wasOutput && searchPath != null && !searchPath.isEmpty()) {
+        if (!wasOutput && !schemaName.isEmpty()) {
             writer.println();
             writer.println(searchPath);
             wasOutput = true;
         }
+    }
+    
+    public void setWasOutput(boolean wasOutput){
+        this.wasOutput = wasOutput;
+    }
+    
+    public boolean getWasOutput(){
+       return wasOutput;
+    }
+    
+    public String getSchemaName(){
+        return this.schemaName;
     }
 }

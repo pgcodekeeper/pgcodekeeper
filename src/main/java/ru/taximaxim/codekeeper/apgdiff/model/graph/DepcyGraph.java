@@ -26,7 +26,8 @@ public class DepcyGraph {
     
     /**
      * Направление связей в графе:<br>
-     * зависимость &lt;-- зависящий объект
+     * зависимость --> зависящий объект <br>
+     * source --> target
      */
     private final DirectedGraph<PgStatement, DefaultEdge> graph = 
             new SimpleDirectedGraph<>(DefaultEdge.class);
@@ -49,7 +50,6 @@ public class DepcyGraph {
         create();
     }
     
-    @SuppressWarnings("unused")
     private void create() {
         graph.addVertex(db);
         
@@ -144,5 +144,9 @@ public class DepcyGraph {
         }
         
         //DirGraDrawer.draw(graph);
+    }
+    
+    public PgDatabase getDb(){
+        return db;
     }
 }

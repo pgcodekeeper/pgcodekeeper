@@ -5,11 +5,12 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgView;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+
+import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
  * Diffs views.
@@ -39,6 +40,52 @@ public class PgDiffViews {
                 writer.println(newView.getCreationSQL());
             }
         }
+        /*
+         * 
+         *    Этот код использовался при поиске зависимостей для каждого 
+         *    класса (вьюха, таблица, и пр.). В текущей ситуации, когда 
+         *    зависимости ищутся "в лоб" на основании имеющихся знаний о 
+         *    структуре данных в бд, этот код устарел.
+         * 
+         * 
+        if (oldSchema == null) {
+            return;
+        }
+
+        // добавить зависимые вьюхи в список вьюх старой схемы
+        Log.log(Log.LOG_DEBUG, "Adding dependant views to oldSchema views list");
+        HashSet<PgView> set = new HashSet<PgView>();
+        ArrayList <PgStatement> yyy = new ArrayList<PgStatement>(10);
+        yyy.addAll(oldSchema.getFunctions());
+        yyy.addAll(oldSchema.getTables());
+        yyy.addAll(oldSchema.getSequences());
+        yyy.addAll(oldSchema.getViews());
+        
+        for (PgStatement xxx : yyy){
+            ArrayList<PgStatement> list = new ArrayList<PgStatement>();
+            PgDiff.getDependantsAsList(xxx, list);
+            
+            for (PgStatement zzz : list){
+                // TODO DEPCY надо ли проверять, в какой схеме лежит вьюха?
+                if (zzz instanceof PgView){
+                    set.add((PgView)zzz);
+                }
+            }
+        }
+        set.addAll(oldSchema.getViews());
+        // write dependent views creation sql
+        for (final PgView oldView : set) {
+            ArrayList<PgStatement> dependencies = new ArrayList<PgStatement>(10);
+            PgDiff.getDependenciesAsList(oldView, dependencies);
+            for (PgStatement st : dependencies){
+                if (PgDiff.isChanged(st)){
+                    searchPathHelper.outputSearchPath(writer);
+                    writer.println("-- at least one dependency of this view was changed: " + st.getName());
+                    writer.println(oldView.getCreationSQL());
+                    break;
+                }
+            }
+        }*/
     }
 
     /**
@@ -59,8 +106,24 @@ public class PgDiffViews {
         for (final PgView oldView : oldSchema.getViews()) {
             final PgView newView = newSchema.getView(oldView.getName());
 
-            // Add here checking if dependencies of oldView modified
-            if (newView == null || isViewModified(oldView, newView)) {
+        /*
+         * 
+         *    Этот код использовался при поиске зависимостей для каждого 
+         *    класса (вьюха, таблица, и пр.). В текущей ситуации, когда 
+         *    зависимости ищутся "в лоб" на основании имеющихся знаний о 
+         *    структуре данных в бд, этот код устарел.
+         * 
+         * 
+         *     boolean isDepcyChanged = false;
+            ArrayList<PgStatement> dependencies = new ArrayList<PgStatement>(10);
+            PgDiff.getDependenciesAsList(oldView, dependencies);
+            for (PgStatement st : dependencies){
+                if (isDepcyChanged |= PgDiff.isChanged(st)){
+                    break;
+                }
+            }
+            */
+            if (newView == null || isViewModified(oldView, newView)/* || isDepcyChanged*/) {
                 searchPathHelper.outputSearchPath(writer);
                 writer.println();
                 writer.println(oldView.getDropSQL());
