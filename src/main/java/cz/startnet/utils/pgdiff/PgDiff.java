@@ -205,15 +205,11 @@ public class PgDiff {
     public static List<PgStatement> getDependantsAsList(PgStatement parent,
             ArrayList<PgStatement> result) {
         if (oldDepcyGraph.containsVertex(parent)){
-            for (DefaultEdge edge : oldDepcyGraph.edgesOf(parent)){
-                // if current statement is "parent" of some other one,
-                // add the other one as dependant and check its dependants
-                if (oldDepcyGraph.getEdgeTarget(edge).equals(parent)){
-                    PgStatement dependant = oldDepcyGraph.getEdgeSource(edge);
-                    if (!result.contains(dependant)){
-                        result.add(dependant);
-                        getDependantsAsList(dependant, result);
-                    }
+            for (DefaultEdge edge : oldDepcyGraph.incomingEdgesOf(parent)) {
+                PgStatement dependant = oldDepcyGraph.getEdgeSource(edge);
+                if (!result.contains(dependant)) {
+                    result.add(dependant);
+                    getDependantsAsList(dependant, result);
                 }
             }
         }
@@ -233,14 +229,10 @@ public class PgDiff {
     public static List<PgStatement> getDependenciesAsList(PgStatement child,
             ArrayList<PgStatement> result) {
         if (oldDepcyGraph.containsVertex(child)){
-            for (DefaultEdge edge : oldDepcyGraph.edgesOf(child)){
-                // if current statement is "child" of some other one,
-                // add the other one as dependency and check its dependencies
-                if (oldDepcyGraph.getEdgeSource(edge).equals(child)){
+            for (DefaultEdge edge : oldDepcyGraph.outgoingEdgesOf(child)){
                     PgStatement dependency = oldDepcyGraph.getEdgeTarget(edge);
                     result.add(dependency);
-                    //getDependenciesAsList(dependency, result);
-                }
+                    getDependenciesAsList(dependency, result);
             }
         }
         return result;
