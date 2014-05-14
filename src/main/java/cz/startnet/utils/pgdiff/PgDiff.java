@@ -13,7 +13,6 @@ import java.util.List;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
-import ru.taximaxim.codekeeper.apgdiff.DirGraDrawer;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
@@ -125,8 +124,6 @@ public class PgDiff {
         if (oldDbFull != null && newDbFull != null){
             depcyOld = new DepcyGraph((PgDatabase)oldDbFull);
             depcyNew = new DepcyGraph((PgDatabase)newDbFull);
-            DirGraDrawer.draw(depcyOld.getGraph(), "remote (source, old) DB");
-            DirGraDrawer.draw(depcyNew.getGraph(), "local repo cache (target, new)");    
         }else{
             depcyOld = new DepcyGraph(new PgDatabase());
             depcyNew = new DepcyGraph(new PgDatabase());

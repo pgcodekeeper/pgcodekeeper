@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="lib" path="lib/jgraph-5.13.0.0.jar" sourcepath="lib/jgraph-5.13.0.0-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" output="target/classes" path="src/main/java">
@@ -30,6 +29,5 @@
 			<attribute name="javadoc_location" value="file:/home/ryabinin_av/Загрузки/jgraph(t)/jgrapht-0.9.0/javadoc/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/jgrapht-ext-0.9.0.jar" sourcepath="/home/ryabinin_av/Загрузки/jgrapht-0.9.0.zip"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
