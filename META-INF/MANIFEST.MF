@@ -8,7 +8,7 @@ Export-Package: cz.startnet.utils.pgdiff,
  cz.startnet.utils.pgdiff.schema,
  ru.taximaxim.codekeeper.apgdiff.model.difftree,
  ru.taximaxim.codekeeper.apgdiff.model.exporter;uses:="cz.startnet.utils.pgdiff.schema",
- ru.taximaxim.codekeeper.apgdiff.model.graph;uses:="org.jgrapht,cz.startnet.utils.pgdiff.schema"
+ ru.taximaxim.codekeeper.apgdiff.model.graph
 Require-Bundle: org.hamcrest.core,
  org.junit
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
