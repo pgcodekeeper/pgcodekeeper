@@ -526,6 +526,12 @@ public class PgDiffTables {
                         PgView view = (PgView) depnt;
                         outputSearchPath(PgDiffUtils.getQuotedName(
                                 view.getParent().getName(), true), searchPathHelper, writer);
+                        writer.println();
+                        writer.println("/* ");
+                        writer.println(" * This view is being dropped, because table " 
+                                        + table.getName() + " gets dropped.");
+                        writer.println(" * It will be recreated later.");
+                        writer.println(" */");
                         writer.println(view.getDropSQL());
                     }
                 }
@@ -533,6 +539,21 @@ public class PgDiffTables {
                 searchPathHelper.outputSearchPath(writer);
                 writer.println();
                 writer.println(table.getDropSQL());
+                
+                for (PgStatement depnt : dependants){
+                    if (depnt instanceof PgView){
+                        PgView view = (PgView) depnt;
+                        outputSearchPath(PgDiffUtils.getQuotedName(
+                                view.getParent().getName(), true), searchPathHelper, writer);
+                        writer.println();
+                        writer.println("/* ");
+                        writer.println(" * This view is being created, because table " 
+                                        + table.getName() + " got dropped.");
+                        writer.println(" * It was dropped earlier.");
+                        writer.println(" */");
+                        writer.println(view.getCreationSQL());
+                    }
+                }
             }
         }
     }
