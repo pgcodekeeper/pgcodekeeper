@@ -13,7 +13,6 @@ import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.di.extensions.Preference;
-import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
@@ -118,7 +117,7 @@ public class DiffPartDescr {
                 Differ differ = new Differ(DbSource.fromFilter(dbSource,
                         filtered, DiffSide.LEFT), DbSource.fromFilter(dbTarget,
                         filtered, DiffSide.RIGHT));
-
+                differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
                 try {
                     new ProgressMonitorDialog(shell).run(true, false, differ);
                 } catch (InvocationTargetException ex) {

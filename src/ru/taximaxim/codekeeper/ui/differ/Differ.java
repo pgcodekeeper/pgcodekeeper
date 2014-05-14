@@ -14,6 +14,7 @@ import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.UnixPrintWriter;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class Differ implements IRunnableWithProgress {
     
@@ -22,6 +23,9 @@ public class Differ implements IRunnableWithProgress {
     private boolean finished;
     
     private String diffDirect, diffReverse;
+
+    private PgStatement sourceDbFull = null;
+    private PgStatement targetDbFull = null;
     
     public Differ(DbSource dbSource, DbSource dbTarget) {
         this.dbSource = dbSource;
@@ -66,7 +70,7 @@ public class Differ implements IRunnableWithProgress {
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
         PrintWriter writer = new UnixPrintWriter(diffOut, true);
         
-        PgDiff.diffDatabaseSchemas(writer, args, dbSource, dbTarget);
+        PgDiff.diffDatabaseSchemas(writer, args, dbSource, dbTarget, sourceDbFull, targetDbFull);
         writer.flush();
         diffDirect = diffOut.toString().trim();
 
@@ -75,11 +79,16 @@ public class Differ implements IRunnableWithProgress {
         
         pm.newChild(25).subTask("Reverse diff..."); // 100
         diffOut.reset();
-        PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource);
+        PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource, sourceDbFull, targetDbFull);
         writer.flush();
         diffReverse = diffOut.toString().trim();
         
         monitor.done();
         finished = true;
+    }
+
+    public void setFullDbs(PgDatabase sourceDbFull, PgDatabase targetDbFull) {
+       this.sourceDbFull = sourceDbFull;
+       this.targetDbFull = targetDbFull;
     }
 }
