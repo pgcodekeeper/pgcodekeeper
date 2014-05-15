@@ -104,7 +104,7 @@ public class CreateTriggerParser {
             final PgSchema tableSchema = database.getSchema(
                     ParserUtils.getSchemaName(tableName, database));
             PgTable table = tableSchema.getTable(trigger.getTableName());
-        	table.addTrigger(trigger);
+            table.addTrigger(trigger);
         }
     }
 

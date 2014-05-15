@@ -44,7 +44,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
     private String comment;
     
     public PgTrigger(String name, String rawStatement, String searchPath) {
-    	super(name, rawStatement, searchPath);    	
+        super(name, rawStatement, searchPath);        
     }
 
     public void setBefore(final boolean before) {

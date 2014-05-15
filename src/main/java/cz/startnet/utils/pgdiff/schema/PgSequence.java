@@ -26,7 +26,7 @@ public class PgSequence extends PgStatementWithSearchPath {
     private String comment;
 
     public PgSequence(String name, String rawStatement, String searchPath) {
-    	super(name, rawStatement, searchPath);
+        super(name, rawStatement, searchPath);
     }
 
     public void setCache(final String cache) {

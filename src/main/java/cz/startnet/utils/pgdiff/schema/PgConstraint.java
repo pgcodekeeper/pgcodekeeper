@@ -28,7 +28,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
     private String comment;
 
     public PgConstraint(String name, String rawStatement, String searchPath) {
-    	super(name, rawStatement, searchPath);
+        super(name, rawStatement, searchPath);
     }
 
     public String getCreationSQL() {

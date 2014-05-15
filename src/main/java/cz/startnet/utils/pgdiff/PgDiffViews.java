@@ -132,9 +132,9 @@ public class PgDiffViews {
         if(oldColumnNames.isEmpty() && newColumnNames.isEmpty()) {
             String nOldQuery = PgDiffUtils.normalizeWhitespaceUnquoted(oldView.getQuery());
             String nNewQuery = PgDiffUtils.normalizeWhitespaceUnquoted(newView.getQuery());
-        	return !nOldQuery.equals(nNewQuery);
+            return !nOldQuery.equals(nNewQuery);
         } else {
-        	return !oldColumnNames.equals(newColumnNames);
+            return !oldColumnNames.equals(newColumnNames);
         }
     }
 

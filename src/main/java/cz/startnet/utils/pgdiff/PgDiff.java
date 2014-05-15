@@ -42,35 +42,35 @@ public class PgDiff {
     public static void createDiff(final PrintWriter writer,
             final PgDiffArguments arguments) {
         diffDatabaseSchemas(writer, arguments,
-        		loadDatabaseSchema(arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments),
-        		loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments), null, null);
+                loadDatabaseSchema(arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments),
+                loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments), null, null);
     }
     
     /**
      * Loads database schema choosing the provided method.
      * 
-     * @param format		format of the database source, must be "dump", "parsed" or "db"
-     * 						otherwise exception is thrown
-     * @param srcPath		path to the database source to load
-     * @param arguments		object containing arguments settings
+     * @param format        format of the database source, must be "dump", "parsed" or "db"
+     *                         otherwise exception is thrown
+     * @param srcPath        path to the database source to load
+     * @param arguments        object containing arguments settings
      * 
      * @return the loaded database
      */
     static PgDatabase loadDatabaseSchema(final String format, final String srcPath,
-    			final PgDiffArguments arguments) {
-    	if(format.equals("dump")) {
-    		return PgDumpLoader.loadDatabaseSchemaFromDump(srcPath,
-    				arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
-    				arguments.isIgnoreSlonyTriggers());
-    	} else if(format.equals("parsed")) {
-    		return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
-    				arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
-    				arguments.isIgnoreSlonyTriggers());
-    	} else if(format.equals("db")) {
-    		throw new UnsupportedOperationException("DB connection is not yet implemented!");
-    	}
-    	
-    	throw new UnsupportedOperationException("Unknown DB format!");
+                final PgDiffArguments arguments) {
+        if(format.equals("dump")) {
+            return PgDumpLoader.loadDatabaseSchemaFromDump(srcPath,
+                    arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
+                    arguments.isIgnoreSlonyTriggers());
+        } else if(format.equals("parsed")) {
+            return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
+                    arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
+                    arguments.isIgnoreSlonyTriggers());
+        } else if(format.equals("db")) {
+            throw new UnsupportedOperationException("DB connection is not yet implemented!");
+        }
+        
+        throw new UnsupportedOperationException("Unknown DB format!");
     }
 
     /**
@@ -266,13 +266,13 @@ public class PgDiff {
      */
     
     private static void createNewExtensions(final PrintWriter writer, 
-    		final PgDatabase oldDatabase, final PgDatabase newDatabase) {
-    	for(final PgExtension newExt : newDatabase.getExtensions()) {
-    		if(oldDatabase.getExtension(newExt.getName()) == null) {
-    			writer.println();
-    			writer.println(newExt.getCreationSQL());
-    		}
-    	}
+            final PgDatabase oldDatabase, final PgDatabase newDatabase) {
+        for(final PgExtension newExt : newDatabase.getExtensions()) {
+            if(oldDatabase.getExtension(newExt.getName()) == null) {
+                writer.println();
+                writer.println(newExt.getCreationSQL());
+            }
+        }
     }
     
     /**
@@ -283,15 +283,15 @@ public class PgDiff {
      * @param newDatabase new database schema
      */
     private static void dropOldExtensions(final PrintWriter writer, 
-    		final PgDatabase oldDatabase, final PgDatabase newDatabase) {
-    	for(final PgExtension oldExt : oldDatabase.getExtensions()) {
-    		if(newDatabase.getExtension(oldExt.getName()) == null) {
-    			writer.println();
-    			writer.println("DROP EXTENSION "
-    					+ PgDiffUtils.getQuotedName(oldExt.getName())
-    					+ ";");
-    		}
-    	}
+            final PgDatabase oldDatabase, final PgDatabase newDatabase) {
+        for(final PgExtension oldExt : oldDatabase.getExtensions()) {
+            if(newDatabase.getExtension(oldExt.getName()) == null) {
+                writer.println();
+                writer.println("DROP EXTENSION "
+                        + PgDiffUtils.getQuotedName(oldExt.getName())
+                        + ";");
+            }
+        }
     }
     
     /**
@@ -303,22 +303,22 @@ public class PgDiff {
      */
     private static void updateExtensions(final PrintWriter writer,
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
-    	for(final PgExtension newExt : newDatabase.getExtensions()) {
-    		final PgExtension oldExt = oldDatabase.getExtension(
-    				newExt.getName());
-    		if(oldExt == null) {
-    			continue;
-    		}
-    		
-    		if(newExt.getSchema() != null
-    				&& !newExt.getSchema().equals(
-    						oldExt.getSchema())) {
-    			writer.println();
-    			writer.println("ALTER EXTENSION "
-    					+ PgDiffUtils.getQuotedName(oldExt.getName())
-    					+ " SET SCHEMA " + newExt.getSchema() + ";");
-    		}
-    	}
+        for(final PgExtension newExt : newDatabase.getExtensions()) {
+            final PgExtension oldExt = oldDatabase.getExtension(
+                    newExt.getName());
+            if(oldExt == null) {
+                continue;
+            }
+            
+            if(newExt.getSchema() != null
+                    && !newExt.getSchema().equals(
+                            oldExt.getSchema())) {
+                writer.println();
+                writer.println("ALTER EXTENSION "
+                        + PgDiffUtils.getQuotedName(oldExt.getName())
+                        + " SET SCHEMA " + newExt.getSchema() + ";");
+            }
+        }
     }
     
     /**
@@ -407,7 +407,7 @@ public class PgDiff {
                         || oldSchema.getComment() != null
                         && newSchema.getComment() != null
                         && !oldSchema.getComment().equals(
-                        		newSchema.getComment())) {
+                                newSchema.getComment())) {
                     writer.println();
                     writer.print("COMMENT ON SCHEMA ");
                     writer.print(

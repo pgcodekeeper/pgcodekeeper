@@ -151,22 +151,22 @@ public class PgColumn extends PgStatement {
     
     @Override
     public boolean compare(PgStatement obj) {
-    	boolean eq = false;
-    	
-    	if(this == obj) {
-    		eq = true;
-    	} else if(obj instanceof PgColumn) {
-    		PgColumn col = (PgColumn) obj;
-    		
-    		eq = Objects.equals(name, col.getName())
-    				&& Objects.equals(type, col.getType())
-    				&& nullValue == col.getNullValue()
-    				&& Objects.equals(defaultValue, col.getDefaultValue())
-    				&& Objects.equals(statistics, col.getStatistics())
-    				&& Objects.equals(storage, col.getStorage());
-    	}
-    	
-    	return eq;
+        boolean eq = false;
+        
+        if(this == obj) {
+            eq = true;
+        } else if(obj instanceof PgColumn) {
+            PgColumn col = (PgColumn) obj;
+            
+            eq = Objects.equals(name, col.getName())
+                    && Objects.equals(type, col.getType())
+                    && nullValue == col.getNullValue()
+                    && Objects.equals(defaultValue, col.getDefaultValue())
+                    && Objects.equals(statistics, col.getStatistics())
+                    && Objects.equals(storage, col.getStorage());
+        }
+        
+        return eq;
     }
     
     @Override

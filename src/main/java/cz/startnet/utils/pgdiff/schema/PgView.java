@@ -28,7 +28,7 @@ public class PgView extends PgStatementWithSearchPath {
     private String comment;
 
     public PgView(String name, String rawStatement, String searchPath) {
-    	super(name, rawStatement, searchPath);
+        super(name, rawStatement, searchPath);
     }
 
     public void setColumnNames(final List<String> columnNames) {
@@ -264,17 +264,17 @@ public class PgView extends PgStatementWithSearchPath {
 
         @Override
         public boolean equals(Object obj) {
-        	boolean eq = false;
-        	
-        	if(this == obj) {
-        		eq = true;
-        	} else if(obj instanceof DefaultValue) {
-        		DefaultValue val = (DefaultValue) obj;
-        		eq = Objects.equals(columnName, val.getColumnName())
-        				&& Objects.equals(defaultValue, val.getDefaultValue());
-        	}
-        	
-        	return eq;
+            boolean eq = false;
+            
+            if(this == obj) {
+                eq = true;
+            } else if(obj instanceof DefaultValue) {
+                DefaultValue val = (DefaultValue) obj;
+                eq = Objects.equals(columnName, val.getColumnName())
+                        && Objects.equals(defaultValue, val.getDefaultValue());
+            }
+            
+            return eq;
         }
         
         @Override

@@ -22,7 +22,7 @@ public class PgIndex extends PgStatementWithSearchPath {
     private String comment;
 
     public PgIndex(String name, String rawStatement, String searchPath) {
-    	super(name, rawStatement, searchPath);
+        super(name, rawStatement, searchPath);
     }
 
     public String getComment() {

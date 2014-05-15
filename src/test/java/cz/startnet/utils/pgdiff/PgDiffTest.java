@@ -215,8 +215,8 @@ public class PgDiffTest {
     }
     
     private final static List<String> runDiffIgnoredFiles = Arrays.asList(
-    		
-    		);
+            
+            );
     /**
      * Template name for file names that should be used for the test. Testing
      * method adds _original.sql, _new.sql and _diff.sql to the file name
@@ -317,9 +317,9 @@ public class PgDiffTest {
      */
     @Test(timeout = 1000)
     public void runDiff() throws FileNotFoundException, IOException {
-    	
-    	Assume.assumeThat(runDiffIgnoredFiles, not(hasItem(fileNameTemplate)));
-    	
+        
+        Assume.assumeThat(runDiffIgnoredFiles, not(hasItem(fileNameTemplate)));
+        
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();

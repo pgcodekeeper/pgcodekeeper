@@ -214,7 +214,7 @@ public class AlterTableParser {
         final String constraintName =
                 ParserUtils.getObjectName(parser.parseIdentifier());
         final PgConstraint constraint = 
-        		new PgConstraint(constraintName, null, searchPath);
+                new PgConstraint(constraintName, null, searchPath);
         constraint.setTableName(table.getName());
         table.addConstraint(constraint);
         constraint.setDefinition(parser.getExpression());
@@ -235,20 +235,20 @@ public class AlterTableParser {
         
         PgColumn column = table.getColumn(columnName);
         if (column == null) {
-        	// костыль
-        	// ignore columns not found in inherited tables
-        	// as they are not correctly supported
-        	if(!table.getInherits().isEmpty()) {
-        		// consume the statement into a fake column object
-        		column = new PgColumn(columnName);
-        	}
-        	
-        	// if table is not inherited throw an error as we're supposed to
-        	else {
-        	    throw new RuntimeException(MessageFormat.format(
-        	            Resources.getString("CannotFindTableColumn"),
-        	            columnName, table.getName(), parser.getString()));
-        	}
+            // костыль
+            // ignore columns not found in inherited tables
+            // as they are not correctly supported
+            if(!table.getInherits().isEmpty()) {
+                // consume the statement into a fake column object
+                column = new PgColumn(columnName);
+            }
+            
+            // if table is not inherited throw an error as we're supposed to
+            else {
+                throw new RuntimeException(MessageFormat.format(
+                        Resources.getString("CannotFindTableColumn"),
+                        columnName, table.getName(), parser.getString()));
+            }
         }
 
         if (parser.expectOptional("SET")) {

@@ -36,7 +36,7 @@ public class CreateTableParser {
 
         final String tableName = parser.parseIdentifier();
         final PgTable table = new PgTable(ParserUtils.getObjectName(tableName),
-        		statement, searchPath);
+                statement, searchPath);
         final String schemaName =
                 ParserUtils.getSchemaName(tableName, database);
         final PgSchema schema = database.getSchema(schemaName);

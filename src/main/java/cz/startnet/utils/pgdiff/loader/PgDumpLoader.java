@@ -168,7 +168,7 @@ public class PgDumpLoader { //NOPMD
      *                                included in the output
      * @param ignoreSlonyTriggers     whether Slony triggers should be ignored
      * 
-     * @param database				  {@link PgDatabase} to load into
+     * @param database                  {@link PgDatabase} to load into
      *
      * @return database schema from dump file
      */
@@ -184,7 +184,7 @@ public class PgDumpLoader { //NOPMD
                 if (PATTERN_CREATE_SCHEMA.matcher(statement).matches()) {
                     CreateSchemaParser.parse(database, statement);
                 } else if(PATTERN_CREATE_EXTENSION.matcher(statement).matches()) {
-                	CreateExtensionParser.parse(database, statement);
+                    CreateExtensionParser.parse(database, statement);
                 } else if (PATTERN_DEFAULT_SCHEMA.matcher(statement).matches()) {
                     final Matcher matcher =
                             PATTERN_DEFAULT_SCHEMA.matcher(statement);
@@ -221,8 +221,8 @@ public class PgDumpLoader { //NOPMD
                         || PATTERN_UPDATE.matcher(statement).matches()
                         || PATTERN_DELETE_FROM.matcher(statement).matches()) {
                     // we just ignore these statements
-                	// add them as ignoredDataStatements
-                	database.addIgnoredDataStatement(statement);
+                    // add them as ignoredDataStatements
+                    database.addIgnoredDataStatement(statement);
                 } else if (outputIgnoredStatements) {
                     database.addIgnoredStatement(statement);
                 } else {
@@ -247,7 +247,7 @@ public class PgDumpLoader { //NOPMD
      * Loads database schema from a ModelExporter directory tree.
      * The root directory must contain a listing.lst file for ordered list of files.
      * 
-     * @param dirPath				  path to the directory tree root
+     * @param dirPath                  path to the directory tree root
      * @param charsetName             charset that should be used to read the
      *                                file
      * @param outputIgnoredStatements whether ignored statements should be
@@ -322,8 +322,8 @@ public class PgDumpLoader { //NOPMD
     public static PgDatabase loadDatabaseSchemaFromDump(final InputStream inputStream,
             final String charsetName, final boolean outputIgnoredStatements,
             final boolean ignoreSlonyTriggers) {
-    	return loadDatabaseSchemaCore(inputStream, charsetName, outputIgnoredStatements,
-    			ignoreSlonyTriggers, new PgDatabase());
+        return loadDatabaseSchemaCore(inputStream, charsetName, outputIgnoredStatements,
+                ignoreSlonyTriggers, new PgDatabase());
     }
     
     /**

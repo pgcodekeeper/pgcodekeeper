@@ -11,82 +11,82 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  */
 public class PgExtension extends PgStatement {
 
-	private String schema;
-	private String version;
-	private String oldVersion;
-	private String comment;
+    private String schema;
+    private String version;
+    private String oldVersion;
+    private String comment;
 
-	public PgExtension(String name, String rawStatement) {
-		super(name, rawStatement);
-	}
-	
-	public String getSchema() {
-		return schema;
-	}
-	
-	public void setSchema(final String schema) {
-		this.schema = schema;
-	}
-	
-	public String getVersion() {
-		return version;
-	}
-	
-	public void setVersion(final String version) {
-		this.version = version;
-	}
-	
-	public String getOldVersion() {
-		return oldVersion;
-	}
-	
-	public void setOldVersion(final String oldVersion) {
-		this.oldVersion = oldVersion;
-	}
-	
-	public String getComment() {
-		return comment;
-	}
-	
-	public void setComment(final String comment) {
-		this.comment = comment;
-	}
-	
-	public String getCreationSQL() {
-		final StringBuilder sbSQL = new StringBuilder(50);
-		sbSQL.append("CREATE EXTENSION ");
-		sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-		
-		if(getSchema() != null && !getSchema().isEmpty()) {
-			sbSQL.append(" SCHEMA ");
-			sbSQL.append(getSchema());
-		}
-		
-		if(getVersion() != null && !getVersion().isEmpty()) {
-			sbSQL.append(" VERSION ");
-			sbSQL.append(getVersion());
-		}
-		
-		if(getOldVersion() != null && !getOldVersion().isEmpty()) {
-			sbSQL.append(" FROM ");
-			sbSQL.append(getOldVersion());
-		}
-		
-		sbSQL.append(';');
-		
-		if(getComment() != null && !getComment().isEmpty()) {
-			sbSQL.append("\n\nCOMMENT ON EXTENSION ");
-			sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-			sbSQL.append(" IS ");
-			sbSQL.append(comment);
-			sbSQL.append(';');
-		}
-		
-		return sbSQL.toString();
-	}
-	
-	@Override
-	public boolean compare(PgStatement obj) {
+    public PgExtension(String name, String rawStatement) {
+        super(name, rawStatement);
+    }
+    
+    public String getSchema() {
+        return schema;
+    }
+    
+    public void setSchema(final String schema) {
+        this.schema = schema;
+    }
+    
+    public String getVersion() {
+        return version;
+    }
+    
+    public void setVersion(final String version) {
+        this.version = version;
+    }
+    
+    public String getOldVersion() {
+        return oldVersion;
+    }
+    
+    public void setOldVersion(final String oldVersion) {
+        this.oldVersion = oldVersion;
+    }
+    
+    public String getComment() {
+        return comment;
+    }
+    
+    public void setComment(final String comment) {
+        this.comment = comment;
+    }
+    
+    public String getCreationSQL() {
+        final StringBuilder sbSQL = new StringBuilder(50);
+        sbSQL.append("CREATE EXTENSION ");
+        sbSQL.append(PgDiffUtils.getQuotedName(getName()));
+        
+        if(getSchema() != null && !getSchema().isEmpty()) {
+            sbSQL.append(" SCHEMA ");
+            sbSQL.append(getSchema());
+        }
+        
+        if(getVersion() != null && !getVersion().isEmpty()) {
+            sbSQL.append(" VERSION ");
+            sbSQL.append(getVersion());
+        }
+        
+        if(getOldVersion() != null && !getOldVersion().isEmpty()) {
+            sbSQL.append(" FROM ");
+            sbSQL.append(getOldVersion());
+        }
+        
+        sbSQL.append(';');
+        
+        if(getComment() != null && !getComment().isEmpty()) {
+            sbSQL.append("\n\nCOMMENT ON EXTENSION ");
+            sbSQL.append(PgDiffUtils.getQuotedName(getName()));
+            sbSQL.append(" IS ");
+            sbSQL.append(comment);
+            sbSQL.append(';');
+        }
+        
+        return sbSQL.toString();
+    }
+    
+    @Override
+    public boolean compare(PgStatement obj) {
         boolean eq = false;
         
         if(this == obj) {
@@ -100,7 +100,7 @@ public class PgExtension extends PgStatement {
         }
         
         return eq;
-	}
+    }
 
     @Override
     public int hashCode() {
@@ -113,18 +113,18 @@ public class PgExtension extends PgStatement {
         return result;
     }
 
-	@Override
-	public PgExtension shallowCopy() {
-	    PgExtension extDst = new PgExtension(getName(), getRawStatement());
+    @Override
+    public PgExtension shallowCopy() {
+        PgExtension extDst = new PgExtension(getName(), getRawStatement());
         extDst.setSchema(getSchema());
         extDst.setVersion(getVersion());
         extDst.setOldVersion(getOldVersion());
         extDst.setComment(getComment());
         return extDst;
-	}
-	
-	@Override
-	public PgExtension deepCopy() {
-	    return shallowCopy();
-	}
+    }
+    
+    @Override
+    public PgExtension deepCopy() {
+        return shallowCopy();
+    }
 }

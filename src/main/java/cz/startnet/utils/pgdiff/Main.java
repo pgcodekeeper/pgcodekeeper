@@ -32,25 +32,25 @@ public class Main {
      */
     public static void main(final String[] args)
             throws UnsupportedEncodingException, FileNotFoundException,
-            	IOException {
+                IOException {
         final PrintWriter writer = new PrintWriter(System.out, true);
         final PgDiffArguments arguments = new PgDiffArguments();
 
         if (arguments.parse(writer, args)) {
-        	if(arguments.isModeDiff()) {
-	            try(final PrintWriter encodedWriter = new UnixPrintWriter(
-	                    new OutputStreamWriter(
-	                    	new FileOutputStream(arguments.getDiffOutfile()),
-	                    						arguments.getOutCharsetName()))) {
-		            PgDiff.createDiff(encodedWriter, arguments);
-	            }
-        	} else if(arguments.isModeParse()) {
-        		new ModelExporter(arguments.getParserOutdir(),
-        				PgDiff.loadDatabaseSchema(arguments.getParseSrcFormat(),
-        						arguments.getParseSrc(), arguments),
-        					arguments.getOutCharsetName())
-        			.export();
-        	}
+            if(arguments.isModeDiff()) {
+                try(final PrintWriter encodedWriter = new UnixPrintWriter(
+                        new OutputStreamWriter(
+                            new FileOutputStream(arguments.getDiffOutfile()),
+                                                arguments.getOutCharsetName()))) {
+                    PgDiff.createDiff(encodedWriter, arguments);
+                }
+            } else if(arguments.isModeParse()) {
+                new ModelExporter(arguments.getParserOutdir(),
+                        PgDiff.loadDatabaseSchema(arguments.getParseSrcFormat(),
+                                arguments.getParseSrc(), arguments),
+                            arguments.getOutCharsetName())
+                    .export();
+            }
         }
 
         writer.close();

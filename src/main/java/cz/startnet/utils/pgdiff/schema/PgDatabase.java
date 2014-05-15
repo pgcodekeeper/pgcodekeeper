@@ -112,13 +112,13 @@ public class PgDatabase extends PgStatement {
      * @return found extension or null
      */
     public PgExtension getExtension(final String name) {
-    	for(final PgExtension ext : extensions) {
-    		if(ext.getName().equals(name)) {
-    			return ext;
-    		}
-    	}
-    	
-    	return null;
+        for(final PgExtension ext : extensions) {
+            if(ext.getName().equals(name)) {
+                return ext;
+            }
+        }
+        
+        return null;
     }
     
     /**
@@ -127,11 +127,11 @@ public class PgDatabase extends PgStatement {
      * @return {@link #extensions}
      */
     public List<PgExtension> getExtensions() {
-    	return Collections.unmodifiableList(extensions);
+        return Collections.unmodifiableList(extensions);
     }
 
     public void addExtension(final PgExtension extension) {
-    	extensions.add(extension);
+        extensions.add(extension);
         extension.setParent(this);
     }
     

@@ -15,15 +15,15 @@ import java.util.SortedMap;
  * @author fordfrog
  */
 public class PgDiffArguments {
-	
-	/**
-	 * Is program in diff mode.
-	 */
-	private boolean modeDiff;
-	/**
-	 * Is program in parser mode.
-	 */
-	private boolean modeParse;
+    
+    /**
+     * Is program in diff mode.
+     */
+    private boolean modeDiff;
+    /**
+     * Is program in parser mode.
+     */
+    private boolean modeParse;
     /**
      * Path to the new dump file.
      */
@@ -104,7 +104,7 @@ public class PgDiffArguments {
      * @param modeDiff {@link #modeDiff}
      */
     public void setModeDiff(final boolean modeDiff) {
-    	this.modeDiff = modeDiff;
+        this.modeDiff = modeDiff;
     }
     
     /**
@@ -113,7 +113,7 @@ public class PgDiffArguments {
      * @return {@link #modeDiff}
      */
     public boolean isModeDiff() {
-    	return modeDiff;
+        return modeDiff;
     }
     
     /**
@@ -122,7 +122,7 @@ public class PgDiffArguments {
      * @param modeParse {@link #modeParse}
      */
     public void setModeParse(final boolean modeParse) {
-    	this.modeParse = modeParse;
+        this.modeParse = modeParse;
     }
     
     /**
@@ -131,7 +131,7 @@ public class PgDiffArguments {
      * @return {@link #modeParse}
      */
     public boolean isModeParse() {
-    	return modeParse;
+        return modeParse;
     }
     
     /**
@@ -140,7 +140,7 @@ public class PgDiffArguments {
      * @param newSrc {@link #newSrc}
      */
     public void setNewSrc(final String newSrc) {
-    	this.newSrc = newSrc;
+        this.newSrc = newSrc;
     }
     
     /**
@@ -149,7 +149,7 @@ public class PgDiffArguments {
      * @return {@link #newSrc}
      */
     public String getNewSrc() {
-    	return newSrc;
+        return newSrc;
     }
     
     /**
@@ -158,7 +158,7 @@ public class PgDiffArguments {
      * @param oldSrc {@link #oldSrc}
      */
     public void setOldSrc(final String oldSrc) {
-    	this.oldSrc = oldSrc;
+        this.oldSrc = oldSrc;
     }
     
     /**
@@ -167,7 +167,7 @@ public class PgDiffArguments {
      * @return {@link #oldSrc}
      */
     public String getOldSrc() {
-    	return this.oldSrc;
+        return this.oldSrc;
     }
     
     /**
@@ -176,7 +176,7 @@ public class PgDiffArguments {
      * @param newSrcFormat {@link #newSrcFormat}
      */
     public void setNewSrcFormat(final String newSrcFormat) {
-    	this.newSrcFormat = newSrcFormat;
+        this.newSrcFormat = newSrcFormat;
     }
     
     /**
@@ -185,7 +185,7 @@ public class PgDiffArguments {
      * @return {@link #oldSrc}
      */
     public String getNewSrcFormat() {
-    	return this.newSrcFormat;
+        return this.newSrcFormat;
     }
     
     /**
@@ -194,7 +194,7 @@ public class PgDiffArguments {
      * @param oldSrcFormat {@link #oldSrcFormat}
      */
     public void setOldSrcFormat(final String oldSrcFormat) {
-    	this.oldSrcFormat = oldSrcFormat;
+        this.oldSrcFormat = oldSrcFormat;
     }
     
     /**
@@ -203,7 +203,7 @@ public class PgDiffArguments {
      * @return {@link #oldSrcFormat}
      */
     public String getOldSrcFormat() {
-    	return this.oldSrcFormat;
+        return this.oldSrcFormat;
     }
     
     /**
@@ -212,7 +212,7 @@ public class PgDiffArguments {
      * @param diffOutfile {@link #diffOutfile}
      */
     public void setDiffOutfile(final String diffOutfile) {
-    	this.diffOutfile = diffOutfile;
+        this.diffOutfile = diffOutfile;
     }
     
     /**
@@ -221,7 +221,7 @@ public class PgDiffArguments {
      * @return {@link #diffOutfile}
      */
     public String getDiffOutfile() {
-    	return this.diffOutfile;
+        return this.diffOutfile;
     }
     
     /**
@@ -230,7 +230,7 @@ public class PgDiffArguments {
      * @param parseSrc {@link #parseSrc}
      */
     public void setParseSrc(final String parseSrc) {
-    	this.parseSrc = parseSrc;
+        this.parseSrc = parseSrc;
     }
     
     /**
@@ -239,7 +239,7 @@ public class PgDiffArguments {
      * @return {@link #parseSrc}
      */
     public String getParseSrc() {
-    	return this.parseSrc;
+        return this.parseSrc;
     }
     
     /**
@@ -248,7 +248,7 @@ public class PgDiffArguments {
      * @param parseSrcFormat {@link #parseSrcFormat}
      */
     public void setParseSrcFormat(final String parseSrcFormat) {
-    	this.parseSrcFormat = parseSrcFormat;
+        this.parseSrcFormat = parseSrcFormat;
     }
     
     /**
@@ -257,7 +257,7 @@ public class PgDiffArguments {
      * @return {@link #parseSrcFormat}
      */
     public String getParseSrcFormat() {
-    	return this.parseSrcFormat;
+        return this.parseSrcFormat;
     }
     
     /**
@@ -266,7 +266,7 @@ public class PgDiffArguments {
      * @param parserOutdir {@link #parserOutdir}
      */
     public void setParserOutdir(final String parserOutdir) {
-    	this.parserOutdir = parserOutdir;
+        this.parserOutdir = parserOutdir;
     }
     
     /**
@@ -275,7 +275,7 @@ public class PgDiffArguments {
      * @return {@link #parserOutdir}
      */
     public String getParserOutdir() {
-    	return this.parserOutdir;
+        return this.parserOutdir;
     }
     
     /**
@@ -402,40 +402,40 @@ public class PgDiffArguments {
         int argsLength = args.length;
 
         for (int i = 0; i < argsLength; i++) {
-        	if("--diff".equals(args[i])) {
-        		setModeDiff(true);
-        		argsLength -= 3; // dont read last three parameters in the loop, they're not options
-        	} else if("--parse".equals(args[i])) {
-        		setModeParse(true);
-        		argsLength -= 2; // same for last two params in this mode
-        	} else if("--dbOld-format".equals(args[i])) {
-        		String format = args[++i];
-        		
-        		if("dump".equals(format) || "parsed".equals(format) || "db".equals(format)) {
-        			setOldSrcFormat(format);
-        		} else {
-        			writer.println("Unsupported DB format!");
-        			success = false;
-        		}
-        	} else if("--dbNew-format".equals(args[i])) {
-        		String format = args[++i];
-        		
-        		if("dump".equals(format) || "parsed".equals(format) || "db".equals(format)) {
-        			setNewSrcFormat(format);
-        		} else {
-        			writer.println("Unsupported DB format!");
-        			success = false;
-        		}
-        	} else if("--db-format".equals(args[i])) {
-        		String format = args[++i];
-        		
-        		if("dump".equals(format) || "db".equals(format)) {
-        			setParseSrcFormat(format);
-        		} else {
-        			writer.println("Unsupported DB format for parsing!");
-        			success = false;
-        		}
-        	} else if ("--add-defaults".equals(args[i])) {
+            if("--diff".equals(args[i])) {
+                setModeDiff(true);
+                argsLength -= 3; // dont read last three parameters in the loop, they're not options
+            } else if("--parse".equals(args[i])) {
+                setModeParse(true);
+                argsLength -= 2; // same for last two params in this mode
+            } else if("--dbOld-format".equals(args[i])) {
+                String format = args[++i];
+                
+                if("dump".equals(format) || "parsed".equals(format) || "db".equals(format)) {
+                    setOldSrcFormat(format);
+                } else {
+                    writer.println("Unsupported DB format!");
+                    success = false;
+                }
+            } else if("--dbNew-format".equals(args[i])) {
+                String format = args[++i];
+                
+                if("dump".equals(format) || "parsed".equals(format) || "db".equals(format)) {
+                    setNewSrcFormat(format);
+                } else {
+                    writer.println("Unsupported DB format!");
+                    success = false;
+                }
+            } else if("--db-format".equals(args[i])) {
+                String format = args[++i];
+                
+                if("dump".equals(format) || "db".equals(format)) {
+                    setParseSrcFormat(format);
+                } else {
+                    writer.println("Unsupported DB format for parsing!");
+                    success = false;
+                }
+            } else if ("--add-defaults".equals(args[i])) {
                 setAddDefaults(true);
             } else if ("--add-transaction".equals(args[i])) {
                 setAddTransaction(true);
@@ -468,8 +468,8 @@ public class PgDiffArguments {
         }
         
         if("db".equals(getOldSrcFormat()) || "db".equals(getNewSrcFormat())
-        		|| "db".equals(getParseSrcFormat())) {
-        	throw new UnsupportedOperationException("DB connection is not yet implemented!");
+                || "db".equals(getParseSrcFormat())) {
+            throw new UnsupportedOperationException("DB connection is not yet implemented!");
         }
 
         if (args.length == 1 && isVersion()) {
@@ -479,31 +479,31 @@ public class PgDiffArguments {
             listCharsets(writer);
             return false;
         } else if(isModeDiff() == isModeParse()) {
-        	success = false;
-        	if(isModeDiff()) {
-        		writer.println("Only one of --diff or --parse mode can be set!");
-        	}
+            success = false;
+            if(isModeDiff()) {
+                writer.println("Only one of --diff or --parse mode can be set!");
+            }
         } else if (args.length < 3) {
             success = false;
         }
         
         if (!success) {
-        	printUsage(writer);
-        	return false;
+            printUsage(writer);
+            return false;
         }
         
         try {
-        	if(isModeDiff()) {
-		        setOldSrc(args[args.length - 3]);
-		        setNewSrc(args[args.length - 2]);
-		        setDiffOutfile(args[args.length - 1]);
-        	} else if (isModeParse()) {
-        		setParseSrc(args[args.length - 2]);
-        		setParserOutdir(args[args.length - 1]);
-        	}
+            if(isModeDiff()) {
+                setOldSrc(args[args.length - 3]);
+                setNewSrc(args[args.length - 2]);
+                setDiffOutfile(args[args.length - 1]);
+            } else if (isModeParse()) {
+                setParseSrc(args[args.length - 2]);
+                setParserOutdir(args[args.length - 1]);
+            }
         } catch (ArrayIndexOutOfBoundsException ex) {
-        	printUsage(writer);
-        	return false;
+            printUsage(writer);
+            return false;
         }
         
         return true;

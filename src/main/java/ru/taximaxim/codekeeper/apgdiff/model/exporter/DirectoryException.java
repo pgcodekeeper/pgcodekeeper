@@ -9,19 +9,19 @@ import java.io.IOException;
  */
 @SuppressWarnings("serial")
 public class DirectoryException extends IOException {
-	
-	public DirectoryException() {
-	}
+    
+    public DirectoryException() {
+    }
 
-	public DirectoryException(String message) {
-		super(message);
-	}
+    public DirectoryException(String message) {
+        super(message);
+    }
 
-	public DirectoryException(Throwable cause) {
-		super(cause);
-	}
+    public DirectoryException(Throwable cause) {
+        super(cause);
+    }
 
-	public DirectoryException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public DirectoryException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

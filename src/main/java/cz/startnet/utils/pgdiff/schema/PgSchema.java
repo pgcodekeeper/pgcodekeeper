@@ -30,7 +30,7 @@ public class PgSchema extends PgStatement {
     private String comment;
 
     public PgSchema(String name, String rawStatement) {
-    	super(name, rawStatement);
+        super(name, rawStatement);
     }
 
     public void setAuthorization(final String authorization) {

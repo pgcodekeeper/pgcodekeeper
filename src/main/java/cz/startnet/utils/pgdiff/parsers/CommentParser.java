@@ -58,7 +58,7 @@ public class CommentParser {
         } else if (parser.expectOptional("VIEW")) {
             parseView(parser, database);
         } else if(parser.expectOptional("EXTENSION")) {
-        	parseExtension(parser, database);
+            parseExtension(parser, database);
         } else if (outputIgnoredStatements) {
             database.addIgnoredStatement(statement);
         }
@@ -373,14 +373,14 @@ public class CommentParser {
      * @param database database
      */
     private static void parseExtension(final Parser parser,
-    		final PgDatabase database) {
-    	final String extension =
-    			ParserUtils.getObjectName(parser.parseIdentifier());
-    	final PgExtension ext = database.getExtension(extension);
-    	
-    	parser.expect("IS");
-    	ext.setComment(getComment(parser));
-    	parser.expect(";");
+            final PgDatabase database) {
+        final String extension =
+                ParserUtils.getObjectName(parser.parseIdentifier());
+        final PgExtension ext = database.getExtension(extension);
+        
+        parser.expect("IS");
+        ext.setComment(getComment(parser));
+        parser.expect(";");
     }
 
     /**

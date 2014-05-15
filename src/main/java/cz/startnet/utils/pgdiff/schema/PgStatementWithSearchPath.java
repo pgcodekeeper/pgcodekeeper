@@ -7,17 +7,17 @@ package cz.startnet.utils.pgdiff.schema;
  * @author Alexander Levsha
  */
 abstract public class PgStatementWithSearchPath extends PgStatement {
-	/**
-	 * Last SET search_path preceding this statement
-	 */
-	private final String searchPath;
-	
-	public PgStatementWithSearchPath(String name,
-	        String rawStatement, String searchPath) {
-		super(name, rawStatement);
-		this.searchPath = searchPath;
-	}
-	public String getSearchPath() {
-		return searchPath;
-	}	
+    /**
+     * Last SET search_path preceding this statement
+     */
+    private final String searchPath;
+    
+    public PgStatementWithSearchPath(String name,
+            String rawStatement, String searchPath) {
+        super(name, rawStatement);
+        this.searchPath = searchPath;
+    }
+    public String getSearchPath() {
+        return searchPath;
+    }    
 }
