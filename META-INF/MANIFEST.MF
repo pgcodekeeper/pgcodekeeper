@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: apgdiff
 Bundle-SymbolicName: apgdiff;singleton:=true
-Bundle-Version: 0.0.1.qualifier
+Bundle-Version: 0.1.0.qualifier
 Export-Package: cz.startnet.utils.pgdiff,
  cz.startnet.utils.pgdiff.loader,
  cz.startnet.utils.pgdiff.schema,
@@ -14,3 +14,9 @@ Require-Bundle: org.hamcrest.core,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: lib/jgrapht-core-0.9.0.jar,
  .
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: ru.taximaxim.codekeeper.apgdiff.Activator
+Import-Package: org.eclipse.equinox.log;version="1.0.0",
+ org.osgi.framework;version="1.7.0",
+ org.osgi.service.log;version="1.3.0",
+ org.osgi.util.tracker;version="1.5.1"

@@ -186,18 +186,22 @@ public class PgSchema extends PgStatement {
 
     public void addFunction(final PgFunction function) {
         functions.add(function);
+        function.setParent(this);
     }
 
     public void addSequence(final PgSequence sequence) {
         sequences.add(sequence);
+        sequence.setParent(this);
     }
 
     public void addTable(final PgTable table) {
         tables.add(table);
+        table.setParent(this);
     }
 
     public void addView(final PgView view) {
         views.add(view);
+        view.setParent(this);
     }
 
     public boolean containsFunction(final String signature) {

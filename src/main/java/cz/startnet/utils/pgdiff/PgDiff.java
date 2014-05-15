@@ -5,13 +5,21 @@
  */
 package cz.startnet.utils.pgdiff;
 
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.util.Set;
+
+import org.jgrapht.DirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
+
+import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-
-import java.io.InputStream;
-import java.io.PrintWriter;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 
 /**
  * Creates diff of two database schemas.
@@ -19,6 +27,11 @@ import java.io.PrintWriter;
  * @author fordfrog
  */
 public class PgDiff {
+
+    private static DirectedGraph<PgStatement, DefaultEdge> oldDepcyGraph;
+    private static DepcyGraph depcyOld;
+    // TODO unused for now
+    private static DepcyGraph depcyNew;
 
     /**
      * Creates diff on the two database schemas.
@@ -30,7 +43,7 @@ public class PgDiff {
             final PgDiffArguments arguments) {
         diffDatabaseSchemas(writer, arguments,
         		loadDatabaseSchema(arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments),
-        		loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments));
+        		loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments), null, null);
     }
     
     /**
@@ -82,7 +95,7 @@ public class PgDiff {
                 arguments.isOutputIgnoredStatements(),
                 arguments.isIgnoreSlonyTriggers());
 
-        diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase);
+        diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase, null, null);
     }
     
     /**
@@ -101,11 +114,21 @@ public class PgDiff {
      */
     public static void diffDatabaseSchemas(final PrintWriter writer,
             final PgDiffArguments arguments, final PgDatabase oldDatabase,
-            final PgDatabase newDatabase) {
+            final PgDatabase newDatabase, PgStatement oldDbFull, PgStatement newDbFull) {
         if (arguments.isAddTransaction()) {
             writer.println("START TRANSACTION;");
         }
 
+        // temp solution
+        if (oldDbFull != null && newDbFull != null){
+            depcyOld = new DepcyGraph((PgDatabase)oldDbFull);
+            depcyNew = new DepcyGraph((PgDatabase)newDbFull);
+        }else{
+            depcyOld = new DepcyGraph(new PgDatabase());
+            depcyNew = new DepcyGraph(new PgDatabase());
+        }
+        oldDepcyGraph = depcyOld.getGraph();
+        
         if (oldDatabase.getComment() == null
                 && newDatabase.getComment() != null
                 || oldDatabase.getComment() != null
@@ -165,6 +188,72 @@ public class PgDiff {
 
                 writer.println("*/");
             }
+        }
+    }
+
+    /**
+     * Fills in the result list with all PgStatements, that are dependent from parent.
+     * <br>
+     * (that is, finds those vertices, that have common edge with parent where 
+     * parent is the target)
+     */
+    public static Set<PgStatement> getDependantsSet(PgStatement parent,
+            Set<PgStatement> result) {
+        if (oldDepcyGraph.containsVertex(parent)){
+            for (DefaultEdge edge : oldDepcyGraph.incomingEdgesOf(parent)) {
+                PgStatement dependant = oldDepcyGraph.getEdgeSource(edge);
+                if (result.add(dependant)) {
+                    getDependantsSet(dependant, result);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Fills in the result list with all PgStatements, that child is dependent from.
+     * <br>
+     * (that is, finds those vertices, that have common edge with child where 
+     * child is the source)
+     */
+    public static Set<PgStatement> getDependenciesSet(PgStatement child,
+            Set<PgStatement> result) {
+        if (oldDepcyGraph.containsVertex(child)){
+            for (DefaultEdge edge : oldDepcyGraph.outgoingEdgesOf(child)){
+                    PgStatement dependency = oldDepcyGraph.getEdgeTarget(edge);
+                    if (result.add(dependency)) {
+                        getDependenciesSet(dependency, result);
+                    }
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Checks, whether the child is in a subtree of the parent.
+     * <br>
+     * (as trigger would be a child of a table)
+     * 
+     * TODO add more class checking for parent
+     */
+    public static boolean containsChild(PgStatement parent, PgStatement child) {
+        String name = child.getName();
+        if (parent instanceof PgTable){
+            PgTable t = (PgTable)parent;
+            return t.containsConstraint(name) ||
+                   t.containsColumn(name) || 
+                   t.containsIndex(name) || 
+                   t.containsTrigger(name);
+        }else if (parent instanceof PgSchema){
+            PgSchema s = (PgSchema) parent;
+            return s.containsFunction(name) ||
+                   s.containsSequence(name) || 
+                   s.containsTable(name) || 
+                   s.containsView(name);
+        }else{
+            Log.log(Log.LOG_DEBUG, "Error in PgDiff.containsChild: parent is neither "
+                    + "a table nor a schema.\nParent's creation SQL:\n" + parent.getCreationSQL());
+            return true;
         }
     }
 
@@ -283,14 +372,10 @@ public class PgDiff {
                 || !newDatabase.getSchemas().get(0).getName().equals("public");
 
         for (final PgSchema newSchema : newDatabase.getSchemas()) {
-            final SearchPathHelper searchPathHelper;
-
-            if (setSearchPath) {
-                searchPathHelper = new SearchPathHelper("SET search_path = "
-                        + PgDiffUtils.getQuotedName(newSchema.getName(), true)
-                        + ", pg_catalog;");
-            } else {
-                searchPathHelper = new SearchPathHelper(null);
+            final SearchPathHelper searchPathHelper = 
+                    new SearchPathHelper(PgDiffUtils.getQuotedName(newSchema.getName(), true));
+            if (!setSearchPath) {
+                searchPathHelper.setWasOutput(true);
             }
             // TODO is this search_path setting sufficient ?
 
@@ -377,10 +462,7 @@ public class PgDiff {
                     writer, oldSchema, newSchema, searchPathHelper);
         }
     }
-
-    /**
-     * Creates a new instance of PgDiff.
-     */
+    
     private PgDiff() {
     }
 }

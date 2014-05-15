@@ -21,6 +21,7 @@ import java.util.Objects;
 public class PgView extends PgStatementWithSearchPath {
 
     private String query;
+    private PgSelect select;
     private List<String> columnNames = new ArrayList<>(1);
     private final List<DefaultValue> defaultValues = new ArrayList<DefaultValue>(0);
     private final List<ColumnComment> columnComments = new ArrayList<ColumnComment>(0);
@@ -118,6 +119,15 @@ public class PgView extends PgStatementWithSearchPath {
     public String getQuery() {
         return query;
     }
+    
+    public void setSelect(PgSelect select) {
+        this.select = select;
+        select.setParent(this);
+    }
+    
+    public PgSelect getSelect() {
+        return select;
+    }
 
     /**
      * Adds/replaces column default value specification.
@@ -177,6 +187,7 @@ public class PgView extends PgStatementWithSearchPath {
         } else if(obj instanceof PgView) {
             PgView view = (PgView) obj;
             eq = Objects.equals(name, view.getName())
+                    && Objects.equals(select, view.getSelect())
                     && columnNames.equals(view.columnNames)
                     && new HashSet<>(defaultValues).equals(new HashSet<>(view.defaultValues));
                     
@@ -205,6 +216,7 @@ public class PgView extends PgStatementWithSearchPath {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((query == null) ? 0 :
             PgDiffUtils.normalizeWhitespaceUnquoted(query).hashCode());
+        result = prime * result + ((select == null) ? 0 : select.hashCode());
         return result;
     }
     
@@ -212,6 +224,7 @@ public class PgView extends PgStatementWithSearchPath {
     public PgView shallowCopy() {
         PgView viewDst = new PgView(getName(), getRawStatement(), getSearchPath());
         viewDst.setQuery(getQuery());
+        viewDst.setSelect(select.shallowCopy());
         viewDst.setComment(getComment());
         viewDst.setColumnNames(new ArrayList<>(columnNames));
         for(DefaultValue defval : defaultValues) {
@@ -231,7 +244,7 @@ public class PgView extends PgStatementWithSearchPath {
     /**
      * Contains information about default value of column.
      */
-    public class DefaultValue {
+    public static class DefaultValue {
 
         private final String columnName;
         private final String defaultValue;
@@ -277,7 +290,7 @@ public class PgView extends PgStatementWithSearchPath {
     /**
      * Contains information about column comment.
      */
-    public class ColumnComment {
+    public static class ColumnComment {
 
         private final String columnName;
         private final String comment;

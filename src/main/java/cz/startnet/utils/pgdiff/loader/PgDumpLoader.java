@@ -56,6 +56,7 @@ public class PgDumpLoader { //NOPMD
     /**
      * Pattern for parsing default schema (search_path).
      */
+    // TODO doesn't satisfy all quoted identifiers (can contain any symbol) 
     private static final Pattern PATTERN_DEFAULT_SCHEMA = Pattern.compile(
             "^SET[\\s]+search_path[\\s]*=[\\s]*\"?([^,\\s\"]+)\"?"
             + "(?:,[\\s]+.*)?;$", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
@@ -450,17 +451,15 @@ public class PgDumpLoader { //NOPMD
      */
     private static boolean isQuoted(final StringBuilder sbString,
             final int pos) {
-        boolean isQuoted = false;
+        boolean isQuoted = false,
+                isDoubleQuoted = false;
 
         for (int curPos = 0; curPos < pos; curPos++) {
-            if (sbString.charAt(curPos) == '\'') {
+            if (sbString.charAt(curPos) == '\'' && !isDoubleQuoted) {
                 isQuoted = !isQuoted;
-
-                // if quote was escaped by backslash, it's like double quote
-                if (pos > 0 && sbString.charAt(pos - 1) == '\\') {
-                    isQuoted = !isQuoted;
-                }
-            } else if (sbString.charAt(curPos) == '$' && !isQuoted) {
+            } else if (sbString.charAt(curPos) == '"' && !isQuoted) {
+                isDoubleQuoted = !isDoubleQuoted;
+            } else if (sbString.charAt(curPos) == '$' && !isQuoted && !isDoubleQuoted) {
                 final int endPos = sbString.indexOf("$", curPos + 1);
 
                 if (endPos == -1) {
@@ -480,7 +479,7 @@ public class PgDumpLoader { //NOPMD
             }
         }
 
-        return isQuoted;
+        return isQuoted || isDoubleQuoted;
     }
 
     /**

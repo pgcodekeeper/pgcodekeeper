@@ -231,6 +231,11 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 	        <artifactId>jgrapht-core</artifactId>
 	        <version>0.9.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.tycho</groupId>
+            <artifactId>org.eclipse.osgi</artifactId>
+            <version>3.9.1.v20130814-1242</version>
+        </dependency>
     </dependencies>
 
     <reporting>

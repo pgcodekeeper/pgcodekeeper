@@ -18,14 +18,8 @@ import java.util.List;
  *
  * @author fordfrog
  */
-public class CreateViewParser {
+public final class CreateViewParser {
 
-    /**
-     * Parses CREATE VIEW statement.
-     *
-     * @param database  database
-     * @param statement CREATE VIEW statement
-     */
     public static void parse(final PgDatabase database,
             final String statement, final String searchPath) {
         final Parser parser = new Parser(statement);
@@ -54,6 +48,7 @@ public class CreateViewParser {
         		statement, searchPath);
         view.setColumnNames(columnNames);
         view.setQuery(query);
+        view.setSelect(SelectParser.parse(database, query, searchPath));
 
         final String schemaName = ParserUtils.getSchemaName(viewName, database);
         final PgSchema schema = database.getSchema(schemaName);
@@ -66,10 +61,7 @@ public class CreateViewParser {
 
         schema.addView(view);
     }
-
-    /**
-     * Creates a new instance of CreateViewParser.
-     */
+    
     private CreateViewParser() {
     }
 }

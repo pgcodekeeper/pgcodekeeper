@@ -6,8 +6,10 @@
 package cz.startnet.utils.pgdiff.parsers;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Parser utilities.
@@ -85,6 +87,7 @@ public class ParserUtils {
      *
      * @return generated name
      */
+    @Deprecated
     public static String generateName(final String prefix,
             final List<String> names, final String postfix) {
         final String adjName;
@@ -123,6 +126,9 @@ public class ParserUtils {
     /**
      * Splits qualified names by dots. If names are quoted then quotes are
      * removed.
+     * <br><br>
+     * This method uses identifier parsing mechanism from
+     * {@link #Parser.parseIdentifierInternal()}
      *
      * @param string qualified name
      *
@@ -130,15 +136,24 @@ public class ParserUtils {
      */
     private static String[] splitNames(final String string) {
         if (string.indexOf('"') == -1) {
-            return string.split("\\.");
+            return string.split(Pattern.quote("."));
         } else {
-            final List<String> strings = new ArrayList<String>(2);
+            final List<String> strings = new ArrayList<String>(3);
             int startPos = 0;
 
             while (true) {
                 if (string.charAt(startPos) == '"') {
-                    final int endPos = string.indexOf('"', startPos + 1);
-                    strings.add(string.substring(startPos + 1, endPos));
+                    // see Parser.parseIdentifierInternal for explanation of this method
+                    int endPos = startPos - 1;
+                    do {
+                        endPos += 2;
+                        endPos = string.indexOf('"', endPos);
+                    } while(string.charAt(endPos) != '"'
+                            || (endPos + 1 < string.length()
+                                    && string.charAt(endPos + 1) == '"'));
+                    
+                    strings.add(string.substring(startPos + 1, endPos)
+                            .replace("\"\"", "\""));
 
                     if (endPos + 1 == string.length()) {
                         break;

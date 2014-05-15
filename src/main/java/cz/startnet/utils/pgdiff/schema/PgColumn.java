@@ -16,93 +16,38 @@ import java.util.regex.Pattern;
  *
  * @author fordfrog
  */
-public class PgColumn {
+public class PgColumn extends PgStatement {
 
-    /**
-     * Pattern for parsing NULL arguments.
-     */
-    private static final Pattern PATTERN_NULL =
-            Pattern.compile("^(.+)[\\s]+NULL$", Pattern.CASE_INSENSITIVE);
-    /**
-     * Pattern for parsing NOT NULL arguments.
-     */
+    private static final Pattern PATTERN_NULL = Pattern.compile(
+            "^(.+)[\\s]+NULL$", Pattern.CASE_INSENSITIVE);
     private static final Pattern PATTERN_NOT_NULL = Pattern.compile(
             "^(.+)[\\s]+NOT[\\s]+NULL$", Pattern.CASE_INSENSITIVE);
-    /**
-     * Pattern for parsing DEFAULT value.
-     */
     private static final Pattern PATTERN_DEFAULT = Pattern.compile(
             "^(.+)[\\s]+DEFAULT[\\s]+(.+)$", Pattern.CASE_INSENSITIVE);
-    /**
-     * Specific statistics value.
-     */
+    
     private Integer statistics;
-    /**
-     * Default value of the column.
-     */
     private String defaultValue;
-    /**
-     * Name of the column.
-     */
-    private String name;
-    /**
-     * Type of the column.
-     */
     private String type;
-    /**
-     * Determines whether null value is allowed in the column.
-     */
     private boolean nullValue = true;
-    /**
-     * Contains information about column storage type.
-     */
     private String storage;
-    /**
-     * Comment.
-     */
     private String comment;
 
-    /**
-     * Creates a new PgColumn object.
-     *
-     * @param name name of the column
-     */
-    public PgColumn(final String name) {
-        this.name = name;
+    public PgColumn(String name) {
+        super(name, null);
     }
 
-    /**
-     * Getter for {@link #comment}.
-     *
-     * @return {@link #comment}
-     */
     public String getComment() {
         return comment;
     }
 
-    /**
-     * Setter for {@link #comment}.
-     *
-     * @param comment {@link #comment}
-     */
     public void setComment(final String comment) {
         this.comment = comment;
     }
 
-    /**
-     * Setter for {@link #defaultValue}.
-     *
-     * @param defaultValue {@link #defaultValue}
-     */
     public void setDefaultValue(final String defaultValue) {
         this.defaultValue = defaultValue;
     }
 
-    /**
-     * Getter for {@link #defaultValue}.
-     *
-     * @return {@link #defaultValue}
-     */
     public String getDefaultValue() {
         return defaultValue;
     }
@@ -140,101 +85,38 @@ public class PgColumn {
         return sbDefinition.toString();
     }
 
-    /**
-     * Setter for {@link #name}.
-     *
-     * @param name {@link #name}
-     */
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-    /**
-     * Getter for {@link #name}.
-     *
-     * @return {@link #name}
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Setter for {@link #nullValue}.
-     *
-     * @param nullValue {@link #nullValue}
-     */
     public void setNullValue(final boolean nullValue) {
         this.nullValue = nullValue;
     }
 
-    /**
-     * Getter for {@link #nullValue}.
-     *
-     * @return {@link #nullValue}
-     */
     public boolean getNullValue() {
         return nullValue;
     }
 
-    /**
-     * Setter for {@link #statistics}.
-     *
-     * @param statistics {@link #statistics}
-     */
     public void setStatistics(final Integer statistics) {
         this.statistics = statistics;
     }
 
-    /**
-     * Getter for {@link #statistics}.
-     *
-     * @return {@link #statistics}
-     */
     public Integer getStatistics() {
         return statistics;
     }
 
-    /**
-     * Getter for {@link #storage}.
-     *
-     * @return {@link #storage}
-     */
     public String getStorage() {
         return storage;
     }
 
-    /**
-     * Setter for {@link #storage}.
-     *
-     * @param storage {@link #storage}
-     */
     public void setStorage(final String storage) {
         this.storage = storage;
     }
 
-    /**
-     * Setter for {@link #type}.
-     *
-     * @param type {@link #type}
-     */
     public void setType(final String type) {
         this.type = type;
     }
 
-    /**
-     * Getter for {@link #type}.
-     *
-     * @return {@link #type}
-     */
     public String getType() {
         return type;
     }
 
-    /**
-     * Parses definition of the column
-     *
-     * @param definition definition of the column
-     */
     public void parseDefinition(final String definition) {
         String string = definition;
 
@@ -263,7 +145,12 @@ public class PgColumn {
     }
     
     @Override
-    public boolean equals(Object obj) {
+    public String getCreationSQL() {
+        return null;
+    }
+    
+    @Override
+    public boolean compare(PgStatement obj) {
     	boolean eq = false;
     	
     	if(this == obj) {
@@ -293,5 +180,22 @@ public class PgColumn {
         result = prime * result + ((storage == null) ? 0 : storage.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         return result;
+    }
+    
+    @Override
+    public PgColumn shallowCopy() {
+        PgColumn colDst = new PgColumn(getName()); 
+        colDst.setDefaultValue(getDefaultValue());
+        colDst.setNullValue(getNullValue());
+        colDst.setStatistics(getStatistics());
+        colDst.setStorage(getStorage());
+        colDst.setType(getType());
+        colDst.setComment(getComment());
+        return colDst;
+    }
+    
+    @Override
+    public PgColumn deepCopy() {
+        return shallowCopy();
     }
 }

@@ -21,7 +21,7 @@ public class PgDiffUtils {
      * Array of reserved keywords. Non-reserved keywords are excluded. Source
      * http://www.postgresql.org/docs/9.0/static/sql-keywords-appendix.html.
      */
-    private static final String[] KEYWORDS = new String[]{
+    private static final String[] KEYWORDS = {
         "ABS",
         "ABSOLUTE",
         "ACTION",
@@ -491,15 +491,15 @@ public class PgDiffUtils {
      */
     public static String getQuotedName(final String name,
             final boolean excludeKeywords) {
-        if (name.indexOf('-') != -1 || name.indexOf('.') != -1) {
-            return '"' + name + '"';
+        if (name.contains("-") || name.contains(".") || name.contains("\"")) {
+            return quoteName(name);
         }
 
         for (int i = 0; i < name.length(); i++) {
             final char chr = name.charAt(i);
 
             if (Character.isUpperCase(chr)) {
-                return '"' + name + '"';
+                return quoteName(name);
             }
         }
 
@@ -511,11 +511,15 @@ public class PgDiffUtils {
 
         for (final String keyword : KEYWORDS) {
             if (keyword.equals(upperName)) {
-                return '"' + name + '"';
+                return quoteName(name);
             }
         }
 
         return name;
+    }
+    
+    private static String quoteName(String name) {
+        return '"' + name.replace("\"", "\"\"") + '"';
     }
 
     /**
