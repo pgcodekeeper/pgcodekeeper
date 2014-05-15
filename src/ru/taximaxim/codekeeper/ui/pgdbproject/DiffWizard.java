@@ -120,12 +120,13 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             } else if (e.getCurrentPage() == pagePartial && e.getTargetPage() == pageResult) {
                 TreeElement filtered = pagePartial.getDiffTree().filterDiffTree();
 
-                DbSource dbSource = DbSource.fromFilter(this.dbSource,
+                DbSource fdbSource = DbSource.fromFilter(dbSource,
                         filtered, DiffSide.LEFT);
-                DbSource dbTarget = DbSource.fromFilter(this.dbTarget,
+                DbSource fdbTarget = DbSource.fromFilter(dbTarget,
                         filtered, DiffSide.RIGHT);
 
-                Differ differ = new Differ(dbSource, dbTarget);
+                Differ differ = new Differ(fdbSource, fdbTarget);
+                differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
                 try {
                     getContainer().run(true, false, differ);
                 } catch (InvocationTargetException ex) {
@@ -137,7 +138,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                             "Differ thread cancelled. Shouldn't happen!", ex),getContainer().getShell());
                 }
 
-                pageResult.setData(dbSource.getOrigin(), dbTarget.getOrigin(),
+                pageResult.setData(fdbSource.getOrigin(), fdbTarget.getOrigin(),
                         differ.getDiffDirect(), differ.getDiffReverse());
                 pageResult.layout();
             }
