@@ -71,7 +71,7 @@ public class SelectParser {
         try {
             parseSelectRecursive(statement);
         } catch (Exception ex) {
-            Log.log(Log.LOG_WARNING,
+            Log.log(Log.LOG_DEBUG,
                     "Exception while trying to parse following SELECT statement\n"
                             + statement, ex);
         }
@@ -107,7 +107,7 @@ public class SelectParser {
                     columns.add(new SelectColumn(m.group(GRP_SCHEMA),
                             m.group(GRP_TABLE), m.group(GRP_COLUMN)));
                 } else {
-                    Log.log(Log.LOG_WARNING, "SELECT column didn't match the pattern"
+                    Log.log(Log.LOG_DEBUG, "SELECT column didn't match the pattern"
                             + " while parsing statement:\n" + statement
                             + "\ncolumn:\n" + column);
                 }
@@ -115,6 +115,7 @@ public class SelectParser {
             
             // TODO FROM SELECT вьюха public.v_i18n_resources
             // FROM JOIN тоже не парсится
+            // FROM {regex}: [(]+
             if (p.expectOptional("FROM")) {
                 do {
                     from(new Parser(p.getExpression(CLAUSES)), tableAliases);
