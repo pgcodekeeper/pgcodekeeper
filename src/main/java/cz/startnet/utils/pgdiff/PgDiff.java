@@ -350,6 +350,7 @@ public class PgDiff {
             PgDiffArguments arguments, final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for (final PgSchema oldSchema : oldDatabase.getSchemas()) {
             if (newDatabase.getSchema(oldSchema.getName()) == null && isFullSelection(oldSchema)) {
+                // drop all contents of the schema
                 PgSchema newSchema = new PgSchema(oldSchema.getName(), "CREATE SCHEMA " + oldSchema.getName());
                 updateSchemaContent(writer, depcyOld.getDb().getSchema(oldSchema.getName()),
                         newSchema, new SearchPathHelper(PgDiffUtils.getQuotedName(oldSchema.getName(), true)), arguments);
@@ -360,12 +361,17 @@ public class PgDiff {
         }
     }
 
-    private static boolean isFullSelection(PgStatement filtered) {
+    protected static boolean isFullSelection(PgStatement filtered) {
         PgDatabase fullDb = depcyOld.getDb();
         if (filtered instanceof PgSchema) {
             PgSchema filteredSchema = (PgSchema) filtered;
             PgSchema fullSchema = fullDb.getSchema(filteredSchema.getName());
             return fullSchema.equals(filteredSchema);
+        }else if (filtered instanceof PgTable){
+            PgTable filteredTable = (PgTable) filtered;
+            PgSchema fullSchema = fullDb.getSchema(filteredTable.getParent().getName()); 
+            PgTable fullTable = fullSchema.getTable(filteredTable.getName());
+            return fullTable.equals(filteredTable);
         } else {
             return true;
         }
@@ -421,6 +427,9 @@ public class PgDiff {
             updateSchemaContent(writer, oldSchema, newSchema, searchPathHelper, arguments);
         }
         
+        // КОСТЫЛЬ
+        // update contents of schema, if it is not present in new db and 
+        // is partly selected by the user
         for (final PgSchema oldSchema : oldDatabase.getSchemas()) {
             if (newDatabase.getSchema(oldSchema.getName()) == null && !isFullSelection(oldSchema)){
                 SearchPathHelper searchPath = 
@@ -433,7 +442,7 @@ public class PgDiff {
                 
                 updateSchemaContent(writer, oldSchema, newSchema, searchPath, arguments);
             }
-        }
+        }// КОСТЫЛЬ
     }
 
     private static void updateSchemaContent(PrintWriter writer, PgSchema oldSchema,

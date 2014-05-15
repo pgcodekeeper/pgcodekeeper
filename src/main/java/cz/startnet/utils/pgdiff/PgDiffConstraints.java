@@ -83,6 +83,22 @@ public class PgDiffConstraints {
                 writer.println(constraint.getDropSQL());
             }
         }
+        
+        // КОСТЫЛЬ
+        if (oldSchema == null){
+            return;
+        }
+        
+        for (final PgTable oldTable : oldSchema.getTables()) {
+            if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
+                PgTable newTable = new PgTable(oldTable.getName(), "", "");
+                for (final PgConstraint constraint : getDropConstraints(oldTable, newTable, primaryKey)) {
+                    searchPathHelper.outputSearchPath(writer);
+                    writer.println();
+                    writer.println(constraint.getDropSQL());
+                }
+            }
+        }// КОСТЫЛЬ
     }
 
     /**

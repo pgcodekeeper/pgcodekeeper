@@ -515,7 +515,7 @@ public class PgDiffTables {
         }
         
         for (final PgTable table : oldSchema.getTables()) {
-            if (!newSchema.containsTable(table.getName())) {
+            if (!newSchema.containsTable(table.getName()) && PgDiff.isFullSelection(table)) {
                 
                 // check all dependants, drop them if instanceof PgView
                 // output search path, if necessary
