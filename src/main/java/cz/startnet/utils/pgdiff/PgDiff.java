@@ -7,8 +7,7 @@ package cz.startnet.utils.pgdiff;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -16,7 +15,6 @@ import org.jgrapht.graph.DefaultEdge;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -32,6 +30,7 @@ public class PgDiff {
 
     private static DirectedGraph<PgStatement, DefaultEdge> oldDepcyGraph;
     private static DepcyGraph depcyOld;
+    // TODO unused for now
     private static DepcyGraph depcyNew;
 
     /**
@@ -197,19 +196,14 @@ public class PgDiff {
      * <br>
      * (that is, finds those vertices, that have common edge with parent where 
      * parent is the target)
-     * 
-     * @param parent
-     * @param result
-     * @return filled in result list
      */
-    public static List<PgStatement> getDependantsAsList(PgStatement parent,
-            ArrayList<PgStatement> result) {
+    public static Set<PgStatement> getDependantsSet(PgStatement parent,
+            Set<PgStatement> result) {
         if (oldDepcyGraph.containsVertex(parent)){
             for (DefaultEdge edge : oldDepcyGraph.incomingEdgesOf(parent)) {
                 PgStatement dependant = oldDepcyGraph.getEdgeSource(edge);
-                if (!result.contains(dependant)) {
-                    result.add(dependant);
-                    getDependantsAsList(dependant, result);
+                if (result.add(dependant)) {
+                    getDependantsSet(dependant, result);
                 }
             }
         }
@@ -221,18 +215,15 @@ public class PgDiff {
      * <br>
      * (that is, finds those vertices, that have common edge with child where 
      * child is the source)
-     * 
-     * @param child
-     * @param result
-     * @return filled in result list
      */
-    public static List<PgStatement> getDependenciesAsList(PgStatement child,
-            ArrayList<PgStatement> result) {
+    public static Set<PgStatement> getDependenciesSet(PgStatement child,
+            Set<PgStatement> result) {
         if (oldDepcyGraph.containsVertex(child)){
             for (DefaultEdge edge : oldDepcyGraph.outgoingEdgesOf(child)){
                     PgStatement dependency = oldDepcyGraph.getEdgeTarget(edge);
-                    result.add(dependency);
-                    getDependenciesAsList(dependency, result);
+                    if (result.add(dependency)) {
+                        getDependenciesSet(dependency, result);
+                    }
             }
         }
         return result;
@@ -244,10 +235,6 @@ public class PgDiff {
      * (as trigger would be a child of a table)
      * 
      * TODO add more class checking for parent
-     * 
-     * @param parent
-     * @param child
-     * @return
      */
     public static boolean containsChild(PgStatement parent, PgStatement child) {
         String name = child.getName();
@@ -475,36 +462,7 @@ public class PgDiff {
                     writer, oldSchema, newSchema, searchPathHelper);
         }
     }
-
-    public static boolean isChanged(PgStatement st) {
-        if (depcyNew == null){
-            return false;    
-        }
-        if (st instanceof PgSchema){
-            PgSchema oldSchema = depcyNew.getDb().getSchema(st.getName()); 
-            return  oldSchema != null && !oldSchema.compare(st);
-        }else if (st instanceof PgTable){
-            PgTable table = (PgTable)st;
-            for (PgSchema s : depcyNew.getDb().getSchemas()){
-                for (PgTable t : s.getTables()){
-                        return !table.equals(t);
-                }
-            }
-        }else if (st instanceof PgColumn){
-            try {
-                PgColumn col = (PgColumn) st;
-                PgStatement popo = col.getParent();
-                if (popo instanceof PgTable) {
-                    PgTable t = (PgTable) popo;
-                    PgSchema ioio = depcyNew.getDb().getSchema(t.getParent().getName());
-                    PgTable uouo = ioio.getTable(t.getName());
-                    PgColumn lolo = uouo.getColumn(col.getName());
-                    return !col.equals(lolo);
-                }
-            } catch (NullPointerException e) {
-                return true;
-            }
-        }
-        return false;
+    
+    private PgDiff() {
     }
 }

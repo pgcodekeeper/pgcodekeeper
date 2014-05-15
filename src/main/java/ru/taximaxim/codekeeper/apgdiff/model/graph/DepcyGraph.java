@@ -23,27 +23,33 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class DepcyGraph {
+
+    private static final List<String> ignoredColumns = Arrays.asList(new String[]{
+            "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
+            });
+    
+    private final DirectedGraph<PgStatement, DefaultEdge> graph = 
+            new SimpleDirectedGraph<>(DefaultEdge.class);
     
     /**
      * Направление связей в графе:<br>
-     * зависящий объект --> зависимость <br>
-     * source --> target
+     * зависящий объект → зависимость <br>
+     * source → target
      */
-    private final DirectedGraph<PgStatement, DefaultEdge> graph = 
-            new SimpleDirectedGraph<>(DefaultEdge.class);
-
-    private final List<String> ignoredColumns = Arrays.asList(new String[]{"oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"});
-            
     public DirectedGraph<PgStatement, DefaultEdge> getGraph() {
         return graph;
     }
+    
+    private final PgDatabase db;
     
     /**
      * Copied database, graph source.<br>
      * <b>Do not modify</b> any elements in this as it will break 
      * HashSets/HashMaps and with them the generated graph.
      */
-    private final PgDatabase db;
+    public PgDatabase getDb(){
+        return db;
+    }
     
     public DepcyGraph(PgDatabase graphSrc) {
         db = graphSrc.deepCopy();
@@ -91,47 +97,51 @@ public class DepcyGraph {
                     graph.addEdge(trig, table);
                 }
             }
-            
+        }
+        
+        for (PgSchema schema : db.getSchemas()) {
+            // add views and their edges only after all the tables and schemas were added
             for(PgView view : schema.getViews()) {
                 graph.addVertex(view);
                 graph.addEdge(view, schema);
                 
-                // for all selected columns
                 for (SelectColumn col : view.getSelect().getColumns()){
                     String scmName = col.schema;
                     String tblName = col.table;
                     String clmnName = col.column;
                     
                     if (scmName == null){
-                        scmName = view.getParent().getName();
+                        scmName = schema.getName();
                     }
-                    
                     PgSchema scm = db.getSchema(scmName);
+                    
                     PgTable tbl = scm.getTable(tblName);
                     if (tbl != null) {
-                        PgColumn clmn = tbl.getColumn(clmnName);
+                        graph.addEdge(view, tbl);
+                        
                         if (ignoredColumns.contains(clmnName)){
-                            graph.addEdge(view, tbl);
-                            Log.log(Log.LOG_INFO, "Added view <-> table edge to depcy graph: " + view.getName() + " <-> " + tbl.getName());
                             continue;
                         }
+                        
+                        PgColumn clmn = tbl.getColumn(clmnName);
                         if (clmn != null){
-                            // column vertex 's been added already
                             graph.addEdge(view, clmn);
-                            Log.log(Log.LOG_INFO, "Added view <-> column edge to depcy graph: " + view.getName() + " <-> " + clmn.getName());
-                        }else{
-                            Log.log(Log.LOG_WARNING, "No column " + clmnName + " found at " + tblName);
+                        } else {
+                            Log.log(Log.LOG_WARNING,
+                                    "No column " + clmnName 
+                                    + " found in " + tblName 
+                                    + " selected by view " + view.getName());
                         }
                     } else {
                         PgView vw = scm.getView(tblName);
                         if (vw != null){
                             graph.addVertex(vw);
                             graph.addEdge(view, vw);
-                            Log.log(Log.LOG_INFO, "Added view <-> view edge to depcy graph: " + view.getName() + " <-> " + vw.getName());
-                        }else{
-                            Log.log(Log.LOG_WARNING, "Couldn't parse view \"" + view.getName() + "\": table name \"" + tblName + "\" not found.\n"
-                                    + "View raw statement is as follows: \n" /*+ view.getRawStatement()*/);
-                        continue;
+                        } else {
+                            Log.log(Log.LOG_WARNING,
+                                    "View " + view.getName()
+                                    + " references table/view " + tblName
+                                    + " that doesn't exist!");
                         }
                     }
                 }
@@ -142,11 +152,5 @@ public class DepcyGraph {
             graph.addVertex(ext);
             graph.addEdge(ext, db);
         }
-        
-        //DirGraDrawer.draw(graph);
-    }
-    
-    public PgDatabase getDb(){
-        return db;
     }
 }

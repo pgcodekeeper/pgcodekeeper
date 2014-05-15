@@ -12,15 +12,9 @@ import java.io.PrintWriter;
  */
 public class SearchPathHelper {
 
-    /**
-     * Statement to output.
-     */
     private final String searchPath;
-    /**
-     * Flag determining whether the statement was already output.
-     */
+    private final String schemaName;
     private boolean wasOutput;
-    private String schemaName;
 
     /**
      * Creates new instance of SearchPathHelper.
