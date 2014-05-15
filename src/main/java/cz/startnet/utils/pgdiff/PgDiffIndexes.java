@@ -5,12 +5,13 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgTable;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+
+import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 
 /**
  * Diffs indexes.
@@ -79,6 +80,22 @@ public class PgDiffIndexes {
                 writer.println(index.getDropSQL());
             }
         }
+        
+        // КОСТЫЛЬ
+        if (oldSchema == null){
+            return;
+        }
+        
+        for (final PgTable oldTable : oldSchema.getTables()) {
+            if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
+                PgTable newTable = new PgTable(oldTable.getName(), "", "");
+                for (final PgIndex index : getDropIndexes(oldTable, newTable)) {
+                    searchPathHelper.outputSearchPath(writer);
+                    writer.println();
+                    writer.println(index.getDropSQL());
+                }
+            }
+        }// КОСТЫЛЬ
     }
 
     /**

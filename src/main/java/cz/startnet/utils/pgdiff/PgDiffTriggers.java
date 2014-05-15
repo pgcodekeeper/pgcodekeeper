@@ -5,12 +5,13 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+
+import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.PgTrigger;
 
 /**
  * Diffs triggers.
@@ -76,6 +77,22 @@ public class PgDiffTriggers {
                 writer.println(trigger.getDropSQL());
             }
         }
+        
+        // КОСТЫЛЬ
+        if (oldSchema == null){
+            return;
+        }
+        
+        for (final PgTable oldTable : oldSchema.getTables()) {
+            if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
+                PgTable newTable = new PgTable(oldTable.getName(), "", "");
+                for (final PgTrigger trigger : getDropTriggers(oldTable, newTable)) {
+                    searchPathHelper.outputSearchPath(writer);
+                    writer.println();
+                    writer.println(trigger.getDropSQL());
+                }
+            }
+        }// КОСТЫЛЬ
     }
 
     /**

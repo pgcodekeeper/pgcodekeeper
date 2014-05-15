@@ -105,25 +105,7 @@ public class PgDiffViews {
 
         for (final PgView oldView : oldSchema.getViews()) {
             final PgView newView = newSchema.getView(oldView.getName());
-
-        /*
-         * 
-         *    Этот код использовался при поиске зависимостей для каждого 
-         *    класса (вьюха, таблица, и пр.). В текущей ситуации, когда 
-         *    зависимости ищутся "в лоб" на основании имеющихся знаний о 
-         *    структуре данных в бд, этот код устарел.
-         * 
-         * 
-         *     boolean isDepcyChanged = false;
-            ArrayList<PgStatement> dependencies = new ArrayList<PgStatement>(10);
-            PgDiff.getDependenciesAsList(oldView, dependencies);
-            for (PgStatement st : dependencies){
-                if (isDepcyChanged |= PgDiff.isChanged(st)){
-                    break;
-                }
-            }
-            */
-            if (newView == null || isViewModified(oldView, newView)/* || isDepcyChanged*/) {
+            if (newView == null || isViewModified(oldView, newView)) {
                 searchPathHelper.outputSearchPath(writer);
                 writer.println();
                 writer.println(oldView.getDropSQL());
