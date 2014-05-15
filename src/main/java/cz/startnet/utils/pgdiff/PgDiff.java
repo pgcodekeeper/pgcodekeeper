@@ -144,7 +144,7 @@ public class PgDiff {
             writer.println("COMMENT ON DATABASE current_database() IS NULL;");
         }
 
-        dropOldSchemas(writer, oldDatabase, newDatabase);
+        dropOldSchemas(writer, arguments, oldDatabase, newDatabase);
         createNewSchemas(writer, oldDatabase, newDatabase);
         
         dropOldExtensions(writer, oldDatabase, newDatabase);
@@ -342,18 +342,32 @@ public class PgDiff {
      * Drops old schemas that do not exist anymore.
      *
      * @param writer      writer the output should be written to
+     * @param arguments 
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
     private static void dropOldSchemas(final PrintWriter writer,
-            final PgDatabase oldDatabase, final PgDatabase newDatabase) {
+            PgDiffArguments arguments, final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for (final PgSchema oldSchema : oldDatabase.getSchemas()) {
-            if (newDatabase.getSchema(oldSchema.getName()) == null) {
+            if (newDatabase.getSchema(oldSchema.getName()) == null && isFullSelection(oldSchema)) {
+                PgSchema newSchema = new PgSchema(oldSchema.getName(), "CREATE SCHEMA " + oldSchema.getName());
+                updateSchemaContent(writer, depcyOld.getDb().getSchema(oldSchema.getName()),
+                        newSchema, new SearchPathHelper(PgDiffUtils.getQuotedName(oldSchema.getName(), true)), arguments);
                 writer.println();
                 writer.println("DROP SCHEMA "
-                        + PgDiffUtils.getQuotedName(oldSchema.getName())
-                        + " CASCADE;");
+                        + PgDiffUtils.getQuotedName(oldSchema.getName()) + ";");
             }
+        }
+    }
+
+    private static boolean isFullSelection(PgStatement filtered) {
+        PgDatabase fullDb = depcyOld.getDb();
+        if (filtered instanceof PgSchema) {
+            PgSchema filteredSchema = (PgSchema) filtered;
+            PgSchema fullSchema = fullDb.getSchema(filteredSchema.getName());
+            return fullSchema.equals(filteredSchema);
+        } else {
+            return true;
         }
     }
 
@@ -377,7 +391,6 @@ public class PgDiff {
             if (!setSearchPath) {
                 searchPathHelper.setWasOutput(true);
             }
-            // TODO is this search_path setting sufficient ?
 
             final PgSchema oldSchema =
                     oldDatabase.getSchema(newSchema.getName());
@@ -405,62 +418,80 @@ public class PgDiff {
                     writer.println(" IS NULL;");
                 }
             }
-
-            PgDiffTriggers.dropTriggers(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffFunctions.dropFunctions(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffViews.dropViews(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffConstraints.dropConstraints(
-                    writer, oldSchema, newSchema, true, searchPathHelper);
-            PgDiffConstraints.dropConstraints(
-                    writer, oldSchema, newSchema, false, searchPathHelper);
-            PgDiffIndexes.dropIndexes(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffTables.dropClusters(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffTables.dropTables(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffSequences.dropSequences(
-                    writer, oldSchema, newSchema, searchPathHelper);
-
-            PgDiffSequences.createSequences(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffSequences.alterSequences(
-                    writer, arguments, oldSchema, newSchema, searchPathHelper);
-            PgDiffTables.createTables(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffTables.alterTables(
-                    writer, arguments, oldSchema, newSchema, searchPathHelper);
-            PgDiffSequences.alterCreatedSequences(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffFunctions.createFunctions(
-                    writer, arguments, oldSchema, newSchema, searchPathHelper);
-            PgDiffConstraints.createConstraints(
-                    writer, oldSchema, newSchema, true, searchPathHelper);
-            PgDiffConstraints.createConstraints(
-                    writer, oldSchema, newSchema, false, searchPathHelper);
-            PgDiffIndexes.createIndexes(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffTables.createClusters(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffTriggers.createTriggers(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffViews.createViews(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffViews.alterViews(
-                    writer, oldSchema, newSchema, searchPathHelper);
-
-            PgDiffFunctions.alterComments(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffConstraints.alterComments(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffIndexes.alterComments(
-                    writer, oldSchema, newSchema, searchPathHelper);
-            PgDiffTriggers.alterComments(
-                    writer, oldSchema, newSchema, searchPathHelper);
+            updateSchemaContent(writer, oldSchema, newSchema, searchPathHelper, arguments);
         }
+        
+        for (final PgSchema oldSchema : oldDatabase.getSchemas()) {
+            if (newDatabase.getSchema(oldSchema.getName()) == null && !isFullSelection(oldSchema)){
+                SearchPathHelper searchPath = 
+                        new SearchPathHelper(PgDiffUtils.getQuotedName(oldSchema.getName(), true));
+                PgSchema newSchema = new PgSchema(oldSchema.getName(),
+                        "CREATE SCHEMA " + oldSchema.getName());
+                newSchema.setAuthorization(oldSchema.getAuthorization());
+                newSchema.setComment(oldSchema.getComment());
+                newSchema.setDefinition(oldSchema.getDefinition());
+                
+                updateSchemaContent(writer, oldSchema, newSchema, searchPath, arguments);
+            }
+        }
+    }
+
+    private static void updateSchemaContent(PrintWriter writer, PgSchema oldSchema,
+            PgSchema newSchema, SearchPathHelper searchPathHelper, PgDiffArguments arguments) {
+        PgDiffTriggers.dropTriggers(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffFunctions.dropFunctions(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffViews.dropViews(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffConstraints.dropConstraints(
+                writer, oldSchema, newSchema, true, searchPathHelper);
+        PgDiffConstraints.dropConstraints(
+                writer, oldSchema, newSchema, false, searchPathHelper);
+        PgDiffIndexes.dropIndexes(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffTables.dropClusters(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffTables.dropTables(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffSequences.dropSequences(
+                writer, oldSchema, newSchema, searchPathHelper);
+
+        PgDiffSequences.createSequences(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffSequences.alterSequences(
+                writer, arguments, oldSchema, newSchema, searchPathHelper);
+        PgDiffTables.createTables(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffTables.alterTables(
+                writer, arguments, oldSchema, newSchema, searchPathHelper);
+        PgDiffSequences.alterCreatedSequences(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffFunctions.createFunctions(
+                writer, arguments, oldSchema, newSchema, searchPathHelper);
+        PgDiffConstraints.createConstraints(
+                writer, oldSchema, newSchema, true, searchPathHelper);
+        PgDiffConstraints.createConstraints(
+                writer, oldSchema, newSchema, false, searchPathHelper);
+        PgDiffIndexes.createIndexes(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffTables.createClusters(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffTriggers.createTriggers(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffViews.createViews(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffViews.alterViews(
+                writer, oldSchema, newSchema, searchPathHelper);
+
+        PgDiffFunctions.alterComments(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffConstraints.alterComments(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffIndexes.alterComments(
+                writer, oldSchema, newSchema, searchPathHelper);
+        PgDiffTriggers.alterComments(
+                writer, oldSchema, newSchema, searchPathHelper);
     }
     
     private PgDiff() {
