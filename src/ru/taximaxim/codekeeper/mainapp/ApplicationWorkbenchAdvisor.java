@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.mainapp;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -32,7 +34,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		// the UI thread but it could take enough time to disrupt progress reporting.
 		// spawn a new thread to do the grunt work of this initialization and spin the event loop 
 		// ourselves just like it's done in Workbench.
-		final boolean[] initDone = new boolean[]{false};
+		final AtomicBoolean initDone = new AtomicBoolean(false);
 		final Throwable [] error = new Throwable[1];
 		Thread initThread = new Thread() {
 			
@@ -63,9 +65,10 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 					error[0] = e;
 				}
 				finally {
-					initDone[0] = true;
+					initDone.set(true);
 					// FIXME this whole method was copypasted to get this fix; remove this method when the fix becomes available in eclipse master branch
 					// this fix prevents startup blocking caused by the display thread not waking
+					// eclipse bug: https://bugs.eclipse.org/bugs/show_bug.cgi?id=429363
 				//	yield();
 					display.wake();
 				}
@@ -74,7 +77,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
 			while (true) {
 				// FIXME this must be a less hack-ish fix than yield() in the other thread
-				if (initDone[0])
+				if (initDone.get())
 					break;
 				
 				if (!display.readAndDispatch()) {
