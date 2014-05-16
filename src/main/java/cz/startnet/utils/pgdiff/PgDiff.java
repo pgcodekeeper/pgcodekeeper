@@ -41,9 +41,37 @@ public class PgDiff {
      */
     public static void createDiff(final PrintWriter writer,
             final PgDiffArguments arguments) {
-        diffDatabaseSchemas(writer, arguments,
-                loadDatabaseSchema(arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments),
-                loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments), null, null);
+        PgDatabase dbOld = loadDatabaseSchema(
+                arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
+        PgDatabase dbNew = loadDatabaseSchema(
+                arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments); 
+        diffDatabaseSchemas(writer, arguments, dbOld, dbNew, dbOld, dbNew);
+    }
+
+    /**
+     * Creates diff on the two database schemas.
+     *
+     * @param writer         writer the output should be written to
+     * @param arguments      object containing arguments settings
+     * @param oldInputStream input stream of file containing dump of the
+     *                       original schema
+     * @param newInputStream input stream of file containing dump of the new
+     *                       schema
+     */
+    public static void createDiff(final PrintWriter writer,
+            final PgDiffArguments arguments, final InputStream oldInputStream,
+            final InputStream newInputStream) {
+        final PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
+                oldInputStream, arguments.getInCharsetName(),
+                arguments.isOutputIgnoredStatements(),
+                arguments.isIgnoreSlonyTriggers());
+        final PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
+                newInputStream, arguments.getInCharsetName(),
+                arguments.isOutputIgnoredStatements(),
+                arguments.isIgnoreSlonyTriggers());
+
+        diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase,
+                oldDatabase, newDatabase);
     }
     
     /**
@@ -71,31 +99,6 @@ public class PgDiff {
         }
         
         throw new UnsupportedOperationException("Unknown DB format!");
-    }
-
-    /**
-     * Creates diff on the two database schemas.
-     *
-     * @param writer         writer the output should be written to
-     * @param arguments      object containing arguments settings
-     * @param oldInputStream input stream of file containing dump of the
-     *                       original schema
-     * @param newInputStream input stream of file containing dump of the new
-     *                       schema
-     */
-    public static void createDiff(final PrintWriter writer,
-            final PgDiffArguments arguments, final InputStream oldInputStream,
-            final InputStream newInputStream) {
-        final PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
-                oldInputStream, arguments.getInCharsetName(),
-                arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers());
-        final PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
-                newInputStream, arguments.getInCharsetName(),
-                arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers());
-
-        diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase, null, null);
     }
     
     /**
