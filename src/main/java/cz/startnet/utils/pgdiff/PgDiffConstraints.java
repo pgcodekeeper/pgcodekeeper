@@ -91,7 +91,7 @@ public class PgDiffConstraints {
         
         for (final PgTable oldTable : oldSchema.getTables()) {
             if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
-                PgTable newTable = new PgTable(oldTable.getName(), "", "");
+                PgTable newTable = new PgTable(oldTable.getName(), null, null);
                 for (final PgConstraint constraint : getDropConstraints(oldTable, newTable, primaryKey)) {
                     searchPathHelper.outputSearchPath(writer);
                     writer.println();

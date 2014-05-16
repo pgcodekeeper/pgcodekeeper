@@ -361,20 +361,20 @@ public class PgDiff {
         }
     }
 
-    protected static boolean isFullSelection(PgStatement filtered) {
+    static boolean isFullSelection(PgStatement filtered) {
         PgDatabase fullDb = depcyOld.getDb();
         if (filtered instanceof PgSchema) {
             PgSchema filteredSchema = (PgSchema) filtered;
             PgSchema fullSchema = fullDb.getSchema(filteredSchema.getName());
             return fullSchema.equals(filteredSchema);
-        }else if (filtered instanceof PgTable){
+        } else if (filtered instanceof PgTable) {
             PgTable filteredTable = (PgTable) filtered;
             PgSchema fullSchema = fullDb.getSchema(filteredTable.getParent().getName()); 
             PgTable fullTable = fullSchema.getTable(filteredTable.getName());
             return fullTable.equals(filteredTable);
-        } else {
-            return true;
         }
+        
+        return true;
     }
 
     /**
@@ -434,8 +434,7 @@ public class PgDiff {
             if (newDatabase.getSchema(oldSchema.getName()) == null && !isFullSelection(oldSchema)){
                 SearchPathHelper searchPath = 
                         new SearchPathHelper(PgDiffUtils.getQuotedName(oldSchema.getName(), true));
-                PgSchema newSchema = new PgSchema(oldSchema.getName(),
-                        "CREATE SCHEMA " + oldSchema.getName());
+                PgSchema newSchema = new PgSchema(oldSchema.getName(), null);
                 newSchema.setAuthorization(oldSchema.getAuthorization());
                 newSchema.setComment(oldSchema.getComment());
                 newSchema.setDefinition(oldSchema.getDefinition());

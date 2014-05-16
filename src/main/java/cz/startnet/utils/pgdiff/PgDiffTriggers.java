@@ -85,7 +85,7 @@ public class PgDiffTriggers {
         
         for (final PgTable oldTable : oldSchema.getTables()) {
             if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
-                PgTable newTable = new PgTable(oldTable.getName(), "", "");
+                PgTable newTable = new PgTable(oldTable.getName(), null, null);
                 for (final PgTrigger trigger : getDropTriggers(oldTable, newTable)) {
                     searchPathHelper.outputSearchPath(writer);
                     writer.println();
