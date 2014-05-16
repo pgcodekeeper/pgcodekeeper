@@ -21,7 +21,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
         configurer.setInitialSize(new Point(1280, 768));
         configurer.setShowMenuBar(true);
         configurer.setShowCoolBar(true);
-        configurer.setShowPerspectiveBar(false);
+        configurer.setShowPerspectiveBar(true);
         configurer.setShowStatusLine(false);
         configurer.setTitle("pgCodeKeeper"); //$NON-NLS-1$
     }

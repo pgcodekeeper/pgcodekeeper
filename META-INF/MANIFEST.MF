@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: MainApp
 Bundle-SymbolicName: ru.taximaxim.codekeeper.mainapp;singleton:=true
-Bundle-Version: 0.3.0.qualifier
+Bundle-Version: 0.3.1.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.mainapp.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -15,7 +15,10 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.bindings,
  ru.taximaxim.codekeeper.ui,
- org.eclipse.pde.runtime
+ org.eclipse.pde.runtime,
+ org.eclipse.egit,
+ org.eclipse.egit.ui,
+ org.eclipse.e4.tools.css.spy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: javax.annotation,
  javax.inject
