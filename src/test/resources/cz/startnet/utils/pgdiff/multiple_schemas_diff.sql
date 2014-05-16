@@ -1,5 +1,11 @@
 
-DROP SCHEMA testschema1 CASCADE;
+SET search_path = testschema1, pg_catalog;
+
+DROP TABLE testtable1;
+
+DROP SEQUENCE testtable1_id_seq;
+
+DROP SCHEMA testschema1;
 
 CREATE SCHEMA testschema2;
 
