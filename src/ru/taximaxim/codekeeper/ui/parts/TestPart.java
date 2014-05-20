@@ -3,8 +3,10 @@ package ru.taximaxim.codekeeper.ui.parts;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.eclipse.e4.core.di.extensions.Preference;
+import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -24,11 +26,11 @@ public class TestPart {
     @Inject
     @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
     private String prefPgdumpPath;
-    /*
+    
     @Inject
     @Named(IServiceConstants.ACTIVE_SHELL)
-    private Shell shell;
-    */
+    private Shell shell_;
+    
     private Text txt;
     
     @PostConstruct
@@ -55,7 +57,7 @@ public class TestPart {
                         + shell.getDisplay());
                 
                 txt.setText(txt.getText() + "\n"
-                        + shell);
+                        + shell_);
                 
             }
         });
