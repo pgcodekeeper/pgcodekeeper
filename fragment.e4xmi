@@ -29,7 +29,7 @@
         <children xsi:type="menu:HandledMenuItem" xmi:id="_YrAvAGyUEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.13" label="&amp;Close" command="_DHHaoGySEeO0IptUBJxhdA"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_HyIoQGlxEeO0LoNj8g6FWw" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.12" label="Close &amp;Project" command="_H_VU0DfvEeOJGp3TAROjKg"/>
         <children xsi:type="menu:MenuSeparator" xmi:id="_UgkpwGlxEeO0LoNj8g6FWw" elementId="ru.taximaxim.codekeeper.ui.menuseparator.3"/>
-        <children xsi:type="menu:Menu" xmi:id="_-ZeoAL-tEeOwLZ0qTYI49g" elementId="ru.taximaxim.codekeeper.ui.menu.4" label="Recent projects">
+        <children xsi:type="menu:Menu" xmi:id="_-ZeoAL-tEeOwLZ0qTYI49g" elementId="ru.taximaxim.codekeeper.ui.menu.4" label="Recent Projects">
           <children xsi:type="menu:DynamicMenuContribution" xmi:id="_rWdOkL-jEeOwLZ0qTYI49g" elementId="ru.taximaxim.codekeeper.ui.dynamicmenucontribution.0" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.recentprojs.DynamicMenuRecent"/>
         </children>
         <children xsi:type="menu:MenuSeparator" xmi:id="_FzVxgL-uEeOwLZ0qTYI49g" elementId="ru.taximaxim.codekeeper.ui.menuseparator.4"/>
@@ -37,16 +37,17 @@
       </children>
       <children xsi:type="menu:Menu" xmi:id="_wKDhsDsjEeOHuJV2eZ06pg" elementId="ru.taximaxim.codekeeper.ui.menu.3" label="&amp;Project">
         <children xsi:type="menu:HandledMenuItem" xmi:id="_jrWBIDyKEeOnONY5mbpMNQ" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.10" label="&amp;Diff..." command="_ncHkEDyKEeOnONY5mbpMNQ"/>
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_9Ef-4DsjEeOHuJV2eZ06pg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.8" label="&amp;Sync repository Cache" command="_HhqhUDskEeOHuJV2eZ06pg"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_oovU0NzTEeOgmaDBCBu-jQ" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.15" label="Switch &amp;Branch..." command="_zy9nANzSEeOgmaDBCBu-jQ"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_9Ef-4DsjEeOHuJV2eZ06pg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.8" label="&amp;Sync Repository Cache" command="_HhqhUDskEeOHuJV2eZ06pg"/>
         <children xsi:type="menu:MenuSeparator" xmi:id="_I52YsD1HEeO0G8IS_Wbu9A" elementId="ru.taximaxim.codekeeper.ui.menuseparator.1"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_nbtWkDooEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.6" label="&amp;Properties" command="_8p39cDooEeOo66lUbQncjg"/>
       </children>
       <children xsi:type="menu:Menu" xmi:id="_Ah0REC_xEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.menu.2" label="&amp;Window">
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_NUbA4C_xEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.4" label="&amp;Switch Perspective" command="_UkgjUC_xEeO2acHPThBe1g"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_NUbA4C_xEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.4" label="&amp;Switch Perspective..." command="_UkgjUC_xEeO2acHPThBe1g"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_PcUXMCpvEeOWDPrJZCzSgA" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.1" label="&amp;Preferences" command="_Xdq-gCpvEeOWDPrJZCzSgA"/>
       </children>
       <children xsi:type="menu:Menu" xmi:id="_LZApICnHEeOhQtIacC9DUw" elementId="ru.taximaxim.codekeeper.ui.menu.1" label="&amp;Help">
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_u8KYkCnHEeOhQtIacC9DUw" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.0" label="&amp;About" command="_s6NdACnJEeObfOm2RjyZmw"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_u8KYkCnHEeOhQtIacC9DUw" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.0" label="&amp;About pgCodeKeeper..." command="_s6NdACnJEeObfOm2RjyZmw"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_abjvQMx-EeOZIMdXYGGhLA" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.14" label="About2" command="_iGyVkMx-EeOZIMdXYGGhLA"/>
       </children>
     </elements>
@@ -58,7 +59,8 @@
         <children xsi:type="menu:HandledToolItem" xmi:id="_rEakADf2EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.1" label="" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/opentype.gif" tooltip="Load Project..." command="_o6NrIDYmEeOu39tpQ1Oozg"/>
         <children xsi:type="menu:ToolBarSeparator" xmi:id="_sHZD8Df2EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.toolbarseparator.0"/>
         <children xsi:type="menu:HandledToolItem" xmi:id="_WCptkFvpEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.2" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/compare_view.gif" tooltip="Diff..." command="_ncHkEDyKEeOnONY5mbpMNQ"/>
-        <children xsi:type="menu:HandledToolItem" xmi:id="_tY3JkFvqEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.3" label="" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/synch_toc_nav.gif" tooltip="Sync repository Cache" command="_HhqhUDskEeOHuJV2eZ06pg"/>
+        <children xsi:type="menu:HandledToolItem" xmi:id="_9EZfoOATEeOb_Zxaz4ayZA" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.6" label="Switch Branch..." iconURI="platform:/plugin/org.eclipse.egit.ui/icons/obj16/branch_obj.gif" command="_zy9nANzSEeOgmaDBCBu-jQ"/>
+        <children xsi:type="menu:HandledToolItem" xmi:id="_tY3JkFvqEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.3" label="" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/synch_toc_nav.gif" tooltip="Sync Repository Cache" command="_HhqhUDskEeOHuJV2eZ06pg"/>
         <children xsi:type="menu:HandledToolItem" xmi:id="_y-JXEFvqEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.4" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/properties.gif" tooltip="Project Properties" command="_8p39cDooEeOo66lUbQncjg"/>
         <children xsi:type="menu:ToolBarSeparator" xmi:id="_6-X9AFvqEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.toolbarseparator.1"/>
         <children xsi:type="menu:HandledToolItem" xmi:id="_7TBXUFvqEeOLSbBBpcEcqQ" elementId="ru.taximaxim.codekeeper.ui.handledtoolitem.5" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/sprocket_dark_gear.png" tooltip="Preferences" command="_Xdq-gCpvEeOWDPrJZCzSgA"/>
@@ -79,6 +81,7 @@
     <elements xsi:type="commands:Command" xmi:id="_DHHaoGySEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.command.CloseEditor" commandName="Close Editor"/>
     <elements xsi:type="commands:Command" xmi:id="_uDcrML-hEeOwLZ0qTYI49g" elementId="ru.taximaxim.codekeeper.ui.command.openRecent1" commandName="Open recent 1"/>
     <elements xsi:type="commands:Command" xmi:id="_iGyVkMx-EeOZIMdXYGGhLA" elementId="org.eclipse.ui.help.aboutAction" commandName="About2"/>
+    <elements xsi:type="commands:Command" xmi:id="_zy9nANzSEeOgmaDBCBu-jQ" elementId="ru.taximaxim.codekeeper.ui.command.SwitchBranch" commandName="SwitchBranch"/>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_V_i7QCnNEeObfOm2RjyZmw" featurename="handlers" parentElementId="ru.taximaxim.codekeeper.mainapp.application">
     <elements xsi:type="commands:Handler" xmi:id="_bNwFgCnNEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.handler.About" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.About" command="_s6NdACnJEeObfOm2RjyZmw"/>
@@ -92,6 +95,7 @@
     <elements xsi:type="commands:Handler" xmi:id="_slobkDyKEeOnONY5mbpMNQ" elementId="ru.taximaxim.codekeeper.ui.handler.Diff" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.Diff" command="_ncHkEDyKEeOnONY5mbpMNQ"/>
     <elements xsi:type="commands:Handler" xmi:id="_iBwG0GySEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.handler.CloseEditor" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.CloseEditor" command="_DHHaoGySEeO0IptUBJxhdA"/>
     <elements xsi:type="commands:Handler" xmi:id="_VivgEL-iEeOwLZ0qTYI49g" elementId="ru.taximaxim.codekeeper.ui.handler.openrecent1" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.OpenRecent" command="_uDcrML-hEeOwLZ0qTYI49g"/>
+    <elements xsi:type="commands:Handler" xmi:id="_7EVi4NzSEeOgmaDBCBu-jQ" elementId="ru.taximaxim.codekeeper.ui.handler.SwitchBranch" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.SwitchBranch" command="_zy9nANzSEeOgmaDBCBu-jQ"/>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_dQL-sCnKEeObfOm2RjyZmw" featurename="children" parentElementId="ru.taximaxim.codekeeper.mainapp.mainwindow">
     <elements xsi:type="advanced:PerspectiveStack" xmi:id="_K9WGsC_vEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.perspectivestack.0" selectedElement="_u4RQAGfhEeOWppTx9KJCTg">
@@ -101,7 +105,8 @@
             <children xsi:type="basic:Part" xmi:id="_qyoa4GfiEeOWppTx9KJCTg" elementId="ru.taximaxim.codekeeper.ui.part.ProjectExplorer" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.ProjectExplorer" label="{project explorer title}" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/tree_explorer.gif">
               <menus xsi:type="menu:PopupMenu" xmi:id="_TZPmcDorEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.popupmenu.project" label="Project">
                 <children xsi:type="menu:HandledMenuItem" xmi:id="_NaVWADyyEeOnONY5mbpMNQ" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.11" label="&amp;Diff..." command="_ncHkEDyKEeOnONY5mbpMNQ"/>
-                <children xsi:type="menu:HandledMenuItem" xmi:id="_3iR88DumEeOhEMin4A9R4g" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.9" label="&amp;Sync repository Cache" command="_HhqhUDskEeOHuJV2eZ06pg"/>
+                <children xsi:type="menu:HandledMenuItem" xmi:id="_BO_R0NzUEeOgmaDBCBu-jQ" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.16" label="Switch &amp;Branch..." command="_zy9nANzSEeOgmaDBCBu-jQ"/>
+                <children xsi:type="menu:HandledMenuItem" xmi:id="_3iR88DumEeOhEMin4A9R4g" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.9" label="&amp;Sync Repository Cache" command="_HhqhUDskEeOHuJV2eZ06pg"/>
                 <children xsi:type="menu:MenuSeparator" xmi:id="_EtRDgD1HEeO0G8IS_Wbu9A" elementId="ru.taximaxim.codekeeper.ui.menuseparator.0"/>
                 <children xsi:type="menu:HandledMenuItem" xmi:id="_u4_qsDosEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.7" label="&amp;Project Properties" command="_8p39cDooEeOo66lUbQncjg"/>
               </menus>
