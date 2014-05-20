@@ -79,7 +79,7 @@ public class Differ implements IRunnableWithProgress {
         
         pm.newChild(25).subTask("Reverse diff..."); // 100
         diffOut.reset();
-        PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource, sourceDbFull, targetDbFull);
+        PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource, targetDbFull, sourceDbFull);
         writer.flush();
         diffReverse = diffOut.toString().trim();
         
