@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class PgSelect extends PgStatementWithSearchPath {
     
-    private final List<SelectColumn> columns = new ArrayList<>(10);
+    private final List<GenericColumn> columns = new ArrayList<>(10);
     
     public PgSelect(String rawStatement, String searchPath) {
         super(null, rawStatement, searchPath);
@@ -16,7 +16,7 @@ public class PgSelect extends PgStatementWithSearchPath {
     /**
      * Adds a column to the column list if it doesn't contain the same column.
      */
-    public void addColumn(SelectColumn column) {
+    public void addColumn(GenericColumn column) {
         if (!columns.contains(column)) {
             columns.add(column);
         }
@@ -25,7 +25,7 @@ public class PgSelect extends PgStatementWithSearchPath {
     /**
      * @return unmodifiable copy of columns
      */
-    public List<SelectColumn> getColumns() {
+    public List<GenericColumn> getColumns() {
         return Collections.unmodifiableList(columns);
     }
 
@@ -66,57 +66,5 @@ public class PgSelect extends PgStatementWithSearchPath {
         int result = 1;
         result = prime * result + ((columns == null) ? 0 : columns.hashCode());
         return result;
-    }
-
-    public final static class SelectColumn {
-        public final String schema;
-        public final String table;
-        public final String column;
-        
-        public SelectColumn(String schema, String table, String column) {
-            this.schema = schema;
-            this.table = table;
-            this.column = column;
-        }
-        
-        public SelectColumn(String table, String column) {
-            this(null, table, column);
-        }
-        
-        public SelectColumn(String column) {
-            this(null, column);
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((column == null) ? 0 : column.hashCode());
-            result = prime * result + ((schema == null) ? 0 : schema.hashCode());
-            result = prime * result + ((table == null) ? 0 : table.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            boolean eq = false;
-            
-            if (this == obj) {
-                eq = true;
-            } else if (obj instanceof SelectColumn) {
-                SelectColumn col = (SelectColumn) obj;
-                eq = Objects.equals(schema, col.schema)
-                        && Objects.equals(table, col.table)
-                        && Objects.equals(column, col.column);
-            }
-            
-            return eq;
-        }
-        
-        @Override
-        public String toString() {
-            return "schema: \"" + schema + "\"; table: \"" + table
-                    + "\"; column: \"" + column + "\";";
-        }
     }
 }

@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.jgrapht.DirectedGraph;
@@ -8,14 +9,15 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
+import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSelect.SelectColumn;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -90,6 +92,17 @@ public class DepcyGraph {
                 for(PgConstraint cons : table.getConstraints()) {
                     graph.addVertex(cons);
                     graph.addEdge(cons, table);
+                    if (cons instanceof PgForeignKey){
+                        HashMap<PgColumn, GenericColumn> refer = 
+                                ((PgForeignKey) cons).getForeigns();
+                        for (PgColumn c : refer.keySet()){
+                            GenericColumn ref = refer.get(c);
+                            PgColumn referredColumn = 
+                                    db.getSchema(ref.schema).getTable(ref.table).getColumn(ref.column);
+                            graph.addVertex(referredColumn);
+                            graph.addEdge(cons, referredColumn);
+                        }
+                    }
                 }
                 
                 for(PgTrigger trig : table.getTriggers()) {
@@ -105,7 +118,7 @@ public class DepcyGraph {
                 graph.addVertex(view);
                 graph.addEdge(view, schema);
                 
-                for (SelectColumn col : view.getSelect().getColumns()){
+                for (GenericColumn col : view.getSelect().getColumns()){
                     String scmName = col.schema;
                     String tblName = col.table;
                     String clmnName = col.column;

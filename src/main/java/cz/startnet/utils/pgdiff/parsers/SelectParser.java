@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
-import cz.startnet.utils.pgdiff.schema.PgSelect.SelectColumn;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 
 public class SelectParser {
     
@@ -86,7 +86,7 @@ public class SelectParser {
      */
     private int parens;
     private void parseSelectRecursive(String statement) {
-        final List<SelectColumn> columns = new ArrayList<>(10);
+        final List<GenericColumn> columns = new ArrayList<>(10);
         final Map<String, String> tableAliases = new HashMap<>();
         
         Parser p = new Parser(statement);
@@ -104,7 +104,7 @@ public class SelectParser {
                 Matcher m = VALID_SELECT_COLUMN.matcher(column);
                 
                 if (m.matches()) {
-                    columns.add(new SelectColumn(m.group(GRP_SCHEMA),
+                    columns.add(new GenericColumn(m.group(GRP_SCHEMA),
                             m.group(GRP_TABLE), m.group(GRP_COLUMN)));
                 } else {
                     Log.log(Log.LOG_DEBUG, "SELECT column didn't match the pattern"
@@ -149,11 +149,11 @@ public class SelectParser {
             }
             
             // resolve aliased columns
-            for (SelectColumn column : columns) {
+            for (GenericColumn column : columns) {
                 if (column.schema == null && column.table != null) {
                     String unaliased = tableAliases.get(column.table);
                     if (unaliased != null) {
-                        column = new SelectColumn(
+                        column = new GenericColumn(
                                 ParserUtils.getSchemaName(unaliased, db),
                                 ParserUtils.getObjectName(unaliased),
                                 column.column);

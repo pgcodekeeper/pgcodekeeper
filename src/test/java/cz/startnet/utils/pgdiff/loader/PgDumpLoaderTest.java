@@ -20,7 +20,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.schema.*;
-import cz.startnet.utils.pgdiff.schema.PgSelect.SelectColumn;
 
 /**
  * An abstract 'factory' that creates 'artificial'
@@ -620,9 +619,9 @@ class PgDB9 extends PgDatabaseObjectCreator {
     schema.addView(view);
     
     PgSelect select = new PgSelect("", "");
-    select.addColumn(new SelectColumn("user_data", "id"));
-    select.addColumn(new SelectColumn("user_data", "email"));
-    select.addColumn(new SelectColumn("user_data", "created"));
+    select.addColumn(new GenericColumn("user_data", "id"));
+    select.addColumn(new GenericColumn("user_data", "email"));
+    select.addColumn(new GenericColumn("user_data", "created"));
     
     view.setSelect(select);
     
@@ -631,7 +630,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
     schema.addView(view);
     
     select = new PgSelect("", "");
-    select.addColumn(new SelectColumn("public", "user_data", "id"));
+    select.addColumn(new GenericColumn("public", "user_data", "id"));
     
     view.setSelect(select);
     
@@ -843,8 +842,8 @@ class PgDB14 extends PgDatabaseObjectCreator {
     view.addColumnComment("id", "'view id col'");
     
     PgSelect select = new PgSelect("", "");
-    select.addColumn(new SelectColumn("test", "id"));
-    select.addColumn(new SelectColumn("test", "text"));
+    select.addColumn(new GenericColumn("test", "id"));
+    select.addColumn(new GenericColumn("test", "text"));
     
     view.setSelect(select);
     
