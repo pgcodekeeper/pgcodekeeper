@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import org.jgrapht.DirectedGraph;
@@ -89,31 +88,34 @@ public class DepcyGraph {
                     graph.addEdge(idx, table);
                 }
                 
-                for(PgConstraint cons : table.getConstraints()) {
-                    graph.addVertex(cons);
-                    graph.addEdge(cons, table);
-                    if (cons instanceof PgForeignKey){
-                        HashMap<PgColumn, GenericColumn> refer = 
-                                ((PgForeignKey) cons).getForeigns();
-                        for (PgColumn c : refer.keySet()){
-                            GenericColumn ref = refer.get(c);
-                            PgColumn referredColumn = 
-                                    db.getSchema(ref.schema).getTable(ref.table).getColumn(ref.column);
-                            graph.addVertex(referredColumn);
-                            graph.addEdge(cons, referredColumn);
-                        }
-                    }
-                }
-                
                 for(PgTrigger trig : table.getTriggers()) {
                     graph.addVertex(trig);
                     graph.addEdge(trig, table);
                 }
             }
         }
+
+        // do "special" dependencies in separate loops after the base structure has been created
+        // currently: foreign keys and views
         
+        // "base" dependencies for those objects are also processed here (less loops)
+        // at least for now
         for (PgSchema schema : db.getSchemas()) {
-            // add views and their edges only after all the tables and schemas were added
+            for (PgTable table : schema.getTables()) {
+                for(PgConstraint cons : table.getConstraints()) {
+                    graph.addVertex(cons);
+                    graph.addEdge(cons, table);
+                    
+                    if (cons instanceof PgForeignKey){
+                        for (GenericColumn ref : ((PgForeignKey) cons).getRefs()){
+                            PgColumn referredColumn = 
+                                    db.getSchema(ref.schema).getTable(ref.table).getColumn(ref.column);
+                            graph.addEdge(cons, referredColumn);
+                        }
+                    }
+                }
+            }
+            
             for(PgView view : schema.getViews()) {
                 graph.addVertex(view);
                 graph.addEdge(view, schema);

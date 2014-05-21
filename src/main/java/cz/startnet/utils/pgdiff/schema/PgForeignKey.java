@@ -1,21 +1,23 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class PgForeignKey extends PgConstraint{
     
-    private final HashMap<PgColumn, GenericColumn> refer = new HashMap<PgColumn, GenericColumn>(5);
+    private final List<GenericColumn> refs = new ArrayList<>(5);
     
     public PgForeignKey(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
     }
 
-    public void setForeignColumn(PgColumn column, GenericColumn referredColumn) {
-        refer.put(column, referredColumn);
+    public void addForeignColumn(GenericColumn referencedColumn) {
+        refs.add(referencedColumn);
     }
     
-    public HashMap<PgColumn, GenericColumn> getForeigns(){
-        return refer;
+    public List<GenericColumn> getRefs(){
+        return Collections.unmodifiableList(refs);
     }
     
     @Override
@@ -24,7 +26,7 @@ public class PgForeignKey extends PgConstraint{
         foreignDst.setDefinition(getDefinition());
         foreignDst.setTableName(getTableName());
         foreignDst.setComment(getComment());
-        foreignDst.refer.putAll(refer);
+        foreignDst.refs.addAll(refs);
         return foreignDst;
     }
 }

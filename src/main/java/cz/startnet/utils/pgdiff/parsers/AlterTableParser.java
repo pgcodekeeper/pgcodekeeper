@@ -289,7 +289,7 @@ public class AlterTableParser {
     /**
      * Parses ADD FOREIGN KEY action.
      *
-     * TODO create PgForeignKey instead of PgConstraint, fill in referred columns
+     * FIXME create PgForeignKey instead of PgConstraint, fill in referred columns
      *
      * @param parser parser
      * @param table  pg table
@@ -327,13 +327,13 @@ public class AlterTableParser {
      */
     private static void parseAddConstraintForeignKey(final Parser parser,
             final PgTable table, final String searchPath, PgForeignKey constraint) {
-        final List<String> columnNames = new ArrayList<String>(1);
-        final List<String> referencedColumnNames = new ArrayList<String>(1);
         parser.expect("(");
 
         // parse dependent column names
         while (!parser.expectOptional(")")) {
-            columnNames.add(ParserUtils.getObjectName(parser.parseIdentifier()));
+            // consume referencing column name
+            ParserUtils.getObjectName(parser.parseIdentifier());
+            
             if (parser.expectOptional(")")) {
                 break;
             } else {
@@ -342,33 +342,25 @@ public class AlterTableParser {
         }// end parse
 
         parser.expect("REFERENCES");
+        String ref = parser.parseIdentifier();
         
-        
-        String ident = parser.parseIdentifier();
-        String schemaName = null;
-        
-        try{
-            schemaName = ParserUtils.getSecondObjectName(ident);
-        }catch(ArrayIndexOutOfBoundsException e){
-            schemaName = table.getParent().getName();
-        }
-        
-        String tableName = ParserUtils.getObjectName(ident);
+        String schemaName = ParserUtils.getSchemaName(ref,
+                (PgDatabase) table.getParent().getParent());
+        String tableName = ParserUtils.getObjectName(ref);
         
         parser.expect("(");
+        
         // parse referenced column names
         while (!parser.expectOptional(")")) {
-            referencedColumnNames.add(ParserUtils.getObjectName(parser.parseIdentifier()));
+            constraint.addForeignColumn(new GenericColumn(schemaName, tableName,
+                            ParserUtils.getObjectName(parser.parseIdentifier())));
+            
             if (parser.expectOptional(")")) {
                 break;
             } else {
                 parser.expect(",");
             }
         }// end parse
-        
-        for (int i = 0; i < columnNames.size(); i ++){
-            constraint.setForeignColumn(table.getColumn(columnNames.get(i)), new GenericColumn(schemaName, tableName, referencedColumnNames.get(i)));            
-        }
     }
     
     /**
