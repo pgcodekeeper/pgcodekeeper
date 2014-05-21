@@ -34,13 +34,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class DiffTableViewer extends Composite {
 
@@ -49,6 +50,8 @@ public class DiffTableViewer extends Composite {
     private TableViewerColumn columnCheck, columnType, columnChange, columnName, columnLocation;
     private final LocalResourceManager lrm;
     private TableViewerComparator comparator;
+    private PgDatabase dbSource;
+    private PgDatabase dbTarget;
     
     public DiffTableViewer(Composite parent, int style) {
         super(parent, style);
@@ -109,7 +112,9 @@ public class DiffTableViewer extends Composite {
                 if ((subtree.getSide() == DiffSide.BOTH && subtree.getParent()
                         .getSide() != DiffSide.BOTH)
                         || subtree.getType() == DbObjType.CONTAINER
-                        || subtree.getType() == DbObjType.DATABASE) {
+                        || subtree.getType() == DbObjType.DATABASE
+                        || subtree.getPgStatement(dbSource).compare(
+                                subtree.getPgStatement(dbTarget))) {
                     return;
                 }
                 list.add(subtree);
@@ -326,9 +331,11 @@ public class DiffTableViewer extends Composite {
         return selectionAdapter;
     }
     
-    public void setInput(TreeElement tree) {
-        this.tree = tree;
-        viewer.setInput(tree);
+    public void setInput(TreeDiffer treediffer) {
+        this.tree = (treediffer == null) ? null : treediffer.getDiffTree();
+        this.dbSource = (treediffer == null) ? null : treediffer.getDbSource().getDbObject();
+        this.dbTarget= (treediffer == null) ? null : treediffer.getDbTarget().getDbObject();
+        viewer.setInput(this.tree);
         
         int widthOfColumns = 0;
         for (TableColumn c : viewer.getTable().getColumns()){

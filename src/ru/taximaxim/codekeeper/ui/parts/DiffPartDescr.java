@@ -269,7 +269,7 @@ public class DiffPartDescr {
                             "Differ thread cancelled. Shouldn't happen!", ex), shell);
                 }
 
-                diffTable.setInput(treediffer.getDiffTree());
+                diffTable.setInput(treediffer);
                 diffPane.setInput(null);
                 btnGetLatest.setEnabled(true);
             }

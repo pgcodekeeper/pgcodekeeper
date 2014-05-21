@@ -346,7 +346,7 @@ public class CommitPartDescr {
                             "Differ thread cancelled. Shouldn't happen!", ex);
                 }
 
-                diffTable.setInput(treediffer.getDiffTree());
+                diffTable.setInput(treediffer);
                 diffPane.setInput(null);
                 btnCommit.setEnabled(true);
             }
