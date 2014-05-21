@@ -14,6 +14,12 @@ public class PgForeignKey extends PgConstraint{
         refer.put(column, referredColumn);
     }
     
+    /**
+     * Returns HashMap &lt;K, V>, where K is column that this foreign key depends on<br>
+     * and V is GenericColumn representing column, referenced by this foreign key
+     *  
+     * @return
+     */
     public HashMap<PgColumn, GenericColumn> getForeigns(){
         return refer;
     }

@@ -15,8 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumnUtils;
+import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -268,13 +270,13 @@ public class PgDiffTables {
 
     /**
      * Adds statements for removal of columns to the list of statements.
-     * @param viewsToDrop 
+     * @param statementsToDrop 
      *
      * @param statements list of statements
      * @param oldTable   original table
      * @param newTable   new table
      */
-    private static void addDropTableColumns(Map<PgView, String> viewsToDrop,
+    private static void addDropTableColumns(Map<PgStatement, String> statementsToDrop,
             final List<String> statements,
             final PgTable oldTable, final PgTable newTable) {
         for (final PgColumn column : oldTable.getColumns()) {
@@ -288,10 +290,11 @@ public class PgDiffTables {
                 // contained in there
                 Set<PgStatement> dependants = new LinkedHashSet<>(10);
                 for (PgStatement dependant : PgDiff.getDependantsSet(column, dependants)){
-                    if (dependant instanceof PgView && !viewsToDrop.containsKey(dependant)){
+                    if ((dependant instanceof PgView || dependant instanceof PgForeignKey) 
+                            && !statementsToDrop.containsKey(dependant)){
                         String reason = "column " + column.getName() + " of table " 
                                 + oldTable.getName() + " is dropped";
-                        viewsToDrop.put((PgView)dependant, reason);
+                        statementsToDrop.put(dependant, reason);
                     }
                 }// end depcy
             }
@@ -309,7 +312,7 @@ public class PgDiffTables {
      * @param dropDefaultsColumns list for storing columns for which default
      *                            value should be dropped
      */
-    private static void addModifyTableColumns(Map<PgView, String> viewsToDrop, 
+    private static void addModifyTableColumns(Map<PgStatement, String> viewsToDrop, 
             final List<String> statements,
             final PgDiffArguments arguments, final PgTable oldTable,
             final PgTable newTable, final List<PgColumn> dropDefaultsColumns) {
@@ -330,7 +333,8 @@ public class PgDiffTables {
                 // contained in there
                 Set<PgStatement> dependants = new LinkedHashSet<PgStatement>(10);
                 for (PgStatement dependant : PgDiff.getDependantsSet(oldColumn, dependants)){
-                    if (dependant instanceof PgView && !viewsToDrop.containsKey(dependant)){
+                    if ((dependant instanceof PgView || dependant instanceof PgForeignKey)
+                            && !viewsToDrop.containsKey(dependant)){
                         String reason = "column " + oldColumn.getName() + " of table " 
                                     + oldTable.getName() + " is altered (type changed)";
                         viewsToDrop.put((PgView)dependant, reason);
@@ -515,8 +519,14 @@ public class PgDiffTables {
         }
         
         for (final PgTable table : oldSchema.getTables()) {
-            if (!newSchema.containsTable(table.getName()) && PgDiff.isFullSelection(table)) {
-                
+            if (!newSchema.containsTable(table.getName())) {
+                if (!PgDiff.isFullSelection(table)){
+                    // TODO Обсудить с Саушкиным, нужен ли этот коммент
+                    writer.println("-- table \"" + table.getName() + "\" was not "
+                            + "dropped because it was not selected entirely");
+                    writer.println();
+                    continue;
+                }
                 // check all dependants, drop them if instanceof PgView
                 // output search path, if necessary
                 Set<PgStatement> dependantsSet = new LinkedHashSet<>(10);
@@ -535,6 +545,17 @@ public class PgDiffTables {
                         writer.println("-- DEPCY: Following view depends on the dropped table " 
                                 + table.getName());
                         writer.println(view.getDropSQL());
+                    }else if (depnt instanceof PgForeignKey){
+                        PgForeignKey foreignKey = (PgForeignKey) depnt;
+                        for (GenericColumn c : foreignKey.getForeigns().values()){
+                            if (c.schema.equals(table.getParent().getName()) && 
+                                    c.table.equals(table.getName())){
+                                writer.println();
+                                writer.println("-- DEPCY: dropping foreign key, because"
+                                        + " table " + table.getName() + " is dropped.");
+                                writer.println(foreignKey.getDropSQL());
+                            }
+                        }
                     }
                 }
                 
@@ -586,26 +607,35 @@ public class PgDiffTables {
         final List<String> statements = new ArrayList<>();
         final List<PgColumn> dropDefaultsColumns = new ArrayList<>();
         
-        // ordered pairs of <viewToDrop, reasonOfDrop>
-        Map<PgView, String> viewsToDrop = new LinkedHashMap<>(10);
+        // ordered pairs of <statementToDrop, reasonOfDrop>
+        Map<PgStatement, String> statementsToDrop = new LinkedHashMap<>(10);
         
-        addDropTableColumns(viewsToDrop, statements, oldTable, newTable);
+        addDropTableColumns(statementsToDrop, statements, oldTable, newTable);
         addCreateTableColumns( 
                 statements, arguments, oldTable, newTable, dropDefaultsColumns);
-        addModifyTableColumns(viewsToDrop, 
+        addModifyTableColumns(statementsToDrop, 
                 statements, arguments, oldTable, newTable, dropDefaultsColumns);
 
-        // write dependent PgViews drop sql in REVERSE order before table altering
-        Set<PgView> dependants = viewsToDrop.keySet();
-        Object [] views = dependants.toArray();
-        for (int i = views.length - 1; i >= 0; i--){
-            PgView key = (PgView) views[i];
-            tempSwitchSearchPath(PgDiffUtils.getQuotedName(
-                    key.getParent().getName(), true), searchPathHelper, writer);
-            writer.println();
-            writer.println("-- DEPCY: dropping view: " + viewsToDrop.get(key));
-            writer.println(key.getDropSQL());
-        }// end write dependent PgViews drop sql code before table altering
+        // write dependent PgViews/PgForeignKey drop sql in REVERSE order before table altering
+        Set<PgStatement> dependants = statementsToDrop.keySet();
+        Object [] dependantsArray = dependants.toArray();
+        for (int i = dependantsArray.length - 1; i >= 0; i--){
+            if (dependantsArray[i] instanceof PgView){
+                PgView key = (PgView) dependantsArray[i];
+                tempSwitchSearchPath(PgDiffUtils.getQuotedName(
+                        key.getParent().getName(), true), searchPathHelper, writer);
+                writer.println();
+                writer.println("-- DEPCY: dropping view: " + statementsToDrop.get(key));
+                writer.println(key.getDropSQL());
+            }else if (dependantsArray[i] instanceof PgForeignKey){
+                PgForeignKey key = (PgForeignKey) dependantsArray[i];
+                tempSwitchSearchPath(PgDiffUtils.getQuotedName(
+                        key.getParent().getName(), true), searchPathHelper, writer);
+                writer.println();
+                writer.println("-- DEPCY: dropping foreign key: " + statementsToDrop.get(key));
+                writer.println(key.getDropSQL());
+            }
+        }// end write dependent PgViews/PgForeignKey drop sql code before table altering
         
         if (!statements.isEmpty()) {
             final String quotedTableName =
@@ -635,13 +665,16 @@ public class PgDiffTables {
         }
         
         // write dependent PgViews create sql code after table altering
-        for (PgView key : dependants){
-            tempSwitchSearchPath(
-                    PgDiffUtils.getQuotedName(key.getParent().getName(), true),
-                    searchPathHelper, writer);
-            writer.println();
-            writer.println("-- DEPCY: recreating dropped view: " + viewsToDrop.get(key));
-            writer.println(key.getCreationSQL());
+        for (PgStatement dependant : dependants){
+            if (dependant instanceof PgView){
+                PgView key = (PgView) dependant;
+                tempSwitchSearchPath(
+                        PgDiffUtils.getQuotedName(key.getParent().getName(), true),
+                        searchPathHelper, writer);
+                writer.println();
+                writer.println("-- DEPCY: recreating dropped view: " + statementsToDrop.get(key));
+                writer.println(key.getCreationSQL());
+            }
         }// end write dependent PgViews create sql code after table altering
     }
 

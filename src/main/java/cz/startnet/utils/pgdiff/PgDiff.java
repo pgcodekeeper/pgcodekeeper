@@ -352,7 +352,13 @@ public class PgDiff {
     private static void dropOldSchemas(final PrintWriter writer,
             PgDiffArguments arguments, final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for (final PgSchema oldSchema : oldDatabase.getSchemas()) {
-            if (newDatabase.getSchema(oldSchema.getName()) == null && isFullSelection(oldSchema)) {
+            if (newDatabase.getSchema(oldSchema.getName()) == null) {
+                if (!isFullSelection(oldSchema)){
+                    writer.println("-- schema \"" + oldSchema.getName() + "\" was "
+                            + "not dropped because it was not selected entirely");
+                    writer.println();
+                    continue;
+                }
                 // drop all contents of the schema
                 PgSchema newSchema = new PgSchema(oldSchema.getName(), "CREATE SCHEMA " + oldSchema.getName());
                 updateSchemaContent(writer, depcyOld.getDb().getSchema(oldSchema.getName()),
