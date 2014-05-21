@@ -50,6 +50,8 @@ abstract public class PgStatement {
     
     abstract public String getCreationSQL();
     
+    abstract public String getDropSQL();
+    
     /**
      * Copies all object properties into a new object and leaves all its children empty.
      * 
@@ -66,14 +68,14 @@ abstract public class PgStatement {
     
     /**
      * This method does not account for nested child PgStatements.
-     * Shallow {@link #equals(Object)}
+     * Shallow version of {@link #equals(Object)}
      */
     abstract public boolean compare(PgStatement obj);
     
     /**
      * Compares this object and all its children with another statement.<br>
      * This default version falls back to {@link #compare(PgStatement)}.
-     * Override for any object with children!<br><br>
+     * Override for any object with nested children!<br><br>
      * 
      * {@inheritDoc}
      */

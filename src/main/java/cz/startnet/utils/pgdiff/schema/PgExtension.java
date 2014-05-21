@@ -86,6 +86,11 @@ public class PgExtension extends PgStatement {
     }
     
     @Override
+    public String getDropSQL() {
+        return "DROP EXTENSION " + PgDiffUtils.getQuotedName(getName()) + ';';
+    }
+    
+    @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
         

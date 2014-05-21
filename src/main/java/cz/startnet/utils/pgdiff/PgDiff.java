@@ -352,14 +352,19 @@ public class PgDiff {
     private static void dropOldSchemas(final PrintWriter writer,
             PgDiffArguments arguments, final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for (final PgSchema oldSchema : oldDatabase.getSchemas()) {
-            if (newDatabase.getSchema(oldSchema.getName()) == null && isFullSelection(oldSchema)) {
+            if (newDatabase.getSchema(oldSchema.getName()) == null) {
+                if (!isFullSelection(oldSchema)){
+                    writer.println("-- schema \"" + oldSchema.getName() + "\" was "
+                            + "not dropped because it was not selected entirely");
+                    writer.println();
+                    continue;
+                }
                 // drop all contents of the schema
                 PgSchema newSchema = new PgSchema(oldSchema.getName(), "CREATE SCHEMA " + oldSchema.getName());
                 updateSchemaContent(writer, depcyOld.getDb().getSchema(oldSchema.getName()),
-                        newSchema, new SearchPathHelper(PgDiffUtils.getQuotedName(oldSchema.getName(), true)), arguments);
+                        newSchema, new SearchPathHelper(PgDiffUtils.getQuotedName(oldSchema.getName())), arguments);
                 writer.println();
-                writer.println("DROP SCHEMA "
-                        + PgDiffUtils.getQuotedName(oldSchema.getName()) + ";");
+                writer.println(oldSchema.getDropSQL());
             }
         }
     }
@@ -396,7 +401,7 @@ public class PgDiff {
 
         for (final PgSchema newSchema : newDatabase.getSchemas()) {
             final SearchPathHelper searchPathHelper = 
-                    new SearchPathHelper(PgDiffUtils.getQuotedName(newSchema.getName(), true));
+                    new SearchPathHelper(PgDiffUtils.getQuotedName(newSchema.getName()));
             if (!setSearchPath) {
                 searchPathHelper.setWasOutput(true);
             }
@@ -436,7 +441,7 @@ public class PgDiff {
         for (final PgSchema oldSchema : oldDatabase.getSchemas()) {
             if (newDatabase.getSchema(oldSchema.getName()) == null && !isFullSelection(oldSchema)){
                 SearchPathHelper searchPath = 
-                        new SearchPathHelper(PgDiffUtils.getQuotedName(oldSchema.getName(), true));
+                        new SearchPathHelper(PgDiffUtils.getQuotedName(oldSchema.getName()));
                 PgSchema newSchema = new PgSchema(oldSchema.getName(), null);
                 newSchema.setAuthorization(oldSchema.getAuthorization());
                 newSchema.setComment(oldSchema.getComment());

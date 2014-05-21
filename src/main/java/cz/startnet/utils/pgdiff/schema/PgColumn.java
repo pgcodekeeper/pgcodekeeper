@@ -5,11 +5,11 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
  * Stores column information.
@@ -146,6 +146,11 @@ public class PgColumn extends PgStatement {
     
     @Override
     public String getCreationSQL() {
+        return null;
+    }
+    
+    @Override
+    public String getDropSQL() {
         return null;
     }
     

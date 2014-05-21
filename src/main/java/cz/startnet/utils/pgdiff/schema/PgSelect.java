@@ -33,6 +33,11 @@ public class PgSelect extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         return null;
     }
+    
+    @Override
+    public String getDropSQL() {
+        return null;
+    }
 
     @Override
     public PgSelect shallowCopy() {

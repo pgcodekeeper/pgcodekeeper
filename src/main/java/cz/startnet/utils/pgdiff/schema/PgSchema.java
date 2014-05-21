@@ -5,13 +5,13 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
  * Stores schema information.
@@ -57,6 +57,7 @@ public class PgSchema extends PgStatement {
         this.definition = definition;
     }
 
+    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(50);
         sbSQL.append("CREATE SCHEMA ");
@@ -80,6 +81,12 @@ public class PgSchema extends PgStatement {
         return sbSQL.toString();
     }
 
+    @Override
+    public String getDropSQL() {
+        return "DROP SCHEMA "
+                + PgDiffUtils.getQuotedName(getName()) + ';';
+    }
+    
     /**
      * Finds function according to specified function {@code signature}.
      *
