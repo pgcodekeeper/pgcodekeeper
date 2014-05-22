@@ -30,7 +30,8 @@ Require-Bundle: apgdiff,
  org.eclipse.ui.workbench,
  org.eclipse.compare,
  org.eclipse.jface.text,
- org.eclipse.egit.ui
+ org.eclipse.egit.ui,
+ org.eclipse.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: javax.annotation;version="1.1.0",
  javax.inject;version="1.0.0",

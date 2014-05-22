@@ -8,5 +8,20 @@
             uri="fragment.e4xmi">
       </fragment>
    </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="ru.taximaxim.codekeeper.ui.FakePerspectiveFactory"
+            icon="icons/app_icon.png"
+            id="ru.taximaxim.codekeeper.ui.perspective.Main"
+            name="pgCodeKeeper">
+      </perspective>
+      <perspective
+            class="ru.taximaxim.codekeeper.ui.FakePerspectiveFactory"
+            icon="icons/beta_violet.png"
+            id="ru.taximaxim.codekeeper.ui.perspective.testbs"
+            name="pgCodeKeeper - Devtest">
+      </perspective>
+   </extension>
 
 </plugin>

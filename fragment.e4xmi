@@ -10,7 +10,6 @@
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_4R4zcI2AEeOZD4rZ-dJoXw" featurename="bindings" parentElementId="ru.taximaxim.codekeeper.mainapp.bindingtable.0">
     <elements xsi:type="commands:KeyBinding" xmi:id="_d0oZ4Df_EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.keybinding.1" keySequence="CTRL+O" command="_o6NrIDYmEeOu39tpQ1Oozg"/>
-    <elements xsi:type="commands:KeyBinding" xmi:id="_zkT2QGygEeO0IptUBJxhdA" elementId="ru.taximaxim.codekeeper.ui.keybinding.4" keySequence="CTRL+Q" command="_Zjel8CnWEeObfOm2RjyZmw"/>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_gYOQkNUGEeOnt8M80Fkklg" featurename="bindings" parentElementId="org.eclipse.ui.contexts.window">
     <elements xsi:type="commands:KeyBinding" xmi:id="_mGM_wI14EeOZD4rZ-dJoXw" elementId="ru.taximaxim.codekeeper.ui.keybinding.6" keySequence="CTRL+SHIFT+W" command="_H_VU0DfvEeOJGp3TAROjKg"/>
@@ -43,7 +42,7 @@
         <children xsi:type="menu:HandledMenuItem" xmi:id="_nbtWkDooEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.6" label="&amp;Properties" command="_8p39cDooEeOo66lUbQncjg"/>
       </children>
       <children xsi:type="menu:Menu" xmi:id="_Ah0REC_xEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.menu.2" label="&amp;Window">
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_NUbA4C_xEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.4" label="&amp;Switch Perspective..." command="_UkgjUC_xEeO2acHPThBe1g"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_NUbA4C_xEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.4" label="&amp;Show Perspective..." command="_UkgjUC_xEeO2acHPThBe1g"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_PcUXMCpvEeOWDPrJZCzSgA" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.1" label="&amp;Preferences" command="_Xdq-gCpvEeOWDPrJZCzSgA"/>
       </children>
       <children xsi:type="menu:Menu" xmi:id="_LZApICnHEeOhQtIacC9DUw" elementId="ru.taximaxim.codekeeper.ui.menu.1" label="&amp;Help">
@@ -72,7 +71,10 @@
     <elements xsi:type="commands:Command" xmi:id="_Zjel8CnWEeObfOm2RjyZmw" elementId="org.eclipse.ui.file.exit" commandName="Exit"/>
     <elements xsi:type="commands:Command" xmi:id="_Xdq-gCpvEeOWDPrJZCzSgA" elementId="ru.taximaxim.codekeeper.ui.command.Prefs" commandName="Show Preferences"/>
     <elements xsi:type="commands:Command" xmi:id="_1JlsQCzJEeOC9s_7P-LAEQ" elementId="ru.taximaxim.codekeeper.ui.command.NewProj" commandName="New Project"/>
-    <elements xsi:type="commands:Command" xmi:id="_UkgjUC_xEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.command.SwitchPersp" commandName="Switch Perspective"/>
+    <elements xsi:type="commands:Command" xmi:id="_UkgjUC_xEeO2acHPThBe1g" elementId="org.eclipse.ui.perspectives.showPerspective" commandName="Show Perspective" description="Show a particular perspective">
+      <parameters xmi:id="_LjDUsOGMEeOesLORVxFJHw" elementId="org.eclipse.ui.perspectives.showPerspective.perspectiveId" name="Parameter"/>
+      <parameters xmi:id="_X4Rk8OGMEeOesLORVxFJHw" elementId="org.eclipse.ui.perspectives.showPerspective.newWindow" name="In New Window"/>
+    </elements>
     <elements xsi:type="commands:Command" xmi:id="_o6NrIDYmEeOu39tpQ1Oozg" elementId="ru.taximaxim.codekeeper.ui.command.LoadProj" commandName="Load Project"/>
     <elements xsi:type="commands:Command" xmi:id="_H_VU0DfvEeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.command.CloseActiveProj" commandName="Close Active Project"/>
     <elements xsi:type="commands:Command" xmi:id="_8p39cDooEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.command.ProjProps" commandName="Project Properties"/>
@@ -87,7 +89,6 @@
     <elements xsi:type="commands:Handler" xmi:id="_bNwFgCnNEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.handler.About" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.About" command="_s6NdACnJEeObfOm2RjyZmw"/>
     <elements xsi:type="commands:Handler" xmi:id="_cnL2ACpvEeOWDPrJZCzSgA" elementId="ru.taximaxim.codekeeper.ui.handler.Prefs" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.Prefs" command="_Xdq-gCpvEeOWDPrJZCzSgA"/>
     <elements xsi:type="commands:Handler" xmi:id="_-yCNMCzJEeOC9s_7P-LAEQ" elementId="ru.taximaxim.codekeeper.ui.handler.NewProj" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.NewProj" command="_1JlsQCzJEeOC9s_7P-LAEQ"/>
-    <elements xsi:type="commands:Handler" xmi:id="_b_5W0C_xEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.handler.SwitchPersp" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.SwitchPerspective" command="_UkgjUC_xEeO2acHPThBe1g"/>
     <elements xsi:type="commands:Handler" xmi:id="_wB_mIDYmEeOu39tpQ1Oozg" elementId="ru.taximaxim.codekeeper.ui.handler.LoadProj" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.LoadProj" command="_o6NrIDYmEeOu39tpQ1Oozg"/>
     <elements xsi:type="commands:Handler" xmi:id="_NM0GUDfvEeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.handler.CloseActiveProj" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.CloseActiveProj" command="_H_VU0DfvEeOJGp3TAROjKg"/>
     <elements xsi:type="commands:Handler" xmi:id="_C5uK4DopEeOo66lUbQncjg" elementId="ru.taximaxim.codekeeper.ui.handler.ProjProps" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.ProjProps" command="_8p39cDooEeOo66lUbQncjg"/>
@@ -99,7 +100,7 @@
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_dQL-sCnKEeObfOm2RjyZmw" featurename="children" parentElementId="ru.taximaxim.codekeeper.mainapp.mainwindow">
     <elements xsi:type="advanced:PerspectiveStack" xmi:id="_K9WGsC_vEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.perspectivestack.0" selectedElement="_u4RQAGfhEeOWppTx9KJCTg">
-      <children xsi:type="advanced:Perspective" xmi:id="_u4RQAGfhEeOWppTx9KJCTg" elementId="ru.taximaxim.codekeeper.ui.perspective.Main" label="Main">
+      <children xsi:type="advanced:Perspective" xmi:id="_u4RQAGfhEeOWppTx9KJCTg" elementId="ru.taximaxim.codekeeper.ui.perspective.Main" label="pgCodeKeeper" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/app_icon.png">
         <children xsi:type="basic:PartSashContainer" xmi:id="_0GIcAGfhEeOWppTx9KJCTg" elementId="ru.taximaxim.codekeeper.ui.partsashcontainer.0" horizontal="true">
           <children xsi:type="basic:PartStack" xmi:id="_p3MtYGfiEeOWppTx9KJCTg" elementId="ru.taximaxim.codekeeper.ui.partstack.ProjectExplorers" containerData="2050">
             <children xsi:type="basic:Part" xmi:id="_qyoa4GfiEeOWppTx9KJCTg" elementId="ru.taximaxim.codekeeper.ui.part.ProjectExplorer" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.ProjectExplorer" label="{project explorer title}" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/tree_explorer.gif">
@@ -122,7 +123,7 @@
           </children>
         </children>
       </children>
-      <children xsi:type="advanced:Perspective" xmi:id="_OGm9sC_vEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.perspective.testbs" label="Bullshit">
+      <children xsi:type="advanced:Perspective" xmi:id="_OGm9sC_vEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.perspective.testbs" label="pgCodeKeeper - Devtest" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/beta_violet.png">
         <children xsi:type="basic:PartStack" xmi:id="_o7nrECnKEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.partstack.testbs">
           <children xsi:type="basic:Part" xmi:id="_pXUIkCnKEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.part.TestPart" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.TestPart" label="TestPart"/>
           <children xsi:type="basic:Part" xmi:id="_tH1W4C_rEeOAX7xkg-kwLg" elementId="ru.taximaxim.codekeeper.ui.part.CtXp" contributionURI="bundleclass://com.opcoach.e4.contextExplorer/com.opcoach.e4.contextExplorer.parts.ContextExplorerPart" label="ContextXp"/>
