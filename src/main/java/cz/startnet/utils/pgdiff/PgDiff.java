@@ -361,8 +361,9 @@ public class PgDiff {
                 }
                 // drop all contents of the schema
                 PgSchema newSchema = new PgSchema(oldSchema.getName(), "CREATE SCHEMA " + oldSchema.getName());
-                updateSchemaContent(writer, depcyOld.getDb().getSchema(oldSchema.getName()),
-                        newSchema, new SearchPathHelper(PgDiffUtils.getQuotedName(oldSchema.getName())), arguments);
+                updateSchemaContent(writer,
+                        depcyOld.getDb().getSchema(oldSchema.getName()), newSchema,
+                        new SearchPathHelper(oldSchema.getName()), arguments);
                 writer.println();
                 writer.println(oldSchema.getDropSQL());
             }
@@ -400,8 +401,8 @@ public class PgDiff {
                 || !newDatabase.getSchemas().get(0).getName().equals("public");
 
         for (final PgSchema newSchema : newDatabase.getSchemas()) {
-            final SearchPathHelper searchPathHelper = 
-                    new SearchPathHelper(PgDiffUtils.getQuotedName(newSchema.getName()));
+            final SearchPathHelper searchPathHelper =
+                    new SearchPathHelper(newSchema.getName());
             if (!setSearchPath) {
                 searchPathHelper.setWasOutput(true);
             }
@@ -440,8 +441,8 @@ public class PgDiff {
         // is partly selected by the user
         for (final PgSchema oldSchema : oldDatabase.getSchemas()) {
             if (newDatabase.getSchema(oldSchema.getName()) == null && !isFullSelection(oldSchema)){
-                SearchPathHelper searchPath = 
-                        new SearchPathHelper(PgDiffUtils.getQuotedName(oldSchema.getName()));
+                SearchPathHelper searchPath =
+                        new SearchPathHelper(oldSchema.getName());
                 PgSchema newSchema = new PgSchema(oldSchema.getName(), null);
                 newSchema.setAuthorization(oldSchema.getAuthorization());
                 newSchema.setComment(oldSchema.getComment());

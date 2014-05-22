@@ -527,7 +527,7 @@ public class PgDiffTables {
                     writer.println();
                     continue;
                 }
-                // check all dependants, drop them if instanceof PgView
+                // check all dependants, drop them if blocking
                 // output search path, if necessary
                 Set<PgStatement> dependantsSet = new LinkedHashSet<>(10);
                 PgDiff.getDependantsSet(table, dependantsSet);
@@ -538,8 +538,7 @@ public class PgDiffTables {
                     PgStatement depnt = (PgStatement) dependants[i];
                     
                     if (depnt instanceof PgView) {
-                        tempSwitchSearchPath(
-                                PgDiffUtils.getQuotedName(depnt.getParent().getName()),
+                        tempSwitchSearchPath(depnt.getParent().getName(),
                                 searchPathHelper, writer);
                     } else if (depnt instanceof PgForeignKey) {
                         if (depnt.getParent().compare(table)
@@ -549,9 +548,12 @@ public class PgDiffTables {
                             continue;
                         }
                         
-                        tempSwitchSearchPath(
-                                PgDiffUtils.getQuotedName(depnt.getParent().getParent().getName()),
+                        tempSwitchSearchPath(depnt.getParent().getParent().getName(),
                                 searchPathHelper, writer);
+                    } else {
+                        // explicitly specify objects to work on in the ifs above
+                        // skip everything else (i.e. columns)
+                        continue;
                     }
                     
                     writer.println();
@@ -569,8 +571,7 @@ public class PgDiffTables {
                 for (Object depnt : dependants){
                     if (depnt instanceof PgView){
                         PgView view = (PgView) depnt;
-                        tempSwitchSearchPath(
-                                PgDiffUtils.getQuotedName(view.getParent().getName()),
+                        tempSwitchSearchPath(view.getParent().getName(),
                                 searchPathHelper, writer);
                         writer.println();
                         writer.println("-- DEPCY: Following view depends on the dropped table " 
@@ -632,11 +633,15 @@ public class PgDiffTables {
             String reason = ((Entry<PgStatement, String>) dependantsArray[i]).getValue();
             
             if (depnt instanceof PgView){
-                tempSwitchSearchPath(PgDiffUtils.getQuotedName(
-                        depnt.getParent().getName()), searchPathHelper, writer);
+                tempSwitchSearchPath(depnt.getParent().getName(),
+                        searchPathHelper, writer);
             }else if (depnt instanceof PgForeignKey){
-                tempSwitchSearchPath(PgDiffUtils.getQuotedName(
-                        depnt.getParent().getParent().getName()), searchPathHelper, writer);
+                tempSwitchSearchPath(depnt.getParent().getParent().getName(),
+                        searchPathHelper, writer);
+            } else {
+                // explicitly specify objects to work on in the ifs above
+                // skip everything else (i.e. columns)
+                continue;
             }
 
             writer.println();
@@ -681,8 +686,7 @@ public class PgDiffTables {
             
             if (depnt instanceof PgView){
                 PgView view = (PgView) depnt;
-                tempSwitchSearchPath(
-                        PgDiffUtils.getQuotedName(view.getParent().getName()),
+                tempSwitchSearchPath(view.getParent().getName(),
                         searchPathHelper, writer);
                 writer.println();
                 writer.println("-- DEPCY: recreating dropped dependant object: "

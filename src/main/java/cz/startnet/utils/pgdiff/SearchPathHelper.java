@@ -19,12 +19,14 @@ public class SearchPathHelper {
     /**
      * Creates new instance of SearchPathHelper.
      *
-     * @param schemaName {@link #searchPath}
+     * @param unquotedSchemaName {@link #searchPath}
      */
-    public SearchPathHelper(final String schemaName) {
-        this.schemaName = schemaName;
+    public SearchPathHelper(final String unquotedSchemaName) {
+        this.schemaName = unquotedSchemaName;
         // TODO is this search_path setting sufficient ?
-        this.searchPath = "SET search_path = " + schemaName + ", pg_catalog;";
+        this.searchPath = "SET search_path = "
+                + PgDiffUtils.getQuotedName(unquotedSchemaName, true)
+                + ", pg_catalog;";
     }
 
     /**
