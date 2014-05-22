@@ -1,5 +1,5 @@
  
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.addons;
 
 import java.io.IOException;
 
@@ -12,6 +12,7 @@ import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.osgi.service.application.ApplicationHandle;
 
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.parts.Console;
 

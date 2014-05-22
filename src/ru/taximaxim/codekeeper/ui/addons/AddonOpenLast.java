@@ -1,5 +1,5 @@
  
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.addons;
 
 
 public class AddonOpenLast {

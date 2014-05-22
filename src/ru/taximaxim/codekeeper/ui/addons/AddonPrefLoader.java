@@ -1,5 +1,5 @@
  
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.addons;
 
 import java.io.IOException;
 
@@ -9,6 +9,7 @@ import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.prefs.UIScopedPreferenceStore;
 
 public class AddonPrefLoader {

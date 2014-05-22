@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui;
 
+import org.eclipse.e4.core.contexts.IEclipseContext;
+
 /**
  * Stores string ids for model objects, objects in {@link IEclipseContext}, etc,
  * that sort of string constants.
@@ -14,6 +16,7 @@ public interface UIConsts {
 
     String PLUGIN_ID = "ru.taximaxim.codekeeper.ui";
     String PREF_STORE = PLUGIN_ID + ".preferenceStore";
+    
     String PART_STACK_EDITORS = PLUGIN_ID + ".partstack.Editors";
     String PART_SQL_EDITOR = PLUGIN_ID + ".partdescriptor.SQLEditorDescr";
     String PART_SQL_EDITOR_FILENAME = PART_SQL_EDITOR + ".filename";
@@ -23,7 +26,9 @@ public interface UIConsts {
     String PART_DIFF = PLUGIN_ID + ".partdescriptor.Diff";
     String PART_DIFF_ID = PART_DIFF + ".Id";
     String PART_WELCOME = PLUGIN_ID + ".part.Welcome";
+    
     String WINDOW_MAIN_ID = "ru.taximaxim.codekeeper.mainapp.mainwindow";
+    String PERSP_MAIN_ID = "ru.taximaxim.codekeeper.ui.perspective.Main";
     
     String HANDLER_RECENT_PROJ = "bundleclass://" + PLUGIN_ID + "/" + PLUGIN_ID
             + ".handlers.OpenRecent";
@@ -68,5 +73,4 @@ public interface UIConsts {
     String FILENAME_ICONEDIT = "/icons/editor.gif";
     
     String EVENT_REOPEN_PROJECT = "ru/taximaxim/codekeeper/ui/project/changed";
-    String EVENT_WELCOME_ACTIVE = "ru/taximaxim/codekeeper/ui/welcome/activated";
 }

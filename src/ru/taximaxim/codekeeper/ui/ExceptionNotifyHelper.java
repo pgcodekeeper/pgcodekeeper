@@ -10,7 +10,7 @@ import org.eclipse.swt.widgets.Shell;
 import ru.taximaxim.codekeeper.ui.parts.Console;
 
 public class ExceptionNotifyHelper {
-    public static void notifyAndThrow(IllegalStateException ex, Shell parent) throws IllegalStateException{
+    public static void notifyAndThrow(RuntimeException ex, Shell parent) {
         MessageBox dialog = new MessageBox(parent, SWT.ERROR);
         dialog.setMessage(ex.getMessage());
         StringWriter sw = new StringWriter();

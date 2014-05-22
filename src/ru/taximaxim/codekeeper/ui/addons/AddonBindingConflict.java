@@ -1,5 +1,5 @@
  
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.addons;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,13 +16,15 @@ import org.eclipse.jface.bindings.Binding;
 import org.eclipse.jface.bindings.BindingManager;
 import org.eclipse.jface.bindings.TriggerSequence;
 
+import ru.taximaxim.codekeeper.ui.Log;
+
 public class AddonBindingConflict {
     
     @Inject
-    EBindingService bindings;
+    private EBindingService bindings;
     
     @Inject
-    BindingManager bindingManager;
+    private BindingManager bindingManager;
     
     @Inject
     @Optional
