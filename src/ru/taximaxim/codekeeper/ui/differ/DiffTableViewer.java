@@ -113,8 +113,9 @@ public class DiffTableViewer extends Composite {
                         .getSide() != DiffSide.BOTH)
                         || subtree.getType() == DbObjType.CONTAINER
                         || subtree.getType() == DbObjType.DATABASE
-                        || subtree.getPgStatement(dbSource).compare(
-                                subtree.getPgStatement(dbTarget))) {
+                        || (subtree.getSide() == DiffSide.BOTH && 
+                                subtree.getPgStatement(dbSource).compare(
+                                        subtree.getPgStatement(dbTarget)))) {
                     return;
                 }
                 list.add(subtree);
