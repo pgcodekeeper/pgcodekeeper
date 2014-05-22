@@ -18,7 +18,7 @@ public class TextDialog extends MessageDialog {
     public TextDialog(Shell parentShell, int type, String title, String message,
             String text, String[] buttonLabels, int defaultButton) {
         super(parentShell, title, null, message, type, buttonLabels, defaultButton);
-        
+        setShellStyle(getShellStyle() | SWT.RESIZE);
         this.text = text;
         this.type = type;
     }
