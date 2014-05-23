@@ -24,7 +24,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.parts.Console;
 
-public class TextDialog extends MessageDialog {
+public class SqlScriptDialog extends MessageDialog {
     
     private static final String SCRIPT_PLACEHOLDER = "%script";
     public static final String runScriptText =  "\u25B6 run script";
@@ -47,7 +47,7 @@ public class TextDialog extends MessageDialog {
         return execScript;
     }
     
-    public TextDialog(Shell parentShell, int type, String title, String message,
+    public SqlScriptDialog(Shell parentShell, int type, String title, String message,
             String text) {
         super(parentShell, title, null, message, type, new String[] {
                 runScriptText, "Save as...", IDialogConstants.OK_LABEL }, 2);
@@ -104,19 +104,19 @@ public class TextDialog extends MessageDialog {
                         try {
                             StdStreamRedirector.launchAndRedirect(pb);
                         } catch (final IOException ex) {
-                            TextDialog.this.getShell().getDisplay().syncExec(
+                            SqlScriptDialog.this.getShell().getDisplay().syncExec(
                                     new Runnable() {
                                         
                                         @Override
                                         public void run() {
                                             ExceptionNotifyHelper.notifyAndThrow(
                                                     new IllegalStateException(ex),
-                                                    TextDialog.this.getShell());
+                                                    SqlScriptDialog.this.getShell());
                                         }
                                     });
                         } finally {
                             // request UI change: button label changed
-                            TextDialog.this.getShell().getDisplay().asyncExec(
+                            SqlScriptDialog.this.getShell().getDisplay().asyncExec(
                                     new Runnable() {
                                         
                                         @Override

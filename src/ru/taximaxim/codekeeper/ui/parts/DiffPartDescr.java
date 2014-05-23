@@ -48,7 +48,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.TextDialog;
+import ru.taximaxim.codekeeper.ui.SqlScriptDialog;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -130,8 +130,8 @@ public class DiffPartDescr {
                             ex);
                 }
 
-                TextDialog dialog = new TextDialog(shell,
-                        TextDialog.INFORMATION, "Diff script",
+                SqlScriptDialog dialog = new SqlScriptDialog(shell,
+                        SqlScriptDialog.INFORMATION, "Diff script",
                         "This will apply selected changes to your database",
                         differ.getDiffDirect());
                 
