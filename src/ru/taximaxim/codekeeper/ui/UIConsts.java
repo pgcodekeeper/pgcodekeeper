@@ -35,6 +35,7 @@ public interface UIConsts {
     
     // Preferences
     String PREF_PGDUMP_EXE_PATH = "prefPgdumpExePath";
+    String PREF_PGDUMP_CUSTOM_PARAMS = "prefPgdumpCustomParams";
     String PREF_DB_STORE = "prefDbStore";
     String PREF_GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile";
     String PREF_RECENT_PROJECTS = "prefRecentProject";

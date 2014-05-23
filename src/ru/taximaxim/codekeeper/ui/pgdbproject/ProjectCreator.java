@@ -23,13 +23,14 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 // TODO log new creation process, log more
 public class ProjectCreator implements IRunnableWithProgress {
 
-    final private String exePgdump;
+    private final String exePgdump;
+    private final String pgdumpCustom;
 
-    final private PgDbProject props;
+    private final PgDbProject props;
 
-    final private String dumpPath;
+    private final String dumpPath;
 
-    final private boolean doInit;
+    private final boolean doInit;
 
     private String repoName = "";
 
@@ -39,6 +40,7 @@ public class ProjectCreator implements IRunnableWithProgress {
             final PgDbProject props, final String dumpPath, boolean doInit) {
         this.mainPrefStore = mainPrefStore;
         this.exePgdump = mainPrefStore.getString(UIConsts.PREF_PGDUMP_EXE_PATH);
+        this.pgdumpCustom = mainPrefStore.getString(UIConsts.PREF_PGDUMP_CUSTOM_PARAMS);
         this.props = props;
         this.dumpPath = dumpPath;
         this.doInit = doInit;
@@ -84,7 +86,7 @@ public class ProjectCreator implements IRunnableWithProgress {
         PgDatabase db;
         switch (props.getString(UIConsts.PROJ_PREF_SOURCE)) {
         case UIConsts.PROJ_SOURCE_TYPE_DB:
-            db = DbSource.fromDb(exePgdump, props).get(taskpm);
+            db = DbSource.fromDb(exePgdump, pgdumpCustom, props).get(taskpm);
             break;
 
         case UIConsts.PROJ_SOURCE_TYPE_DUMP:

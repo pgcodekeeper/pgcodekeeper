@@ -40,7 +40,7 @@ public class AddonExternalTools {
     private void getVersionsOnStartup(
             @EventTopic(UIEvents.UILifeCycle.APP_STARTUP_COMPLETE)
             MApplication app,
-            @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
+            @Preference(UIConsts.PREF_PGDUMP_EXE_PATH)
             String pgdumpExec) {
         
         try {
@@ -64,7 +64,7 @@ public class AddonExternalTools {
     @Optional
     private void prefsReinject(
             ApplicationHandle appHandle, // IApplicationContext actually
-            @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
+            @Preference(UIConsts.PREF_PGDUMP_EXE_PATH)
             String pgdumpExec) {
         if(appHandle.getState() == ApplicationHandle.RUNNING) {
             getVersionsOnStartup(null, pgdumpExec);

@@ -78,14 +78,16 @@ public abstract class DbSource {
         return new DbSourceFile(filename, encoding);
     }
 
-    public static DbSource fromDb(String exePgdump, PgDbProject proj) {
-        return new DbSourceDb(exePgdump, proj);
+    public static DbSource fromDb(String exePgdump, String customParams,
+            PgDbProject proj) {
+        return new DbSourceDb(exePgdump, customParams, proj);
     }
 
-    public static DbSource fromDb(String exePgdump, String host, int port,
-            String user, String pass, String dbname, String encoding) {
-        return new DbSourceDb(exePgdump, host, port, user, pass, dbname,
-                encoding);
+    public static DbSource fromDb(String exePgdump, String customParams,
+            String host, int port, String user, String pass, String dbname,
+            String encoding) {
+        return new DbSourceDb(exePgdump, customParams,
+                host, port, user, pass, dbname, encoding);
     }
 
     public static DbSource fromFilter(DbSource src, TreeElement filter,
@@ -159,7 +161,6 @@ class DbSourceRepo extends DbSource {
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                     dir.getAbsolutePath(), encoding, false, false);
         }
-
     }
 }
 
@@ -207,26 +208,30 @@ class DbSourceFile extends DbSource {
 
 class DbSourceDb extends DbSource {
 
-    final private String exePgdump;
+    private final String exePgdump;
+    private final String customParams;
 
-    final private String host, user, pass, dbname, encoding;
-    final private int port;
+    private final String host, user, pass, dbname, encoding;
+    private final int port;
 
-    DbSourceDb(String exePgdump, PgDbProject props) {
-        this(exePgdump, props.getString(UIConsts.PROJ_PREF_DB_HOST), props
-                .getInt(UIConsts.PROJ_PREF_DB_PORT), props
-                .getString(UIConsts.PROJ_PREF_DB_USER), props
-                .getString(UIConsts.PROJ_PREF_DB_PASS), props
-                .getString(UIConsts.PROJ_PREF_DB_NAME), props
-                .getString(UIConsts.PROJ_PREF_ENCODING));
+    DbSourceDb(String exePgdump, String customParams, PgDbProject props) {
+        this(exePgdump, customParams,
+                props.getString(UIConsts.PROJ_PREF_DB_HOST),
+                props.getInt(UIConsts.PROJ_PREF_DB_PORT),
+                props.getString(UIConsts.PROJ_PREF_DB_USER),
+                props.getString(UIConsts.PROJ_PREF_DB_PASS),
+                props.getString(UIConsts.PROJ_PREF_DB_NAME),
+                props.getString(UIConsts.PROJ_PREF_ENCODING));
     }
 
-    DbSourceDb(String exePgdump, String host, int port, String user,
-            String pass, String dbname, String encoding) {
+    DbSourceDb(String exePgdump, String customParams,
+            String host, int port, String user, String pass,
+            String dbname, String encoding) {
         super((dbname.isEmpty() ? "unknown_db" : dbname) + "@"
                 + (host.isEmpty() ? "unknown_host" : host));
 
         this.exePgdump = exePgdump;
+        this.customParams = customParams;
         this.host = host;
         this.port = port;
         this.user = user;
@@ -244,7 +249,8 @@ class DbSourceDb extends DbSource {
 
             pm.newChild(1).subTask("Executing pg_dump...");
 
-            new PgDumper(exePgdump, host, port, user, pass, dbname, encoding,
+            new PgDumper(exePgdump, customParams,
+                    host, port, user, pass, dbname, encoding,
                     dump.getAbsolutePath()).pgDump();
 
             pm.newChild(1).subTask("Loading dump...");

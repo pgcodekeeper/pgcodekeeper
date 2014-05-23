@@ -168,9 +168,9 @@ class PageDiff extends WizardPage implements Listener {
         DB, DUMP, /*SVN, */GIT, PROJ
     }
 
-    final private IPreferenceStore mainPrefs;
+    private final IPreferenceStore mainPrefs;
 
-    final private PgDbProject proj;
+    private final PgDbProject proj;
 
     private Composite container;
 
@@ -271,6 +271,7 @@ class PageDiff extends WizardPage implements Listener {
         case DB:
             dbs = DbSource.fromDb(
                     mainPrefs.getString(UIConsts.PREF_PGDUMP_EXE_PATH),
+                    mainPrefs.getString(UIConsts.PREF_PGDUMP_CUSTOM_PARAMS),
                     getDbHost(), getDbPort(), getDbUser(), getDbPass(),
                     getDbName(), getTargetEncoding());
             break;

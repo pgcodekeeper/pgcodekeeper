@@ -1,6 +1,10 @@
 package ru.taximaxim.codekeeper.ui.externalcalls;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,16 +16,17 @@ public class PgDumper {
     private final static Pattern PATTERN_VERSION = Pattern.compile(
             "^(?:pg_dump[\\s]+\\(PostgreSQL.*\\)[\\s]+)([\\d]+\\.[\\d]+\\.[\\d]+)$");
 
-    final private String exePgdump;
+    private final String exePgdump;
+    private final List<String> customParams;
 
-    final private String host, user, pass, dbname, encoding;
-    final private int port;
+    private final String host, user, pass, dbname, encoding;
+    private final int port;
     
-    final private String dumpFile;
+    private final String dumpFile;
     
-    public PgDumper(String exePgdump, String host, int port,
-            String user, String pass, String dbname, String encoding,
-            String dumpFile) {
+    public PgDumper(String exePgdump, String customParams,
+            String host, int port, String user, String pass,
+            String dbname, String encoding, String dumpFile) {
         this.exePgdump = exePgdump;
         this.host = host;
         this.port = port;
@@ -30,6 +35,12 @@ public class PgDumper {
         this.dbname = dbname;
         this.encoding = encoding;
         this.dumpFile = dumpFile;
+        
+        List<String> listCustom = new ArrayList<>(
+                Arrays.asList(customParams.split(Pattern.quote(" ")))
+                );
+        listCustom.removeAll(Arrays.asList(new String[] { "" }));
+        this.customParams = Collections.unmodifiableList(listCustom);
     }
     
     /**
@@ -43,6 +54,7 @@ public class PgDumper {
     public PgDumper(String exePgdump) {
         this.exePgdump = exePgdump;
         
+        customParams = Arrays.asList();
         host = user = pass = dbname = encoding = dumpFile = null;
         port = 0;
     }
@@ -52,6 +64,8 @@ public class PgDumper {
                 "--file=" + dumpFile,
                 "--schema-only",
                 "--no-password");
+        
+        pgdump.command().addAll(customParams);
         
         ProcBuilderUtils env = new ProcBuilderUtils(pgdump);
         env.addEnv("PGHOST", host);

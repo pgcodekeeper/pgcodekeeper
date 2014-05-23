@@ -15,7 +15,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class DynamicMenuRecent {
     @Inject
-    @Preference(value=UIConsts.PREF_RECENT_PROJECTS)
+    @Preference(UIConsts.PREF_RECENT_PROJECTS)
     String prefRecent;
     
     @AboutToShow

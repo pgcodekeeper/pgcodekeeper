@@ -19,9 +19,9 @@ public class AddonOpenLast {
             
             final EPartService partService,
             
-            @Preference(value=UIConsts.PREF_OPEN_LAST_ON_START) String prefOpenLast,
+            @Preference(UIConsts.PREF_OPEN_LAST_ON_START) String prefOpenLast,
 
-            @Preference(value = UIConsts.PREF_RECENT_PROJECTS) String prefRecentProjects,
+            @Preference(= UIConsts.PREF_RECENT_PROJECTS) String prefRecentProjects,
             
             UISynchronize sync) {
         if (prefOpenLast != null && prefOpenLast.equals("true")) {

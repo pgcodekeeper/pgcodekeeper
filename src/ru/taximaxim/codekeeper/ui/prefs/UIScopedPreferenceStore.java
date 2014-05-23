@@ -25,5 +25,6 @@ public class UIScopedPreferenceStore extends ScopedPreferenceStore {
         setDefault(UIConsts.PREF_GIT_KEY_PRIVATE_FILE, (new File(new File(
                 System.getProperty("user.home"), ".ssh"), "id_rsa")).toString());
         setDefault(UIConsts.PREF_RECENT_PROJECTS, "");
+        setDefault(UIConsts.PREF_PGDUMP_CUSTOM_PARAMS, "");
     }
 }

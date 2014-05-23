@@ -15,6 +15,7 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -78,8 +79,11 @@ class GeneralPrefPage extends FieldEditorPreferencePage {
                     protected boolean checkState() {
                         return true;
                     }
-                }
-        );
+                });
+        
+        addField(new StringFieldEditor(UIConsts.PREF_PGDUMP_CUSTOM_PARAMS,
+                "pg_dump custom parameters", getFieldEditorParent()));
+        
         BooleanFieldEditor openLast = new BooleanFieldEditor(
                 UIConsts.PREF_OPEN_LAST_ON_START, "Open last project on startup",
                 FileFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());

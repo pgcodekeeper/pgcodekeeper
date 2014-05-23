@@ -24,7 +24,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 public class TestPart {
     
     @Inject
-    @Preference(value=UIConsts.PREF_PGDUMP_EXE_PATH)
+    @Preference(UIConsts.PREF_PGDUMP_CUSTOM_PARAMS)
     private String prefPgdumpPath;
     
     @Inject

@@ -77,8 +77,12 @@ public class CommitPartDescr {
     private EPartService partService;
     
     @Inject
-    @Preference(value = UIConsts.PREF_PGDUMP_EXE_PATH)
+    @Preference(UIConsts.PREF_PGDUMP_EXE_PATH)
     private String exePgdump;
+
+    @Inject
+    @Preference(UIConsts.PREF_PGDUMP_CUSTOM_PARAMS)
+    private String pgdumpCustom;
     
     @Inject
     private IEventBroker events;
@@ -314,14 +318,16 @@ public class CommitPartDescr {
                 } else if (btnDb.getSelection()) {
                     int port;
                     try {
-                        port = Integer.parseInt(dbSrc.txtDbPort.getText());
+                        String sPort = dbSrc.txtDbPort.getText();
+                        port = sPort.isEmpty()? 0 : Integer.parseInt(sPort);
                     } catch (NumberFormatException ex) {
                         MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR);
                         mb.setText("Bad port!");
                         mb.setMessage("Port must be a number!");
+                        mb.open();
                         return;
                     }
-                    dbTarget = DbSource.fromDb(exePgdump,
+                    dbTarget = DbSource.fromDb(exePgdump, pgdumpCustom,
                             dbSrc.txtDbHost.getText(), port,
                             dbSrc.txtDbUser.getText(),
                             dbSrc.txtDbPass.getText(),
