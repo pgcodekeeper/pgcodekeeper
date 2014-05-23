@@ -46,6 +46,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.ui.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.TextDialog;
@@ -135,7 +136,13 @@ public class DiffPartDescr {
                         "This will apply selected changes to your database",
                         differ.getDiffDirect(), new String[] {
                     TextDialog.runScriptText, "Save to a file", IDialogConstants.OK_LABEL }, 2);
+                
+                dialog.setScript(mainPrefs.getString(UIConsts.PREF_SUPREME_ROLL_SCRIPT));
                 dialog.open();
+                if (!dialog.getScript().equals("")){
+                    AddonPrefLoader.savePreference(mainPrefs, 
+                            UIConsts.PREF_SUPREME_ROLL_SCRIPT, dialog.getScript());
+                }
             }
         });
         // end upper commit comment container

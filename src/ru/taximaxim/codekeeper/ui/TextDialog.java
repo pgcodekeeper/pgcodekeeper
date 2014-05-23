@@ -35,6 +35,8 @@ public class TextDialog extends MessageDialog {
     
     private Thread scriptThread;
 
+    private String execScript = "";
+
     public static final String runScriptText =  "\u25B6 run script";
     public static final String stopScriptText = "\u25A0 stop script";
     
@@ -61,13 +63,9 @@ public class TextDialog extends MessageDialog {
         txt.setLayoutData(gd);
         
         txtScript = new Text(parent, SWT.BORDER);
-        txtScript.setText("");
-        
-        txtScript.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        txtScript.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        txtScript.setText(execScript);
         txtScript.setToolTipText("Use %script to denote a place where SQL script filename will be inserted.");
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        txtScript.setLayoutData(gd);
+        txtScript.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         
         return parent;
     }
@@ -148,8 +146,9 @@ public class TextDialog extends MessageDialog {
             }
         }
         // case Ok
-        else{
-            close();
+        else if (buttonId == 2){
+            execScript = txtScript.getText();
+            super.buttonPressed(buttonId);
         }
     }
     
@@ -163,5 +162,13 @@ public class TextDialog extends MessageDialog {
         } else {
             return super.close();
         }
+    }
+
+    public void setScript(String rollScript) {
+        this.execScript = rollScript;
+    }
+    
+    public String getScript() {
+        return execScript;
     }
 }
