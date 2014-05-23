@@ -7,6 +7,7 @@
     <elements xsi:type="application:Addon" xmi:id="_HnX9MNTyEeOnt8M80Fkklg" elementId="ru.taximaxim.codekeeper.ui.addon.AddonBindingConflict" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.addons.AddonBindingConflict"/>
     <elements xsi:type="application:Addon" xmi:id="_KI7uwM7CEeOwUvs9OWQ4pg" elementId="ru.taximaxim.codekeeper.ui.addon.WindowLabel" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.addons.AddonWindowLabel"/>
     <elements xsi:type="application:Addon" xmi:id="_YPcNIOGfEeOBmYABepyveQ" elementId="ru.taximaxim.codekeeper.ui.addon.AddonPerspListener" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.addons.AddonPerspListener"/>
+    <elements xsi:type="application:Addon" xmi:id="_CZrqYI2jEeO4ie8GiiWKfQ" elementId="ru.taximaxim.codekeeper.ui.addon.JFaceExceptionHandler" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.addons.AddonJFaceExceptionHandler"/>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_4R4zcI2AEeOZD4rZ-dJoXw" featurename="bindings" parentElementId="ru.taximaxim.codekeeper.mainapp.bindingtable.0">
     <elements xsi:type="commands:KeyBinding" xmi:id="_d0oZ4Df_EeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.keybinding.1" keySequence="CTRL+O" command="_o6NrIDYmEeOu39tpQ1Oozg"/>
