@@ -16,6 +16,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -70,6 +71,13 @@ public class SqlScriptDialog extends MessageDialog {
         gd.heightHint = 400;
         txt.setLayoutData(gd);
         
+        Label l = new Label(parent, SWT.NONE);
+        l.setText("Enter command to roll on this SQL script ("
+                + SCRIPT_PLACEHOLDER + " is replaced by the SQL script file):");
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = 12;
+        l.setLayoutData(gd);
+        
         txtScript = new Text(parent, SWT.BORDER);
         txtScript.setText(execScript);
         txtScript.setToolTipText("Use " + SCRIPT_PLACEHOLDER
@@ -109,9 +117,11 @@ public class SqlScriptDialog extends MessageDialog {
                                         
                                         @Override
                                         public void run() {
-                                            ExceptionNotifyHelper.notifyAndThrow(
-                                                    new IllegalStateException(ex),
-                                                    SqlScriptDialog.this.getShell());
+                                            Log.log(ex);
+                                            MessageBox mb = new MessageBox(
+                                                    getShell(), SWT.ERROR);
+                                            mb.setMessage("IOException thrown while running script: " + ex.getMessage());
+                                            mb.open();
                                         }
                                     });
                         } finally {
@@ -125,7 +135,6 @@ public class SqlScriptDialog extends MessageDialog {
                                             runScriptBtn.setText(runScriptText);
                                         }
                                     });
-                            Console.addMessage("SUCCESS: Script executed!");
                         }
                     }
                 };
