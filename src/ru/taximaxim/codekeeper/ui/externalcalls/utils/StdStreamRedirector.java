@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.parts.Console;
@@ -21,7 +22,7 @@ public class StdStreamRedirector implements Runnable {
     
     private StringBuilder storage = new StringBuilder(2000);
     
-    private static boolean isTimeToFinish = false;
+    private AtomicBoolean isDestroyed = new AtomicBoolean(false);
     
     /**
      * @param in {@link InputStream} to 
@@ -35,13 +36,16 @@ public class StdStreamRedirector implements Runnable {
     public void run() {
         String line = null;
         try {
-            while(!isTimeToFinish && (line = in.readLine()) != null) {
+            while((line = in.readLine()) != null) {
                 Console.addMessage(line);
                 storage.append(line);
                 storage.append(System.lineSeparator());
             }
-            isTimeToFinish = false;
         } catch(IOException ex) {
+            if (isDestroyed.get()) {
+                // the process was destroyed by us, exit silently
+                return;
+            }
             throw new IllegalStateException(
                     "Error while reading from stdout/stderr", ex);
         }
@@ -75,15 +79,18 @@ public class StdStreamRedirector implements Runnable {
             
             try {
                 p.waitFor();
-                redirectorThread.join();
-            } catch(InterruptedException ex) {
+            } catch (InterruptedException ex) {
+                redirector.isDestroyed.set(true);
                 p.destroy();
-                isTimeToFinish = true;
             }
             
-            // expect java.lang.IllegalThreadStateException in logs 
-            // if Process p terminated manually (by p.destroy())
-            if(p.exitValue() != 0) {
+            try {
+                redirectorThread.join();
+            } catch (InterruptedException ex) {
+                throw new IllegalStateException("Interrupted wait on redirectorThread", ex);
+            }
+
+            if (!redirector.isDestroyed.get() && p.exitValue() != 0) {
                 throw new IOException("Process returned with error: "
                             + p.exitValue());
             }

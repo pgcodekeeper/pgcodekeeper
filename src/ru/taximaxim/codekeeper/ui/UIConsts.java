@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui;
 
+import org.eclipse.e4.core.contexts.IEclipseContext;
+
 /**
  * Stores string ids for model objects, objects in {@link IEclipseContext}, etc,
  * that sort of string constants.
@@ -35,7 +37,7 @@ public interface UIConsts {
     String PREF_RECENT_PROJECTS = "prefRecentProject";
     String PREF_OPEN_LAST_ON_START = "prefOpenLastOnStart";
     String PREF_LAST_OPENED_LOCATION = "prefLastOpenedLocation";
-    String PREF_SUPREME_ROLL_SCRIPT = "prefSupremeRollScript";
+    String PREF_LAST_ROLLON_SCRIPT = "prefLastRollonScript";
     
     // Project preferences
     String PROJ_PREF_ENCODING = "prefGeneralEncoding";

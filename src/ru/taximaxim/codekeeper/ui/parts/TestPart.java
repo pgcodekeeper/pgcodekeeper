@@ -59,6 +59,7 @@ public class TestPart {
                 txt.setText(txt.getText() + "\n"
                         + shell_);
                 
+                
             }
         });
         

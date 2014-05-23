@@ -19,7 +19,6 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.Document;
@@ -134,14 +133,13 @@ public class DiffPartDescr {
                 TextDialog dialog = new TextDialog(shell,
                         TextDialog.INFORMATION, "Diff script",
                         "This will apply selected changes to your database",
-                        differ.getDiffDirect(), new String[] {
-                    TextDialog.runScriptText, "Save to a file", IDialogConstants.OK_LABEL }, 2);
+                        differ.getDiffDirect());
                 
-                dialog.setScript(mainPrefs.getString(UIConsts.PREF_SUPREME_ROLL_SCRIPT));
+                dialog.setScript(mainPrefs.getString(UIConsts.PREF_LAST_ROLLON_SCRIPT));
                 dialog.open();
                 if (!dialog.getScript().equals("")){
                     AddonPrefLoader.savePreference(mainPrefs, 
-                            UIConsts.PREF_SUPREME_ROLL_SCRIPT, dialog.getScript());
+                            UIConsts.PREF_LAST_ROLLON_SCRIPT, dialog.getScript());
                 }
             }
         });

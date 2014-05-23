@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
@@ -13,7 +15,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -25,27 +26,34 @@ import ru.taximaxim.codekeeper.ui.parts.Console;
 
 public class TextDialog extends MessageDialog {
     
-    final private String text;
+    private static final String SCRIPT_PLACEHOLDER = "%script";
+    public static final String runScriptText =  "\u25B6 run script";
+    public static final String stopScriptText = "\u25A0 stop script";
     
-    final private int type;
-
+    private final String text;
+    private String execScript = "";
+    
     private Text txtScript;
     private boolean isRunning = false;
     private Button runScriptBtn;
     
     private Thread scriptThread;
 
-    private String execScript = "";
-
-    public static final String runScriptText =  "\u25B6 run script";
-    public static final String stopScriptText = "\u25A0 stop script";
+    public void setScript(String rollScript) {
+        this.execScript = rollScript;
+    }
+    
+    public String getScript() {
+        return execScript;
+    }
     
     public TextDialog(Shell parentShell, int type, String title, String message,
-            String text, String[] buttonLabels, int defaultButton) {
-        super(parentShell, title, null, message, type, buttonLabels, defaultButton);
+            String text) {
+        super(parentShell, title, null, message, type, new String[] {
+                runScriptText, "Save as...", IDialogConstants.OK_LABEL }, 2);
+        
         setShellStyle(getShellStyle() | SWT.RESIZE);
         this.text = text;
-        this.type = type;
     }
     
     @Override
@@ -57,15 +65,16 @@ public class TextDialog extends MessageDialog {
         txt.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         txt.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
         gd.heightHint = 400;
         txt.setLayoutData(gd);
         
         txtScript = new Text(parent, SWT.BORDER);
         txtScript.setText(execScript);
-        txtScript.setToolTipText("Use %script to denote a place where SQL script filename will be inserted.");
-        txtScript.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        txtScript.setToolTipText("Use " + SCRIPT_PLACEHOLDER
+                + " to denote a place where SQL script filename will be inserted.");
+        txtScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
         return parent;
     }
@@ -75,30 +84,48 @@ public class TextDialog extends MessageDialog {
         // case Run script
         if (buttonId == 0 && !isRunning){
             this.runScriptBtn = getButton(0);
-            try(TempFile tf = new TempFile("", ".sql")){
-                PrintWriter writer = new PrintWriter(tf.get());
-                writer.write(text);
-                writer.close();
-                List<String> command = Arrays.asList(
-                        txtScript.getText().replaceFirst("%script", 
-                                tf.get().getAbsolutePath()).split(" "));
+            
+            try(TempFile tf = new TempFile("tmp_rollon_", ".sql")){
+                try (PrintWriter writer = new PrintWriter(tf.get())) {
+                    writer.write(text);
+                    writer.close();
+                }
+                
+                List<String> command = Arrays.asList(txtScript.getText()
+                        .replaceFirst(SCRIPT_PLACEHOLDER, tf.get().getAbsolutePath())
+                        .split(Pattern.quote(" ")));
                 final ProcessBuilder pb = new ProcessBuilder(command);
+                
                 // new runnable to unlock the UI thread
                 Runnable launcher = new Runnable() {
+                    
                     @Override
                     public void run() {
                         try {
                             StdStreamRedirector.launchAndRedirect(pb);
-                        } catch (IOException e) {
-                                Console.addMessage(e.toString());
-                        }finally{
+                        } catch (final IOException ex) {
+                            TextDialog.this.getShell().getDisplay().syncExec(
+                                    new Runnable() {
+                                        
+                                        @Override
+                                        public void run() {
+                                            ExceptionNotifyHelper.notifyAndThrow(
+                                                    new IllegalStateException(ex),
+                                                    TextDialog.this.getShell());
+                                        }
+                                    });
+                        } finally {
                             // request UI change: button label changed
-                            Display.getDefault().asyncExec(new Runnable() {
-                                public void run() {
-                                    runScriptBtn.setText(runScriptText);
-                                }
-                             });
-                            isRunning = false;
+                            TextDialog.this.getShell().getDisplay().asyncExec(
+                                    new Runnable() {
+                                        
+                                        @Override
+                                        public void run() {
+                                            isRunning = false;
+                                            runScriptBtn.setText(runScriptText);
+                                        }
+                                    });
+                            Console.addMessage("SUCCESS: Script executed!");
                         }
                     }
                 };
@@ -107,16 +134,16 @@ public class TextDialog extends MessageDialog {
                 scriptThread.start();
                 getButton(0).setText(stopScriptText);
                 isRunning = true;
-            }catch(IOException e){
-                MessageBox errorDialog = new MessageBox(getShell(), SWT.OK);
-                errorDialog.setMessage("IOException thrown: " + e.getMessage());
-                errorDialog.open();
+            } catch (IOException ex) {
+                ExceptionNotifyHelper.notifyAndThrow(
+                        new IllegalStateException(ex), getShell());
             }
         }
         // case Stop script
         else if (buttonId == 0 && isRunning){
-            Console.addMessage("Script execution was interrupted by user.");
-            Log.log(Log.LOG_INFO, "Script execution was interrupted by user.");
+            Console.addMessage("Script execution interrupted!");
+            Log.log(Log.LOG_INFO, "Script execution interrupted by user.");
+            
             scriptThread.interrupt();
             getButton(0).setText(runScriptText);
             isRunning = false;
@@ -124,25 +151,23 @@ public class TextDialog extends MessageDialog {
         // case Save to a file
         else if (buttonId == 1){
             FileDialog fd = new FileDialog(getShell(), SWT.SAVE);
-            fd.setText("Select file to save script");
+            fd.setText("Save as...");
             fd.setOverwrite(true);
-            fd.setFilterExtensions(new String[]{"*.sql", "*.*"});
+            fd.setFilterExtensions(new String[] {"*.sql", "*.*"});
             String scriptFileName = fd.open();
-            if (scriptFileName != null){
-                try{
-                    File script = new File(scriptFileName);
-                    PrintWriter writer = new PrintWriter(script);
+            
+            if (scriptFileName != null) {
+                File script = new File(scriptFileName);
+                try (PrintWriter writer = new PrintWriter(script)) {
                     writer.write(text);
-                    writer.close();
-                    String fileSaved = "Script saved to file " + script.getAbsolutePath();
-                    Console.addMessage(fileSaved);
-                    Log.log(Log.LOG_INFO, fileSaved);
-                    close();
-                }catch(IOException e){
-                    MessageBox errorDialog = new MessageBox(getShell(), SWT.OK);
-                    errorDialog.setMessage("Could not save file: " + e.getMessage());
-                    errorDialog.open();
+                } catch (IOException ex) {
+                    ExceptionNotifyHelper.notifyAndThrow(
+                            new IllegalStateException(ex), getShell());
                 }
+                
+                String fileSaved = "Script saved to file " + script.getAbsolutePath();
+                Console.addMessage(fileSaved);
+                Log.log(Log.LOG_INFO, fileSaved);
             }
         }
         // case Ok
@@ -162,13 +187,5 @@ public class TextDialog extends MessageDialog {
         } else {
             return super.close();
         }
-    }
-
-    public void setScript(String rollScript) {
-        this.execScript = rollScript;
-    }
-    
-    public String getScript() {
-        return execScript;
     }
 }
