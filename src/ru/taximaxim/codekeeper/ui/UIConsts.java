@@ -41,6 +41,7 @@ public interface UIConsts {
     String PREF_RECENT_PROJECTS = "prefRecentProject";
     String PREF_OPEN_LAST_ON_START = "prefOpenLastOnStart";
     String PREF_LAST_OPENED_LOCATION = "prefLastOpenedLocation";
+    String PREF_LAST_ROLLON_SCRIPT = "prefLastRollonScript";
     
     // Project preferences
     String PROJ_PREF_ENCODING = "prefGeneralEncoding";

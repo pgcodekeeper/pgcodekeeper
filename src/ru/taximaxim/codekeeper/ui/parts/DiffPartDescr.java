@@ -19,7 +19,6 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.Document;
@@ -46,9 +45,10 @@ import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.ui.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.TextDialog;
+import ru.taximaxim.codekeeper.ui.SqlScriptDialog;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -134,12 +134,17 @@ public class DiffPartDescr {
                             ex);
                 }
 
-                TextDialog dialog = new TextDialog(shell,
-                        TextDialog.INFORMATION, "Diff script",
+                SqlScriptDialog dialog = new SqlScriptDialog(shell,
+                        SqlScriptDialog.INFORMATION, "Diff script",
                         "This will apply selected changes to your database",
-                        differ.getDiffDirect(),
-                        new String[] { IDialogConstants.OK_LABEL }, 0);
+                        differ.getDiffDirect());
+                
+                dialog.setScript(mainPrefs.getString(UIConsts.PREF_LAST_ROLLON_SCRIPT));
                 dialog.open();
+                if (!dialog.getScript().equals("")){
+                    AddonPrefLoader.savePreference(mainPrefs, 
+                            UIConsts.PREF_LAST_ROLLON_SCRIPT, dialog.getScript());
+                }
             }
         });
         // end upper commit comment container
