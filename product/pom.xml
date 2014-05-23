@@ -5,7 +5,7 @@
 
   <groupId>ru.taximaxim.codeKeeper</groupId>
   <artifactId>ru.taximaxim.codekeeper.repo</artifactId>
-  <version>0.3.1-SNAPSHOT</version>
+  <version>0.3.2-SNAPSHOT</version>
   <packaging>eclipse-repository</packaging>
 
   <parent>
