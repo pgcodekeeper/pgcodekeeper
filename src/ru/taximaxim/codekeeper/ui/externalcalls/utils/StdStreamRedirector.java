@@ -21,6 +21,8 @@ public class StdStreamRedirector implements Runnable {
     
     private StringBuilder storage = new StringBuilder(2000);
     
+    private static boolean isTimeToFinish = false;
+    
     /**
      * @param in {@link InputStream} to 
      */
@@ -33,11 +35,12 @@ public class StdStreamRedirector implements Runnable {
     public void run() {
         String line = null;
         try {
-            while((line = in.readLine()) != null) {
+            while(!isTimeToFinish && (line = in.readLine()) != null) {
                 Console.addMessage(line);
                 storage.append(line);
                 storage.append(System.lineSeparator());
             }
+            isTimeToFinish = false;
         } catch(IOException ex) {
             throw new IllegalStateException(
                     "Error while reading from stdout/stderr", ex);
@@ -74,9 +77,12 @@ public class StdStreamRedirector implements Runnable {
                 p.waitFor();
                 redirectorThread.join();
             } catch(InterruptedException ex) {
-                throw new IllegalStateException(ex);
+                p.destroy();
+                isTimeToFinish = true;
             }
             
+            // expect java.lang.IllegalThreadStateException in logs 
+            // if Process p terminated manually (by p.destroy())
             if(p.exitValue() != 0) {
                 throw new IOException("Process returned with error: "
                             + p.exitValue());

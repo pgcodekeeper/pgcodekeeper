@@ -133,8 +133,8 @@ public class DiffPartDescr {
                 TextDialog dialog = new TextDialog(shell,
                         TextDialog.INFORMATION, "Diff script",
                         "This will apply selected changes to your database",
-                        differ.getDiffDirect(),
-                        new String[] { "Run script", "Save to a file", IDialogConstants.OK_LABEL }, 2);
+                        differ.getDiffDirect(), new String[] {
+                    TextDialog.runScriptText, "Save to a file", IDialogConstants.OK_LABEL }, 2);
                 dialog.open();
             }
         });
