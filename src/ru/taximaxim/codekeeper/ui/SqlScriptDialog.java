@@ -93,14 +93,17 @@ public class SqlScriptDialog extends MessageDialog {
         if (buttonId == 0 && !isRunning){
             this.runScriptBtn = getButton(0);
             
-            try(TempFile tf = new TempFile("tmp_rollon_", ".sql")){
-                try (PrintWriter writer = new PrintWriter(tf.get())) {
+            try {
+                @SuppressWarnings("resource")
+                final File fileTmpScript = new TempFile("tmp_rollon_", ".sql").get();
+                
+                try (PrintWriter writer = new PrintWriter(fileTmpScript)) {
                     writer.write(text);
                     writer.close();
                 }
                 
                 List<String> command = Arrays.asList(txtScript.getText()
-                        .replaceFirst(SCRIPT_PLACEHOLDER, tf.get().getAbsolutePath())
+                        .replaceFirst(SCRIPT_PLACEHOLDER, fileTmpScript.getAbsolutePath())
                         .split(Pattern.quote(" ")));
                 final ProcessBuilder pb = new ProcessBuilder(command);
                 
@@ -125,6 +128,8 @@ public class SqlScriptDialog extends MessageDialog {
                                         }
                                     });
                         } finally {
+                            fileTmpScript.delete();
+                            
                             // request UI change: button label changed
                             SqlScriptDialog.this.getShell().getDisplay().asyncExec(
                                     new Runnable() {
