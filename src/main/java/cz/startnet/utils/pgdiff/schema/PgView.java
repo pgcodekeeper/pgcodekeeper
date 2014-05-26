@@ -26,11 +26,16 @@ public class PgView extends PgStatementWithSearchPath {
     private final List<DefaultValue> defaultValues = new ArrayList<DefaultValue>(0);
     private final List<ColumnComment> columnComments = new ArrayList<ColumnComment>(0);
     private String comment;
+    private String normalizedQuery = null;
 
     public PgView(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
     }
 
+    public String getNormalizedQuery(){
+        return normalizedQuery;
+    }
+    
     public void setColumnNames(final List<String> columnNames) {
         this.columnNames = columnNames;
     }
@@ -114,6 +119,7 @@ public class PgView extends PgStatementWithSearchPath {
 
     public void setQuery(final String query) {
         this.query = query;
+        this.normalizedQuery = PgDiffUtils.normalizeWhitespaceUnquoted(query);
     }
 
     public String getQuery() {
@@ -195,8 +201,8 @@ public class PgView extends PgStatementWithSearchPath {
                 String queryOther = view.getQuery();
                 
                 if (query != null && queryOther != null) {
-                    String nQuery = PgDiffUtils.normalizeWhitespaceUnquoted(query);
-                    String nQueryOther = PgDiffUtils.normalizeWhitespaceUnquoted(queryOther);
+                    String nQuery = getNormalizedQuery();
+                    String nQueryOther = view.getNormalizedQuery();
                     eq &= nQuery.equals(nQueryOther);
                 } else {
                     eq &= query == queryOther;
@@ -215,7 +221,7 @@ public class PgView extends PgStatementWithSearchPath {
         result = prime * result + new HashSet<>(defaultValues).hashCode();
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((query == null) ? 0 :
-            PgDiffUtils.normalizeWhitespaceUnquoted(query).hashCode());
+            getNormalizedQuery().hashCode());
         result = prime * result + ((select == null) ? 0 : select.hashCode());
         return result;
     }
