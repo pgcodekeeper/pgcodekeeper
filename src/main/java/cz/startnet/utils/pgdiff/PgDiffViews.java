@@ -7,9 +7,12 @@ package cz.startnet.utils.pgdiff;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
@@ -33,59 +36,11 @@ public class PgDiffViews {
         for (final PgView newView : newSchema.getViews()) {
             if (oldSchema == null
                     || !oldSchema.containsView(newView.getName())
-                    || isViewModified(
-                    oldSchema.getView(newView.getName()), newView)) {
+                    || isViewModified(oldSchema.getView(newView.getName()), newView)) {
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(newView.getCreationSQL());
+                PgDiff.writeCreationSql(writer, null, newView);
             }
         }
-        /*
-         * 
-         *    Этот код использовался при поиске зависимостей для каждого 
-         *    класса (вьюха, таблица, и пр.). В текущей ситуации, когда 
-         *    зависимости ищутся "в лоб" на основании имеющихся знаний о 
-         *    структуре данных в бд, этот код устарел.
-         * 
-         * 
-        if (oldSchema == null) {
-            return;
-        }
-
-        // добавить зависимые вьюхи в список вьюх старой схемы
-        Log.log(Log.LOG_DEBUG, "Adding dependant views to oldSchema views list");
-        HashSet<PgView> set = new HashSet<PgView>();
-        ArrayList <PgStatement> yyy = new ArrayList<PgStatement>(10);
-        yyy.addAll(oldSchema.getFunctions());
-        yyy.addAll(oldSchema.getTables());
-        yyy.addAll(oldSchema.getSequences());
-        yyy.addAll(oldSchema.getViews());
-        
-        for (PgStatement xxx : yyy){
-            ArrayList<PgStatement> list = new ArrayList<PgStatement>();
-            PgDiff.getDependantsAsList(xxx, list);
-            
-            for (PgStatement zzz : list){
-                // TODO DEPCY надо ли проверять, в какой схеме лежит вьюха?
-                if (zzz instanceof PgView){
-                    set.add((PgView)zzz);
-                }
-            }
-        }
-        set.addAll(oldSchema.getViews());
-        // write dependent views creation sql
-        for (final PgView oldView : set) {
-            ArrayList<PgStatement> dependencies = new ArrayList<PgStatement>(10);
-            PgDiff.getDependenciesAsList(oldView, dependencies);
-            for (PgStatement st : dependencies){
-                if (PgDiff.isChanged(st)){
-                    searchPathHelper.outputSearchPath(writer);
-                    writer.println("-- at least one dependency of this view was changed: " + st.getName());
-                    writer.println(oldView.getCreationSQL());
-                    break;
-                }
-            }
-        }*/
     }
 
     /**
@@ -106,9 +61,38 @@ public class PgDiffViews {
         for (final PgView oldView : oldSchema.getViews()) {
             final PgView newView = newSchema.getView(oldView.getName());
             if (newView == null || isViewModified(oldView, newView)) {
+                
+                // check all dependants, drop them if blocking
+                Set<PgStatement> dependantsSet = new LinkedHashSet<>(10);
+                PgDiff.getDependantsSet(oldView, dependantsSet);
+                // wrap Set into array for reverse iteration
+                Object[] dependants = dependantsSet.toArray();
+                
+                for (int i = dependants.length - 1; i >= 0; i--){
+                    PgStatement depnt = (PgStatement) dependants[i];
+                    
+                    if (depnt instanceof PgView) {
+                        PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
+                                searchPathHelper, writer);
+                        PgDiff.writeDropSql(writer, "-- DEPCY: This view depends on the "
+                                + "view we are about to drop: " + oldView.getName(), depnt);
+                    }
+                }
+                
+                // output initial view drop
                 searchPathHelper.outputSearchPath(writer);
                 writer.println();
                 writer.println(oldView.getDropSQL());
+    
+                // recreate dependant views in straight order
+                for (PgStatement depnt : dependantsSet){
+                    if (depnt instanceof PgView){
+                        PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
+                                searchPathHelper, writer);
+                        PgDiff.writeCreationSql(writer,"-- DEPCY: Following view depends"
+                                + " on the dropped view " + oldView.getName(), depnt);
+                    }
+                }
             }
         }
     }
@@ -124,6 +108,7 @@ public class PgDiffViews {
      */
     private static boolean isViewModified(final PgView oldView,
             final PgView newView) {
+        // TODO replace list by set? order of columns does not matter
         List<String> oldColumnNames = oldView.getColumnNames();
         List<String> newColumnNames = newView.getColumnNames();
 

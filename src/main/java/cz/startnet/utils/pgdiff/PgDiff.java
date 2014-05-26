@@ -272,8 +272,7 @@ public class PgDiff {
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension newExt : newDatabase.getExtensions()) {
             if(oldDatabase.getExtension(newExt.getName()) == null) {
-                writer.println();
-                writer.println(newExt.getCreationSQL());
+                writeCreationSql(writer, null, newExt);
             }
         }
     }
@@ -289,10 +288,7 @@ public class PgDiff {
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension oldExt : oldDatabase.getExtensions()) {
             if(newDatabase.getExtension(oldExt.getName()) == null) {
-                writer.println();
-                writer.println("DROP EXTENSION "
-                        + PgDiffUtils.getQuotedName(oldExt.getName())
-                        + ";");
+                writeDropSql(writer, null, oldExt);
             }
         }
     }
@@ -335,8 +331,7 @@ public class PgDiff {
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for (final PgSchema newSchema : newDatabase.getSchemas()) {
             if (oldDatabase.getSchema(newSchema.getName()) == null) {
-                writer.println();
-                writer.println(newSchema.getCreationSQL());
+                writeCreationSql(writer, null, newSchema);
             }
         }
     }
@@ -509,6 +504,33 @@ public class PgDiff {
                 writer, oldSchema, newSchema, searchPathHelper);
         PgDiffTriggers.alterComments(
                 writer, oldSchema, newSchema, searchPathHelper);
+    }
+    
+    protected static void tempSwitchSearchPath(String switchTo, 
+            final SearchPathHelper searchPathHelper, final PrintWriter writer){
+        
+        if (searchPathHelper.getWasOutput() == false ||
+                !searchPathHelper.getSchemaName().equals(switchTo)){
+            new SearchPathHelper(switchTo).outputSearchPath(writer);
+            
+            searchPathHelper.setWasOutput(false);
+        }
+    }
+    
+    protected static void writeCreationSql(PrintWriter writer, String comment, PgStatement pgObject){
+        writer.println();
+        if (comment != null){
+            writer.println(comment);
+        }
+        writer.println(pgObject.getCreationSQL());
+    }
+    
+    protected static void writeDropSql(PrintWriter writer, String comment, PgStatement pgObject){
+        writer.println();
+        if (comment != null){
+            writer.println(comment);
+        }
+        writer.println(pgObject.getDropSQL());
     }
     
     private PgDiff() {

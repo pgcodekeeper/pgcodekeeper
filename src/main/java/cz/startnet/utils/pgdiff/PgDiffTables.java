@@ -538,7 +538,7 @@ public class PgDiffTables {
                     PgStatement depnt = (PgStatement) dependants[i];
                     
                     if (depnt instanceof PgView) {
-                        tempSwitchSearchPath(depnt.getParent().getName(),
+                        PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
                                 searchPathHelper, writer);
                     } else if (depnt instanceof PgForeignKey) {
                         if (depnt.getParent().compare(table)
@@ -548,50 +548,32 @@ public class PgDiffTables {
                             continue;
                         }
                         
-                        tempSwitchSearchPath(depnt.getParent().getParent().getName(),
+                        PgDiff.tempSwitchSearchPath(depnt.getParent().getParent().getName(),
                                 searchPathHelper, writer);
                     } else {
                         // explicitly specify objects to work on in the ifs above
                         // skip everything else (i.e. columns)
                         continue;
                     }
-                    
-                    writer.println();
-                    writer.println("-- DEPCY: Dropping an object that depends"
-                            + " on the table we are about to drop: " + table.getName());
-                    writer.println(depnt.getDropSQL());
+                    PgDiff.writeDropSql(writer, "-- DEPCY: Dropping an object that depends"
+                            + " on the table we are about to drop: " + table.getName(), depnt);
                 }
                 
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(table.getDropSQL());
+                PgDiff.writeDropSql(writer, null, table);
                 
                 // TODO remove, make optional or mark as a todo for DB programmer
                 // futile attempt to restore a view that depends on the dropped table
                 for (Object depnt : dependants){
                     if (depnt instanceof PgView){
                         PgView view = (PgView) depnt;
-                        tempSwitchSearchPath(view.getParent().getName(),
+                        PgDiff.tempSwitchSearchPath(view.getParent().getName(),
                                 searchPathHelper, writer);
-                        writer.println();
-                        writer.println("-- DEPCY: Following view depends on the dropped table " 
-                                + table.getName());
-                        writer.println(view.getCreationSQL());
+                        PgDiff.writeCreationSql(writer, "-- DEPCY: Following view depends"
+                                + " on the dropped table " + table.getName(), view);
                     }
                 }
             }
-        }
-    }
-    
-    // TODO refactor, put this elsewhere?
-    private static void tempSwitchSearchPath(String switchTo, 
-            final SearchPathHelper searchPathHelper, final PrintWriter writer){
-        
-        if (searchPathHelper.getWasOutput() == false ||
-                !searchPathHelper.getSchemaName().equals(switchTo)){
-            new SearchPathHelper(switchTo).outputSearchPath(writer);
-            
-            searchPathHelper.setWasOutput(false);
         }
     }
     
@@ -633,20 +615,17 @@ public class PgDiffTables {
             String reason = ((Entry<PgStatement, String>) dependantsArray[i]).getValue();
             
             if (depnt instanceof PgView){
-                tempSwitchSearchPath(depnt.getParent().getName(),
+                PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
                         searchPathHelper, writer);
             }else if (depnt instanceof PgForeignKey){
-                tempSwitchSearchPath(depnt.getParent().getParent().getName(),
+                PgDiff.tempSwitchSearchPath(depnt.getParent().getParent().getName(),
                         searchPathHelper, writer);
             } else {
                 // explicitly specify objects to work on in the ifs above
                 // skip everything else (i.e. columns)
                 continue;
             }
-
-            writer.println();
-            writer.println("-- DEPCY: dropping dependant object: " + reason);
-            writer.println(depnt.getDropSQL());
+            PgDiff.writeDropSql(writer, "-- DEPCY: dropping dependant object: " + reason, depnt);
         }// end write dependent PgViews/PgForeignKey drop sql code before table altering
         
         if (!statements.isEmpty()) {
@@ -686,12 +665,10 @@ public class PgDiffTables {
             
             if (depnt instanceof PgView){
                 PgView view = (PgView) depnt;
-                tempSwitchSearchPath(view.getParent().getName(),
+                PgDiff.tempSwitchSearchPath(view.getParent().getName(),
                         searchPathHelper, writer);
-                writer.println();
-                writer.println("-- DEPCY: recreating dropped dependant object: "
-                        + reason);
-                writer.println(view.getCreationSQL());
+                PgDiff.writeCreationSql(writer, "-- DEPCY: recreating dropped dependant"
+                        + " object: " + reason, view);
             }
         }// end write dependent PgViews create sql code after table altering
     }
