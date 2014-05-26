@@ -76,8 +76,7 @@ public class PgDiffIndexes {
             // Drop indexes that do not exist in new schema or are modified
             for (final PgIndex index : getDropIndexes(oldTable, newTable)) {
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(index.getDropSQL());
+                PgDiff.writeDropSql(writer, null, index);
             }
         }
         
@@ -91,8 +90,7 @@ public class PgDiffIndexes {
                 PgTable newTable = new PgTable(oldTable.getName(), null, null);
                 for (final PgIndex index : getDropIndexes(oldTable, newTable)) {
                     searchPathHelper.outputSearchPath(writer);
-                    writer.println();
-                    writer.println(index.getDropSQL());
+                    PgDiff.writeDropSql(writer, null, index);
                 }
             }
         }// КОСТЫЛЬ

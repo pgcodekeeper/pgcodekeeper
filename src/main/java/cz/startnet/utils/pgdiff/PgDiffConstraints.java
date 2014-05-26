@@ -46,8 +46,7 @@ public class PgDiffConstraints {
             for (final PgConstraint constraint :
                     getNewConstraints(oldTable, newTable, primaryKey)) {
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(constraint.getCreationSQL());
+                PgDiff.writeCreationSql(writer, null, constraint);
             }
         }
     }
@@ -79,8 +78,7 @@ public class PgDiffConstraints {
             for (final PgConstraint constraint :
                     getDropConstraints(oldTable, newTable, primaryKey)) {
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(constraint.getDropSQL());
+                PgDiff.writeDropSql(writer, null, constraint);
             }
         }
         
@@ -94,8 +92,7 @@ public class PgDiffConstraints {
                 PgTable newTable = new PgTable(oldTable.getName(), null, null);
                 for (final PgConstraint constraint : getDropConstraints(oldTable, newTable, primaryKey)) {
                     searchPathHelper.outputSearchPath(writer);
-                    writer.println();
-                    writer.println(constraint.getDropSQL());
+                    PgDiff.writeDropSql(writer, null, constraint);
                 }
             }
         }// КОСТЫЛЬ

@@ -81,8 +81,7 @@ public class PgDiffViews {
                 
                 // output initial view drop
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(oldView.getDropSQL());
+                PgDiff.writeDropSql(writer, null, oldView);
     
                 // recreate dependant views in straight order
                 for (PgStatement depnt : dependantsSet){

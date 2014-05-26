@@ -506,7 +506,7 @@ public class PgDiff {
                 writer, oldSchema, newSchema, searchPathHelper);
     }
     
-    protected static void tempSwitchSearchPath(String switchTo, 
+    static void tempSwitchSearchPath(String switchTo, 
             final SearchPathHelper searchPathHelper, final PrintWriter writer){
         
         if (searchPathHelper.getWasOutput() == false ||
@@ -517,7 +517,7 @@ public class PgDiff {
         }
     }
     
-    protected static void writeCreationSql(PrintWriter writer, String comment, PgStatement pgObject){
+    static void writeCreationSql(PrintWriter writer, String comment, PgStatement pgObject){
         writer.println();
         if (comment != null){
             writer.println(comment);
@@ -525,7 +525,7 @@ public class PgDiff {
         writer.println(pgObject.getCreationSQL());
     }
     
-    protected static void writeDropSql(PrintWriter writer, String comment, PgStatement pgObject){
+    static void writeDropSql(PrintWriter writer, String comment, PgStatement pgObject){
         writer.println();
         if (comment != null){
             writer.println(comment);

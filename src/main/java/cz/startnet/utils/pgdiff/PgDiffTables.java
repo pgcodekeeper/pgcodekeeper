@@ -496,8 +496,7 @@ public class PgDiffTables {
         for (final PgTable table : newSchema.getTables()) {
             if (oldSchema == null || !oldSchema.containsTable(table.getName())) {
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(table.getCreationSQL());
+                PgDiff.writeCreationSql(writer, null, table);
             }
         }
     }

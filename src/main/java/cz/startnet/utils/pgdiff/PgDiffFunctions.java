@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff;
 
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+
 import java.io.PrintWriter;
 
 /**
@@ -41,8 +42,7 @@ public class PgDiffFunctions {
             if ((oldFunction == null) || !newFunction.equalsWhitespace(
                     oldFunction, arguments.isIgnoreFunctionWhitespace())) {
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(newFunction.getCreationSQL());
+                PgDiff.writeCreationSql(writer, null, newFunction);
             }
         }
     }
@@ -67,8 +67,7 @@ public class PgDiffFunctions {
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
             if (!newSchema.containsFunction(oldFunction.getSignature())) {
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(oldFunction.getDropSQL());
+                PgDiff.writeDropSql(writer, null, oldFunction);
             }
         }
     }
