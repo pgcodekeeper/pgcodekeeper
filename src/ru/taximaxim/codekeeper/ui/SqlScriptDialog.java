@@ -34,6 +34,7 @@ public class SqlScriptDialog extends MessageDialog {
     private final String text;
     private String execScript = "";
     
+    private Text txtMain;
     private Text txtScript;
     private boolean isRunning = false;
     private Button runScriptBtn;
@@ -51,7 +52,7 @@ public class SqlScriptDialog extends MessageDialog {
     public SqlScriptDialog(Shell parentShell, int type, String title, String message,
             String text) {
         super(parentShell, title, null, message, type, new String[] {
-                runScriptText, "Save as...", IDialogConstants.OK_LABEL }, 2);
+                runScriptText, "Save as...", IDialogConstants.CLOSE_LABEL }, 2);
         
         setShellStyle(getShellStyle() | SWT.RESIZE);
         this.text = text;
@@ -59,17 +60,17 @@ public class SqlScriptDialog extends MessageDialog {
     
     @Override
     protected Control createCustomArea(Composite parent) {
-        Text txt = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
-                | SWT.READ_ONLY | SWT.MULTI);
-        txt.setText(text);
+        txtMain = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
+                | /*SWT.READ_ONLY |*/ SWT.MULTI);
+        txtMain.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+        /*txt.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));*/
         
-        txt.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        txt.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        txtMain.setText(text);
         
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
         gd.heightHint = 400;
-        txt.setLayoutData(gd);
+        txtMain.setLayoutData(gd);
         
         Label l = new Label(parent, SWT.NONE);
         l.setText("Enter command to roll on this SQL script ("
@@ -89,6 +90,8 @@ public class SqlScriptDialog extends MessageDialog {
     
     @Override
     protected void buttonPressed(int buttonId) {
+        final String textRetrieved = txtMain.getText();
+        
         // case Run script
         if (buttonId == 0 && !isRunning){
             this.runScriptBtn = getButton(0);
@@ -98,8 +101,7 @@ public class SqlScriptDialog extends MessageDialog {
                 final File fileTmpScript = new TempFile("tmp_rollon_", ".sql").get();
                 
                 try (PrintWriter writer = new PrintWriter(fileTmpScript)) {
-                    writer.write(text);
-                    writer.close();
+                    writer.write(textRetrieved);
                 }
                 
                 List<String> command = Arrays.asList(txtScript.getText()
@@ -173,7 +175,7 @@ public class SqlScriptDialog extends MessageDialog {
             if (scriptFileName != null) {
                 File script = new File(scriptFileName);
                 try (PrintWriter writer = new PrintWriter(script)) {
-                    writer.write(text);
+                    writer.write(textRetrieved);
                 } catch (IOException ex) {
                     ExceptionNotifyHelper.notifyAndThrow(
                             new IllegalStateException(ex), getShell());
