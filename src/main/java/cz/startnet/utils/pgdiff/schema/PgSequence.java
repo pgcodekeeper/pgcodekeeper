@@ -31,6 +31,7 @@ public class PgSequence extends PgStatementWithSearchPath {
 
     public void setCache(final String cache) {
         this.cache = cache;
+        resetHash();
     }
 
     public String getCache() {
@@ -121,6 +122,7 @@ public class PgSequence extends PgStatementWithSearchPath {
 
     public void setCycle(final boolean cycle) {
         this.cycle = cycle;
+        resetHash();
     }
 
     public boolean isCycle() {
@@ -133,6 +135,7 @@ public class PgSequence extends PgStatementWithSearchPath {
 
     public void setIncrement(final String increment) {
         this.increment = increment;
+        resetHash();
     }
 
     public String getIncrement() {
@@ -141,6 +144,7 @@ public class PgSequence extends PgStatementWithSearchPath {
 
     public void setMaxValue(final String maxValue) {
         this.maxValue = maxValue;
+        resetHash();
     }
 
     public String getMaxValue() {
@@ -149,6 +153,7 @@ public class PgSequence extends PgStatementWithSearchPath {
 
     public void setMinValue(final String minValue) {
         this.minValue = minValue;
+        resetHash();
     }
 
     public String getMinValue() {
@@ -157,6 +162,7 @@ public class PgSequence extends PgStatementWithSearchPath {
 
     public void setStartWith(final String startWith) {
         this.startWith = startWith;
+        resetHash();
     }
 
     public String getStartWith() {
@@ -169,6 +175,7 @@ public class PgSequence extends PgStatementWithSearchPath {
 
     public void setOwnedBy(final String ownedBy) {
         this.ownedBy = ownedBy;
+        resetHash();
     }
     
     @Override
@@ -193,7 +200,7 @@ public class PgSequence extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int hashCode() {
+    public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((cache == null) ? 0 : cache.hashCode());

@@ -112,16 +112,13 @@ public class PgConstraint extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int hashCode() {
-        if (this.hash != 0){
-            return hash;
-        }
+    public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
-        return this.hash = result;
+        return result;
     }
     
     @Override

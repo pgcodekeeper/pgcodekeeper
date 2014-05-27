@@ -35,6 +35,7 @@ public class PgSchema extends PgStatement {
 
     public void setAuthorization(final String authorization) {
         this.authorization = authorization;
+        resetHash();
     }
 
     public String getAuthorization() {
@@ -55,6 +56,7 @@ public class PgSchema extends PgStatement {
 
     public void setDefinition(final String definition) {
         this.definition = definition;
+        resetHash();
     }
 
     @Override
@@ -194,21 +196,25 @@ public class PgSchema extends PgStatement {
     public void addFunction(final PgFunction function) {
         functions.add(function);
         function.setParent(this);
+        resetHash();
     }
 
     public void addSequence(final PgSequence sequence) {
         sequences.add(sequence);
         sequence.setParent(this);
+        resetHash();
     }
 
     public void addTable(final PgTable table) {
         tables.add(table);
         table.setParent(this);
+        resetHash();
     }
 
     public void addView(final PgView view) {
         views.add(view);
         view.setParent(this);
+        resetHash();
     }
 
     public boolean containsFunction(final String signature) {
@@ -265,7 +271,7 @@ public class PgSchema extends PgStatement {
     }
     
     @Override
-    public int hashCode() {
+    public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((authorization == null) ? 0 : authorization.hashCode());

@@ -34,6 +34,7 @@ public class PgView extends PgStatementWithSearchPath {
 
     public void setColumnNames(final List<String> columnNames) {
         this.columnNames = columnNames;
+        resetHash();
     }
 
     /**
@@ -116,6 +117,7 @@ public class PgView extends PgStatementWithSearchPath {
     public void setQuery(final String query) {
         this.query = query;
         this.normalizedQuery = PgDiffUtils.normalizeWhitespaceUnquoted(query);
+        resetHash();
     }
 
     public String getQuery() {
@@ -133,6 +135,7 @@ public class PgView extends PgStatementWithSearchPath {
     public void setSelect(PgSelect select) {
         this.select = select;
         select.setParent(this);
+        resetHash();
     }
     
     public PgSelect getSelect() {
@@ -146,12 +149,14 @@ public class PgView extends PgStatementWithSearchPath {
             final String defaultValue) {
         removeColumnDefaultValue(columnName);
         defaultValues.add(new DefaultValue(columnName, defaultValue));
+        resetHash();
     }
 
     public void removeColumnDefaultValue(final String columnName) {
         for (final DefaultValue item : defaultValues) {
             if (item.getColumnName().equals(columnName)) {
                 defaultValues.remove(item);
+                resetHash();
                 return;
             }
         }
@@ -207,7 +212,7 @@ public class PgView extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int hashCode() {
+    public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((columnNames == null) ? 0 : columnNames.hashCode());
