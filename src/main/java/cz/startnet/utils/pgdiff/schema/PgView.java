@@ -5,13 +5,13 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
  * Stores view information.
@@ -21,21 +21,17 @@ import java.util.Objects;
 public class PgView extends PgStatementWithSearchPath {
 
     private String query;
+    private String normalizedQuery;
     private PgSelect select;
     private List<String> columnNames = new ArrayList<>(1);
     private final List<DefaultValue> defaultValues = new ArrayList<DefaultValue>(0);
     private final List<ColumnComment> columnComments = new ArrayList<ColumnComment>(0);
     private String comment;
-    private String normalizedQuery = null;
 
     public PgView(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
     }
 
-    public String getNormalizedQuery(){
-        return normalizedQuery;
-    }
-    
     public void setColumnNames(final List<String> columnNames) {
         this.columnNames = columnNames;
     }
@@ -125,6 +121,14 @@ public class PgView extends PgStatementWithSearchPath {
     public String getQuery() {
         return query;
     }
+
+    /**
+     * @return query string with whitespace normalized.
+     * @see PgDiffUtils#normalizeWhitespaceUnquoted(String)
+     */
+    public String getNormalizedQuery(){
+        return normalizedQuery;
+    }
     
     public void setSelect(PgSelect select) {
         this.select = select;
@@ -193,21 +197,10 @@ public class PgView extends PgStatementWithSearchPath {
         } else if(obj instanceof PgView) {
             PgView view = (PgView) obj;
             eq = Objects.equals(name, view.getName())
+                    && Objects.equals(normalizedQuery, view.getNormalizedQuery())
                     && Objects.equals(select, view.getSelect())
                     && columnNames.equals(view.columnNames)
                     && new HashSet<>(defaultValues).equals(new HashSet<>(view.defaultValues));
-                    
-            if (eq) {
-                String queryOther = view.getQuery();
-                
-                if (query != null && queryOther != null) {
-                    String nQuery = getNormalizedQuery();
-                    String nQueryOther = view.getNormalizedQuery();
-                    eq &= nQuery.equals(nQueryOther);
-                } else {
-                    eq &= query == queryOther;
-                }
-            }
         }
         
         return eq;
@@ -220,8 +213,7 @@ public class PgView extends PgStatementWithSearchPath {
         result = prime * result + ((columnNames == null) ? 0 : columnNames.hashCode());
         result = prime * result + new HashSet<>(defaultValues).hashCode();
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((query == null) ? 0 :
-            getNormalizedQuery().hashCode());
+        result = prime * result + ((normalizedQuery == null) ? 0 : normalizedQuery.hashCode());
         result = prime * result + ((select == null) ? 0 : select.hashCode());
         return result;
     }
