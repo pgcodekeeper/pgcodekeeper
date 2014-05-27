@@ -563,13 +563,12 @@ public class PgDiffTables {
                 
                 // TODO remove, make optional or mark as a todo for DB programmer
                 // futile attempt to restore a view that depends on the dropped table
-                for (Object depnt : dependants){
+                for (PgStatement depnt : dependantsSet){
                     if (depnt instanceof PgView){
-                        PgView view = (PgView) depnt;
-                        PgDiff.tempSwitchSearchPath(view.getParent().getName(),
+                        PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
                                 searchPathHelper, writer);
                         PgDiff.writeCreationSql(writer, "-- DEPCY: Following view depends"
-                                + " on the dropped table " + table.getName(), view);
+                                + " on the dropped table " + table.getName(), depnt);
                     }
                 }
             }

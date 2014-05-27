@@ -34,11 +34,29 @@ public class PgDiffViews {
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgView newView : newSchema.getViews()) {
+            boolean isModified = oldSchema != null
+                    && oldSchema.containsView(newView.getName()) 
+                    && isViewModified(oldSchema.getView(newView.getName()), newView);
             if (oldSchema == null
                     || !oldSchema.containsView(newView.getName())
-                    || isViewModified(oldSchema.getView(newView.getName()), newView)) {
+                    || isModified) {
                 searchPathHelper.outputSearchPath(writer);
                 PgDiff.writeCreationSql(writer, null, newView);
+                
+                if (isModified){
+                 // check all dependants, drop them if blocking
+                    Set<PgStatement> dependantsSet = new LinkedHashSet<>(10);
+                    PgDiff.getDependantsSet(oldSchema.getView(newView.getName()), dependantsSet);
+                    
+                    for (PgStatement depnt : dependantsSet){
+                        if (depnt instanceof PgView){
+                            PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
+                                    searchPathHelper, writer);
+                            PgDiff.writeCreationSql(writer,"-- DEPCY: Following view depends"
+                                    + " on the altered view " + newView.getName(), depnt);
+                        }
+                    }
+                }
             }
         }
     }
@@ -60,7 +78,8 @@ public class PgDiffViews {
 
         for (final PgView oldView : oldSchema.getViews()) {
             final PgView newView = newSchema.getView(oldView.getName());
-            if (newView == null || isViewModified(oldView, newView)) {
+            boolean isModified = newView != null && isViewModified(oldView, newView);
+            if (newView == null || isModified) {
                 
                 // check all dependants, drop them if blocking
                 Set<PgStatement> dependantsSet = new LinkedHashSet<>(10);
@@ -83,7 +102,11 @@ public class PgDiffViews {
                 searchPathHelper.outputSearchPath(writer);
                 PgDiff.writeDropSql(writer, null, oldView);
     
-                // recreate dependant views in straight order
+                // recreate dependant views in straight order if view isn't modified
+                if (isModified){
+                    continue;
+                }
+                
                 for (PgStatement depnt : dependantsSet){
                     if (depnt instanceof PgView){
                         PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
