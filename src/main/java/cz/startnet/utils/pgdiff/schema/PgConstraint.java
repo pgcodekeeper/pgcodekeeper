@@ -64,6 +64,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
 
     public void setDefinition(final String definition) {
         this.definition = definition;
+        resetHash();
     }
 
     public String getDefinition() {
@@ -87,6 +88,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
 
     public void setTableName(final String tableName) {
         this.tableName = tableName;
+        resetHash();
     }
 
     public String getTableName() {
@@ -111,12 +113,15 @@ public class PgConstraint extends PgStatementWithSearchPath {
 
     @Override
     public int hashCode() {
+        if (this.hash != 0){
+            return hash;
+        }
         final int prime = 31;
         int result = 1;
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
-        return result;
+        return this.hash = result;
     }
     
     @Override

@@ -15,6 +15,8 @@ abstract public class PgStatement {
     
     private PgStatement parent;
     
+    protected int hash;
+    
     public PgStatement(String name, String rawStatement) {
         this.name = name;
         this.rawStatement = rawStatement;
@@ -86,4 +88,12 @@ abstract public class PgStatement {
     
     @Override
     abstract public int hashCode();
+    
+    protected void resetHash(){
+        PgStatement st = this;
+        while (st != null){
+            st.hash = 0;
+            st = st.getParent();
+        }
+    }
 }
