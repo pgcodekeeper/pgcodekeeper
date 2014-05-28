@@ -1,11 +1,15 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * The superclass for general pgsql statement.
  * 
  * @author Alexander Levsha
  */
-abstract public class PgStatement {    
+abstract public class PgStatement {
     /**
      * The statement as it's been read from dump before parsing.
      */
@@ -14,6 +18,8 @@ abstract public class PgStatement {
     protected final String name;
     
     private PgStatement parent;
+    
+    protected final List<PgPrivilege> privileges = new ArrayList<>(1);
     
     public PgStatement(String name, String rawStatement) {
         this.name = name;
@@ -46,6 +52,15 @@ abstract public class PgStatement {
         }
         
         this.parent = parent;
+    }
+    
+    public List<PgPrivilege> getPrivileges() {
+        return Collections.unmodifiableList(privileges);
+    }
+    
+    public void addPrivilege(PgPrivilege privilege) {
+        privileges.add(privilege);
+        privilege.setParent(this);
     }
     
     abstract public String getCreationSQL();

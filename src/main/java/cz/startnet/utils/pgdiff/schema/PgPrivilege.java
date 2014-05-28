@@ -1,0 +1,68 @@
+package cz.startnet.utils.pgdiff.schema;
+
+import java.util.Objects;
+
+public class PgPrivilege extends PgStatement {
+    
+    private final boolean revoke;
+    private final String definition;
+    
+    public boolean isRevoke() {
+        return revoke;
+    }
+    
+    public String getDefinition() {
+        return definition;
+    }
+    
+    public PgPrivilege(boolean revoke, String definition, String rawStatement) {
+        super(null, rawStatement);
+        
+        this.revoke = revoke;
+        this.definition = definition;
+    }
+    
+    @Override
+    public String getCreationSQL() {
+        return revoke? "REVOKE" : "GRANT" + ' ' + definition;
+    }
+    
+    @Override
+    public String getDropSQL() {
+        return null;
+    }
+    
+    @Override
+    public PgStatement deepCopy() {
+        return shallowCopy();
+    }
+    
+    @Override
+    public PgStatement shallowCopy() {
+        return new PgPrivilege(isRevoke(), getDefinition(), getRawStatement());
+    }
+
+    @Override
+    public boolean compare(PgStatement obj) {
+        boolean eq = false;
+        
+        if (this == obj) {
+            eq = true;
+        } else if (obj instanceof PgPrivilege){
+            PgPrivilege priv = (PgPrivilege) obj;
+            eq = revoke == priv.isRevoke()
+                    && Objects.equals(definition, priv.getDefinition());
+        }
+        
+        return eq;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((definition == null) ? 0 : definition.hashCode());
+        result = prime * result + (revoke ? 1231 : 1237);
+        return result;
+    }
+}

@@ -5,10 +5,10 @@
  */
 package cz.startnet.utils.pgdiff.parsers;
 
-import cz.startnet.utils.pgdiff.Resources;
-
 import java.text.MessageFormat;
 import java.util.Locale;
+
+import cz.startnet.utils.pgdiff.Resources;
 
 /**
  * Class for parsing strings.
@@ -45,6 +45,34 @@ public final class Parser {
     public void expect(final String... words) {
         for (final String word : words) {
             expect(word, false);
+        }
+    }
+    
+    /**
+     * Checks whether one of the words is present at current position. If a
+     * word is present then the word is returned and position is updated.
+     * Throws an exception if no words found.
+     *
+     * @param words words to check
+     *
+     * @return found word or throws if none of the words has been found
+     *
+     * @see #expectOptional(java.lang.String[])
+     */
+    public String expectOneOf(final String... words) {
+        final int last = words.length - 1;
+        for (int i = 0; i < last - 1; ++i) {
+            if (expect(words[i], true)) {
+                return words[i];
+            }
+        }
+        
+        if (expect(words[last], false)) {
+            return words[last];
+        } else {
+            // never happens
+            // expect(word, false) throws if none of the words has been found
+            return null;
         }
     }
 

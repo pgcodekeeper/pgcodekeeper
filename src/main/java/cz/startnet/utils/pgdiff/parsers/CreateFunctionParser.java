@@ -5,11 +5,12 @@
  */
 package cz.startnet.utils.pgdiff.parsers;
 
+import java.text.MessageFormat;
+
 import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import java.text.MessageFormat;
 
 /**
  * Parses CREATE FUNCTION and CREATE OR REPLACE FUNCTION statements.
@@ -46,6 +47,12 @@ public class CreateFunctionParser {
                 ParserUtils.getObjectName(functionName), statement, searchPath);
         schema.addFunction(function);
         
+        parseArguments(parser, function);
+        
+        function.setBody(parser.getRest());
+    }
+    
+    static void parseArguments(Parser parser, PgFunction function) {
         parser.expect("(");
 
         while (!parser.expectOptional(")")) {
@@ -102,8 +109,6 @@ public class CreateFunctionParser {
                 parser.expect(",");
             }
         }
-
-        function.setBody(parser.getRest());
     }
 
     /**

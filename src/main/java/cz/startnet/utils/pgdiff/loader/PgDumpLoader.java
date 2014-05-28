@@ -31,6 +31,7 @@ import cz.startnet.utils.pgdiff.parsers.CreateSequenceParser;
 import cz.startnet.utils.pgdiff.parsers.CreateTableParser;
 import cz.startnet.utils.pgdiff.parsers.CreateTriggerParser;
 import cz.startnet.utils.pgdiff.parsers.CreateViewParser;
+import cz.startnet.utils.pgdiff.parsers.PrivilegeParser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 
@@ -58,8 +59,8 @@ public class PgDumpLoader { //NOPMD
      */
     // TODO doesn't satisfy all quoted identifiers (can contain any symbol) 
     private static final Pattern PATTERN_DEFAULT_SCHEMA = Pattern.compile(
-            "^SET[\\s]+search_path[\\s]*=[\\s]*\"?([^,\\s\"]+)\"?"
-            + "(?:,[\\s]+.*)?;$", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+            "^SET[\\s]+search_path[\\s]*=[\\s]*\"?([^,\\s\"]+)\"?(?:,[\\s]+.*)?;$",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     /**
      * Pattern for testing whether it is CREATE TABLE statement.
      */
@@ -75,8 +76,8 @@ public class PgDumpLoader { //NOPMD
     /**
      * Pattern for testing whether it is ALTER TABLE statement.
      */
-    private static final Pattern PATTERN_ALTER_TABLE =
-            Pattern.compile("^ALTER[\\s]+TABLE[\\s]+.*$",
+    private static final Pattern PATTERN_ALTER_TABLE = Pattern.compile(
+            "^ALTER[\\s]+TABLE[\\s]+.*$",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     /**
      * Pattern for testing whether it is CREATE SEQUENCE statement.
@@ -87,8 +88,8 @@ public class PgDumpLoader { //NOPMD
     /**
      * Pattern for testing whether it is ALTER SEQUENCE statement.
      */
-    private static final Pattern PATTERN_ALTER_SEQUENCE =
-            Pattern.compile("^ALTER[\\s]+SEQUENCE[\\s]+.*$",
+    private static final Pattern PATTERN_ALTER_SEQUENCE = Pattern.compile(
+            "^ALTER[\\s]+SEQUENCE[\\s]+.*$",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     /**
      * Pattern for testing whether it is CREATE INDEX statement.
@@ -100,7 +101,8 @@ public class PgDumpLoader { //NOPMD
      * Pattern for testing whether it is SELECT statement.
      */
     private static final Pattern PATTERN_SELECT = Pattern.compile(
-            "^SELECT[\\s]+.*$", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+            "^SELECT[\\s]+.*$",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     /**
      * Pattern for testing whether it is INSERT INTO statement.
      */
@@ -111,7 +113,8 @@ public class PgDumpLoader { //NOPMD
      * Pattern for testing whether it is UPDATE statement.
      */
     private static final Pattern PATTERN_UPDATE = Pattern.compile(
-            "^UPDATE[\\s].*$", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+            "^UPDATE[\\s].*$",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     /**
      * Pattern for testing whether it is DELETE FROM statement.
      */
@@ -150,6 +153,12 @@ public class PgDumpLoader { //NOPMD
             "^CREATE[\\s]+EXTENSION[\\s]+.*$",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     /**
+     * Pattern for testing whether it is GRANT or REVOKE statement.
+     */
+    private static final Pattern PATTERN_PRIVILIGE = Pattern.compile(
+            "^(?:GRANT|REVOKE)[\\s]+.*$",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    /**
      * Storage of unprocessed line part.
      */
     private static String lineBuffer;
@@ -186,36 +195,32 @@ public class PgDumpLoader { //NOPMD
                 } else if(PATTERN_CREATE_EXTENSION.matcher(statement).matches()) {
                     CreateExtensionParser.parse(database, statement);
                 } else if (PATTERN_DEFAULT_SCHEMA.matcher(statement).matches()) {
-                    final Matcher matcher =
-                            PATTERN_DEFAULT_SCHEMA.matcher(statement);
+                    final Matcher matcher = PATTERN_DEFAULT_SCHEMA.matcher(statement);
                     matcher.matches();
                     database.setDefaultSchema(matcher.group(1));
                     activeSearchPath = statement;
                 } else if (PATTERN_CREATE_TABLE.matcher(statement).matches()) {
                     CreateTableParser.parse(database, statement, activeSearchPath);
                 } else if (PATTERN_ALTER_TABLE.matcher(statement).matches()) {
-                    AlterTableParser.parse(
-                            database, statement, outputIgnoredStatements, activeSearchPath);
+                    AlterTableParser.parse(database, statement, outputIgnoredStatements, activeSearchPath);
                 } else if (PATTERN_CREATE_SEQUENCE.matcher(statement).matches()) {
                     CreateSequenceParser.parse(database, statement, activeSearchPath);
                 } else if (PATTERN_ALTER_SEQUENCE.matcher(statement).matches()) {
-                    AlterSequenceParser.parse(
-                            database, statement, outputIgnoredStatements);
+                    AlterSequenceParser.parse(database, statement, outputIgnoredStatements);
                 } else if (PATTERN_CREATE_INDEX.matcher(statement).matches()) {
                     CreateIndexParser.parse(database, statement, activeSearchPath);
                 } else if (PATTERN_CREATE_VIEW.matcher(statement).matches()) {
                     CreateViewParser.parse(database, statement, activeSearchPath);
                 } else if (PATTERN_ALTER_VIEW.matcher(statement).matches()) {
-                    AlterViewParser.parse(
-                            database, statement, outputIgnoredStatements);
+                    AlterViewParser.parse(database, statement, outputIgnoredStatements);
                 } else if (PATTERN_CREATE_TRIGGER.matcher(statement).matches()) {
-                    CreateTriggerParser.parse(
-                            database, statement, activeSearchPath, ignoreSlonyTriggers);
+                    CreateTriggerParser.parse(database, statement, activeSearchPath, ignoreSlonyTriggers);
                 } else if (PATTERN_CREATE_FUNCTION.matcher(statement).matches()) {
                     CreateFunctionParser.parse(database, statement, activeSearchPath);
                 } else if (PATTERN_COMMENT.matcher(statement).matches()) {
-                    CommentParser.parse(
-                            database, statement, outputIgnoredStatements);
+                    CommentParser.parse(database, statement, outputIgnoredStatements);
+                } else if (PATTERN_PRIVILIGE.matcher(statement).matches()) {
+                    PrivilegeParser.parse(database, statement, outputIgnoredStatements);
                 } else if (PATTERN_SELECT.matcher(statement).matches()
                         || PATTERN_INSERT_INTO.matcher(statement).matches()
                         || PATTERN_UPDATE.matcher(statement).matches()
