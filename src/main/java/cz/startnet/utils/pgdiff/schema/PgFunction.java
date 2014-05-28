@@ -85,6 +85,7 @@ public class PgFunction extends PgStatementWithSearchPath {
 
     public void setBody(final String body) {
         this.body = body;
+        resetHash();
     }
 
     public String getBody() {
@@ -138,6 +139,7 @@ public class PgFunction extends PgStatementWithSearchPath {
 
     public void addArgument(final Argument argument) {
         arguments.add(argument);
+        resetHash();
     }
 
     /**
@@ -222,7 +224,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int hashCode() {
+    public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());

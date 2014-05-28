@@ -30,8 +30,6 @@ public class PgDiff {
 
     private static DirectedGraph<PgStatement, DefaultEdge> oldDepcyGraph;
     private static DepcyGraph depcyOld;
-    // TODO unused for now
-    private static DepcyGraph depcyNew;
 
     /**
      * Creates diff on the two database schemas.
@@ -125,10 +123,8 @@ public class PgDiff {
         // temp solution
         if (oldDbFull != null && newDbFull != null){
             depcyOld = new DepcyGraph((PgDatabase)oldDbFull);
-            depcyNew = new DepcyGraph((PgDatabase)newDbFull);
         }else{
             depcyOld = new DepcyGraph(new PgDatabase());
-            depcyNew = new DepcyGraph(new PgDatabase());
         }
         oldDepcyGraph = depcyOld.getGraph();
         

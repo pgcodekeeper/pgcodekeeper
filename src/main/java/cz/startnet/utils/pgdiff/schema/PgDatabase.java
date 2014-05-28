@@ -102,6 +102,7 @@ public class PgDatabase extends PgStatement {
     public void addSchema(final PgSchema schema) {
         schemas.add(schema);
         schema.setParent(this);
+        resetHash();
     }
     
     /**
@@ -133,6 +134,7 @@ public class PgDatabase extends PgStatement {
     public void addExtension(final PgExtension extension) {
         extensions.add(extension);
         extension.setParent(this);
+        resetHash();
     }
     
     @Override
@@ -169,7 +171,7 @@ public class PgDatabase extends PgStatement {
     }
 
     @Override
-    public int hashCode() {
+    public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + new HashSet<>(extensions).hashCode();

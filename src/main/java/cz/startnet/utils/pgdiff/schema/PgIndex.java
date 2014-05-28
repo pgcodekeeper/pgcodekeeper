@@ -62,6 +62,7 @@ public class PgIndex extends PgStatementWithSearchPath {
 
     public void setDefinition(final String definition) {
         this.definition = definition;
+        resetHash();
     }
 
     public String getDefinition() {
@@ -74,6 +75,7 @@ public class PgIndex extends PgStatementWithSearchPath {
 
     public void setTableName(final String tableName) {
         this.tableName = tableName;
+        resetHash();
     }
 
     public String getTableName() {
@@ -86,6 +88,7 @@ public class PgIndex extends PgStatementWithSearchPath {
 
     public void setUnique(final boolean unique) {
         this.unique = unique;
+        resetHash();
     }
 
     @Override
@@ -106,7 +109,7 @@ public class PgIndex extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int hashCode() {
+    public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
