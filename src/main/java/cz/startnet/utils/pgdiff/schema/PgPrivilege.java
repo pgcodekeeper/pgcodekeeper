@@ -58,7 +58,7 @@ public class PgPrivilege extends PgStatement {
     }
 
     @Override
-    public int hashCode() {
+    protected int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
