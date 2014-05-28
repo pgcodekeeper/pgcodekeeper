@@ -2,6 +2,8 @@ package cz.startnet.utils.pgdiff.schema;
 
 /**
  * The superclass for general pgsql statement.
+ * All changes to hashed fields of extending classes must be
+ * followed by a {@link #resetHash()} call. 
  * 
  * @author Alexander Levsha
  */
@@ -15,8 +17,8 @@ abstract public class PgStatement {
     
     private PgStatement parent;
     
-    protected volatile int hash;
-    protected volatile boolean hashComputed;
+    private volatile int hash;
+    private volatile boolean hashComputed;
     
     public PgStatement(String name, String rawStatement) {
         this.name = name;
@@ -76,7 +78,7 @@ abstract public class PgStatement {
     abstract public boolean compare(PgStatement obj);
     
     /**
-     * Computes new value of hash code for this object
+     * Computes new value of hash code for this object, called by {@link #hashCode()}
      * 
      * @return computed hash code of this object
      */
@@ -96,11 +98,10 @@ abstract public class PgStatement {
     
     @Override
     public int hashCode(){
-        if (hashComputed){
-            return hash;
+        if (!hashComputed){
+            hash = computeHash();
+            hashComputed = true;
         }
-        hash = computeHash();
-        hashComputed = true;
         return hash;
     }
     

@@ -5,9 +5,10 @@
  */
 package cz.startnet.utils.pgdiff;
 
+import java.io.PrintWriter;
+
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import java.io.PrintWriter;
 
 /**
  * Diffs functions.
@@ -51,7 +52,6 @@ public class PgDiffFunctions {
      * Outputs statements for dropping of functions that exist no more.
      *
      * @param writer           writer the output should be written to
-     * @param arguments        object containing arguments settings
      * @param oldSchema        original schema
      * @param newSchema        new schema
      * @param searchPathHelper search path helper

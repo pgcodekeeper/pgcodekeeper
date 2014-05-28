@@ -199,7 +199,6 @@ public class PgDatabase extends PgStatement {
             }
             copy.addSchema(schema.deepCopy());
         }
-        copy.hash = this.hash;
         
         return copy;
     }
