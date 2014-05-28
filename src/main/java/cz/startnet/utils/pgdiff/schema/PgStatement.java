@@ -6,6 +6,8 @@ import java.util.List;
 
 /**
  * The superclass for general pgsql statement.
+ * All changes to hashed fields of extending classes must be
+ * followed by a {@link #resetHash()} call. 
  * 
  * @author Alexander Levsha
  */
@@ -21,6 +23,9 @@ abstract public class PgStatement {
     
     protected final List<PgPrivilege> privileges = new ArrayList<>(1);
     
+    private volatile int hash;
+    private volatile boolean hashComputed;
+
     public PgStatement(String name, String rawStatement) {
         this.name = name;
         this.rawStatement = rawStatement;
@@ -88,6 +93,13 @@ abstract public class PgStatement {
     abstract public boolean compare(PgStatement obj);
     
     /**
+     * Computes new value of hash code for this object, called by {@link #hashCode()}
+     * 
+     * @return computed hash code of this object
+     */
+    abstract protected int computeHash();
+    
+    /**
      * Compares this object and all its children with another statement.<br>
      * This default version falls back to {@link #compare(PgStatement)}.
      * Override for any object with nested children!<br><br>
@@ -100,5 +112,19 @@ abstract public class PgStatement {
     }
     
     @Override
-    abstract public int hashCode();
+    public int hashCode(){
+        if (!hashComputed){
+            hash = computeHash();
+            hashComputed = true;
+        }
+        return hash;
+    }
+    
+    protected void resetHash(){
+        PgStatement st = this;
+        while (st != null){
+            st.hashComputed = false;
+            st = st.getParent();
+        }
+    }
 }

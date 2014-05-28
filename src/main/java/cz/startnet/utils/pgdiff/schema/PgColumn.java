@@ -46,6 +46,7 @@ public class PgColumn extends PgStatement {
 
     public void setDefaultValue(final String defaultValue) {
         this.defaultValue = defaultValue;
+        resetHash();
     }
 
     public String getDefaultValue() {
@@ -87,6 +88,7 @@ public class PgColumn extends PgStatement {
 
     public void setNullValue(final boolean nullValue) {
         this.nullValue = nullValue;
+        resetHash();
     }
 
     public boolean getNullValue() {
@@ -95,6 +97,7 @@ public class PgColumn extends PgStatement {
 
     public void setStatistics(final Integer statistics) {
         this.statistics = statistics;
+        resetHash();
     }
 
     public Integer getStatistics() {
@@ -107,10 +110,12 @@ public class PgColumn extends PgStatement {
 
     public void setStorage(final String storage) {
         this.storage = storage;
+        resetHash();
     }
 
     public void setType(final String type) {
         this.type = type;
+        resetHash();
     }
 
     public String getType() {
@@ -175,7 +180,7 @@ public class PgColumn extends PgStatement {
     }
     
     @Override
-    public int hashCode() {
+    public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
