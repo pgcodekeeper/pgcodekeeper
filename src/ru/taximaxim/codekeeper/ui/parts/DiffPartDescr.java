@@ -31,6 +31,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -153,11 +154,34 @@ public class DiffPartDescr {
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // middle container
-        SashForm sashDb = new SashForm(sashOuter, SWT.HORIZONTAL | SWT.SMOOTH);
+        final SashForm sashDb = new SashForm(sashOuter, SWT.HORIZONTAL | SWT.SMOOTH);
         sashDb.setSashWidth(8);
         
-        // ВКЛАДКА Get latest
-        diffTable = new DiffTableViewer(sashDb, SWT.NONE);
+        // composite for table and flip button
+        final Composite middleLeft = new Composite(sashDb, SWT.BORDER);
+        middleLeft.setLayout(new GridLayout(2, false));
+        
+        diffTable = new DiffTableViewer(middleLeft, SWT.FILL);
+        diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+        
+        // flip button set up
+        final Button btnFlipDbPicker = new Button(middleLeft, SWT.ARROW | SWT.TRAIL);
+        GridData gd = new GridData(GridData.FILL_VERTICAL);
+        gd.widthHint = 20;
+        btnFlipDbPicker.setLayoutData(gd);
+        btnFlipDbPicker.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (sashDb.getMaximizedControl() == middleLeft){
+                    sashDb.setMaximizedControl(null);
+                    btnFlipDbPicker.setAlignment(SWT.TRAIL);
+                }else {
+                    sashDb.setMaximizedControl(middleLeft);
+                    btnFlipDbPicker.setAlignment(SWT.LEAD);
+                }
+            }
+        });
+        
         diffTable.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
                     @Override
@@ -175,7 +199,14 @@ public class DiffPartDescr {
                 });
         
         // middle right container
-        Composite containerSrc = new Composite(sashDb, SWT.NONE);
+        final ScrolledComposite scrollComp = new ScrolledComposite(sashDb, SWT.H_SCROLL);
+        scrollComp.setExpandHorizontal(true);
+        scrollComp.setExpandVertical(true);
+        
+        Composite containerSrc = new Composite(scrollComp, SWT.NONE);
+        scrollComp.setContent(containerSrc);
+        scrollComp.setMinWidth(300);
+        
         gl = new GridLayout(2, false);
         gl.marginHeight = gl.marginWidth = 0;
         containerSrc.setLayout(gl);
