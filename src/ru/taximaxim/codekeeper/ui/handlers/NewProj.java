@@ -35,7 +35,7 @@ public class NewProj {
         NewProjWizard newProj = new NewProjWizard(prefStore);
         WizardDialog dialog = new WizardDialog(shell, newProj);
         if(dialog.open() == Dialog.OK) {
-            LoadProj.load(newProj.getProject(), ctx, partService, model, app, prefStore);
+            LoadProj.load(newProj.getProject(), ctx, partService, model, app, prefStore, shell);
         }
     }
 }

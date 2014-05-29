@@ -40,7 +40,7 @@ public class OpenRecent {
         PgDbProject proj = new PgDbProject(menuItem.getLabel());
         
         if (proj.getProjectFile().isFile()) {
-            LoadProj.load(proj, app.getContext(), partService, model, app, mainPrefs);
+            LoadProj.load(proj, app.getContext(), partService, model, app, mainPrefs, shell);
         } else {
             Log.log(Log.LOG_WARNING, "Couldn't open project at "
                     + proj.getProjectFile()

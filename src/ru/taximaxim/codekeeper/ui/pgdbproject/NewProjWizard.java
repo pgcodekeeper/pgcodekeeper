@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PageChangingEvent;
@@ -162,6 +163,37 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                 // didn't clone the repo; can't proceed without it
                 event.doit = false;
             }
+        }else if (event.getCurrentPage() == pageSubdir
+                && event.getTargetPage() == pageMisc){
+            File sub = new File (pageSubdir.getRepoSubdir()); 
+            if (!pageSubdir.isDoInit() && !new File(sub, UIConsts.FILENAME_WORKING_DIR_MARKER).exists()){
+                MessageDialog dialog = new MessageDialog(getShell(),
+                        "Confirm working directory", null, 
+                        "Selected working directory does not seem to be a correct one.\n"
+                        + "It should contain marker file.", 
+                        MessageDialog.INFORMATION, 
+                        new String []{"Create and commit marker file", "Select another working dir"}, 1);
+                dialog.open();
+                if (dialog.getReturnCode() == 0){
+                    try {
+                        boolean isCreated = new File (pageSubdir.getRepoSubdir(),
+                                UIConsts.FILENAME_WORKING_DIR_MARKER).createNewFile();
+                        if (isCreated){
+                            JGitExec repo = new JGitExec( pageRepo.getRepoUrl(),
+                                    pageRepo.getRepoUser(), 
+                                    pageRepo.getRepoPass(),
+                                    mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+                            repo.repoRemoveMissingAddNew(new File(pageSubdir.getRepoSubdir()));
+                            repo.repoCommit(new File(pageSubdir.getRepoSubdir()), "File-marker added");
+                        }
+                    } catch (IOException e) {
+                        Log.log(Log.LOG_WARNING, "Could not either create marker file or "
+                                + "commit it in " + new File(pageSubdir.getRepoSubdir()));
+                    }
+                }else{
+                    event.doit = false;
+                }
+            }
         }
     }
 
@@ -233,18 +265,6 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
             }
         }
 
-        try {
-            boolean isCreated = new File (props.getProjectWorkingDir(),
-                    UIConsts.FILENAME_WORKING_DIR_MARKER).createNewFile();
-            if (isCreated){
-                JGitExec repo = new JGitExec(props, mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
-                repo.repoRemoveMissingAddNew(props.getProjectWorkingDir());
-                repo.repoCommit(props.getProjectWorkingDir(), "File-marker added");
-            }
-        } catch (IOException e) {
-            Log.log(Log.LOG_WARNING, "Could not either create marker file or "
-                    + "commit it in " + props.getProjectWorkingDir());
-        }
         
         return true;
     }
