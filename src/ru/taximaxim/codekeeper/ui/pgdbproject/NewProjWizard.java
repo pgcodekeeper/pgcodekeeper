@@ -237,8 +237,9 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
             boolean isCreated = new File (props.getProjectWorkingDir(),
                     UIConsts.FILENAME_WORKING_DIR_MARKER).createNewFile();
             if (isCreated){
-                new JGitExec(props, mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE)).
-                            repoCommit(props.getProjectWorkingDir(), "File-marker added");
+                JGitExec repo = new JGitExec(props, mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+                repo.repoRemoveMissingAddNew(props.getProjectWorkingDir());
+                repo.repoCommit(props.getProjectWorkingDir(), "File-marker added");
             }
         } catch (IOException e) {
             Log.log(Log.LOG_WARNING, "Could not either create marker file or "
