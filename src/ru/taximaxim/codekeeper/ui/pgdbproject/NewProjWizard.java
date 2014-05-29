@@ -141,6 +141,8 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                         pm.worked(1);
                         try {
                             git.repoCheckOut(new File(repoPath));
+                            AddonPrefLoader.savePreference(mainPrefStore, 
+                                    UIConsts.PREF_LAST_REPO, repoUrl);
                         } catch (IOException e) {
                             throw new InvocationTargetException(e);
                         }
@@ -312,6 +314,7 @@ class PageRepo extends WizardPage implements Listener {
 
         txtRepoUrl = new Text(grpRepo, SWT.BORDER);
         txtRepoUrl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtRepoUrl.setText(mainPrefStore.getString(UIConsts.PREF_LAST_REPO));
         txtRepoUrl.addListener(SWT.Modify, this);
 
         lblRepoUser = new Label(grpRepo, SWT.NONE);

@@ -13,6 +13,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
@@ -118,5 +119,7 @@ public class ProjectCreator implements IRunnableWithProgress {
         pm.newChild(25).subTask(repoName + " committing..."); // 100
         repo.repoRemoveMissingAddNew(dirRepo);
         repo.repoCommit(dirRepo, "new rev");
+        AddonPrefLoader.savePreference(mainPrefStore, 
+                UIConsts.PREF_LAST_ROLLON_SCRIPT, props.getString(UIConsts.PROJ_PREF_REPO_URL));
     }
 }
