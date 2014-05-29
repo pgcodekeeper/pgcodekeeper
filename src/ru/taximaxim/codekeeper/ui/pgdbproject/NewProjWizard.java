@@ -219,17 +219,18 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                     "Error while saving project properties", ex);
         }
 
-        ProjectCreator creator = new ProjectCreator(mainPrefStore, props,
-                pageDb.getDumpPath(), pageSubdir.isDoInit());
-        try {
-            getContainer().run(true, false, creator);
-        } catch (InvocationTargetException ex) {
-            ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
-                    "Error in the project creator thread", ex), getShell());
-        } catch (InterruptedException ex) {
-            // assume run() was called as non cancelable
-            ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
-                    "Project creator thread cancelled. Shouldn't happen!", ex), getShell());
+        if (pageSubdir.isDoInit()){
+            try {
+                getContainer().run(true, false, 
+                        new InitProjectFromSource(mainPrefStore, props, pageDb.getDumpPath()));
+            } catch (InvocationTargetException ex) {
+                ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
+                        "Error while initializing repo", ex), getShell());
+            } catch (InterruptedException ex) {
+                // assume run() was called as non cancelable
+                ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
+                        "Project creator thread cancelled. Shouldn't happen!", ex), getShell());
+            }
         }
         return true;
     }
@@ -245,7 +246,6 @@ class PageRepo extends WizardPage implements Listener {
     private Text txtProjectFile;
     private Label lblProjectFile;
 
-    private boolean checkOverwrite = true;
 
     private LocalResourceManager lrm;
     
@@ -397,13 +397,6 @@ class PageRepo extends WizardPage implements Listener {
 
         txtRepoRoot = new Text(container, SWT.BORDER);
         txtRepoRoot.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtRepoRoot.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                checkOverwrite = true;
-            }
-        });
         txtRepoRoot.addListener(SWT.Modify, this);
 
         Button btnBrowseRepo = new Button(container, SWT.PUSH);
@@ -455,7 +448,8 @@ class PageRepo extends WizardPage implements Listener {
 
     @Override
     public boolean isPageComplete() {
-        // TODO enable Next even if git repo url is empty
+        // TODO enable Next if git repo url is empty && selected root dir is 
+        // git repo root. In that case get git repo url from repo
         String errMsg = null;
         
         if (getRepoUrl().isEmpty()) {
@@ -473,22 +467,7 @@ class PageRepo extends WizardPage implements Listener {
         } else if (new File(getRepoRootPath()).toPath().getNameCount() == 0) {
             errMsg = "Select Project Directory (should not be root)!";
         }
-/*
-        if (checkOverwrite) {
-            File proj = new File(txtRepoRoot.getText(),
-                    UIConsts.FILENAME_PROJ_PREF_STORE);
-            if (proj.isFile()) {
-                if (MessageDialog.openQuestion(getShell(),
-                        "Overwrite existing?", "Overwrite existing project?\n"
-                                + txtRepoRoot.getText())) {
-                    checkOverwrite = false;
-                } else {
-                    txtRepoRoot.setText("");
-                    return false;
-                }
-            }
-        }
-*/
+
         setErrorMessage(errMsg);
         return errMsg == null;
     }
@@ -608,7 +587,6 @@ class PageSubdir extends WizardPage implements Listener {
         String repoSubdir = txtRepoSubdir.getText();
         String errMsg = null;
         
-        // TODO check if not empty, move overwrite check here?
         if (repoSubdir.isEmpty() || !new File(repoSubdir).exists() || 
                 !Paths.get(repoSubdir).startsWith(Paths.get(repoRoot))) {
             errMsg = "Select correct subdir of the GIT repository";

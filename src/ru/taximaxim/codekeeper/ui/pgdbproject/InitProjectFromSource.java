@@ -21,8 +21,7 @@ import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
-// TODO log new creation process, log more
-public class ProjectCreator implements IRunnableWithProgress {
+public class InitProjectFromSource implements IRunnableWithProgress {
 
     private final String exePgdump;
     private final String pgdumpCustom;
@@ -31,37 +30,27 @@ public class ProjectCreator implements IRunnableWithProgress {
 
     private final String dumpPath;
 
-    private final boolean doInit;
-
-    private String repoName = "";
-
     private final IPreferenceStore mainPrefStore;
     
-    public ProjectCreator(final IPreferenceStore mainPrefStore,
-            final PgDbProject props, final String dumpPath, boolean doInit) {
+    public InitProjectFromSource(final IPreferenceStore mainPrefStore,
+            final PgDbProject props, final String dumpPath) {
         this.mainPrefStore = mainPrefStore;
         this.exePgdump = mainPrefStore.getString(UIConsts.PREF_PGDUMP_EXE_PATH);
         this.pgdumpCustom = mainPrefStore.getString(UIConsts.PREF_PGDUMP_CUSTOM_PARAMS);
         this.props = props;
         this.dumpPath = dumpPath;
-        this.doInit = doInit;
     }
 
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException {
         try {
-            Log.log(Log.LOG_INFO, "Creating project at " + props.getProjectFile());
+            Log.log(Log.LOG_INFO, "Init project at " + props.getProjectWorkingDir());
             
-            int workToDo = doInit ? 100 : 1;
-            SubMonitor pm = SubMonitor.convert(monitor, "Creating project...",
-                    workToDo); // 0
-
-            if (doInit) {
-                IRepoWorker repo = new JGitExec(props, 
-                        mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
-                repoName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
-                initRepoFromSource(pm, repo);
-            }
+            SubMonitor pm = SubMonitor.convert(monitor, "Initializing project...", 100);
+            IRepoWorker repo = new JGitExec(props, 
+                    mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+            initRepoFromSource(pm, repo);
+            
             monitor.done();
         } catch (IOException ex) {
             throw new InvocationTargetException(ex,
@@ -116,7 +105,7 @@ public class ProjectCreator implements IRunnableWithProgress {
             Files.move(repoMetaTmp.toPath(), repoMetaProj.toPath());
         }
 
-        pm.newChild(25).subTask(repoName + " committing..."); // 100
+        pm.newChild(25).subTask(UIConsts.PROJ_REPO_TYPE_GIT_NAME + " committing..."); // 100
         repo.repoRemoveMissingAddNew(dirRepo);
         repo.repoCommit(dirRepo, "new rev");
         AddonPrefLoader.savePreference(mainPrefStore, 
