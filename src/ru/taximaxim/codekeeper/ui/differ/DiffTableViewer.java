@@ -130,7 +130,7 @@ public class DiffTableViewer extends Composite {
         contButtons.setLayout(contButtonsLayout);
         
         Button btnSelectAll = new Button(contButtons, SWT.PUSH);
-        btnSelectAll.setText("Select all");
+        btnSelectAll.setText("Select All");
         btnSelectAll.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

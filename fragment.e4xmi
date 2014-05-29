@@ -47,9 +47,10 @@
         <children xsi:type="menu:HandledMenuItem" xmi:id="_PcUXMCpvEeOWDPrJZCzSgA" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.1" label="&amp;Preferences" command="_Xdq-gCpvEeOWDPrJZCzSgA"/>
       </children>
       <children xsi:type="menu:Menu" xmi:id="_LZApICnHEeOhQtIacC9DUw" elementId="ru.taximaxim.codekeeper.ui.menu.1" label="&amp;Help">
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_39PlAOZoEeOaq5VuJEgAfA" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.17" label="Open log file" command="_A4yjsOZpEeOaq5VuJEgAfA"/>
+        <children xsi:type="menu:MenuSeparator" xmi:id="_C2xVEObyEeObMIWu8TvBOg" elementId="ru.taximaxim.codekeeper.ui.menuseparator.5"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_u8KYkCnHEeOhQtIacC9DUw" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.0" label="&amp;About pgCodeKeeper..." command="_s6NdACnJEeObfOm2RjyZmw"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_abjvQMx-EeOZIMdXYGGhLA" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.14" label="About2" command="_iGyVkMx-EeOZIMdXYGGhLA"/>
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_39PlAOZoEeOaq5VuJEgAfA" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.17" label="Open log file" command="_A4yjsOZpEeOaq5VuJEgAfA"/>
       </children>
     </elements>
   </fragments>

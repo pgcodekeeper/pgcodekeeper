@@ -31,7 +31,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -79,6 +78,7 @@ public class DiffPartDescr {
     private DiffTableViewer diffTable;
     private Button btnNone, btnDump, btnDb;
     private Button btnGetChanges;
+    private Composite containerSrc;
     private DbPicker dbSrc;
     private TextMergeViewer diffPane;
     /**
@@ -154,34 +154,14 @@ public class DiffPartDescr {
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // middle container
-        final SashForm sashDb = new SashForm(sashOuter, SWT.HORIZONTAL | SWT.SMOOTH);
-        sashDb.setSashWidth(8);
+        final Composite containerDb = new Composite(sashOuter, SWT.NONE);
+        gl = new GridLayout(3, false);
+        gl.marginHeight = gl.marginWidth = 0;
+        gl.horizontalSpacing = gl.verticalSpacing = 2;
+        containerDb.setLayout(gl);
         
-        // composite for table and flip button
-        final Composite middleLeft = new Composite(sashDb, SWT.BORDER);
-        middleLeft.setLayout(new GridLayout(2, false));
-        
-        diffTable = new DiffTableViewer(middleLeft, SWT.FILL);
+        diffTable = new DiffTableViewer(containerDb, SWT.FILL);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        
-        // flip button set up
-        final Button btnFlipDbPicker = new Button(middleLeft, SWT.ARROW | SWT.TRAIL);
-        GridData gd = new GridData(GridData.FILL_VERTICAL);
-        gd.widthHint = 20;
-        btnFlipDbPicker.setLayoutData(gd);
-        btnFlipDbPicker.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (sashDb.getMaximizedControl() == middleLeft){
-                    sashDb.setMaximizedControl(null);
-                    btnFlipDbPicker.setAlignment(SWT.TRAIL);
-                }else {
-                    sashDb.setMaximizedControl(middleLeft);
-                    btnFlipDbPicker.setAlignment(SWT.LEAD);
-                }
-            }
-        });
-        
         diffTable.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
                     @Override
@@ -198,19 +178,36 @@ public class DiffPartDescr {
                     }
                 });
         
+        // flip button set up
+        final Button btnFlipDbPicker = new Button(containerDb, SWT.PUSH | SWT.FLAT);
+        btnFlipDbPicker.setText("\u25B8");
+        GridData gd = new GridData(GridData.FILL_VERTICAL);
+        gd.widthHint = 20;
+        btnFlipDbPicker.setLayoutData(gd);
+        btnFlipDbPicker.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean open = containerSrc.getVisible();
+                
+                containerSrc.setVisible(!open);
+                ((GridData) containerSrc.getLayoutData()).exclude = open;
+                containerDb.layout();
+                
+                btnFlipDbPicker.setText(open ? "\u25C2" // ◂
+                        : "\u25B8"); // ▸
+            }
+        });
+        
         // middle right container
-        final ScrolledComposite scrollComp = new ScrolledComposite(sashDb, SWT.H_SCROLL);
-        scrollComp.setExpandHorizontal(true);
-        scrollComp.setExpandVertical(true);
-        
-        Composite containerSrc = new Composite(scrollComp, SWT.NONE);
-        scrollComp.setContent(containerSrc);
-        scrollComp.setMinWidth(300);
-        
+        containerSrc = new Composite(containerDb, SWT.NONE);
         gl = new GridLayout(2, false);
         gl.marginHeight = gl.marginWidth = 0;
         containerSrc.setLayout(gl);
-
+        
+        gd = new GridData(SWT.FILL, SWT.FILL, false, true);
+        gd.minimumWidth = gd.minimumHeight = 300;
+        containerSrc.setLayoutData(gd);
+        
         Group grpSrc = new Group(containerSrc, SWT.NONE);
         grpSrc.setText("Get changes from");
         grpSrc.setLayout(new GridLayout(3, false));
@@ -344,8 +341,6 @@ public class DiffPartDescr {
                     .getInt(UIConsts.PROJ_PREF_DB_PORT)));
         }
         // end middle right container
-
-        sashDb.setWeights(new int[] { 7750, 2250 });
         // end middle container
 
         CompareConfiguration conf = new CompareConfiguration();
