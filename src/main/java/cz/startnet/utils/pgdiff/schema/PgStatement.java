@@ -68,6 +68,15 @@ abstract public class PgStatement {
         privilege.setParent(this);
     }
     
+    protected StringBuilder appendPrivileges(StringBuilder sb) {
+        sb.append('\n');
+        for (PgPrivilege priv : privileges) {
+            sb.append('\n').append(priv.getCreationSQL());
+        }
+        
+        return sb;
+    }
+    
     abstract public String getCreationSQL();
     
     abstract public String getDropSQL();

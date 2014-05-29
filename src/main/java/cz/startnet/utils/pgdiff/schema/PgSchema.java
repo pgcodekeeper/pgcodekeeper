@@ -71,6 +71,8 @@ public class PgSchema extends PgStatement {
         }
 
         sbSQL.append(';');
+        
+        appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
             sbSQL.append("\n\nCOMMENT ON SCHEMA ");
@@ -244,7 +246,8 @@ public class PgSchema extends PgStatement {
             
             eq = Objects.equals(name, schema.getName())
                     && Objects.equals(authorization, schema.getAuthorization())
-                    && Objects.equals(definition, schema.getDefinition());
+                    && Objects.equals(definition, schema.getDefinition())
+                    && privileges.equals(schema.privileges);
         }
         
         return eq;
@@ -274,6 +277,7 @@ public class PgSchema extends PgStatement {
     public int computeHash() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
         result = prime * result + ((authorization == null) ? 0 : authorization.hashCode());
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
         result = prime * result + new HashSet<>(functions).hashCode();

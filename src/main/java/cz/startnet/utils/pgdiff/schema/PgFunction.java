@@ -5,13 +5,13 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
  * Stores function information.
@@ -57,6 +57,8 @@ public class PgFunction extends PgStatementWithSearchPath {
         sbSQL.append(") ");
         sbSQL.append(body);
         sbSQL.append(';');
+        
+        appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
             sbSQL.append("\n\nCOMMENT ON FUNCTION ");
@@ -194,7 +196,8 @@ public class PgFunction extends PgStatementWithSearchPath {
             equals = true;
         } else {
             equals = Objects.equals(name, func.getBareName())
-                    && arguments.equals(func.arguments);
+                    && arguments.equals(func.arguments)
+                    && privileges.equals(func.privileges);
             
             if(equals) {
                 String thisBody, thatBody;
@@ -227,6 +230,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     public int computeHash() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
         result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());
         result = prime * result + ((body == null) ? 0 : body.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());

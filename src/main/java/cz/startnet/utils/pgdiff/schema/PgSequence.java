@@ -89,6 +89,8 @@ public class PgSequence extends PgStatementWithSearchPath {
         }
 
         sbSQL.append(';');
+        
+        appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
             sbSQL.append("\n\nCOMMENT ON SEQUENCE ");
@@ -193,7 +195,8 @@ public class PgSequence extends PgStatementWithSearchPath {
                     && Objects.equals(startWith, seq.getStartWith())
                     && Objects.equals(cache, seq.getCache())
                     && cycle == seq.isCycle()
-                    && Objects.equals(ownedBy, seq.getOwnedBy());
+                    && Objects.equals(ownedBy, seq.getOwnedBy())
+                    && privileges.equals(seq.privileges);
         }
         
         return eq;
@@ -203,6 +206,7 @@ public class PgSequence extends PgStatementWithSearchPath {
     public int computeHash() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
         result = prime * result + ((cache == null) ? 0 : cache.hashCode());
         result = prime * result + (cycle ? 1231 : 1237);
         result = prime * result + ((increment == null) ? 0 : increment.hashCode());

@@ -75,6 +75,8 @@ public class PgView extends PgStatementWithSearchPath {
         sbSQL.append(" AS\n\t");
         sbSQL.append(query);
         sbSQL.append(';');
+        
+        appendPrivileges(sbSQL);
 
         for (final DefaultValue defaultValue : defaultValues) {
             sbSQL.append("\n\nALTER VIEW ");
@@ -205,7 +207,8 @@ public class PgView extends PgStatementWithSearchPath {
                     && Objects.equals(normalizedQuery, view.getNormalizedQuery())
                     && Objects.equals(select, view.getSelect())
                     && columnNames.equals(view.columnNames)
-                    && new HashSet<>(defaultValues).equals(new HashSet<>(view.defaultValues));
+                    && new HashSet<>(defaultValues).equals(new HashSet<>(view.defaultValues))
+                    && privileges.equals(view.privileges);
         }
         
         return eq;
@@ -215,6 +218,7 @@ public class PgView extends PgStatementWithSearchPath {
     public int computeHash() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
         result = prime * result + ((columnNames == null) ? 0 : columnNames.hashCode());
         result = prime * result + new HashSet<>(defaultValues).hashCode();
         result = prime * result + ((name == null) ? 0 : name.hashCode());

@@ -5,13 +5,13 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
  * Stores table information.
@@ -174,6 +174,8 @@ public class PgTable extends PgStatementWithSearchPath {
         }
 
         sbSQL.append(';');
+        
+        appendPrivileges(sbSQL);
 
         for (PgColumn column : getColumnsWithStatistics()) {
             sbSQL.append("\nALTER TABLE ONLY ");
@@ -367,7 +369,8 @@ public class PgTable extends PgStatementWithSearchPath {
                     && Objects.equals(with, table.getWith())
                     
                     && inherits.equals(table.inherits)
-                    && columns.equals(table.columns);
+                    && columns.equals(table.columns)
+                    && privileges.equals(table.privileges);
         }
         
         return eq;
@@ -396,6 +399,7 @@ public class PgTable extends PgStatementWithSearchPath {
     public int computeHash() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
         result = prime * result + ((clusterIndexName == null) ? 0 : clusterIndexName.hashCode());
         result = prime * result + ((columns == null) ? 0 : columns.hashCode());
         result = prime * result + new HashSet<>(constraints).hashCode();

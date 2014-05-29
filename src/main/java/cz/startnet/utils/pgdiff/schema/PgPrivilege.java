@@ -24,7 +24,12 @@ public class PgPrivilege extends PgStatement {
     
     @Override
     public String getCreationSQL() {
-        return revoke? "REVOKE" : "GRANT" + ' ' + definition;
+        return new StringBuilder(definition.length() + 16)
+                .append(revoke? "REVOKE" : "GRANT")
+                .append(' ')
+                .append(definition)
+                .append(';')
+                .toString();
     }
     
     @Override
