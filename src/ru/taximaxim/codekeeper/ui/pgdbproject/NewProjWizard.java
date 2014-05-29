@@ -221,7 +221,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
 
         if (pageSubdir.isDoInit()){
             try {
-                getContainer().run(true, false, 
+                getContainer().run(false, false, 
                         new InitProjectFromSource(mainPrefStore, props, pageDb.getDumpPath()));
             } catch (InvocationTargetException ex) {
                 ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
@@ -232,6 +232,20 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                         "Project creator thread cancelled. Shouldn't happen!", ex), getShell());
             }
         }
+
+        try {
+            boolean isCreated = new File (props.getProjectWorkingDir(),
+                    UIConsts.FILENAME_WORKING_DIR_MARKER).createNewFile();
+            if (isCreated){
+                JGitExec repo = new JGitExec(props, mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+                repo.repoRemoveMissingAddNew(props.getProjectWorkingDir());
+                repo.repoCommit(props.getProjectWorkingDir(), "File-marker added");
+            }
+        } catch (IOException e) {
+            Log.log(Log.LOG_WARNING, "Could not either create marker file or "
+                    + "commit it in " + props.getProjectWorkingDir());
+        }
+        
         return true;
     }
 }

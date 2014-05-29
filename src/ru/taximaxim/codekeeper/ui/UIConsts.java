@@ -65,6 +65,7 @@ public interface UIConsts {
     String PROJ_PREF_REPO_ROOT_PATH = "prefRepoPath";
     
     String FILENAME_PROJ_PREF_STORE = ".project";
+    String FILENAME_WORKING_DIR_MARKER = ".pgCodekeeper";
     
     String FILENAME_ICONPGADMIN = "/icons/pgadmin/";
     String FILENAME_ICONWARNING = "/icons/warning.gif";

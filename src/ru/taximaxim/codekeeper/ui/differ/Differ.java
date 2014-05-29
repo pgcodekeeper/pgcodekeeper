@@ -18,18 +18,19 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class Differ implements IRunnableWithProgress {
     
-    final private DbSource dbSource, dbTarget;
+    private final DbSource dbSource, dbTarget;
 
     private boolean finished;
-    
+    private final boolean needTwoWay;
     private String diffDirect, diffReverse;
 
-    private PgStatement sourceDbFull = null;
-    private PgStatement targetDbFull = null;
+    private PgStatement sourceDbFull;
+    private PgStatement targetDbFull;
     
-    public Differ(DbSource dbSource, DbSource dbTarget) {
+    public Differ(DbSource dbSource, DbSource dbTarget, boolean needTwoWay) {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
+        this.needTwoWay = needTwoWay;
     }
     
     public String getDiffDirect() {
@@ -74,15 +75,16 @@ public class Differ implements IRunnableWithProgress {
         writer.flush();
         diffDirect = diffOut.toString().trim();
 
-        Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin()
-                + " to: " + this.dbSource.getOrigin());
-        
-        pm.newChild(25).subTask("Reverse diff..."); // 100
-        diffOut.reset();
-        PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource, targetDbFull, sourceDbFull);
-        writer.flush();
-        diffReverse = diffOut.toString().trim();
-        
+        if (needTwoWay) {
+            Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin()
+                    + " to: " + this.dbSource.getOrigin());
+            
+            pm.newChild(25).subTask("Reverse diff..."); // 100
+            diffOut.reset();
+            PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource, targetDbFull, sourceDbFull);
+            writer.flush();
+            diffReverse = diffOut.toString().trim();
+        }
         monitor.done();
         finished = true;
     }

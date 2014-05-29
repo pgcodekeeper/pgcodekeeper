@@ -119,9 +119,10 @@ public class DiffPartDescr {
                 }
                 final TreeElement filtered = diffTable.filterDiffTree();
 
-                Differ differ = new Differ(DbSource.fromFilter(dbSource,
-                        filtered, DiffSide.LEFT), DbSource.fromFilter(dbTarget,
-                        filtered, DiffSide.RIGHT));
+                Differ differ = new Differ(
+                        DbSource.fromFilter(dbSource, filtered, DiffSide.LEFT),
+                        DbSource.fromFilter(dbTarget,filtered, DiffSide.RIGHT),
+                        false);
                 differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
                 try {
                     new ProgressMonitorDialog(shell).run(true, false, differ);
