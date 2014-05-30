@@ -87,10 +87,12 @@ public class PgDbFilter2 {
                 
             case SCHEMA:
                 PgSchema schemaSrc = ((PgDatabase) src).getSchema(el.getName());
-                PgSchema schemaDst = ((PgDatabase) dst).getSchema(schemaSrc.getName());
-                if(schemaDst == null) {
-                    schemaDst = schemaSrc.shallowCopy();
+                PgSchema schemaEx = ((PgDatabase) dst).getSchema(schemaSrc.getName());
+                PgSchema schemaDst = schemaSrc.shallowCopy();
+                if(schemaEx == null) {
                     ((PgDatabase) dst).addSchema(schemaDst);
+                } else {
+                    ((PgDatabase) dst).replaceSchema(schemaEx, schemaDst);
                 }
                 
                 res = new ProcessResult(schemaSrc, schemaDst);

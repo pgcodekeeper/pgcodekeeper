@@ -38,7 +38,7 @@ public class DiffTreeApplier {
     }
     
     public PgDatabase apply() {
-        // fill the no copy with all the selected LEFT statements 
+        // fill the no copy with all selected LEFT statements 
         noCopyLeft(root);
         
         // first get modified & added elements by filtering target DB with our selection

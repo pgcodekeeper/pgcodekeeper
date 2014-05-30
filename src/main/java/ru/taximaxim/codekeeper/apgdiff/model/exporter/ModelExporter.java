@@ -100,9 +100,6 @@ public class ModelExporter {
         }
         
         for(PgSchema schema : db.getSchemas()) {
-            if(schema.getName().equals("public")) {
-                continue;
-            }
             File schemaSQL = new File(schemasSharedDir, getExportedFilename(schema)+ ".sql");
             dumpSQL(schema.getCreationSQL(), schemaSQL);
         }

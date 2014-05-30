@@ -128,9 +128,12 @@ public class PgDiffTables {
     public static void alterTables(final PrintWriter writer,
             final PgDiffArguments arguments, final PgSchema oldSchema,
             final PgSchema newSchema, final SearchPathHelper searchPathHelper) {
+        if (oldSchema == null) {
+            return;
+        }
+        
         for (final PgTable newTable : newSchema.getTables()) {
-            if (oldSchema == null
-                    || !oldSchema.containsTable(newTable.getName())) {
+            if (!oldSchema.containsTable(newTable.getName())) {
                 continue;
             }
 
@@ -143,6 +146,13 @@ public class PgDiffTables {
             checkTablespace(writer, oldTable, newTable, searchPathHelper);
             addAlterStatistics(writer, oldTable, newTable, searchPathHelper);
             addAlterStorage(writer, oldTable, newTable, searchPathHelper);
+            
+            if (!oldTable.getPrivileges().equals(newTable.getPrivileges())) {
+                searchPathHelper.outputSearchPath(writer);
+                writer.println(newTable.getPrivilegesSQL());
+                writer.println();
+            }
+            
             alterComments(writer, oldTable, newTable, searchPathHelper);
         }
     }

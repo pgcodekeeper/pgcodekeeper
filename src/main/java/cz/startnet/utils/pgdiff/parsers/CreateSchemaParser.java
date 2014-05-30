@@ -30,9 +30,10 @@ public class CreateSchemaParser {
             final PgSchema schema = new PgSchema(
                     ParserUtils.getObjectName(parser.parseIdentifier()), statement);
             if(schema.getName().equals("public")) {
-                return;
+                database.replaceSchema(database.getSchema(schema.getName()), schema);
+            } else {
+                database.addSchema(schema);
             }
-            database.addSchema(schema);
             schema.setAuthorization(schema.getName());
 
             final String definition = parser.getRest();
@@ -44,9 +45,10 @@ public class CreateSchemaParser {
             final PgSchema schema = new PgSchema(
                     ParserUtils.getObjectName(parser.parseIdentifier()), statement);
             if(schema.getName().equals("public")) {
-                return;
+                database.replaceSchema(database.getSchema(schema.getName()), schema);
+            } else {
+                database.addSchema(schema);
             }
-            database.addSchema(schema);
 
             if (parser.expectOptional("AUTHORIZATION")) {
                 schema.setAuthorization(

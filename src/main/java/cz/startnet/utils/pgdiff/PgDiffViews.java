@@ -169,6 +169,12 @@ public class PgDiffViews {
 
             diffDefaultValues(writer, oldView, newView, searchPathHelper);
 
+            if (!oldView.getPrivileges().equals(newView.getPrivileges())) {
+                searchPathHelper.outputSearchPath(writer);
+                writer.println(newView.getPrivilegesSQL());
+                writer.println();
+            }
+
             if (oldView.getComment() == null
                     && newView.getComment() != null
                     || oldView.getComment() != null

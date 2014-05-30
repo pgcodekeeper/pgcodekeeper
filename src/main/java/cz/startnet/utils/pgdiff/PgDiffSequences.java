@@ -5,10 +5,10 @@
  */
 package cz.startnet.utils.pgdiff;
 
+import java.io.PrintWriter;
+
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
-
-import java.io.PrintWriter;
 
 /**
  * Diffs sequences.
@@ -187,6 +187,12 @@ public class PgDiffSequences {
                         + PgDiffUtils.getQuotedName(newSequence.getName()));
                 writer.print(sbSQL.toString());
                 writer.println(';');
+            }
+            
+            if (!oldSequence.getPrivileges().equals(newSequence.getPrivileges())) {
+                searchPathHelper.outputSearchPath(writer);
+                writer.println(newSequence.getPrivilegesSQL());
+                writer.println();
             }
 
             if (oldSequence.getComment() == null

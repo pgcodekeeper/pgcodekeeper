@@ -105,6 +105,22 @@ public class PgDatabase extends PgStatement {
         resetHash();
     }
     
+    public void replaceSchema(PgSchema oldSchema, PgSchema newSchema) {
+        if (!oldSchema.getName().equals(newSchema.getName())) {
+            throw new IllegalStateException("Replacing schema must have the same name");
+        }
+        
+        int old = schemas.indexOf(oldSchema);
+        if (old == -1) {
+            throw new IllegalStateException("Replaced schema is not in the database");
+        }
+        
+        schemas.set(old, newSchema);
+        if (defaultSchema == oldSchema) {
+            setDefaultSchema(newSchema.getName());
+        }
+    }
+    
     /**
      * Returns extension of given name or null if the extension has not been found.
      * 
