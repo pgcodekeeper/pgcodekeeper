@@ -50,6 +50,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -185,13 +186,6 @@ public class CommitPartDescr {
                                         dbNew,
                                         proj.getString(UIConsts.PROJ_PREF_ENCODING))
                                         .export();
-
-                                try {
-                                    new File (workingDir, UIConsts.FILENAME_WORKING_DIR_MARKER).createNewFile();
-                                } catch (IOException e) {
-                                    throw new IllegalStateException("Could not create marker file in empty "
-                                            + "working directory " + workingDir, e);
-                                }
                                 
                                 Files.move(repoMetaTmp.toPath(),
                                         repoMetaProj.toPath());

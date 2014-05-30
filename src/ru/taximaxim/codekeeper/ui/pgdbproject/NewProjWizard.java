@@ -41,7 +41,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
@@ -50,6 +50,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class NewProjWizard extends Wizard implements IPageChangingListener {
 
@@ -170,10 +171,10 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
             File sub = new File (pageSubdir.getRepoSubdir()); 
 
             if (!pageSubdir.isDoInit() && sub.list().length > 0 && 
-                    !new File(sub, UIConsts.FILENAME_WORKING_DIR_MARKER).exists()){
+                    !new File(sub, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
                     new MessageDialog(getShell(), "Bad working directory", null, 
                             "Missing marker file in working directory " + sub + 
-                            "\nCreate marker file named " + UIConsts.FILENAME_WORKING_DIR_MARKER +
+                            "\nCreate marker file named " + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
                             " manually and try again", MessageDialog.WARNING, 
                             new String []{"Ok"}, 0).open();
                     event.doit = false;
@@ -249,12 +250,12 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
             }
         }else if (!pageSubdir.isDoInit() && new File (pageSubdir.getRepoSubdir()).list().length == 0 ){
             try {
-                /*new ModelExporter(pageSubdir.getRepoSubdir(), new PgDatabase(),
-                        props.getString(UIConsts.PROJ_PREF_ENCODING)).export();*/
-                new File (new File (pageSubdir.getRepoSubdir()), UIConsts.FILENAME_WORKING_DIR_MARKER).createNewFile();
+                // init empty db for further commits
+                new ModelExporter(pageSubdir.getRepoSubdir(), new PgDatabase(),
+                        props.getString(UIConsts.PROJ_PREF_ENCODING)).export();
             } catch (IOException e) {
-                throw new IllegalStateException("Could not create marker file in empty "
-                        + "working directory " + new File (pageSubdir.getRepoSubdir()), e);
+                throw new IllegalStateException("Could not create empty database in "
+                            + new File (pageSubdir.getRepoSubdir()), e);
             }
         }
         

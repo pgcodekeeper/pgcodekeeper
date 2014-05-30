@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
@@ -73,11 +74,11 @@ public class LoadProj {
             return false;
         }
         if (!new File(proj.getProjectWorkingDir(), 
-                UIConsts.FILENAME_WORKING_DIR_MARKER).exists()){
+                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
             MessageDialog dialog = new MessageDialog(shell,
                     "Bad project", null, 
                     "Missing marker file in working directory " + proj.getProjectWorkingDir() +
-                    "\nCreate marker file named " + UIConsts.FILENAME_WORKING_DIR_MARKER +
+                    "\nCreate marker file named " + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
                     " manually and try again", MessageDialog.WARNING, 
                     new String []{"Ok"}, 0);
             dialog.open();

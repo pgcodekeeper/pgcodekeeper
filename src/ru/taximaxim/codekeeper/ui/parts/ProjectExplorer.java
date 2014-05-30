@@ -41,6 +41,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -85,7 +86,7 @@ public class ProjectExplorer {
             private final List<String> ignoredFiles = Arrays.asList(
                     new String[] {
                             ".git",
-                            UIConsts.FILENAME_WORKING_DIR_MARKER
+                            ApgdiffConsts.FILENAME_WORKING_DIR_MARKER
                     });
             
             private final FilenameFilter filter = new FilenameFilter() {
