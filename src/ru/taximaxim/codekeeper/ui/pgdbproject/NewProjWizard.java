@@ -9,7 +9,6 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PageChangingEvent;
@@ -42,6 +41,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -112,6 +113,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
         } else if (event.getCurrentPage() == pageRepo
                 && event.getTargetPage() == pageSubdir) {
             pageSubdir.setRepoRoot(pageRepo.getRepoRootPath());
+            pageSubdir.setProjectFile(pageRepo.getProjectFile());
             
             if (JGitExec.isGitRepo(pageRepo.getRepoRootPath())){
                 return;
@@ -166,33 +168,15 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
         }else if (event.getCurrentPage() == pageSubdir
                 && event.getTargetPage() == pageMisc){
             File sub = new File (pageSubdir.getRepoSubdir()); 
-            if (!pageSubdir.isDoInit() && !new File(sub, UIConsts.FILENAME_WORKING_DIR_MARKER).exists()){
-                MessageDialog dialog = new MessageDialog(getShell(),
-                        "Confirm working directory", null, 
-                        "Selected working directory does not seem to be a correct one.\n"
-                        + "It should contain marker file.", 
-                        MessageDialog.INFORMATION, 
-                        new String []{"Create and commit marker file", "Select another working dir"}, 1);
-                dialog.open();
-                if (dialog.getReturnCode() == 0){
-                    try {
-                        boolean isCreated = new File (pageSubdir.getRepoSubdir(),
-                                UIConsts.FILENAME_WORKING_DIR_MARKER).createNewFile();
-                        if (isCreated){
-                            JGitExec repo = new JGitExec( pageRepo.getRepoUrl(),
-                                    pageRepo.getRepoUser(), 
-                                    pageRepo.getRepoPass(),
-                                    mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
-                            repo.repoRemoveMissingAddNew(new File(pageSubdir.getRepoSubdir()));
-                            repo.repoCommit(new File(pageSubdir.getRepoSubdir()), "File-marker added");
-                        }
-                    } catch (IOException e) {
-                        Log.log(Log.LOG_WARNING, "Could not either create marker file or "
-                                + "commit it in " + new File(pageSubdir.getRepoSubdir()));
-                    }
-                }else{
+
+            if (!pageSubdir.isDoInit() && sub.list().length > 0 && 
+                    !new File(sub, UIConsts.FILENAME_WORKING_DIR_MARKER).exists()){
+                    new MessageDialog(getShell(), "Bad working directory", null, 
+                            "Missing marker file in working directory " + sub + 
+                            "\nCreate marker file named " + UIConsts.FILENAME_WORKING_DIR_MARKER +
+                            " manually and try again", MessageDialog.WARNING, 
+                            new String []{"Ok"}, 0).open();
                     event.doit = false;
-                }
             }
         }
     }
@@ -263,8 +247,16 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                 ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
                         "Project creator thread cancelled. Shouldn't happen!", ex), getShell());
             }
+        }else if (!pageSubdir.isDoInit() && new File (pageSubdir.getRepoSubdir()).list().length == 0 ){
+            try {
+                /*new ModelExporter(pageSubdir.getRepoSubdir(), new PgDatabase(),
+                        props.getString(UIConsts.PROJ_PREF_ENCODING)).export();*/
+                new File (new File (pageSubdir.getRepoSubdir()), UIConsts.FILENAME_WORKING_DIR_MARKER).createNewFile();
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not create marker file in empty "
+                        + "working directory " + new File (pageSubdir.getRepoSubdir()), e);
+            }
         }
-
         
         return true;
     }
@@ -524,9 +516,15 @@ class PageSubdir extends WizardPage implements Listener {
     private Label lblRepoSubdir;
     
     private String repoRoot;
+
+    private String projectFile;
     
     public String getRepoSubdir() {
         return txtRepoSubdir.getText();
+    }
+
+    public void setProjectFile(String projectFile) {
+       this.projectFile = projectFile;
     }
 
     public void setRepoRoot(String repoRoot) {
@@ -621,9 +619,13 @@ class PageSubdir extends WizardPage implements Listener {
         String repoSubdir = txtRepoSubdir.getText();
         String errMsg = null;
         
-        if (repoSubdir.isEmpty() || !new File(repoSubdir).exists() || 
-                !Paths.get(repoSubdir).startsWith(Paths.get(repoRoot))) {
+        if (repoSubdir.isEmpty() || !new File(repoSubdir).exists()
+                || !new File(repoSubdir).isDirectory() 
+                || !Paths.get(repoSubdir).startsWith(Paths.get(repoRoot))) {
             errMsg = "Select correct subdir of the GIT repository";
+        }else if (isDoInit() && Paths.get(projectFile).startsWith(getRepoSubdir())){
+            errMsg = "Project file " + projectFile + " can not be saved in working "
+                    + "directory, because it will be deleted during init stage";
         }
         
         setErrorMessage(errMsg);

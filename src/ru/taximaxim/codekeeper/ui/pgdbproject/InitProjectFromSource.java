@@ -101,6 +101,12 @@ public class InitProjectFromSource implements IRunnableWithProgress {
 
             new ModelExporter(dirRepo.getAbsolutePath(), db,
                     props.getString(UIConsts.PROJ_PREF_ENCODING)).export();
+            try {
+                new File (dirRepo, UIConsts.FILENAME_WORKING_DIR_MARKER).createNewFile();
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not create marker file in empty "
+                        + "working directory " + dirRepo, e);
+            }
 
             Files.move(repoMetaTmp.toPath(), repoMetaProj.toPath());
         }

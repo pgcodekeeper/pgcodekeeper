@@ -186,6 +186,13 @@ public class CommitPartDescr {
                                         proj.getString(UIConsts.PROJ_PREF_ENCODING))
                                         .export();
 
+                                try {
+                                    new File (workingDir, UIConsts.FILENAME_WORKING_DIR_MARKER).createNewFile();
+                                } catch (IOException e) {
+                                    throw new IllegalStateException("Could not create marker file in empty "
+                                            + "working directory " + workingDir, e);
+                                }
+                                
                                 Files.move(repoMetaTmp.toPath(),
                                         repoMetaProj.toPath());
                             }

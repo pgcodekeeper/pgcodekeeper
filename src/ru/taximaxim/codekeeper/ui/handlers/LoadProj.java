@@ -2,7 +2,6 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
 import java.io.File;
-import java.io.IOException;
 
 import javax.inject.Named;
 
@@ -21,7 +20,6 @@ import org.eclipse.swt.widgets.Shell;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
-import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.parts.CommitPartDescr;
 import ru.taximaxim.codekeeper.ui.parts.Console;
 import ru.taximaxim.codekeeper.ui.parts.DiffPartDescr;
@@ -77,29 +75,13 @@ public class LoadProj {
         if (!new File(proj.getProjectWorkingDir(), 
                 UIConsts.FILENAME_WORKING_DIR_MARKER).exists()){
             MessageDialog dialog = new MessageDialog(shell,
-                    "Possibly bad project", null, 
-                    "Working directory of this project does not seem to be a correct one.\n"
-                    + "It should contain marker file.", 
-                    MessageDialog.INFORMATION, 
-                    new String []{"Create and commit marker file", "Open another project"}, 1);
+                    "Bad project", null, 
+                    "Missing marker file in working directory " + proj.getProjectWorkingDir() +
+                    "\nCreate marker file named " + UIConsts.FILENAME_WORKING_DIR_MARKER +
+                    " manually and try again", MessageDialog.WARNING, 
+                    new String []{"Ok"}, 0);
             dialog.open();
-            if (dialog.getReturnCode() == 0){
-                try {
-                    boolean isCreated = new File (proj.getProjectWorkingDir(),
-                            UIConsts.FILENAME_WORKING_DIR_MARKER).createNewFile();
-                    if (isCreated){
-                        JGitExec repo = new JGitExec(proj,
-                                mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
-                        repo.repoRemoveMissingAddNew(proj.getProjectWorkingDir());
-                        repo.repoCommit(proj.getProjectWorkingDir(), "File-marker added");
-                    }
-                } catch (IOException e) {
-                    Log.log(Log.LOG_WARNING, "Could not either create marker file or "
-                            + "commit it in " + proj.getProjectWorkingDir());
-                }
-            }else{
-                return false;
-            }
+            return false;
         }
         ctx.modify(PgDbProject.class, proj);
         

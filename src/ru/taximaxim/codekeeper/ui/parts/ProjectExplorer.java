@@ -84,7 +84,8 @@ public class ProjectExplorer {
             
             private final List<String> ignoredFiles = Arrays.asList(
                     new String[] {
-                            ".git"
+                            ".git",
+                            UIConsts.FILENAME_WORKING_DIR_MARKER
                     });
             
             private final FilenameFilter filter = new FilenameFilter() {
