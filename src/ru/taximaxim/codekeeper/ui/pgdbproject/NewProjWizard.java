@@ -166,18 +166,19 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                 // didn't clone the repo; can't proceed without it
                 event.doit = false;
             }
-        }else if (event.getCurrentPage() == pageSubdir
-                && event.getTargetPage() == pageMisc){
+        }else if (event.getCurrentPage() == pageSubdir && event.getTargetPage() == pageMisc){
             File sub = new File (pageSubdir.getRepoSubdir()); 
 
-            if (!pageSubdir.isDoInit() && sub.list().length > 0 && 
-                    !new File(sub, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
-                    new MessageDialog(getShell(), "Bad working directory", null, 
-                            "Missing marker file in working directory " + sub + 
-                            "\nCreate marker file named " + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
-                            " manually and try again", MessageDialog.WARNING, 
-                            new String []{"Ok"}, 0).open();
-                    event.doit = false;
+            if (sub.list().length > 0 && !new File(sub, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
+                if (sub.list().length == 1 && sub.list()[0].equals(".git")){
+                    return;
+                }
+                new MessageDialog(getShell(), "Bad working directory", null, 
+                        "Missing marker file in working directory " + sub + 
+                        "\nCreate marker file named " + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
+                        " manually and try again", MessageDialog.WARNING, 
+                        new String []{"Ok"}, 0).open();
+                event.doit = false;
             }
         }
     }
