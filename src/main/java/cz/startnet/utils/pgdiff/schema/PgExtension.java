@@ -26,6 +26,7 @@ public class PgExtension extends PgStatement {
     
     public void setSchema(final String schema) {
         this.schema = schema;
+        resetHash();
     }
     
     public String getVersion() {
@@ -34,6 +35,7 @@ public class PgExtension extends PgStatement {
     
     public void setVersion(final String version) {
         this.version = version;
+        resetHash();
     }
     
     public String getOldVersion() {
@@ -42,6 +44,7 @@ public class PgExtension extends PgStatement {
     
     public void setOldVersion(final String oldVersion) {
         this.oldVersion = oldVersion;
+        resetHash();
     }
     
     public String getComment() {
@@ -108,7 +111,7 @@ public class PgExtension extends PgStatement {
     }
 
     @Override
-    public int hashCode() {
+    public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((name == null) ? 0 : name.hashCode());

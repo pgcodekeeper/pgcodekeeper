@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff;
 
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
+
 import java.io.PrintWriter;
 
 /**
@@ -32,8 +33,7 @@ public class PgDiffSequences {
             if (oldSchema == null
                     || !oldSchema.containsSequence(sequence.getName())) {
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(sequence.getCreationSQL());
+                PgDiff.writeCreationSql(writer, null, sequence);
             }
         }
     }
@@ -81,8 +81,7 @@ public class PgDiffSequences {
         for (final PgSequence sequence : oldSchema.getSequences()) {
             if (!newSchema.containsSequence(sequence.getName())) {
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(sequence.getDropSQL());
+                PgDiff.writeDropSql(writer, null, sequence);
             }
         }
     }

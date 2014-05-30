@@ -41,6 +41,7 @@ public class PgTable extends PgStatementWithSearchPath {
 
     public void setClusterIndexName(final String name) {
         clusterIndexName = name;
+        resetHash();
     }
 
     public String getClusterIndexName() {
@@ -257,6 +258,7 @@ public class PgTable extends PgStatementWithSearchPath {
 
     public void addInherits(final String tableName) {
         inherits.add(tableName);
+        resetHash();
     }
 
     /**
@@ -279,6 +281,7 @@ public class PgTable extends PgStatementWithSearchPath {
 
     public void setWith(final String with) {
         this.with = with;
+        resetHash();
     }
 
     public String getWith() {
@@ -291,26 +294,31 @@ public class PgTable extends PgStatementWithSearchPath {
 
     public void setTablespace(final String tablespace) {
         this.tablespace = tablespace;
+        resetHash();
     }
 
     public void addColumn(final PgColumn column) {
         columns.add(column);
         column.setParent(this);
+        resetHash();
     }
 
     public void addConstraint(final PgConstraint constraint) {
         constraints.add(constraint);
         constraint.setParent(this);
+        resetHash();
     }
 
     public void addIndex(final PgIndex index) {
         indexes.add(index);
         index.setParent(this);
+        resetHash();
     }
 
     public void addTrigger(final PgTrigger trigger) {
         triggers.add(trigger);
         trigger.setParent(this);
+        resetHash();
     }
 
     public boolean containsColumn(final String name) {
@@ -385,7 +393,7 @@ public class PgTable extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int hashCode() {
+    public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((clusterIndexName == null) ? 0 : clusterIndexName.hashCode());

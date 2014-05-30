@@ -43,8 +43,7 @@ public class PgDiffTriggers {
             // Add new triggers
             for (final PgTrigger trigger : getNewTriggers(oldTable, newTable)) {
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(trigger.getCreationSQL());
+                PgDiff.writeCreationSql(writer, null, trigger);
             }
         }
     }
@@ -73,8 +72,7 @@ public class PgDiffTriggers {
             for (final PgTrigger trigger :
                     getDropTriggers(oldTable, newTable)) {
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(trigger.getDropSQL());
+                PgDiff.writeDropSql(writer, null, trigger);
             }
         }
         
@@ -88,8 +86,7 @@ public class PgDiffTriggers {
                 PgTable newTable = new PgTable(oldTable.getName(), null, null);
                 for (final PgTrigger trigger : getDropTriggers(oldTable, newTable)) {
                     searchPathHelper.outputSearchPath(writer);
-                    writer.println();
-                    writer.println(trigger.getDropSQL());
+                    PgDiff.writeDropSql(writer, null, trigger);
                 }
             }
         }// КОСТЫЛЬ

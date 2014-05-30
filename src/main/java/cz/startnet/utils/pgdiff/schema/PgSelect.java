@@ -19,6 +19,7 @@ public class PgSelect extends PgStatementWithSearchPath {
     public void addColumn(GenericColumn column) {
         if (!columns.contains(column)) {
             columns.add(column);
+            resetHash();
         }
     }
     
@@ -66,7 +67,7 @@ public class PgSelect extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int hashCode() {
+    public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((columns == null) ? 0 : columns.hashCode());

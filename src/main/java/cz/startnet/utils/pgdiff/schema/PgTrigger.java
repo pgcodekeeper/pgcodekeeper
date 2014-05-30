@@ -49,6 +49,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     public void setBefore(final boolean before) {
         this.before = before;
+        resetHash();
     }
 
     public boolean isBefore() {
@@ -155,6 +156,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     public void setForEachRow(final boolean forEachRow) {
         this.forEachRow = forEachRow;
+        resetHash();
     }
 
     public boolean isForEachRow() {
@@ -163,6 +165,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     public void setFunction(final String function) {
         this.function = function;
+        resetHash();
     }
 
     public String getFunction() {
@@ -171,6 +174,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     public void setOnDelete(final boolean onDelete) {
         this.onDelete = onDelete;
+        resetHash();
     }
 
     public boolean isOnDelete() {
@@ -179,6 +183,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     public void setOnInsert(final boolean onInsert) {
         this.onInsert = onInsert;
+        resetHash();
     }
 
     public boolean isOnInsert() {
@@ -187,6 +192,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     public void setOnUpdate(final boolean onUpdate) {
         this.onUpdate = onUpdate;
+        resetHash();
     }
 
     public boolean isOnUpdate() {
@@ -199,10 +205,12 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     public void setOnTruncate(final boolean onTruncate) {
         this.onTruncate = onTruncate;
+        resetHash();
     }
 
     public void setTableName(final String tableName) {
         this.tableName = tableName;
+        resetHash();
     }
 
     public String getTableName() {
@@ -215,6 +223,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     public void addUpdateColumn(final String columnName) {
         updateColumns.add(columnName);
+        resetHash();
     }
 
     public String getWhen() {
@@ -223,6 +232,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     public void setWhen(final String when) {
         this.when = when;
+        resetHash();
     }
 
     @Override
@@ -250,7 +260,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int hashCode() {
+    public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + (before ? 1231 : 1237);

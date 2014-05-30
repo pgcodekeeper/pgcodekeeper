@@ -5,9 +5,10 @@
  */
 package cz.startnet.utils.pgdiff;
 
+import java.io.PrintWriter;
+
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import java.io.PrintWriter;
 
 /**
  * Diffs functions.
@@ -41,8 +42,7 @@ public class PgDiffFunctions {
             if ((oldFunction == null) || !newFunction.equalsWhitespace(
                     oldFunction, arguments.isIgnoreFunctionWhitespace())) {
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(newFunction.getCreationSQL());
+                PgDiff.writeCreationSql(writer, null, newFunction);
             }
         }
     }
@@ -51,7 +51,6 @@ public class PgDiffFunctions {
      * Outputs statements for dropping of functions that exist no more.
      *
      * @param writer           writer the output should be written to
-     * @param arguments        object containing arguments settings
      * @param oldSchema        original schema
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
@@ -67,8 +66,7 @@ public class PgDiffFunctions {
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
             if (!newSchema.containsFunction(oldFunction.getSignature())) {
                 searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(oldFunction.getDropSQL());
+                PgDiff.writeDropSql(writer, null, oldFunction);
             }
         }
     }

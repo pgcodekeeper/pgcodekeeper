@@ -30,8 +30,6 @@ public class PgDiff {
 
     private static DirectedGraph<PgStatement, DefaultEdge> oldDepcyGraph;
     private static DepcyGraph depcyOld;
-    // TODO unused for now
-    private static DepcyGraph depcyNew;
 
     /**
      * Creates diff on the two database schemas.
@@ -125,10 +123,8 @@ public class PgDiff {
         // temp solution
         if (oldDbFull != null && newDbFull != null){
             depcyOld = new DepcyGraph((PgDatabase)oldDbFull);
-            depcyNew = new DepcyGraph((PgDatabase)newDbFull);
         }else{
             depcyOld = new DepcyGraph(new PgDatabase());
-            depcyNew = new DepcyGraph(new PgDatabase());
         }
         oldDepcyGraph = depcyOld.getGraph();
         
@@ -272,8 +268,7 @@ public class PgDiff {
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension newExt : newDatabase.getExtensions()) {
             if(oldDatabase.getExtension(newExt.getName()) == null) {
-                writer.println();
-                writer.println(newExt.getCreationSQL());
+                writeCreationSql(writer, null, newExt);
             }
         }
     }
@@ -289,10 +284,7 @@ public class PgDiff {
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension oldExt : oldDatabase.getExtensions()) {
             if(newDatabase.getExtension(oldExt.getName()) == null) {
-                writer.println();
-                writer.println("DROP EXTENSION "
-                        + PgDiffUtils.getQuotedName(oldExt.getName())
-                        + ";");
+                writeDropSql(writer, null, oldExt);
             }
         }
     }
@@ -335,8 +327,7 @@ public class PgDiff {
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for (final PgSchema newSchema : newDatabase.getSchemas()) {
             if (oldDatabase.getSchema(newSchema.getName()) == null) {
-                writer.println();
-                writer.println(newSchema.getCreationSQL());
+                writeCreationSql(writer, null, newSchema);
             }
         }
     }
@@ -509,6 +500,33 @@ public class PgDiff {
                 writer, oldSchema, newSchema, searchPathHelper);
         PgDiffTriggers.alterComments(
                 writer, oldSchema, newSchema, searchPathHelper);
+    }
+    
+    static void tempSwitchSearchPath(String switchTo, 
+            final SearchPathHelper searchPathHelper, final PrintWriter writer){
+        
+        if (searchPathHelper.getWasOutput() == false ||
+                !searchPathHelper.getSchemaName().equals(switchTo)){
+            new SearchPathHelper(switchTo).outputSearchPath(writer);
+            
+            searchPathHelper.setWasOutput(false);
+        }
+    }
+    
+    static void writeCreationSql(PrintWriter writer, String comment, PgStatement pgObject){
+        writer.println();
+        if (comment != null){
+            writer.println(comment);
+        }
+        writer.println(pgObject.getCreationSQL());
+    }
+    
+    static void writeDropSql(PrintWriter writer, String comment, PgStatement pgObject){
+        writer.println();
+        if (comment != null){
+            writer.println(comment);
+        }
+        writer.println(pgObject.getDropSQL());
     }
     
     private PgDiff() {
