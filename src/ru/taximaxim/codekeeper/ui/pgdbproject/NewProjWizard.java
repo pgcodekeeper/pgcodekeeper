@@ -49,6 +49,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
+import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -254,10 +255,22 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                 // init empty db for further commits
                 new ModelExporter(pageSubdir.getRepoSubdir(), new PgDatabase(),
                         props.getString(UIConsts.PROJ_PREF_ENCODING)).export();
+                IRepoWorker repo = new JGitExec(props, 
+                        mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+                repo.repoRemoveMissingAddNew(new File(pageSubdir.getRepoSubdir()));
+                repo.repoCommit(new File(pageSubdir.getRepoSubdir()), "empty working directory");
             } catch (IOException e) {
                 throw new IllegalStateException("Could not create empty database in "
                             + new File (pageSubdir.getRepoSubdir()), e);
             }
+        }else if (!pageSubdir.isDoInit() && !new File (pageSubdir.getRepoSubdir(), 
+                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
+            new MessageDialog(getShell(), "Bad working directory", null, 
+                    "Missing marker file in working directory " + pageSubdir.getRepoSubdir() + 
+                    "\nCreate marker file named " + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
+                    " manually and try again", MessageDialog.WARNING, 
+                    new String []{"Ok"}, 0).open();
+            return false;
         }
         
         return true;
@@ -478,6 +491,8 @@ class PageRepo extends WizardPage implements Listener {
     public boolean isPageComplete() {
         // TODO enable Next if git repo url is empty && selected root dir is 
         // git repo root. In that case get git repo url from repo
+        
+        // TODO check for conflicting user repo url and existing repo url
         String errMsg = null;
         
         if (getRepoUrl().isEmpty()) {
