@@ -9,6 +9,7 @@ import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.List;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.UnixPrintWriter;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -133,6 +134,7 @@ public class ModelExporter {
             
             // indexes, triggers, constraints are saved when tables are processed
         }
+        new File (outDir, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).createNewFile();
     }
     
     /**
