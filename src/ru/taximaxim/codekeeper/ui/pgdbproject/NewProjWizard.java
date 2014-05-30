@@ -41,6 +41,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -48,6 +50,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class NewProjWizard extends Wizard implements IPageChangingListener {
 
@@ -111,6 +114,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
         } else if (event.getCurrentPage() == pageRepo
                 && event.getTargetPage() == pageSubdir) {
             pageSubdir.setRepoRoot(pageRepo.getRepoRootPath());
+            pageSubdir.setProjectFile(pageRepo.getProjectFile());
             
             if (JGitExec.isGitRepo(pageRepo.getRepoRootPath())){
                 return;
@@ -161,6 +165,19 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
             } else {
                 // didn't clone the repo; can't proceed without it
                 event.doit = false;
+            }
+        }else if (event.getCurrentPage() == pageSubdir
+                && event.getTargetPage() == pageMisc){
+            File sub = new File (pageSubdir.getRepoSubdir()); 
+
+            if (!pageSubdir.isDoInit() && sub.list().length > 0 && 
+                    !new File(sub, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
+                    new MessageDialog(getShell(), "Bad working directory", null, 
+                            "Missing marker file in working directory " + sub + 
+                            "\nCreate marker file named " + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
+                            " manually and try again", MessageDialog.WARNING, 
+                            new String []{"Ok"}, 0).open();
+                    event.doit = false;
             }
         }
     }
@@ -231,19 +248,15 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                 ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
                         "Project creator thread cancelled. Shouldn't happen!", ex), getShell());
             }
-        }
-
-        try {
-            boolean isCreated = new File (props.getProjectWorkingDir(),
-                    UIConsts.FILENAME_WORKING_DIR_MARKER).createNewFile();
-            if (isCreated){
-                JGitExec repo = new JGitExec(props, mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
-                repo.repoRemoveMissingAddNew(props.getProjectWorkingDir());
-                repo.repoCommit(props.getProjectWorkingDir(), "File-marker added");
+        }else if (!pageSubdir.isDoInit() && new File (pageSubdir.getRepoSubdir()).list().length == 0 ){
+            try {
+                // init empty db for further commits
+                new ModelExporter(pageSubdir.getRepoSubdir(), new PgDatabase(),
+                        props.getString(UIConsts.PROJ_PREF_ENCODING)).export();
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not create empty database in "
+                            + new File (pageSubdir.getRepoSubdir()), e);
             }
-        } catch (IOException e) {
-            Log.log(Log.LOG_WARNING, "Could not either create marker file or "
-                    + "commit it in " + props.getProjectWorkingDir());
         }
         
         return true;
@@ -505,9 +518,15 @@ class PageSubdir extends WizardPage implements Listener {
     private Label lblRepoSubdir;
     
     private String repoRoot;
+
+    private String projectFile;
     
     public String getRepoSubdir() {
         return txtRepoSubdir.getText();
+    }
+
+    public void setProjectFile(String projectFile) {
+       this.projectFile = projectFile;
     }
 
     public void setRepoRoot(String repoRoot) {
@@ -602,9 +621,13 @@ class PageSubdir extends WizardPage implements Listener {
         String repoSubdir = txtRepoSubdir.getText();
         String errMsg = null;
         
-        if (repoSubdir.isEmpty() || !new File(repoSubdir).exists() || 
-                !Paths.get(repoSubdir).startsWith(Paths.get(repoRoot))) {
+        if (repoSubdir.isEmpty() || !new File(repoSubdir).exists()
+                || !new File(repoSubdir).isDirectory() 
+                || !Paths.get(repoSubdir).startsWith(Paths.get(repoRoot))) {
             errMsg = "Select correct subdir of the GIT repository";
+        }else if (isDoInit() && Paths.get(projectFile).startsWith(getRepoSubdir())){
+            errMsg = "Project file " + projectFile + " can not be saved in working "
+                    + "directory, because it will be deleted during init stage";
         }
         
         setErrorMessage(errMsg);

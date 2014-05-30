@@ -50,6 +50,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -168,13 +169,16 @@ public class CommitPartDescr {
                         pm.newChild(1).subTask("Exporting new DB model..."); // 2
                         File workingDir = proj.getProjectWorkingDir();
                         try {
-                            IRepoWorker repo = new JGitExec(proj, mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+                            IRepoWorker repo = new JGitExec(proj,
+                                    mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
                             try (TempDir tmpRepoMeta = new TempDir(
                                     proj.getProjectWorkingDir().toPath().getParent(), 
                                     "tmp_repo_meta_")) {
                                 // TODO not necessary if workingDir != gitRoot
-                                File repoMetaProj = new File(proj.getRepoRoot(), repo.getRepoMetaFolder());
-                                File repoMetaTmp = new File(tmpRepoMeta.get(), repo.getRepoMetaFolder());
+                                File repoMetaProj = new File(proj.getRepoRoot(),
+                                        repo.getRepoMetaFolder());
+                                File repoMetaTmp = new File(tmpRepoMeta.get(),
+                                        repo.getRepoMetaFolder());
                                 Files.move(repoMetaProj.toPath(), repoMetaTmp.toPath());
                                 Dir.deleteRecursive(workingDir);
 
@@ -183,7 +187,7 @@ public class CommitPartDescr {
                                         dbNew,
                                         proj.getString(UIConsts.PROJ_PREF_ENCODING))
                                         .export();
-
+                                
                                 Files.move(repoMetaTmp.toPath(),
                                         repoMetaProj.toPath());
                             }
