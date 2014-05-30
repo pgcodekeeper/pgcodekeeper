@@ -344,6 +344,9 @@ public class PgFunction extends PgStatementWithSearchPath {
             argDst.setDefaultExpression(argSrc.getDefaultExpression());
             functionDst.addArgument(argDst);
         }
+        for (PgPrivilege priv : privileges) {
+            functionDst.addPrivilege(priv.shallowCopy());
+        }
         return functionDst;
     }
     

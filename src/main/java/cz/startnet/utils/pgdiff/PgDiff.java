@@ -345,13 +345,14 @@ public class PgDiff {
         for (final PgSchema oldSchema : oldDatabase.getSchemas()) {
             if (newDatabase.getSchema(oldSchema.getName()) == null) {
                 if (!isFullSelection(oldSchema)){
-                    writer.println("-- schema \"" + oldSchema.getName() + "\" was "
+                    writer.println("-- schema " + oldSchema.getName() + " was "
                             + "not dropped because it was not selected entirely");
                     writer.println();
                     continue;
                 }
                 // drop all contents of the schema
-                PgSchema newSchema = new PgSchema(oldSchema.getName(), "CREATE SCHEMA " + oldSchema.getName());
+                PgSchema newSchema = new PgSchema(oldSchema.getName(),
+                        "CREATE SCHEMA " + oldSchema.getName());
                 updateSchemaContent(writer,
                         depcyOld.getDb().getSchema(oldSchema.getName()), newSchema,
                         new SearchPathHelper(oldSchema.getName()), arguments);
@@ -402,6 +403,11 @@ public class PgDiff {
                     oldDatabase.getSchema(newSchema.getName());
 
             if (oldSchema != null) {
+                if (!oldSchema.getPrivileges().equals(newSchema.getPrivileges())) {
+                    writer.println(newSchema.getPrivilegesSQL());
+                    writer.println();
+                }
+                
                 if (oldSchema.getComment() == null
                         && newSchema.getComment() != null
                         || oldSchema.getComment() != null

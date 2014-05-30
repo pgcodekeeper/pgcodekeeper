@@ -240,6 +240,9 @@ public class PgView extends PgStatementWithSearchPath {
         for(ColumnComment colcomment : columnComments) {
             viewDst.addColumnComment(colcomment.getColumnName(), colcomment.getComment());
         }
+        for (PgPrivilege priv : privileges) {
+            viewDst.addPrivilege(priv.shallowCopy());
+        }
         return viewDst;
     }
     

@@ -425,6 +425,9 @@ public class PgTable extends PgStatementWithSearchPath {
             tableDst.addColumn(colSrc.shallowCopy());
         }
         tableDst.setComment(getComment());
+        for (PgPrivilege priv : privileges) {
+            tableDst.addPrivilege(priv.shallowCopy());
+        }
         return tableDst;
     }
     

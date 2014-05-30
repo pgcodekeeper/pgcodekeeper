@@ -294,6 +294,9 @@ public class PgSchema extends PgStatement {
         schemaDst.setAuthorization(getAuthorization());
         schemaDst.setDefinition(getDefinition());
         schemaDst.setComment(getComment());
+        for (PgPrivilege priv : privileges) {
+            schemaDst.addPrivilege(priv.shallowCopy());
+        }
         return schemaDst;
     }
     

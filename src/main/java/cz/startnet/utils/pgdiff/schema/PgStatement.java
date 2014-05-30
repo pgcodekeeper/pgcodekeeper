@@ -66,6 +66,7 @@ abstract public class PgStatement {
     public void addPrivilege(PgPrivilege privilege) {
         privileges.add(privilege);
         privilege.setParent(this);
+        resetHash();
     }
     
     protected StringBuilder appendPrivileges(StringBuilder sb) {
@@ -75,6 +76,9 @@ abstract public class PgStatement {
         }
         
         return sb;
+    }
+    public String getPrivilegesSQL() {
+        return appendPrivileges(new StringBuilder()).toString();
     }
     
     abstract public String getCreationSQL();

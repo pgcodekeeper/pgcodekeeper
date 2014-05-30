@@ -38,12 +38,12 @@ public class PgPrivilege extends PgStatement {
     }
     
     @Override
-    public PgStatement deepCopy() {
+    public PgPrivilege deepCopy() {
         return shallowCopy();
     }
     
     @Override
-    public PgStatement shallowCopy() {
+    public PgPrivilege shallowCopy() {
         return new PgPrivilege(isRevoke(), getDefinition(), getRawStatement());
     }
 

@@ -52,7 +52,7 @@ public class TreeElement {
     
     private TreeElement parent;
     
-    private List<TreeElement> children = new ArrayList<>();
+    private List<TreeElement> children = new ArrayList<>(3);
     
     public String getName() {
         return name;
