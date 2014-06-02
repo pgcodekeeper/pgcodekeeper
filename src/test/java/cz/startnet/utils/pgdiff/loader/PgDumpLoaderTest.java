@@ -19,7 +19,20 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import cz.startnet.utils.pgdiff.schema.*;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgExtension;
+import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgIndex;
+import cz.startnet.utils.pgdiff.schema.PgPrivilege;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgSelect;
+import cz.startnet.utils.pgdiff.schema.PgSequence;
+import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
  * An abstract 'factory' that creates 'artificial'
@@ -122,8 +135,8 @@ public class PgDumpLoaderTest {
         }
         
         PgDatabase dbPredefined = dbCreators[fileIndex - 1].getDatabase();
-        Assert.assertEquals("predefined object is not equal to file: " + filename,
-                dbPredefined, d);
+        Assert.assertEquals("PgDumpLoader: predefined object is not equal to file "
+                + filename, dbPredefined, d);
         
         PgDatabase empty = new PgDatabase();
         
@@ -133,12 +146,12 @@ public class PgDumpLoaderTest {
         TreeElement dbTree = DiffTree.create(d, empty);
         PgDatabase dbFilteredFullTree = new PgDbFilter2(d, dbTree, DiffSide.LEFT).apply();
         
-        Assert.assertEquals("filter altered the result", d, dbFilteredFullTree);
-        Assert.assertEquals("filter altered the original", dbPredefined, d);
+        Assert.assertEquals("PgDbFilter2: filter altered the result", d, dbFilteredFullTree);
+        Assert.assertEquals("PgDbFilter2: filter altered the original", dbPredefined, d);
         
         // test deepCopy mechanism
-        Assert.assertEquals("deep copy altered", d, d.deepCopy());
-        Assert.assertEquals("deep copy altered original", dbPredefined, d);
+        Assert.assertEquals("PgStatement deep copy altered", d, d.deepCopy());
+        Assert.assertEquals("PgStatement deep copy altered original", dbPredefined, d);
         
         PgDatabase oneDiff = new PgDatabase();
         oneDiff.addSchema(new PgSchema("testschemaqwerty", null));
@@ -148,11 +161,11 @@ public class PgDumpLoaderTest {
         TreeElement onlyNew = DiffTree.create(d, oneDiff);
         TreeElement onlyOld = DiffTree.create(d, d);
         
-        Assert.assertEquals("not empty", empty,
+        Assert.assertEquals("DiffTreeApplier: not empty", empty,
                 new DiffTreeApplier(d, oneDiff, removeAll).apply());
-        Assert.assertEquals("not new", oneDiff,
+        Assert.assertEquals("DiffTreeApplier: not new", oneDiff,
                 new DiffTreeApplier(d, oneDiff, onlyNew).apply());
-        Assert.assertEquals("not old", d,
+        Assert.assertEquals("DiffTreeApplier: not old", d,
                 new DiffTreeApplier(d, oneDiff, onlyOld).apply());
     }
 }
@@ -495,6 +508,11 @@ class PgDB6 extends PgDatabaseObjectCreator {
     PgSchema schema = d.getDefaultSchema();
     schema.setComment("'Standard public schema'");
     
+    schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM PUBLIC", ""));
+    schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM postgres", ""));
+    schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO postgres", ""));
+    schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO PUBLIC", ""));
+    
     PgTable table = new PgTable("test_table", "", "");
     schema.addTable(table);
     
@@ -775,6 +793,11 @@ class PgDB14 extends PgDatabaseObjectCreator {
     PgDatabase d = new PgDatabase();
     PgSchema schema = d.getDefaultSchema();
     
+    schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM PUBLIC", ""));
+    schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM postgres", ""));
+    schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO postgres", ""));
+    schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO PUBLIC", ""));
+
     d.setComment("'comments database'");
     schema.setComment("'public schema'");
     

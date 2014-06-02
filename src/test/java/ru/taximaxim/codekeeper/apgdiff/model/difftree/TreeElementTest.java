@@ -18,6 +18,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgPrivilege;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 
 @RunWith(value = Parameterized.class)
 public class TreeElementTest {
@@ -46,6 +48,14 @@ public class TreeElementTest {
                 "src/test/resources/cz/startnet/utils/pgdiff/loader/" + dbDumpName,
                 "UTF8", false, false);
         PgDatabase dbPartial = new PgDatabase();
+        
+        if (dbDumpName.equals("schema_6.sql")) {
+            PgSchema schema = dbPartial.getDefaultSchema();
+            schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM PUBLIC", ""));
+            schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM postgres", ""));
+            schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO postgres", ""));
+            schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO PUBLIC", ""));
+        }
         
         for (String function : FUNC_NAMES){
             String name = function.substring(0, function.length()-2);

@@ -9,6 +9,7 @@ DROP SCHEMA testschema1;
 
 CREATE SCHEMA testschema2;
 
+
 SET search_path = public, pg_catalog;
 
 DROP TABLE testtable2;
@@ -22,9 +23,11 @@ CREATE SEQUENCE testtable3_id_seq
 	NO MINVALUE
 	CACHE 1;
 
+
 CREATE TABLE testtable3 (
 	id bigint DEFAULT nextval('testtable3_id_seq'::regclass) NOT NULL
 );
+
 
 ALTER SEQUENCE testtable3_id_seq
 	OWNED BY testtable3.id;
@@ -38,9 +41,11 @@ CREATE SEQUENCE testtable1_id_seq
 	NO MINVALUE
 	CACHE 1;
 
+
 CREATE TABLE testtable1 (
 	id integer DEFAULT nextval('testtable1_id_seq'::regclass) NOT NULL
 );
+
 
 ALTER SEQUENCE testtable1_id_seq
 	OWNED BY testtable1.id;

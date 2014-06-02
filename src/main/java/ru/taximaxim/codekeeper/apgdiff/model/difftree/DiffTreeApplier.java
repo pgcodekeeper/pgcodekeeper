@@ -62,6 +62,14 @@ public class DiffTreeApplier {
             if(dstSchema == null) {
                 dstSchema = schema.shallowCopy();
                 dbNew.addSchema(dstSchema);
+            } else {
+                if (dstSchema.equals(new PgDatabase().getDefaultSchema())
+                        && !dstSchema.compare(schema)) {
+                    // TODO костыль, если схема - дефолтно созданная паблик - заменяем
+                    PgSchema schemaEx = dstSchema;
+                    dstSchema = schema.shallowCopy();
+                    dbNew.replaceSchema(schemaEx, dstSchema);
+                }
             }
             
             for(PgFunction func : schema.getFunctions()) {

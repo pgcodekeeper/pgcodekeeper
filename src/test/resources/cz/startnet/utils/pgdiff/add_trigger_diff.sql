@@ -7,6 +7,7 @@ end;
 $$
     LANGUAGE plpgsql;
 
+
 CREATE TRIGGER test_table_trigger
 	BEFORE INSERT OR UPDATE ON test_table
 	FOR EACH ROW

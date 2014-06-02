@@ -210,10 +210,12 @@ public class PgDatabase extends PgStatement {
             copy.addExtension(ext.deepCopy());
         }
         for(PgSchema schema : schemas) {
-            if(schema.getName().equals("public")) {
-                copy.schemas.remove(copy.getSchema("public"));
+            PgSchema exists = copy.getSchema(schema.getName());
+            if (exists == null) {
+                copy.addSchema(schema.deepCopy());
+            } else {
+                copy.replaceSchema(exists, schema.deepCopy());
             }
-            copy.addSchema(schema.deepCopy());
         }
         
         return copy;

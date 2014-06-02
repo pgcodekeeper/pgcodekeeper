@@ -289,8 +289,13 @@ public class DiffTree {
                 }
             }
             
-            if(foundRight == null) {
-                rv.add(new CompareResult(sLeft, foundRight));
+            // special case: if right schema is a bare default public schema
+            // and left one is not bare - assume that right doesn't exist at all
+            // and mark left as LEFT, not BOTH
+            if(foundRight == null || (foundRight instanceof PgSchema
+                    && foundRight.equals(new PgDatabase().getDefaultSchema())
+                    && !sLeft.compare(foundRight))) {
+                rv.add(new CompareResult(sLeft, null));
                 leftCont.addChild(new TreeElement(sLeft, DiffSide.LEFT));
             } else if(!sLeft.equals(foundRight)) {
                 rv.add(new CompareResult(sLeft, foundRight));
