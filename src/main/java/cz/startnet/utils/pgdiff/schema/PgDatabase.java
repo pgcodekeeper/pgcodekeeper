@@ -119,6 +119,7 @@ public class PgDatabase extends PgStatement {
         if (defaultSchema == oldSchema) {
             setDefaultSchema(newSchema.getName());
         }
+        resetHash();
     }
     
     /**
