@@ -70,7 +70,30 @@ abstract public class PgStatement {
     }
     
     protected StringBuilder appendPrivileges(StringBuilder sb) {
-        sb.append('\n');
+        if (privileges.isEmpty()) {
+            return sb;
+        }
+        
+        String type = "<unknown>";
+        if (this instanceof PgSchema) {
+            type = "SCHEMA";
+        } else if (this instanceof PgSequence) {
+            type = "SEQUENCE";
+        } else if (this instanceof PgTable) {
+            type = "TABLE";
+        } else if (this instanceof PgView) {
+            type = "VIEW";
+        } else if (this instanceof PgFunction) {
+            type = "FUNCTION";
+        }
+        sb
+            .append("\n\n-- ")
+            .append(type)
+            .append(' ')
+            .append(getName())
+            .append(' ')
+            .append("GRANT\n");
+        
         for (PgPrivilege priv : privileges) {
             sb.append('\n').append(priv.getCreationSQL());
         }

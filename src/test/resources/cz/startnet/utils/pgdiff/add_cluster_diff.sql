@@ -6,12 +6,10 @@ CREATE SEQUENCE testtable2_id_seq
 	NO MINVALUE
 	CACHE 1;
 
-
 CREATE TABLE testtable2 (
 	id integer DEFAULT nextval('testtable2_id_seq'::regclass) NOT NULL,
 	col1 boolean NOT NULL
 );
-
 
 ALTER SEQUENCE testtable2_id_seq
 	OWNED BY testtable2.id;
