@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
@@ -52,6 +53,7 @@ public class DiffTableViewer extends Composite {
     private TableViewerComparator comparator;
     private PgDatabase dbSource;
     private PgDatabase dbTarget;
+    private Label lblObjectCount;
     
     public DiffTableViewer(Composite parent, int style) {
         super(parent, style);
@@ -125,7 +127,7 @@ public class DiffTableViewer extends Composite {
         
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout contButtonsLayout = new GridLayout(5, false);
+        GridLayout contButtonsLayout = new GridLayout(3, false);
         contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
         contButtons.setLayout(contButtonsLayout);
         
@@ -146,6 +148,9 @@ public class DiffTableViewer extends Composite {
                 viewer.setAllChecked(false);
             }
         });
+        
+        lblObjectCount = new Label(contButtons, SWT.RIGHT);
+        lblObjectCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
     }
 
     private void initColumns() {
@@ -344,6 +349,10 @@ public class DiffTableViewer extends Composite {
             widthOfColumns += c.getWidth();
         }
         columnName.getColumn().setWidth(widthOfColumns-viewer.getTable().getSize().x);
+        
+        lblObjectCount.setText("Objects: " +
+                String.valueOf(viewer.getTable().getItemCount()));
+        lblObjectCount.getParent().layout();
     }
     
     public TreeElement filterDiffTree() {
