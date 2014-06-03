@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
-import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
+import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
@@ -180,17 +180,17 @@ class GitPrefPage extends FieldEditorPreferencePage {
                 fd.setText("Save private key to a file...");
                 fd.setOverwrite(true);
                 String privateFileName = fd.open();
-                if (privateFileName != null)
+                if (privateFileName != null){
                     try {
                         JGitExec.genKeys(privateFileName);
                         editorPrivate.setStringValue(privateFileName);
                     } catch (IOException | JSchException ex) {
-                        ExceptionNotifyHelper
-                                .notifyAndThrow(
-                                        new IllegalStateException(
-                                                "Some error occured during RSA keys creation and writing to files",
-                                                ex), parent.getShell());
+                        ExceptionNotifier.notify(
+                                new IllegalStateException("Error occured during "
+                                        + "RSA keys creation and writing to files", ex), 
+                                        parent.getShell(), true, true);
                     }
+                }
             }
         });
         copyPublicKeyButt = new Button(parent, SWT.PUSH);

@@ -20,7 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
-import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
+import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
@@ -86,14 +86,16 @@ public class ProjSyncSrc {
         try {
             new ProgressMonitorDialog(shell).run(true, false, syncRunnable);
         } catch (InterruptedException ex) {
-            ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
-                    "Uncancellable thread interrupted!", ex), shell);
+            ExceptionNotifier.notify(new IllegalStateException(
+                    "Repository sync uncancellable thread interrupted", ex), shell, true, true);
+            return false;
         }
 
         if (conflicted[0]) {
             MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR);
             mb.setText("Sync error!");
-            mb.setMessage("Repository cache has conflicts!" + " Resolve them manually and reload project before continuing.");
+            mb.setMessage("Repository cache has conflicts! Resolve them manually"
+                    + " and reload project before continuing.");
             mb.open();
         }else{
             events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);

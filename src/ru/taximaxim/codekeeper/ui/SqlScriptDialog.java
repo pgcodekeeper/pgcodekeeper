@@ -95,65 +95,66 @@ public class SqlScriptDialog extends MessageDialog {
         // case Run script
         if (buttonId == 0 && !isRunning){
             this.runScriptBtn = getButton(0);
-            
+            final File fileTmpScript;
             try {
-                @SuppressWarnings("resource")
-                final File fileTmpScript = new TempFile("tmp_rollon_", ".sql").get();
+                // TODO remove fileTmpScript if script is done or interrupted
+                fileTmpScript = new TempFile("tmp_rollon_", ".sql").get();
                 
-                try (PrintWriter writer = new PrintWriter(fileTmpScript)) {
-                    writer.write(textRetrieved);
-                }
-                
-                List<String> command = Arrays.asList(txtScript.getText()
-                        .replaceFirst(SCRIPT_PLACEHOLDER, fileTmpScript.getAbsolutePath())
-                        .split(Pattern.quote(" ")));
-                final ProcessBuilder pb = new ProcessBuilder(command);
-                
-                // new runnable to unlock the UI thread
-                Runnable launcher = new Runnable() {
-                    
-                    @Override
-                    public void run() {
-                        try {
-                            StdStreamRedirector.launchAndRedirect(pb);
-                        } catch (final IOException ex) {
-                            SqlScriptDialog.this.getShell().getDisplay().syncExec(
-                                    new Runnable() {
-                                        
-                                        @Override
-                                        public void run() {
-                                            Log.log(ex);
-                                            MessageBox mb = new MessageBox(
-                                                    getShell(), SWT.ERROR);
-                                            mb.setMessage("IOException thrown while running script: " + ex.getMessage());
-                                            mb.open();
-                                        }
-                                    });
-                        } finally {
-                            fileTmpScript.delete();
-                            
-                            // request UI change: button label changed
-                            SqlScriptDialog.this.getShell().getDisplay().asyncExec(
-                                    new Runnable() {
-                                        
-                                        @Override
-                                        public void run() {
-                                            isRunning = false;
-                                            runScriptBtn.setText(runScriptText);
-                                        }
-                                    });
-                        }
-                    }
-                };
-                // run thread that calls StdStreamRedirector.launchAndRedirect
-                scriptThread = new Thread(launcher);
-                scriptThread.start();
-                getButton(0).setText(stopScriptText);
-                isRunning = true;
+                PrintWriter writer = new PrintWriter(fileTmpScript);
+                writer.write(textRetrieved);
+                writer.close();
             } catch (IOException ex) {
-                ExceptionNotifyHelper.notifyAndThrow(
-                        new IllegalStateException(ex), getShell());
+                ExceptionNotifier.notify(new IllegalStateException("Error saving "
+                        + "rollon script to temporary file" , ex), getShell(), true, true);
+                return;
             }
+                
+            List<String> command = Arrays.asList(txtScript.getText()
+                    .replaceFirst(SCRIPT_PLACEHOLDER, fileTmpScript.getAbsolutePath())
+                    .split(Pattern.quote(" ")));
+            final ProcessBuilder pb = new ProcessBuilder(command);
+            
+            // new runnable to unlock the UI thread
+            Runnable launcher = new Runnable() {
+                
+                @Override
+                public void run() {
+                    try {
+                        StdStreamRedirector.launchAndRedirect(pb);
+                    } catch (final IOException ex) {
+                        // in case of exception sync call to notify user via UI
+                        SqlScriptDialog.this.getShell().getDisplay().syncExec(
+                                new Runnable() {
+                                    
+                                    @Override
+                                    public void run() {
+                                        ExceptionNotifier.notify(
+                                                new IllegalStateException(
+                                                        "Exception during script execution", ex),
+                                                        getShell(), true, true);
+                                    }
+                                });
+                    } finally {
+                        fileTmpScript.delete();
+                        
+                        // request UI change: button label changed
+                        SqlScriptDialog.this.getShell().getDisplay().asyncExec(
+                                new Runnable() {
+                                    
+                                    @Override
+                                    public void run() {
+                                        isRunning = false;
+                                        runScriptBtn.setText(runScriptText);
+                                    }
+                                });
+                    }
+                }
+            };
+            // run thread that calls StdStreamRedirector.launchAndRedirect
+            scriptThread = new Thread(launcher);
+            scriptThread.start();
+            getButton(0).setText(stopScriptText);
+            isRunning = true;
         }
         // case Stop script
         else if (buttonId == 0 && isRunning){
@@ -177,8 +178,9 @@ public class SqlScriptDialog extends MessageDialog {
                 try (PrintWriter writer = new PrintWriter(script)) {
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
-                    ExceptionNotifyHelper.notifyAndThrow(
-                            new IllegalStateException(ex), getShell());
+                    ExceptionNotifier.notify(new IllegalStateException("Error saving "
+                            + "script to a file", ex), getShell(), true, true);
+                    return;
                 }
                 
                 String fileSaved = "Script saved to file " + script.getAbsolutePath();
