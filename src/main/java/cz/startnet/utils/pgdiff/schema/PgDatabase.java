@@ -115,11 +115,11 @@ public class PgDatabase extends PgStatement {
             throw new IllegalStateException("Replaced schema is not in the database");
         }
         
-        schemas.set(old, newSchema);
+        schemas.remove(old);
+        addSchema(newSchema);
         if (defaultSchema == oldSchema) {
             setDefaultSchema(newSchema.getName());
         }
-        resetHash();
     }
     
     /**
