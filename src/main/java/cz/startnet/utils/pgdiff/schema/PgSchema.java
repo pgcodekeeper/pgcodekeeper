@@ -289,6 +289,11 @@ public class PgSchema extends PgStatement {
     }
     
     @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+    
+    @Override
     public PgSchema shallowCopy() {
         PgSchema schemaDst = new PgSchema(getName(), getRawStatement());
         schemaDst.setAuthorization(getAuthorization());

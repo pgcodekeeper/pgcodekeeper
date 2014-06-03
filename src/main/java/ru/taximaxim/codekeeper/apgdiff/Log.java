@@ -52,6 +52,7 @@ public class Log {
             }
             logger.log(level, msg, ex);
         } catch (Exception exLog) {
+            // TODO FIXME DEBUG HACK
             /*if (failedToGetLog) {
                 System.out.println("LogService not found! Logging to stdout.");
             } else {

@@ -17,7 +17,8 @@ abstract public class PgStatementWithSearchPath extends PgStatement {
         super(name, rawStatement);
         this.searchPath = searchPath;
     }
+    
     public String getSearchPath() {
         return searchPath;
-    }    
+    }
 }

@@ -84,6 +84,7 @@ public class PrivilegeParser {
         }
         
         PgStatement obj = null;
+        String schemaName = null;
         switch (objType) {
         case "TABLE":
         case "SEQUENCE":
@@ -92,7 +93,8 @@ public class PrivilegeParser {
             break;
             
         case "SCHEMA":
-            obj = db.getSchema(ParserUtils.getObjectName(p.parseIdentifier()));
+            schemaName = ParserUtils.getObjectName(p.parseIdentifier());
+            obj = db.getSchema(schemaName);
             break;
             
         default:
@@ -102,11 +104,14 @@ public class PrivilegeParser {
             return;
         }
         
-        if (obj != null) {
-            obj.addPrivilege(privilege);
-        } else {
-            p.throwUnsupportedCommand();
+        // throw here if we couldn't find schema
+        // other not found objects should throw in getStatementFromSchema()
+        if (obj == null) {
+            throw new RuntimeException(MessageFormat.format(
+                    Resources.getString("CannotFindObject"), schemaName, statement));
         }
+        
+        obj.addPrivilege(privilege);
     }
 
     private static PgStatement getStatementFromSchema(Parser p, String type,
@@ -148,6 +153,11 @@ public class PrivilegeParser {
         
         default:
             break;
+        }
+        
+        if (obj == null) {
+            throw new RuntimeException(MessageFormat.format(
+                    Resources.getString("CannotFindObject"), objName, statement));
         }
         
         return obj;

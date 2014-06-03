@@ -22,6 +22,8 @@ abstract public class PgStatement {
     private PgStatement parent;
     
     protected final List<PgPrivilege> privileges = new ArrayList<>(1);
+
+    protected String owner;
     
     private volatile int hash;
     private volatile boolean hashComputed;
@@ -100,8 +102,17 @@ abstract public class PgStatement {
         
         return sb;
     }
+    
     public String getPrivilegesSQL() {
         return appendPrivileges(new StringBuilder()).toString();
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+    
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
     
     abstract public String getCreationSQL();

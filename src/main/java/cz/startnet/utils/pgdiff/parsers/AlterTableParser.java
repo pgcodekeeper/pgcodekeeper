@@ -85,13 +85,7 @@ public class AlterTableParser {
                 table.setClusterIndexName(
                         ParserUtils.getObjectName(parser.parseIdentifier()));
             } else if (parser.expectOptional("OWNER", "TO")) {
-                // we do not parse this one so we just consume the identifier
-                if (outputIgnoredStatements) {
-                    database.addIgnoredStatement("ALTER TABLE " + tableName
-                            + " OWNER TO " + parser.parseIdentifier() + ';');
-                } else {
-                    parser.parseIdentifier();
-                }
+                table.setOwner(parser.parseIdentifier());
             } else if (parser.expectOptional("ADD")) {
                 if (parser.expectOptional("FOREIGN", "KEY")) {
                     parseAddForeignKey(parser, table, searchPath);
@@ -393,13 +387,7 @@ public class AlterTableParser {
                     parser.throwUnsupportedCommand();
                 }
             } else if (parser.expectOptional("OWNER", "TO")) {
-                // we do not parse this one so we just consume the identifier
-                if (outputIgnoredStatements) {
-                    database.addIgnoredStatement("ALTER TABLE " + viewName
-                            + " OWNER TO " + parser.parseIdentifier() + ';');
-                } else {
-                    parser.parseIdentifier();
-                }
+                view.setOwner(parser.parseIdentifier());
             } else {
                 parser.throwUnsupportedCommand();
             }
@@ -422,13 +410,7 @@ public class AlterTableParser {
             final String sequenceName, final PgDatabase database) {
         while (!parser.expectOptional(";")) {
             if (parser.expectOptional("OWNER", "TO")) {
-                // we do not parse this one so we just consume the identifier
-                if (outputIgnoredStatements) {
-                    database.addIgnoredStatement("ALTER TABLE " + sequenceName
-                            + " OWNER TO " + parser.parseIdentifier() + ';');
-                } else {
-                    parser.parseIdentifier();
-                }
+                sequence.setOwner(parser.parseIdentifier());
             } else {
                 parser.throwUnsupportedCommand();
             }

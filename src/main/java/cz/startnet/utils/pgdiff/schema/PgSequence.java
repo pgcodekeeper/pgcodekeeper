@@ -196,7 +196,8 @@ public class PgSequence extends PgStatementWithSearchPath {
                     && Objects.equals(cache, seq.getCache())
                     && cycle == seq.isCycle()
                     && Objects.equals(ownedBy, seq.getOwnedBy())
-                    && privileges.equals(seq.privileges);
+                    && privileges.equals(seq.privileges)
+                    && Objects.equals(owner, seq.getOwner());
         }
         
         return eq;
@@ -215,6 +216,7 @@ public class PgSequence extends PgStatementWithSearchPath {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((ownedBy == null) ? 0 : ownedBy.hashCode());
         result = prime * result + ((startWith == null) ? 0 : startWith.hashCode());
+        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         return result;
     }
 
