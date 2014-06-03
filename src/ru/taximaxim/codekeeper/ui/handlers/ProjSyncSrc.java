@@ -36,9 +36,13 @@ public class ProjSyncSrc {
     private void execute(
             PgDbProject proj,
             @Named(IServiceConstants.ACTIVE_SHELL) Shell shell,
-            @Named(UIConsts.PREF_STORE) IPreferenceStore prefStore)
-                    throws IOException, InvocationTargetException {
-        sync(proj, shell, prefStore);
+            @Named(UIConsts.PREF_STORE) IPreferenceStore prefStore){
+        try {
+            sync(proj, shell, prefStore);
+        } catch (InvocationTargetException e) {
+            ExceptionNotifier.notify(new IllegalStateException("Could not syncronize "
+                    + "repository with remote: " + e.toString(), e), shell, true, true);
+        }
     }
 
     @CanExecute
@@ -53,7 +57,7 @@ public class ProjSyncSrc {
             final PgDbProject proj,
             Shell shell,
             final IPreferenceStore mainPrefs)
-                    throws IOException, InvocationTargetException {
+                    throws InvocationTargetException {
         Log.log(Log.LOG_INFO, "Syncing project " + proj.getProjectFile() +
                 " with repo url " + proj.getString(UIConsts.PROJ_PREF_REPO_URL));
         
@@ -77,7 +81,8 @@ public class ProjSyncSrc {
                         conflicted[0] = !repo.repoUpdate(repoDir);
                     }
                 } catch (IOException ex) {
-                    throw new InvocationTargetException(ex);
+                    throw new InvocationTargetException(ex, "Error while checking"
+                            + " conflicts or updating repository: " + ex.toString());
                 }
                 monitor.done();
             }

@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.parts;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.annotation.PostConstruct;
@@ -254,7 +253,7 @@ public class DiffPartDescr {
                     if (!ProjSyncSrc.sync(proj, shell, mainPrefs)) {
                         return;
                     }
-                } catch (InvocationTargetException | IOException ex) {
+                } catch (InvocationTargetException ex) {
                     throw new IllegalStateException(
                             "Unexpected error while trying to sync repository cache!",
                             ex);

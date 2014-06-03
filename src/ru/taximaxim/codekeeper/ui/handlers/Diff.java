@@ -1,7 +1,6 @@
  
 package ru.taximaxim.codekeeper.ui.handlers;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.inject.Named;
@@ -13,6 +12,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.DiffWizard;
@@ -26,13 +26,18 @@ public class Diff {
             @Named(IServiceConstants.ACTIVE_SHELL)
             Shell shell,
             @Named(UIConsts.PREF_STORE)
-            IPreferenceStore prefStore) throws IOException, InvocationTargetException {
-        if(ProjSyncSrc.sync(proj, shell, prefStore)) {
-            Log.log(Log.LOG_DEBUG, "Diff wizard about to show");
-            
-            WizardDialog dialog = new WizardDialog(
-                    shell, new DiffWizard(proj, prefStore));
-            dialog.open();
+            IPreferenceStore prefStore){
+        try {
+            if(ProjSyncSrc.sync(proj, shell, prefStore)) {
+                Log.log(Log.LOG_DEBUG, "Diff wizard about to show");
+                
+                WizardDialog dialog = new WizardDialog(
+                        shell, new DiffWizard(proj, prefStore));
+                dialog.open();
+            }
+        } catch (InvocationTargetException e) {
+            ExceptionNotifier.notify(new IllegalStateException("Could not syncronize "
+                    + "repository with remote: " + e.toString(), e), shell, true, true);
         }
     }
     

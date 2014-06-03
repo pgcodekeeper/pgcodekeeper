@@ -50,7 +50,6 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -331,7 +330,7 @@ public class CommitPartDescr {
                     if (!ProjSyncSrc.sync(proj, shell, mainPrefs)) {
                         return;
                     }
-                } catch (InvocationTargetException | IOException ex) {
+                } catch (InvocationTargetException ex) {
                     throw new IllegalStateException(
                             "Unexpected error while trying to sync repository cache!",
                             ex);

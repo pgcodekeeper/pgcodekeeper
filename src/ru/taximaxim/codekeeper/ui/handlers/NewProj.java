@@ -1,8 +1,6 @@
  
 package ru.taximaxim.codekeeper.ui.handlers;
 
-import java.io.IOException;
-
 import javax.inject.Named;
 
 import org.eclipse.e4.core.contexts.IEclipseContext;
@@ -29,7 +27,7 @@ public class NewProj {
             @Named(IServiceConstants.ACTIVE_SHELL)
             Shell shell,
             IEclipseContext ctx, EPartService partService, EModelService model,
-            MApplication app) throws IOException {
+            MApplication app){
         Log.log(Log.LOG_DEBUG, "New Project Wizard about to show");
         
         NewProjWizard newProj = new NewProjWizard(prefStore);
