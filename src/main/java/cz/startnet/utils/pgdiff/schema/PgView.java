@@ -56,7 +56,7 @@ public class PgView extends PgStatementWithSearchPath {
 
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(query.length() * 2);
-        sbSQL.append("CREATE VIEW ");
+        sbSQL.append("CREATE OR REPLACE VIEW ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
         if (columnNames != null && !columnNames.isEmpty()) {
@@ -113,7 +113,7 @@ public class PgView extends PgStatementWithSearchPath {
     }
 
     public String getDropSQL() {
-        return "DROP VIEW " + PgDiffUtils.getQuotedName(getName()) + ";";
+        return "DROP VIEW IF EXISTS " + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     public void setQuery(final String query) {
