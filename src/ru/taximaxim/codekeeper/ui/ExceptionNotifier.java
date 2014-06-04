@@ -36,8 +36,8 @@ public class ExceptionNotifier {
      * Displays UI dialog with message and stack trace
      * 
      * @param source
-     * @param shell
      * @param message
+     * @param shell Shell to display dialog on. Can be null if showInDialog is false
      * @param outputToConsole
      * @param showInDialog
      */
