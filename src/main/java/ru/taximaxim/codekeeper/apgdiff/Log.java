@@ -52,7 +52,7 @@ public class Log {
             }
             logger.log(level, msg, ex);
         } catch (Exception exLog) {
-            /*if (failedToGetLog) {
+            if (failedToGetLog) {
                 System.out.println("LogService not found! Logging to stdout.");
             } else {
                 System.out.println("ERROR while trying to log!");
@@ -65,7 +65,7 @@ public class Log {
             if (ex != null) {
                 ex.printStackTrace();
             }
-            System.out.println();*/
+            System.out.println();
         }
     }
 }

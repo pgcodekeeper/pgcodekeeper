@@ -262,7 +262,7 @@ public final class Parser {
      */
     public int parseInteger() {
         int endPos = position;
-
+        // FIXME negative numbers?
         for (; endPos < string.length(); endPos++) {
             if (!Character.isLetterOrDigit(string.charAt(endPos))) {
                 break;
@@ -424,13 +424,13 @@ public final class Parser {
                         // and is not a part of a bigger word
                         // any non-letter character delimits the word
                         if (charPos - 1 > -1 &&
-                                Character.isLetter(string.charAt(
+                                Character.isJavaIdentifierStart(string.charAt(
                                         charPos - 1))) {
                             // current char continues another word, skip this word
                             continue;
                         }
                         if (charPos < string.length() - word.length()
-                                && Character.isLetter(string.charAt(
+                                && Character.isJavaIdentifierStart(string.charAt(
                                         charPos + word.length()))) {
                             // char after the word continues it, skip this word
                             continue;
