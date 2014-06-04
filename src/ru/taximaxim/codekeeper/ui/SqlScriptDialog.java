@@ -104,8 +104,8 @@ public class SqlScriptDialog extends MessageDialog {
                 writer.write(textRetrieved);
                 writer.close();
             } catch (IOException ex) {
-                ExceptionNotifier.notify(new IllegalStateException("Error saving "
-                        + "rollon script to temporary file" , ex), getShell(), true, true);
+                ExceptionNotifier.notify(ex, "Error saving rollon script to temporary file",
+                        getShell(), true, true);
                 return;
             }
                 
@@ -128,10 +128,8 @@ public class SqlScriptDialog extends MessageDialog {
                                     
                                     @Override
                                     public void run() {
-                                        ExceptionNotifier.notify(
-                                                new IllegalStateException(
-                                                        "Exception during script execution", ex),
-                                                        getShell(), true, true);
+                                        ExceptionNotifier.notify(ex, "Exception during "
+                                                + "script execution", getShell(), true, true);
                                     }
                                 });
                     } finally {
@@ -178,8 +176,8 @@ public class SqlScriptDialog extends MessageDialog {
                 try (PrintWriter writer = new PrintWriter(script)) {
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
-                    ExceptionNotifier.notify(new IllegalStateException("Error saving "
-                            + "script to a file", ex), getShell(), true, true);
+                    ExceptionNotifier.notify(ex, "Error saving script to a file",
+                            getShell(), true, true);
                     return;
                 }
                 

@@ -300,13 +300,12 @@ public class DiffPartDescr {
                     new ProgressMonitorDialog(shell).run(true, false,
                             treediffer);
                 } catch (InvocationTargetException ex) {
-                    ExceptionNotifier.notify(new IllegalStateException("Error in differ thread",
-                            ex), shell, true, true);
+                    ExceptionNotifier.notify(ex, "Error in differ thread", shell, true, true);
                     return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    ExceptionNotifier.notify(new IllegalStateException(
-                            "Differ thread cancelled. Shouldn't happen!", ex), shell, true, true);
+                    ExceptionNotifier.notify(ex, "Differ thread cancelled. Shouldn't happen!",
+                            shell, true, true);
                     return;
                 }
 

@@ -149,7 +149,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                             AddonPrefLoader.savePreference(mainPrefStore, 
                                     UIConsts.PREF_LAST_REPO, repoUrl);
                         } catch (IOException e) {
-                            throw new InvocationTargetException(e);
+                            throw new InvocationTargetException(e, "Error cloning repository");
                         }
                         monitor.done();
                     }
@@ -160,13 +160,13 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                             false, cloneRunnable);
                 } catch (InvocationTargetException e) {
                     event.doit = false;
-                    ExceptionNotifier.notify(new IllegalStateException(
-                            "Cloning was not successful", e), getShell(), true, true);
+                    ExceptionNotifier.notify(e, "Cloning was not successful",
+                            getShell(), true, true);
                     event.doit = false;
                 }catch(InterruptedException e){
                     event.doit = false;
-                    ExceptionNotifier.notify(new IllegalStateException(
-                            "Cloning thread interrupted", e), getShell(), true, true);
+                    ExceptionNotifier.notify(e, "Cloning thread interrupted",
+                            getShell(), true, true);
                     event.doit = false;
                 }
             } else {
@@ -249,13 +249,13 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                 getContainer().run(false, false, 
                         new InitProjectFromSource(mainPrefStore, props, pageDb.getDumpPath()));
             } catch (InvocationTargetException ex) {
-                ExceptionNotifier.notify(new IllegalStateException(
-                        "Error initializing repo from source", ex), getShell(), true, true);
+                ExceptionNotifier.notify(ex, "Error initializing repo from source",
+                        getShell(), true, true);
                 return false;
             } catch (InterruptedException ex) {
                 // assume run() was called as non cancelable
-                ExceptionNotifier.notify(new IllegalStateException(
-                        "Project initializer thread interrupted", ex), getShell(), true, true);
+                ExceptionNotifier.notify(ex, "Project initializer thread interrupted",
+                        getShell(), true, true);
                 return false;
             }
         }else if (!pageSubdir.isDoInit() && new File (pageSubdir.getRepoSubdir()).list().length == 0 ){

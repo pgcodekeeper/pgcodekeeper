@@ -65,8 +65,7 @@ public class SwitchBranch {
                             });
                         }
                     } catch (IOException | InterruptedException ex) {
-                        ExceptionNotifier.notify(new IllegalStateException("Exception "
-                                + "thrown during running checkout job: " + ex.toString(), ex),
+                        ExceptionNotifier.notify(ex, "Exception thrown during running checkout job",
                                 shell, true, true);
                     } finally {
                         git[0].close();
@@ -77,8 +76,7 @@ public class SwitchBranch {
             if (git[0] != null){
                 git[0].close();
             }
-            ExceptionNotifier.notify(new IllegalStateException(
-                    "Wrong repository or ref name: " + e.toString(), e), shell, true, true);
+            ExceptionNotifier.notify(e, "Wrong repository or ref name", shell, true, true);
             return;
         }
 	}

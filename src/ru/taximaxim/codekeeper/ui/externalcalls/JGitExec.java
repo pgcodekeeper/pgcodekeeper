@@ -79,7 +79,7 @@ public class JGitExec implements IRepoWorker{
         try {
             cloneCom.setURI(url).setDirectory(dirTo).call().close();
         } catch (GitAPIException e) {
-            throw new IOException ("Exception thrown at JGit clone.", e);
+            throw new IOException ("Exception thrown at JGit clone: " + e.toString(), e);
         }
     }
 

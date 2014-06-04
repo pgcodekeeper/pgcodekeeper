@@ -40,8 +40,8 @@ public class ProjSyncSrc {
         try {
             sync(proj, shell, prefStore);
         } catch (InvocationTargetException e) {
-            ExceptionNotifier.notify(new IllegalStateException("Could not syncronize "
-                    + "repository with remote: " + e.toString(), e), shell, true, true);
+            ExceptionNotifier.notify(e, "Could not syncronize repository with remote",
+                    shell, true, true);
         }
     }
 
@@ -82,7 +82,7 @@ public class ProjSyncSrc {
                     }
                 } catch (IOException ex) {
                     throw new InvocationTargetException(ex, "Error while checking"
-                            + " conflicts or updating repository: " + ex.toString());
+                            + " conflicts or updating repository");
                 }
                 monitor.done();
             }
@@ -91,8 +91,8 @@ public class ProjSyncSrc {
         try {
             new ProgressMonitorDialog(shell).run(true, false, syncRunnable);
         } catch (InterruptedException ex) {
-            ExceptionNotifier.notify(new IllegalStateException(
-                    "Repository sync uncancellable thread interrupted", ex), shell, true, true);
+            ExceptionNotifier.notify(ex, "Repository sync uncancellable thread interrupted",
+                    shell, true, true);
             return false;
         }
 

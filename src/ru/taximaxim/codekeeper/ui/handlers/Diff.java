@@ -36,8 +36,8 @@ public class Diff {
                 dialog.open();
             }
         } catch (InvocationTargetException e) {
-            ExceptionNotifier.notify(new IllegalStateException("Could not syncronize "
-                    + "repository with remote: " + e.toString(), e), shell, true, true);
+            ExceptionNotifier.notify(e, "Could not syncronize repository with remote",
+                    shell, true, true);
         }
     }
     

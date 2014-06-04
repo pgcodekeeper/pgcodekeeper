@@ -3,7 +3,15 @@ package ru.taximaxim.codekeeper.ui;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 
@@ -23,34 +31,34 @@ import ru.taximaxim.codekeeper.ui.parts.Console;
 public class ExceptionNotifier {
     
     /**
-     * Outputs ex.getMessage() to console
+     * Outputs short to console
      * Prints stack trace to log
      * Displays UI dialog with message and stack trace
      * 
-     * @param ex
-     * @param parent
+     * @param source
+     * @param shell
+     * @param message
      * @param outputToConsole
      * @param showInDialog
      */
-    public static void notify(RuntimeException ex, Shell parent, 
+    public static void notify(Exception source, String message, Shell shell, 
             boolean outputToConsole, boolean showInDialog) {
-        Log.log(Log.LOG_ERROR, ex.getMessage(), ex);
+        Log.log(Log.LOG_ERROR, source.getMessage(), source);
         
         String initReason = "";
-        Throwable t = ex.getCause();
+        Throwable t = source.getCause();
         while (t != null){
-            initReason = t.getMessage() == null? "" : t.getMessage();
+            initReason = t.getMessage() == null? initReason : t.toString();
             t = t.getCause();
         }
         
         if (outputToConsole){
-            Console.addMessage(ex.getMessage() + ": " + initReason);
+            Console.addMessage(message + ": " + initReason);
         }
         if (showInDialog){
-            IStatus status = new Status(IStatus.ERROR, "<unknown>", initReason, ex);
-            StackTraceErrorDialog errorDialog = new ExceptionNotifier().
-                    new StackTraceErrorDialog(parent, "Exception thrown", ex.getMessage(), status, 4);
-            errorDialog.open();
+            IStatus status = new Status(IStatus.ERROR, "<unknown>", initReason, source);
+            new ExceptionNotifier().new StackTraceErrorDialog(shell, "Exception thrown", 
+                    message + ": " + source.toString(), status, 4).open();
         }
     }
     
@@ -65,6 +73,8 @@ public class ExceptionNotifier {
         
         private IStatus status;
         
+        private List rtc;
+        
         public StackTraceErrorDialog(Shell parentShell, String dialogTitle,
                 String message, IStatus status, int displayMask) {
             super(parentShell, dialogTitle, message, status, displayMask);
@@ -73,7 +83,7 @@ public class ExceptionNotifier {
         
         @Override
         protected List createDropDownList(Composite parent) {
-            List rtc = super.createDropDownList(parent);
+            rtc = super.createDropDownList(parent);
             if (status != null && status.getException() != null) {
                 
                 Throwable t = status.getException();
@@ -89,5 +99,42 @@ public class ExceptionNotifier {
             return rtc;
         }
         
+        @Override
+        protected void createButtonsForButtonBar(final Composite parent) {
+            Layout layout = parent.getLayout();
+            if (layout instanceof GridLayout){
+                GridLayout gl = (GridLayout) layout;
+                gl.numColumns++;
+                parent.setLayout(gl);
+            }
+            createButton(parent, IDialogConstants.NO_ID, "Copy stack trace",true).
+                    addSelectionListener(new SelectionListener() {
+
+                @Override
+                public void widgetSelected(SelectionEvent arg0) {
+                    putStackToClipboard(parent);
+                }
+
+                @Override
+                public void widgetDefaultSelected(SelectionEvent arg0) {
+                    putStackToClipboard(parent);
+                }
+            });
+            
+            super.createButtonsForButtonBar(parent);
+        }
+
+        private void putStackToClipboard(Composite parent) {
+            // generate list to fetch strings from
+            if (rtc == null){
+                createDropDownList(getShell());
+            }
+            StringBuilder sBuilder = new StringBuilder();
+            for (String l : rtc.getItems()){
+                sBuilder.append(l + "\n");
+            }
+            new Clipboard(parent.getDisplay()).setContents(new Object[]{sBuilder.toString()}, 
+                    new Transfer[] { TextTransfer.getInstance() });
+        }
     }
 }

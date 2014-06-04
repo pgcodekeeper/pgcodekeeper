@@ -45,7 +45,7 @@ public class Differ implements IRunnableWithProgress {
     
     private void checkFinished() {
         if(!finished) {
-            throw new IllegalStateException("Runnable has not yet finisheEEEd!"
+            throw new IllegalStateException("Runnable has not yet finished!"
                     + " diff is undefined!");
         }
     }

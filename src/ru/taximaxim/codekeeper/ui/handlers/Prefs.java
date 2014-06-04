@@ -185,10 +185,8 @@ class GitPrefPage extends FieldEditorPreferencePage {
                         JGitExec.genKeys(privateFileName);
                         editorPrivate.setStringValue(privateFileName);
                     } catch (IOException | JSchException ex) {
-                        ExceptionNotifier.notify(
-                                new IllegalStateException("Error occured during "
-                                        + "RSA keys creation and writing to files", ex), 
-                                        parent.getShell(), true, true);
+                        ExceptionNotifier.notify(ex, "Error occured during RSA keys "
+                                + "creation and writing to files", parent.getShell(), true, true);
                     }
                 }
             }
@@ -198,7 +196,8 @@ class GitPrefPage extends FieldEditorPreferencePage {
         copyPublicKeyButt.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                String publicFileName = editorPrivate.getTextControl(getFieldEditorParent()).getText() + ".pub";
+                String publicFileName = editorPrivate.getTextControl(
+                        getFieldEditorParent()).getText() + ".pub";
                 File publicKey = new File (publicFileName);
                 try (BufferedReader reader = new BufferedReader( new FileReader (publicKey))){
                     StringBuilder  sBuilder = new StringBuilder();
@@ -207,12 +206,12 @@ class GitPrefPage extends FieldEditorPreferencePage {
                         sBuilder.append(line + "\n");
                     }
                     Object [] data = new Object [] {sBuilder.toString()};
-                    new Clipboard(parent.getDisplay()).setContents (data, new Transfer[]{TextTransfer.getInstance()});
-                } catch (IOException e1) {
-                    MessageBox box = new MessageBox(parent.getShell(), SWT.ERROR);
-                    box.setMessage("Public key file " + editorPrivate.getTextControl(getFieldEditorParent()).getText() + 
-                            ".pub"+" either does not exist or inaccessible.");
-                    box.open();
+                    new Clipboard(parent.getDisplay()).setContents (data, 
+                            new Transfer[]{TextTransfer.getInstance()});
+                } catch (IOException ex) {
+                    ExceptionNotifier.notify(ex, "Public key file " + editorPrivate.getTextControl(
+                            getFieldEditorParent()).getText() + ".pub either does not exist "
+                                    + "or inaccessible.", parent.getShell(), true, true);
                 }
             }
         });

@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class DbStoreEditorDialog extends TrayDialog {
@@ -278,8 +279,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                 try {
                     ((IPersistentPreferenceStore) prefStore).save();
                 } catch (IOException ex) {
-                    throw new IllegalStateException(
-                            "Unexpected error while saving preferences!", ex);
+                    ExceptionNotifier.notify(ex, "Unexpected error while saving preferences: ",
+                            getShell(), true, true );
                 }
             }
         }

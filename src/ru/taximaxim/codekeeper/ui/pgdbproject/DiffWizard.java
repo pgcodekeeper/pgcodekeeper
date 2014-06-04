@@ -103,14 +103,14 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 try {
                     getContainer().run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
-                    ExceptionNotifier.notify(new IllegalStateException("Error in differ thread",
-                            ex), getContainer().getShell(), true, true);
+                    ExceptionNotifier.notify(ex, "Error in differ thread",
+                            getContainer().getShell(), true, true);
                     e.doit = false;
                     return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    ExceptionNotifier.notify(new IllegalStateException(
-                            "Differ thread cancelled", ex), getContainer().getShell(), true, true);
+                    ExceptionNotifier.notify(ex, "Differ thread cancelled", 
+                            getContainer().getShell(), true, true);
                     e.doit = false;
                     return;
                 }
@@ -134,15 +134,13 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 try {
                     getContainer().run(true, false, differ);
                 } catch (InvocationTargetException ex) {
-                    ExceptionNotifier.notify(new IllegalStateException(
-                            "Error in differ thread: " + ex.getMessage(),
-                            ex), getContainer().getShell(), true, true);
+                    ExceptionNotifier.notify(ex, "Error in differ thread",
+                            getContainer().getShell(), true, true);
                     e.doit = false;
                     return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    ExceptionNotifier.notify(new IllegalStateException(
-                            "Differ thread cancelled: " + ex.getMessage(), ex), 
+                    ExceptionNotifier.notify(ex, "Differ thread cancelled", 
                             getContainer().getShell(), true, true);
                     e.doit = false;
                     return;
