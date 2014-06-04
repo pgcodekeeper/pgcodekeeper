@@ -174,7 +174,8 @@ public class PgTable extends PgStatementWithSearchPath {
         }
 
         sbSQL.append(';');
-        
+
+        appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
         for (PgColumn column : getColumnsWithStatistics()) {

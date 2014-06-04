@@ -89,7 +89,8 @@ public class PgSequence extends PgStatementWithSearchPath {
         }
 
         sbSQL.append(';');
-        
+
+        appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {

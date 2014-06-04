@@ -58,6 +58,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         sbSQL.append(body);
         sbSQL.append(';');
         
+        appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {

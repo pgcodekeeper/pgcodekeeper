@@ -76,7 +76,7 @@ abstract public class PgStatement {
             return sb;
         }
         
-        String type = "<unknown>";
+        String type;
         if (this instanceof PgSchema) {
             type = "SCHEMA";
         } else if (this instanceof PgSequence) {
@@ -87,9 +87,11 @@ abstract public class PgStatement {
             type = "VIEW";
         } else if (this instanceof PgFunction) {
             type = "FUNCTION";
+        } else {
+            throw new IllegalStateException("GRANTs allowed only for SCHEMA, "
+                    + "SEQUENCE, TABLE, VIEW, FUNCTION objects.");
         }
-        sb
-            .append("\n\n-- ")
+        sb.append("\n\n-- ")
             .append(type)
             .append(' ')
             .append(getName())
@@ -113,6 +115,41 @@ abstract public class PgStatement {
     
     public void setOwner(String owner) {
         this.owner = owner;
+        resetHash();
+    }
+    
+    public StringBuilder appendOwnerSQL(StringBuilder sb) {
+        if (owner == null) {
+            return sb;
+        }
+        
+        String type;
+        if (this instanceof PgSchema) {
+            type = "SCHEMA";
+        } else if (this instanceof PgSequence) {
+            type = "SEQUENCE";
+        } else if (this instanceof PgTable) {
+            type = "TABLE";
+        } else if (this instanceof PgView) {
+            type = "VIEW";
+        } else if (this instanceof PgFunction) {
+            type = "FUNCTION";
+        } else {
+            throw new IllegalStateException("OWNERs allowed only for SCHEMA, "
+                    + "SEQUENCE, TABLE, VIEW, FUNCTION objects.");
+        }
+        
+        sb.append("\n\nALTER ")
+            .append(type)
+            .append(" OWNER TO ")
+            .append(owner)
+            .append(';');
+        
+        return sb;
+    }
+    
+    public String getOwnerSQL() {
+        return appendOwnerSQL(new StringBuilder()).toString();
     }
     
     abstract public String getCreationSQL();

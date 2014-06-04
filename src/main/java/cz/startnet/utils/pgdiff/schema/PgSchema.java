@@ -71,7 +71,8 @@ public class PgSchema extends PgStatement {
         }
 
         sbSQL.append(';');
-        
+
+        appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {

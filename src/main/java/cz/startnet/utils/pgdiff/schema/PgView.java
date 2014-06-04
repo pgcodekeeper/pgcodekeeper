@@ -75,7 +75,8 @@ public class PgView extends PgStatementWithSearchPath {
         sbSQL.append(" AS\n\t");
         sbSQL.append(query);
         sbSQL.append(';');
-        
+
+        appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
         for (final DefaultValue defaultValue : defaultValues) {

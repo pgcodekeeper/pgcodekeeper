@@ -6,6 +6,7 @@
 package cz.startnet.utils.pgdiff;
 
 import java.io.PrintWriter;
+import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -187,6 +188,12 @@ public class PgDiffSequences {
                         + PgDiffUtils.getQuotedName(newSequence.getName()));
                 writer.print(sbSQL.toString());
                 writer.println(';');
+            }
+            
+            if (!Objects.equals(oldSequence.getOwner(), newSequence.getOwner())) {
+                searchPathHelper.outputSearchPath(writer);
+                writer.println(newSequence.getOwnerSQL());
+                writer.println();
             }
             
             if (!oldSequence.getPrivileges().equals(newSequence.getPrivileges())) {
