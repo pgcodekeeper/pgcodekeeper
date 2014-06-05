@@ -6,7 +6,8 @@ Bundle-Version: 0.2.7.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.ui.Activator
 Export-Package: ru.taximaxim.codekeeper.ui,
  ru.taximaxim.codekeeper.ui.externalcalls,
- ru.taximaxim.codekeeper.ui.fileutils
+ ru.taximaxim.codekeeper.ui.fileutils,
+ ru.taximaxim.codekeeper.ui.handlers
 Require-Bundle: apgdiff,
  org.eclipse.osgi,
  org.eclipse.core.runtime,
