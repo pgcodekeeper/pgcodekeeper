@@ -235,6 +235,20 @@ public class PgSchema extends PgStatement {
         return getView(name) != null;
     }
     
+    void replaceDef(PgSchema newSchema) {
+        if (!getName().equals(newSchema.getName())) {
+            throw new IllegalStateException("Replacing schema must have the same name");
+        }
+        
+        privileges.clear();
+        for (PgPrivilege priv : newSchema.privileges) {
+            addPrivilege(priv.shallowCopy());
+        }
+        
+        setAuthorization(newSchema.getAuthorization());
+        setDefinition(newSchema.getDefinition());
+    }
+    
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;

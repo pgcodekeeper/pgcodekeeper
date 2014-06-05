@@ -123,6 +123,22 @@ public class PgDatabase extends PgStatement {
     }
     
     /**
+     * Tries to replace the definition of default public schema.
+     * Only replaces default public schema like one created by
+     * {@link PgDatabase#PgDatabase()} constructor.
+     */
+    public void tryReplacePublicDef(PgSchema newPublic) {
+        if (newPublic.getName().equals("public")) {
+            PgSchema oldPublic = getSchema("public");
+        
+            if (oldPublic.compare(new PgDatabase().getDefaultSchema()) 
+                    && !newPublic.compare(oldPublic)) {
+                oldPublic.replaceDef(newPublic);
+            }
+        }
+    }
+    
+    /**
      * Returns extension of given name or null if the extension has not been found.
      * 
      * @param name extension name

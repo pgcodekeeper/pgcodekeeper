@@ -29,25 +29,29 @@ public class CreateSchemaParser {
         if (parser.expectOptional("AUTHORIZATION")) {
             final PgSchema schema = new PgSchema(
                     ParserUtils.getObjectName(parser.parseIdentifier()), statement);
-            if(schema.getName().equals("public")) {
-                database.replaceSchema(database.getSchema(schema.getName()), schema);
-            } else {
+            
+            PgSchema exists = database.getSchema(schema.getName());
+            if(exists == null) {
                 database.addSchema(schema);
+            } else {
+                database.tryReplacePublicDef(schema);
             }
+            
             schema.setAuthorization(schema.getName());
 
             final String definition = parser.getRest();
-
             if (definition != null && !definition.isEmpty()) {
                 schema.setDefinition(definition);
             }
         } else {
             final PgSchema schema = new PgSchema(
                     ParserUtils.getObjectName(parser.parseIdentifier()), statement);
-            if(schema.getName().equals("public")) {
-                database.replaceSchema(database.getSchema(schema.getName()), schema);
-            } else {
+            
+            PgSchema exists = database.getSchema(schema.getName());
+            if(exists == null) {
                 database.addSchema(schema);
+            } else {
+                database.tryReplacePublicDef(schema);
             }
 
             if (parser.expectOptional("AUTHORIZATION")) {
@@ -56,7 +60,6 @@ public class CreateSchemaParser {
             }
 
             final String definition = parser.getRest();
-
             if (definition != null && !definition.isEmpty()) {
                 schema.setDefinition(definition);
             }

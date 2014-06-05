@@ -92,7 +92,8 @@ public class PgDbFilter2 {
                 if(schemaEx == null) {
                     ((PgDatabase) dst).addSchema(schemaDst);
                 } else {
-                    ((PgDatabase) dst).replaceSchema(schemaEx, schemaDst);
+                    ((PgDatabase) dst).tryReplacePublicDef(schemaDst);
+                    schemaDst = schemaEx;
                 }
                 
                 res = new ProcessResult(schemaSrc, schemaDst);
