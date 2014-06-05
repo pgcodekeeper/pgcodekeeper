@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+
 /**
  * The superclass for general pgsql statement.
  * All changes to hashed fields of extending classes must be
@@ -118,7 +120,7 @@ abstract public class PgStatement {
         resetHash();
     }
     
-    public StringBuilder appendOwnerSQL(StringBuilder sb) {
+    protected StringBuilder appendOwnerSQL(StringBuilder sb) {
         if (owner == null) {
             return sb;
         }
@@ -141,6 +143,8 @@ abstract public class PgStatement {
         
         sb.append("\n\nALTER ")
             .append(type)
+            .append(' ')
+            .append(PgDiffUtils.getQuotedName(getName()))
             .append(" OWNER TO ")
             .append(owner)
             .append(';');
@@ -192,6 +196,9 @@ abstract public class PgStatement {
      */
     @Override
     public boolean equals(Object obj){
+        /*if(!this.compare((PgStatement) obj)) {
+            System.out.println(((PgStatement) obj).getName());
+        }*/
         return (obj instanceof PgStatement)? this.compare((PgStatement) obj) : false;
     }
     

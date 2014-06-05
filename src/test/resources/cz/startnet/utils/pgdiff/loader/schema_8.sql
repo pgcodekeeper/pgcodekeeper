@@ -54,7 +54,7 @@ $_$
     LANGUAGE plpgsql;
 
 
-ALTER FUNCTION "``54'253-=9!@#$%^&*()__<>?:""{}[];',./".".x.."(integer) OWNER TO madej;
+ALTER FUNCTION "``54'253-=9!@#$%^&*()__<>?:""{}[];',./".".x"".""""."(integer) OWNER TO madej;
 
 --
 -- PostgreSQL database dump complete

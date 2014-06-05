@@ -350,6 +350,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         for (PgPrivilege priv : privileges) {
             functionDst.addPrivilege(priv.shallowCopy());
         }
+        functionDst.setOwner(getOwner());
         return functionDst;
     }
     

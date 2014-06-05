@@ -436,6 +436,7 @@ public class PgTable extends PgStatementWithSearchPath {
         for (PgPrivilege priv : privileges) {
             tableDst.addPrivilege(priv.shallowCopy());
         }
+        tableDst.setOwner(getOwner());
         return tableDst;
     }
     

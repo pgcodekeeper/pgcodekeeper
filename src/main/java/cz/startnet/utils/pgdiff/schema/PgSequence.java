@@ -235,6 +235,7 @@ public class PgSequence extends PgStatementWithSearchPath {
         for (PgPrivilege priv : privileges) {
             sequenceDst.addPrivilege(priv.shallowCopy());
         }
+        sequenceDst.setOwner(getOwner());
         return sequenceDst;
     }
     

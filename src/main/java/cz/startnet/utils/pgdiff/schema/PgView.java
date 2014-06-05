@@ -246,6 +246,7 @@ public class PgView extends PgStatementWithSearchPath {
         for (PgPrivilege priv : privileges) {
             viewDst.addPrivilege(priv.shallowCopy());
         }
+        viewDst.setOwner(getOwner());
         return viewDst;
     }
     

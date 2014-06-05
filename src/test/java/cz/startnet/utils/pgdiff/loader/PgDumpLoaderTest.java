@@ -193,6 +193,8 @@ class PgDB1 extends PgDatabaseObjectCreator {
         constraint.setTableName("fax_boxes");
         constraint.setDefinition("PRIMARY KEY (fax_box_id)");
         
+        table.setOwner("postgres");
+        
         table = new PgTable("faxes", "", "");
         schema.addTable(table);
         
@@ -524,6 +526,8 @@ class PgDB6 extends PgDatabaseObjectCreator {
     col.setType("timestamp without time zone");
     table.addColumn(col);
     
+    table.setOwner("postgres");
+    
     PgIndex idx = new PgIndex("test_table_deleted", "", "");
     idx.setTableName("test_table");
     idx.setDefinition("USING btree (date_deleted) WHERE (date_deleted IS NULL)");
@@ -596,6 +600,8 @@ class PgDB8 extends PgDatabaseObjectCreator {
     arg.setDataType("integer");
     func.addArgument(arg);
     
+    func.setOwner("madej");
+    
     return d;
     }
 }
@@ -625,11 +631,15 @@ class PgDB9 extends PgDatabaseObjectCreator {
     col.setDefaultValue("now()");
     table.addColumn(col);
     
+    table.setOwner("postgres");
+    
     PgSequence seq = new PgSequence("user_id_seq", "", "");
     seq.setIncrement("1");
     seq.setCache("1");
     seq.setOwnedBy("user_data.id");
     schema.addSequence(seq);
+    
+    seq.setOwner("postgres");
     
     PgView view = new PgView("user", "", "");
     view.setQuery("( SELECT user_data.id, user_data.email, user_data.created FROM user_data)");
@@ -642,6 +652,8 @@ class PgDB9 extends PgDatabaseObjectCreator {
     select.addColumn(new GenericColumn("user_data", "created"));
     
     view.setSelect(select);
+    
+    view.setOwner("postgres");
     
     view = new PgView("ws_test", "", "");
     view.setQuery("SELECT ud.id \"   i   d   \" FROM user_data ud");
@@ -664,6 +676,8 @@ class PgDB10 extends PgDatabaseObjectCreator {
     d.addSchema(schema);
     d.setDefaultSchema("admin");
     
+    schema.setOwner("postgres");
+    
     PgTable table = new PgTable("acl_role", "", "");
     schema.addTable(table);
     
@@ -676,6 +690,8 @@ class PgDB10 extends PgDatabaseObjectCreator {
     constraint.setTableName("acl_role");
     constraint.setDefinition("PRIMARY KEY (id)");
     table.addConstraint(constraint);
+    
+    table.setOwner("postgres");
     
     table = new PgTable("user", "", "");
     schema.addTable(table);
@@ -738,6 +754,8 @@ class PgDB10 extends PgDatabaseObjectCreator {
     constraint.setTableName("user");
     constraint.setDefinition("FOREIGN KEY (role_id) REFERENCES acl_role(id)");
     table.addConstraint(constraint);
+    
+    table.setOwner("postgres");
     
     return d;
     }
@@ -810,11 +828,15 @@ class PgDB14 extends PgDatabaseObjectCreator {
     arg.setName("arg");
     func.addArgument(arg);
     
+    func.setOwner("fordfrog");
+    
     func.setComment("'test function'");
     
     func = new PgFunction("trigger_fnc", "", "");
     func.setBody("RETURNS trigger\n    LANGUAGE plpgsql\n    AS $$begin\nend;$$");
     schema.addFunction(func);
+    
+    func.setOwner("fordfrog");
     
     PgTable table = new PgTable("test", "", "");
     schema.addTable(table);
@@ -847,6 +869,8 @@ class PgDB14 extends PgDatabaseObjectCreator {
     
     constraint.setComment("'primary key'");
     
+    table.setOwner("fordfrog");
+    
     PgSequence seq = new PgSequence("test_id_seq", "", "");
     seq.setStartWith("1");
     seq.setIncrement("1");
@@ -854,6 +878,8 @@ class PgDB14 extends PgDatabaseObjectCreator {
     schema.addSequence(seq);
     
     seq.setOwnedBy("test.id");
+    
+    seq.setOwner("fordfrog");
     
     seq.setComment("'test table sequence'");
     
@@ -869,6 +895,8 @@ class PgDB14 extends PgDatabaseObjectCreator {
     select.addColumn(new GenericColumn("test", "text"));
     
     view.setSelect(select);
+    
+    view.setOwner("fordfrog");
     
     PgTrigger trigger = new PgTrigger("test_trigger", "", "");
     trigger.setBefore(true);

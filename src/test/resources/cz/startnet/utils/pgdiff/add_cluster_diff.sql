@@ -6,10 +6,14 @@ CREATE SEQUENCE testtable2_id_seq
 	NO MINVALUE
 	CACHE 1;
 
+ALTER SEQUENCE testtable2_id_seq OWNER TO fordfrog;
+
 CREATE TABLE testtable2 (
 	id integer DEFAULT nextval('testtable2_id_seq'::regclass) NOT NULL,
 	col1 boolean NOT NULL
 );
+
+ALTER TABLE testtable2 OWNER TO fordfrog;
 
 ALTER SEQUENCE testtable2_id_seq
 	OWNED BY testtable2.id;

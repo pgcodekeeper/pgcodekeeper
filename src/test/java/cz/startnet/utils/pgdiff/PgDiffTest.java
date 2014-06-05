@@ -338,11 +338,12 @@ public class PgDiffTest {
         final BufferedReader reader = new BufferedReader(new InputStreamReader(
                 PgDiffTest.class.getResourceAsStream(
                 fileNameTemplate + "_diff.sql")));
-        final char[] part = new char[1024];
         final StringBuilder sbExpDiff = new StringBuilder(1024);
 
-        while (reader.read(part) != -1) {
-            sbExpDiff.append(part);
+        String line;
+        while ((line = reader.readLine()) != null) {
+            sbExpDiff.append(line);
+            sbExpDiff.append('\n');
         }
 
         reader.close();

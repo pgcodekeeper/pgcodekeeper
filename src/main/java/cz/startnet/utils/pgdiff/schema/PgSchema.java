@@ -303,6 +303,7 @@ public class PgSchema extends PgStatement {
         for (PgPrivilege priv : privileges) {
             schemaDst.addPrivilege(priv.shallowCopy());
         }
+        schemaDst.setOwner(getOwner());
         return schemaDst;
     }
     
