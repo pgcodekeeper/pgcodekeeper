@@ -14,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -146,6 +147,12 @@ public class PgDiffTables {
             checkTablespace(writer, oldTable, newTable, searchPathHelper);
             addAlterStatistics(writer, oldTable, newTable, searchPathHelper);
             addAlterStorage(writer, oldTable, newTable, searchPathHelper);
+            
+            if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
+                searchPathHelper.outputSearchPath(writer);
+                writer.println(newTable.getOwnerSQL());
+                writer.println();
+            }
             
             if (!oldTable.getPrivileges().equals(newTable.getPrivileges())) {
                 searchPathHelper.outputSearchPath(writer);

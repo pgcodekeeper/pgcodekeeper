@@ -7,3 +7,4 @@ end;
 $$
     LANGUAGE plpgsql;
 
+ALTER FUNCTION multiply_numbers(smallint,smallint) OWNER TO fordfrog;

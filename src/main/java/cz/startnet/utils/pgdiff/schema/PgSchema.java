@@ -71,7 +71,8 @@ public class PgSchema extends PgStatement {
         }
 
         sbSQL.append(';');
-        
+
+        appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
@@ -303,6 +304,11 @@ public class PgSchema extends PgStatement {
     }
     
     @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+    
+    @Override
     public PgSchema shallowCopy() {
         PgSchema schemaDst = new PgSchema(getName(), getRawStatement());
         schemaDst.setAuthorization(getAuthorization());
@@ -311,6 +317,7 @@ public class PgSchema extends PgStatement {
         for (PgPrivilege priv : privileges) {
             schemaDst.addPrivilege(priv.shallowCopy());
         }
+        schemaDst.setOwner(getOwner());
         return schemaDst;
     }
     

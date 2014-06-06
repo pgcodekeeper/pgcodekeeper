@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+
 /**
  * The superclass for general pgsql statement.
  * All changes to hashed fields of extending classes must be
@@ -22,6 +24,8 @@ abstract public class PgStatement {
     private PgStatement parent;
     
     protected final List<PgPrivilege> privileges = new ArrayList<>(1);
+
+    protected String owner;
     
     private volatile int hash;
     private volatile boolean hashComputed;
@@ -74,7 +78,7 @@ abstract public class PgStatement {
             return sb;
         }
         
-        String type = "<unknown>";
+        String type;
         if (this instanceof PgSchema) {
             type = "SCHEMA";
         } else if (this instanceof PgSequence) {
@@ -85,9 +89,11 @@ abstract public class PgStatement {
             type = "VIEW";
         } else if (this instanceof PgFunction) {
             type = "FUNCTION";
+        } else {
+            throw new IllegalStateException("GRANTs allowed only for SCHEMA, "
+                    + "SEQUENCE, TABLE, VIEW, FUNCTION objects.");
         }
-        sb
-            .append("\n\n-- ")
+        sb.append("\n\n-- ")
             .append(type)
             .append(' ')
             .append(getName())
@@ -100,8 +106,54 @@ abstract public class PgStatement {
         
         return sb;
     }
+    
     public String getPrivilegesSQL() {
         return appendPrivileges(new StringBuilder()).toString();
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+    
+    public void setOwner(String owner) {
+        this.owner = owner;
+        resetHash();
+    }
+    
+    protected StringBuilder appendOwnerSQL(StringBuilder sb) {
+        if (owner == null) {
+            return sb;
+        }
+        
+        String type;
+        if (this instanceof PgSchema) {
+            type = "SCHEMA";
+        } else if (this instanceof PgSequence) {
+            type = "SEQUENCE";
+        } else if (this instanceof PgTable) {
+            type = "TABLE";
+        } else if (this instanceof PgView) {
+            type = "VIEW";
+        } else if (this instanceof PgFunction) {
+            type = "FUNCTION";
+        } else {
+            throw new IllegalStateException("OWNERs allowed only for SCHEMA, "
+                    + "SEQUENCE, TABLE, VIEW, FUNCTION objects.");
+        }
+        
+        sb.append("\n\nALTER ")
+            .append(type)
+            .append(' ')
+            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(" OWNER TO ")
+            .append(owner)
+            .append(';');
+        
+        return sb;
+    }
+    
+    public String getOwnerSQL() {
+        return appendOwnerSQL(new StringBuilder()).toString();
     }
     
     abstract public String getCreationSQL();
@@ -144,6 +196,9 @@ abstract public class PgStatement {
      */
     @Override
     public boolean equals(Object obj){
+        /*if(!this.compare((PgStatement) obj)) {
+            System.out.println(((PgStatement) obj).getName());
+        }*/
         return (obj instanceof PgStatement)? this.compare((PgStatement) obj) : false;
     }
     

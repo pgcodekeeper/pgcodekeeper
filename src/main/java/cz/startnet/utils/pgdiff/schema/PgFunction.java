@@ -58,6 +58,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         sbSQL.append(body);
         sbSQL.append(';');
         
+        appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
@@ -197,7 +198,8 @@ public class PgFunction extends PgStatementWithSearchPath {
         } else {
             equals = Objects.equals(name, func.getBareName())
                     && arguments.equals(func.arguments)
-                    && privileges.equals(func.privileges);
+                    && privileges.equals(func.privileges)
+                    && Objects.equals(owner, func.getOwner());
             
             if(equals) {
                 String thisBody, thatBody;
@@ -234,6 +236,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());
         result = prime * result + ((body == null) ? 0 : body.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         return result;
     }
 
@@ -347,6 +350,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         for (PgPrivilege priv : privileges) {
             functionDst.addPrivilege(priv.shallowCopy());
         }
+        functionDst.setOwner(getOwner());
         return functionDst;
     }
     

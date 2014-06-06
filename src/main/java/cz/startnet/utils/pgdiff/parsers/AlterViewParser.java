@@ -5,11 +5,12 @@
  */
 package cz.startnet.utils.pgdiff.parsers;
 
+import java.text.MessageFormat;
+
 import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import java.text.MessageFormat;
 
 /**
  * Parses ALTER VIEW statements.
@@ -66,13 +67,7 @@ public class AlterViewParser {
                     parser.throwUnsupportedCommand();
                 }
             } else if (parser.expectOptional("OWNER", "TO")) {
-                // we do not parse this one so we just consume the identifier
-                if (outputIgnoredStatements) {
-                    database.addIgnoredStatement("ALTER TABLE " + viewName
-                            + " OWNER TO " + parser.parseIdentifier() + ';');
-                } else {
-                    parser.parseIdentifier();
-                }
+                view.setOwner(parser.parseIdentifier());
             } else {
                 parser.throwUnsupportedCommand();
             }

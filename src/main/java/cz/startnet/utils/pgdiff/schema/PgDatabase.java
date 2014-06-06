@@ -211,6 +211,11 @@ public class PgDatabase extends PgStatement {
         result = prime * result + new HashSet<>(schemas).hashCode();
         return result;
     }
+    
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 
     @Override
     public PgDatabase shallowCopy() {

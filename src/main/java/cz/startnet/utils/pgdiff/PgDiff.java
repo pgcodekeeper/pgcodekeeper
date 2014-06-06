@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.Objects;
 import java.util.Set;
 
 import org.jgrapht.DirectedGraph;
@@ -403,6 +404,13 @@ public class PgDiff {
                     oldDatabase.getSchema(newSchema.getName());
 
             if (oldSchema != null) {
+
+                if (!Objects.equals(oldSchema.getOwner(), newSchema.getOwner())) {
+                    searchPathHelper.outputSearchPath(writer);
+                    writer.println(newSchema.getOwnerSQL());
+                    writer.println();
+                }
+                
                 if (!oldSchema.getPrivileges().equals(newSchema.getPrivileges())) {
                     writer.println(newSchema.getPrivilegesSQL());
                     writer.println();

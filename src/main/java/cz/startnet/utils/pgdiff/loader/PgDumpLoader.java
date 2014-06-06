@@ -19,6 +19,8 @@ import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import cz.startnet.utils.pgdiff.Resources;
+import cz.startnet.utils.pgdiff.parsers.AlterFunctionParser;
+import cz.startnet.utils.pgdiff.parsers.AlterSchemaParser;
 import cz.startnet.utils.pgdiff.parsers.AlterSequenceParser;
 import cz.startnet.utils.pgdiff.parsers.AlterTableParser;
 import cz.startnet.utils.pgdiff.parsers.AlterViewParser;
@@ -141,6 +143,18 @@ public class PgDumpLoader { //NOPMD
             "^ALTER[\\s]+VIEW[\\s]+.*$",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     /**
+     * Pattern for testing whether it is ALTER FUNCTION statement.
+     */
+    private static final Pattern PATTERN_ALTER_FUNCTION = Pattern.compile(
+            "^ALTER[\\s]+FUNCTION[\\s]+.*$",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    /**
+     * Pattern for testing whether it is ALTER SCHEMA statement.
+     */
+    private static final Pattern PATTERN_ALTER_SCHEMA = Pattern.compile(
+            "^ALTER[\\s]+SCHEMA[\\s]+.*$",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    /**
      * Pattern for testing whether it is COMMENT statement.
      */
     private static final Pattern PATTERN_COMMENT = Pattern.compile(
@@ -213,6 +227,10 @@ public class PgDumpLoader { //NOPMD
                     CreateViewParser.parse(database, statement, activeSearchPath);
                 } else if (PATTERN_ALTER_VIEW.matcher(statement).matches()) {
                     AlterViewParser.parse(database, statement, outputIgnoredStatements);
+                } else if (PATTERN_ALTER_FUNCTION.matcher(statement).matches()) {
+                    AlterFunctionParser.parse(database, statement, outputIgnoredStatements);
+                } else if (PATTERN_ALTER_SCHEMA.matcher(statement).matches()) {
+                    AlterSchemaParser.parse(database, statement, outputIgnoredStatements);
                 } else if (PATTERN_CREATE_TRIGGER.matcher(statement).matches()) {
                     CreateTriggerParser.parse(database, statement, activeSearchPath, ignoreSlonyTriggers);
                 } else if (PATTERN_CREATE_FUNCTION.matcher(statement).matches()) {

@@ -174,7 +174,8 @@ public class PgTable extends PgStatementWithSearchPath {
         }
 
         sbSQL.append(';');
-        
+
+        appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
 
         for (PgColumn column : getColumnsWithStatistics()) {
@@ -370,7 +371,8 @@ public class PgTable extends PgStatementWithSearchPath {
                     
                     && inherits.equals(table.inherits)
                     && columns.equals(table.columns)
-                    && privileges.equals(table.privileges);
+                    && privileges.equals(table.privileges)
+                    && Objects.equals(owner, table.getOwner());
         }
         
         return eq;
@@ -409,9 +411,15 @@ public class PgTable extends PgStatementWithSearchPath {
         result = prime * result + ((tablespace == null) ? 0 : tablespace.hashCode());
         result = prime * result + new HashSet<>(triggers).hashCode();
         result = prime * result + ((with == null) ? 0 : with.hashCode());
+        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         return result;
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+    
     @Override
     public PgTable shallowCopy() {
         PgTable tableDst = new PgTable(getName(), getRawStatement(), getSearchPath());
@@ -428,6 +436,7 @@ public class PgTable extends PgStatementWithSearchPath {
         for (PgPrivilege priv : privileges) {
             tableDst.addPrivilege(priv.shallowCopy());
         }
+        tableDst.setOwner(getOwner());
         return tableDst;
     }
     

@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -169,6 +170,12 @@ public class PgDiffViews {
 
             diffDefaultValues(writer, oldView, newView, searchPathHelper);
 
+            if (!Objects.equals(oldView.getOwner(), newView.getOwner())) {
+                searchPathHelper.outputSearchPath(writer);
+                writer.println(newView.getOwnerSQL());
+                writer.println();
+            }
+            
             if (!oldView.getPrivileges().equals(newView.getPrivileges())) {
                 searchPathHelper.outputSearchPath(writer);
                 writer.println(newView.getPrivilegesSQL());

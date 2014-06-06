@@ -5,11 +5,12 @@
  */
 package cz.startnet.utils.pgdiff.parsers;
 
+import java.text.MessageFormat;
+
 import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
-import java.text.MessageFormat;
 
 /**
  * Parses ALTER SEQUENCE statements.
@@ -60,6 +61,8 @@ public class AlterSequenceParser {
                 } else {
                     sequence.setOwnedBy(parser.getExpression());
                 }
+            } else if (parser.expectOptional("OWNER", "TO")) {
+                sequence.setOwner(parser.parseIdentifier());
             } else {
                 parser.throwUnsupportedCommand();
             }
