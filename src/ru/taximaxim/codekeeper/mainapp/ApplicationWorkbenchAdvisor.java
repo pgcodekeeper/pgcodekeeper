@@ -17,7 +17,7 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.statushandlers.AbstractStatusHandler;
 import org.eclipse.ui.statushandlers.StatusManager;
 
-import ru.taximaxim.codekeeper.ui.handlers.StackTraceDialogStatusHandler;
+import ru.taximaxim.codekeeper.ui.StackTraceDialogStatusHandler;
 
 @SuppressWarnings("restriction")
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
@@ -114,8 +114,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
         try {
             StatusManager.getManager().handle(
-                    new Status(IStatus.ERROR, WorkbenchPlugin.PI_WORKBENCH,
-                            "Unhandled event loop exception", exception), StatusManager.BLOCK); //$NON-NLS-1$
+                    new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+                            "Unhandled event loop exception", exception),
+                    StatusManager.BLOCK);
 
             if (WorkbenchPlugin.DEBUG) {
                 exception.printStackTrace();
@@ -124,9 +125,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
             // One of the log listeners probably failed. Core should have logged
             // the
             // exception since its the first listener.
-            System.err.println("Error while logging event loop exception:"); //$NON-NLS-1$
+            System.err.println("Error while logging event loop exception:");
             exception.printStackTrace();
-            System.err.println("Logging exception:"); //$NON-NLS-1$
+            System.err.println("Logging exception:");
             e.printStackTrace();
         }
     }
