@@ -72,7 +72,7 @@
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_FAWMACnJEeOzItlTPWWkmA" featurename="commands" parentElementId="ru.taximaxim.codekeeper.mainapp.application">
     <elements xsi:type="commands:Command" xmi:id="_s6NdACnJEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.command.About" commandName="Show About"/>
     <elements xsi:type="commands:Command" xmi:id="_Zjel8CnWEeObfOm2RjyZmw" elementId="org.eclipse.ui.file.exit" commandName="Exit"/>
-    <elements xsi:type="commands:Command" xmi:id="_Xdq-gCpvEeOWDPrJZCzSgA" elementId="ru.taximaxim.codekeeper.ui.command.Prefs" commandName="Show Preferences"/>
+    <elements xsi:type="commands:Command" xmi:id="_Xdq-gCpvEeOWDPrJZCzSgA" elementId="org.eclipse.ui.window.preferences" commandName="Preferences"/>
     <elements xsi:type="commands:Command" xmi:id="_1JlsQCzJEeOC9s_7P-LAEQ" elementId="ru.taximaxim.codekeeper.ui.command.NewProj" commandName="New Project"/>
     <elements xsi:type="commands:Command" xmi:id="_UkgjUC_xEeO2acHPThBe1g" elementId="org.eclipse.ui.perspectives.showPerspective" commandName="Show Perspective" description="Show a particular perspective">
       <parameters xmi:id="_LjDUsOGMEeOesLORVxFJHw" elementId="org.eclipse.ui.perspectives.showPerspective.perspectiveId" name="Parameter"/>

@@ -23,5 +23,25 @@
             name="pgCodeKeeper - Devtest">
       </perspective>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="ru.taximaxim.codekeeper.ui.prefs.GeneralPrefPage"
+            id="ru.taximaxim.codekeeper.ui.general"
+            name="pgCodeKeeper">
+      </page>
+      <page
+            category="ru.taximaxim.codekeeper.ui.general"
+            class="ru.taximaxim.codekeeper.ui.prefs.DbStorePrefPage"
+            id="ru.taximaxim.codekeeper.ui.dbstore"
+            name="DB Store">
+      </page>
+      <page
+            category="ru.taximaxim.codekeeper.ui.general"
+            class="ru.taximaxim.codekeeper.ui.prefs.GitPrefPage"
+            id="ru.taximaxim.codekeeper.ui.git"
+            name="Git+SSH">
+      </page>
+   </extension>
 
 </plugin>

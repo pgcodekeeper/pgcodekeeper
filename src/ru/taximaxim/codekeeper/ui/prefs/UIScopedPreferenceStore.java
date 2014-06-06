@@ -9,12 +9,25 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 
 /**
  * Extends {@link ScopedPreferenceStore} with app's default values.
+ * Singleton.
  * 
  * @author Alexander Levsha
  */
 public class UIScopedPreferenceStore extends ScopedPreferenceStore {
     
-    public UIScopedPreferenceStore() {
+    private static UIScopedPreferenceStore instance;
+    
+    /**
+     * Get this singletone.
+     */
+    public static UIScopedPreferenceStore get() {
+        if (instance == null) {
+            instance = new UIScopedPreferenceStore();
+        }
+        return instance;
+    }
+    
+    private UIScopedPreferenceStore() {
         super(InstanceScope.INSTANCE, UIConsts.PLUGIN_ID);
         setDefaultValues();
     }

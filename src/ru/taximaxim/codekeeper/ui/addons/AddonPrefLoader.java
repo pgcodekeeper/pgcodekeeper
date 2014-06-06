@@ -16,7 +16,7 @@ public class AddonPrefLoader {
         
     @PostConstruct
     private void start(IEclipseContext ctx) {
-        ctx.set(UIConsts.PREF_STORE, new UIScopedPreferenceStore());
+        ctx.set(UIConsts.PREF_STORE, UIScopedPreferenceStore.get());
     }
     
     public static void savePreference(IPreferenceStore mainPrefs, String preference, String value){
@@ -29,5 +29,5 @@ public class AddonPrefLoader {
                       "Unexpected error while saving preferences!", ex);
           }
       }
-    } 
+    }
 }
