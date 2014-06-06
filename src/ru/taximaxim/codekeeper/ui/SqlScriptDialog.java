@@ -61,9 +61,8 @@ public class SqlScriptDialog extends MessageDialog {
     @Override
     protected Control createCustomArea(Composite parent) {
         txtMain = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
-                | /*SWT.READ_ONLY |*/ SWT.MULTI);
+                | SWT.MULTI);
         txtMain.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        /*txt.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));*/
         
         txtMain.setText(text);
         
@@ -100,9 +99,9 @@ public class SqlScriptDialog extends MessageDialog {
                 // TODO remove fileTmpScript if script is done or interrupted
                 fileTmpScript = new TempFile("tmp_rollon_", ".sql").get();
                 
-                PrintWriter writer = new PrintWriter(fileTmpScript);
-                writer.write(textRetrieved);
-                writer.close();
+               try (PrintWriter writer = new PrintWriter(fileTmpScript)) {
+                   writer.write(textRetrieved);
+               }
             } catch (IOException ex) {
                 ExceptionNotifier.notify(ex, "Error saving rollon script to temporary file",
                         getShell(), true, true);

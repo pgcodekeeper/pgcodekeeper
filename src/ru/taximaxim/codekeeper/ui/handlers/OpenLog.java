@@ -9,6 +9,10 @@ public class OpenLog {
     
 	@Execute
 	public void execute() {
-        Program.launch(Platform.getLogFileLocation().toFile().getAbsolutePath());
+        openExternalViewer();
+	}
+	
+	public static void openExternalViewer() {
+	    Program.launch(Platform.getLogFileLocation().toFile().getAbsolutePath());
 	}
 }

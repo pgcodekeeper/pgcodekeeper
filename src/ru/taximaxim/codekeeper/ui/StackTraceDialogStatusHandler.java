@@ -1,22 +1,19 @@
-package ru.taximaxim.codekeeper.ui.handlers;
+package ru.taximaxim.codekeeper.ui;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.statushandlers.IStatusDialogConstants;
 import org.eclipse.ui.statushandlers.AbstractStatusHandler;
 import org.eclipse.ui.statushandlers.StatusAdapter;
 import org.eclipse.ui.statushandlers.StatusManager;
 import org.eclipse.ui.statushandlers.WorkbenchStatusDialogManager;
 
-import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
-
 /**
  * pgCodekeeper default error handler.<br>
  * Partly copied from org.eclipse.ui.statushandlers.WorkbenchErrorHandler
  * 
  * @author ryabinin_av
- *
  */
 public class StackTraceDialogStatusHandler extends AbstractStatusHandler{
 
@@ -29,74 +26,37 @@ public class StackTraceDialogStatusHandler extends AbstractStatusHandler{
      */
     private WorkbenchStatusDialogManager statusDialogManager;
     
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eclipse.ui.statushandlers.AbstractStatusHandler#handle(org.eclipse.ui.statushandlers.StatusAdapter,
-     *      int)
-     */
     @Override
     public void handle(final StatusAdapter statusAdapter, int style) {
 
         if (((style & StatusManager.SHOW) == StatusManager.SHOW)
                 || ((style & StatusManager.BLOCK) == StatusManager.BLOCK)) {
-
-            final boolean block = ((style & StatusManager.BLOCK) == StatusManager.BLOCK);
-            
-            if (Display.getCurrent() != null) {
-                showStatusAdapter(statusAdapter, block);
-            } else {
-                if (block) {
-                    Display.getDefault().syncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            showStatusAdapter(statusAdapter, true);
-                        }
-                    });
-
-                } else {
-                    Display.getDefault().asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            showStatusAdapter(statusAdapter, false);
-                        }
-                    });
+            Display.getDefault().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    showStatusAdapter(statusAdapter);
                 }
-            }
+            });
         }
 
         if ((style & StatusManager.LOG) == StatusManager.LOG) {
-            StatusManager.getManager().addLoggedStatus(
-                    statusAdapter.getStatus());
-            WorkbenchPlugin.getDefault().getLog()
-                    .log(statusAdapter.getStatus());
+            StatusManager.getManager().addLoggedStatus(statusAdapter.getStatus());
+            IStatus status = statusAdapter.getStatus();
+            Log.log(Log.LOG_ERROR, status.getMessage(), status.getException());
         }
     }
     
     /**
      * Display the status adaptor - dialog with copyable stack trace as details
-     * 
-     * @param statusAdapter
-     *            the status adapter to show
-     * @param block
-     *            Ignored. <code>true</code> to request a modal dialog and suspend the
-     *            calling thread till the dialog is closed, <code>false</code>
-     *            otherwise.
      */
-    private void showStatusAdapter(StatusAdapter statusAdapter, boolean block) {
-        Throwable t = statusAdapter.getStatus().getException();
-        if (t instanceof Exception){
-            ExceptionNotifier.notify((Exception) t, "Exception caught: ", getStatusDialogShell(), true, true);
-        }else{
-            ExceptionNotifier.notify(new IllegalStateException(t), "Throwable is not exception:",
-                    getStatusDialogShell(), true, true);
-        }
+    private void showStatusAdapter(StatusAdapter statusAdapter) {
+        ExceptionNotifier.notify(statusAdapter.getStatus().getException(),
+                "Exception caught: ", getStatusDialogShell(), true, true);
         
     }
 
     /**
      * Returns singleton instance of StackTraceDialogStatusHandler
-     * @return
      */
     public static StackTraceDialogStatusHandler get(){
         if (handler == null){
@@ -112,6 +72,7 @@ public class StackTraceDialogStatusHandler extends AbstractStatusHandler{
      * 
      * @return current {@link WorkbenchStatusDialogManager}
      */
+    // FIXME restricted access
     private WorkbenchStatusDialogManager getStatusDialogManager() {
         if (statusDialogManager == null) {
             synchronized (this) {
@@ -132,11 +93,12 @@ public class StackTraceDialogStatusHandler extends AbstractStatusHandler{
 
     /**
      * Returns shell for dialog to be built on
-     * 
-     * @return
      */
     private Shell getStatusDialogShell() {
         return (Shell) getStatusDialogManager().getProperty(
                 IStatusDialogConstants.SHELL);
+    }
+    
+    private StackTraceDialogStatusHandler() {
     }
 }
