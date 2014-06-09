@@ -3,10 +3,13 @@ package ru.taximaxim.codekeeper.ui;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
@@ -20,6 +23,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
@@ -121,22 +125,13 @@ public class SqlScriptDialog extends MessageDialog {
                 public void run() {
                     try {
                         StdStreamRedirector.launchAndRedirect(pb);
-                    } catch (final IOException ex) {
-                        // in case of exception sync call to notify user via UI
-                        SqlScriptDialog.this.getShell().getDisplay().syncExec(
-                                new Runnable() {
-                                    
-                                    @Override
-                                    public void run() {
-                                        ExceptionNotifier.notify(ex, "Exception during "
-                                                + "script execution", getShell(), true, true);
-                                    }
-                                });
+                    } catch (IOException ex) {
+                        throw new IllegalStateException(ex); 
                     } finally {
                         fileTmpScript.delete();
                         
                         // request UI change: button label changed
-                        SqlScriptDialog.this.getShell().getDisplay().asyncExec(
+                        SqlScriptDialog.this.getShell().getDisplay().syncExec(
                                 new Runnable() {
                                     
                                     @Override
@@ -150,6 +145,15 @@ public class SqlScriptDialog extends MessageDialog {
             };
             // run thread that calls StdStreamRedirector.launchAndRedirect
             scriptThread = new Thread(launcher);
+            scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler(){
+                @Override
+                public void uncaughtException(Thread t, Throwable e) {
+                    Status status = new Status(IStatus.ERROR, "<unknown>", 
+                            "Exception during script execution", e);
+                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
+                }
+                
+            });
             scriptThread.start();
             getButton(0).setText(stopScriptText);
             isRunning = true;

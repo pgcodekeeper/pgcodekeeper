@@ -85,13 +85,7 @@ public class StackTraceDialogStatusHandler extends AbstractStatusHandler{
      */
     private void showStatusAdapter(StatusAdapter statusAdapter, boolean block) {
         Throwable t = statusAdapter.getStatus().getException();
-        if (t instanceof Exception){
-            ExceptionNotifier.notify((Exception) t, "Exception caught: ", getStatusDialogShell(), true, true);
-        }else{
-            ExceptionNotifier.notify(new IllegalStateException(t), "Throwable is not exception:",
-                    getStatusDialogShell(), true, true);
-        }
-        
+        ExceptionNotifier.notify(t, statusAdapter.getStatus().getMessage(), getStatusDialogShell(), true, true);
     }
 
     /**

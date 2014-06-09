@@ -11,6 +11,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
@@ -41,7 +42,7 @@ public class ExceptionNotifier {
      * @param outputToConsole
      * @param showInDialog
      */
-    public static void notify(Exception source, String message, Shell shell, 
+    public static void notify(final Throwable source, final String message, final Shell shell, 
             boolean outputToConsole, boolean showInDialog) {
         Log.log(Log.LOG_ERROR, source.getMessage(), source);
         
@@ -56,9 +57,17 @@ public class ExceptionNotifier {
             Console.addMessage(message + ": " + initReason);
         }
         if (showInDialog){
-            IStatus status = new Status(IStatus.ERROR, "<unknown>", initReason, source);
-            new ExceptionNotifier().new StackTraceErrorDialog(shell, "Exception thrown", 
-                    message + ": " + source.toString(), status, 4).open();
+            final IStatus status = new Status(IStatus.ERROR, "<unknown>", initReason, source);
+            Display.getDefault().syncExec(
+                    new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            new ExceptionNotifier().new StackTraceErrorDialog(shell,
+                                    "Exception thrown", message + ": " + 
+                                            source.toString(), status, 4).open();
+                        }
+                    });
         }
     }
     
