@@ -8,6 +8,8 @@ import java.nio.file.Paths;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -40,11 +42,11 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
@@ -160,13 +162,15 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                             false, cloneRunnable);
                 } catch (InvocationTargetException e) {
                     event.doit = false;
-                    ExceptionNotifier.notify(e, "Cloning was not successful",
-                            getShell(), true, true);
+                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                            "Cloning was not successful", e);
+                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
                     event.doit = false;
                 }catch(InterruptedException e){
                     event.doit = false;
-                    ExceptionNotifier.notify(e, "Cloning thread interrupted",
-                            getShell(), true, true);
+                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                            "Cloning thread interrupted", e);
+                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
                     event.doit = false;
                 }
             } else {
@@ -249,13 +253,15 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                 getContainer().run(false, false, 
                         new InitProjectFromSource(mainPrefStore, props, pageDb.getDumpPath()));
             } catch (InvocationTargetException ex) {
-                ExceptionNotifier.notify(ex, "Error initializing repo from source",
-                        getShell(), true, true);
+                Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                        "Error initializing repo from source", ex);
+                StatusManager.getManager().handle(status, StatusManager.BLOCK);
                 return false;
             } catch (InterruptedException ex) {
                 // assume run() was called as non cancelable
-                ExceptionNotifier.notify(ex, "Project initializer thread interrupted",
-                        getShell(), true, true);
+                Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                        "Project initializer thread interrupted", ex);
+                StatusManager.getManager().handle(status, StatusManager.BLOCK);
                 return false;
             }
         }else if (!pageSubdir.isDoInit() && new File (pageSubdir.getRepoSubdir()).list().length == 0 ){

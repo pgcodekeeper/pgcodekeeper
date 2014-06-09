@@ -5,11 +5,13 @@ import java.io.IOException;
 
 import javax.annotation.PostConstruct;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.statushandlers.StatusManager;
 
-import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.prefs.UIScopedPreferenceStore;
 
@@ -26,8 +28,9 @@ public class AddonPrefLoader {
           try {
               ((IPersistentPreferenceStore) mainPrefs).save();
           } catch (IOException ex) {
-              ExceptionNotifier.notify(ex, "Unexpected error while saving preferences!",
-                      null, true, false);
+              Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                      "Unexpected error while saving preferences!", ex);
+              StatusManager.getManager().handle(status, StatusManager.BLOCK);
           }
       }
     } 

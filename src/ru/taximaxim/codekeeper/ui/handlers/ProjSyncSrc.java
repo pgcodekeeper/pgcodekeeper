@@ -8,6 +8,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.core.di.annotations.Execute;
@@ -19,6 +21,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -40,8 +43,9 @@ public class ProjSyncSrc {
         try {
             sync(proj, shell, prefStore);
         } catch (InvocationTargetException e) {
-            ExceptionNotifier.notify(e, "Could not syncronize repository with remote",
-                    shell, true, true);
+            Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                    "Could not syncronize repository with remote", e);
+            StatusManager.getManager().handle(status, StatusManager.BLOCK);
         }
     }
 
@@ -91,8 +95,9 @@ public class ProjSyncSrc {
         try {
             new ProgressMonitorDialog(shell).run(true, false, syncRunnable);
         } catch (InterruptedException ex) {
-            ExceptionNotifier.notify(ex, "Repository sync uncancellable thread interrupted",
-                    shell, true, true);
+            Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                    "Repository sync uncancellable thread interrupted", ex);
+            StatusManager.getManager().handle(status, StatusManager.BLOCK);
             return false;
         }
 

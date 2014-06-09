@@ -24,7 +24,6 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.statushandlers.StatusManager;
 
-import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -69,8 +68,9 @@ public class SwitchBranch {
                             });
                         }
                     } catch (IOException | InterruptedException ex) {
-                        ExceptionNotifier.notify(ex, "Exception thrown during running checkout job",
-                                shell, true, true);
+                        Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                                "Exception thrown during running checkout job", ex);
+                        StatusManager.getManager().handle(status, StatusManager.BLOCK);
                     }
                 }
             });
@@ -85,7 +85,9 @@ public class SwitchBranch {
             });
     	    t.start();
         } catch (IOException e) {
-            ExceptionNotifier.notify(e, "Wrong repository or ref name", shell, true, true);
+            Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                    "Wrong repository or ref name", e);
+            StatusManager.getManager().handle(status, StatusManager.BLOCK);
             return;
         }finally{
             if (git[0] != null){

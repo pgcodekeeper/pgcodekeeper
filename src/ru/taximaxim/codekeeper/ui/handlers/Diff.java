@@ -5,14 +5,16 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.inject.Named;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.statushandlers.StatusManager;
 
-import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.DiffWizard;
@@ -36,8 +38,9 @@ public class Diff {
                 dialog.open();
             }
         } catch (InvocationTargetException e) {
-            ExceptionNotifier.notify(e, "Could not syncronize repository with remote",
-                    shell, true, true);
+            Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                    "Could not syncronize repository with remote", e);
+            StatusManager.getManager().handle(status, StatusManager.BLOCK);
         }
     }
     

@@ -3,6 +3,8 @@ package ru.taximaxim.codekeeper.ui.dbstore;
 import java.io.IOException;
 import java.util.Map;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -26,9 +28,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class DbStoreEditorDialog extends TrayDialog {
@@ -279,8 +281,9 @@ public class DbStoreEditorDialog extends TrayDialog {
                 try {
                     ((IPersistentPreferenceStore) prefStore).save();
                 } catch (IOException ex) {
-                    ExceptionNotifier.notify(ex, "Unexpected error while saving preferences: ",
-                            getShell(), true, true );
+                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                            "Unexpected error while saving preferences: ", ex);
+                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
                 }
             }
         }

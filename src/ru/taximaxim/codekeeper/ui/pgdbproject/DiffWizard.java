@@ -10,6 +10,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -40,6 +42,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -103,14 +106,16 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 try {
                     getContainer().run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
-                    ExceptionNotifier.notify(ex, "Error in differ thread",
-                            getContainer().getShell(), true, true);
+                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                            "Error in differ thread", ex);
+                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
                     e.doit = false;
                     return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    ExceptionNotifier.notify(ex, "Differ thread cancelled", 
-                            getContainer().getShell(), true, true);
+                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                            "Differ thread cancelled", ex);
+                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
                     e.doit = false;
                     return;
                 }
@@ -134,14 +139,16 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 try {
                     getContainer().run(true, false, differ);
                 } catch (InvocationTargetException ex) {
-                    ExceptionNotifier.notify(ex, "Error in differ thread",
-                            getContainer().getShell(), true, true);
+                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                            "Error in differ thread", ex);
+                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
                     e.doit = false;
                     return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    ExceptionNotifier.notify(ex, "Differ thread cancelled", 
-                            getContainer().getShell(), true, true);
+                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                            "Differ thread cancelled", ex);
+                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
                     e.doit = false;
                     return;
                 }

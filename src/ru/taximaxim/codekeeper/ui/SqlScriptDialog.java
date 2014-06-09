@@ -107,8 +107,9 @@ public class SqlScriptDialog extends MessageDialog {
                    writer.write(textRetrieved);
                }
             } catch (IOException ex) {
-                ExceptionNotifier.notify(ex, "Error saving rollon script to temporary file",
-                        getShell(), true, true);
+                Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                        "Error saving rollon script to temporary file", ex);
+                StatusManager.getManager().handle(status, StatusManager.BLOCK);
                 return;
             }
                 
@@ -179,8 +180,9 @@ public class SqlScriptDialog extends MessageDialog {
                 try (PrintWriter writer = new PrintWriter(script)) {
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
-                    ExceptionNotifier.notify(ex, "Error saving script to a file",
-                            getShell(), true, true);
+                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                            "Error saving script to a file", ex);
+                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
                     return;
                 }
                 

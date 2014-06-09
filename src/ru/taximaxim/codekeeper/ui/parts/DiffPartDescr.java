@@ -9,6 +9,8 @@ import javax.inject.Named;
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.di.extensions.Preference;
@@ -41,6 +43,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -300,12 +303,15 @@ public class DiffPartDescr {
                     new ProgressMonitorDialog(shell).run(true, false,
                             treediffer);
                 } catch (InvocationTargetException ex) {
-                    ExceptionNotifier.notify(ex, "Error in differ thread", shell, true, true);
+                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                            "Error in differ thread", ex);
+                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
                     return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    ExceptionNotifier.notify(ex, "Differ thread cancelled. Shouldn't happen!",
-                            shell, true, true);
+                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                            "Differ thread cancelled. Shouldn't happen!", ex);
+                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
                     return;
                 }
 
