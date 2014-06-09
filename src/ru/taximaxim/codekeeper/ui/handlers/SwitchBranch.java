@@ -71,6 +71,8 @@ public class SwitchBranch {
                         Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
                                 "Exception thrown during running checkout job", ex);
                         StatusManager.getManager().handle(status, StatusManager.BLOCK);
+                    }finally{
+                            git[0].close();      
                     }
                 }
             });
@@ -88,11 +90,10 @@ public class SwitchBranch {
             Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
                     "Wrong repository or ref name", e);
             StatusManager.getManager().handle(status, StatusManager.BLOCK);
-            return;
-        }finally{
             if (git[0] != null){
                 git[0].close();
             }
+            return;
         }
 	}
 	
