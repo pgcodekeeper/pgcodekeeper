@@ -147,7 +147,7 @@ public class SqlScriptDialog extends MessageDialog {
             scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler(){
                 @Override
                 public void uncaughtException(Thread t, Throwable e) {
-                    Status status = new Status(IStatus.ERROR, "<unknown>", 
+                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
                             "Exception during script execution", e);
                     StatusManager.getManager().handle(status, StatusManager.BLOCK);
                 }

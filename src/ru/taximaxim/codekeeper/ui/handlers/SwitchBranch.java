@@ -3,10 +3,13 @@ package ru.taximaxim.codekeeper.ui.handlers;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.Thread.UncaughtExceptionHandler;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.core.di.annotations.Execute;
@@ -19,6 +22,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -47,7 +51,7 @@ public class SwitchBranch {
     	    final Ref headOld = git[0].getRepository().getRef(Constants.HEAD);
     	    BranchOperationUI.checkout(git[0].getRepository()).start();
     	    
-    	    new Thread(new Runnable() {
+    	    Thread t = new Thread(new Runnable() {
                 
                 @Override
                 public void run() {
@@ -67,17 +71,26 @@ public class SwitchBranch {
                     } catch (IOException | InterruptedException ex) {
                         ExceptionNotifier.notify(ex, "Exception thrown during running checkout job",
                                 shell, true, true);
-                    } finally {
-                        git[0].close();
                     }
                 }
-            }).start();
+            });
+    	    t.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                
+                @Override
+                public void uncaughtException(Thread t, Throwable e) {
+                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                            "Exception during switching branch", e);
+                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
+                }
+            });
+    	    t.start();
         } catch (IOException e) {
+            ExceptionNotifier.notify(e, "Wrong repository or ref name", shell, true, true);
+            return;
+        }finally{
             if (git[0] != null){
                 git[0].close();
             }
-            ExceptionNotifier.notify(e, "Wrong repository or ref name", shell, true, true);
-            return;
         }
 	}
 	
