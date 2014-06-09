@@ -1,21 +1,25 @@
 package ru.taximaxim.codekeeper.ui;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.ui.handlers.OpenLog;
 import ru.taximaxim.codekeeper.ui.parts.Console;
 
 /**
@@ -27,123 +31,112 @@ import ru.taximaxim.codekeeper.ui.parts.Console;
  * is requested.
  * 
  * @author ryabinin_av
- *
  */
 public class ExceptionNotifier {
     
     /**
-     * Outputs short to console
-     * Prints stack trace to log
-     * Displays UI dialog with message and stack trace
+     * Outputs short message to {@link Console},
+     * prints stack trace to log,
+     * displays UI dialog with message and stack trace
      * 
-     * @param source
-     * @param message
-     * @param shell Shell to display dialog on. Can be null if showInDialog is false
-     * @param outputToConsole
-     * @param showInDialog
+     * @param shell dialog parent. Can be null if showInDialog is false
      */
     public static void notify(final Throwable source, final String message, final Shell shell, 
             boolean outputToConsole, boolean showInDialog) {
         Log.log(Log.LOG_ERROR, source.getMessage(), source);
         
-        String initReason = "";
+        String initialReason = "";
         Throwable t = source.getCause();
         while (t != null){
-            initReason = t.getMessage() == null? initReason : t.toString();
+            initialReason = t.getMessage() == null? initialReason : t.toString();
             t = t.getCause();
         }
         
         if (outputToConsole){
-            Console.addMessage(message + ": " + initReason);
+            Console.addMessage(message + ": " + initialReason);
         }
         if (showInDialog){
-            final IStatus status = new Status(IStatus.ERROR, "<unknown>", initReason, source);
-            Display.getDefault().syncExec(
-                    new Runnable() {
-                        
-                        @Override
-                        public void run() {
-                            new ExceptionNotifier().new StackTraceErrorDialog(shell,
-                                    "Exception thrown", message + ": " + 
-                                            source.toString(), status, 4).open();
-                        }
-                    });
-        }
-    }
-    
-    /**
-     * Default constructor
-     */
-    public ExceptionNotifier() {
-        
-    }
-    
-    private class StackTraceErrorDialog extends ErrorDialog {
-        
-        private IStatus status;
-        
-        private List rtc;
-        
-        public StackTraceErrorDialog(Shell parentShell, String dialogTitle,
-                String message, IStatus status, int displayMask) {
-            super(parentShell, dialogTitle, message, status, displayMask);
-            this.status = status;
-        }
-        
-        @Override
-        protected List createDropDownList(Composite parent) {
-            rtc = super.createDropDownList(parent);
-            if (status != null && status.getException() != null) {
-                
-                Throwable t = status.getException();
-                while(t != null){
-                    StackTraceElement[] ste = t.getStackTrace();
-                    rtc.add("caused by: " + t.getClass() + ": " + t.getMessage());
-                    for (int i = 0; i < ste.length; i++) {
-                        rtc.add("\t" + ste[i].toString());
-                    }
-                    t = t.getCause();
-                }
-            }
-            return rtc;
-        }
-        
-        @Override
-        protected void createButtonsForButtonBar(final Composite parent) {
-            Layout layout = parent.getLayout();
-            if (layout instanceof GridLayout){
-                GridLayout gl = (GridLayout) layout;
-                gl.numColumns++;
-                parent.setLayout(gl);
-            }
-            createButton(parent, IDialogConstants.NO_ID, "Copy stack trace",true).
-                    addSelectionListener(new SelectionListener() {
+            final IStatus status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID,
+                    initialReason, source);
+            Display.getDefault().syncExec(new Runnable() {
 
                 @Override
-                public void widgetSelected(SelectionEvent arg0) {
-                    putStackToClipboard(parent);
-                }
-
-                @Override
-                public void widgetDefaultSelected(SelectionEvent arg0) {
-                    putStackToClipboard(parent);
+                public void run() {
+                    new StackTraceErrorDialog(shell, "Unhandled exception!",
+                            message + ": " + source.toString(), status, status
+                                    .getSeverity()).open();
                 }
             });
-            
-            super.createButtonsForButtonBar(parent);
         }
+    }
+}
 
-        private void putStackToClipboard(Composite parent) {
-            // generate list to fetch strings from
-            if (rtc == null){
-                createDropDownList(getShell());
+class StackTraceErrorDialog extends ErrorDialog {
+    
+    private IStatus status;
+    
+    private List lstStackTrace;
+    
+    public StackTraceErrorDialog(Shell parentShell, String dialogTitle,
+            String message, IStatus status, int displayMask) {
+        super(parentShell, dialogTitle, message, status, displayMask);
+        this.status = status;
+    }
+    
+    private String stackTraceAsString() {
+        Throwable t = status.getException();
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        t.printStackTrace(pw);
+        return sw.toString();
+    }
+    
+    @Override
+    protected List createDropDownList(Composite parent) {
+        lstStackTrace = super.createDropDownList(parent);
+        
+        if (status != null && status.getException() != null) {
+            BufferedReader rdr = new BufferedReader(new StringReader(stackTraceAsString()));
+            try {
+                String line;
+                while ((line = rdr.readLine()) != null) {
+                    lstStackTrace.add(line);
+                }
+            } catch (IOException ex) {
+                throw new IllegalStateException(
+                        "String reader IOException! The world ends!", ex);
             }
-            StringBuilder sBuilder = new StringBuilder();
-            for (String l : rtc.getItems()){
-                sBuilder.append(l + "\n");
-            }
-            new Clipboard(parent.getDisplay()).setContents(new Object[]{sBuilder.toString()}, 
-                    new Transfer[] { TextTransfer.getInstance() });
         }
+        return lstStackTrace;
+    }
+    
+    @Override
+    protected void createButtonsForButtonBar(final Composite parent) {
+        createButton(parent, Integer.MAX_VALUE, "Open log file ", false)
+                .addSelectionListener(new SelectionAdapter() {
+                    
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        OpenLog.openExternalViewer();
+                    }
+                });
+
+        createButton(parent, Integer.MAX_VALUE - 1, "Copy stack trace", false)
+                .addSelectionListener(new SelectionAdapter() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        putStackToClipboard(parent.getDisplay());
+                    }
+                });
+        
+        super.createButtonsForButtonBar(parent);
+    }
+
+    private void putStackToClipboard(Display display) {
+        new Clipboard(display).setContents(
+                new Object[]   { stackTraceAsString() }, 
+                new Transfer[] { TextTransfer.getInstance() }
+            );
     }
 }
