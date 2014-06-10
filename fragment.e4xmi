@@ -91,7 +91,6 @@
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_V_i7QCnNEeObfOm2RjyZmw" featurename="handlers" parentElementId="ru.taximaxim.codekeeper.mainapp.application">
     <elements xsi:type="commands:Handler" xmi:id="_bNwFgCnNEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.handler.About" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.About" command="_s6NdACnJEeObfOm2RjyZmw"/>
-    <elements xsi:type="commands:Handler" xmi:id="_cnL2ACpvEeOWDPrJZCzSgA" elementId="ru.taximaxim.codekeeper.ui.handler.Prefs" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.Prefs" command="_Xdq-gCpvEeOWDPrJZCzSgA"/>
     <elements xsi:type="commands:Handler" xmi:id="_-yCNMCzJEeOC9s_7P-LAEQ" elementId="ru.taximaxim.codekeeper.ui.handler.NewProj" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.NewProj" command="_1JlsQCzJEeOC9s_7P-LAEQ"/>
     <elements xsi:type="commands:Handler" xmi:id="_wB_mIDYmEeOu39tpQ1Oozg" elementId="ru.taximaxim.codekeeper.ui.handler.LoadProj" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.LoadProj" command="_o6NrIDYmEeOu39tpQ1Oozg"/>
     <elements xsi:type="commands:Handler" xmi:id="_NM0GUDfvEeOJGp3TAROjKg" elementId="ru.taximaxim.codekeeper.ui.handler.CloseActiveProj" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.handlers.CloseActiveProj" command="_H_VU0DfvEeOJGp3TAROjKg"/>

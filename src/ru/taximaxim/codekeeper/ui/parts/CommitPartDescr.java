@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -24,6 +25,8 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -40,23 +43,26 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.XmlCommitCommentHistory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -114,18 +120,63 @@ public class CommitPartDescr {
         
         parent.setLayout(new GridLayout());
         repoName = proj.getString(UIConsts.PROJ_PREF_REPO_TYPE);
+        
         // upper container
-        Composite containerUpper = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(2, false);
+        final Composite containerUpper = new Composite(parent, SWT.NONE);
+        GridLayout gl = new GridLayout(3, false);
         gl.marginHeight = gl.marginWidth = 0;
         containerUpper.setLayout(gl);
         containerUpper.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        txtCommitComment = new Text(containerUpper, SWT.BORDER | SWT.MULTI);
+        txtCommitComment = new Text(containerUpper, SWT.BORDER | SWT.MULTI | 
+                SWT.H_SCROLL | SWT.V_SCROLL);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.heightHint = 80;
         txtCommitComment.setLayoutData(gd);
-
+        
+        final Button btnPrevComments = new Button(containerUpper, SWT.PUSH);
+        btnPrevComments.setLayoutData(new GridData(SWT.DEFAULT, SWT.FILL, false,
+                false));
+        btnPrevComments.setText("\u25bc");
+        btnPrevComments.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                List<String> comments = XmlCommitCommentHistory.read();
+                
+                MenuManager mmComments = new MenuManager();
+                if (comments == null || comments.isEmpty()) {
+                    mmComments.add(new Action("no prevoius comments") {
+                        @Override
+                        public boolean isEnabled() {
+                            return false;
+                        }
+                    });
+                } else { 
+                    for (final String comment : comments) {
+                        String menuLabel = comment;
+                        if (menuLabel.length() > 120) {
+                            menuLabel = menuLabel.substring(0, 120) + "...";
+                        }
+                        
+                        mmComments.add(new Action(menuLabel) {
+                            @Override
+                            public void run() {
+                                txtCommitComment.setText(comment);
+                            }
+                        });
+                    }
+                }
+                Menu menuComments = mmComments.createContextMenu(shell);
+                
+                Point loc = btnPrevComments.getLocation();
+                Rectangle rectBtn = btnPrevComments.getBounds();
+                menuComments.setLocation(shell.getDisplay().map(
+                        containerUpper, null,
+                        loc.x + rectBtn.width + 1, loc.y + rectBtn.height));
+                menuComments.setVisible(true);
+            }
+        });
+        
         btnCommit = new Button(containerUpper, SWT.PUSH);
         btnCommit.setLayoutData(new GridData(SWT.DEFAULT, SWT.FILL, false,
                 false));
@@ -149,6 +200,8 @@ public class CommitPartDescr {
                     mb.open();
                     return;
                 }
+                
+                XmlCommitCommentHistory.add(commitComment);
 
                 final TreeElement filtered = diffTable.filterDiffTree();
                 IRunnableWithProgress commitRunnable = new IRunnableWithProgress() {
