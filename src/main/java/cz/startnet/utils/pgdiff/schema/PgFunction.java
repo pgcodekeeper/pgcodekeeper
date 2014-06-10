@@ -39,22 +39,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(500);
         sbSQL.append("CREATE OR REPLACE FUNCTION ");
-        sbSQL.append(PgDiffUtils.getQuotedName(name));
-        sbSQL.append('(');
-
-        boolean addComma = false;
-
-        for (final Argument argument : arguments) {
-            if (addComma) {
-                sbSQL.append(", ");
-            }
-
-            sbSQL.append(argument.getDeclaration(true));
-
-            addComma = true;
-        }
-
-        sbSQL.append(") ");
+        appendFunctionSignature(sbSQL, true);
         sbSQL.append(body);
         sbSQL.append(';');
         
@@ -63,27 +48,47 @@ public class PgFunction extends PgStatementWithSearchPath {
 
         if (comment != null && !comment.isEmpty()) {
             sbSQL.append("\n\nCOMMENT ON FUNCTION ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
-            sbSQL.append('(');
-
-            addComma = false;
-
-            for (final Argument argument : arguments) {
-                if (addComma) {
-                    sbSQL.append(", ");
-                }
-
-                sbSQL.append(argument.getDeclaration(false));
-
-                addComma = true;
-            }
-
-            sbSQL.append(") IS ");
+            appendFunctionSignature(sbSQL, false);
+            sbSQL.append(" IS ");
             sbSQL.append(comment);
             sbSQL.append(';');
         }
 
         return sbSQL.toString();
+    }
+    
+    @Override
+    protected StringBuilder appendOwnerSQL(StringBuilder sb) {
+        if (owner == null) {
+            return sb;
+        }
+        
+        sb.append("\n\nALTER FUNCTION ")
+            .append(' ');
+        appendFunctionSignature(sb, false)
+            .append(" OWNER TO ")
+            .append(owner)
+            .append(';');
+        
+        return sb;
+    }
+    
+    private StringBuilder appendFunctionSignature(StringBuilder sb,
+            boolean includeDefaulValues) {
+        sb.append(PgDiffUtils.getQuotedName(name));
+        
+        sb.append('(');
+        boolean addComma = false;
+        for (final Argument argument : arguments) {
+            if (addComma) {
+                sb.append(", ");
+            }
+            sb.append(argument.getDeclaration(includeDefaulValues));
+            addComma = true;
+        }
+        sb.append(") ");
+        
+        return sb;
     }
 
     public void setBody(final String body) {

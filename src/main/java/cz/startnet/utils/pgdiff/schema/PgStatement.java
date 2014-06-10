@@ -134,8 +134,6 @@ abstract public class PgStatement {
             type = "TABLE";
         } else if (this instanceof PgView) {
             type = "VIEW";
-        } else if (this instanceof PgFunction) {
-            type = "FUNCTION";
         } else {
             throw new IllegalStateException("OWNERs allowed only for SCHEMA, "
                     + "SEQUENCE, TABLE, VIEW, FUNCTION objects.");
