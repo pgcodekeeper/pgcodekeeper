@@ -40,6 +40,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         final StringBuilder sbSQL = new StringBuilder(500);
         sbSQL.append("CREATE OR REPLACE FUNCTION ");
         appendFunctionSignature(sbSQL, true);
+        sbSQL.append(' ');
         sbSQL.append(body);
         sbSQL.append(';');
         
@@ -63,8 +64,7 @@ public class PgFunction extends PgStatementWithSearchPath {
             return sb;
         }
         
-        sb.append("\n\nALTER FUNCTION ")
-            .append(' ');
+        sb.append("\n\nALTER FUNCTION ");
         appendFunctionSignature(sb, false)
             .append(" OWNER TO ")
             .append(owner)
@@ -86,7 +86,7 @@ public class PgFunction extends PgStatementWithSearchPath {
             sb.append(argument.getDeclaration(includeDefaulValues));
             addComma = true;
         }
-        sb.append(") ");
+        sb.append(')');
         
         return sb;
     }
