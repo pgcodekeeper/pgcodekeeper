@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.mainapp;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.widgets.Display;
@@ -10,8 +11,8 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.internal.StartupThreading;
-import org.eclipse.ui.internal.UISynchronizer;
 import org.eclipse.ui.internal.StartupThreading.StartupRunnable;
+import org.eclipse.ui.internal.UISynchronizer;
 
 @SuppressWarnings("restriction")
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
@@ -28,41 +29,41 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     @SuppressWarnings("unchecked")
 	public boolean openWindows() {
 		final Display display = PlatformUI.getWorkbench().getDisplay();
-		final boolean result [] = new boolean[1];
+		final AtomicBoolean result = new AtomicBoolean();
 		
 		// spawn another init thread.  For API compatibility We guarantee this method is called from 
 		// the UI thread but it could take enough time to disrupt progress reporting.
 		// spawn a new thread to do the grunt work of this initialization and spin the event loop 
 		// ourselves just like it's done in Workbench.
-		final AtomicBoolean initDone = new AtomicBoolean(false);
-		final Throwable [] error = new Throwable[1];
+		final AtomicBoolean initDone = new AtomicBoolean();
+		final AtomicReference<Throwable> error = new AtomicReference<>();
 		Thread initThread = new Thread() {
 			
             public void run() {
 				try {
 					//declare us to be a startup thread so that our syncs will be executed 
 					UISynchronizer.startupThread.set(Boolean.TRUE);
-					final IWorkbenchConfigurer [] myConfigurer = new IWorkbenchConfigurer[1];
+					final AtomicReference<IWorkbenchConfigurer> myConfigurer = 
+					        new AtomicReference<>();
 					StartupThreading.runWithoutExceptions(new StartupRunnable() {
 	
 						public void runWithException() throws Throwable {
-							myConfigurer[0] = getWorkbenchConfigurer();
-							
+							myConfigurer.set(getWorkbenchConfigurer());
 						}});
 					
-					IStatus status = myConfigurer[0].restoreState();
+					IStatus status = myConfigurer.get().restoreState();
 					if (!status.isOK()) {
 						if (status.getCode() == IWorkbenchConfigurer.RESTORE_CODE_EXIT) {
-							result[0] = false;
+							result.set(false);
 							return;
 						}
 						if (status.getCode() == IWorkbenchConfigurer.RESTORE_CODE_RESET) {
-							myConfigurer[0].openFirstTimeWindow();
+							myConfigurer.get().openFirstTimeWindow();
 						}
 					}
-					result[0] = true;
+					result.set(true);
 				} catch (Throwable e) {
-					error[0] = e;
+					error.set(e);
 				}
 				finally {
 					initDone.set(true);
@@ -86,11 +87,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			}
 			
 			// can only be a runtime or error
-			if (error[0] instanceof Error)
-				throw (Error)error[0];
-			else if (error[0] instanceof RuntimeException)
-				throw (RuntimeException)error[0];
+			if (error.get() instanceof Error)
+				throw (Error)error.get();
+			else if (error.get() instanceof RuntimeException)
+				throw (RuntimeException)error.get();
 		
-			return result[0];
+			return result.get();
 	}
 }
