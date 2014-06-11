@@ -44,7 +44,6 @@ import org.eclipse.swt.widgets.Text;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
@@ -103,12 +102,13 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 try {
                     getContainer().run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
-                    ExceptionNotifyHelper.notifyAndThrow( new IllegalStateException("Error in differ thread",
-                            ex), getContainer().getShell());
+                    e.doit = false;
+                    throw new IllegalStateException("Error in differ thread", ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
-                            "Differ thread cancelled. Shouldn't happen!", ex), getContainer().getShell());
+                    e.doit = false;
+                    throw new IllegalStateException(
+                            "Differ thread cancelled. Shouldn't happen!", ex);
                 }
 
                 dbSource = treediffer.getDbSource();
@@ -130,12 +130,13 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 try {
                     getContainer().run(true, false, differ);
                 } catch (InvocationTargetException ex) {
-                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException("Error in differ thread",
-                            ex), getContainer().getShell());
+                    e.doit = false;
+                    throw new IllegalStateException("Error in differ thread", ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
-                            "Differ thread cancelled. Shouldn't happen!", ex),getContainer().getShell());
+                    e.doit = false;
+                    throw new IllegalStateException(
+                            "Differ thread cancelled. Shouldn't happen!", ex);
                 }
 
                 pageResult.setData(fdbSource.getOrigin(), fdbTarget.getOrigin(),

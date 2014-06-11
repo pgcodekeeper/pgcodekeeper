@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import ru.taximaxim.codekeeper.ui.Log;
+
 public class DbInfo {
     
     /**
@@ -97,7 +99,7 @@ public class DbInfo {
             } catch(IllegalArgumentException ex) {
                 // just ignore broken entries
                 // the store won't have them in and they will be consequently deleted from preferences
-                ex.printStackTrace();
+                Log.log(ex);
             }
         }
         

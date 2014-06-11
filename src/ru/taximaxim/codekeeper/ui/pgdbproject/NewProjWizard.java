@@ -44,7 +44,6 @@ import org.eclipse.swt.widgets.Text;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
@@ -149,7 +148,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                             AddonPrefLoader.savePreference(mainPrefStore, 
                                     UIConsts.PREF_LAST_REPO, repoUrl);
                         } catch (IOException e) {
-                            throw new InvocationTargetException(e);
+                            throw new InvocationTargetException(e, "Error cloning repository");
                         }
                         monitor.done();
                     }
@@ -158,10 +157,13 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                 try {
                     new ProgressMonitorDialog(pageRepo.getShell()).run(true,
                             false, cloneRunnable);
-                } catch (InvocationTargetException | InterruptedException e) {
+                } catch (InvocationTargetException ex) {
                     event.doit = false;
-                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(e), 
-                            this.getShell());
+                    throw new IllegalStateException("Cloning was not successful", ex);
+                } catch (InterruptedException ex) {
+                    // assume run() was called as non cancelable
+                    event.doit = false;
+                    throw new IllegalStateException("Cloning thread interrupted", ex);
                 }
             } else {
                 // didn't clone the repo; can't proceed without it
@@ -243,14 +245,14 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                 getContainer().run(false, false, 
                         new InitProjectFromSource(mainPrefStore, props, pageDb.getDumpPath()));
             } catch (InvocationTargetException ex) {
-                ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
-                        "Error while initializing repo", ex), getShell());
+                throw new IllegalStateException(
+                        "Error initializing repo from source", ex);
             } catch (InterruptedException ex) {
                 // assume run() was called as non cancelable
-                ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
-                        "Project creator thread cancelled. Shouldn't happen!", ex), getShell());
+                throw new IllegalStateException(
+                        "Project initializer thread interrupted", ex);
             }
-        }else if (!pageSubdir.isDoInit() && new File (pageSubdir.getRepoSubdir()).list().length == 0 ){
+        } else if (!pageSubdir.isDoInit() && new File(pageSubdir.getRepoSubdir()).list().length == 0 ){
             try {
                 // init empty db for further commits
                 new ModelExporter(pageSubdir.getRepoSubdir(), new PgDatabase(),
@@ -259,11 +261,11 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                         mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
                 repo.repoRemoveMissingAddNew(new File(pageSubdir.getRepoSubdir()));
                 repo.repoCommit(new File(pageSubdir.getRepoSubdir()), "empty working directory");
-            } catch (IOException e) {
+            } catch (IOException ex) {
                 throw new IllegalStateException("Could not create empty database in "
-                            + new File (pageSubdir.getRepoSubdir()), e);
+                            + new File(pageSubdir.getRepoSubdir()), ex);
             }
-        }else if (!pageSubdir.isDoInit() && !new File (pageSubdir.getRepoSubdir(), 
+        } else if (!pageSubdir.isDoInit() && !new File(pageSubdir.getRepoSubdir(), 
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
             new MessageDialog(getShell(), "Bad working directory", null, 
                     "Missing marker file in working directory " + pageSubdir.getRepoSubdir() + 

@@ -51,7 +51,6 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -331,14 +330,8 @@ public class CommitPartDescr {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                try {
-                    if (!ProjSyncSrc.sync(proj, shell, mainPrefs)) {
-                        return;
-                    }
-                } catch (InvocationTargetException | IOException ex) {
-                    throw new IllegalStateException(
-                            "Unexpected error while trying to sync repository cache!",
-                            ex);
+                if (!ProjSyncSrc.sync(proj, shell, mainPrefs)) {
+                    return;
                 }
                 
                 dbSource = DbSource.fromProject(proj);
@@ -378,11 +371,9 @@ public class CommitPartDescr {
                 Log.log(Log.LOG_INFO, "Getting changes for commit");
                 TreeDiffer treediffer = new TreeDiffer(dbSource, dbTarget);
                 try {
-                    new ProgressMonitorDialog(shell).run(true, false,
-                            treediffer);
+                    new ProgressMonitorDialog(shell).run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
-                    throw new IllegalStateException("Error in differ thread",
-                            ex);
+                    throw new IllegalStateException("Error in differ thread", ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     throw new IllegalStateException(

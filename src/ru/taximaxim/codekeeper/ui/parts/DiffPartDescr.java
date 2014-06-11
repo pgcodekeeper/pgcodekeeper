@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.parts;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.annotation.PostConstruct;
@@ -46,7 +45,6 @@ import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.SqlScriptDialog;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -254,14 +252,8 @@ public class DiffPartDescr {
         btnGetChanges.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                try {
-                    if (!ProjSyncSrc.sync(proj, shell, mainPrefs)) {
-                        return;
-                    }
-                } catch (InvocationTargetException | IOException ex) {
-                    throw new IllegalStateException(
-                            "Unexpected error while trying to sync repository cache!",
-                            ex);
+                if (!ProjSyncSrc.sync(proj, shell, mainPrefs)) {
+                    return;
                 }
                 
                 dbTarget = DbSource.fromProject(proj);
@@ -302,15 +294,13 @@ public class DiffPartDescr {
                 Log.log(Log.LOG_INFO, "Getting changes to generate script");
                 TreeDiffer treediffer = new TreeDiffer(dbSource, dbTarget);
                 try {
-                    new ProgressMonitorDialog(shell).run(true, false,
-                            treediffer);
+                    new ProgressMonitorDialog(shell).run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
-                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException("Error in differ thread",
-                            ex), shell);
+                    throw new IllegalStateException("Error in differ thread", ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    ExceptionNotifyHelper.notifyAndThrow(new IllegalStateException(
-                            "Differ thread cancelled. Shouldn't happen!", ex), shell);
+                    throw new IllegalStateException(
+                            "Differ thread cancelled. Shouldn't happen!", ex);
                 }
 
                 diffTable.setInput(treediffer);

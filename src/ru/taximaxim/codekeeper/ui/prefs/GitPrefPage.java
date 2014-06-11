@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
-import ru.taximaxim.codekeeper.ui.ExceptionNotifyHelper;
+import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 
@@ -70,11 +70,8 @@ public class GitPrefPage extends FieldEditorPreferencePage
                         JGitExec.genKeys(privateFileName);
                         editorPrivate.setStringValue(privateFileName);
                     } catch (IOException | JSchException ex) {
-                        ExceptionNotifyHelper
-                                .notifyAndThrow(
-                                        new IllegalStateException(
-                                                "Some error occured during RSA keys creation and writing to files",
-                                                ex), parent.getShell());
+                        ExceptionNotifier.notify(
+                                "Error while RSA keys generation", ex);
                     }
             }
         });
@@ -93,11 +90,12 @@ public class GitPrefPage extends FieldEditorPreferencePage
                     }
                     Object [] data = new Object [] {sBuilder.toString()};
                     new Clipboard(parent.getDisplay()).setContents (data, new Transfer[]{TextTransfer.getInstance()});
-                } catch (IOException e1) {
-                    MessageBox box = new MessageBox(parent.getShell(), SWT.ERROR);
-                    box.setMessage("Public key file " + editorPrivate.getTextControl(getFieldEditorParent()).getText() + 
-                            ".pub"+" either does not exist or inaccessible.");
-                    box.open();
+                } catch (IOException ex) {
+                    MessageBox mb = new MessageBox(getShell(), SWT.ERROR);
+                    mb.setText("File not found!");
+                    mb.setMessage("Public key file " + publicFileName
+                            + " either does not exist or inaccessible.");
+                    mb.open();
                 }
             }
         });

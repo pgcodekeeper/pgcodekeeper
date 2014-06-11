@@ -34,7 +34,8 @@ public class LoadProj {
             @Named(IServiceConstants.ACTIVE_SHELL)
             Shell shell,
             IEclipseContext ctx, EPartService partService, EModelService model,
-            MApplication app, @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs) {
+            MApplication app,
+            @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs) {
         FileDialog dialog = new FileDialog(shell);
         dialog.setText("Open project...");
         dialog.setOverwrite(false);

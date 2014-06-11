@@ -1,9 +1,6 @@
  
 package ru.taximaxim.codekeeper.ui.handlers;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-
 import javax.inject.Named;
 
 import org.eclipse.e4.core.di.annotations.CanExecute;
@@ -26,7 +23,7 @@ public class Diff {
             @Named(IServiceConstants.ACTIVE_SHELL)
             Shell shell,
             @Named(UIConsts.PREF_STORE)
-            IPreferenceStore prefStore) throws IOException, InvocationTargetException {
+            IPreferenceStore prefStore) {
         if(ProjSyncSrc.sync(proj, shell, prefStore)) {
             Log.log(Log.LOG_DEBUG, "Diff wizard about to show");
             

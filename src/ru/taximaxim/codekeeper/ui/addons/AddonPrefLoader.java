@@ -21,13 +21,14 @@ public class AddonPrefLoader {
     
     public static void savePreference(IPreferenceStore mainPrefs, String preference, String value){
         mainPrefs.setValue(preference, value);
-      if(mainPrefs.needsSaving() && mainPrefs instanceof IPersistentPreferenceStore) {
-          try {
-              ((IPersistentPreferenceStore) mainPrefs).save();
-          } catch (IOException ex) {
-              throw new IllegalStateException(
-                      "Unexpected error while saving preferences!", ex);
-          }
-      }
+        
+        if(mainPrefs.needsSaving() && mainPrefs instanceof IPersistentPreferenceStore) {
+            try {
+                ((IPersistentPreferenceStore) mainPrefs).save();
+            } catch (IOException ex) {
+                throw new IllegalStateException(
+                        "Unexpected error while saving preferences!", ex);
+            }
+        }
     }
 }

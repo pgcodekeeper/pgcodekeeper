@@ -3,10 +3,13 @@ package ru.taximaxim.codekeeper.ui;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
@@ -20,6 +23,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
@@ -61,9 +65,8 @@ public class SqlScriptDialog extends MessageDialog {
     @Override
     protected Control createCustomArea(Composite parent) {
         txtMain = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
-                | /*SWT.READ_ONLY |*/ SWT.MULTI);
+                | SWT.MULTI);
         txtMain.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        /*txt.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));*/
         
         txtMain.setText(text);
         
@@ -95,65 +98,62 @@ public class SqlScriptDialog extends MessageDialog {
         // case Run script
         if (buttonId == 0 && !isRunning){
             this.runScriptBtn = getButton(0);
-            
+            final File fileTmpScript;
             try {
-                @SuppressWarnings("resource")
-                final File fileTmpScript = new TempFile("tmp_rollon_", ".sql").get();
+                // TODO remove fileTmpScript if script is done or interrupted
+                fileTmpScript = new TempFile("tmp_rollon_", ".sql").get();
                 
-                try (PrintWriter writer = new PrintWriter(fileTmpScript)) {
-                    writer.write(textRetrieved);
-                }
-                
-                List<String> command = Arrays.asList(txtScript.getText()
-                        .replaceFirst(SCRIPT_PLACEHOLDER, fileTmpScript.getAbsolutePath())
-                        .split(Pattern.quote(" ")));
-                final ProcessBuilder pb = new ProcessBuilder(command);
-                
-                // new runnable to unlock the UI thread
-                Runnable launcher = new Runnable() {
-                    
-                    @Override
-                    public void run() {
-                        try {
-                            StdStreamRedirector.launchAndRedirect(pb);
-                        } catch (final IOException ex) {
-                            SqlScriptDialog.this.getShell().getDisplay().syncExec(
-                                    new Runnable() {
-                                        
-                                        @Override
-                                        public void run() {
-                                            Log.log(ex);
-                                            MessageBox mb = new MessageBox(
-                                                    getShell(), SWT.ERROR);
-                                            mb.setMessage("IOException thrown while running script: " + ex.getMessage());
-                                            mb.open();
-                                        }
-                                    });
-                        } finally {
-                            fileTmpScript.delete();
-                            
-                            // request UI change: button label changed
-                            SqlScriptDialog.this.getShell().getDisplay().asyncExec(
-                                    new Runnable() {
-                                        
-                                        @Override
-                                        public void run() {
-                                            isRunning = false;
-                                            runScriptBtn.setText(runScriptText);
-                                        }
-                                    });
-                        }
-                    }
-                };
-                // run thread that calls StdStreamRedirector.launchAndRedirect
-                scriptThread = new Thread(launcher);
-                scriptThread.start();
-                getButton(0).setText(stopScriptText);
-                isRunning = true;
+               try (PrintWriter writer = new PrintWriter(fileTmpScript)) {
+                   writer.write(textRetrieved);
+               }
             } catch (IOException ex) {
-                ExceptionNotifyHelper.notifyAndThrow(
-                        new IllegalStateException(ex), getShell());
+                throw new IllegalStateException(
+                        "Error saving rollon script to temporary file", ex);
             }
+                
+            List<String> command = Arrays.asList(txtScript.getText()
+                    .replaceFirst(SCRIPT_PLACEHOLDER, fileTmpScript.getAbsolutePath())
+                    .split(Pattern.quote(" ")));
+            final ProcessBuilder pb = new ProcessBuilder(command);
+            
+            // new runnable to unlock the UI thread
+            Runnable launcher = new Runnable() {
+                
+                @Override
+                public void run() {
+                    try {
+                        StdStreamRedirector.launchAndRedirect(pb);
+                    } catch (IOException ex) {
+                        throw new IllegalStateException(ex);
+                    } finally {
+                        fileTmpScript.delete();
+                        
+                        // request UI change: button label changed
+                        SqlScriptDialog.this.getShell().getDisplay().syncExec(
+                                new Runnable() {
+                                    
+                                    @Override
+                                    public void run() {
+                                        isRunning = false;
+                                        runScriptBtn.setText(runScriptText);
+                                    }
+                                });
+                    }
+                }
+            };
+            // run thread that calls StdStreamRedirector.launchAndRedirect
+            scriptThread = new Thread(launcher);
+            scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler(){
+                @Override
+                public void uncaughtException(Thread t, Throwable e) {
+                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                            "Exception during script execution", e);
+                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
+                }
+            });
+            scriptThread.start();
+            getButton(0).setText(stopScriptText);
+            isRunning = true;
         }
         // case Stop script
         else if (buttonId == 0 && isRunning){
@@ -177,8 +177,10 @@ public class SqlScriptDialog extends MessageDialog {
                 try (PrintWriter writer = new PrintWriter(script)) {
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
-                    ExceptionNotifyHelper.notifyAndThrow(
-                            new IllegalStateException(ex), getShell());
+                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                            "Error saving script to a file", ex);
+                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
+                    return;
                 }
                 
                 String fileSaved = "Script saved to file " + script.getAbsolutePath();
