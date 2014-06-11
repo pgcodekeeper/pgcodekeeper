@@ -194,16 +194,36 @@ abstract public class PgStatement {
      */
     @Override
     public boolean equals(Object obj){
-        /*if(!this.compare((PgStatement) obj)) {
-            System.out.println(((PgStatement) obj).getName());
-        }*/
-        return (obj instanceof PgStatement)? this.compare((PgStatement) obj) : false;
+        return (obj instanceof PgStatement)? 
+                this.compare((PgStatement) obj) && parentNamesEquals((PgStatement) obj) : false;
+    }
+    
+    private boolean parentNamesEquals(PgStatement st){
+        PgStatement p = parent;
+        PgStatement p2 = st.getParent();
+        while (p != null && p2 != null){
+            if (!p.getName().equals(p2.getName())){
+                return false;
+            }
+            p = p.getParent();
+            p2 = p2.getParent();
+        }
+        if (p != p2){
+            return false;
+        }
+        return true;
     }
     
     @Override
     public int hashCode(){
         if (!hashComputed){
             hash = computeHash();
+            final int prime = 31;
+            PgStatement p = parent;
+            while(p != null){
+                hash = prime * hash + p.getName().hashCode();
+                p = p.getParent();
+            }
             hashComputed = true;
         }
         return hash;
