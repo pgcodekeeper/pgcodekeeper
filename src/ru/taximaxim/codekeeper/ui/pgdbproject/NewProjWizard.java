@@ -8,8 +8,6 @@ import java.nio.file.Paths;
 import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -42,7 +40,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -160,18 +157,13 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                 try {
                     new ProgressMonitorDialog(pageRepo.getShell()).run(true,
                             false, cloneRunnable);
-                } catch (InvocationTargetException e) {
+                } catch (InvocationTargetException ex) {
                     event.doit = false;
-                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
-                            "Cloning was not successful", e);
-                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
+                    throw new IllegalStateException("Cloning was not successful", ex);
+                } catch (InterruptedException ex) {
+                    // assume run() was called as non cancelable
                     event.doit = false;
-                }catch(InterruptedException e){
-                    event.doit = false;
-                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
-                            "Cloning thread interrupted", e);
-                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
-                    event.doit = false;
+                    throw new IllegalStateException("Cloning thread interrupted", ex);
                 }
             } else {
                 // didn't clone the repo; can't proceed without it
@@ -253,18 +245,14 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                 getContainer().run(false, false, 
                         new InitProjectFromSource(mainPrefStore, props, pageDb.getDumpPath()));
             } catch (InvocationTargetException ex) {
-                Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                throw new IllegalStateException(
                         "Error initializing repo from source", ex);
-                StatusManager.getManager().handle(status, StatusManager.BLOCK);
-                return false;
             } catch (InterruptedException ex) {
                 // assume run() was called as non cancelable
-                Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                throw new IllegalStateException(
                         "Project initializer thread interrupted", ex);
-                StatusManager.getManager().handle(status, StatusManager.BLOCK);
-                return false;
             }
-        }else if (!pageSubdir.isDoInit() && new File (pageSubdir.getRepoSubdir()).list().length == 0 ){
+        } else if (!pageSubdir.isDoInit() && new File(pageSubdir.getRepoSubdir()).list().length == 0 ){
             try {
                 // init empty db for further commits
                 new ModelExporter(pageSubdir.getRepoSubdir(), new PgDatabase(),
@@ -273,11 +261,11 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                         mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
                 repo.repoRemoveMissingAddNew(new File(pageSubdir.getRepoSubdir()));
                 repo.repoCommit(new File(pageSubdir.getRepoSubdir()), "empty working directory");
-            } catch (IOException e) {
+            } catch (IOException ex) {
                 throw new IllegalStateException("Could not create empty database in "
-                            + new File (pageSubdir.getRepoSubdir()), e);
+                            + new File(pageSubdir.getRepoSubdir()), ex);
             }
-        }else if (!pageSubdir.isDoInit() && !new File (pageSubdir.getRepoSubdir(), 
+        } else if (!pageSubdir.isDoInit() && !new File(pageSubdir.getRepoSubdir(), 
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
             new MessageDialog(getShell(), "Bad working directory", null, 
                     "Missing marker file in working directory " + pageSubdir.getRepoSubdir() + 

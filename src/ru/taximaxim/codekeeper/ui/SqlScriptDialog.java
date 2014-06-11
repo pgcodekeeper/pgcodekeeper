@@ -107,10 +107,8 @@ public class SqlScriptDialog extends MessageDialog {
                    writer.write(textRetrieved);
                }
             } catch (IOException ex) {
-                Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                throw new IllegalStateException(
                         "Error saving rollon script to temporary file", ex);
-                StatusManager.getManager().handle(status, StatusManager.BLOCK);
-                return;
             }
                 
             List<String> command = Arrays.asList(txtScript.getText()

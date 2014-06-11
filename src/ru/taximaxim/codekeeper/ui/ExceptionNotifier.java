@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.ui.handlers.OpenLog;
 import ru.taximaxim.codekeeper.ui.parts.Console;
@@ -65,6 +66,12 @@ public class ExceptionNotifier {
                 }
             });
         }
+    }
+    
+    public static void notify(String message, Throwable ex) {
+        Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                message, ex);
+        StatusManager.getManager().handle(status, StatusManager.BLOCK);
     }
 }
 

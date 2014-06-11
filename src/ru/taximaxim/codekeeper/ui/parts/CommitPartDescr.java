@@ -326,14 +326,8 @@ public class CommitPartDescr {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                try {
-                    if (!ProjSyncSrc.sync(proj, shell, mainPrefs)) {
-                        return;
-                    }
-                } catch (InvocationTargetException ex) {
-                    throw new IllegalStateException(
-                            "Unexpected error while trying to sync repository cache!",
-                            ex);
+                if (!ProjSyncSrc.sync(proj, shell, mainPrefs)) {
+                    return;
                 }
                 
                 dbSource = DbSource.fromProject(proj);
@@ -373,11 +367,9 @@ public class CommitPartDescr {
                 Log.log(Log.LOG_INFO, "Getting changes for commit");
                 TreeDiffer treediffer = new TreeDiffer(dbSource, dbTarget);
                 try {
-                    new ProgressMonitorDialog(shell).run(true, false,
-                            treediffer);
+                    new ProgressMonitorDialog(shell).run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
-                    throw new IllegalStateException("Error in differ thread",
-                            ex);
+                    throw new IllegalStateException("Error in differ thread", ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     throw new IllegalStateException(

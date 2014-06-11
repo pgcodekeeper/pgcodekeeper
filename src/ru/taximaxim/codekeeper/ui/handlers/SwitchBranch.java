@@ -9,8 +9,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.core.di.annotations.Execute;
@@ -23,8 +21,8 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.statushandlers.StatusManager;
 
+import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -69,9 +67,8 @@ public class SwitchBranch {
                             });
                         }
                     } catch (IOException | InterruptedException ex) {
-                        Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
-                                "Exception thrown during running checkout job", ex);
-                        StatusManager.getManager().handle(status, StatusManager.BLOCK);
+                        throw new IllegalStateException(
+                                "Exception waiting for checkout job", ex);
                     } finally {
                         git.get().close();
                     }
@@ -80,21 +77,17 @@ public class SwitchBranch {
             t.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
                 
                 @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
-                            "Exception during switching branch", e);
-                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
+                public void uncaughtException(Thread t, Throwable ex) {
+                    ExceptionNotifier.notify("Exception during switching branch", ex);
                 }
             });
             t.start();
-        } catch (IOException e) {
+        } catch (IOException ex) {
             if (git != null) {
                 git.get().close();
             }
             
-            Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
-                    "Wrong repository or ref name", e);
-            StatusManager.getManager().handle(status, StatusManager.BLOCK);
+            ExceptionNotifier.notify("Wrong repository or ref name", ex);
         }
     }
 

@@ -8,8 +8,6 @@ import java.io.IOException;
 
 import javax.inject.Named;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.dialogs.Dialog;
@@ -30,7 +28,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -188,9 +185,8 @@ class GitPrefPage extends FieldEditorPreferencePage {
                         JGitExec.genKeys(privateFileName);
                         editorPrivate.setStringValue(privateFileName);
                     } catch (IOException | JSchException ex) {
-                        Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
-                                "Error occured during RSA keys creation and writing to files", ex);
-                        StatusManager.getManager().handle(status, StatusManager.BLOCK);
+                        ExceptionNotifier.notify(
+                                "Error while RSA keys generation", ex);
                     }
                 }
             }
@@ -203,7 +199,7 @@ class GitPrefPage extends FieldEditorPreferencePage {
                 String publicFileName = editorPrivate.getTextControl(
                         getFieldEditorParent()).getText() + ".pub";
                 File publicKey = new File (publicFileName);
-                try (BufferedReader reader = new BufferedReader( new FileReader (publicKey))){
+                try (BufferedReader reader = new BufferedReader(new FileReader(publicKey))) {
                     StringBuilder  sBuilder = new StringBuilder();
                     String line;
                     while((line = reader.readLine()) != null){
@@ -213,11 +209,11 @@ class GitPrefPage extends FieldEditorPreferencePage {
                     new Clipboard(parent.getDisplay()).setContents (data, 
                             new Transfer[]{TextTransfer.getInstance()});
                 } catch (IOException ex) {
-                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
-                            "Public key file " + editorPrivate.getTextControl(
-                                    getFieldEditorParent()).getText() + 
-                                    ".pub either does not exist or inaccessible.", ex);
-                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
+                    MessageBox mb = new MessageBox(getShell(), SWT.ERROR);
+                    mb.setText("File not found!");
+                    mb.setMessage("Public key file " + publicFileName
+                            + " either does not exist or inaccessible.");
+                    mb.open();
                 }
             }
         });

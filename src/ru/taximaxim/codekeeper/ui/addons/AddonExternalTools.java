@@ -12,9 +12,9 @@ import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.osgi.service.application.ApplicationHandle;
 
+import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
-import ru.taximaxim.codekeeper.ui.parts.Console;
 
 public class AddonExternalTools {
     
@@ -46,10 +46,9 @@ public class AddonExternalTools {
         try {
             setPgdumpVersion(new PgDumper(pgdumpExec).getVersion());
         } catch(IOException ex) {
-            Console.addMessage("Error while trying to run pg_dump --version!"
-                    + " Check paths in program preferences.");
-            ex.printStackTrace();
             setPgdumpVersion("<unknown>");
+            ExceptionNotifier.notify("Error while trying to run pg_dump"
+                    + " --version! Check paths in program preferences.", ex);
         }
     }
     

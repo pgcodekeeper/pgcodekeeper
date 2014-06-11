@@ -79,7 +79,7 @@ public class JGitExec implements IRepoWorker{
         try {
             cloneCom.setURI(url).setDirectory(dirTo).call().close();
         } catch (GitAPIException e) {
-            throw new IOException ("Exception thrown at JGit clone: " + e.toString(), e);
+            throw new IOException ("Exception thrown at JGit clone", e);
         }
     }
 
@@ -121,7 +121,7 @@ public class JGitExec implements IRepoWorker{
                 }
             }
         } catch (GitAPIException e){
-            throw new IOException ("Exception thrown at JGit commit: ", e);
+            throw new IOException ("Exception thrown at JGit commit", e);
         }finally{
             git.close();
         }
@@ -205,7 +205,7 @@ public class JGitExec implements IRepoWorker{
     
     public static boolean isGitRepo(String path){
         try {
-            Git.open(new File(path));
+            Git.open(new File(path)).close();
             return true;
         } catch (IOException e) {
             return false;

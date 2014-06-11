@@ -9,8 +9,6 @@ import javax.inject.Named;
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.di.extensions.Preference;
@@ -43,11 +41,9 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.SqlScriptDialog;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -252,14 +248,8 @@ public class DiffPartDescr {
         btnGetChanges.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                try {
-                    if (!ProjSyncSrc.sync(proj, shell, mainPrefs)) {
-                        return;
-                    }
-                } catch (InvocationTargetException ex) {
-                    throw new IllegalStateException(
-                            "Unexpected error while trying to sync repository cache!",
-                            ex);
+                if (!ProjSyncSrc.sync(proj, shell, mainPrefs)) {
+                    return;
                 }
                 
                 dbTarget = DbSource.fromProject(proj);
@@ -300,19 +290,13 @@ public class DiffPartDescr {
                 Log.log(Log.LOG_INFO, "Getting changes to generate script");
                 TreeDiffer treediffer = new TreeDiffer(dbSource, dbTarget);
                 try {
-                    new ProgressMonitorDialog(shell).run(true, false,
-                            treediffer);
+                    new ProgressMonitorDialog(shell).run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
-                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
-                            "Error in differ thread", ex);
-                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
-                    return;
+                    throw new IllegalStateException("Error in differ thread", ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
-                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                    throw new IllegalStateException(
                             "Differ thread cancelled. Shouldn't happen!", ex);
-                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
-                    return;
                 }
 
                 diffTable.setInput(treediffer);

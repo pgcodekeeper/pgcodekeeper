@@ -53,8 +53,7 @@ public class InitProjectFromSource implements IRunnableWithProgress {
             
             monitor.done();
         } catch (IOException ex) {
-            throw new InvocationTargetException(ex,
-                    "IOException while creating project!");
+            throw new InvocationTargetException(ex, "IOException while creating project!");
         }
     }
 

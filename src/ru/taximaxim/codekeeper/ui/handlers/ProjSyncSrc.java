@@ -3,13 +3,12 @@ package ru.taximaxim.codekeeper.ui.handlers;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.core.di.annotations.Execute;
@@ -21,9 +20,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.statushandlers.StatusManager;
 
-import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
@@ -39,14 +36,8 @@ public class ProjSyncSrc {
     private void execute(
             PgDbProject proj,
             @Named(IServiceConstants.ACTIVE_SHELL) Shell shell,
-            @Named(UIConsts.PREF_STORE) IPreferenceStore prefStore){
-        try {
-            sync(proj, shell, prefStore);
-        } catch (InvocationTargetException e) {
-            Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
-                    "Could not syncronize repository with remote", e);
-            StatusManager.getManager().handle(status, StatusManager.BLOCK);
-        }
+            @Named(UIConsts.PREF_STORE) IPreferenceStore prefStore) {
+        sync(proj, shell, prefStore);
     }
 
     @CanExecute
@@ -60,12 +51,11 @@ public class ProjSyncSrc {
     public static boolean sync(
             final PgDbProject proj,
             Shell shell,
-            final IPreferenceStore mainPrefs)
-                    throws InvocationTargetException {
+            final IPreferenceStore mainPrefs) {
         Log.log(Log.LOG_INFO, "Syncing project " + proj.getProjectFile() +
                 " with repo url " + proj.getString(UIConsts.PROJ_PREF_REPO_URL));
         
-        final boolean[] conflicted = { false };
+        final AtomicBoolean conflicted = new AtomicBoolean(true);
         IRunnableWithProgress syncRunnable = new IRunnableWithProgress() {
             
             @Override
@@ -78,11 +68,11 @@ public class ProjSyncSrc {
 
                 try {
                     pm.newChild(2).subTask("Checking conflicts...");
-                    conflicted[0] = repo.hasConflicts(repoDir);
+                    conflicted.set(repo.hasConflicts(repoDir));
 
-                    if (!conflicted[0]) {
+                    if (!conflicted.get()) {
                         pm.newChild(8).subTask("Updating cache...");
-                        conflicted[0] = !repo.repoUpdate(repoDir);
+                        conflicted.set(!repo.repoUpdate(repoDir));
                     }
                 } catch (IOException ex) {
                     throw new InvocationTargetException(ex, "Error while checking"
@@ -95,13 +85,14 @@ public class ProjSyncSrc {
         try {
             new ProgressMonitorDialog(shell).run(true, false, syncRunnable);
         } catch (InterruptedException ex) {
-            Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+            throw new IllegalStateException(
                     "Repository sync uncancellable thread interrupted", ex);
-            StatusManager.getManager().handle(status, StatusManager.BLOCK);
-            return false;
+        } catch (InvocationTargetException ex) {
+            throw new IllegalStateException(
+                    "Could not synchronize repository with remote", ex);
         }
 
-        if (conflicted[0]) {
+        if (conflicted.get()) {
             MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR);
             mb.setText("Sync error!");
             mb.setMessage("Repository cache has conflicts! Resolve them manually"
@@ -111,6 +102,6 @@ public class ProjSyncSrc {
             events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
         }
 
-        return !conflicted[0];
+        return !conflicted.get();
     }
 }

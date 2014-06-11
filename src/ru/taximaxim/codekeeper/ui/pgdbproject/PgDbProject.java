@@ -30,8 +30,8 @@ public class PgDbProject extends PreferenceStore {
     public void load(){
         try {
             super.load();
-        } catch (IOException e) {
-            throw new IllegalStateException("Error loading project file. ", e);
+        } catch (IOException ex) {
+            throw new IllegalStateException("Error loading project file. ", ex);
         }
     }
     
