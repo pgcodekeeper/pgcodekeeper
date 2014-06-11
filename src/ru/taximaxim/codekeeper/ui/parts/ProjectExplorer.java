@@ -10,8 +10,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.AtomicStampedReference;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -249,13 +247,11 @@ public class ProjectExplorer {
             @Optional
             @EventTopic(UIConsts.EVENT_REOPEN_PROJECT)
             PgDbProject proj2)
-            throws IOException, InvocationTargetException, InterruptedException {
+            throws InvocationTargetException, InterruptedException {
         if (treeDb != null) {
-            final AtomicReference<File> treeInput = new AtomicReference<File>();
+            final File treeInput = proj == null? null : proj.getProjectWorkingDir();
             
             if(proj != null) {
-                treeInput.set(proj.getProjectWorkingDir());
-                
                 IRunnableWithProgress loadRunnable = new IRunnableWithProgress() {
                     @Override
                     public void run(IProgressMonitor monitor)
@@ -273,20 +269,21 @@ public class ProjectExplorer {
                 
                 @Override
                 public void run() {
-                    treeDb.setInput(treeInput.get());
+                    treeDb.setInput(treeInput);
                 }
             });
         }
         
-        final AtomicReference<String> partLabel = new AtomicReference<String>("Project Explorer");
-        if(proj != null) {
-            partLabel.set(partLabel.get() + " - " + proj.getProjectName());
+        String partLabel = "Project Explorer";
+        if (proj != null) {
+            partLabel += " - " + proj.getProjectName();
         }
+        final String newLabel = partLabel;
         sync.asyncExec(new Runnable() {
             
             @Override
             public void run() {
-                part.setLabel(partLabel.get());
+                part.setLabel(newLabel);
             }
         });
     }
