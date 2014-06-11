@@ -26,9 +26,6 @@ import ru.taximaxim.codekeeper.ui.parts.Console;
  * Helper class for notifying user of exceptions thrown.<br>
  * Logs messages to log. Outputs short message to Console and displays 
  * ErrorDialog with stack trace, if requested.
- * <br><br>
- * This class calls should be synchronized by the caller if UI interaction 
- * is requested.
  * 
  * @author ryabinin_av
  */

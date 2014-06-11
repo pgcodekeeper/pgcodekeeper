@@ -4,6 +4,7 @@ package ru.taximaxim.codekeeper.ui.handlers;
 import java.io.File;
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -41,14 +42,14 @@ public class SwitchBranch {
     
 	@Execute
 	public void execute(final PgDbProject proj,
-	        @Named(IServiceConstants.ACTIVE_SHELL) final
-	        Shell shell){
-	    final Git[] git = new Git [1];
+	        @Named(IServiceConstants.ACTIVE_SHELL)
+	        final Shell shell) {
+	    final AtomicReference<Git> git = new AtomicReference<>();
         try {
-            git[0] = Git.open(
-                    new File(proj.getString(UIConsts.PROJ_PREF_REPO_ROOT_PATH)));
-    	    final Ref headOld = git[0].getRepository().getRef(Constants.HEAD);
-    	    BranchOperationUI.checkout(git[0].getRepository()).start();
+            git.set(Git.open(
+                    new File(proj.getString(UIConsts.PROJ_PREF_REPO_ROOT_PATH))));
+    	    final Ref headOld = git.get().getRepository().getRef(Constants.HEAD);
+    	    BranchOperationUI.checkout(git.get().getRepository()).start();
     	    
     	    Thread t = new Thread(new Runnable() {
                 
@@ -57,7 +58,7 @@ public class SwitchBranch {
                     try {
                         jobs.join(JobFamilies.CHECKOUT, null);
                         
-                        if (!headOld.getObjectId().equals(git[0].getRepository()
+                        if (!headOld.getObjectId().equals(git.get().getRepository()
                                 .getRef(Constants.HEAD).getObjectId())) {
                             sync.asyncExec(new Runnable() {
                                 
@@ -71,12 +72,12 @@ public class SwitchBranch {
                         Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
                                 "Exception thrown during running checkout job", ex);
                         StatusManager.getManager().handle(status, StatusManager.BLOCK);
-                    }finally{
-                            git[0].close();      
+                    } finally {
+                        git.get().close();
                     }
                 }
             });
-    	    t.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+            t.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
                 
                 @Override
                 public void uncaughtException(Thread t, Throwable e) {
@@ -85,20 +86,20 @@ public class SwitchBranch {
                     StatusManager.getManager().handle(status, StatusManager.BLOCK);
                 }
             });
-    	    t.start();
+            t.start();
         } catch (IOException e) {
+            if (git != null) {
+                git.get().close();
+            }
+            
             Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
                     "Wrong repository or ref name", e);
             StatusManager.getManager().handle(status, StatusManager.BLOCK);
-            if (git[0] != null){
-                git[0].close();
-            }
-            return;
         }
-	}
-	
-	@CanExecute
-	public boolean canExecute(PgDbProject proj) {
-		return proj != null;
-	}	
+    }
+
+    @CanExecute
+    public boolean canExecute(PgDbProject proj) {
+        return proj != null;
+    }
 }

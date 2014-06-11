@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.parts.Console;
@@ -73,13 +74,14 @@ public class StdStreamRedirector implements Runnable {
         final Process p = pb.start();
         
         final StdStreamRedirector redirector = new StdStreamRedirector(p.getInputStream());
-        try(BufferedReader t = redirector.in) {
+        try (BufferedReader t = redirector.in) {
             Thread redirectorThread = new Thread(redirector);
-            final Throwable [] lastException = new Throwable[1];
+            final AtomicReference<Throwable> lastException = new AtomicReference<>();
             redirectorThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                
                 @Override
                 public void uncaughtException(Thread t, Throwable e) {
-                    lastException[0] = e;
+                    lastException.set(e);
                     redirector.isDestroyed.set(true);
                     p.destroy();
                 }
@@ -104,9 +106,9 @@ public class StdStreamRedirector implements Runnable {
                             + p.exitValue());
             }
             
-            if (lastException[0] != null){
+            if (lastException.get() != null){
                 throw new IOException("Exception thrown while reading external command output", 
-                        lastException[0]);
+                        lastException.get());
             }
             return redirector.storage.toString();
         } finally {

@@ -126,7 +126,7 @@ public class SqlScriptDialog extends MessageDialog {
                     try {
                         StdStreamRedirector.launchAndRedirect(pb);
                     } catch (IOException ex) {
-                        throw new IllegalStateException(ex); 
+                        throw new IllegalStateException(ex);
                     } finally {
                         fileTmpScript.delete();
                         
@@ -152,7 +152,6 @@ public class SqlScriptDialog extends MessageDialog {
                             "Exception during script execution", e);
                     StatusManager.getManager().handle(status, StatusManager.BLOCK);
                 }
-                
             });
             scriptThread.start();
             getButton(0).setText(stopScriptText);

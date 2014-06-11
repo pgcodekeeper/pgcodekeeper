@@ -7,12 +7,12 @@ import org.eclipse.swt.program.Program;
 
 public class OpenLog {
     
-	@Execute
-	public void execute() {
+    @Execute
+    public void execute() {
         openExternalViewer();
-	}
-	
-	public static void openExternalViewer() {
-	    Program.launch(Platform.getLogFileLocation().toFile().getAbsolutePath());
-	}
+    }
+    
+    public static void openExternalViewer() {
+        Program.launch(Platform.getLogFileLocation().toFile().getAbsolutePath());
+    }
 }
