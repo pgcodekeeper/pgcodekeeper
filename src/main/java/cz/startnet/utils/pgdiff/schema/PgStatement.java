@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
@@ -179,49 +180,65 @@ abstract public class PgStatement {
     abstract public boolean compare(PgStatement obj);
     
     /**
-     * Computes new value of hash code for this object, called by {@link #hashCode()}
-     * 
-     * @return computed hash code of this object
-     */
-    abstract protected int computeHash();
-    
-    /**
      * Compares this object and all its children with another statement.<br>
      * This default version falls back to {@link #compare(PgStatement)}.
-     * Override for any object with nested children!<br><br>
-     * 
+     * Override for any object with nested children!
+     * Overriding classes should still call this method via <code>super</code>
+     * to get correct parent comparison and {@link #compare(PgStatement)} call.
+     * <hr><br>
      * {@inheritDoc}
      */
     @Override
     public boolean equals(Object obj){
-        return (obj instanceof PgStatement)? 
-                this.compare((PgStatement) obj) && parentNamesEquals((PgStatement) obj) : false;
+        if (obj instanceof PgStatement) {
+            return this.compare((PgStatement) obj)
+                    && this.parentNamesEquals((PgStatement) obj);
+        }
+        
+        return false;
     }
     
+    /**
+     * Recursively compares objects' parents
+     * to ensure their equal position in their object trees.
+     */
     private boolean parentNamesEquals(PgStatement st){
         PgStatement p = parent;
         PgStatement p2 = st.getParent();
         while (p != null && p2 != null){
-            if (!p.getName().equals(p2.getName())){
+            if (!Objects.equals(p.getName(), p2.getName())){
                 return false;
             }
             p = p.getParent();
             p2 = p2.getParent();
         }
-        if (p != p2){
-            return false;
+        if (p == null && p2 == null) {
+            return true;
         }
-        return true;
+        return false;
     }
     
+    /**
+     * Calls {@link #computeHash()}. Modifies that value with combined hashcode
+     * of all parents of this object in the tree to complement
+     * {@link #parentNamesEquals(PgStatement)} and {@link #equals(Object)}<br>
+     * Caches the hashcode value until recalculation is requested via {@link #resetHash()}.
+     * Always request recalculation when you change the hashed fields.<br>
+     * Always override with bare <code>super</code> call.
+     * Do actual hashing in {@link #computeHash()}. 
+     * <hr><br>
+     * {@inheritDoc}
+     */
     @Override
-    public int hashCode(){
+    public int hashCode() {
         if (!hashComputed){
             hash = computeHash();
+            
             final int prime = 31;
             PgStatement p = parent;
-            while(p != null){
-                hash = prime * hash + p.getName().hashCode();
+            while (p != null) {
+                String pName = p.getName();
+                hash = prime * hash + ((pName == null) ? 0 : pName.hashCode());
                 p = p.getParent();
             }
             hashComputed = true;
@@ -236,4 +253,9 @@ abstract public class PgStatement {
             st = st.getParent();
         }
     }
+    
+    /**
+     * @see #hashCode()
+     */
+    abstract protected int computeHash();
 }
