@@ -214,7 +214,7 @@ public class DiffPartDescr {
         containerSrc.setLayoutData(gd);
         
         Group grpSrc = new Group(containerSrc, SWT.NONE);
-        grpSrc.setText("Get changes from");
+        grpSrc.setText("Get changes for");
         grpSrc.setLayout(new GridLayout(3, false));
 
         btnNone = new Button(grpSrc, SWT.RADIO);
