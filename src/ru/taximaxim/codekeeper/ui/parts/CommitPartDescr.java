@@ -18,6 +18,7 @@ import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.di.extensions.Preference;
 import org.eclipse.e4.core.services.events.IEventBroker;
+import org.eclipse.e4.ui.di.UISynchronize;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
@@ -73,6 +74,9 @@ public class CommitPartDescr {
 
     @Inject
     private MPart part;
+    
+    @Inject
+    UISynchronize sync;
     
     @Inject
     private EPartService partService;
@@ -547,12 +551,24 @@ public class CommitPartDescr {
         if (proj == null
                 || !proj.getProjectFile().toString().equals(
                         part.getPersistedState().get(UIConsts.PART_SYNC_ID))) {
-            partService.hidePart(part);
+            sync.asyncExec(new Runnable() {
+                
+                @Override
+                public void run() {
+                    partService.hidePart(part);
+                }
+            });
         } else if (proj2 != null) {
-            diffTable.setInput(null);
-            diffPane.setInput(null);
-            txtCommitComment.setText("");
-            btnCommit.setEnabled(false);
+            sync.asyncExec(new Runnable() {
+                
+                @Override
+                public void run() {
+                    diffTable.setInput(null);
+                    diffPane.setInput(null);
+                    txtCommitComment.setText("");
+                    btnCommit.setEnabled(false);
+                }
+            });
         }
     }
 

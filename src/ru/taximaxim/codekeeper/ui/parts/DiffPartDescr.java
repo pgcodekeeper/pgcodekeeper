@@ -13,6 +13,7 @@ import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.di.extensions.Preference;
+import org.eclipse.e4.ui.di.UISynchronize;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
@@ -62,6 +63,9 @@ public class DiffPartDescr {
 
     @Inject
     private MPart part;
+
+    @Inject
+    UISynchronize sync;
     
     @Inject
     private EPartService partService;
@@ -471,11 +475,23 @@ public class DiffPartDescr {
         if (proj == null
                 || !proj.getProjectFile().toString().equals(
                         part.getPersistedState().get(UIConsts.PART_DIFF_ID))) {
-            partService.hidePart(part);
+            sync.asyncExec(new Runnable() {
+                
+                @Override
+                public void run() {
+                    partService.hidePart(part);
+                }
+            });
         } else if (proj2 != null) {
-            diffTable.setInput(null);
-            diffPane.setInput(null);
-            btnGetLatest.setEnabled(false);
+            sync.asyncExec(new Runnable() {
+                
+                @Override
+                public void run() {
+                    diffTable.setInput(null);
+                    diffPane.setInput(null);
+                    btnGetLatest.setEnabled(false);
+                }
+            });
         }
     }
 

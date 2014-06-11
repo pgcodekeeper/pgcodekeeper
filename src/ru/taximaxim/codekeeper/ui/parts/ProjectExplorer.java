@@ -10,6 +10,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicStampedReference;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -18,6 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
+import org.eclipse.e4.ui.di.UISynchronize;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.services.EMenuService;
@@ -58,6 +61,10 @@ public class ProjectExplorer {
     
     @Inject
     private MPart part;
+    
+    @Inject
+    UISynchronize sync;
+    
     @Inject
     private EModelService model;
     @Inject
@@ -244,10 +251,10 @@ public class ProjectExplorer {
             PgDbProject proj2)
             throws IOException, InvocationTargetException, InterruptedException {
         if (treeDb != null) {
-            File treeInput = null;
+            final AtomicReference<File> treeInput = new AtomicReference<File>();
             
             if(proj != null) {
-                treeInput = proj.getProjectWorkingDir();
+                treeInput.set(proj.getProjectWorkingDir());
                 
                 IRunnableWithProgress loadRunnable = new IRunnableWithProgress() {
                     @Override
@@ -262,13 +269,25 @@ public class ProjectExplorer {
                 new ProgressMonitorDialog(parent.getShell())
                         .run(true, false, loadRunnable);
             }
-            treeDb.setInput(treeInput);
+            sync.asyncExec(new Runnable() {
+                
+                @Override
+                public void run() {
+                    treeDb.setInput(treeInput.get());
+                }
+            });
         }
         
-        String partLabel = "Project Explorer";
+        final AtomicReference<String> partLabel = new AtomicReference<String>("Project Explorer");
         if(proj != null) {
-            partLabel += " - " + proj.getProjectName();
+            partLabel.set(partLabel.get() + " - " + proj.getProjectName());
         }
-        part.setLabel(partLabel);
+        sync.asyncExec(new Runnable() {
+            
+            @Override
+            public void run() {
+                part.setLabel(partLabel.get());
+            }
+        });
     }
 }

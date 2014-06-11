@@ -1,12 +1,14 @@
 package ru.taximaxim.codekeeper.ui.addons;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.services.events.IEventBroker;
+import org.eclipse.e4.ui.di.UISynchronize;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
@@ -21,6 +23,9 @@ public class AddonWindowLabel {
     private IEventBroker eventBroker;
     
     @Inject
+    UISynchronize sync;
+    
+    @Inject
     private EModelService service;
     
     @Inject
@@ -31,17 +36,23 @@ public class AddonWindowLabel {
             PgDbProject proj,
             @Optional @EventTopic(UIConsts.EVENT_REOPEN_PROJECT)
             PgDbProject proj2) throws IOException {
-        String windowLabel = "pgCodeKeeper";
+        final AtomicReference<String> windowLabel = new AtomicReference<String>("pgCodeKeeper");
         
         if (proj != null) {
             String p = proj.getRepoRoot().toString();
-            windowLabel += "  \u2014  " + proj.getProjectWorkingDir() + " [branch: " + 
-                    new JGitExec().getCurrentBranch(p) + "]";
+            windowLabel.set(windowLabel.get() + "  \u2014  " + proj.getProjectWorkingDir() + 
+                    " [branch: " + new JGitExec().getCurrentBranch(p) + "]");
         }
 
-        MWindow window = (MWindow) service.find(UIConsts.WINDOW_MAIN_ID, app);
+        final MWindow window = (MWindow) service.find(UIConsts.WINDOW_MAIN_ID, app);
         if (window != null) {
-            window.setLabel(windowLabel);
+            sync.asyncExec(new Runnable() {
+                
+                @Override
+                public void run() {
+                    window.setLabel(windowLabel.get());
+                }
+            });
         }
     }
 }

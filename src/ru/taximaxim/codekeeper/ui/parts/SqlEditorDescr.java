@@ -10,6 +10,7 @@ import javax.inject.Inject;
 
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
+import org.eclipse.e4.ui.di.UISynchronize;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
@@ -29,6 +30,9 @@ public class SqlEditorDescr {
     
     @Inject
     private MPart part;
+    
+    @Inject
+    UISynchronize sync;
     
     @Inject
     private EPartService partService;
@@ -64,7 +68,13 @@ public class SqlEditorDescr {
                 part.getPersistedState().get(UIConsts.PART_SQL_EDITOR_FILENAME));
         if(proj == null
                 || !myFile.toPath().startsWith(proj.getProjectWorkingDir().toPath()) || !myFile.exists()) {
-            partService.hidePart(part);
+            sync.asyncExec(new Runnable() {
+                
+                @Override
+                public void run() {
+                    partService.hidePart(part);
+                }
+            });
         }
     }
     
