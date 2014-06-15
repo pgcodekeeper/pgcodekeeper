@@ -224,7 +224,7 @@ abstract public class PgStatement {
      * {@link #parentNamesEquals(PgStatement)} and {@link #equals(Object)}<br>
      * Caches the hashcode value until recalculation is requested via {@link #resetHash()}.
      * Always request recalculation when you change the hashed fields.<br>
-     * Always override with bare <code>super</code> call.
+     * Override only with bare <code>super</code> call.
      * Do actual hashing in {@link #computeHash()}. 
      * <hr><br>
      * {@inheritDoc}
