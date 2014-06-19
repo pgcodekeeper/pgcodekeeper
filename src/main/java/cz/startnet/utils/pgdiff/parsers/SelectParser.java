@@ -8,9 +8,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 
 public class SelectParser {
     
@@ -118,7 +118,9 @@ public class SelectParser {
             // FROM {regex}: [(]+
             if (p.expectOptional("FROM")) {
                 do {
-                    from(new Parser(p.getExpression(CLAUSES)), tableAliases);
+                    //Pass whole FROM statement
+                    String fromQuery = p.getExpression(CLAUSES); 
+                    from(new Parser(removeExcessParens(fromQuery)), tableAliases);
                 } while (p.expectOptional(","));
             }
             
@@ -164,6 +166,49 @@ public class SelectParser {
                 select.addColumn(column);
             }
         } while (parens > 0);
+    }
+    
+    /**
+     * Replaces excessive (non-needed) parentheses in FROM query by spaces.
+     * Leaves parens around SELECT query, as it is expected to be wrapped
+     * 
+     * @param initial Query string
+     * @return Query string with excessive parens replaced by spaces
+     */
+    private String removeExcessParens(String initial){
+        Parser p = new Parser(initial);
+        StringBuilder sb = new StringBuilder(initial);
+        int startIndex = 0;
+        
+        while(sb.substring(startIndex, sb.length()).contains("(")){
+            int opening = sb.indexOf("(", startIndex);
+            p = new Parser(sb.toString());
+            p.setPosition(opening + 1);
+            p.skipWhitespace();
+            if (!p.expectOptional("SELECT")){
+                int closing = getClosingParenthesisIndex(sb, opening);
+                sb.setCharAt(opening, ' ');
+                sb.setCharAt(closing, ' ');
+            }else{
+                startIndex = opening + 1;
+            }
+        }
+        return sb.toString();
+    }
+    
+    private int getClosingParenthesisIndex(StringBuilder part, int openingIndex){
+        int parensCount = 0;
+        for (int i = openingIndex + 1; i < part.length(); i++){
+            if (part.charAt(i) == '('){
+                parensCount++;
+            }else if (part.charAt(i) == ')'){
+                parensCount--;
+            }
+            if (parensCount == -1){
+                return i;
+            }
+        }
+        return Integer.MAX_VALUE;
     }
     
     private void from(Parser pf, Map<String, String> tableAliases) {
