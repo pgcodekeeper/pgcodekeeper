@@ -77,6 +77,12 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 					// this fix prevents startup blocking caused by the display thread not waking
 					// eclipse bug: https://bugs.eclipse.org/bugs/show_bug.cgi?id=429363
 				//	yield();
+					try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        // do nothing
+                        e.printStackTrace();
+                    }
 					display.wake();
 				}
 			}};
