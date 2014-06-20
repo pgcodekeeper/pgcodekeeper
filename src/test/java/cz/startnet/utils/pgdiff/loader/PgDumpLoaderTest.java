@@ -647,9 +647,9 @@ class PgDB9 extends PgDatabaseObjectCreator {
     schema.addView(view);
     
     PgSelect select = new PgSelect("", "");
-    select.addColumn(new GenericColumn("user_data", "id"));
-    select.addColumn(new GenericColumn("user_data", "email"));
-    select.addColumn(new GenericColumn("user_data", "created"));
+    select.addColumn(new GenericColumn("public", "user_data", "id"));
+    select.addColumn(new GenericColumn("public", "user_data", "email"));
+    select.addColumn(new GenericColumn("public", "user_data", "created"));
     
     view.setSelect(select);
     
@@ -891,8 +891,8 @@ class PgDB14 extends PgDatabaseObjectCreator {
     view.addColumnComment("id", "'view id col'");
     
     PgSelect select = new PgSelect("", "");
-    select.addColumn(new GenericColumn("test", "id"));
-    select.addColumn(new GenericColumn("test", "text"));
+    select.addColumn(new GenericColumn("public", "test", "id"));
+    select.addColumn(new GenericColumn("public", "test", "text"));
     
     view.setSelect(select);
     

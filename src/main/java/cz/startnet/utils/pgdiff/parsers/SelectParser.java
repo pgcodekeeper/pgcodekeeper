@@ -223,6 +223,9 @@ public class SelectParser {
             boolean as = pf.expectOptional("AS");
             if (!as) {
                 joinOp = pf.expectOptionalOneOf(SelectParser.JOIN_WORDS);
+                if (joinOp != null || pf.isConsumed()){
+                    tableAliases.put(table, table);
+                }
             }
             if (as || (joinOp == null && !pf.isConsumed())) {
                 tableAliases.put(pf.parseIdentifier(), table);
