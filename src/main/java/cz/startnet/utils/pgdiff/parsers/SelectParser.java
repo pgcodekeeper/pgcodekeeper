@@ -120,7 +120,7 @@ public class SelectParser {
                 do {
                     //Pass whole FROM statement
                     String fromQuery = p.getExpression(CLAUSES); 
-                    from(new Parser(removeExcessParens(fromQuery)), tableAliases);
+                    from(new Parser(removeExcessParens(fromQuery)), tableAliases, columns);
                 } while (p.expectOptional(","));
             }
             
@@ -151,21 +151,31 @@ public class SelectParser {
             }
             
             // resolve aliased columns
-            for (GenericColumn column : columns) {
-                if (column.schema == null && column.table != null) {
-                    String unaliased = tableAliases.get(column.table);
-                    if (unaliased != null) {
-                        column = new GenericColumn(
-                                ParserUtils.getSchemaName(unaliased, db),
-                                ParserUtils.getObjectName(unaliased),
-                                column.column);
-                    }
-                }
-                
-                // and add them to the accumulating object
-                select.addColumn(column);
-            }
+            
         } while (parens > 0);
+    }
+    
+    /**
+     * Resolve aliased columns and add them to accumulating object
+     * 
+     * @param columns
+     * @param tableAliases
+     */
+    private void resolveAliases(List<GenericColumn> columns, Map<String, String> tableAliases){
+        for (GenericColumn column : columns) {
+            if (column.schema == null && column.table != null) {
+                String unaliased = tableAliases.get(column.table);
+                if (unaliased != null) {
+                    column = new GenericColumn(
+                            ParserUtils.getSchemaName(unaliased, db),
+                            ParserUtils.getObjectName(unaliased),
+                            column.column);
+                }
+            }
+            
+            // and add them to the accumulating object
+            select.addColumn(column);
+        }
     }
     
     /**
@@ -211,27 +221,76 @@ public class SelectParser {
         return Integer.MAX_VALUE;
     }
     
-    private void from(Parser pf, Map<String, String> tableAliases) {
-        pf.expectOptional("ONLY");
-        
-        String table = pf.parseIdentifier();
-        pf.expectOptional("*");
-
-        String joinOp = null;
-        
-        if (!joinCondition(pf)) {
-            boolean as = pf.expectOptional("AS");
-            if (!as) {
-                joinOp = pf.expectOptionalOneOf(SelectParser.JOIN_WORDS);
-                if (joinOp != null || pf.isConsumed()){
-                    tableAliases.put(table, table);
+    private void from(Parser pf, Map<String, String> tableAliases, List<GenericColumn> outerSelectColumns) {
+        boolean wasSubselect;
+        // just skip for now
+        pf.expectOptional("LATERAL");
+        /**
+         * If subselect is present in the first place
+         * 
+         * From PostgreSQL 9.3.4 Documentation:
+         *     A sub-SELECT can appear in the FROM clause. This acts as though its 
+         *     output were created as a temporary table for the duration of this 
+         *     single SELECT command. Note that the sub-SELECT must be surrounded 
+         *     by parentheses, and an alias must be provided for it. 
+         *     A VALUES command can also be used here.
+         */
+        if (wasSubselect = pf.expectOptional("(")){
+            int start = pf.getPosition();
+            pf.expect("SELECT");
+            
+            StringBuilder sb = new StringBuilder(pf.getString().substring(start));
+            
+            int end = getClosingParenthesisIndex(sb, 0);
+            
+            // parse subselect recursively as usually
+            parseSelectRecursive(pf.getSubString(start, start + end));
+            
+            // skip subselect enclosement to its alias (which is REQUIRED) 
+            pf.setPosition(start + end + 1);
+            pf.skipWhitespace();
+            pf.expectOptional("AS");
+            String alias = pf.parseIdentifier();
+            
+            // If external SELECT selects columns from subselect,
+            // remove them from external select columns list as they will be 
+            // dealiased and added to PgSelect when parsing subselect
+            List<GenericColumn> toBeRemoved = new ArrayList <GenericColumn> (5);
+            for(GenericColumn c : outerSelectColumns){
+                if (c.schema == null && c.table != null && c.table.equals(alias)){
+                    toBeRemoved.add(c);
                 }
             }
-            if (as || (joinOp == null && !pf.isConsumed())) {
-                tableAliases.put(pf.parseIdentifier(), table);
-                
-                joinCondition(pf);
+            // remove all subselect columns
+            for (GenericColumn c : toBeRemoved){
+                outerSelectColumns.remove(c);
             }
+            
+            joinCondition(pf);
+        }
+        String joinOp = null;
+        if (!wasSubselect){
+            pf.expectOptional("ONLY");
+            
+            String table = pf.parseIdentifier();
+            pf.expectOptional("*");
+            
+            
+            if (!joinCondition(pf)) {
+                boolean as = pf.expectOptional("AS");
+                if (!as) {
+                    joinOp = pf.expectOptionalOneOf(SelectParser.JOIN_WORDS);
+                    if (joinOp != null || pf.isConsumed()){
+                        tableAliases.put(table, table);
+                    }
+                }
+                if (as || (joinOp == null && !pf.isConsumed())) {
+                    tableAliases.put(pf.parseIdentifier(), table);
+                    
+                    joinCondition(pf);
+                }
+            }
+            
         }
         
         boolean join = joinOp != null;
@@ -246,10 +305,12 @@ public class SelectParser {
         join |= pf.expectOptional("JOIN");
         
         if (join) {
-            from(pf, tableAliases);
+            from(pf, tableAliases, outerSelectColumns);
         }
         
         joinCondition(pf);
+        
+        resolveAliases(outerSelectColumns, tableAliases);
     }
     
     private boolean joinCondition(Parser pf) {
