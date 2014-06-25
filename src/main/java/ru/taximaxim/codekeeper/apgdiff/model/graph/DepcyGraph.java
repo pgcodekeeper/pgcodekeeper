@@ -29,6 +29,9 @@ public class DepcyGraph {
             "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
             });
     
+    private static final List<String> ignoredSchemas = Arrays.asList(new String[]{
+            "information_schema", "pg_catalog"});
+    
     private final DirectedGraph<PgStatement, DefaultEdge> graph = 
             new SimpleDirectedGraph<>(DefaultEdge.class);
     
@@ -127,6 +130,9 @@ public class DepcyGraph {
                     
                     if (scmName == null){
                         scmName = schema.getName();
+                    }
+                    if (ignoredSchemas.contains(scmName)){
+                        continue;
                     }
                     PgSchema scm = db.getSchema(scmName);
                     
