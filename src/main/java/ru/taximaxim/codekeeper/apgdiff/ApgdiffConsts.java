@@ -7,4 +7,9 @@ package ru.taximaxim.codekeeper.apgdiff;
  */
 public interface ApgdiffConsts {
     String FILENAME_WORKING_DIR_MARKER = ".pgcodekeeper";
+    
+    enum WORK_DIR_NAMES {
+        EXTENSION,
+        SCHEMA
+    }
 }

@@ -7,6 +7,7 @@ import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -83,9 +84,12 @@ public class ModelExporter {
             if(!outDir.isDirectory()) {
                 throw new NotDirectoryException(outDir.getAbsolutePath());
             }
-            
-            if(outDir.list().length != 0) {
-                throw new DirectoryNotEmptyException(outDir.getAbsolutePath());
+            if (Arrays.asList(outDir.list()).contains(
+                    ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.toString()) || 
+                    Arrays.asList(outDir.list()).contains(
+                            ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString())) {
+                throw new DirectoryException(
+                        "Directory already contains EXTENSION or SCHEMA folders");
             }
         } else if(!outDir.mkdirs()) {
                 throw new DirectoryException("Could not create output directory:"
@@ -93,7 +97,8 @@ public class ModelExporter {
         }
         
         // exporting schemas
-        File schemasSharedDir = new File(outDir, "SCHEMA");
+        File schemasSharedDir = new File(outDir, 
+                ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString());
         if(!schemasSharedDir.mkdir()) {
             throw new DirectoryException("Could not create schemas directory:"
                     + schemasSharedDir.getAbsolutePath());
@@ -105,7 +110,8 @@ public class ModelExporter {
         }
         
         // exporting extensions
-        File extensionsDir = new File(outDir, "EXTENSION");
+        File extensionsDir = new File(outDir, 
+                ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.toString());
         if(!extensionsDir.mkdir()) {
             throw new DirectoryException("Could not create extensions directory:"
                     + extensionsDir.getAbsolutePath());
