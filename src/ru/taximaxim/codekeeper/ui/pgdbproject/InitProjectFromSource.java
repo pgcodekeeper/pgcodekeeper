@@ -3,13 +3,13 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -18,7 +18,6 @@ import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
-import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class InitProjectFromSource implements IRunnableWithProgress {
@@ -90,19 +89,20 @@ public class InitProjectFromSource implements IRunnableWithProgress {
 
         pm.newChild(25).subTask("Exporting DB model..."); // 75
 
-        try (TempDir tmpRepoMeta = new TempDir(
-                props.getProjectWorkingDir().toPath().getParent(),
-                "tmp_repo_meta_")) {
-            File repoMetaProj = new File(props.getRepoRoot(), repo.getRepoMetaFolder());
-            File repoMetaTmp = new File(tmpRepoMeta.get(), repo.getRepoMetaFolder());
-            Files.move(repoMetaProj.toPath(), repoMetaTmp.toPath());
-            Dir.deleteRecursive(dirRepo);
-
-            new ModelExporter(dirRepo.getAbsolutePath(), db,
-                    props.getString(UIConsts.PROJ_PREF_ENCODING)).export();
-
-            Files.move(repoMetaTmp.toPath(), repoMetaProj.toPath());
+        File schemaDir = Dir.findDirectory(dirRepo,
+                ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString());
+        if (schemaDir != null) {
+            Dir.deleteRecursive(schemaDir);
         }
+
+        File extensionDir = Dir.findDirectory(dirRepo,
+                ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.toString());
+        if (extensionDir != null) {
+            Dir.deleteRecursive(extensionDir);
+        }
+        
+        new ModelExporter(dirRepo.getAbsolutePath(), db,
+                props.getString(UIConsts.PROJ_PREF_ENCODING)).export();
 
         pm.newChild(25).subTask(UIConsts.PROJ_REPO_TYPE_GIT_NAME + " committing..."); // 100
         repo.repoRemoveMissingAddNew(dirRepo);

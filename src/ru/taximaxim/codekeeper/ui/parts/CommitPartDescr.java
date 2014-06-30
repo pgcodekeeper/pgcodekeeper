@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.parts;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -57,6 +56,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -71,7 +71,6 @@ import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
-import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -226,28 +225,26 @@ public class CommitPartDescr {
                         pm.newChild(1).subTask("Exporting new DB model..."); // 2
                         File workingDir = proj.getProjectWorkingDir();
                         try {
-                            IRepoWorker repo = new JGitExec(proj,
+                            IRepoWorker repo = new JGitExec(
+                                    proj,
                                     mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
-                            try (TempDir tmpRepoMeta = new TempDir(
-                                    proj.getProjectWorkingDir().toPath().getParent(), 
-                                    "tmp_repo_meta_")) {
-                                // TODO not necessary if workingDir != gitRoot
-                                File repoMetaProj = new File(proj.getRepoRoot(),
-                                        repo.getRepoMetaFolder());
-                                File repoMetaTmp = new File(tmpRepoMeta.get(),
-                                        repo.getRepoMetaFolder());
-                                Files.move(repoMetaProj.toPath(), repoMetaTmp.toPath());
-                                Dir.deleteRecursive(workingDir);
 
-                                new ModelExporter(
-                                        workingDir.getAbsolutePath(),
-                                        dbNew,
-                                        proj.getString(UIConsts.PROJ_PREF_ENCODING))
-                                        .export();
-                                
-                                Files.move(repoMetaTmp.toPath(),
-                                        repoMetaProj.toPath());
+                            File schemaDir = Dir.findDirectory(workingDir,
+                                    ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString());
+                            if (schemaDir != null) {
+                                Dir.deleteRecursive(schemaDir);
                             }
+
+                            File extensionDir = Dir.findDirectory(workingDir,
+                                    ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.toString());
+                            if (extensionDir != null) {
+                                Dir.deleteRecursive(extensionDir);
+                            }
+
+                            new ModelExporter(workingDir.getAbsolutePath(),
+                                    dbNew,
+                                    proj.getString(UIConsts.PROJ_PREF_ENCODING))
+                                    .export();
 
                             pm.newChild(1).subTask(repoName + " committing..."); // 3
                             repo.repoRemoveMissingAddNew(workingDir);

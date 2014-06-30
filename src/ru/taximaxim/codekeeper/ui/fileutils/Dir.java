@@ -19,4 +19,24 @@ public class Dir {
         }
         ReadOnlyFileRemover.remove(f.toPath());
     }
+
+    /**
+     * Search for directory name
+     * @param f
+     * @param name
+     * @return
+     */
+    public static File findDirectory(File f, String name) {
+        if (f.isDirectory()) {
+            if (f.getName().equals(name)) {
+                return f;
+            }
+            for (File sub : f.listFiles()) {
+                if (sub.getName().equals(name)) {
+                    return sub;
+                }
+            }
+        }
+        return null;
+    }
 }
