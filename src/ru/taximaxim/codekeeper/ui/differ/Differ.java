@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -24,8 +26,20 @@ public class Differ implements IRunnableWithProgress {
     private final boolean needTwoWay;
     private String diffDirect, diffReverse;
 
-    private PgStatement sourceDbFull;
-    private PgStatement targetDbFull;
+    private PgDatabase sourceDbFull;
+    private PgDatabase targetDbFull;
+    
+    private List<Entry<PgStatement, PgStatement>> additionalDepcies;
+
+    public void setFullDbs(PgDatabase sourceDbFull, PgDatabase targetDbFull) {
+       this.sourceDbFull = sourceDbFull;
+       this.targetDbFull = targetDbFull;
+    }
+    
+    public void setAdditionalDepcies(
+            List<Entry<PgStatement, PgStatement>> additionalDepcies) {
+        this.additionalDepcies = additionalDepcies;
+    }
     
     public Differ(DbSource dbSource, DbSource dbTarget, boolean needTwoWay) {
         this.dbSource = dbSource;
@@ -71,7 +85,8 @@ public class Differ implements IRunnableWithProgress {
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
         PrintWriter writer = new UnixPrintWriter(diffOut, true);
         
-        PgDiff.diffDatabaseSchemas(writer, args, dbSource, dbTarget, sourceDbFull, targetDbFull);
+        PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
+                dbSource, dbTarget, sourceDbFull, targetDbFull, additionalDepcies);
         writer.flush();
         diffDirect = diffOut.toString().trim();
 
@@ -87,10 +102,5 @@ public class Differ implements IRunnableWithProgress {
         }
         monitor.done();
         finished = true;
-    }
-
-    public void setFullDbs(PgDatabase sourceDbFull, PgDatabase targetDbFull) {
-       this.sourceDbFull = sourceDbFull;
-       this.targetDbFull = targetDbFull;
     }
 }
