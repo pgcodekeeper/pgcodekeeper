@@ -1,34 +1,34 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="app" sequenceNumber="35">
+<?pde version="3.8"?><target name="app" sequenceNumber="39">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.pde.feature.group" version="3.10.0.v20140501-0200"/>
-<unit id="org.eclipse.platform.ide" version="4.4.0.I20140501-0200"/>
-<unit id="org.eclipse.equinox.sdk.feature.group" version="3.10.0.v20140430-1556"/>
-<unit id="org.eclipse.jdt.feature.group" version="3.10.0.v20140501-0200"/>
-<repository location="http://download.eclipse.org/eclipse/updates/4.4milestones"/>
+<unit id="org.eclipse.jdt.feature.group" version="3.10.0.v20140606-1536"/>
+<unit id="org.eclipse.equinox.sdk.feature.group" version="3.10.0.v20140606-1602"/>
+<unit id="org.eclipse.platform.ide" version="4.4.0.I20140606-1215"/>
+<unit id="org.eclipse.pde.feature.group" version="3.10.0.v20140606-1215"/>
+<repository location="http://download.eclipse.org/eclipse/updates/4.4"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.egit.source.feature.group" version="3.3.2.201404171909-r"/>
-<unit id="org.eclipse.jgit.pgm.feature.group" version="3.3.2.201404171909-r"/>
-<unit id="org.eclipse.jgit.pgm.source.feature.group" version="3.3.2.201404171909-r"/>
-<unit id="org.eclipse.egit.feature.group" version="3.3.2.201404171909-r"/>
-<unit id="org.eclipse.jgit.feature.group" version="3.3.2.201404171909-r"/>
-<unit id="org.eclipse.jgit.http.apache.feature.group" version="3.3.2.201404171909-r"/>
-<unit id="org.eclipse.jgit.source.feature.group" version="3.3.2.201404171909-r"/>
-<unit id="org.eclipse.jgit.java7.feature.group" version="3.3.2.201404171909-r"/>
+<unit id="org.eclipse.emf.edit.feature.group" version="2.10.0.v20140519-0339"/>
+<repository location="http://download.eclipse.org/modeling/emf/emf/updates/releases/"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.egit.source.feature.group" version="3.4.1.201406201815-r"/>
+<unit id="org.eclipse.jgit.pgm.feature.group" version="3.4.1.201406201815-r"/>
+<unit id="org.eclipse.jgit.pgm.source.feature.group" version="3.4.1.201406201815-r"/>
+<unit id="org.eclipse.egit.feature.group" version="3.4.1.201406201815-r"/>
+<unit id="org.eclipse.jgit.feature.group" version="3.4.1.201406201815-r"/>
+<unit id="org.eclipse.jgit.http.apache.feature.group" version="3.4.1.201406201815-r"/>
+<unit id="org.eclipse.jgit.source.feature.group" version="3.4.1.201406201815-r"/>
+<unit id="org.eclipse.jgit.java7.feature.group" version="3.4.1.201406201815-r"/>
 <repository location="http://download.eclipse.org/egit/updates/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.e4.core.tools.feature.feature.group" version="0.14.0.v20140502-1911"/>
 <unit id="org.eclipse.e4.tools.css.spy.feature.source.feature.group" version="0.14.0.v20140402-1524"/>
-<unit id="org.eclipse.e4.core.tools.feature.source.feature.group" version="0.14.0.v20140502-1911"/>
 <unit id="org.eclipse.e4.tools.css.spy.feature.feature.group" version="0.14.0.v20140402-1524"/>
+<unit id="org.eclipse.e4.core.tools.feature.source.feature.group" version="0.14.0.v20140502-1911"/>
 <repository location="http://storage.chelny.taximaxim.ru/codekeeper/p2/e4/I20140504-2200_custom_build/"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.emf.edit.feature.group" version="2.9.0.v20140203-1126"/>
-<repository location="http://download.eclipse.org/modeling/emf/emf/updates/releases/"/>
 </location>
 </locations>
 </target>
