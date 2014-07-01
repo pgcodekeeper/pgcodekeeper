@@ -28,9 +28,6 @@ public class Dir {
      */
     public static File findDirectory(File f, String name) {
         if (f.isDirectory()) {
-            if (f.getName().equals(name)) {
-                return f;
-            }
             for (File sub : f.listFiles()) {
                 if (sub.getName().equals(name)) {
                     return sub;
