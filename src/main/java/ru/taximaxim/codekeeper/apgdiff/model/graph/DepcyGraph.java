@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -172,6 +173,12 @@ public class DepcyGraph {
         for(PgExtension ext : db.getExtensions()) {
             graph.addVertex(ext);
             graph.addEdge(ext, db);
+        }
+    }
+    
+    public void addCustomDepcies(List<Entry<PgStatement, PgStatement>> depcies) {
+        for (Entry<PgStatement, PgStatement> depcy : depcies) {
+            graph.addEdge(depcy.getKey(), depcy.getValue());
         }
     }
 }

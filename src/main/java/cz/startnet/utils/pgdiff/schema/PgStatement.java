@@ -258,4 +258,24 @@ abstract public class PgStatement {
      * @see #hashCode()
      */
     abstract protected int computeHash();
+    
+    /**
+     * @return fully qualified (up to schema) dot-delimited object name.
+     *          Identifiers are quoted.
+     */
+    public String getQualifiedName() {
+        String name = PgDiffUtils.getQuotedName(getName());
+        
+        PgStatement parent = this.parent;
+        while (parent != null) {
+            if (parent instanceof PgDatabase) {
+                break;
+            }
+            name = PgDiffUtils.getQuotedName(parent.getName())
+                    + '.' + name;
+            parent = parent.getParent();
+        }
+        
+        return name;
+    }
 }

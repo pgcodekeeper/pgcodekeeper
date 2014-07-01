@@ -7,6 +7,8 @@ package cz.startnet.utils.pgdiff;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
@@ -114,16 +116,28 @@ public class PgDiff {
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
-    public static void diffDatabaseSchemas(final PrintWriter writer,
-            final PgDiffArguments arguments, final PgDatabase oldDatabase,
-            final PgDatabase newDatabase, PgStatement oldDbFull, PgStatement newDbFull) {
+    public static void diffDatabaseSchemas(PrintWriter writer,
+            PgDiffArguments arguments, PgDatabase oldDatabase, PgDatabase newDatabase,
+            PgDatabase oldDbFull, PgDatabase newDbFull) {
+        diffDatabaseSchemasAdditionalDepcies(writer, arguments,
+                oldDatabase, newDatabase, oldDbFull, newDbFull, null);
+    }
+    
+    public static void diffDatabaseSchemasAdditionalDepcies(PrintWriter writer,
+            PgDiffArguments arguments, PgDatabase oldDatabase, PgDatabase newDatabase,
+            PgDatabase oldDbFull, PgDatabase newDbFull,
+            List<Entry<PgStatement, PgStatement>> additionalDepcies) {
         if (arguments.isAddTransaction()) {
             writer.println("START TRANSACTION;");
         }
 
         // temp solution
         if (oldDbFull != null && newDbFull != null){
-            depcyOld = new DepcyGraph((PgDatabase)oldDbFull);
+            depcyOld = new DepcyGraph((PgDatabase) oldDbFull);
+            
+            if (additionalDepcies != null) {
+                depcyOld.addCustomDepcies(additionalDepcies);
+            }
         }else{
             depcyOld = new DepcyGraph(new PgDatabase());
         }
