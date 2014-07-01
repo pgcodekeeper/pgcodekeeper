@@ -38,8 +38,8 @@ public class JGitExec implements IRepoWorker{
 
     private final String url, user, pass;
     public static final Pattern PATTERN_HTTP_URL = Pattern.compile(
-            "http(s)?://.+", Pattern.CASE_INSENSITIVE);
-    public static final Pattern PATTERN_FILE_URL = Pattern.compile("(file://).*",
+            "http(s)?://.+", Pattern.CASE_INSENSITIVE); //$NON-NLS-1$
+    public static final Pattern PATTERN_FILE_URL = Pattern.compile("(file://).*", //$NON-NLS-1$
             Pattern.CASE_INSENSITIVE);
     private static final int RSA_KEY_LENGTH = 2048;
     
@@ -74,12 +74,12 @@ public class JGitExec implements IRepoWorker{
             cloneCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
         }
         
-        Log.log(Log.LOG_INFO, "git clone " + url);
+        Log.log(Log.LOG_INFO, "git clone " + url); //$NON-NLS-1$
         
         try {
             cloneCom.setURI(url).setDirectory(dirTo).call().close();
         } catch (GitAPIException e) {
-            throw new IOException ("Exception thrown at JGit clone", e);
+            throw new IOException (Messages.JGitExec_eception_thrown_at_jgit_clone, e);
         }
     }
 
@@ -92,9 +92,9 @@ public class JGitExec implements IRepoWorker{
         Git git = Git.open(getGitRoot(dirIn));
         try {
             StoredConfig config = git.getRepository().getConfig();
-            String urlRepo = config.getString("remote", "origin", "url");
+            String urlRepo = config.getString("remote", "origin", "url"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
-            Log.log(Log.LOG_INFO, "git commit " + urlRepo);
+            Log.log(Log.LOG_INFO, "git commit " + urlRepo); //$NON-NLS-1$
             
             git.commit().setMessage(comment).call();
             PushCommand pushCom = git.push();
@@ -105,23 +105,23 @@ public class JGitExec implements IRepoWorker{
             if (head != null){
                 pushCom.add(head);
             }
-            Log.log(Log.LOG_INFO, "git push " + urlRepo);
+            Log.log(Log.LOG_INFO, "git push " + urlRepo); //$NON-NLS-1$
             
             for (PushResult pushRes : pushCom.call()){
                 for (RemoteRefUpdate b : pushRes.getRemoteUpdates()){
                     if (b.getStatus() !=  RemoteRefUpdate.Status.OK && 
                             b.getStatus() !=  RemoteRefUpdate.Status.UP_TO_DATE){
-                        Log.log(Log.LOG_ERROR, "git push failed. Cause: " + 
+                        Log.log(Log.LOG_ERROR, "git push failed. Cause: " +  //$NON-NLS-1$
                             b.getRemoteName() + 
-                            "\n                Status: " + b.getStatus() + 
-                            "\n               Message: " + b.getMessage());
+                            "\n                Status: " + b.getStatus() +  //$NON-NLS-1$
+                            "\n               Message: " + b.getMessage()); //$NON-NLS-1$
                         throw new IOException(
-                                "Exception thrown at JGit commit: status is not ok or up_to_date");
+                                Messages.JGitExec_exception_thrown_at_jgit_commit_status_isnt_ok_or_up_to_date);
                     }
                 }
             }
         } catch (GitAPIException e){
-            throw new IOException ("Exception thrown at JGit commit", e);
+            throw new IOException (Messages.JGitExec_exception_thrown_at_jgit_commit, e);
         }finally{
             git.close();
         }
@@ -134,21 +134,21 @@ public class JGitExec implements IRepoWorker{
         
         String subDir = gitRoot.toPath().relativize(dirIn.toPath()).toString();
         if (subDir.isEmpty()) {
-            subDir = ".";
+            subDir = "."; //$NON-NLS-1$
         }
         
         try {
 
-            Log.log(Log.LOG_INFO, "git add update " + url);
+            Log.log(Log.LOG_INFO, "git add update " + url); //$NON-NLS-1$
             
             git.add().addFilepattern(subDir).setUpdate(true).call();
 
-            Log.log(Log.LOG_INFO, "git add " + url);
+            Log.log(Log.LOG_INFO, "git add " + url); //$NON-NLS-1$
             
             git.add().addFilepattern(subDir).call();
         } catch (GitAPIException e) {
             throw new IOException(
-                    "Exception thrown at JGit repoRemoveMissingAddNew.", e);
+                    Messages.JGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new, e);
         } finally {
             git.close();
         }
@@ -157,7 +157,7 @@ public class JGitExec implements IRepoWorker{
     @Override
     public String getRepoMetaFolder() {
         // TODO replace magic strings ".git" by call to this method
-        return ".git";
+        return ".git"; //$NON-NLS-1$
     }
 
     @Override
@@ -165,10 +165,10 @@ public class JGitExec implements IRepoWorker{
         File gitRoot = getGitRoot(dirIn);
         Git git = Git.open(gitRoot);
         try {
-            IndexDiff id = new IndexDiff(git.getRepository(), "HEAD",
+            IndexDiff id = new IndexDiff(git.getRepository(), "HEAD", //$NON-NLS-1$
                     new FileTreeIterator(git.getRepository()));
 
-            Log.log(Log.LOG_INFO, "git indexdiff " + url);
+            Log.log(Log.LOG_INFO, "git indexdiff " + url); //$NON-NLS-1$
             
             id.diff();
             return !id.getConflicting().isEmpty();
@@ -187,12 +187,12 @@ public class JGitExec implements IRepoWorker{
                 pullCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
             }
 
-            Log.log(Log.LOG_INFO, "git pull " + url);
+            Log.log(Log.LOG_INFO, "git pull " + url); //$NON-NLS-1$
             
             PullResult pr =  pullCom.call();
             return pr.getMergeResult().getMergeStatus().isSuccessful();
         } catch (GitAPIException e){
-            throw new IOException("Exception thrown at JGit repoUpdate.", e);
+            throw new IOException(Messages.JGitExec_exception_thrown_at_jgit_repo_update, e);
         }finally{
             git.close();
         }
@@ -216,20 +216,20 @@ public class JGitExec implements IRepoWorker{
             throws JSchException, IOException {
         JSch jsch = new JSch();
 
-        Log.log(Log.LOG_INFO, "Generating RSA key pair");
+        Log.log(Log.LOG_INFO, "Generating RSA key pair"); //$NON-NLS-1$
         
         KeyPair keys = KeyPair.genKeyPair(jsch, KeyPair.RSA, RSA_KEY_LENGTH);
         
-        Log.log(Log.LOG_INFO, "Writing RSA key pair");
+        Log.log(Log.LOG_INFO, "Writing RSA key pair"); //$NON-NLS-1$
         
         File privateKeyFile = new File(privateFileName);
-        File publicKeyFile = new File(privateFileName + ".pub");
+        File publicKeyFile = new File(privateFileName + ".pub"); //$NON-NLS-1$
         Files.deleteIfExists(privateKeyFile.toPath());
         Files.deleteIfExists(publicKeyFile.toPath());
         privateKeyFile.createNewFile();
         publicKeyFile.createNewFile();
         keys.writePrivateKey(privateKeyFile.getAbsolutePath());
-        keys.writePublicKey(publicKeyFile.getAbsolutePath(), "");
+        keys.writePublicKey(publicKeyFile.getAbsolutePath(), ""); //$NON-NLS-1$
     }
 
     public String getCurrentBranch(String repoRoot) throws IOException{
@@ -244,15 +244,15 @@ public class JGitExec implements IRepoWorker{
     private File getGitRoot(File subDir) {
         File gitSubDir = subDir;
         while (gitSubDir != null) {
-            gitSubDir = new File(gitSubDir, ".git");
+            gitSubDir = new File(gitSubDir, ".git"); //$NON-NLS-1$
             if (gitSubDir.exists()) {
                 return gitSubDir.getParentFile();
             } else {
                 gitSubDir = gitSubDir.getParentFile().getParentFile();
             }
         }
-        throw new IllegalStateException("Could not find .git repository in " 
-                                            + subDir + " and higher");
+        throw new IllegalStateException(Messages.JGitExec_couldnt_find_git_repository_in 
+                                            + subDir + Messages.JGitExec_and_higher);
     }
     
     private static class CustomJschConfigSessionFactory extends JschConfigSessionFactory {
@@ -266,7 +266,7 @@ public class JGitExec implements IRepoWorker{
         @Override
         protected void configure(OpenSshConfig.Host host, Session session) {
             // TODO strict known_hosts check
-            session.setConfig("StrictHostKeyChecking", "no");
+            session.setConfig("StrictHostKeyChecking", "no"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         
         @Override

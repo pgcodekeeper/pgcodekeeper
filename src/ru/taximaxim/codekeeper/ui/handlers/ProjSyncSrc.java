@@ -52,31 +52,31 @@ public class ProjSyncSrc {
             final PgDbProject proj,
             Shell shell,
             final IPreferenceStore mainPrefs) {
-        Log.log(Log.LOG_INFO, "Syncing project " + proj.getProjectFile() +
-                " with repo url " + proj.getString(UIConsts.PROJ_PREF_REPO_URL));
+        Log.log(Log.LOG_INFO, "Syncing project " + proj.getProjectFile() + //$NON-NLS-1$
+                " with repo url " + proj.getString(UIConsts.PROJ_PREF_REPO_URL)); //$NON-NLS-1$
         
         final AtomicBoolean conflicted = new AtomicBoolean(true);
         IRunnableWithProgress syncRunnable = new IRunnableWithProgress() {
             
             @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                SubMonitor pm = SubMonitor.convert(monitor, "Syncing repository cache", 10);
+                SubMonitor pm = SubMonitor.convert(monitor, Messages.ProjSyncSrc_syncing_repository_cache, 10);
                 IRepoWorker repo = new JGitExec(proj, 
                         mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
 
                 File repoDir = proj.getProjectWorkingDir();
 
                 try {
-                    pm.newChild(2).subTask("Checking conflicts...");
+                    pm.newChild(2).subTask(Messages.ProjSyncSrc_checking_conflicts);
                     conflicted.set(repo.hasConflicts(repoDir));
 
                     if (!conflicted.get()) {
-                        pm.newChild(8).subTask("Updating cache...");
+                        pm.newChild(8).subTask(Messages.ProjSyncSrc_updating_cache);
                         conflicted.set(!repo.repoUpdate(repoDir));
                     }
                 } catch (IOException ex) {
-                    throw new InvocationTargetException(ex, "Error while checking"
-                            + " conflicts or updating repository");
+                    throw new InvocationTargetException(ex, Messages.ProjSyncSrc_error_while_checking
+                            + Messages.ProjSyncSrc_conflicts_or_update_repository);
                 }
                 monitor.done();
             }
@@ -86,17 +86,17 @@ public class ProjSyncSrc {
             new ProgressMonitorDialog(shell).run(true, false, syncRunnable);
         } catch (InterruptedException ex) {
             throw new IllegalStateException(
-                    "Repository sync uncancellable thread interrupted", ex);
+                    Messages.ProjSyncSrc_repository_sync_uncancellable_thread_interrupted, ex);
         } catch (InvocationTargetException ex) {
             throw new IllegalStateException(
-                    "Could not synchronize repository with remote", ex);
+                    Messages.ProjSyncSrc_couldnt_synchronize_repository_with_remote, ex);
         }
 
         if (conflicted.get()) {
             MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR);
-            mb.setText("Sync error!");
-            mb.setMessage("Repository cache has conflicts! Resolve them manually"
-                    + " and reload project before continuing.");
+            mb.setText(Messages.ProjSyncSrc_sync_error);
+            mb.setMessage(Messages.ProjSyncSrc_repository_cache_has_conflict_resolve_them_manually
+                    + Messages.ProjSyncSrc_and_reload_project_before_continuing);
             mb.open();
         }else{
             events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);

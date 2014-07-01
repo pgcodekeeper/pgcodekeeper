@@ -44,16 +44,16 @@ public class InitProjectFromSource implements IRunnableWithProgress {
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException {
         try {
-            Log.log(Log.LOG_INFO, "Init project at " + props.getProjectWorkingDir());
+            Log.log(Log.LOG_INFO, "Init project at " + props.getProjectWorkingDir()); //$NON-NLS-1$
             
-            SubMonitor pm = SubMonitor.convert(monitor, "Initializing project...", 100);
+            SubMonitor pm = SubMonitor.convert(monitor, Messages.InitProjectFromSource_initializing_project, 100);
             IRepoWorker repo = new JGitExec(props, 
                     mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
             initRepoFromSource(pm, repo);
             
             monitor.done();
         } catch (IOException ex) {
-            throw new InvocationTargetException(ex, "IOException while creating project!");
+            throw new InvocationTargetException(ex, Messages.InitProjectFromSource_ioexception_while_creating_project);
         }
     }
 
@@ -85,14 +85,14 @@ public class InitProjectFromSource implements IRunnableWithProgress {
 
         default:
             throw new InvocationTargetException(new IllegalStateException(
-                    "Init requested but no Schema Source"));
+                    Messages.InitProjectFromSource_init_request_but_no_schema_source));
         }
 
-        pm.newChild(25).subTask("Exporting DB model..."); // 75
+        pm.newChild(25).subTask(Messages.InitProjectFromSource_exporting_db_model); // 75
 
         try (TempDir tmpRepoMeta = new TempDir(
                 props.getProjectWorkingDir().toPath().getParent(),
-                "tmp_repo_meta_")) {
+                "tmp_repo_meta_")) { //$NON-NLS-1$
             File repoMetaProj = new File(props.getRepoRoot(), repo.getRepoMetaFolder());
             File repoMetaTmp = new File(tmpRepoMeta.get(), repo.getRepoMetaFolder());
             Files.move(repoMetaProj.toPath(), repoMetaTmp.toPath());
@@ -104,9 +104,9 @@ public class InitProjectFromSource implements IRunnableWithProgress {
             Files.move(repoMetaTmp.toPath(), repoMetaProj.toPath());
         }
 
-        pm.newChild(25).subTask(UIConsts.PROJ_REPO_TYPE_GIT_NAME + " committing..."); // 100
+        pm.newChild(25).subTask(UIConsts.PROJ_REPO_TYPE_GIT_NAME + " committing..."); // 100 //$NON-NLS-1$
         repo.repoRemoveMissingAddNew(dirRepo);
-        repo.repoCommit(dirRepo, "new rev");
+        repo.repoCommit(dirRepo, "new rev"); //$NON-NLS-1$
         AddonPrefLoader.savePreference(mainPrefStore, 
                 UIConsts.PREF_LAST_ROLLON_SCRIPT, props.getString(UIConsts.PROJ_PREF_REPO_URL));
     }

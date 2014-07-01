@@ -31,12 +31,12 @@ public class AddonWindowLabel {
             PgDbProject proj,
             @Optional @EventTopic(UIConsts.EVENT_REOPEN_PROJECT)
             PgDbProject proj2) throws IOException {
-        String windowLabel = "pgCodeKeeper";
+        String windowLabel = "pgCodeKeeper"; //$NON-NLS-1$
         
         if (proj != null) {
             String p = proj.getRepoRoot().toString();
-            windowLabel += "  \u2014  " + proj.getProjectWorkingDir() + 
-                    " [branch: " + new JGitExec().getCurrentBranch(p) + "]";
+            windowLabel += "  \u2014  " + proj.getProjectWorkingDir() +  //$NON-NLS-1$
+                    " [branch: " + new JGitExec().getCurrentBranch(p) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         final MWindow window = (MWindow) service.find(UIConsts.WINDOW_MAIN_ID, app);

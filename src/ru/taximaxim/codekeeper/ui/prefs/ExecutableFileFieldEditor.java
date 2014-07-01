@@ -40,16 +40,16 @@ public class ExecutableFileFieldEditor extends FileFieldEditor {
             
             List<String> pathExts = new ArrayList<>(16);
             // since we always try to search with extension add empty one too
-            pathExts.add("");
+            pathExts.add(""); //$NON-NLS-1$
             
-            String pathext = System.getenv("PATHEXT");
+            String pathext = System.getenv("PATHEXT"); //$NON-NLS-1$
             if(pathext != null) {
                 for(String ext : pathext.split(pathSep)) {
                     pathExts.add(ext);
                 }
             }
             
-            String envVarPath = System.getenv("PATH");
+            String envVarPath = System.getenv("PATH"); //$NON-NLS-1$
             for(String subVarPath : envVarPath.split(pathSep)) {
                 for(String ext : pathExts) {
                     File fTry = new File(subVarPath, getStringValue() + ext);
@@ -69,7 +69,7 @@ public class ExecutableFileFieldEditor extends FileFieldEditor {
         
         if(!f.canExecute()) {
             showErrorMessage(
-                    "Value must be a file with execute permission set");
+                    Messages.ExecutableFileFieldEditor_value_must_be_file_with_execute_permission_set);
             return false;
         }
         

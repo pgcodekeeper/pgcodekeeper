@@ -25,7 +25,7 @@ public class SwitchPerspective {
             EModelService modelSrv, EPartService partSrv,
             MApplication app) {
         ListDialog dialog = new ListDialog(shell);
-        dialog.setTitle("Open Perspective");
+        dialog.setTitle(Messages.SwitchPerspective_open_perspective);
         
         dialog.setContentProvider(ArrayContentProvider.getInstance());
         dialog.setInput(modelSrv.findElements(
@@ -39,7 +39,7 @@ public class SwitchPerspective {
         });
         
         if(dialog.open() == Dialog.OK) {
-            Log.log(Log.LOG_DEBUG, "About to switch perspective");
+            Log.log(Log.LOG_DEBUG, "About to switch perspective"); //$NON-NLS-1$
             
             partSrv.switchPerspective((MPerspective)(dialog.getResult()[0]));
         }

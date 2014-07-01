@@ -31,12 +31,12 @@ import ru.taximaxim.codekeeper.ui.parts.Console;
 
 public class SqlScriptDialog extends MessageDialog {
     
-    private static final String SCRIPT_PLACEHOLDER = "%script";
-    public static final String runScriptText =  "\u25B6 run script";
-    public static final String stopScriptText = "\u25A0 stop script";
+    private static final String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
+    public static final String runScriptText =  Messages.SqlScriptDialog_run_script;
+    public static final String stopScriptText = Messages.SqlScriptDialog_stop_script;
     
     private final String text;
-    private String execScript = "";
+    private String execScript = ""; //$NON-NLS-1$
     
     private Text txtMain;
     private Text txtScript;
@@ -56,7 +56,7 @@ public class SqlScriptDialog extends MessageDialog {
     public SqlScriptDialog(Shell parentShell, int type, String title, String message,
             String text) {
         super(parentShell, title, null, message, type, new String[] {
-                runScriptText, "Save as...", IDialogConstants.CLOSE_LABEL }, 2);
+                runScriptText, Messages.SqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }, 2);
         
         setShellStyle(getShellStyle() | SWT.RESIZE);
         this.text = text;
@@ -76,16 +76,16 @@ public class SqlScriptDialog extends MessageDialog {
         txtMain.setLayoutData(gd);
         
         Label l = new Label(parent, SWT.NONE);
-        l.setText("Enter command to roll on this SQL script ("
-                + SCRIPT_PLACEHOLDER + " is replaced by the SQL script file):");
+        l.setText(Messages.SqlScriptDialog_Enter_cmd_to_roll_on_sql_script
+                + SCRIPT_PLACEHOLDER + Messages.SqlScriptDialog_replaced_by_sql_script_file);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         l.setLayoutData(gd);
         
         txtScript = new Text(parent, SWT.BORDER);
         txtScript.setText(execScript);
-        txtScript.setToolTipText("Use " + SCRIPT_PLACEHOLDER
-                + " to denote a place where SQL script filename will be inserted.");
+        txtScript.setToolTipText(Messages.SqlScriptDialog_use + SCRIPT_PLACEHOLDER
+                + Messages.SqlScriptDialog_denote_place_where_sql_script_fname_be_inserted);
         txtScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
         return parent;
@@ -101,19 +101,19 @@ public class SqlScriptDialog extends MessageDialog {
             final File fileTmpScript;
             try {
                 // TODO remove fileTmpScript if script is done or interrupted
-                fileTmpScript = new TempFile("tmp_rollon_", ".sql").get();
+                fileTmpScript = new TempFile("tmp_rollon_", ".sql").get(); //$NON-NLS-1$ //$NON-NLS-2$
                 
                try (PrintWriter writer = new PrintWriter(fileTmpScript)) {
                    writer.write(textRetrieved);
                }
             } catch (IOException ex) {
                 throw new IllegalStateException(
-                        "Error saving rollon script to temporary file", ex);
+                        Messages.SqlScriptDialog_error_saving_script_to_tmp_file, ex);
             }
                 
             List<String> command = Arrays.asList(txtScript.getText()
                     .replaceFirst(SCRIPT_PLACEHOLDER, fileTmpScript.getAbsolutePath())
-                    .split(Pattern.quote(" ")));
+                    .split(Pattern.quote(" "))); //$NON-NLS-1$
             final ProcessBuilder pb = new ProcessBuilder(command);
             
             // new runnable to unlock the UI thread
@@ -147,7 +147,7 @@ public class SqlScriptDialog extends MessageDialog {
                 @Override
                 public void uncaughtException(Thread t, Throwable e) {
                     Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
-                            "Exception during script execution", e);
+                            Messages.SqlScriptDialog_exception_during_script_execution, e);
                     StatusManager.getManager().handle(status, StatusManager.BLOCK);
                 }
             });
@@ -157,8 +157,8 @@ public class SqlScriptDialog extends MessageDialog {
         }
         // case Stop script
         else if (buttonId == 0 && isRunning){
-            Console.addMessage("Script execution interrupted!");
-            Log.log(Log.LOG_INFO, "Script execution interrupted by user.");
+            Console.addMessage(Messages.SqlScriptDialog_script_execution_interrupted);
+            Log.log(Log.LOG_INFO, Messages.SqlScriptDialog_script_interrupted_by_user);
             
             scriptThread.interrupt();
             getButton(0).setText(runScriptText);
@@ -167,9 +167,9 @@ public class SqlScriptDialog extends MessageDialog {
         // case Save to a file
         else if (buttonId == 1){
             FileDialog fd = new FileDialog(getShell(), SWT.SAVE);
-            fd.setText("Save as...");
+            fd.setText(Messages.SqlScriptDialog_save_as);
             fd.setOverwrite(true);
-            fd.setFilterExtensions(new String[] {"*.sql", "*.*"});
+            fd.setFilterExtensions(new String[] {"*.sql", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$
             String scriptFileName = fd.open();
             
             if (scriptFileName != null) {
@@ -178,12 +178,12 @@ public class SqlScriptDialog extends MessageDialog {
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
                     Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
-                            "Error saving script to a file", ex);
+                            Messages.SqlScriptDialog_error_saving_script_to_file, ex);
                     StatusManager.getManager().handle(status, StatusManager.BLOCK);
                     return;
                 }
                 
-                String fileSaved = "Script saved to file " + script.getAbsolutePath();
+                String fileSaved = Messages.SqlScriptDialog_script_saved_to_file + script.getAbsolutePath();
                 Console.addMessage(fileSaved);
                 Log.log(Log.LOG_INFO, fileSaved);
             }
@@ -199,7 +199,7 @@ public class SqlScriptDialog extends MessageDialog {
     public boolean close() {
         if (isRunning) {
             MessageBox errorDialog = new MessageBox(getShell(), SWT.OK);
-            errorDialog.setMessage("Stop the script before closing dialog");
+            errorDialog.setMessage(Messages.SqlScriptDialog_stop_script_before_closing_dialog);
             errorDialog.open();
             return false;
         } else {

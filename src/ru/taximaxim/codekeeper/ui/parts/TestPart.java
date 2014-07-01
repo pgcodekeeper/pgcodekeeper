@@ -39,7 +39,7 @@ public class TestPart {
         
         parent.setLayout(new FormLayout());
         Button btn = new Button(parent, SWT.PUSH);
-        btn.setText("qwe");
+        btn.setText(Messages.TestPart_qwe);
         
         FormData data = new FormData();
         data.left = data.top = new FormAttachment(5);
@@ -50,13 +50,13 @@ public class TestPart {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 
-                txt.setText(txt.getText() + "\n"
-                        + prefPgdumpPath + "\n"
+                txt.setText(txt.getText() + "\n" //$NON-NLS-1$
+                        + prefPgdumpPath + "\n" //$NON-NLS-1$
                         + shell);
-                txt.setText(txt.getText() + "\n"
+                txt.setText(txt.getText() + "\n" //$NON-NLS-1$
                         + shell.getDisplay());
                 
-                txt.setText(txt.getText() + "\n"
+                txt.setText(txt.getText() + "\n" //$NON-NLS-1$
                         + shell_);
                 
                 

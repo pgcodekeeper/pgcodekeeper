@@ -17,7 +17,7 @@ public class RecentProjects {
         if (prefRecent == null || prefRecent.isEmpty()){
             return null;
         }
-        return prefRecent.split(Pattern.quote("*"));
+        return prefRecent.split(Pattern.quote("*")); //$NON-NLS-1$
     }
     
     public static void addRecent(String recent, IPreferenceStore prefStore){
@@ -37,7 +37,7 @@ public class RecentProjects {
     }
     
     private static LinkedList <String> getList(String prefRecent){
-        return new LinkedList<String>(Arrays.asList(prefRecent.split(Pattern.quote("*"))));
+        return new LinkedList<String>(Arrays.asList(prefRecent.split(Pattern.quote("*")))); //$NON-NLS-1$
     }
     
     private static void writePref(LinkedList<String> prefRecent, IPreferenceStore prefStore){
@@ -46,7 +46,7 @@ public class RecentProjects {
         while (iter.hasNext()){
             sb.append(iter.next());
             if (iter.hasNext()){
-                sb.append("*");
+                sb.append("*"); //$NON-NLS-1$
             }
         }
         prefStore.setValue(UIConsts.PREF_RECENT_PROJECTS, sb.toString());
@@ -55,7 +55,7 @@ public class RecentProjects {
                 ((IPersistentPreferenceStore) prefStore).save();
             } catch (IOException ex) {
                 throw new IllegalStateException(
-                        "Unexpected error while saving preferences!", ex);
+                        Messages.RecentProjects_unexpected_error_while_saving_preferences, ex);
             }
         }
     }

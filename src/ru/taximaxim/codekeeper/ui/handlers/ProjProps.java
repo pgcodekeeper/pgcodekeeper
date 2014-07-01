@@ -50,17 +50,17 @@ public class ProjProps {
             @Named(UIConsts.PREF_STORE) IPreferenceStore mainPrefs,
             @Named(IServiceConstants.ACTIVE_SHELL) Shell shell, PgDbProject proj) {
         FakePrefPageExtension[] propPages = {
-                new FakePrefPageExtension("projprefs.0.pagerepo", 
+                new FakePrefPageExtension("projprefs.0.pagerepo",  //$NON-NLS-1$
                         proj.getString(UIConsts.PROJ_PREF_REPO_TYPE)
-                        + " Settings", new RepoSettingsPage(), null),
+                        + " Settings", new RepoSettingsPage(), null), //$NON-NLS-1$
 
-                new FakePrefPageExtension("projprefs.1.pagedbsouce",
-                        "DB Source", new DbSrcPage(mainPrefs), null),
+                new FakePrefPageExtension("projprefs.1.pagedbsouce", //$NON-NLS-1$
+                        "DB Source", new DbSrcPage(mainPrefs), null), //$NON-NLS-1$
 
-                new FakePrefPageExtension("projprefs.2.pagemisc",
-                        "Miscellaneous", new MiscSettingPage(), null) };
+                new FakePrefPageExtension("projprefs.2.pagemisc", //$NON-NLS-1$
+                        "Miscellaneous", new MiscSettingPage(), null) }; //$NON-NLS-1$
 
-        Log.log(Log.LOG_DEBUG, "About to show proj props dialog");
+        Log.log(Log.LOG_DEBUG, "About to show proj props dialog"); //$NON-NLS-1$
         
         PrefDialogFactory.show(shell, proj, propPages);
     }
@@ -93,27 +93,27 @@ class DbSrcPage extends FieldEditorPreferencePage {
                 getFieldEditorParent());
 
         RadioGroupFieldEditor radio = new RadioGroupFieldEditor(
-                UIConsts.PROJ_PREF_SOURCE, "Source of the DB schema", 1,
-                new String[][] { { "None", UIConsts.PROJ_SOURCE_TYPE_NONE },
-                        { "Dump file", UIConsts.PROJ_SOURCE_TYPE_DUMP },
-                        { "Database", UIConsts.PROJ_SOURCE_TYPE_DB } },
+                UIConsts.PROJ_PREF_SOURCE, "Source of the DB schema", 1, //$NON-NLS-1$
+                new String[][] { { "None", UIConsts.PROJ_SOURCE_TYPE_NONE }, //$NON-NLS-1$
+                        { "Dump file", UIConsts.PROJ_SOURCE_TYPE_DUMP }, //$NON-NLS-1$
+                        { "Database", UIConsts.PROJ_SOURCE_TYPE_DB } }, //$NON-NLS-1$
                 getFieldEditorParent(), true);
         addField(radio);
 
         grpSourceDb = new Group(getFieldEditorParent(), SWT.NONE);
         grpSourceDb.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
-        grpSourceDb.setText("Settings for Database schema source");
+        grpSourceDb.setText(Messages.ProjProps_settings_for_database_schema_source);
 
         final StringFieldEditor sfeName = new StringFieldEditor(
-                UIConsts.PROJ_PREF_DB_NAME, "DB Name:", grpSourceDb);
+                UIConsts.PROJ_PREF_DB_NAME, Messages.ProjProps_db_name, grpSourceDb);
         addField(sfeName);
 
         final StringFieldEditor sfeUser = new StringFieldEditor(
-                UIConsts.PROJ_PREF_DB_USER, "DB User:", grpSourceDb);
+                UIConsts.PROJ_PREF_DB_USER, Messages.ProjProps_db_user, grpSourceDb);
         addField(sfeUser);
 
         final StringFieldEditor sfePass = new StringFieldEditor(
-                UIConsts.PROJ_PREF_DB_PASS, "DB Password:", grpSourceDb);
+                UIConsts.PROJ_PREF_DB_PASS, Messages.ProjProps_db_password, grpSourceDb);
         addField(sfePass);
         sfePass.getTextControl(grpSourceDb).setEchoChar('\u2022'); // •
 
@@ -121,8 +121,8 @@ class DbSrcPage extends FieldEditorPreferencePage {
         lblWarn.setImage(lrm.createImage(ImageDescriptor
                 .createFromURL(Activator.getContext().getBundle()
                         .getResource(UIConsts.FILENAME_ICONWARNING))));
-        lblWarn.setText("Warning:\n" + "Providing password here is insecure!\n"
-                + "Consider using .pgpass file instead.");
+        lblWarn.setText(Messages.ProjProps_warning + Messages.ProjProps_providing_password_here_is_insecure
+                + Messages.ProjProps_consider_using_pgpass_instead);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
 
         if (getPreferenceStore().getString(UIConsts.PROJ_PREF_DB_PASS)
@@ -134,15 +134,15 @@ class DbSrcPage extends FieldEditorPreferencePage {
         lblWarn.setLayoutData(gd);
 
         final StringFieldEditor sfeHost = new StringFieldEditor(
-                UIConsts.PROJ_PREF_DB_HOST, "DB Host:", grpSourceDb);
+                UIConsts.PROJ_PREF_DB_HOST, Messages.ProjProps_db_host, grpSourceDb);
         addField(sfeHost);
 
         final IntegerFieldEditor ifePort = new IntegerFieldEditor(
-                UIConsts.PROJ_PREF_DB_PORT, "DB Port:", grpSourceDb);
+                UIConsts.PROJ_PREF_DB_PORT, Messages.ProjProps_db_port, grpSourceDb);
         addField(ifePort);
 
         Button btnStorePick = new Button(grpSourceDb, SWT.PUSH);
-        btnStorePick.setText("...");
+        btnStorePick.setText("..."); //$NON-NLS-1$
         btnStorePick.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false,
                 false, 2, 1));
         btnStorePick.addSelectionListener(new SelectionAdapter() {
@@ -229,20 +229,20 @@ class RepoSettingsPage extends FieldEditorPreferencePage {
         String repoTypeName;
         String warningMessage;
         repoTypeName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
-        warningMessage = "Warning:\n Providing password here is insecure!\n"
-                + "This password WILL show up in logs!\n"
-                + "Consider using ssh authentification instead (use git@host repo url).";
+        warningMessage = Messages.ProjProps_warning_providing_password_here_is_insecure
+                + Messages.ProjProps_this_password_will_show_up_in_logs
+                + Messages.ProjProps_consider_using_ssh_authentication_instead;
         StringFieldEditor sfeUrl = new StringFieldEditor(
-                UIConsts.PROJ_PREF_REPO_URL, repoTypeName + " Repo URL:",
+                UIConsts.PROJ_PREF_REPO_URL, repoTypeName + Messages.ProjProps_repo_url,
                 getFieldEditorParent());
         addField(sfeUrl);
         sfeUrl.setEmptyStringAllowed(false);
 
         addField(new StringFieldEditor(UIConsts.PROJ_PREF_REPO_USER,
-                repoTypeName + " User:", getFieldEditorParent()));
+                repoTypeName + Messages.ProjProps_user, getFieldEditorParent()));
 
         StringFieldEditor sfePass = new StringFieldEditor(
-                UIConsts.PROJ_PREF_REPO_PASS, repoTypeName + " Pass:",
+                UIConsts.PROJ_PREF_REPO_PASS, repoTypeName + Messages.ProjProps_password,
                 getFieldEditorParent());
         addField(sfePass);
         sfePass.getTextControl(getFieldEditorParent()).setEchoChar('\u2022'); // •
@@ -317,15 +317,15 @@ class MiscSettingPage extends FieldEditorPreferencePage {
         }
 
         addField(new ComboFieldEditor(UIConsts.PROJ_PREF_ENCODING,
-                "Project encoding:", lstCharsets.toArray(new String[lstCharsets
+                Messages.ProjProps_project_encoding, lstCharsets.toArray(new String[lstCharsets
                         .size()][]), getFieldEditorParent()));
 
         lblWarn = new CLabel(getFieldEditorParent(), SWT.NONE);
         lblWarn.setImage(lrm.createImage(ImageDescriptor
                 .createFromURL(Activator.getContext().getBundle()
                         .getResource(UIConsts.FILENAME_ICONWARNING))));
-        lblWarn.setText("Warning:\n"
-                + "Encoding of existing files will not be changed!");
+        lblWarn.setText(Messages.ProjProps_warning
+                + Messages.ProjProps_encoding_of_existing_files_willnt_be_changed);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
         gd.exclude = true;
         lblWarn.setVisible(false);

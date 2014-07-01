@@ -64,7 +64,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
     private PgDbProject props;
 
     public NewProjWizard(IPreferenceStore mainPrefStore) {
-        setWindowTitle("New PgDbProject");
+        setWindowTitle(Messages.NewProjWizard_new_pg_db_project);
         setNeedsProgressMonitor(true);
         this.mainPrefStore = mainPrefStore;
     }
@@ -75,13 +75,13 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
 
     @Override
     public void addPages() {
-        pageRepo = new PageRepo("Repository settings", mainPrefStore);
+        pageRepo = new PageRepo(Messages.NewProjWizard_repository_settings, mainPrefStore);
         addPage(pageRepo);
-        pageSubdir = new PageSubdir("Working directory settings");
+        pageSubdir = new PageSubdir(Messages.NewProjWizard_workdirectory_settings);
         addPage(pageSubdir);
-        pageDb = new PageDb("Schema Source Settings", mainPrefStore);
+        pageDb = new PageDb(Messages.NewProjWizard_schema_source_settings, mainPrefStore);
         addPage(pageDb);
-        pageMisc = new PageMisc("Miscellaneous");
+        pageMisc = new PageMisc(Messages.NewProjWizard_miscellaneous);
         addPage(pageMisc);
     }
 
@@ -120,12 +120,12 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                 return;
             }
             
-            if (MessageDialog.openQuestion(getShell(), "Selected directory is empty",
-                            "Targer directory is not a GIT repository root directory.\n"
-                            + "You need to clone the repo first in order to select working directory.\n"
-                            + "Do you want to clone repository \""
+            if (MessageDialog.openQuestion(getShell(), Messages.NewProjWizard_selected_directory_is_empty,
+                            Messages.NewProjWizard_target_dir_isnt_git_repository_root_dir
+                            + Messages.NewProjWizard_you_need_to_clone_the_repo_first_in_order_to_select_work_dir
+                            + Messages.NewProjWizard_do_you_want_to_clone_repo
                             + pageRepo.getRepoUrl()
-                            + "\" to selected directory now?")) {
+                            + Messages.NewProjWizard_to_selected_dir_now)) {
 
                 final String repoUrl = pageRepo.getRepoUrl();
                 final String repoUser = pageRepo.getRepoUser();
@@ -139,7 +139,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                             throws InvocationTargetException,
                             InterruptedException {
                         SubMonitor pm = SubMonitor.convert(monitor,
-                                "Cloning GIT repository", 2);
+                                Messages.NewProjWizard_cloning_get_repo, 2);
                         final JGitExec git = new JGitExec(repoUrl,repoUser, repoPass,
                                 mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
                         pm.worked(1);
@@ -148,7 +148,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                             AddonPrefLoader.savePreference(mainPrefStore, 
                                     UIConsts.PREF_LAST_REPO, repoUrl);
                         } catch (IOException e) {
-                            throw new InvocationTargetException(e, "Error cloning repository");
+                            throw new InvocationTargetException(e, Messages.NewProjWizard_error_cloning_repository);
                         }
                         monitor.done();
                     }
@@ -159,11 +159,11 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                             false, cloneRunnable);
                 } catch (InvocationTargetException ex) {
                     event.doit = false;
-                    throw new IllegalStateException("Cloning was not successful", ex);
+                    throw new IllegalStateException(Messages.NewProjWizard_cloning_wasnt_successful, ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     event.doit = false;
-                    throw new IllegalStateException("Cloning thread interrupted", ex);
+                    throw new IllegalStateException(Messages.NewProjWizard_cloning_thread_interrupted, ex);
                 }
             } else {
                 // didn't clone the repo; can't proceed without it
@@ -173,14 +173,14 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
             File sub = new File (pageSubdir.getRepoSubdir()); 
 
             if (sub.list().length > 0 && !new File(sub, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
-                if (sub.list().length == 1 && sub.list()[0].equals(".git")){
+                if (sub.list().length == 1 && sub.list()[0].equals(".git")){ //$NON-NLS-1$
                     return;
                 }
-                new MessageDialog(getShell(), "Bad working directory", null, 
-                        "Missing marker file in working directory " + sub + 
-                        "\nCreate marker file named " + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
-                        " manually and try again", MessageDialog.WARNING, 
-                        new String []{"Ok"}, 0).open();
+                new MessageDialog(getShell(), Messages.NewProjWizard_bad_work_dir, null, 
+                        Messages.NewProjWizard_missing_marker_file_in_work_dir + sub + 
+                        Messages.NewProjWizard_create_marker_file_named + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
+                        Messages.NewProjWizard_manually_and_try_again, MessageDialog.WARNING, 
+                        new String []{"Ok"}, 0).open(); //$NON-NLS-1$
                 event.doit = false;
             }
         }
@@ -198,7 +198,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
     public boolean performFinish() {
         props = new PgDbProject(pageRepo.getProjectFile());
 
-        Log.log(Log.LOG_INFO, "Creating new project properties at "
+        Log.log(Log.LOG_INFO, "Creating new project properties at " //$NON-NLS-1$
                 + props.getProjectFile());
 
         props.setValue(UIConsts.PROJ_PREF_ENCODING, pageMisc.getEncoding());
@@ -218,7 +218,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
         } else if (pageDb.isSourceNone()) {
             src = UIConsts.PROJ_SOURCE_TYPE_NONE;
         } else {
-            throw new IllegalStateException("No Schema Source selected.");
+            throw new IllegalStateException(Messages.NewProjWizard_no_schema_source_selected);
         }
         props.setValue(UIConsts.PROJ_PREF_SOURCE, src);
 
@@ -237,7 +237,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
             props.save();
         } catch (IOException ex) {
             throw new IllegalStateException(
-                    "Error while saving project properties", ex);
+                    Messages.NewProjWizard_error_while_saving_project_properties, ex);
         }
 
         if (pageSubdir.isDoInit()){
@@ -246,11 +246,11 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                         new InitProjectFromSource(mainPrefStore, props, pageDb.getDumpPath()));
             } catch (InvocationTargetException ex) {
                 throw new IllegalStateException(
-                        "Error initializing repo from source", ex);
+                        Messages.NewProjWizard_error_in_initializing_repo_from_source, ex);
             } catch (InterruptedException ex) {
                 // assume run() was called as non cancelable
                 throw new IllegalStateException(
-                        "Project initializer thread interrupted", ex);
+                        Messages.NewProjWizard_project_initializer_thread_interrupted, ex);
             }
         } else if (!pageSubdir.isDoInit() && new File(pageSubdir.getRepoSubdir()).list().length == 0 ){
             try {
@@ -260,18 +260,18 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                 IRepoWorker repo = new JGitExec(props, 
                         mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
                 repo.repoRemoveMissingAddNew(new File(pageSubdir.getRepoSubdir()));
-                repo.repoCommit(new File(pageSubdir.getRepoSubdir()), "empty working directory");
+                repo.repoCommit(new File(pageSubdir.getRepoSubdir()), "empty working directory"); //$NON-NLS-1$
             } catch (IOException ex) {
-                throw new IllegalStateException("Could not create empty database in "
+                throw new IllegalStateException(Messages.NewProjWizard_couldnt_create_empty_database_in
                             + new File(pageSubdir.getRepoSubdir()), ex);
             }
         } else if (!pageSubdir.isDoInit() && !new File(pageSubdir.getRepoSubdir(), 
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
-            new MessageDialog(getShell(), "Bad working directory", null, 
-                    "Missing marker file in working directory " + pageSubdir.getRepoSubdir() + 
-                    "\nCreate marker file named " + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
-                    " manually and try again", MessageDialog.WARNING, 
-                    new String []{"Ok"}, 0).open();
+            new MessageDialog(getShell(), Messages.NewProjWizard_bad_work_dir, null, 
+                    Messages.NewProjWizard_missing_marker_file_in_work_dir + pageSubdir.getRepoSubdir() + 
+                    Messages.NewProjWizard_create_marker_file_named + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
+                    Messages.NewProjWizard_manually_and_try_again, MessageDialog.WARNING, 
+                    new String []{"Ok"}, 0).open(); //$NON-NLS-1$
             return false;
         }
         
@@ -327,15 +327,15 @@ class PageRepo extends WizardPage implements Listener {
     private void redrawLabels() {
             if (JGitExec.PATTERN_HTTP_URL.matcher(txtRepoUrl.getText()).matches()){
                 lblWarnPass
-                .setText("Warning:\n"
-                        + "Providing password here is insecure!"
-                        + " This password WILL show up in logs!\n"
-                        + "Consider using ssh authentification instead (use git@host as repo url).");
+                .setText(Messages.NewProjWizard_warning
+                        + Messages.NewProjWizard_providing_password_here_is_insecure
+                        + Messages.NewProjWizard_this_password_will_show_up_in_logs
+                        + Messages.NewProjWizard_consider_using_ssh_authentication_instead);
             }else if (JGitExec.PATTERN_FILE_URL.matcher(txtRepoUrl.getText()).matches()){
-                lblWarnPass.setText("");
+                lblWarnPass.setText(""); //$NON-NLS-1$
             }else {
-                lblWarnPass.setText("Make sure you have private and public keys\n"
-                        + "filenames entered in application preferences.");
+                lblWarnPass.setText(Messages.NewProjWizard_make_sure_you_have_priv_and_public_keys
+                        + Messages.NewProjWizard_dilenames_entered_in_application_preferences);
             }
     }
 
@@ -348,12 +348,12 @@ class PageRepo extends WizardPage implements Listener {
         container.setLayout(new GridLayout(2, false));
         
         grpRepo = new Group(container, SWT.NONE);
-        grpRepo.setText(repoTypeName + " Settings");
+        grpRepo.setText(repoTypeName + Messages.NewProjWizard_settings);
         grpRepo.setLayout(new GridLayout(2, false));
         grpRepo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
 
         lblRepoUrl = new Label(grpRepo, SWT.NONE);
-        lblRepoUrl.setText(repoTypeName + " Repo URL:");
+        lblRepoUrl.setText(repoTypeName + Messages.NewProjWizard_repo_url);
 
         txtRepoUrl = new Text(grpRepo, SWT.BORDER);
         txtRepoUrl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -362,13 +362,13 @@ class PageRepo extends WizardPage implements Listener {
         txtRepoUrl.addListener(SWT.Modify, this);
 
         lblRepoUser = new Label(grpRepo, SWT.NONE);
-        lblRepoUser.setText(repoTypeName + " User:");
+        lblRepoUser.setText(repoTypeName + Messages.NewProjWizard_user);
 
         txtRepoUser = new Text(grpRepo, SWT.BORDER);
         txtRepoUser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         lblRepoPass = new Label(grpRepo, SWT.NONE);
-        lblRepoPass.setText(repoTypeName + " Password:");
+        lblRepoPass.setText(repoTypeName + Messages.NewProjWizard_password);
 
         txtRepoPass = new Text(grpRepo, SWT.BORDER | SWT.PASSWORD);
         txtRepoPass.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -432,8 +432,8 @@ class PageRepo extends WizardPage implements Listener {
         lblWarnPass.setVisible(false);
 
         lblRepoRoot = new Label(container, SWT.NONE);
-        lblRepoRoot.setText("Select Git repository root directory "
-                + "(either empty folder or existing repository)");
+        lblRepoRoot.setText(Messages.NewProjWizard_select_git_repository_root_directory
+                + Messages.NewProjWizard_either_empty_folder_or_existing_repository);
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
@@ -444,7 +444,7 @@ class PageRepo extends WizardPage implements Listener {
         txtRepoRoot.addListener(SWT.Modify, this);
 
         Button btnBrowseRepo = new Button(container, SWT.PUSH);
-        btnBrowseRepo.setText("Browse...");
+        btnBrowseRepo.setText(Messages.NewProjWizard_browse);
         btnBrowseRepo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -460,7 +460,7 @@ class PageRepo extends WizardPage implements Listener {
         });
         
         lblProjectFile = new Label(container, SWT.NONE);
-        lblProjectFile.setText("Select project filename");
+        lblProjectFile.setText(Messages.NewProjWizard_select_project_name);
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
@@ -470,12 +470,12 @@ class PageRepo extends WizardPage implements Listener {
         txtProjectFile.addListener(SWT.Modify, this);
         
         Button btnBrowseProj = new Button(container, SWT.PUSH);
-        btnBrowseProj.setText("Browse...");
+        btnBrowseProj.setText(Messages.NewProjWizard_browse);
         btnBrowseProj.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(container.getShell(),SWT.SAVE);
-                dialog.setFilterExtensions(new String [] {"*.project"});
+                dialog.setFilterExtensions(new String [] {"*.project"}); //$NON-NLS-1$
                 dialog.setOverwrite(true);
                 dialog.setFilterPath(mainPrefStore.getString(UIConsts.PREF_LAST_OPENED_LOCATION));
                 String path = dialog.open();
@@ -499,19 +499,19 @@ class PageRepo extends WizardPage implements Listener {
         String errMsg = null;
         
         if (getRepoUrl().isEmpty()) {
-            errMsg = "Enter " + repoTypeName + " Repo URL!";
+            errMsg = Messages.NewProjWizard_enter + repoTypeName + Messages.NewProjWizard_repo_usrl_demand;
         } else if (getRepoRootPath().isEmpty()
                 || !new File(getRepoRootPath()).isDirectory()) {
-            errMsg = "Select repo root directory!";
+            errMsg = Messages.NewProjWizard_select_repo_root_directory;
         } else if (!JGitExec.isGitRepo(getRepoRootPath())
                 && new File(txtRepoRoot.getText()).list().length != 0) {
-            errMsg = "Selected directory must be empty or be a root directory of"
-                    + " existing git repository (must contain .git subdirectory)";
+            errMsg = Messages.NewProjWizard_selecterd_dir_must_be_empty_or_be_a_root_dir_of
+                    + Messages.NewProjWizard_existing_git_repository;
         } else if (getProjectFile().isEmpty()
                 || !getProjectFile().endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)) {
-            errMsg = "Select project filename!";
+            errMsg = Messages.NewProjWizard_select_project_filename_demand;
         } else if (new File(getRepoRootPath()).toPath().getNameCount() == 0) {
-            errMsg = "Select Project Directory (should not be root)!";
+            errMsg = Messages.NewProjWizard_select_project_directory_demand;
         }
 
         setErrorMessage(errMsg);
@@ -565,7 +565,7 @@ class PageSubdir extends WizardPage implements Listener {
         GridData gd = new GridData();
         gd.horizontalSpan = 2;
         btnDoInit = new Button(container, SWT.CHECK);
-        btnDoInit.setText("Init project subdirectory from Schema Source (Live DB or dump file)");
+        btnDoInit.setText(Messages.NewProjWizard_init_project_subdir_from_schema_source);
         btnDoInit.setLayoutData(gd);
         
         btnDoInit.addSelectionListener(new SelectionAdapter() {
@@ -586,18 +586,18 @@ class PageSubdir extends WizardPage implements Listener {
         lblWarnInit.setImage(lrm.createImage(ImageDescriptor
                 .createFromURL(Activator.getContext().getBundle()
                         .getResource(UIConsts.FILENAME_ICONWARNING))));
-        lblWarnInit.setText("Warning:\n"
-                        + "This will delete repo contents and recreate them "
-                        + "from Schema Source (next page).");        
+        lblWarnInit.setText(Messages.NewProjWizard_warning
+                        + Messages.NewProjWizard_this_will_delete_contents_and_recreate_them
+                        + Messages.NewProjWizard_from_schema_source);        
         gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
         gd.exclude = true;
         lblWarnInit.setLayoutData(gd);
         lblWarnInit.setVisible(false);
         
         lblRepoSubdir = new Label(container, SWT.NONE);
-        lblRepoSubdir.setText("Select a directory inside the repository,"
-                            + " that will contain DB schemas and constraints\n"
-                            + "(leave unchanged to use root)");
+        lblRepoSubdir.setText(Messages.NewProjWizard_select_a_dir_inside_the_repo
+                            + Messages.NewProjWizard_that_will_contain_db_schema_and_constraints
+                            + Messages.NewProjWizard_leave_unchaged_to_use_root);
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
@@ -608,7 +608,7 @@ class PageSubdir extends WizardPage implements Listener {
 
         txtRepoSubdir.addListener(SWT.Modify, this);
         Button btnBrowseProj = new Button(container, SWT.PUSH);
-        btnBrowseProj.setText("Browse...");
+        btnBrowseProj.setText(Messages.NewProjWizard_browse);
         btnBrowseProj.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -642,10 +642,10 @@ class PageSubdir extends WizardPage implements Listener {
         if (repoSubdir.isEmpty() || !new File(repoSubdir).exists()
                 || !new File(repoSubdir).isDirectory() 
                 || !Paths.get(repoSubdir).startsWith(Paths.get(repoRoot))) {
-            errMsg = "Select correct subdir of the GIT repository";
+            errMsg = Messages.NewProjWizard_select_correct_subdir_of_the_git_repo;
         }else if (isDoInit() && Paths.get(projectFile).startsWith(getRepoSubdir())){
-            errMsg = "Project file " + projectFile + " can not be saved in working "
-                    + "directory, because it will be deleted during init stage";
+            errMsg = Messages.NewProjWizard_project_fiel + projectFile + Messages.NewProjWizard_connt_be_saved_in_working
+                    + Messages.NewProjWizard_dir_because_itll_be_deleted_during_init_stage;
         }
         
         setErrorMessage(errMsg);
@@ -731,13 +731,13 @@ class PageDb extends WizardPage implements Listener {
         container.setLayout(new GridLayout(2, false));
 
         Group radioGrp = new Group(container, SWT.NONE);
-        radioGrp.setText("Schema Source");
+        radioGrp.setText(Messages.NewProjWizard_schema_source);
         radioGrp.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false,
                 2, 1));
         radioGrp.setLayout(new GridLayout(3, false));
 
         radioDb = new Button(radioGrp, SWT.RADIO);
-        radioDb.setText("DB");
+        radioDb.setText(Messages.NewProjWizard_db);
 
         radioDb.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -758,7 +758,7 @@ class PageDb extends WizardPage implements Listener {
         radioDb.addListener(SWT.Selection, this);
 
         radioDump = new Button(radioGrp, SWT.RADIO);
-        radioDump.setText("Dump File");
+        radioDump.setText(Messages.NewProjWizard_dump_file);
 
         radioDump.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -779,7 +779,7 @@ class PageDb extends WizardPage implements Listener {
         radioDb.addListener(SWT.Selection, this);
 
         radioNone = new Button(radioGrp, SWT.RADIO);
-        radioNone.setText("None");
+        radioNone.setText(Messages.NewProjWizard_none);
         radioNone.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -798,7 +798,7 @@ class PageDb extends WizardPage implements Listener {
         radioNone.setSelection(true);
 
         grpDb = new DbPicker(container, SWT.NONE, mainPrefs);
-        grpDb.setText("DB Source Settings");
+        grpDb.setText(Messages.NewProjWizard_db_source_settings);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
         gd.exclude = true;
         gd.verticalIndent = 12;
@@ -808,7 +808,7 @@ class PageDb extends WizardPage implements Listener {
         grpDb.txtDbPort.addListener(SWT.Modify, this);
 
         grpDump = new Group(container, SWT.NONE);
-        grpDump.setText("Dump File Source Settings");
+        grpDump.setText(Messages.NewProjWizard_dump_file_source_settings);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
         gd.exclude = true;
         gd.verticalIndent = 12;
@@ -817,7 +817,7 @@ class PageDb extends WizardPage implements Listener {
         grpDump.setVisible(false);
 
         Label l = new Label(grpDump, SWT.NONE);
-        l.setText("Path to DB Schema Dump:");
+        l.setText(Messages.NewProjWizard_path_to_db_schema_dump);
         gd = new GridData();
         gd.horizontalSpan = 2;
         l.setLayoutData(gd);
@@ -827,7 +827,7 @@ class PageDb extends WizardPage implements Listener {
         txtDumpPath.addListener(SWT.Modify, this);
 
         Button btnBrowseDump = new Button(grpDump, SWT.PUSH);
-        btnBrowseDump.setText("Browse...");
+        btnBrowseDump.setText(Messages.NewProjWizard_browse);
         btnBrowseDump.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -840,7 +840,7 @@ class PageDb extends WizardPage implements Listener {
         });
 
         lblNoSource = new Label(container, SWT.NONE);
-        lblNoSource.setText("No Schema Source selected.");
+        lblNoSource.setText(Messages.NewProjWizard_no_schema_source_selected);
 
         setControl(container);
     }
@@ -851,13 +851,13 @@ class PageDb extends WizardPage implements Listener {
         if (radioDump.getSelection()
                 && (txtDumpPath.getText().isEmpty() || !new File(
                         txtDumpPath.getText()).isFile())) {
-            errMsg = "Select a readable DB dump file!";
+            errMsg = Messages.NewProjWizard_select_readeble_db_dump_file;
         } else if (radioDb.getSelection()
                 && !grpDb.txtDbPort.getText().isEmpty()) {
             try {
                 Integer.parseInt(grpDb.txtDbPort.getText());
             } catch (NumberFormatException ex) {
-                errMsg = "Port must be a number!";
+                errMsg = Messages.NewProjWizard_port_must_be_number;
             }
         }
 
@@ -890,13 +890,13 @@ class PageMisc extends WizardPage {
         container.setLayout(new GridLayout(2, false));
 
         new Label(container, SWT.NONE)
-                .setText("Project encoding (used for all supporting operaions):");
+                .setText(Messages.NewProjWizard_project_encoding);
 
         cmbEncoding = new Combo(container, SWT.BORDER | SWT.DROP_DOWN
                 | SWT.READ_ONLY);
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
-        cmbEncoding.select(cmbEncoding.indexOf("UTF-8"));
+        cmbEncoding.select(cmbEncoding.indexOf("UTF-8")); //$NON-NLS-1$
 
         setControl(container);
     }

@@ -46,7 +46,7 @@ public class GitPrefPage extends FieldEditorPreferencePage
     @Override
     protected void createFieldEditors() {
         editorPrivate = new FileFieldEditor(UIConsts.PREF_GIT_KEY_PRIVATE_FILE, 
-                "Private key", true, FileFieldEditor.VALIDATE_ON_KEY_STROKE,
+                Messages.GitPrefPage_private_key, true, FileFieldEditor.VALIDATE_ON_KEY_STROKE,
                 getFieldEditorParent());
         addField(editorPrivate);
     }
@@ -54,15 +54,15 @@ public class GitPrefPage extends FieldEditorPreferencePage
     @Override
     protected Control createContents(final Composite parent) {
         genKeysButt = new Button(parent, SWT.PUSH);
-        genKeysButt.setText("Generate keys");
+        genKeysButt.setText(Messages.GitPrefPage_generate_keys);
         genKeysButt.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 MessageBox dialog = new MessageBox(getShell(), SWT.OK);
-                dialog.setMessage("Select file to save private key");
+                dialog.setMessage(Messages.GitPrefPage_select_file_to_save_priv_key);
                 dialog.open();
                 FileDialog fd = new FileDialog(parent.getShell(), SWT.SAVE);
-                fd.setText("Save private key to a file...");
+                fd.setText(Messages.GitPrefPage_save_priv_key_to_file);
                 fd.setOverwrite(true);
                 String privateFileName = fd.open();
                 if (privateFileName != null)
@@ -71,30 +71,30 @@ public class GitPrefPage extends FieldEditorPreferencePage
                         editorPrivate.setStringValue(privateFileName);
                     } catch (IOException | JSchException ex) {
                         ExceptionNotifier.notify(
-                                "Error while RSA keys generation", ex);
+                                Messages.GitPrefPage_error_while_rsa_keys_generation, ex);
                     }
             }
         });
         copyPublicKeyButt = new Button(parent, SWT.PUSH);
-        copyPublicKeyButt.setText("Copy public key to clipboard");
+        copyPublicKeyButt.setText(Messages.GitPrefPage_copy_public_keys_to_clipboard);
         copyPublicKeyButt.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                String publicFileName = editorPrivate.getTextControl(getFieldEditorParent()).getText() + ".pub";
+                String publicFileName = editorPrivate.getTextControl(getFieldEditorParent()).getText() + ".pub"; //$NON-NLS-1$
                 File publicKey = new File (publicFileName);
                 try (BufferedReader reader = new BufferedReader( new FileReader (publicKey))){
                     StringBuilder  sBuilder = new StringBuilder();
                     String line;
                     while((line = reader.readLine()) != null){
-                        sBuilder.append(line + "\n");
+                        sBuilder.append(line + "\n"); //$NON-NLS-1$
                     }
                     Object [] data = new Object [] {sBuilder.toString()};
                     new Clipboard(parent.getDisplay()).setContents (data, new Transfer[]{TextTransfer.getInstance()});
                 } catch (IOException ex) {
                     MessageBox mb = new MessageBox(getShell(), SWT.ERROR);
-                    mb.setText("File not found!");
-                    mb.setMessage("Public key file " + publicFileName
-                            + " either does not exist or inaccessible.");
+                    mb.setText(Messages.GitPrefPage_file_not_found);
+                    mb.setMessage(Messages.GitPrefPage_public_key_file + publicFileName
+                            + Messages.GitPrefPage_either_doesnt_exist_or_inaccessible);
                     mb.open();
                 }
             }

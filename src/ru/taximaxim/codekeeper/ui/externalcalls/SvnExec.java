@@ -14,22 +14,22 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 public class SvnExec implements IRepoWorker {
 
     private static final Pattern PATTERN_MISSING_FILE = Pattern.compile(
-            "^(?:!.{6}[\\s]+)(.*)$", Pattern.MULTILINE);
+            "^(?:!.{6}[\\s]+)(.*)$", Pattern.MULTILINE); //$NON-NLS-1$
 
     private static final Pattern PATTERN_UNVERSIONED = Pattern.compile(
-            "^(?:\\?.{6}[\\s]+)(.*)$", Pattern.MULTILINE);
+            "^(?:\\?.{6}[\\s]+)(.*)$", Pattern.MULTILINE); //$NON-NLS-1$
 
     private static final Pattern PATTERN_ST_CONFLICTED = Pattern.compile(
-            "^(?:C.{6}[\\s]+)(.*)$", Pattern.MULTILINE);
+            "^(?:C.{6}[\\s]+)(.*)$", Pattern.MULTILINE); //$NON-NLS-1$
 
     private static final Pattern PATTERN_UP_CONFLICTED = Pattern.compile(
-            "^(?:C.{3}[\\s]+)(.*)$", Pattern.MULTILINE);
+            "^(?:C.{3}[\\s]+)(.*)$", Pattern.MULTILINE); //$NON-NLS-1$
 
     private static final Pattern PATTERN_VERSION = Pattern
-            .compile("^[\\d]+\\.[\\d]+\\.[\\d]+$");
+            .compile("^[\\d]+\\.[\\d]+\\.[\\d]+$"); //$NON-NLS-1$
 
-    private static final Pattern PATTERN_SVN_URL = Pattern.compile("svn(\\+ssh)?://.+");
-    private static final Pattern PATTERN_HTTP_URL = Pattern.compile("http(s)?://.+");
+    private static final Pattern PATTERN_SVN_URL = Pattern.compile("svn(\\+ssh)?://.+"); //$NON-NLS-1$
+    private static final Pattern PATTERN_HTTP_URL = Pattern.compile("http(s)?://.+"); //$NON-NLS-1$
     
     private final String svnExec;
 
@@ -69,15 +69,15 @@ public class SvnExec implements IRepoWorker {
 
     @Override
     public void repoCheckOut(File dirTo, String rev) throws IOException {
-        ProcessBuilder svn = new ProcessBuilder(svnExec, "co",
-                "--non-interactive");
+        ProcessBuilder svn = new ProcessBuilder(svnExec, "co", //$NON-NLS-1$
+                "--non-interactive"); //$NON-NLS-1$
         addCredentials(svn);
         if (rev != null && !rev.isEmpty()) {
-            svn.command().add("-r");
+            svn.command().add("-r"); //$NON-NLS-1$
             svn.command().add(rev);
         }
         addUrl(svn);
-        svn.command().add(".");
+        svn.command().add("."); //$NON-NLS-1$
 
         svn.directory(dirTo);
 
@@ -86,12 +86,12 @@ public class SvnExec implements IRepoWorker {
 
     @Override
     public void repoCommit(File dirFrom, String comment) throws IOException {
-        ProcessBuilder svn = new ProcessBuilder(svnExec, "ci",
-                "--non-interactive");
+        ProcessBuilder svn = new ProcessBuilder(svnExec, "ci", //$NON-NLS-1$
+                "--non-interactive"); //$NON-NLS-1$
         addCredentials(svn);
-        svn.command().add("--message");
+        svn.command().add("--message"); //$NON-NLS-1$
         svn.command().add(comment);
-        svn.command().add(".");
+        svn.command().add("."); //$NON-NLS-1$
 
         svn.directory(dirFrom);
 
@@ -117,11 +117,11 @@ public class SvnExec implements IRepoWorker {
     private void repoRemove(File dirIn, List<String> files) throws IOException {
         if (files.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Cannot svn rm an empty file list!");
+                    Messages.SvnExec_cannot_svn_rm_an_empty_file_list);
         }
 
-        ProcessBuilder svn = new ProcessBuilder(svnExec, "rm",
-                "--non-interactive");
+        ProcessBuilder svn = new ProcessBuilder(svnExec, "rm", //$NON-NLS-1$
+                "--non-interactive"); //$NON-NLS-1$
         svn.command().addAll(files);
         svn.directory(dirIn);
 
@@ -133,9 +133,9 @@ public class SvnExec implements IRepoWorker {
         List<String> files = repoGetUnversioned(dirIn);
 
         while (!files.isEmpty()) {
-            ProcessBuilder svn = new ProcessBuilder(svnExec, "add",
-                    "--non-interactive", "--depth", "infinity", "--force",
-                    "--parents");
+            ProcessBuilder svn = new ProcessBuilder(svnExec, "add", //$NON-NLS-1$
+                    "--non-interactive", "--depth", "infinity", "--force", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                    "--parents"); //$NON-NLS-1$
             svn.command().addAll(files);
             svn.directory(dirIn);
 
@@ -174,10 +174,10 @@ public class SvnExec implements IRepoWorker {
 
     private String repoStatus(File dirIn, boolean showUpdates)
             throws IOException {
-        ProcessBuilder svn = new ProcessBuilder(svnExec, "st",
-                "--non-interactive");
+        ProcessBuilder svn = new ProcessBuilder(svnExec, "st", //$NON-NLS-1$
+                "--non-interactive"); //$NON-NLS-1$
         if (showUpdates) {
-            svn.command().add("--show-updates");
+            svn.command().add("--show-updates"); //$NON-NLS-1$
         }
 
         svn.directory(dirIn);
@@ -193,8 +193,8 @@ public class SvnExec implements IRepoWorker {
      */
     @Override
     public boolean repoUpdate(File dirIn) throws IOException {
-        ProcessBuilder svn = new ProcessBuilder(svnExec, "up",
-                "--non-interactive");
+        ProcessBuilder svn = new ProcessBuilder(svnExec, "up", //$NON-NLS-1$
+                "--non-interactive"); //$NON-NLS-1$
         addCredentials(svn);
         svn.directory(dirIn);
 
@@ -204,11 +204,11 @@ public class SvnExec implements IRepoWorker {
 
     private void addCredentials(ProcessBuilder pb) {
         if (user != null && !user.isEmpty()) {
-            pb.command().add("--username");
+            pb.command().add("--username"); //$NON-NLS-1$
             pb.command().add(user);
         }
         if (pass != null && !pass.isEmpty()) {
-            pb.command().add("--password");
+            pb.command().add("--password"); //$NON-NLS-1$
             pb.command().add(pass);
         }
     }
@@ -218,18 +218,18 @@ public class SvnExec implements IRepoWorker {
             if (PATTERN_SVN_URL.matcher(url).matches() || PATTERN_HTTP_URL.matcher(url).matches()) {
                 pb.command().add(url);
             } else {
-                pb.command().add("file:///" + url);
+                pb.command().add("file:///" + url); //$NON-NLS-1$
             }
         }
     }
 
     @Override
     public String repoGetVersion() throws IOException {
-        ProcessBuilder svn = new ProcessBuilder(svnExec, "--version",
-                "--quiet", "--non-interactive");
+        ProcessBuilder svn = new ProcessBuilder(svnExec, "--version", //$NON-NLS-1$
+                "--quiet", "--non-interactive"); //$NON-NLS-1$ //$NON-NLS-2$
         String version = StdStreamRedirector.launchAndRedirect(svn).trim();
         if (!PATTERN_VERSION.matcher(version).matches()) {
-            throw new IOException("Bad svn --version output: " + version);
+            throw new IOException(Messages.SvnExec_bad_svn_version_output + version);
         }
         return version;
     }
@@ -237,7 +237,7 @@ public class SvnExec implements IRepoWorker {
     @Override
     public String getRepoMetaFolder() {
 
-        return ".svn";
+        return ".svn"; //$NON-NLS-1$
     }
 
     @Override

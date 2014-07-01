@@ -32,13 +32,13 @@ public abstract class DbSource {
     public PgDatabase getDbObject() {
         if (dbObject == null) {
             throw new NullPointerException(
-                    "DB is not loaded yet, object is null!");
+                    Messages.DbSource_db_is_not_loaded_yet_object_is_null);
         }
         return dbObject;
     }
 
     public PgDatabase get(SubMonitor monitor) throws IOException {
-        Log.log(Log.LOG_INFO, "Loading DB from " + origin);
+        Log.log(Log.LOG_INFO, Messages.DbSource_loading_db_from + origin);
         
         dbObject = this.loadInternal(monitor);
         return dbObject;
@@ -111,7 +111,7 @@ class DbSourceDirTree extends DbSource {
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) {
-        SubMonitor.convert(monitor, 1).newChild(1).subTask("Loading tree...");
+        SubMonitor.convert(monitor, 1).newChild(1).subTask(Messages.DbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
                 encoding, false, false);
@@ -140,7 +140,7 @@ class DbSourceRepo extends DbSource {
 
     DbSourceRepo(String repoExec, String url, String user,
             String pass, String rev, String encoding, String privateKeyFile) {
-        super(url + (rev.isEmpty() ? "" : "@" + rev));
+        super(url + (rev.isEmpty() ? "" : "@" + rev)); //$NON-NLS-1$ //$NON-NLS-2$
         repo = new JGitExec(url, user, pass, privateKeyFile);
         this.encoding = encoding;
         this.rev = rev;
@@ -150,13 +150,13 @@ class DbSourceRepo extends DbSource {
     protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
         SubMonitor pm = SubMonitor.convert(monitor, 2);
 
-        try (TempDir tmpDir = new TempDir("tmp_repo_")) {
+        try (TempDir tmpDir = new TempDir("tmp_repo_")) { //$NON-NLS-1$
             File dir = tmpDir.get();
 
-            pm.newChild(1).subTask("Repository rev checkout...");
+            pm.newChild(1).subTask(Messages.DbSource_repository_rev_checkout);
             repo.repoCheckOut(dir, rev);
 
-            pm.newChild(1).subTask("Loading tree...");
+            pm.newChild(1).subTask(Messages.DbSource_loading_tree);
             // TODO Implement reading subdir to be passed to loadDBSchema...
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                     dir.getAbsolutePath(), encoding, false, false);
@@ -176,7 +176,7 @@ class DbSourceProject extends DbSource {
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) {
-        SubMonitor.convert(monitor, 1).newChild(1).subTask("Loading tree...");
+        SubMonitor.convert(monitor, 1).newChild(1).subTask(Messages.DbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(proj
                 .getProjectWorkingDir().getAbsolutePath(), proj
@@ -199,7 +199,7 @@ class DbSourceFile extends DbSource {
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) {
-        SubMonitor.convert(monitor, 1).newChild(1).subTask("Loading dump...");
+        SubMonitor.convert(monitor, 1).newChild(1).subTask(Messages.DbSource_loading_dump);
 
         return PgDumpLoader.loadDatabaseSchemaFromDump(filename, encoding,
                 false, false);
@@ -227,8 +227,8 @@ class DbSourceDb extends DbSource {
     DbSourceDb(String exePgdump, String customParams,
             String host, int port, String user, String pass,
             String dbname, String encoding) {
-        super((dbname.isEmpty() ? "unknown_db" : dbname) + "@"
-                + (host.isEmpty() ? "unknown_host" : host));
+        super((dbname.isEmpty() ? Messages.DbSource_unknown_db : dbname) + "@" //$NON-NLS-1$
+                + (host.isEmpty() ? Messages.DbSource_unknown_host : host));
 
         this.exePgdump = exePgdump;
         this.customParams = customParams;
@@ -244,16 +244,16 @@ class DbSourceDb extends DbSource {
     protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
         SubMonitor pm = SubMonitor.convert(monitor, 2);
 
-        try (TempFile tf = new TempFile("tmp_dump_", ".sql")) {
+        try (TempFile tf = new TempFile("tmp_dump_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
             File dump = tf.get();
 
-            pm.newChild(1).subTask("Executing pg_dump...");
+            pm.newChild(1).subTask(Messages.DbSource_executing_pg_dump);
 
             new PgDumper(exePgdump, customParams,
                     host, port, user, pass, dbname, encoding,
                     dump.getAbsolutePath()).pgDump();
 
-            pm.newChild(1).subTask("Loading dump...");
+            pm.newChild(1).subTask(Messages.DbSource_loading_dump);
 
             return PgDumpLoader.loadDatabaseSchemaFromDump(
                     dump.getAbsolutePath(), encoding, false, false);
@@ -270,7 +270,7 @@ class DbSourceFilter extends DbSource {
     final DiffSide side;
 
     DbSourceFilter(DbSource src, TreeElement filter, DiffSide side) {
-        super("Filter on " + src.getOrigin());
+        super(Messages.DbSource_filter_on + src.getOrigin());
         this.src = src;
         this.filter = filter;
         this.side = side;

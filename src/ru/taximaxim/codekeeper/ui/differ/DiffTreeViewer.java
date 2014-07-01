@@ -109,12 +109,12 @@ public class DiffTreeViewer extends Composite {
                             Activator.getContext().getBundle().getResource(
                                     UIConsts.FILENAME_ICONPGADMIN
                                     + objType.toString().toLowerCase()
-                                    + ".png"));
+                                    + ".png")); //$NON-NLS-1$
                     ImageDescriptor iCont = ImageDescriptor.createFromURL(
                             Activator.getContext().getBundle().getResource(
                                     UIConsts.FILENAME_ICONPGADMIN
                                     + objType.toString().toLowerCase()
-                                    + "s.png"));
+                                    + "s.png")); //$NON-NLS-1$
                     
                     mapObjIcons.put(objType, lrm.createImage(iObj));
                     mapContIcons.put(objType, lrm.createImage(iCont));
@@ -148,7 +148,7 @@ public class DiffTreeViewer extends Composite {
                 }
                 
                 if(btnDebugView.getSelection()) {
-                    cell.setText(String.format("%s:%s:%s",
+                    cell.setText(String.format("%s:%s:%s", //$NON-NLS-1$
                             el.getType(), name, el.getSide()));
                 } else {
                     StringBuilder label = new StringBuilder(name);
@@ -157,9 +157,9 @@ public class DiffTreeViewer extends Composite {
                             || el.getType() == DbObjType.DATABASE
                             || el.getType() == DbObjType.SCHEMA
                             || el.getType() == DbObjType.TABLE) {
-                        label.append(" (")
+                        label.append(" (") //$NON-NLS-1$
                             .append(el.countChildren())
-                            .append(") [")
+                            .append(") [") //$NON-NLS-1$
                             .append(el.countDescendants())
                             .append(']');
                         
@@ -213,7 +213,7 @@ public class DiffTreeViewer extends Composite {
         });
         
         MenuManager menuMgr = new MenuManager();
-        menuMgr.add(new Action("Select Subtree") {
+        menuMgr.add(new Action(Messages.DiffTreeViewer_select_subtree) {
             @Override
             public void run() {
                 TreeElement el = (TreeElement) ((TreeSelection) viewer.getSelection())
@@ -221,7 +221,7 @@ public class DiffTreeViewer extends Composite {
                 viewer.setSubtreeChecked(el, true);
             }
         });
-        menuMgr.add(new Action("Deselect Subtree") {
+        menuMgr.add(new Action(Messages.DiffTreeViewer_deselect_subtree) {
             @Override
             public void run() {
                 TreeElement el = (TreeElement) ((TreeSelection) viewer.getSelection())
@@ -230,14 +230,14 @@ public class DiffTreeViewer extends Composite {
             }
         });
         menuMgr.add(new Separator());
-        menuMgr.add(new Action("Expand Subtree") {
+        menuMgr.add(new Action(Messages.DiffTreeViewer_expand_subtree) {
             @Override
             public void run() {
                 TreePath path = ((TreeSelection) viewer.getSelection()).getPaths()[0];
                 viewer.expandToLevel(path, TreeViewer.ALL_LEVELS);
             }
         });
-        menuMgr.add(new Action("Collapse Subtree") {
+        menuMgr.add(new Action(Messages.DiffTreeViewer_collapse_subtree) {
             @Override
             public void run() {
                 TreePath path = ((TreeSelection) viewer.getSelection()).getPaths()[0];
@@ -266,7 +266,7 @@ public class DiffTreeViewer extends Composite {
         contButtons.setLayout(contButtonsLayout);
         
         Button btnSelectAll = new Button(contButtons, SWT.PUSH);
-        btnSelectAll.setText("Select All");
+        btnSelectAll.setText(Messages.DiffTreeViewer_select_all);
         btnSelectAll.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -280,7 +280,7 @@ public class DiffTreeViewer extends Composite {
         });
         
         Button btnSelectNone = new Button(contButtons, SWT.PUSH);
-        btnSelectNone.setText("Select None");
+        btnSelectNone.setText(Messages.DiffTreeViewer_select_none);
         btnSelectNone.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -294,7 +294,7 @@ public class DiffTreeViewer extends Composite {
         });
         
         Button btnExpandAll = new Button(contButtons, SWT.PUSH);
-        btnExpandAll.setText("Expand All");
+        btnExpandAll.setText(Messages.DiffTreeViewer_expand_all);
         btnExpandAll.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -303,7 +303,7 @@ public class DiffTreeViewer extends Composite {
         });
         
         Button btnCollapseAll = new Button(contButtons, SWT.PUSH);
-        btnCollapseAll.setText("Collapse All");
+        btnCollapseAll.setText(Messages.DiffTreeViewer_collapse_all);
         btnCollapseAll.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -312,7 +312,7 @@ public class DiffTreeViewer extends Composite {
         });
         
         btnDebugView = new Button(contButtons, SWT.CHECK);
-        btnDebugView.setText("Debug view");
+        btnDebugView.setText(Messages.DiffTreeViewer_debug_view);
         btnDebugView.setLayoutData(new GridData(
                 GridData.HORIZONTAL_ALIGN_END | GridData.FILL_HORIZONTAL));
         btnDebugView.addSelectionListener(new SelectionAdapter() {
@@ -345,7 +345,7 @@ public class DiffTreeViewer extends Composite {
             return null;
         }
         
-        Log.log(Log.LOG_INFO, "Filtering diff tree based on GUI selection");
+        Log.log(Log.LOG_INFO, "Filtering diff tree based on GUI selection"); //$NON-NLS-1$
         
         return filterDiffTree(tree);
     }

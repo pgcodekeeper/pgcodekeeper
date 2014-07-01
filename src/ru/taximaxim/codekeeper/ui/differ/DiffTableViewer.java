@@ -132,7 +132,7 @@ public class DiffTableViewer extends Composite {
         contButtons.setLayout(contButtonsLayout);
         
         Button btnSelectAll = new Button(contButtons, SWT.PUSH);
-        btnSelectAll.setText("Select All");
+        btnSelectAll.setText(Messages.DiffTableViewer_select_all);
         btnSelectAll.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -141,7 +141,7 @@ public class DiffTableViewer extends Composite {
         });
         
         Button btnSelectNone = new Button(contButtons, SWT.PUSH);
-        btnSelectNone.setText("Select None");
+        btnSelectNone.setText(Messages.DiffTableViewer_select_none);
         btnSelectNone.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -160,24 +160,24 @@ public class DiffTableViewer extends Composite {
         columnName = new TableViewerColumn(viewer, SWT.LEFT);
         columnLocation = new TableViewerColumn(viewer, SWT.LEFT);
         
-        columnName.getColumn().setText("Object name");
+        columnName.getColumn().setText(Messages.DiffTableViewer_object_name);
         columnName.getColumn().setResizable(true);
         columnName.getColumn().setMoveable(true);
         
-        columnType.getColumn().setText("Object type");
+        columnType.getColumn().setText(Messages.DiffTableViewer_object_type);
         columnType.getColumn().setResizable(true);
         columnType.getColumn().setMoveable(true);
         
-        columnChange.getColumn().setText("Change type");
+        columnChange.getColumn().setText(Messages.DiffTableViewer_change_type);
         columnChange.getColumn().setResizable(true);
         columnChange.getColumn().setMoveable(true);
         
         columnCheck.getColumn().setResizable(false);
-        columnCheck.getColumn().setText(" ");
+        columnCheck.getColumn().setText(" "); //$NON-NLS-1$
         columnCheck.getColumn().setMoveable(true);
 
         columnLocation.getColumn().setResizable(false);
-        columnLocation.getColumn().setText("Container");
+        columnLocation.getColumn().setText(Messages.DiffTableViewer_container);
         columnLocation.getColumn().setMoveable(true);
         
         columnName.getColumn().addSelectionListener(getSelectionAdapter(columnName.getColumn(), 1));
@@ -193,7 +193,7 @@ public class DiffTableViewer extends Composite {
         columnCheck.setLabelProvider(new ColumnLabelProvider(){
             @Override
             public String getText(Object element) {
-                return " ";
+                return " "; //$NON-NLS-1$
             }
         });
         
@@ -222,7 +222,7 @@ public class DiffTableViewer extends Composite {
                                             UIConsts.FILENAME_ICONPGADMIN
                                                     + objType.toString()
                                                             .toLowerCase()
-                                                    + ".png"));
+                                                    + ".png")); //$NON-NLS-1$
                     ImageDescriptor iCont = ImageDescriptor
                             .createFromURL(Activator
                                     .getContext()
@@ -231,7 +231,7 @@ public class DiffTableViewer extends Composite {
                                             UIConsts.FILENAME_ICONPGADMIN
                                                     + objType.toString()
                                                             .toLowerCase()
-                                                    + "s.png"));
+                                                    + "s.png")); //$NON-NLS-1$
 
                     mapObjIcons.put(objType, lrm.createImage(iObj));
                     mapContIcons.put(objType, lrm.createImage(iCont));
@@ -299,7 +299,7 @@ public class DiffTableViewer extends Composite {
     public static String getLocationColumntText(Object element) {
         TreeElement e = (TreeElement)element;
         if (e.getType() == DbObjType.EXTENSION || e.getType() == DbObjType.SCHEMA){
-            return "";
+            return ""; //$NON-NLS-1$
         }
         String path = null;
         TreeElement parent = e.getParent();
@@ -312,7 +312,8 @@ public class DiffTableViewer extends Composite {
             if (path == null){
                 path = PgDiffUtils.getQuotedName(parent.getName(), true);
             } else {
-                path = PgDiffUtils.getQuotedName(parent.getName(), true) + "." + path;
+                path = PgDiffUtils.getQuotedName(parent.getName(), true) + 
+                        "." + path; //$NON-NLS-1$
             }
             parent = parent.getParent();
         }
@@ -350,7 +351,7 @@ public class DiffTableViewer extends Composite {
         }
         columnName.getColumn().setWidth(widthOfColumns-viewer.getTable().getSize().x);
         
-        lblObjectCount.setText("Objects: " +
+        lblObjectCount.setText(Messages.DiffTableViewer_objects +
                 String.valueOf(viewer.getTable().getItemCount()));
         lblObjectCount.getParent().layout();
     }
@@ -360,14 +361,15 @@ public class DiffTableViewer extends Composite {
             return null;
         }
         
-        Log.log(Log.LOG_INFO, "Filtering diff tree based on GUI selection");
+        Log.log(Log.LOG_INFO, Messages.DiffTableViewer_filtering_diff_tree_based_on_gui_selection);
         
         Object[] checked = viewer.getCheckedElements();
         Set<TreeElement> checkedSet = new HashSet<>(checked.length);
         
         for (Object o : checked) {
             if (!checkedSet.add((TreeElement) o)) {
-                throw new IllegalStateException("Tried to add equal elements to checkedSet!");
+                throw new IllegalStateException(
+                        Messages.DiffTableViewer_tried_to_add_equal_elements_to_checkedset);
             }
         }
         

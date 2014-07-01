@@ -65,7 +65,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     private final IPreferenceStore mainPrefs;
 
     public DiffWizard(PgDbProject proj, IPreferenceStore mainPrefs) {
-        setWindowTitle("Diff");
+        setWindowTitle(Messages.DiffWizard_diff);
         setNeedsProgressMonitor(true);
 
         this.proj = proj;
@@ -74,9 +74,9 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 
     @Override
     public void addPages() {
-        pageDiff = new PageDiff("Diff parameters", mainPrefs, proj);
-        pagePartial = new PagePartial("Diff tree");
-        pageResult = new PageResult("Diff result", proj);
+        pageDiff = new PageDiff(Messages.DiffWizard_diff_parameters, mainPrefs, proj);
+        pagePartial = new PagePartial(Messages.DiffWizard_diff_tree);
+        pageResult = new PageResult(Messages.DiffWizard_diff_result, proj);
 
         addPage(pageDiff);
         addPage(pagePartial);
@@ -103,12 +103,12 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     getContainer().run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
                     e.doit = false;
-                    throw new IllegalStateException("Error in differ thread", ex);
+                    throw new IllegalStateException(Messages.DiffWizard_error_in_differ_thread, ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     e.doit = false;
                     throw new IllegalStateException(
-                            "Differ thread cancelled. Shouldn't happen!", ex);
+                            Messages.DiffWizard_differ_thread_cancelled_shouldnt_happen, ex);
                 }
 
                 dbSource = treediffer.getDbSource();
@@ -131,12 +131,12 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     getContainer().run(true, false, differ);
                 } catch (InvocationTargetException ex) {
                     e.doit = false;
-                    throw new IllegalStateException("Error in differ thread", ex);
+                    throw new IllegalStateException(Messages.DiffWizard_error_in_differ_thread, ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     e.doit = false;
                     throw new IllegalStateException(
-                            "Differ thread cancelled. Shouldn't happen!", ex);
+                            Messages.DiffWizard_differ_thread_cancelled_shouldnt_happen, ex);
                 }
 
                 pageResult.setData(fdbSource.getOrigin(), fdbTarget.getOrigin(),
@@ -206,7 +206,7 @@ class PageDiff extends WizardPage implements Listener {
             return DiffTargetType.PROJ;
         }
 
-        throw new IllegalStateException("No target type selection found!");
+        throw new IllegalStateException(Messages.DiffWizard_no_target_type_selection_found);
     }
 
     public String getDbName() {
@@ -304,7 +304,7 @@ class PageDiff extends WizardPage implements Listener {
             }
             break;
         default:
-            throw new IllegalStateException("Unexpected target type value!");
+            throw new IllegalStateException(Messages.DiffWizard_unexpected_target_type_value);
         }
 
         return dbs;
@@ -327,7 +327,7 @@ class PageDiff extends WizardPage implements Listener {
         container.setLayout(new GridLayout());
 
         Group grpRadio = new Group(container, SWT.NONE);
-        grpRadio.setText("Diff target");
+        grpRadio.setText(Messages.DiffWizard_diff_target);
         grpRadio.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         grpRadio.setLayout(new GridLayout(5, false));
 
@@ -341,7 +341,7 @@ class PageDiff extends WizardPage implements Listener {
 
                     if (to != grpProj) {
                         cmbEncoding.setEnabled(true);
-                        cmbEncoding.select(cmbEncoding.indexOf("UTF-8"));
+                        cmbEncoding.select(cmbEncoding.indexOf("UTF-8")); //$NON-NLS-1$
                     } else {
                         cmbEncoding.setEnabled(false);
                         txtProjPath.notifyListeners(SWT.Modify, null);
@@ -352,23 +352,23 @@ class PageDiff extends WizardPage implements Listener {
         };
 
         radioDb = new Button(grpRadio, SWT.RADIO);
-        radioDb.setText("DB");
+        radioDb.setText(Messages.DiffWizard_db);
         radioDb.setSelection(true);
         radioDb.addSelectionListener(switcher);
 
         radioDump = new Button(grpRadio, SWT.RADIO);
-        radioDump.setText("Dump");
+        radioDump.setText(Messages.DiffWizard_dump);
         radioDump.addSelectionListener(switcher);
         radioGit = new Button(grpRadio, SWT.RADIO);
         radioGit.setText(UIConsts.PROJ_REPO_TYPE_GIT_NAME);
         radioGit.addSelectionListener(switcher);
 
         radioProj = new Button(grpRadio, SWT.RADIO);
-        radioProj.setText("Project");
+        radioProj.setText(Messages.DiffWizard_project);
         radioProj.addSelectionListener(switcher);
 
         grpDb = new DbPicker(container, SWT.NONE, mainPrefs);
-        grpDb.setText("DB target");
+        grpDb.setText(Messages.DiffWizard_db_taget);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         grpDb.setLayoutData(gd);
@@ -378,7 +378,7 @@ class PageDiff extends WizardPage implements Listener {
         grpDb.txtDbPort.addListener(SWT.Modify, this);
 
         grpDump = new Group(container, SWT.NONE);
-        grpDump.setText("Dump target");
+        grpDump.setText(Messages.DiffWizard_dump_taget);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         grpDump.setLayoutData(gd);
@@ -388,7 +388,7 @@ class PageDiff extends WizardPage implements Listener {
         grpDump.setVisible(false);
 
         Label l = new Label(grpDump, SWT.NONE);
-        l.setText("Path to DB Schema Dump:");
+        l.setText(Messages.DiffWizard_path_to_db_schema_dump);
         gd = new GridData();
         gd.horizontalSpan = 2;
         l.setLayoutData(gd);
@@ -398,7 +398,7 @@ class PageDiff extends WizardPage implements Listener {
         txtDumpPath.addListener(SWT.Modify, this);
 
         Button btnBrowseDump = new Button(grpDump, SWT.PUSH);
-        btnBrowseDump.setText("Browse...");
+        btnBrowseDump.setText(Messages.DiffWizard_browse);
         btnBrowseDump.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -411,7 +411,7 @@ class PageDiff extends WizardPage implements Listener {
         });
         
         grpGit = new Group(container, SWT.NONE);
-        grpGit.setText("Git target");
+        grpGit.setText(Messages.DiffWizard_git_target);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         grpGit.setLayoutData(gd);
@@ -420,7 +420,7 @@ class PageDiff extends WizardPage implements Listener {
         gd.exclude = true;
         grpGit.setVisible(false);
 
-        new Label(grpGit, SWT.NONE).setText("Git Repo URL:");
+        new Label(grpGit, SWT.NONE).setText(Messages.DiffWizard_git_repo_url);
 
         txtGitUrl = new Text(grpGit, SWT.BORDER);
         txtGitUrl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -437,10 +437,10 @@ class PageDiff extends WizardPage implements Listener {
                         txtGitUrl.getText()).matches()) {
                     txtGitUser.setEnabled(true);
                     txtGitPass.setEnabled(true);
-                    lblWarnGitPass.setText("Warning:\n"
-                            + "Providing password here is insecure!"
-                            + " This password WILL show up in logs!\n"
-                            + "Consider using ssh authentification instead.");
+                    lblWarnGitPass.setText(Messages.DiffWizard_warning
+                            + Messages.DiffWizard_providing_password_here_is_insecure
+                            + Messages.DiffWizard_this_password_will_show_up_in_logs
+                            + Messages.DiffWizard_consider_using_ssh_authentication_instead);
                     txtGitPass.notifyListeners(SWT.Modify, new Event());
                 } else if (JGitExec.PATTERN_FILE_URL.matcher(
                         txtGitUrl.getText()).matches()) {
@@ -450,19 +450,19 @@ class PageDiff extends WizardPage implements Listener {
                 }else {
                     txtGitUser.setEnabled(false);
                     txtGitPass.setEnabled(false);
-                    lblWarnGitPass.setText("Make sure you have private and public keys\n"
-                            + "filenames entered in application preferences.");
+                    lblWarnGitPass.setText(Messages.DiffWizard_make_sure_you_have_priv_and_public_keys
+                            + Messages.DiffWizard_filenames_entered_in_application_preferences);
                     txtGitPass.notifyListeners(SWT.Modify, new Event());
                 }
             }
         });
         
-        new Label(grpGit, SWT.NONE).setText("Git User:");
+        new Label(grpGit, SWT.NONE).setText(Messages.DiffWizard_git_user);
 
         txtGitUser = new Text(grpGit, SWT.BORDER);
         txtGitUser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        new Label(grpGit, SWT.NONE).setText("Git Password:");
+        new Label(grpGit, SWT.NONE).setText(Messages.DiffWizard_git_password);
 
         txtGitPass = new Text(grpGit, SWT.BORDER | SWT.PASSWORD);
         txtGitPass.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -494,23 +494,23 @@ class PageDiff extends WizardPage implements Listener {
         lblWarnGitPass.setImage(lrm.createImage(ImageDescriptor
                 .createFromURL(Activator.getContext().getBundle()
                         .getResource(UIConsts.FILENAME_ICONWARNING))));
-        lblWarnGitPass.setText("Warning:\n"
-                + "Providing password here is insecure!"
-                + " This password WILL show up in logs!\n"
-                + "Consider using ssh authentification instead.");
+        lblWarnGitPass.setText(Messages.DiffWizard_warning
+                + Messages.DiffWizard_providing_password_here_is_insecure
+                + Messages.DiffWizard_this_password_will_show_up_in_logs
+                + Messages.DiffWizard_consider_using_ssh_authentication_instead);
         gd = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
         gd.exclude = true;
         lblWarnGitPass.setLayoutData(gd);
         lblWarnGitPass.setVisible(false);
 
-        new Label(grpGit, SWT.NONE).setText("Git commit hash:");
+        new Label(grpGit, SWT.NONE).setText(Messages.DiffWizard_git_commit_hash);
 
         txtGitRev = new Text(grpGit, SWT.BORDER);
         txtGitRev.setLayoutData(new GridData());
         txtGitRev.addListener(SWT.Modify, this);
 
         grpProj = new Group(container, SWT.NONE);
-        grpProj.setText("Project target");
+        grpProj.setText(Messages.DiffWizard_project_target);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         grpProj.setLayoutData(gd);
@@ -520,7 +520,7 @@ class PageDiff extends WizardPage implements Listener {
         grpProj.setVisible(false);
 
         final Button btnThis = new Button(grpProj, SWT.CHECK);
-        btnThis.setText("This project");
+        btnThis.setText(Messages.DiffWizard_this_project);
         btnThis.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false,
                 2, 1));
         btnThis.addSelectionListener(new SelectionAdapter() {
@@ -541,7 +541,7 @@ class PageDiff extends WizardPage implements Listener {
         tmpCont.setLayout(new GridLayout(2, false));
 
         l = new Label(tmpCont, SWT.NONE);
-        l.setText("Path to Target Project:");
+        l.setText(Messages.DiffWizard_path_to_target_project);
         l.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
 
         txtProjPath = new Text(tmpCont, SWT.BORDER);
@@ -564,14 +564,14 @@ class PageDiff extends WizardPage implements Listener {
         txtProjPath.addListener(SWT.Modify, this);
 
         Button btnBrowseProj = new Button(tmpCont, SWT.PUSH);
-        btnBrowseProj.setText("Browse...");
+        btnBrowseProj.setText(Messages.DiffWizard_browse);
         btnBrowseProj.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(container.getShell());
-                dialog.setText("Open project file");
+                dialog.setText(Messages.DiffWizard_open_project_file);
                 dialog.setOverwrite(false);
-                dialog.setFilterExtensions(new String[] { "*.project", "*" });
+                dialog.setFilterExtensions(new String[] { "*.project", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
                 dialog.setFilterPath(mainPrefs.getString(UIConsts.PREF_LAST_OPENED_LOCATION));
                 String path = dialog.open();
                 if (path != null) {
@@ -584,7 +584,7 @@ class PageDiff extends WizardPage implements Listener {
         });
 
         new Label(grpProj, SWT.NONE)
-                .setText("Project revision (grab from repository):");
+                .setText(Messages.DiffWizard_project_revision_grab_from_repo);
 
         txtProjRev = new Text(grpProj, SWT.BORDER);
         txtProjRev.setLayoutData(new GridData());
@@ -595,19 +595,19 @@ class PageDiff extends WizardPage implements Listener {
         radioProj.setData(grpProj);
 
         Group grpEncoding = new Group(container, SWT.NONE);
-        grpEncoding.setText("Encoding");
+        grpEncoding.setText(Messages.DiffWizard_encoding);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         grpEncoding.setLayoutData(gd);
         grpEncoding.setLayout(new GridLayout(2, false));
 
-        new Label(grpEncoding, SWT.NONE).setText("Target encoding:");
+        new Label(grpEncoding, SWT.NONE).setText(Messages.DiffWizard_target_encoding);
 
         cmbEncoding = new Combo(grpEncoding, SWT.BORDER | SWT.DROP_DOWN
                 | SWT.READ_ONLY);
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
-        cmbEncoding.select(cmbEncoding.indexOf("UTF-8"));
+        cmbEncoding.select(cmbEncoding.indexOf("UTF-8")); //$NON-NLS-1$
 
         setControl(container);
     }
@@ -638,7 +638,7 @@ class PageDiff extends WizardPage implements Listener {
                 try {
                     Integer.parseInt(grpDb.txtDbPort.getText());
                 } catch (NumberFormatException ex) {
-                    errMsg = "Port must be a number!";
+                    errMsg = Messages.DiffWizard_port_must_be_number;
                 }
             }
             break;
@@ -646,13 +646,13 @@ class PageDiff extends WizardPage implements Listener {
         case DUMP:
             if (txtDumpPath.getText().isEmpty()
                     || !new File(txtDumpPath.getText()).isFile()) {
-                errMsg = "Select a readable DB dump file!";
+                errMsg = Messages.DiffWizard_select_readable_db_dump_file;
             }
             break;
 
         case GIT:
             if (txtGitUrl.getText().isEmpty()) {
-                errMsg = "Enter Git Repo URL!";
+                errMsg = Messages.DiffWizard_enter_git_repo_url;
             }
             break;
 
@@ -661,7 +661,7 @@ class PageDiff extends WizardPage implements Listener {
 
             if (dir.isEmpty() || !dir.endsWith(UIConsts.FILENAME_PROJ_PREF_STORE) 
                     || !new File(dir).isFile()) {
-                errMsg = "Select a valid project file!";
+                errMsg = Messages.DiffWizard_select_valid_project_file;
             }
 
             break;
@@ -713,7 +713,7 @@ class PagePartial extends WizardPage {
         container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout());
 
-        new Label(container, SWT.NONE).setText("Source:");
+        new Label(container, SWT.NONE).setText(Messages.DiffWizard_source);
 
         lblSource = new Label(container, SWT.WRAP);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -721,7 +721,7 @@ class PagePartial extends WizardPage {
         lblSource.setLayoutData(gd);
 
         Label l = new Label(container, SWT.NONE);
-        l.setText("Target:");
+        l.setText(Messages.DiffWizard_target);
         gd = new GridData();
         gd.verticalIndent = 12;
         l.setLayoutData(gd);
@@ -778,7 +778,7 @@ class PageResult extends WizardPage {
         container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout());
 
-        new Label(container, SWT.NONE).setText("Source:");
+        new Label(container, SWT.NONE).setText(Messages.DiffWizard_source);
 
         lblSource = new Label(container, SWT.WRAP);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -786,7 +786,7 @@ class PageResult extends WizardPage {
         lblSource.setLayoutData(gd);
 
         Label l = new Label(container, SWT.NONE);
-        l.setText("Target:");
+        l.setText(Messages.DiffWizard_target);
         gd = new GridData();
         gd.verticalIndent = 12;
         l.setLayoutData(gd);
@@ -811,7 +811,7 @@ class PageResult extends WizardPage {
         txtDirect.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
 
         TabItem tabDirect = new TabItem(tabs, SWT.NONE);
-        tabDirect.setText("Source -> Target");
+        tabDirect.setText(Messages.DiffWizard_source_target);
         tabDirect.setControl(txtDirect);
 
         txtReverse = new Text(tabs, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
@@ -822,11 +822,11 @@ class PageResult extends WizardPage {
         txtReverse.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
 
         TabItem tabReverse = new TabItem(tabs, SWT.NONE);
-        tabReverse.setText("Target -> Source");
+        tabReverse.setText(Messages.DiffWizard_target_source);
         tabReverse.setControl(txtReverse);
 
         Button btnSave = new Button(container, SWT.PUSH);
-        btnSave.setText("Save...");
+        btnSave.setText(Messages.DiffWizard_save);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
         gd.verticalIndent = 12;
         btnSave.setLayoutData(gd);
@@ -834,10 +834,10 @@ class PageResult extends WizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog saveDialog = new FileDialog(getShell(), SWT.SAVE);
-                saveDialog.setText("Save " + tabs.getSelection()[0].getText()
-                        + " diff...");
+                saveDialog.setText(Messages.DiffWizard_save__ + tabs.getSelection()[0].getText()
+                        + " diff..."); //$NON-NLS-1$
                 saveDialog.setOverwrite(true);
-                saveDialog.setFilterExtensions(new String[] { "*.sql", "*" });
+                saveDialog.setFilterExtensions(new String[] { "*.sql", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
                 saveDialog.setFilterPath(proj.getProjectFile().getParent());
 
                 String saveTo = saveDialog.open();
@@ -852,7 +852,7 @@ class PageResult extends WizardPage {
                     } catch (FileNotFoundException
                             | UnsupportedEncodingException ex) {
                         throw new IllegalStateException(
-                                "Unexpected error while saving diff!", ex);
+                                Messages.DiffWizard_unexpected_error_while_saving_diff, ex);
                     }
                 }
             }

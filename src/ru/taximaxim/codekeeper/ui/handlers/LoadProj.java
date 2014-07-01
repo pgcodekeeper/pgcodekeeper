@@ -37,10 +37,10 @@ public class LoadProj {
             MApplication app,
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs) {
         FileDialog dialog = new FileDialog(shell);
-        dialog.setText("Open project...");
+        dialog.setText(Messages.LoadProj_open_project);
         dialog.setOverwrite(false);
         dialog.setFilterPath(mainPrefs.getString(UIConsts.PREF_LAST_OPENED_LOCATION));
-        dialog.setFilterExtensions(new String[] { "*.project", "*" });
+        dialog.setFilterExtensions(new String[] { "*.project", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
         
         String path = dialog.open();
         if(path != null) {
@@ -52,9 +52,9 @@ public class LoadProj {
                 }
             } else {
                 MessageBox mb = new MessageBox(shell);
-                mb.setText("Load failed");
-                mb.setMessage("Directory is not a valid project!"
-                        + " Properties file not found!");
+                mb.setText(Messages.LoadProj_loadl_failed);
+                mb.setMessage(Messages.LoadProj_directory_isnt_valid_project
+                        + Messages.LoadProj_properties_file_not_found);
                 mb.open();
             }
         }
@@ -62,14 +62,14 @@ public class LoadProj {
     
     public static boolean load(PgDbProject proj, IEclipseContext ctx, EPartService partService,
             EModelService model, MApplication app, IPreferenceStore mainPrefs, Shell shell) {
-        Log.log(Log.LOG_INFO, "Opening project at " + proj.getProjectFile());
+        Log.log(Log.LOG_INFO, "Opening project at " + proj.getProjectFile()); //$NON-NLS-1$
         
         proj.load();
         // check for not existing working dir
         if (!proj.getProjectWorkingDir().exists() || !proj.getProjectWorkingDir().isDirectory()){
-            String message = "Could not open project " + proj.getProjectFile() + 
-                    " because working directory " + proj.getProjectWorkingDir() + 
-                    " either does not exist or not a directory";
+            String message = Messages.LoadProj_couldnt_open_project + proj.getProjectFile() + 
+                    Messages.LoadProj_because_working_directory + proj.getProjectWorkingDir() + 
+                    Messages.LoadProj_either_doesnt_exist_or_not_a_directory;
             Console.addMessage(message);
             Log.log(Log.LOG_WARNING, message);
             return false;
@@ -77,11 +77,11 @@ public class LoadProj {
         if (!new File(proj.getProjectWorkingDir(), 
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
             MessageDialog dialog = new MessageDialog(shell,
-                    "Bad project", null, 
-                    "Missing marker file in working directory " + proj.getProjectWorkingDir() +
-                    "\nCreate marker file named " + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
-                    " manually and try again", MessageDialog.WARNING, 
-                    new String []{"Ok"}, 0);
+                    Messages.LoadProj_bad_project, null, 
+                    Messages.LoadProj_missing_marker_file_in_working_directory + proj.getProjectWorkingDir() +
+                    Messages.LoadProj_create_marker_file_named + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
+                    Messages.LoadProj_manually_and_try_again, MessageDialog.WARNING, 
+                    new String []{Messages.LoadProj_ok}, 0);
             dialog.open();
             return false;
         }

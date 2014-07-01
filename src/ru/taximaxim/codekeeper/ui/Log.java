@@ -7,7 +7,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 public class Log {
 
-    private static final String EQUINOX_LOGGER = "org.eclipse.equinox.logger";
+    private static final String EQUINOX_LOGGER = "org.eclipse.equinox.logger"; //$NON-NLS-1$
     
     public static final int LOG_ERROR = LogService.LOG_ERROR;
     public static final int LOG_WARNING = LogService.LOG_WARNING;
@@ -53,15 +53,15 @@ public class Log {
             logger.log(level, msg, ex);
         } catch (Exception exLog) {
             if (failedToGetLog) {
-                System.out.println("LogService not found! Logging to stdout.");
+                System.out.println("LogService not found! Logging to stdout.");//$NON-NLS-1$
             } else {
-                System.out.println("ERROR while trying to log!");
+                System.out.println("ERROR while trying to log!");//$NON-NLS-1$
                 exLog.printStackTrace();
             }
             
-            System.out.println("Attempted to log:");
-            System.out.println("Message: " + msg);
-            System.out.println("Exception: ");
+            System.out.println("Attempted to log:");//$NON-NLS-1$
+            System.out.println("Message: " + msg);//$NON-NLS-1$
+            System.out.println("Exception: ");//$NON-NLS-1$
             if (ex != null) {
                 ex.printStackTrace();
             }

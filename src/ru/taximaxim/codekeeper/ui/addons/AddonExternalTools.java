@@ -18,7 +18,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 
 public class AddonExternalTools {
     
-    private static volatile String pgdumpVersion = "<unknown>";
+    private static volatile String pgdumpVersion = "<unknown>"; //$NON-NLS-1$
  
     public static String getPgdumpVersion() {
         return pgdumpVersion;
@@ -46,9 +46,9 @@ public class AddonExternalTools {
         try {
             setPgdumpVersion(new PgDumper(pgdumpExec).getVersion());
         } catch(IOException ex) {
-            setPgdumpVersion("<unknown>");
-            ExceptionNotifier.notify("Error while trying to run pg_dump"
-                    + " --version! Check paths in program preferences.", ex);
+            setPgdumpVersion(Messages.AddonExternalTools_uknown);
+            ExceptionNotifier.notify(Messages.AddonExternalTools_error_while_trying_to_run_pg_admin
+                    + Messages.AddonExternalTools_version_check_paths_in_program_preferences, ex);
         }
     }
     

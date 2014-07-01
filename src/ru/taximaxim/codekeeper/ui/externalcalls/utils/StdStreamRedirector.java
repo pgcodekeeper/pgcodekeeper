@@ -48,7 +48,7 @@ public class StdStreamRedirector implements Runnable {
                 return;
             }
             throw new IllegalStateException(
-                    "Error while reading from stdout/stderr", ex);
+                    Messages.StdStreamRedirector_error_while_reading_from_stdout_stderr, ex);
         }
     }
     
@@ -98,27 +98,27 @@ public class StdStreamRedirector implements Runnable {
             try {
                 redirectorThread.join();
             } catch (InterruptedException ex) {
-                throw new IllegalStateException("Interrupted wait on redirectorThread", ex);
+                throw new IllegalStateException(Messages.StdStreamRedirector_interrrupted_wait_on_redirector_thread, ex);
             }
 
             if (!redirector.isDestroyed.get() && p.exitValue() != 0) {
-                throw new IOException("Process returned with error: "
+                throw new IOException(Messages.StdStreamRedirector_process_returned_with_error
                             + p.exitValue());
             }
             
             if (lastException.get() != null){
-                throw new IOException("Exception thrown while reading external command output", 
+                throw new IOException(Messages.StdStreamRedirector_exception_thrown_while_external_command_output, 
                         lastException.get());
             }
             return redirector.storage.toString();
         } finally {
             StringBuilder msg = new StringBuilder(
                     cmd.length() + redirector.storage.length() + 128);
-            msg.append("External command:")
+            msg.append(Messages.StdStreamRedirector_external_command)
                 .append(System.lineSeparator())
                 .append(cmd)
                 .append(System.lineSeparator())
-                .append("Output:")
+                .append(Messages.StdStreamRedirector_output)
                 .append(System.lineSeparator())
                 .append(redirector.storage);
             

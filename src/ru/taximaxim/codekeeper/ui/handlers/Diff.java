@@ -25,7 +25,7 @@ public class Diff {
             @Named(UIConsts.PREF_STORE)
             IPreferenceStore prefStore) {
         if(ProjSyncSrc.sync(proj, shell, prefStore)) {
-            Log.log(Log.LOG_DEBUG, "Diff wizard about to show");
+            Log.log(Log.LOG_DEBUG, "Diff wizard about to show"); //$NON-NLS-1$
             
             WizardDialog dialog = new WizardDialog(
                     shell, new DiffWizard(proj, prefStore));

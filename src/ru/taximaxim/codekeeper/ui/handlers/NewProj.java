@@ -28,7 +28,7 @@ public class NewProj {
             Shell shell,
             IEclipseContext ctx, EPartService partService, EModelService model,
             MApplication app){
-        Log.log(Log.LOG_DEBUG, "New Project Wizard about to show");
+        Log.log(Log.LOG_DEBUG, "New Project Wizard about to show"); //$NON-NLS-1$
         
         NewProjWizard newProj = new NewProjWizard(prefStore);
         WizardDialog dialog = new WizardDialog(shell, newProj);

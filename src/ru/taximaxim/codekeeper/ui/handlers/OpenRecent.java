@@ -42,14 +42,14 @@ public class OpenRecent {
         if (proj.getProjectFile().isFile()) {
             LoadProj.load(proj, app.getContext(), partService, model, app, mainPrefs, shell);
         } else {
-            Log.log(Log.LOG_WARNING, "Couldn't open project at "
+            Log.log(Log.LOG_WARNING, "Couldn't open project at " //$NON-NLS-1$
                     + proj.getProjectFile()
-                    + ". Project pref store either doesn't exist or not a file.");
+                    + ". Project pref store either doesn't exist or not a file."); //$NON-NLS-1$
             
             MessageBox mb = new MessageBox(shell);
-            mb.setText("Load failed");
-            mb.setMessage("Directory is not a valid project!"
-                    + " Properties file not found!");
+            mb.setText(Messages.OpenRecent_loadl_failed);
+            mb.setMessage(Messages.OpenRecent_directory_isnt_valid_project
+                    + Messages.OpenRecent_properties_file_not_found);
             mb.open();
             
             RecentProjects.deleteRecent(menuItem.getLabel(), mainPrefs);

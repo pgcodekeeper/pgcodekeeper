@@ -1,0 +1,128 @@
+package ru.taximaxim.codekeeper.ui.pgdbproject;
+
+import org.eclipse.osgi.util.NLS;
+
+public class Messages extends NLS {
+    private static final String BUNDLE_NAME = "ru.taximaxim.codekeeper.ui.pgdbproject.messages"; //$NON-NLS-1$
+    public static String DiffWizard_browse;
+    public static String DiffWizard_consider_using_ssh_authentication_instead;
+    public static String DiffWizard_db;
+    public static String DiffWizard_db_taget;
+    public static String DiffWizard_diff;
+    public static String DiffWizard_diff_parameters;
+    public static String DiffWizard_diff_result;
+    public static String DiffWizard_diff_target;
+    public static String DiffWizard_diff_tree;
+    public static String DiffWizard_differ_thread_cancelled_shouldnt_happen;
+    public static String DiffWizard_dump;
+    public static String DiffWizard_dump_taget;
+    public static String DiffWizard_encoding;
+    public static String DiffWizard_enter_git_repo_url;
+    public static String DiffWizard_error_in_differ_thread;
+    public static String DiffWizard_filenames_entered_in_application_preferences;
+    public static String DiffWizard_git_commit_hash;
+    public static String DiffWizard_git_password;
+    public static String DiffWizard_git_repo_url;
+    public static String DiffWizard_git_target;
+    public static String DiffWizard_git_user;
+    public static String DiffWizard_make_sure_you_have_priv_and_public_keys;
+    public static String DiffWizard_no_target_type_selection_found;
+    public static String DiffWizard_open_project_file;
+    public static String DiffWizard_path_to_db_schema_dump;
+    public static String DiffWizard_path_to_target_project;
+    public static String DiffWizard_port_must_be_number;
+    public static String DiffWizard_project;
+    public static String DiffWizard_project_revision_grab_from_repo;
+    public static String DiffWizard_project_target;
+    public static String DiffWizard_providing_password_here_is_insecure;
+    public static String DiffWizard_save;
+    public static String DiffWizard_save__;
+    public static String DiffWizard_select_readable_db_dump_file;
+    public static String DiffWizard_select_valid_project_file;
+    public static String DiffWizard_source;
+    public static String DiffWizard_source_target;
+    public static String DiffWizard_target;
+    public static String DiffWizard_target_encoding;
+    public static String DiffWizard_target_source;
+    public static String DiffWizard_this_password_will_show_up_in_logs;
+    public static String DiffWizard_this_project;
+    public static String DiffWizard_unexpected_error_while_saving_diff;
+    public static String DiffWizard_unexpected_target_type_value;
+    public static String DiffWizard_warning;
+    public static String InitProjectFromSource_exporting_db_model;
+    public static String InitProjectFromSource_init_request_but_no_schema_source;
+    public static String InitProjectFromSource_initializing_project;
+    public static String InitProjectFromSource_ioexception_while_creating_project;
+    public static String NewProjWizard_bad_work_dir;
+    public static String NewProjWizard_browse;
+    public static String NewProjWizard_cloning_get_repo;
+    public static String NewProjWizard_cloning_thread_interrupted;
+    public static String NewProjWizard_cloning_wasnt_successful;
+    public static String NewProjWizard_connt_be_saved_in_working;
+    public static String NewProjWizard_consider_using_ssh_authentication_instead;
+    public static String NewProjWizard_couldnt_create_empty_database_in;
+    public static String NewProjWizard_create_marker_file_named;
+    public static String NewProjWizard_db;
+    public static String NewProjWizard_db_source_settings;
+    public static String NewProjWizard_dilenames_entered_in_application_preferences;
+    public static String NewProjWizard_dir_because_itll_be_deleted_during_init_stage;
+    public static String NewProjWizard_do_you_want_to_clone_repo;
+    public static String NewProjWizard_dump_file;
+    public static String NewProjWizard_dump_file_source_settings;
+    public static String NewProjWizard_either_empty_folder_or_existing_repository;
+    public static String NewProjWizard_enter;
+    public static String NewProjWizard_error_cloning_repository;
+    public static String NewProjWizard_error_in_initializing_repo_from_source;
+    public static String NewProjWizard_error_while_saving_project_properties;
+    public static String NewProjWizard_existing_git_repository;
+    public static String NewProjWizard_from_schema_source;
+    public static String NewProjWizard_init_project_subdir_from_schema_source;
+    public static String NewProjWizard_leave_unchaged_to_use_root;
+    public static String NewProjWizard_make_sure_you_have_priv_and_public_keys;
+    public static String NewProjWizard_manually_and_try_again;
+    public static String NewProjWizard_miscellaneous;
+    public static String NewProjWizard_missing_marker_file_in_work_dir;
+    public static String NewProjWizard_new_pg_db_project;
+    public static String NewProjWizard_no_schema_source_selected;
+    public static String NewProjWizard_none;
+    public static String NewProjWizard_password;
+    public static String NewProjWizard_path_to_db_schema_dump;
+    public static String NewProjWizard_port_must_be_number;
+    public static String NewProjWizard_project_encoding;
+    public static String NewProjWizard_project_fiel;
+    public static String NewProjWizard_project_initializer_thread_interrupted;
+    public static String NewProjWizard_providing_password_here_is_insecure;
+    public static String NewProjWizard_repo_url;
+    public static String NewProjWizard_repo_usrl_demand;
+    public static String NewProjWizard_repository_settings;
+    public static String NewProjWizard_schema_source;
+    public static String NewProjWizard_schema_source_settings;
+    public static String NewProjWizard_select_a_dir_inside_the_repo;
+    public static String NewProjWizard_select_correct_subdir_of_the_git_repo;
+    public static String NewProjWizard_select_git_repository_root_directory;
+    public static String NewProjWizard_select_project_directory_demand;
+    public static String NewProjWizard_select_project_filename_demand;
+    public static String NewProjWizard_select_project_name;
+    public static String NewProjWizard_select_readeble_db_dump_file;
+    public static String NewProjWizard_select_repo_root_directory;
+    public static String NewProjWizard_selected_directory_is_empty;
+    public static String NewProjWizard_selecterd_dir_must_be_empty_or_be_a_root_dir_of;
+    public static String NewProjWizard_settings;
+    public static String NewProjWizard_target_dir_isnt_git_repository_root_dir;
+    public static String NewProjWizard_that_will_contain_db_schema_and_constraints;
+    public static String NewProjWizard_this_password_will_show_up_in_logs;
+    public static String NewProjWizard_this_will_delete_contents_and_recreate_them;
+    public static String NewProjWizard_to_selected_dir_now;
+    public static String NewProjWizard_user;
+    public static String NewProjWizard_warning;
+    public static String NewProjWizard_workdirectory_settings;
+    public static String NewProjWizard_you_need_to_clone_the_repo_first_in_order_to_select_work_dir;
+    public static String PgDbProject_error_loading_project_file;
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+    }
+
+    private Messages() {
+    }
+}

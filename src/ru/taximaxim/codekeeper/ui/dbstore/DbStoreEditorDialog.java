@@ -86,7 +86,7 @@ public class DbStoreEditorDialog extends TrayDialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText("DB Store editor");
+        newShell.setText(Messages.DbStoreEditorDialog_db_store_editor);
         
         newShell.addShellListener(new ShellAdapter() {
             @Override
@@ -128,7 +128,7 @@ public class DbStoreEditorDialog extends TrayDialog {
             public void modifyText(ModifyEvent e) {
                 DbInfo db = store.get(cmbDbNames.getText());
                 if(db == null) {
-                    db = DbInfo.getEmpty("");
+                    db = DbInfo.getEmpty(""); //$NON-NLS-1$
                 }
                 grpDbData.lblName.setText(db.name);
                 grpDbData.txtDbName.setText(db.dbname);
@@ -150,23 +150,24 @@ public class DbStoreEditorDialog extends TrayDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 InputDialog dialog = new InputDialog(
-                        getShell(), "New entry...", "Entry Name:", null, null);
+                        getShell(), Messages.DbStoreEditorDialog_new_entry, 
+                        Messages.DbStoreEditorDialog_entry_name, null, null);
                 
                 if(dialog.open() == Dialog.OK) {
                     String newName = dialog.getValue().trim();
                     
                     if(newName.isEmpty()) {
                         MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
-                        mb.setText("Cannot add entry!");
-                        mb.setMessage("Name cannot be empty or whitespace!");
+                        mb.setText(Messages.DbStoreEditorDialog_cannot_add_entry);
+                        mb.setMessage(Messages.DbStoreEditorDialog_name_cannot_be_empty_or_whitespace);
                         mb.open();
                         return;
                     }
                     
                     if(store.containsKey(newName)) {
                         MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
-                        mb.setText("Cannot add entry!");
-                        mb.setMessage("An entry with this name alredy exists:\n"
+                        mb.setText(Messages.DbStoreEditorDialog_cannot_add_entry);
+                        mb.setMessage(Messages.DbStoreEditorDialog_entry_with_this_name_already_exists
                                 + newName);
                         mb.open();
                         return;
@@ -221,7 +222,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1);
         gd.widthHint = 480;
         grpDbData.setLayoutData(gd);
-        grpDbData.setText("DB Info");
+        grpDbData.setText(Messages.DbStoreEditorDialog_db_info);
         
         grpDbData.txtDbName.addModifyListener(dbModified);
         grpDbData.txtDbUser.addModifyListener(dbModified);
@@ -242,8 +243,9 @@ public class DbStoreEditorDialog extends TrayDialog {
             }
         } catch (NumberFormatException ex) {
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
-            mb.setText("Cannot save entry!");
-            mb.setMessage("Not valid port number: " + grpDbData.txtDbPort.getText());
+            mb.setText(Messages.DbStoreEditorDialog_cannot_save_entry);
+            mb.setMessage(Messages.DbStoreEditorDialog_not_valid_port_number + 
+                    grpDbData.txtDbPort.getText());
             mb.open();
             return;
         }
@@ -279,7 +281,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                     ((IPersistentPreferenceStore) prefStore).save();
                 } catch (IOException ex) {
                     throw new IllegalStateException(
-                            "Unexpected error while saving preferences!", ex);
+                            Messages.DbStoreEditorDialog_unexpected_error_while_saving_preferences, ex);
                 }
             }
         }

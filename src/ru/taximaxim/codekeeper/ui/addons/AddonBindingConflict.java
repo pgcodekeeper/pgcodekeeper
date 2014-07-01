@@ -38,19 +38,19 @@ public class AddonBindingConflict {
         for (Binding b : bindingManager.getBindings()) {
             if (conflicts.contains(b)) {
                 StringBuilder msg = new StringBuilder(1000);
-                msg.append("Trying to deactivate conflicting binding '");
+                msg.append(Messages.AddonBindingConflict_trying_to_deactivate_conflicting_bind);
                 
                 TriggerSequence seq = b.getTriggerSequence();
                 if (seq != null) {
                     msg.append(seq.format());
                 }
-                msg.append("' with command id '");
+                msg.append(Messages.AddonBindingConflict_with_command_id);
                 
                 ParameterizedCommand cmd = b.getParameterizedCommand();
                 if (cmd != null) {
                     msg.append(cmd.getId());
                 }
-                msg.append("'");
+                msg.append("'"); //$NON-NLS-1$
                 
                 Log.log(Log.LOG_WARNING, msg.toString());
                 

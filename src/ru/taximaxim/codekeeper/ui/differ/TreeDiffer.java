@@ -42,14 +42,14 @@ public class TreeDiffer implements IRunnableWithProgress {
     
     private void checkFinished() {
         if(!finished) {
-            throw new IllegalStateException("Runnable has not yet finished!"
-                    + " diff is undefined!");
+            throw new IllegalStateException(Messages.TreeDiffer_runnable_has_not_yet_finished
+                    + Messages.TreeDiffer_diff_is_undefined);
         }
     }
     
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException{
-        SubMonitor pm = SubMonitor.convert(monitor, "Calculating diff", 100); // 0
+        SubMonitor pm = SubMonitor.convert(monitor, Messages.TreeDiffer_calculating_diff, 100); // 0
         
         PgDatabase dbSource, dbTarget;
         dbSource = dbTarget = null;
@@ -60,10 +60,10 @@ public class TreeDiffer implements IRunnableWithProgress {
             throw new InvocationTargetException(ex);
         }
         
-        Log.log(Log.LOG_INFO, "Generating diff tree between src: " + this.dbSource.getOrigin()
-                + " tgt: " + this.dbTarget.getOrigin());
+        Log.log(Log.LOG_INFO, "Generating diff tree between src: " + this.dbSource.getOrigin() //$NON-NLS-1$
+                + " tgt: " + this.dbTarget.getOrigin()); //$NON-NLS-1$
         
-        pm.newChild(34).subTask("Building diff tree..."); // 100
+        pm.newChild(34).subTask(Messages.TreeDiffer_building_diff_tree); // 100
         diffTree = DiffTree.create(dbSource, dbTarget);
         
         monitor.done();

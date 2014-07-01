@@ -43,7 +43,7 @@ public class ExceptionNotifier {
             boolean outputToConsole, boolean showInDialog) {
         Log.log(Log.LOG_ERROR, source.getMessage(), source);
         
-        String initialReason = "";
+        String initialReason = ""; //$NON-NLS-1$
         Throwable t = source.getCause();
         while (t != null){
             initialReason = t.getMessage() == null? initialReason : t.toString();
@@ -51,7 +51,7 @@ public class ExceptionNotifier {
         }
         
         if (outputToConsole){
-            Console.addMessage(message + ": " + initialReason);
+            Console.addMessage(message + ": " + initialReason); //$NON-NLS-1$
         }
         if (showInDialog){
             final IStatus status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID,
@@ -60,8 +60,8 @@ public class ExceptionNotifier {
 
                 @Override
                 public void run() {
-                    new StackTraceErrorDialog(shell, "Unhandled exception!",
-                            message + ": " + source.toString(), status, status
+                    new StackTraceErrorDialog(shell, Messages.ExceptionNotifier_unhandled_exception,
+                            message + ": " + source.toString(), status, status //$NON-NLS-1$
                                     .getSeverity()).open();
                 }
             });
@@ -108,7 +108,7 @@ class StackTraceErrorDialog extends ErrorDialog {
                 }
             } catch (IOException ex) {
                 throw new IllegalStateException(
-                        "String reader IOException! The world ends!", ex);
+                        Messages.ExceptionNotifier_string_reader_ioexception_world_ends, ex);
             }
         }
         return lstStackTrace;
@@ -116,7 +116,7 @@ class StackTraceErrorDialog extends ErrorDialog {
     
     @Override
     protected void createButtonsForButtonBar(final Composite parent) {
-        createButton(parent, Integer.MAX_VALUE, "Open log file ", false)
+        createButton(parent, Integer.MAX_VALUE, Messages.ExceptionNotifier_open_log_file, false)
                 .addSelectionListener(new SelectionAdapter() {
                     
                     @Override
@@ -125,7 +125,7 @@ class StackTraceErrorDialog extends ErrorDialog {
                     }
                 });
 
-        createButton(parent, Integer.MAX_VALUE - 1, "Copy stack trace", false)
+        createButton(parent, Integer.MAX_VALUE - 1, Messages.ExceptionNotifier_copy_stack_trace, false)
                 .addSelectionListener(new SelectionAdapter() {
 
                     @Override

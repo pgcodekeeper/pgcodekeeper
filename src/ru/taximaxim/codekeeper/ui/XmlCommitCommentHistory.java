@@ -32,10 +32,10 @@ public class XmlCommitCommentHistory {
     
     private static final int MAX_STORED_COMMENTS = 40;
     
-    private static final String XML_FILENAME = "commit_comments.xml";
+    private static final String XML_FILENAME = "commit_comments.xml"; //$NON-NLS-1$
     
-    private static final String COMMENTS_TAG = "comments";
-    private static final String COMMENT_TAG = "c";
+    private static final String COMMENTS_TAG = "comments"; //$NON-NLS-1$
+    private static final String COMMENT_TAG = "c"; //$NON-NLS-1$
 
     /**
      * @return List of commit comments or null
@@ -117,7 +117,7 @@ public class XmlCommitCommentHistory {
             return xml;
         } catch (IOException | SAXException | ParserConfigurationException ex) {
             throw new IllegalStateException(
-                    "Error reading comment history XML", ex);
+                    Messages.XmlCommitCommentHistory_error_reading_comment_history_xml, ex);
         }
     }
     
@@ -147,7 +147,7 @@ public class XmlCommitCommentHistory {
                     fileXml.createNewFile();
                 } catch (IOException ex) {
                     throw new IllegalStateException(
-                            "Error while trying to write comment history XML", ex);
+                            Messages.XmlCommitCommentHistory_error_while_trying_to_write_comment, ex);
                 }
             }
             StreamResult stream = new StreamResult(fileXml);
@@ -164,8 +164,8 @@ public class XmlCommitCommentHistory {
         } catch(URISyntaxException ex) {
             throw new IllegalStateException(ex);
         }
-        fileComments = new File(fileComments, ".metadata");
-        fileComments = new File(fileComments, ".plugins");
+        fileComments = new File(fileComments, ".metadata"); //$NON-NLS-1$
+        fileComments = new File(fileComments, ".plugins"); //$NON-NLS-1$
         fileComments = new File(fileComments, UIConsts.PLUGIN_ID);
         fileComments = new File(fileComments, XML_FILENAME);
         return fileComments;

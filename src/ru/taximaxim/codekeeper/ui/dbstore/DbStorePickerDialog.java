@@ -52,7 +52,7 @@ public class DbStorePickerDialog extends TrayDialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText("Choose DB from store...");
+        newShell.setText(Messages.DbStorePickerDialog_choose_db_from_store);
     }
     
     @Override

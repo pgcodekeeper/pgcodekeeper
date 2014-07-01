@@ -24,7 +24,7 @@ public class GeneralPrefPage extends FieldEditorPreferencePage
     @Override
     protected void createFieldEditors() {
         addField(
-                new FileFieldEditor(UIConsts.PREF_PGDUMP_EXE_PATH, "pg_dump executable", getFieldEditorParent()){
+                new FileFieldEditor(UIConsts.PREF_PGDUMP_EXE_PATH, Messages.GeneralPrefPage_pg_dump_executable, getFieldEditorParent()){
                     @Override
                     protected boolean checkState() {
                         return true;
@@ -32,10 +32,10 @@ public class GeneralPrefPage extends FieldEditorPreferencePage
                 });
         
         addField(new StringFieldEditor(UIConsts.PREF_PGDUMP_CUSTOM_PARAMS,
-                "pg_dump custom parameters", getFieldEditorParent()));
+                Messages.GeneralPrefPage_pg_dump_custom_parameters, getFieldEditorParent()));
         
         BooleanFieldEditor openLast = new BooleanFieldEditor(
-                UIConsts.PREF_OPEN_LAST_ON_START, "Open last project on startup",
+                UIConsts.PREF_OPEN_LAST_ON_START, Messages.GeneralPrefPage_open_last_project_on_startup,
                 FileFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());
         addField(openLast);
         openLast.setEnabled(false, getFieldEditorParent());

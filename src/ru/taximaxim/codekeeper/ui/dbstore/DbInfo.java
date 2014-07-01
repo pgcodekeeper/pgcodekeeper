@@ -44,7 +44,7 @@ public class DbInfo {
         try {
             if(parts.length > 6) {
                 throw new ArrayIndexOutOfBoundsException(
-                        "Too many parts in the DbInfo string (>6)!");
+                        Messages.DbInfo_too_many_parts_in_dbinfo_string);
             }
             
             this.name = parts[0];
@@ -54,12 +54,12 @@ public class DbInfo {
             this.dbhost = parts[4];
             this.dbport = Integer.parseInt(parts[5]);
         } catch (ArrayIndexOutOfBoundsException | NumberFormatException ex) {
-            throw new IllegalArgumentException("Bad DbInfo string: " + coords, ex);
+            throw new IllegalArgumentException(Messages.DbInfo_bad_dbinfo_string + coords, ex);
         }
     }
     
     public static DbInfo getEmpty(String name) {
-        return new DbInfo(name, "", "", "", "", 0);
+        return new DbInfo(name, "", "", "", "", 0); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
     
     @Override

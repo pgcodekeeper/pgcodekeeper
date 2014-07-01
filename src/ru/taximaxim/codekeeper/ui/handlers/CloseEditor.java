@@ -21,8 +21,8 @@ public class CloseEditor {
     
     @Execute
     private void execute(EPartService partService) {
-        Log.log(Log.LOG_DEBUG, "Editor about to close: "
-                        + part.getPersistedState().get(UIConsts.PART_SQL_EDITOR_FILENAME));
+        Log.log(Log.LOG_DEBUG, "Editor about to close: "  //$NON-NLS-1$
+                + part.getPersistedState().get(UIConsts.PART_SQL_EDITOR_FILENAME));
         
         partService.hidePart(part);
     }

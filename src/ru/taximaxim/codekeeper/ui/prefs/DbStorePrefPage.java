@@ -37,13 +37,13 @@ public class DbStorePrefPage extends FieldEditorPreferencePage
     @Override
     public void createControl(Composite parent) {
         super.createControl(parent);
-        getDefaultsButton().setText("Clear DB Store");
+        getDefaultsButton().setText(Messages.DbStorePrefPage_clear_db_store);
     }
     
     @Override
     protected Control createContents(Composite parent) {
         Button btnDbStore = new Button(parent, SWT.PUSH);
-        btnDbStore.setText("Edit Db Store...");
+        btnDbStore.setText(Messages.DbStorePrefPage_edit_db_store);
         btnDbStore.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

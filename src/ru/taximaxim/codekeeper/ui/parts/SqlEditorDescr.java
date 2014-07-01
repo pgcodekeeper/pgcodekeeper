@@ -89,7 +89,7 @@ public class SqlEditorDescr {
             }
         }
         
-        Log.log(Log.LOG_DEBUG, "About to show editor: " + file.getAbsolutePath());
+        Log.log(Log.LOG_DEBUG, "About to show editor: " + file.getAbsolutePath()); //$NON-NLS-1$
         
         MPart newEditor = partService.createPart(UIConsts.PART_SQL_EDITOR);
         newEditor.setLabel(nameToDisplay);

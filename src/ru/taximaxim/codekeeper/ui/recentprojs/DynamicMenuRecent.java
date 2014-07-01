@@ -23,7 +23,7 @@ public class DynamicMenuRecent {
         String[] recent = RecentProjects.getRecent(prefRecent);
         if (recent == null) {
             MDirectMenuItem dynamicItem = MMenuFactory.INSTANCE.createDirectMenuItem();
-            dynamicItem.setLabel("Recent list is empty");
+            dynamicItem.setLabel(Messages.DynamicMenuRecent_recent_list_is_empty);
             dynamicItem.setEnabled(false);
             items.add(dynamicItem);
         } else {

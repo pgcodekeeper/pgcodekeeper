@@ -90,7 +90,7 @@ public class ProjectExplorer {
             
             private final List<String> ignoredFiles = Arrays.asList(
                     new String[] {
-                            ".git",
+                            ".git", //$NON-NLS-1$
                             ApgdiffConsts.FILENAME_WORKING_DIR_MARKER
                     });
             
@@ -197,7 +197,7 @@ public class ProjectExplorer {
     
     private String getObjNameFromHash(File f){
         String filename = f.getName();
-        final String extension = ".sql";
+        final String extension = ".sql"; //$NON-NLS-1$
         int indexOfExt = filename.lastIndexOf(extension);
         if (indexOfExt != -1 && filename.length() - indexOfExt == extension.length()){
             filename = filename.substring(0, indexOfExt);
@@ -213,7 +213,7 @@ public class ProjectExplorer {
             throws InvocationTargetException {
         SubMonitor pm = SubMonitor.convert(monitor, 10);
         DbSource src = DbSource.fromProject(proj);
-        TreeDiffer differ = new TreeDiffer(src, new DbSource("empty db") {
+        TreeDiffer differ = new TreeDiffer(src, new DbSource("empty db") { //$NON-NLS-1$
             
             @Override
             protected PgDatabase loadInternal(SubMonitor monitor) {
@@ -223,7 +223,7 @@ public class ProjectExplorer {
         
         differ.run(pm.newChild(6));
         
-        pm.newChild(4).subTask("Generating object hashes...");
+        pm.newChild(4).subTask(Messages.ProjectExplorer_generating_object_hashes);
         visit(differ.getDiffTree(), src.getDbObject());
     }
     
@@ -256,7 +256,7 @@ public class ProjectExplorer {
                     @Override
                     public void run(IProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException {
-                        SubMonitor pm = SubMonitor.convert(monitor, "Loading project", 10);
+                        SubMonitor pm = SubMonitor.convert(monitor, Messages.ProjectExplorer_loading_project, 10);
                         initialHash(proj, pm.newChild(10));
                         
                         monitor.done();
@@ -274,9 +274,9 @@ public class ProjectExplorer {
             });
         }
         
-        String partLabel = "Project Explorer";
+        String partLabel = "Project Explorer"; //$NON-NLS-1$
         if (proj != null) {
-            partLabel += " - " + proj.getProjectName();
+            partLabel += " - " + proj.getProjectName(); //$NON-NLS-1$
         }
         final String newLabel = partLabel;
         sync.asyncExec(new Runnable() {

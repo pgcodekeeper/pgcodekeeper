@@ -19,11 +19,11 @@ public class About {
         Map<String, List<String>> versions = Activator.getPluginVersions();
         
         String message = String.format(
-                "pgCodeKeeper version: %s\n\n"
-                + "%s version: %s\n"
-                + "%s version: %s\n\n"
-                + "%s version: %s\n\n"
-                + "pg_dump version: %s",
+                Messages.About_pgcodekeeper_version
+                + Messages.About_version
+                + Messages.About_version_n
+                + Messages.About_version_n
+                + Messages.About_pg_dump_version,
                 
                 versions.get(UIConsts.MAINAPP_PLUGIN_ID).get(0),
                 
@@ -39,6 +39,6 @@ public class About {
                 AddonExternalTools.getPgdumpVersion());
         
         MessageDialog.open(MessageDialog.INFORMATION, parentShell,
-                "About pgCodeKeeper...", message, SWT.RESIZE);
+                Messages.About_about_pgcodekeeper, message, SWT.RESIZE);
     }
 }

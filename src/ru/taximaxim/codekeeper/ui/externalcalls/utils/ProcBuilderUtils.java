@@ -16,7 +16,7 @@ public class ProcBuilderUtils {
     
     public void addEnv(String var, int value) {
         if(value != 0) {
-            pb.environment().put(var, ""+value);
+            pb.environment().put(var, "" + value); //$NON-NLS-1$
         }
     }
 }
