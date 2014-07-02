@@ -7,7 +7,6 @@ import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -84,12 +83,12 @@ public class ModelExporter {
             if(!outDir.isDirectory()) {
                 throw new NotDirectoryException(outDir.getAbsolutePath());
             }
-            if (Arrays.asList(outDir.list()).contains(
-                    ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.toString()) || 
-                    Arrays.asList(outDir.list()).contains(
-                            ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString())) {
-                throw new DirectoryException(
-                        "Directory already contains EXTENSION or SCHEMA folders");
+            
+            for (ApgdiffConsts.WORK_DIR_NAMES subdirName : ApgdiffConsts.WORK_DIR_NAMES.values()) {
+                if (new File(outDir, subdirName.toString()).exists()) {
+                    throw new DirectoryException("Output directory already contains "
+                            + subdirName + " directory.");
+                }
             }
         } else if(!outDir.mkdirs()) {
                 throw new DirectoryException("Could not create output directory:"
