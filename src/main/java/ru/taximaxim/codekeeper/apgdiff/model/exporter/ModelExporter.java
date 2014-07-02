@@ -84,8 +84,11 @@ public class ModelExporter {
                 throw new NotDirectoryException(outDir.getAbsolutePath());
             }
             
-            if(outDir.list().length != 0) {
-                throw new DirectoryNotEmptyException(outDir.getAbsolutePath());
+            for (ApgdiffConsts.WORK_DIR_NAMES subdirName : ApgdiffConsts.WORK_DIR_NAMES.values()) {
+                if (new File(outDir, subdirName.toString()).exists()) {
+                    throw new DirectoryException("Output directory already contains "
+                            + subdirName + " directory.");
+                }
             }
         } else if(!outDir.mkdirs()) {
                 throw new DirectoryException("Could not create output directory:"
@@ -93,7 +96,8 @@ public class ModelExporter {
         }
         
         // exporting schemas
-        File schemasSharedDir = new File(outDir, "SCHEMA");
+        File schemasSharedDir = new File(outDir, 
+                ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString());
         if(!schemasSharedDir.mkdir()) {
             throw new DirectoryException("Could not create schemas directory:"
                     + schemasSharedDir.getAbsolutePath());
@@ -105,7 +109,8 @@ public class ModelExporter {
         }
         
         // exporting extensions
-        File extensionsDir = new File(outDir, "EXTENSION");
+        File extensionsDir = new File(outDir, 
+                ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.toString());
         if(!extensionsDir.mkdir()) {
             throw new DirectoryException("Could not create extensions directory:"
                     + extensionsDir.getAbsolutePath());
