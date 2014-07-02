@@ -225,22 +225,16 @@ public class CommitPartDescr {
                         pm.newChild(1).subTask("Exporting new DB model..."); // 2
                         File workingDir = proj.getProjectWorkingDir();
                         try {
-                            IRepoWorker repo = new JGitExec(
-                                    proj,
+                            IRepoWorker repo = new JGitExec(proj,
                                     mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
 
-                            File schemaDir = Dir.findDirectory(workingDir,
-                                    ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString());
-                            if (schemaDir != null) {
-                                Dir.deleteRecursive(schemaDir);
+                            for (ApgdiffConsts.WORK_DIR_NAMES subdirName : ApgdiffConsts.WORK_DIR_NAMES.values()) {
+                                File subdir = new File(workingDir, subdirName.toString());
+                                if (subdir.exists()) {
+                                    Dir.deleteRecursive(subdir);
+                                }
                             }
-
-                            File extensionDir = Dir.findDirectory(workingDir,
-                                    ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.toString());
-                            if (extensionDir != null) {
-                                Dir.deleteRecursive(extensionDir);
-                            }
-
+                            
                             new ModelExporter(workingDir.getAbsolutePath(),
                                     dbNew,
                                     proj.getString(UIConsts.PROJ_PREF_ENCODING))

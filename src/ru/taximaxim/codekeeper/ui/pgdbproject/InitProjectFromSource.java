@@ -89,16 +89,11 @@ public class InitProjectFromSource implements IRunnableWithProgress {
 
         pm.newChild(25).subTask("Exporting DB model..."); // 75
 
-        File schemaDir = Dir.findDirectory(dirRepo,
-                ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString());
-        if (schemaDir != null) {
-            Dir.deleteRecursive(schemaDir);
-        }
-
-        File extensionDir = Dir.findDirectory(dirRepo,
-                ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.toString());
-        if (extensionDir != null) {
-            Dir.deleteRecursive(extensionDir);
+        for (ApgdiffConsts.WORK_DIR_NAMES subdirName : ApgdiffConsts.WORK_DIR_NAMES.values()) {
+            File subdir = new File(dirRepo, subdirName.toString());
+            if (subdir.exists()) {
+                Dir.deleteRecursive(subdir);
+            }
         }
         
         new ModelExporter(dirRepo.getAbsolutePath(), db,

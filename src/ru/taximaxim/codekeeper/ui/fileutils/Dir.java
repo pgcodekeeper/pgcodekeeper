@@ -12,28 +12,11 @@ public class Dir {
      * @throws IOException
      */
     public static void deleteRecursive(File f) throws IOException {
-        if(f.isDirectory()) {
-            for(File sub : f.listFiles()) {
+        if (f.isDirectory()) {
+            for (File sub : f.listFiles()) {
                 deleteRecursive(sub);
             }
         }
         ReadOnlyFileRemover.remove(f.toPath());
-    }
-
-    /**
-     * Search for directory name
-     * @param f
-     * @param name
-     * @return
-     */
-    public static File findDirectory(File f, String name) {
-        if (f.isDirectory()) {
-            for (File sub : f.listFiles()) {
-                if (sub.getName().equals(name)) {
-                    return sub;
-                }
-            }
-        }
-        return null;
     }
 }
