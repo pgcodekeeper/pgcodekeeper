@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class SvnExec implements IRepoWorker {

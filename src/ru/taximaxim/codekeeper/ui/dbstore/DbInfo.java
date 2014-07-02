@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbInfo {
     

@@ -21,6 +21,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 /**
  * Commit history operations.
  * Commit history is stored in an XML in

@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbPicker extends Group {
 

@@ -10,6 +10,8 @@ import org.eclipse.e4.ui.workbench.UIEvents;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 /**
  * Listens for contexts being created, waits for the one associated with
  * provided part and injects provided values into it.

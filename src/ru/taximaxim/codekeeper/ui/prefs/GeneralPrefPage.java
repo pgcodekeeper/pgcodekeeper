@@ -8,6 +8,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class GeneralPrefPage extends FieldEditorPreferencePage
         implements IWorkbenchPreferencePage  {

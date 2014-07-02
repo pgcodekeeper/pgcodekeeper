@@ -13,6 +13,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbStorePrefPage extends FieldEditorPreferencePage
         implements IWorkbenchPreferencePage {

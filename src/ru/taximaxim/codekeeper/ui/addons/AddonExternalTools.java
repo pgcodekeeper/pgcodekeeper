@@ -15,6 +15,7 @@ import org.osgi.service.application.ApplicationHandle;
 import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class AddonExternalTools {
     

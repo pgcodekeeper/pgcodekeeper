@@ -24,6 +24,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 import com.jcraft.jsch.JSchException;
 

@@ -17,6 +17,7 @@ import org.eclipse.jface.bindings.BindingManager;
 import org.eclipse.jface.bindings.TriggerSequence;
 
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class AddonBindingConflict {
     

@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import org.eclipse.jface.preference.PreferenceStore;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgDbProject extends PreferenceStore {
 

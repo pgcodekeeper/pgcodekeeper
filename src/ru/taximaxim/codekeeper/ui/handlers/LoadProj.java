@@ -21,6 +21,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.parts.CommitPartDescr;
 import ru.taximaxim.codekeeper.ui.parts.Console;
 import ru.taximaxim.codekeeper.ui.parts.DiffPartDescr;

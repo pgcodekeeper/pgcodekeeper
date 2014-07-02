@@ -19,6 +19,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class InitProjectFromSource implements IRunnableWithProgress {

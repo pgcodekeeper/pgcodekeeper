@@ -27,6 +27,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.parts.Console;
 
 public class SqlScriptDialog extends MessageDialog {

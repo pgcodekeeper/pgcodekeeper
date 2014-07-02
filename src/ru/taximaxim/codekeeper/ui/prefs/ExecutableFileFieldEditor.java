@@ -8,6 +8,8 @@ import java.util.regex.Pattern;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 /**
  * Extends {@link FileFieldEditor} to check whether an executable
  * can be found in PATH system variable and if it can be executed.

@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.ProcBuilderUtils;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgDumper {
     

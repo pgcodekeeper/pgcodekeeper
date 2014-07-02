@@ -2,6 +2,8 @@ package ru.taximaxim.codekeeper.ui;
 
 import org.eclipse.e4.core.contexts.IEclipseContext;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 /**
  * Stores string ids for model objects, objects in {@link IEclipseContext}, etc,
  * that sort of string constants.
