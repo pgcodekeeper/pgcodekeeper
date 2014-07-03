@@ -235,10 +235,10 @@ public class SelectParser {
             
             // pf.expect("SELECT"); unnecessary, done in parseSelectRecursive()
             // parse subselect recursively as usually
-            parseSelectRecursive(pf.getSubString(start, start + end));
+            parseSelectRecursive(pf.getSubString(start, end));
             
             // skip subselect enclosement to its alias (which is REQUIRED) 
-            pf.setPosition(start + end + 1);
+            pf.setPosition(end + 1);
             pf.skipWhitespace();
             pf.expectOptional("AS");
             String alias = pf.parseIdentifier();
