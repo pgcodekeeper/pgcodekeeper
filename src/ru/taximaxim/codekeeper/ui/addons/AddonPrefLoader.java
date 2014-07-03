@@ -28,7 +28,7 @@ public class AddonPrefLoader {
                 ((IPersistentPreferenceStore) mainPrefs).save();
             } catch (IOException ex) {
                 throw new IllegalStateException(
-                        Messages.AddonPrefLoader_unexpected_error_while_saving_preferences, ex);
+                        Messages.unexpected_error_while_saving_preferences, ex);
             }
         }
     }

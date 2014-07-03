@@ -150,7 +150,7 @@ public class CommitPartDescr {
                 
                 MenuManager mmComments = new MenuManager();
                 if (comments == null || comments.isEmpty()) {
-                    mmComments.add(new Action(Messages.CommitPartDescr_no_previous_comments) {
+                    mmComments.add(new Action(Messages.commitPartDescr_no_previous_comments) {
                         @Override
                         public boolean isEnabled() {
                             return false;
@@ -185,7 +185,7 @@ public class CommitPartDescr {
         btnCommit = new Button(containerUpper, SWT.PUSH);
         btnCommit.setLayoutData(new GridData(SWT.DEFAULT, SWT.FILL, false,
                 false));
-        btnCommit.setText(Messages.CommitPartDescr_commit);
+        btnCommit.setText(Messages.commitPartDescr_commit);
         btnCommit.setEnabled(false);
         btnCommit.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -193,15 +193,15 @@ public class CommitPartDescr {
                 final String commitComment = txtCommitComment.getText();
                 if (diffTable.viewer.getCheckedElements().length < 1){
                     MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
-                    mb.setMessage(Messages.CommitPartDescr_please_check_at_least_one_row);
-                    mb.setText(Messages.CommitPartDescr_empty_selection);
+                    mb.setMessage(Messages.please_check_at_least_one_row);
+                    mb.setText(Messages.empty_selection);
                     mb.open();
                     return;
                 }
                 if (commitComment.isEmpty()) {
                     MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
-                    mb.setMessage(Messages.CommitPartDescr_comment_required);
-                    mb.setText(Messages.CommitPartDescr_please_enter_a_comment_for_the_commit);
+                    mb.setMessage(Messages.commitPartDescr_comment_required);
+                    mb.setText(Messages.commitPartDescr_please_enter_a_comment_for_the_commit);
                     mb.open();
                     return;
                 }
@@ -216,15 +216,15 @@ public class CommitPartDescr {
                             throws InvocationTargetException,
                             InterruptedException {
                         SubMonitor pm = SubMonitor.convert(monitor,
-                                Messages.CommitPartDescr_commiting, 3);
+                                Messages.commitPartDescr_commiting, 3);
 
-                        pm.newChild(1).subTask(Messages.CommitPartDescr_modifying_db_model); // 1
+                        pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
                         DiffTreeApplier applier = new DiffTreeApplier(dbSource
                                 .getDbObject(), dbTarget.getDbObject(),
                                 filtered);
                         PgDatabase dbNew = applier.apply();
 
-                        pm.newChild(1).subTask(Messages.CommitPartDescr_exporting_db_model); // 2
+                        pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
                         File workingDir = proj.getProjectWorkingDir();
                         try {
                             IRepoWorker repo = new JGitExec(proj,
@@ -255,7 +255,7 @@ public class CommitPartDescr {
                             repo.repoCommit(workingDir, commitComment);
                         } catch (IOException ex) {
                             throw new InvocationTargetException(ex,
-                                    Messages.CommitPartDescr_ioexception_while_modifying_project);
+                                    Messages.commitPartDescr_ioexception_while_modifying_project);
                         }
 
                         monitor.done();
@@ -269,15 +269,15 @@ public class CommitPartDescr {
                             commitRunnable);
                 } catch (InvocationTargetException ex) {
                     throw new IllegalStateException(
-                            Messages.CommitPartDescr_error_in_project_modifier_thread, ex);
+                            Messages.error_in_the_project_modifier_thread, ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     throw new IllegalStateException(
-                            Messages.CommitPartDescr_project_modifier_thread_cancelled_shouldnt_happen,
+                            Messages.project_modifier_thread_cancelled_shouldnt_happen,
                             ex);
                 }
 
-                Console.addMessage(Messages.CommitPartDescr_success_project_updated);
+                Console.addMessage(Messages.commitPartDescr_success_project_updated);
 
                 // reopen project because file structure has been changed
                 events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
@@ -344,11 +344,11 @@ public class CommitPartDescr {
         containerSrc.setLayoutData(gd);
         
         Group grpSrc = new Group(containerSrc, SWT.NONE);
-        grpSrc.setText(Messages.CommitPartDescr_get_changes_from);
+        grpSrc.setText(Messages.commitPartDescr_get_changes_from);
         grpSrc.setLayout(new GridLayout(3, false));
 
         btnNone = new Button(grpSrc, SWT.RADIO);
-        btnNone.setText(Messages.CommitPartDescr_none);
+        btnNone.setText(Messages.none);
         btnNone.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -358,7 +358,7 @@ public class CommitPartDescr {
         });
 
         btnDump = new Button(grpSrc, SWT.RADIO);
-        btnDump.setText(Messages.CommitPartDescr_dump);
+        btnDump.setText(Messages.dump);
         btnDump.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -368,7 +368,7 @@ public class CommitPartDescr {
         });
 
         btnDb = new Button(grpSrc, SWT.RADIO);
-        btnDb.setText(Messages.CommitPartDescr_db);
+        btnDb.setText(Messages.db);
         btnDb.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -378,7 +378,7 @@ public class CommitPartDescr {
         });
 
         btnGetChanges = new Button(containerSrc, SWT.PUSH);
-        btnGetChanges.setText(Messages.CommitPartDescr_get_changes);
+        btnGetChanges.setText(Messages.get_changes);
         btnGetChanges.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
                 false));
         btnGetChanges.addSelectionListener(new SelectionAdapter() {
@@ -392,7 +392,7 @@ public class CommitPartDescr {
                 dbSource = DbSource.fromProject(proj);
                 if (btnDump.getSelection()) {
                     FileDialog dialog = new FileDialog(shell);
-                    dialog.setText(Messages.CommitPartDescr_choose_dump_file_with_changes);
+                    dialog.setText(Messages.choose_dump_file_with_changes);
                     String dumpfile = dialog.open();
                     if (dumpfile != null) {
                         dbTarget = DbSource.fromFile(dumpfile,
@@ -407,8 +407,8 @@ public class CommitPartDescr {
                         port = sPort.isEmpty()? 0 : Integer.parseInt(sPort);
                     } catch (NumberFormatException ex) {
                         MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR);
-                        mb.setText(Messages.CommitPartDescr_bad_port);
-                        mb.setMessage(Messages.CommitPartDescr_port_must_be_a_number);
+                        mb.setText(Messages.bad_port);
+                        mb.setMessage(Messages.port_must_be_a_number);
                         mb.open();
                         return;
                     }
@@ -420,7 +420,7 @@ public class CommitPartDescr {
                             proj.getString(UIConsts.PROJ_PREF_ENCODING));
                 } else {
                     throw new IllegalStateException(
-                            Messages.CommitPartDescr_undefined_surce_for_db_changes);
+                            Messages.undefined_surce_for_db_changes);
                 }
                 
                 Log.log(Log.LOG_INFO, "Getting changes for commit"); //$NON-NLS-1$
@@ -428,11 +428,11 @@ public class CommitPartDescr {
                 try {
                     new ProgressMonitorDialog(shell).run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
-                    throw new IllegalStateException(Messages.CommitPartDescr_error_in_differ_thread, ex);
+                    throw new IllegalStateException(Messages.error_in_differ_thread, ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     throw new IllegalStateException(
-                            Messages.CommitPartDescr_differ_thread_cancelled_shouldnt_happen, ex);
+                            Messages.differ_thread_cancelled_shouldnt_happen, ex);
                 }
 
                 diffTable.setInput(treediffer);
@@ -442,7 +442,7 @@ public class CommitPartDescr {
         });
 
         dbSrc = new DbPicker(containerSrc, SWT.NONE, mainPrefs, false);
-        dbSrc.setText(Messages.CommitPartDescr_db_source);
+        dbSrc.setText(Messages.db_source);
         dbSrc.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2,
                 1));
 
@@ -520,7 +520,7 @@ public class CommitPartDescr {
             
             @Override
             public String getRightLabel(Object input) {
-                return Messages.CommitPartDescr_to + repoName;
+                return Messages.commitPartDescr_to + repoName;
             }
             
             @Override
@@ -543,7 +543,7 @@ public class CommitPartDescr {
             
             @Override
             public String getLeftLabel(Object input) {
-                return Messages.CommitPartDescr_from_database;
+                return Messages.commitPartDescr_from_database;
             }
             
             @Override

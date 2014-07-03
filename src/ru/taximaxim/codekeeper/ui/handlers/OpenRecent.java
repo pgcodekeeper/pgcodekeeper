@@ -48,9 +48,9 @@ public class OpenRecent {
                     + ". Project pref store either doesn't exist or not a file."); //$NON-NLS-1$
             
             MessageBox mb = new MessageBox(shell);
-            mb.setText(Messages.OpenRecent_loadl_failed);
-            mb.setMessage(Messages.OpenRecent_directory_isnt_valid_project
-                    + Messages.OpenRecent_properties_file_not_found);
+            mb.setText(Messages.load_failed);
+            mb.setMessage(Messages.directory_isnt_valid_project
+                    + Messages.properties_file_not_found);
             mb.open();
             
             RecentProjects.deleteRecent(menuItem.getLabel(), mainPrefs);

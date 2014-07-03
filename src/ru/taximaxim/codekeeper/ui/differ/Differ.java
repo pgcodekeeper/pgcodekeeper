@@ -46,14 +46,14 @@ public class Differ implements IRunnableWithProgress {
     
     private void checkFinished() {
         if(!finished) {
-            throw new IllegalStateException(Messages.Differ_runnable_has_not_finished
-                    + Messages.Differ_diff_is_undefined);
+            throw new IllegalStateException(Messages.runnable_has_not_finished
+                    + Messages.diff_is_undefined);
         }
     }
     
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException{
-        SubMonitor pm = SubMonitor.convert(monitor, Messages.Differ_calculating_diff, 100); // 0
+        SubMonitor pm = SubMonitor.convert(monitor, Messages.calculating_diff, 100); // 0
         
         PgDatabase dbSource, dbTarget;
         dbSource = dbTarget = null;
@@ -64,10 +64,10 @@ public class Differ implements IRunnableWithProgress {
             throw new InvocationTargetException(ex);
         }
         
-        Log.log(Log.LOG_INFO, Messages.Differ_diff_from + this.dbSource.getOrigin()
-                + Messages.Differ_to + this.dbTarget.getOrigin());
+        Log.log(Log.LOG_INFO, Messages.differ_diff_from + this.dbSource.getOrigin()
+                + Messages.differ_to + this.dbTarget.getOrigin());
         
-        pm.newChild(25).subTask(Messages.Differ_direct_diff); // 75
+        pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
         PgDiffArguments args = new PgDiffArguments();
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
         PrintWriter writer = new UnixPrintWriter(diffOut, true);
@@ -77,10 +77,10 @@ public class Differ implements IRunnableWithProgress {
         diffDirect = diffOut.toString().trim();
 
         if (needTwoWay) {
-            Log.log(Log.LOG_INFO, Messages.Differ_diff_from + this.dbTarget.getOrigin()
-                    + Messages.Differ_to + this.dbSource.getOrigin());
+            Log.log(Log.LOG_INFO, Messages.differ_diff_from + this.dbTarget.getOrigin()
+                    + Messages.differ_to + this.dbSource.getOrigin());
             
-            pm.newChild(25).subTask(Messages.Differ_reverse_diff); // 100
+            pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
             diffOut.reset();
             PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource, targetDbFull, sourceDbFull);
             writer.flush();

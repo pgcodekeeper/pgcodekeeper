@@ -69,7 +69,7 @@ public class SwitchBranch {
                         }
                     } catch (IOException | InterruptedException ex) {
                         throw new IllegalStateException(
-                                Messages.SwitchBranch_exception_waiting_for_checkout_job, ex);
+                                Messages.switchBranch_exception_waiting_for_checkout_job, ex);
                     } finally {
                         git.get().close();
                     }
@@ -79,7 +79,7 @@ public class SwitchBranch {
                 
                 @Override
                 public void uncaughtException(Thread t, Throwable ex) {
-                    ExceptionNotifier.notify(Messages.SwitchBranch_exception_during_switching_branch, ex);
+                    ExceptionNotifier.notify(Messages.pwitchBranch_exception_during_switching_branch, ex);
                 }
             });
             t.start();
@@ -88,7 +88,7 @@ public class SwitchBranch {
                 git.get().close();
             }
             
-            ExceptionNotifier.notify(Messages.SwitchBranch_wrong_repository_or_ref_name, ex);
+            ExceptionNotifier.notify(Messages.switchBranch_wrong_repository_or_ref_name, ex);
         }
     }
 

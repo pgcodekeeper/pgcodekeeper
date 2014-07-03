@@ -32,7 +32,7 @@ public class PgDbProject extends PreferenceStore {
         try {
             super.load();
         } catch (IOException ex) {
-            throw new IllegalStateException(Messages.PgDbProject_error_loading_project_file, ex);
+            throw new IllegalStateException(Messages.pgDbProject_error_loading_project_file, ex);
         }
     }
     

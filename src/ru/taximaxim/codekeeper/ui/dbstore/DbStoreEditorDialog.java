@@ -87,7 +87,7 @@ public class DbStoreEditorDialog extends TrayDialog {
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        newShell.setText(Messages.DbStoreEditorDialog_db_store_editor);
+        newShell.setText(Messages.dbStoreEditorDialog_db_store_editor);
         
         newShell.addShellListener(new ShellAdapter() {
             @Override
@@ -151,24 +151,24 @@ public class DbStoreEditorDialog extends TrayDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 InputDialog dialog = new InputDialog(
-                        getShell(), Messages.DbStoreEditorDialog_new_entry, 
-                        Messages.DbStoreEditorDialog_entry_name, null, null);
+                        getShell(), Messages.dbStoreEditorDialog_new_entry, 
+                        Messages.entry_name, null, null);
                 
                 if(dialog.open() == Dialog.OK) {
                     String newName = dialog.getValue().trim();
                     
                     if(newName.isEmpty()) {
                         MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
-                        mb.setText(Messages.DbStoreEditorDialog_cannot_add_entry);
-                        mb.setMessage(Messages.DbStoreEditorDialog_name_cannot_be_empty_or_whitespace);
+                        mb.setText(Messages.dbStoreEditorDialog_cannot_add_entry);
+                        mb.setMessage(Messages.dbStoreEditorDialog_name_cannot_be_empty_or_whitespace);
                         mb.open();
                         return;
                     }
                     
                     if(store.containsKey(newName)) {
                         MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
-                        mb.setText(Messages.DbStoreEditorDialog_cannot_add_entry);
-                        mb.setMessage(Messages.DbStoreEditorDialog_entry_with_this_name_already_exists
+                        mb.setText(Messages.dbStoreEditorDialog_cannot_add_entry);
+                        mb.setMessage(Messages.dbStoreEditorDialog_entry_with_this_name_already_exists
                                 + newName);
                         mb.open();
                         return;
@@ -223,7 +223,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1);
         gd.widthHint = 480;
         grpDbData.setLayoutData(gd);
-        grpDbData.setText(Messages.DbStoreEditorDialog_db_info);
+        grpDbData.setText(Messages.dbStoreEditorDialog_db_info);
         
         grpDbData.txtDbName.addModifyListener(dbModified);
         grpDbData.txtDbUser.addModifyListener(dbModified);
@@ -244,8 +244,8 @@ public class DbStoreEditorDialog extends TrayDialog {
             }
         } catch (NumberFormatException ex) {
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
-            mb.setText(Messages.DbStoreEditorDialog_cannot_save_entry);
-            mb.setMessage(Messages.DbStoreEditorDialog_not_valid_port_number + 
+            mb.setText(Messages.dbStoreEditorDialog_cannot_save_entry);
+            mb.setMessage(Messages.dbStoreEditorDialog_not_valid_port_number + 
                     grpDbData.txtDbPort.getText());
             mb.open();
             return;
@@ -282,7 +282,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                     ((IPersistentPreferenceStore) prefStore).save();
                 } catch (IOException ex) {
                     throw new IllegalStateException(
-                            Messages.DbStoreEditorDialog_unexpected_error_while_saving_preferences, ex);
+                            Messages.unexpected_error_while_saving_preferences, ex);
                 }
             }
         }

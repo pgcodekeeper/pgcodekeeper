@@ -47,7 +47,7 @@ public class GitPrefPage extends FieldEditorPreferencePage
     @Override
     protected void createFieldEditors() {
         editorPrivate = new FileFieldEditor(UIConsts.PREF_GIT_KEY_PRIVATE_FILE, 
-                Messages.GitPrefPage_private_key, true, FileFieldEditor.VALIDATE_ON_KEY_STROKE,
+                Messages.gitPrefPage_private_key, true, FileFieldEditor.VALIDATE_ON_KEY_STROKE,
                 getFieldEditorParent());
         addField(editorPrivate);
     }
@@ -55,15 +55,15 @@ public class GitPrefPage extends FieldEditorPreferencePage
     @Override
     protected Control createContents(final Composite parent) {
         genKeysButt = new Button(parent, SWT.PUSH);
-        genKeysButt.setText(Messages.GitPrefPage_generate_keys);
+        genKeysButt.setText(Messages.gitPrefPage_generate_keys);
         genKeysButt.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 MessageBox dialog = new MessageBox(getShell(), SWT.OK);
-                dialog.setMessage(Messages.GitPrefPage_select_file_to_save_priv_key);
+                dialog.setMessage(Messages.gitPrefPage_select_file_to_save_priv_key);
                 dialog.open();
                 FileDialog fd = new FileDialog(parent.getShell(), SWT.SAVE);
-                fd.setText(Messages.GitPrefPage_save_priv_key_to_file);
+                fd.setText(Messages.gitPrefPage_save_priv_key_to_file);
                 fd.setOverwrite(true);
                 String privateFileName = fd.open();
                 if (privateFileName != null)
@@ -72,12 +72,12 @@ public class GitPrefPage extends FieldEditorPreferencePage
                         editorPrivate.setStringValue(privateFileName);
                     } catch (IOException | JSchException ex) {
                         ExceptionNotifier.notify(
-                                Messages.GitPrefPage_error_while_rsa_keys_generation, ex);
+                                Messages.gitPrefPage_error_while_rsa_keys_generation, ex);
                     }
             }
         });
         copyPublicKeyButt = new Button(parent, SWT.PUSH);
-        copyPublicKeyButt.setText(Messages.GitPrefPage_copy_public_keys_to_clipboard);
+        copyPublicKeyButt.setText(Messages.gitPrefPage_copy_public_keys_to_clipboard);
         copyPublicKeyButt.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -93,9 +93,9 @@ public class GitPrefPage extends FieldEditorPreferencePage
                     new Clipboard(parent.getDisplay()).setContents (data, new Transfer[]{TextTransfer.getInstance()});
                 } catch (IOException ex) {
                     MessageBox mb = new MessageBox(getShell(), SWT.ERROR);
-                    mb.setText(Messages.GitPrefPage_file_not_found);
-                    mb.setMessage(Messages.GitPrefPage_public_key_file + publicFileName
-                            + Messages.GitPrefPage_either_doesnt_exist_or_inaccessible);
+                    mb.setText(Messages.gitPrefPage_file_not_found);
+                    mb.setMessage(Messages.gitPrefPage_public_key_file + publicFileName
+                            + Messages.gitPrefPage_either_doesnt_exist_or_inaccessible);
                     mb.open();
                 }
             }

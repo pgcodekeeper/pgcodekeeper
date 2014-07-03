@@ -51,7 +51,7 @@ public class DbPicker extends Group {
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         
         lblFieldName = new Label(this, SWT.NONE);
-        lblFieldName.setText(Messages.DbPicker_entry_name);
+        lblFieldName.setText(Messages.entry_name);
         GridData gd = new GridData();
         gd.exclude = true;
         lblFieldName.setLayoutData(gd);
@@ -63,7 +63,7 @@ public class DbPicker extends Group {
         lblName.setLayoutData(gd);
         lblName.setVisible(false);
         
-        new Label(this, SWT.NONE).setText(Messages.DbPicker_db_name);
+        new Label(this, SWT.NONE).setText(Messages.dB_name);
         
         txtDbName = new Text(this, SWT.BORDER);
         txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
@@ -79,12 +79,12 @@ public class DbPicker extends Group {
             }
         });
         
-        new Label(this, SWT.NONE).setText(Messages.DbPicker_db_user);
+        new Label(this, SWT.NONE).setText(Messages.dB_user);
         
         txtDbUser = new Text(this, SWT.BORDER);
         txtDbUser.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
         
-        new Label(this, SWT.NONE).setText(Messages.DbPicker_db_password);
+        new Label(this, SWT.NONE).setText(Messages.dB_password);
         
         txtDbPass = new Text(this, SWT.BORDER | SWT.PASSWORD);
         txtDbPass.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
@@ -108,22 +108,22 @@ public class DbPicker extends Group {
         lblWarnDbPass.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(
                         UIConsts.FILENAME_ICONWARNING))));
-        lblWarnDbPass.setText(Messages.DbPicker_warning
-                + Messages.DbPicker_providing_password_here_is_insecure
-                + Messages.DbPicker_consider_using_pgpass_file_instead);
+        lblWarnDbPass.setText(Messages.warning
+                + Messages.providing_password_here_is_insecure + "\n"
+                + Messages.consider_using_pgpass_file_instead);
         gd = new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1);
         gd.exclude = true;
         lblWarnDbPass.setLayoutData(gd);
         lblWarnDbPass.setVisible(false);
         
-        new Label(this, SWT.NONE).setText(Messages.DbPicker_db_host);
+        new Label(this, SWT.NONE).setText(Messages.dB_host);
         
         txtDbHost = new Text(this, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 80;
         txtDbHost.setLayoutData(gd);
         
-        new Label(this, SWT.NONE).setText(Messages.DbPicker_port);
+        new Label(this, SWT.NONE).setText(Messages.dbPicker_port);
         
         txtDbPort = new Text(this, SWT.BORDER);
         gd = new GridData(60, SWT.DEFAULT);

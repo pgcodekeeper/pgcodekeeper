@@ -103,18 +103,18 @@ class DbSrcPage extends FieldEditorPreferencePage {
 
         grpSourceDb = new Group(getFieldEditorParent(), SWT.NONE);
         grpSourceDb.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
-        grpSourceDb.setText(Messages.ProjProps_settings_for_database_schema_source);
+        grpSourceDb.setText(Messages.projProps_settings_for_database_schema_source);
 
         final StringFieldEditor sfeName = new StringFieldEditor(
-                UIConsts.PROJ_PREF_DB_NAME, Messages.ProjProps_db_name, grpSourceDb);
+                UIConsts.PROJ_PREF_DB_NAME, Messages.dB_name, grpSourceDb);
         addField(sfeName);
 
         final StringFieldEditor sfeUser = new StringFieldEditor(
-                UIConsts.PROJ_PREF_DB_USER, Messages.ProjProps_db_user, grpSourceDb);
+                UIConsts.PROJ_PREF_DB_USER, Messages.dB_user, grpSourceDb);
         addField(sfeUser);
 
         final StringFieldEditor sfePass = new StringFieldEditor(
-                UIConsts.PROJ_PREF_DB_PASS, Messages.ProjProps_db_password, grpSourceDb);
+                UIConsts.PROJ_PREF_DB_PASS, Messages.dB_password, grpSourceDb);
         addField(sfePass);
         sfePass.getTextControl(grpSourceDb).setEchoChar('\u2022'); // •
 
@@ -122,8 +122,9 @@ class DbSrcPage extends FieldEditorPreferencePage {
         lblWarn.setImage(lrm.createImage(ImageDescriptor
                 .createFromURL(Activator.getContext().getBundle()
                         .getResource(UIConsts.FILENAME_ICONWARNING))));
-        lblWarn.setText(Messages.ProjProps_warning + Messages.ProjProps_providing_password_here_is_insecure
-                + Messages.ProjProps_consider_using_pgpass_instead);
+        lblWarn.setText(Messages.warning 
+                + Messages.providing_password_here_is_insecure + "\n"
+                + Messages.consider_using_pgpass_file_instead);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
 
         if (getPreferenceStore().getString(UIConsts.PROJ_PREF_DB_PASS)
@@ -135,11 +136,11 @@ class DbSrcPage extends FieldEditorPreferencePage {
         lblWarn.setLayoutData(gd);
 
         final StringFieldEditor sfeHost = new StringFieldEditor(
-                UIConsts.PROJ_PREF_DB_HOST, Messages.ProjProps_db_host, grpSourceDb);
+                UIConsts.PROJ_PREF_DB_HOST, Messages.dB_host, grpSourceDb);
         addField(sfeHost);
 
         final IntegerFieldEditor ifePort = new IntegerFieldEditor(
-                UIConsts.PROJ_PREF_DB_PORT, Messages.ProjProps_db_port, grpSourceDb);
+                UIConsts.PROJ_PREF_DB_PORT, Messages.projProps_db_port, grpSourceDb);
         addField(ifePort);
 
         Button btnStorePick = new Button(grpSourceDb, SWT.PUSH);
@@ -230,20 +231,21 @@ class RepoSettingsPage extends FieldEditorPreferencePage {
         String repoTypeName;
         String warningMessage;
         repoTypeName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
-        warningMessage = Messages.ProjProps_warning_providing_password_here_is_insecure
-                + Messages.ProjProps_this_password_will_show_up_in_logs
-                + Messages.ProjProps_consider_using_ssh_authentication_instead;
+        warningMessage = Messages.warning
+                + Messages.providing_password_here_is_insecure + "\n"
+                + Messages.this_password_will_show_up_in_logs
+                + Messages.consider_using_ssh_authentication_instead_use_git;
         StringFieldEditor sfeUrl = new StringFieldEditor(
-                UIConsts.PROJ_PREF_REPO_URL, repoTypeName + Messages.ProjProps_repo_url,
+                UIConsts.PROJ_PREF_REPO_URL, repoTypeName + Messages.repo_url,
                 getFieldEditorParent());
         addField(sfeUrl);
         sfeUrl.setEmptyStringAllowed(false);
 
         addField(new StringFieldEditor(UIConsts.PROJ_PREF_REPO_USER,
-                repoTypeName + Messages.ProjProps_user, getFieldEditorParent()));
+                repoTypeName + Messages.user_, getFieldEditorParent()));
 
         StringFieldEditor sfePass = new StringFieldEditor(
-                UIConsts.PROJ_PREF_REPO_PASS, repoTypeName + Messages.ProjProps_password,
+                UIConsts.PROJ_PREF_REPO_PASS, repoTypeName + Messages.projProps_password,
                 getFieldEditorParent());
         addField(sfePass);
         sfePass.getTextControl(getFieldEditorParent()).setEchoChar('\u2022'); // •
@@ -318,15 +320,15 @@ class MiscSettingPage extends FieldEditorPreferencePage {
         }
 
         addField(new ComboFieldEditor(UIConsts.PROJ_PREF_ENCODING,
-                Messages.ProjProps_project_encoding, lstCharsets.toArray(new String[lstCharsets
+                Messages.projProps_project_encoding, lstCharsets.toArray(new String[lstCharsets
                         .size()][]), getFieldEditorParent()));
 
         lblWarn = new CLabel(getFieldEditorParent(), SWT.NONE);
         lblWarn.setImage(lrm.createImage(ImageDescriptor
                 .createFromURL(Activator.getContext().getBundle()
                         .getResource(UIConsts.FILENAME_ICONWARNING))));
-        lblWarn.setText(Messages.ProjProps_warning
-                + Messages.ProjProps_encoding_of_existing_files_willnt_be_changed);
+        lblWarn.setText(Messages.warning
+                + Messages.projProps_encoding_of_existing_files_willnt_be_changed);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
         gd.exclude = true;
         lblWarn.setVisible(false);

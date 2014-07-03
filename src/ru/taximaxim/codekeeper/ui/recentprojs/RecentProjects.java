@@ -56,7 +56,7 @@ public class RecentProjects {
                 ((IPersistentPreferenceStore) prefStore).save();
             } catch (IOException ex) {
                 throw new IllegalStateException(
-                        Messages.RecentProjects_unexpected_error_while_saving_preferences, ex);
+                        Messages.unexpected_error_while_saving_preferences, ex);
             }
         }
     }

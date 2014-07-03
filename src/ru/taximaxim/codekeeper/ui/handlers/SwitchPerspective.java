@@ -26,7 +26,7 @@ public class SwitchPerspective {
             EModelService modelSrv, EPartService partSrv,
             MApplication app) {
         ListDialog dialog = new ListDialog(shell);
-        dialog.setTitle(Messages.SwitchPerspective_open_perspective);
+        dialog.setTitle(Messages.switchPerspective_open_perspective);
         
         dialog.setContentProvider(ArrayContentProvider.getInstance());
         dialog.setInput(modelSrv.findElements(

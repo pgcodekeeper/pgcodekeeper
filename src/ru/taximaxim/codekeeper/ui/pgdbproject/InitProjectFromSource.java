@@ -47,14 +47,14 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         try {
             Log.log(Log.LOG_INFO, "Init project at " + props.getProjectWorkingDir()); //$NON-NLS-1$
             
-            SubMonitor pm = SubMonitor.convert(monitor, Messages.InitProjectFromSource_initializing_project, 100);
+            SubMonitor pm = SubMonitor.convert(monitor, Messages.initProjectFromSource_initializing_project, 100);
             IRepoWorker repo = new JGitExec(props, 
                     mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
             initRepoFromSource(pm, repo);
             
             monitor.done();
         } catch (IOException ex) {
-            throw new InvocationTargetException(ex, Messages.InitProjectFromSource_ioexception_while_creating_project);
+            throw new InvocationTargetException(ex, Messages.initProjectFromSource_ioexception_while_creating_project);
         }
     }
 
@@ -86,10 +86,10 @@ public class InitProjectFromSource implements IRunnableWithProgress {
 
         default:
             throw new InvocationTargetException(new IllegalStateException(
-                    Messages.InitProjectFromSource_init_request_but_no_schema_source));
+                    Messages.initProjectFromSource_init_request_but_no_schema_source));
         }
 
-        pm.newChild(25).subTask(Messages.InitProjectFromSource_exporting_db_model); // 75
+        pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model); // 75
 
         try (TempDir tmpRepoMeta = new TempDir(
                 props.getProjectWorkingDir().toPath().getParent(),

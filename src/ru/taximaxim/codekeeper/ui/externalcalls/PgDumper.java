@@ -85,7 +85,7 @@ public class PgDumper {
         String version = StdStreamRedirector.launchAndRedirect(pgdump).trim();
         Matcher m = PATTERN_VERSION.matcher(version);
         if(!m.matches()) {
-            throw new IOException(Messages.PgDumper_bad_pg_dump_version_output + version);
+            throw new IOException(Messages.pgDumper_bad_pg_dump_version_output + version);
         }
         return m.group(1);
     }

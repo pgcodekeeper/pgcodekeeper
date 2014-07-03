@@ -61,23 +61,23 @@ public class ProjSyncSrc {
             
             @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                SubMonitor pm = SubMonitor.convert(monitor, Messages.ProjSyncSrc_syncing_repository_cache, 10);
+                SubMonitor pm = SubMonitor.convert(monitor, Messages.projSyncSrc_syncing_repository_cache, 10);
                 IRepoWorker repo = new JGitExec(proj, 
                         mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
 
                 File repoDir = proj.getProjectWorkingDir();
 
                 try {
-                    pm.newChild(2).subTask(Messages.ProjSyncSrc_checking_conflicts);
+                    pm.newChild(2).subTask(Messages.projSyncSrc_checking_conflicts);
                     conflicted.set(repo.hasConflicts(repoDir));
 
                     if (!conflicted.get()) {
-                        pm.newChild(8).subTask(Messages.ProjSyncSrc_updating_cache);
+                        pm.newChild(8).subTask(Messages.projSyncSrc_updating_cache);
                         conflicted.set(!repo.repoUpdate(repoDir));
                     }
                 } catch (IOException ex) {
-                    throw new InvocationTargetException(ex, Messages.ProjSyncSrc_error_while_checking
-                            + Messages.ProjSyncSrc_conflicts_or_update_repository);
+                    throw new InvocationTargetException(ex, Messages.projSyncSrc_error_while_checking
+                            + Messages.projSyncSrc_conflicts_or_update_repository);
                 }
                 monitor.done();
             }
@@ -87,17 +87,17 @@ public class ProjSyncSrc {
             new ProgressMonitorDialog(shell).run(true, false, syncRunnable);
         } catch (InterruptedException ex) {
             throw new IllegalStateException(
-                    Messages.ProjSyncSrc_repository_sync_uncancellable_thread_interrupted, ex);
+                    Messages.projSyncSrc_repository_sync_uncancellable_thread_interrupted, ex);
         } catch (InvocationTargetException ex) {
             throw new IllegalStateException(
-                    Messages.ProjSyncSrc_couldnt_synchronize_repository_with_remote, ex);
+                    Messages.projSyncSrc_couldnt_synchronize_repository_with_remote, ex);
         }
 
         if (conflicted.get()) {
             MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR);
-            mb.setText(Messages.ProjSyncSrc_sync_error);
-            mb.setMessage(Messages.ProjSyncSrc_repository_cache_has_conflict_resolve_them_manually
-                    + Messages.ProjSyncSrc_and_reload_project_before_continuing);
+            mb.setText(Messages.projSyncSrc_sync_error);
+            mb.setMessage(Messages.projSyncSrc_repository_cache_has_conflict_resolve_them_manually
+                    + Messages.projSyncSrc_and_reload_project_before_continuing);
             mb.open();
         }else{
             events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);

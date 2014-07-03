@@ -224,7 +224,7 @@ public class ProjectExplorer {
         
         differ.run(pm.newChild(6));
         
-        pm.newChild(4).subTask(Messages.ProjectExplorer_generating_object_hashes);
+        pm.newChild(4).subTask(Messages.projectExplorer_generating_object_hashes);
         visit(differ.getDiffTree(), src.getDbObject());
     }
     
@@ -257,7 +257,7 @@ public class ProjectExplorer {
                     @Override
                     public void run(IProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException {
-                        SubMonitor pm = SubMonitor.convert(monitor, Messages.ProjectExplorer_loading_project, 10);
+                        SubMonitor pm = SubMonitor.convert(monitor, Messages.projectExplorer_loading_project, 10);
                         initialHash(proj, pm.newChild(10));
                         
                         monitor.done();

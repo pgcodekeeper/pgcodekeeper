@@ -108,15 +108,15 @@ public class DiffPartDescr {
         containerUpper.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         btnGetLatest = new Button(containerUpper, SWT.PUSH);
-        btnGetLatest.setText(Messages.DiffPartDescr_get_latest);
+        btnGetLatest.setText(Messages.diffPartDescr_get_latest);
         btnGetLatest.setEnabled(false);
         btnGetLatest.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (diffTable.viewer.getCheckedElements().length < 1){
                     MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
-                    mb.setMessage(Messages.DiffPartDescr_please_check_at_least_one_row);
-                    mb.setText(Messages.DiffPartDescr_empty_selection);
+                    mb.setMessage(Messages.please_check_at_least_one_row);
+                    mb.setText(Messages.empty_selection);
                     mb.open();
                     return;
                 }
@@ -131,17 +131,17 @@ public class DiffPartDescr {
                     new ProgressMonitorDialog(shell).run(true, false, differ);
                 } catch (InvocationTargetException ex) {
                     throw new IllegalStateException(
-                            Messages.DiffPartDescr_error_in_the_project_modifier_thread, ex);
+                            Messages.error_in_the_project_modifier_thread, ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     throw new IllegalStateException(
-                            Messages.DiffPartDescr_project_modifier_thread_cancelled_shouldnt_happen,
+                            Messages.project_modifier_thread_cancelled_shouldnt_happen,
                             ex);
                 }
 
                 SqlScriptDialog dialog = new SqlScriptDialog(shell,
-                        SqlScriptDialog.INFORMATION, Messages.DiffPartDescr_diff_script,
-                        Messages.DiffPartDescr_this_will_apply_selected_changes_to_your_database,
+                        SqlScriptDialog.INFORMATION, Messages.diffPartDescr_diff_script,
+                        Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
                         differ.getDiffDirect());
                 
                 dialog.setScript(mainPrefs.getString(UIConsts.PREF_LAST_ROLLON_SCRIPT));
@@ -213,11 +213,11 @@ public class DiffPartDescr {
         containerSrc.setLayoutData(gd);
         
         Group grpSrc = new Group(containerSrc, SWT.NONE);
-        grpSrc.setText(Messages.DiffPartDescr_get_changes_for);
+        grpSrc.setText(Messages.diffPartDescr_get_changes_for);
         grpSrc.setLayout(new GridLayout(3, false));
 
         btnNone = new Button(grpSrc, SWT.RADIO);
-        btnNone.setText(Messages.DiffPartDescr_none);
+        btnNone.setText(Messages.none);
         btnNone.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -227,7 +227,7 @@ public class DiffPartDescr {
         });
 
         btnDump = new Button(grpSrc, SWT.RADIO);
-        btnDump.setText(Messages.DiffPartDescr_dump);
+        btnDump.setText(Messages.dump);
         btnDump.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -237,7 +237,7 @@ public class DiffPartDescr {
         });
 
         btnDb = new Button(grpSrc, SWT.RADIO);
-        btnDb.setText(Messages.DiffPartDescr_db);
+        btnDb.setText(Messages.db);
         btnDb.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -247,7 +247,7 @@ public class DiffPartDescr {
         });
 
         btnGetChanges = new Button(containerSrc, SWT.PUSH);
-        btnGetChanges.setText(Messages.DiffPartDescr_get_changes);
+        btnGetChanges.setText(Messages.get_changes);
         btnGetChanges.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
                 false));
         btnGetChanges.addSelectionListener(new SelectionAdapter() {
@@ -260,7 +260,7 @@ public class DiffPartDescr {
                 dbTarget = DbSource.fromProject(proj);
                 if (btnDump.getSelection()) {
                     FileDialog dialog = new FileDialog(shell);
-                    dialog.setText(Messages.DiffPartDescr_choose_dump_file_with_changes);
+                    dialog.setText(Messages.choose_dump_file_with_changes);
                     String dumpfile = dialog.open();
                     if (dumpfile != null) {
                         dbSource = DbSource.fromFile(dumpfile,
@@ -275,8 +275,8 @@ public class DiffPartDescr {
                         port = sPort.isEmpty()? 0 : Integer.parseInt(sPort);
                     } catch (NumberFormatException ex) {
                         MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR);
-                        mb.setText(Messages.DiffPartDescr_bad_port);
-                        mb.setMessage(Messages.DiffPartDescr_port_must_be_a_number);
+                        mb.setText(Messages.bad_port);
+                        mb.setMessage(Messages.port_must_be_a_number);
                         mb.open();
                         return;
                     }
@@ -289,7 +289,7 @@ public class DiffPartDescr {
                             proj.getString(UIConsts.PROJ_PREF_ENCODING));
                 } else {
                     throw new IllegalStateException(
-                            Messages.DiffPartDescr_undefined_source_for_db_changes);
+                            Messages.undefined_surce_for_db_changes);
                 }
                 
                 Log.log(Log.LOG_INFO, "Getting changes to generate script"); //$NON-NLS-1$
@@ -297,11 +297,11 @@ public class DiffPartDescr {
                 try {
                     new ProgressMonitorDialog(shell).run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
-                    throw new IllegalStateException(Messages.DiffPartDescr_error_in_differ_thread, ex);
+                    throw new IllegalStateException(Messages.error_in_differ_thread, ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     throw new IllegalStateException(
-                            Messages.DiffPartDescr_differ_thread_cancelled_shouldnt_happen, ex);
+                            Messages.differ_thread_cancelled_shouldnt_happen, ex);
                 }
 
                 diffTable.setInput(treediffer);
@@ -311,7 +311,7 @@ public class DiffPartDescr {
         });
 
         dbSrc = new DbPicker(containerSrc, SWT.NONE, mainPrefs, false);
-        dbSrc.setText(Messages.DiffPartDescr_db_source);
+        dbSrc.setText(Messages.db_source);
         dbSrc.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2,
                 1));
 
@@ -389,7 +389,7 @@ public class DiffPartDescr {
             
             @Override
             public String getRightLabel(Object input) {
-                return Messages.DiffPartDescr_from + proj.getString(UIConsts.PROJ_PREF_REPO_TYPE);
+                return Messages.diffPartDescr_from + proj.getString(UIConsts.PROJ_PREF_REPO_TYPE);
             }
             
             @Override
@@ -412,7 +412,7 @@ public class DiffPartDescr {
             
             @Override
             public String getLeftLabel(Object input) {
-                return Messages.DiffPartDescr_to_database;
+                return Messages.diffPartDescr_to_database;
             }
             
             @Override

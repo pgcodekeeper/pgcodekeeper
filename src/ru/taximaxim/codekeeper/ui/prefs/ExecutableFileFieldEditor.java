@@ -71,7 +71,7 @@ public class ExecutableFileFieldEditor extends FileFieldEditor {
         
         if(!f.canExecute()) {
             showErrorMessage(
-                    Messages.ExecutableFileFieldEditor_value_must_be_file_with_execute_permission_set);
+                    Messages.executableFileFieldEditor_value_must_be_file_with_execute_permission_set);
             return false;
         }
         

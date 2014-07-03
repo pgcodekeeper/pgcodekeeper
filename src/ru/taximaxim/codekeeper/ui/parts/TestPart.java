@@ -40,7 +40,7 @@ public class TestPart {
         
         parent.setLayout(new FormLayout());
         Button btn = new Button(parent, SWT.PUSH);
-        btn.setText(Messages.TestPart_qwe);
+        btn.setText(Messages.testPart_qwe);
         
         FormData data = new FormData();
         data.left = data.top = new FormAttachment(5);

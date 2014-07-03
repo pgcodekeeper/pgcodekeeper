@@ -118,7 +118,7 @@ public class SvnExec implements IRepoWorker {
     private void repoRemove(File dirIn, List<String> files) throws IOException {
         if (files.isEmpty()) {
             throw new IllegalArgumentException(
-                    Messages.SvnExec_cannot_svn_rm_an_empty_file_list);
+                    Messages.svnExec_cannot_svn_rm_an_empty_file_list);
         }
 
         ProcessBuilder svn = new ProcessBuilder(svnExec, "rm", //$NON-NLS-1$
@@ -230,7 +230,7 @@ public class SvnExec implements IRepoWorker {
                 "--quiet", "--non-interactive"); //$NON-NLS-1$ //$NON-NLS-2$
         String version = StdStreamRedirector.launchAndRedirect(svn).trim();
         if (!PATTERN_VERSION.matcher(version).matches()) {
-            throw new IOException(Messages.SvnExec_bad_svn_version_output + version);
+            throw new IOException(Messages.svnExec_bad_svn_version_output + version);
         }
         return version;
     }

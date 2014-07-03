@@ -34,7 +34,7 @@ public class PartContextInjector implements EventHandler {
     public PartContextInjector(MPart part, Map<Object, Object> values,
             IEventBroker events) {
         if(values.isEmpty()) {
-            throw new IllegalArgumentException(Messages.PartContextInjector_empty_values_map);
+            throw new IllegalArgumentException(Messages.partContextInjector_empty_values_map);
         }
         
         this.part = part;
@@ -65,8 +65,8 @@ public class PartContextInjector implements EventHandler {
                                 ctx.set((String) key, entry.getValue());
                             } else {
                                 throw new IllegalArgumentException(
-                                        Messages.PartContextInjector_only_class_and_string_are_allowed
-                                        + Messages.PartContextInjector_as_key_in_ieclipsecontext);
+                                        Messages.partContextInjector_only_class_and_string_are_allowed
+                                        + Messages.partContextInjector_as_key_in_ieclipsecontext);
                             }
                         }
                     } finally {

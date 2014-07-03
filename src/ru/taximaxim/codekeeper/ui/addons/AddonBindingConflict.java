@@ -39,13 +39,13 @@ public class AddonBindingConflict {
         for (Binding b : bindingManager.getBindings()) {
             if (conflicts.contains(b)) {
                 StringBuilder msg = new StringBuilder(1000);
-                msg.append(Messages.AddonBindingConflict_trying_to_deactivate_conflicting_bind);
+                msg.append(Messages.addonBindingConflict_trying_to_deactivate_conflicting_bind);
                 
                 TriggerSequence seq = b.getTriggerSequence();
                 if (seq != null) {
                     msg.append(seq.format());
                 }
-                msg.append(Messages.AddonBindingConflict_with_command_id);
+                msg.append(Messages.addonBindingConflict_with_command_id);
                 
                 ParameterizedCommand cmd = b.getParameterizedCommand();
                 if (cmd != null) {

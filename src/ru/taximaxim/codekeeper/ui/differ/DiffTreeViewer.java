@@ -214,7 +214,7 @@ public class DiffTreeViewer extends Composite {
         });
         
         MenuManager menuMgr = new MenuManager();
-        menuMgr.add(new Action(Messages.DiffTreeViewer_select_subtree) {
+        menuMgr.add(new Action(Messages.diffTreeViewer_select_subtree) {
             @Override
             public void run() {
                 TreeElement el = (TreeElement) ((TreeSelection) viewer.getSelection())
@@ -222,7 +222,7 @@ public class DiffTreeViewer extends Composite {
                 viewer.setSubtreeChecked(el, true);
             }
         });
-        menuMgr.add(new Action(Messages.DiffTreeViewer_deselect_subtree) {
+        menuMgr.add(new Action(Messages.diffTreeViewer_deselect_subtree) {
             @Override
             public void run() {
                 TreeElement el = (TreeElement) ((TreeSelection) viewer.getSelection())
@@ -231,14 +231,14 @@ public class DiffTreeViewer extends Composite {
             }
         });
         menuMgr.add(new Separator());
-        menuMgr.add(new Action(Messages.DiffTreeViewer_expand_subtree) {
+        menuMgr.add(new Action(Messages.diffTreeViewer_expand_subtree) {
             @Override
             public void run() {
                 TreePath path = ((TreeSelection) viewer.getSelection()).getPaths()[0];
                 viewer.expandToLevel(path, TreeViewer.ALL_LEVELS);
             }
         });
-        menuMgr.add(new Action(Messages.DiffTreeViewer_collapse_subtree) {
+        menuMgr.add(new Action(Messages.diffTreeViewer_collapse_subtree) {
             @Override
             public void run() {
                 TreePath path = ((TreeSelection) viewer.getSelection()).getPaths()[0];
@@ -267,7 +267,7 @@ public class DiffTreeViewer extends Composite {
         contButtons.setLayout(contButtonsLayout);
         
         Button btnSelectAll = new Button(contButtons, SWT.PUSH);
-        btnSelectAll.setText(Messages.DiffTreeViewer_select_all);
+        btnSelectAll.setText(Messages.select_all);
         btnSelectAll.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -281,7 +281,7 @@ public class DiffTreeViewer extends Composite {
         });
         
         Button btnSelectNone = new Button(contButtons, SWT.PUSH);
-        btnSelectNone.setText(Messages.DiffTreeViewer_select_none);
+        btnSelectNone.setText(Messages.select_none);
         btnSelectNone.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -295,7 +295,7 @@ public class DiffTreeViewer extends Composite {
         });
         
         Button btnExpandAll = new Button(contButtons, SWT.PUSH);
-        btnExpandAll.setText(Messages.DiffTreeViewer_expand_all);
+        btnExpandAll.setText(Messages.diffTreeViewer_expand_all);
         btnExpandAll.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -304,7 +304,7 @@ public class DiffTreeViewer extends Composite {
         });
         
         Button btnCollapseAll = new Button(contButtons, SWT.PUSH);
-        btnCollapseAll.setText(Messages.DiffTreeViewer_collapse_all);
+        btnCollapseAll.setText(Messages.diffTreeViewer_collapse_all);
         btnCollapseAll.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -313,7 +313,7 @@ public class DiffTreeViewer extends Composite {
         });
         
         btnDebugView = new Button(contButtons, SWT.CHECK);
-        btnDebugView.setText(Messages.DiffTreeViewer_debug_view);
+        btnDebugView.setText(Messages.diffTreeViewer_debug_view);
         btnDebugView.setLayoutData(new GridData(
                 GridData.HORIZONTAL_ALIGN_END | GridData.FILL_HORIZONTAL));
         btnDebugView.addSelectionListener(new SelectionAdapter() {

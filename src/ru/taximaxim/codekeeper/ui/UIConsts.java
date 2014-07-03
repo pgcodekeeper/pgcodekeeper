@@ -68,14 +68,14 @@ public interface UIConsts {
     
     String FILENAME_PROJ_PREF_STORE = ".project"; //$NON-NLS-1$
     
-    String FILENAME_ICONPGADMIN = Messages.UIConsts_icons_pgadmin;
-    String FILENAME_ICONWARNING = Messages.UIConsts_icons_warning;
-    String FILENAME_ICONDIR = Messages.UIConsts_icons_exportdir_wiz;
-    String FILENAME_ICONFILE = Messages.UIConsts_icons_file_obj;
-    String FILENAME_ICONADD = Messages.UIConsts_icons_add_obj;
-    String FILENAME_ICONSAVE = Messages.UIConsts_icons_save_edit;
-    String FILENAME_ICONDEL = Messages.UIConsts_icons_delete_obj;
-    String FILENAME_ICONEDIT = Messages.UIConsts_icons_editor;
+    String FILENAME_ICONPGADMIN = Messages.uIConsts_icons_pgadmin;
+    String FILENAME_ICONWARNING = Messages.uIConsts_icons_warning;
+    String FILENAME_ICONDIR = Messages.uIConsts_icons_exportdir_wiz;
+    String FILENAME_ICONFILE = Messages.uIConsts_icons_file_obj;
+    String FILENAME_ICONADD = Messages.uIConsts_icons_add_obj;
+    String FILENAME_ICONSAVE = Messages.uIConsts_icons_save_edit;
+    String FILENAME_ICONDEL = Messages.uIConsts_icons_delete_obj;
+    String FILENAME_ICONEDIT = Messages.uIConsts_icons_editor;
     
     String EVENT_REOPEN_PROJECT = "ru/taximaxim/codekeeper/ui/project/changed"; //$NON-NLS-1$
 }

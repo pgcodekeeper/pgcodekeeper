@@ -80,7 +80,7 @@ public class JGitExec implements IRepoWorker{
         try {
             cloneCom.setURI(url).setDirectory(dirTo).call().close();
         } catch (GitAPIException e) {
-            throw new IOException (Messages.JGitExec_eception_thrown_at_jgit_clone, e);
+            throw new IOException (Messages.jGitExec_eception_thrown_at_jgit_clone, e);
         }
     }
 
@@ -117,12 +117,12 @@ public class JGitExec implements IRepoWorker{
                             "\n                Status: " + b.getStatus() +  //$NON-NLS-1$
                             "\n               Message: " + b.getMessage()); //$NON-NLS-1$
                         throw new IOException(
-                                Messages.JGitExec_exception_thrown_at_jgit_commit_status_isnt_ok_or_up_to_date);
+                                Messages.jGitExec_exception_thrown_at_jgit_commit_status_isnt_ok_or_up_to_date);
                     }
                 }
             }
         } catch (GitAPIException e){
-            throw new IOException (Messages.JGitExec_exception_thrown_at_jgit_commit, e);
+            throw new IOException (Messages.jGitExec_exception_thrown_at_jgit_commit, e);
         }finally{
             git.close();
         }
@@ -149,7 +149,7 @@ public class JGitExec implements IRepoWorker{
             git.add().addFilepattern(subDir).call();
         } catch (GitAPIException e) {
             throw new IOException(
-                    Messages.JGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new, e);
+                    Messages.jGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new, e);
         } finally {
             git.close();
         }
@@ -193,7 +193,7 @@ public class JGitExec implements IRepoWorker{
             PullResult pr =  pullCom.call();
             return pr.getMergeResult().getMergeStatus().isSuccessful();
         } catch (GitAPIException e){
-            throw new IOException(Messages.JGitExec_exception_thrown_at_jgit_repo_update, e);
+            throw new IOException(Messages.jGitExec_exception_thrown_at_jgit_repo_update, e);
         }finally{
             git.close();
         }
@@ -252,8 +252,8 @@ public class JGitExec implements IRepoWorker{
                 gitSubDir = gitSubDir.getParentFile().getParentFile();
             }
         }
-        throw new IllegalStateException(Messages.JGitExec_couldnt_find_git_repository_in 
-                                            + subDir + Messages.JGitExec_and_higher);
+        throw new IllegalStateException(Messages.jGitExec_couldnt_find_git_repository_in 
+                                            + subDir + Messages.jGitExec_and_higher);
     }
     
     private static class CustomJschConfigSessionFactory extends JschConfigSessionFactory {

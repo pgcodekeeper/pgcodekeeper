@@ -38,7 +38,7 @@ public class LoadProj {
             MApplication app,
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs) {
         FileDialog dialog = new FileDialog(shell);
-        dialog.setText(Messages.LoadProj_open_project);
+        dialog.setText(Messages.loadProj_open_project);
         dialog.setOverwrite(false);
         dialog.setFilterPath(mainPrefs.getString(UIConsts.PREF_LAST_OPENED_LOCATION));
         dialog.setFilterExtensions(new String[] { "*.project", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
@@ -53,9 +53,9 @@ public class LoadProj {
                 }
             } else {
                 MessageBox mb = new MessageBox(shell);
-                mb.setText(Messages.LoadProj_loadl_failed);
-                mb.setMessage(Messages.LoadProj_directory_isnt_valid_project
-                        + Messages.LoadProj_properties_file_not_found);
+                mb.setText(Messages.load_failed);
+                mb.setMessage(Messages.directory_isnt_valid_project
+                        + Messages.properties_file_not_found);
                 mb.open();
             }
         }
@@ -68,9 +68,9 @@ public class LoadProj {
         proj.load();
         // check for not existing working dir
         if (!proj.getProjectWorkingDir().exists() || !proj.getProjectWorkingDir().isDirectory()){
-            String message = Messages.LoadProj_couldnt_open_project + proj.getProjectFile() + 
-                    Messages.LoadProj_because_working_directory + proj.getProjectWorkingDir() + 
-                    Messages.LoadProj_either_doesnt_exist_or_not_a_directory;
+            String message = Messages.loadProj_couldnt_open_project + proj.getProjectFile() + 
+                    Messages.loadProj_because_working_directory + proj.getProjectWorkingDir() + 
+                    Messages.loadProj_either_doesnt_exist_or_not_a_directory;
             Console.addMessage(message);
             Log.log(Log.LOG_WARNING, message);
             return false;
@@ -78,11 +78,11 @@ public class LoadProj {
         if (!new File(proj.getProjectWorkingDir(), 
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
             MessageDialog dialog = new MessageDialog(shell,
-                    Messages.LoadProj_bad_project, null, 
-                    Messages.LoadProj_missing_marker_file_in_working_directory + proj.getProjectWorkingDir() +
-                    Messages.LoadProj_create_marker_file_named + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
-                    Messages.LoadProj_manually_and_try_again, MessageDialog.WARNING, 
-                    new String []{Messages.LoadProj_ok}, 0);
+                    Messages.loadProj_bad_project, null, 
+                    Messages.missing_marker_file_in_working_directory + proj.getProjectWorkingDir() +
+                    Messages.create_marker_file_named + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
+                    Messages.manually_and_try_again, MessageDialog.WARNING, 
+                    new String []{Messages.loadProj_ok}, 0);
             dialog.open();
             return false;
         }

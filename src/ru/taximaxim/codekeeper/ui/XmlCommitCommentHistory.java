@@ -119,7 +119,7 @@ public class XmlCommitCommentHistory {
             return xml;
         } catch (IOException | SAXException | ParserConfigurationException ex) {
             throw new IllegalStateException(
-                    Messages.XmlCommitCommentHistory_error_reading_comment_history_xml, ex);
+                    Messages.xmlCommitCommentHistory_error_reading_comment_history_xml, ex);
         }
     }
     
@@ -149,7 +149,7 @@ public class XmlCommitCommentHistory {
                     fileXml.createNewFile();
                 } catch (IOException ex) {
                     throw new IllegalStateException(
-                            Messages.XmlCommitCommentHistory_error_while_trying_to_write_comment, ex);
+                            Messages.xmlCommitCommentHistory_error_while_trying_to_write_comment, ex);
                 }
             }
             StreamResult stream = new StreamResult(fileXml);
