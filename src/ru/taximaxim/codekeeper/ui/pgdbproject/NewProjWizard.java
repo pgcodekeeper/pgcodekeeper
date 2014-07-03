@@ -645,7 +645,7 @@ class PageSubdir extends WizardPage implements Listener {
                 || !Paths.get(repoSubdir).startsWith(Paths.get(repoRoot))) {
             errMsg = Messages.newProjWizard_select_correct_subdir_of_the_git_repo;
         }else if (isDoInit() && Paths.get(projectFile).startsWith(getRepoSubdir())){
-            errMsg = Messages.newProjWizard_project_fiel + projectFile + Messages.newProjWizard_connt_be_saved_in_working
+            errMsg = Messages.newProjWizard_project_fiel + projectFile + Messages.newProjWizard_cannt_be_saved_in_working
                     + Messages.newProjWizard_dir_because_itll_be_deleted_during_init_stage;
         }
         

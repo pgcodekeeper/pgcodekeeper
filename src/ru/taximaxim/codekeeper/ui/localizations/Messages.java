@@ -85,10 +85,7 @@ public class Messages extends NLS {
     public static String xmlCommitCommentHistory_error_while_trying_to_write_comment;
     
     // ui.addons
-    public static String addonBindingConflict_trying_to_deactivate_conflicting_bind;
-    public static String addonBindingConflict_with_command_id;
     public static String addonExternalTools_error_while_trying_to_run_pg_admin;
-    public static String addonExternalTools_uknown;
     public static String addonExternalTools_version_check_paths_in_program_preferences;
     
     // ui.dbstore
@@ -109,12 +106,9 @@ public class Messages extends NLS {
     public static String dbSource_db_is_not_loaded_yet_object_is_null;
     public static String dbSource_executing_pg_dump;
     public static String dbSource_filter_on;
-    public static String dbSource_loading_db_from;
     public static String dbSource_loading_dump;
     public static String dbSource_loading_tree;
     public static String dbSource_repository_rev_checkout;
-    public static String dbSource_unknown_db;
-    public static String dbSource_unknown_host;
     public static String differ_diff_from;
     public static String differ_direct_diff;
     public static String differ_reverse_diff;
@@ -149,11 +143,8 @@ public class Messages extends NLS {
     
     // ui.externalcalls.utils
     public static String stdStreamRedirector_error_while_reading_from_stdout_stderr;
-    public static String stdStreamRedirector_exception_thrown_while_external_command_output;
     public static String stdStreamRedirector_external_command;
-    public static String stdStreamRedirector_interrrupted_wait_on_redirector_thread;
     public static String stdStreamRedirector_output;
-    public static String stdStreamRedirector_process_returned_with_error;
     
     // ui.handlers
     public static String about_about_pgcodekeeper;
@@ -183,7 +174,6 @@ public class Messages extends NLS {
     public static String projSyncSrc_syncing_repository_cache;
     public static String projSyncSrc_updating_cache;
     public static String pwitchBranch_exception_during_switching_branch;
-    public static String switchBranch_exception_waiting_for_checkout_job;
     public static String switchBranch_wrong_repository_or_ref_name;
     public static String switchPerspective_open_perspective;
     
@@ -210,7 +200,6 @@ public class Messages extends NLS {
     public static String projectExplorer_loading_project;
 
     public static String projectExplorer_project_explorer;
-    public static String testPart_qwe;
     
     // ui.pgdbproject
     public static String diffWizard_consider_using_ssh_authentication_instead;
@@ -253,7 +242,7 @@ public class Messages extends NLS {
     public static String newProjWizard_cloning_get_repo;
     public static String newProjWizard_cloning_thread_interrupted;
     public static String newProjWizard_cloning_wasnt_successful;
-    public static String newProjWizard_connt_be_saved_in_working;
+    public static String newProjWizard_cannt_be_saved_in_working;
     public static String newProjWizard_couldnt_create_empty_database_in;
     public static String newProjWizard_db_source_settings;
     public static String newProjWizard_dir_because_itll_be_deleted_during_init_stage;

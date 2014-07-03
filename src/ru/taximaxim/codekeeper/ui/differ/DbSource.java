@@ -39,7 +39,7 @@ public abstract class DbSource {
     }
 
     public PgDatabase get(SubMonitor monitor) throws IOException {
-        Log.log(Log.LOG_INFO, Messages.dbSource_loading_db_from + origin);
+        Log.log(Log.LOG_INFO, "Loading DB from " + origin); //$NON-NLS-1$
         
         dbObject = this.loadInternal(monitor);
         return dbObject;
@@ -228,8 +228,8 @@ class DbSourceDb extends DbSource {
     DbSourceDb(String exePgdump, String customParams,
             String host, int port, String user, String pass,
             String dbname, String encoding) {
-        super((dbname.isEmpty() ? Messages.dbSource_unknown_db : dbname) + "@" //$NON-NLS-1$
-                + (host.isEmpty() ? Messages.dbSource_unknown_host : host));
+        super((dbname.isEmpty() ? "unknown_db" : dbname) + "@" //$NON-NLS-1$ //$NON-NLS-2$
+                + (host.isEmpty() ? "unknown_host" : host)); //$NON-NLS-1$
 
         this.exePgdump = exePgdump;
         this.customParams = customParams;

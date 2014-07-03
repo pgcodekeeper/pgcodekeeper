@@ -68,8 +68,7 @@ public class SwitchBranch {
                             });
                         }
                     } catch (IOException | InterruptedException ex) {
-                        throw new IllegalStateException(
-                                Messages.switchBranch_exception_waiting_for_checkout_job, ex);
+                        throw new IllegalStateException("Exception waiting for checkout job ", ex); //$NON-NLS-1$
                     } finally {
                         git.get().close();
                     }

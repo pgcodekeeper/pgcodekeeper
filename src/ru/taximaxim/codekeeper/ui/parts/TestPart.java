@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 
 public class TestPart {
@@ -40,7 +39,7 @@ public class TestPart {
         
         parent.setLayout(new FormLayout());
         Button btn = new Button(parent, SWT.PUSH);
-        btn.setText(Messages.testPart_qwe);
+        btn.setText("qwe"); //$NON-NLS-1$
         
         FormData data = new FormData();
         data.left = data.top = new FormAttachment(5);

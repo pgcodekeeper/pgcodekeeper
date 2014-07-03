@@ -99,16 +99,16 @@ public class StdStreamRedirector implements Runnable {
             try {
                 redirectorThread.join();
             } catch (InterruptedException ex) {
-                throw new IllegalStateException(Messages.stdStreamRedirector_interrrupted_wait_on_redirector_thread, ex);
+                throw new IllegalStateException("Interrupted wait on redirectorThread ", ex); //$NON-NLS-1$
             }
 
             if (!redirector.isDestroyed.get() && p.exitValue() != 0) {
-                throw new IOException(Messages.stdStreamRedirector_process_returned_with_error
+                throw new IOException("Process returned with error: " //$NON-NLS-1$
                             + p.exitValue());
             }
             
             if (lastException.get() != null){
-                throw new IOException(Messages.stdStreamRedirector_exception_thrown_while_external_command_output, 
+                throw new IOException("Exception thrown while reading external command output ",  //$NON-NLS-1$
                         lastException.get());
             }
             return redirector.storage.toString();

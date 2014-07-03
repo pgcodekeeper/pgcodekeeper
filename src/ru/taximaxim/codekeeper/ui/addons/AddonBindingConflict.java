@@ -17,7 +17,6 @@ import org.eclipse.jface.bindings.BindingManager;
 import org.eclipse.jface.bindings.TriggerSequence;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class AddonBindingConflict {
     
@@ -39,13 +38,13 @@ public class AddonBindingConflict {
         for (Binding b : bindingManager.getBindings()) {
             if (conflicts.contains(b)) {
                 StringBuilder msg = new StringBuilder(1000);
-                msg.append(Messages.addonBindingConflict_trying_to_deactivate_conflicting_bind);
+                msg.append("Trying to deactivate conflicting binding '"); //$NON-NLS-1$
                 
                 TriggerSequence seq = b.getTriggerSequence();
                 if (seq != null) {
                     msg.append(seq.format());
                 }
-                msg.append(Messages.addonBindingConflict_with_command_id);
+                msg.append("' with command id '"); //$NON-NLS-1$
                 
                 ParameterizedCommand cmd = b.getParameterizedCommand();
                 if (cmd != null) {
