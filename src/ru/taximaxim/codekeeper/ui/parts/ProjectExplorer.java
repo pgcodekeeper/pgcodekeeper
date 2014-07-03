@@ -275,7 +275,7 @@ public class ProjectExplorer {
             });
         }
         
-        String partLabel = "Project Explorer"; //$NON-NLS-1$
+        String partLabel = Messages.projectExplorer_project_explorer;
         if (proj != null) {
             partLabel += " - " + proj.getProjectName(); //$NON-NLS-1$
         }

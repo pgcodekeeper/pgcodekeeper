@@ -329,7 +329,7 @@ class PageRepo extends WizardPage implements Listener {
             if (JGitExec.PATTERN_HTTP_URL.matcher(txtRepoUrl.getText()).matches()){
                 lblWarnPass
                 .setText(Messages.warning
-                        + Messages.providing_password_here_is_insecure + "\n"
+                        + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
                         + Messages.this_password_will_show_up_in_logs
                         + Messages.consider_using_ssh_authentication_instead_use_git);
             }else if (JGitExec.PATTERN_FILE_URL.matcher(txtRepoUrl.getText()).matches()){

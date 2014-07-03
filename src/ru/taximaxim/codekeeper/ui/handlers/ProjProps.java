@@ -123,7 +123,7 @@ class DbSrcPage extends FieldEditorPreferencePage {
                 .createFromURL(Activator.getContext().getBundle()
                         .getResource(UIConsts.FILENAME_ICONWARNING))));
         lblWarn.setText(Messages.warning 
-                + Messages.providing_password_here_is_insecure + "\n"
+                + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
                 + Messages.consider_using_pgpass_file_instead);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
 
@@ -232,7 +232,7 @@ class RepoSettingsPage extends FieldEditorPreferencePage {
         String warningMessage;
         repoTypeName = UIConsts.PROJ_REPO_TYPE_GIT_NAME;
         warningMessage = Messages.warning
-                + Messages.providing_password_here_is_insecure + "\n"
+                + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
                 + Messages.this_password_will_show_up_in_logs
                 + Messages.consider_using_ssh_authentication_instead_use_git;
         StringFieldEditor sfeUrl = new StringFieldEditor(

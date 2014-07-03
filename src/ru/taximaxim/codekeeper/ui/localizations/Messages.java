@@ -208,6 +208,8 @@ public class Messages extends NLS {
     public static String diffPartDescr_to_database;
     public static String projectExplorer_generating_object_hashes;
     public static String projectExplorer_loading_project;
+
+    public static String projectExplorer_project_explorer;
     public static String testPart_qwe;
     
     // ui.pgdbproject

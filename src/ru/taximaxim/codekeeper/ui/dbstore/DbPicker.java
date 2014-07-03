@@ -109,7 +109,7 @@ public class DbPicker extends Group {
                 Activator.getContext().getBundle().getResource(
                         UIConsts.FILENAME_ICONWARNING))));
         lblWarnDbPass.setText(Messages.warning
-                + Messages.providing_password_here_is_insecure + "\n"
+                + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
                 + Messages.consider_using_pgpass_file_instead);
         gd = new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1);
         gd.exclude = true;

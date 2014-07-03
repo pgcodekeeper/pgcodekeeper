@@ -439,7 +439,7 @@ class PageDiff extends WizardPage implements Listener {
                     txtGitUser.setEnabled(true);
                     txtGitPass.setEnabled(true);
                     lblWarnGitPass.setText(Messages.warning
-                            + Messages.providing_password_here_is_insecure + "\n"
+                            + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
                             + Messages.this_password_will_show_up_in_logs
                             + Messages.diffWizard_consider_using_ssh_authentication_instead);
                     txtGitPass.notifyListeners(SWT.Modify, new Event());
@@ -496,7 +496,7 @@ class PageDiff extends WizardPage implements Listener {
                 .createFromURL(Activator.getContext().getBundle()
                         .getResource(UIConsts.FILENAME_ICONWARNING))));
         lblWarnGitPass.setText(Messages.warning
-                + Messages.providing_password_here_is_insecure + "\n"
+                + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
                 + Messages.this_password_will_show_up_in_logs
                 + Messages.diffWizard_consider_using_ssh_authentication_instead);
         gd = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
