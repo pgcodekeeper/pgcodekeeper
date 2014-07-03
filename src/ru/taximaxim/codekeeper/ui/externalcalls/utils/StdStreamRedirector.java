@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.parts.Console;
 
 /**
@@ -48,8 +47,7 @@ public class StdStreamRedirector implements Runnable {
                 // the process was destroyed by us, exit silently
                 return;
             }
-            throw new IllegalStateException(
-                    Messages.stdStreamRedirector_error_while_reading_from_stdout_stderr, ex);
+            throw new IllegalStateException("Error while reading from stdout/stderr ", ex); //$NON-NLS-1$
         }
     }
     
@@ -115,11 +113,11 @@ public class StdStreamRedirector implements Runnable {
         } finally {
             StringBuilder msg = new StringBuilder(
                     cmd.length() + redirector.storage.length() + 128);
-            msg.append(Messages.stdStreamRedirector_external_command)
+            msg.append("External command:") //$NON-NLS-1$
                 .append(System.lineSeparator())
                 .append(cmd)
                 .append(System.lineSeparator())
-                .append(Messages.stdStreamRedirector_output)
+                .append("Output: ") //$NON-NLS-1$
                 .append(System.lineSeparator())
                 .append(redirector.storage);
             

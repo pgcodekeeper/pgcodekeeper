@@ -141,11 +141,6 @@ public class Messages extends NLS {
     public static String svnExec_bad_svn_version_output;
     public static String svnExec_cannot_svn_rm_an_empty_file_list;
     
-    // ui.externalcalls.utils
-    public static String stdStreamRedirector_error_while_reading_from_stdout_stderr;
-    public static String stdStreamRedirector_external_command;
-    public static String stdStreamRedirector_output;
-    
     // ui.handlers
     public static String about_about_pgcodekeeper;
     public static String about_pg_dump_version;
