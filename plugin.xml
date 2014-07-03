@@ -34,13 +34,13 @@
             category="ru.taximaxim.codekeeper.ui.general"
             class="ru.taximaxim.codekeeper.ui.prefs.DbStorePrefPage"
             id="ru.taximaxim.codekeeper.ui.dbstore"
-            name="DB Store">
+            name="%page.name.dbstore">
       </page>
       <page
             category="ru.taximaxim.codekeeper.ui.general"
             class="ru.taximaxim.codekeeper.ui.prefs.GitPrefPage"
             id="ru.taximaxim.codekeeper.ui.git"
-            name="Git+SSH">
+            name="%page.name.gitssh">
       </page>
    </extension>
 
