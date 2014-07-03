@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -70,6 +71,8 @@ public class SelectParser {
     private PgSelect parseSelect(String statement) {
         try {
             parseSelectRecursive(statement);
+        } catch (ParserException ex) {
+            Log.log(ex);
         } catch (Exception ex) {
             Log.log(Log.LOG_DEBUG,
                     "Exception while trying to parse following SELECT statement\n"
@@ -85,6 +88,7 @@ public class SelectParser {
      * We need this to be a member variable due to recursive nature of the parser. 
      */
     private int parens;
+    
     private void parseSelectRecursive(String statement) {
         final List<GenericColumn> columns = new ArrayList<>(10);
         final Map<String, String> tableAliases = new HashMap<>();
@@ -94,7 +98,7 @@ public class SelectParser {
             columns.clear();
             tableAliases.clear();
             
-            if (p.expectOptional("(")) {
+            while (p.expectOptional("(")) {
                 ++parens;
             }
             
@@ -107,9 +111,8 @@ public class SelectParser {
                     columns.add(new GenericColumn(m.group(GRP_SCHEMA),
                             m.group(GRP_TABLE), m.group(GRP_COLUMN)));
                 } else {
-                    Log.log(Log.LOG_DEBUG, "SELECT column didn't match the pattern"
-                            + " while parsing statement:\n" + statement
-                            + "\ncolumn:\n" + column);
+                    Log.log(Log.LOG_DEBUG, "SELECT column didn't match the pattern:\n"
+                            + column);
                 }
             } while (p.expectOptional(","));
             
@@ -118,9 +121,8 @@ public class SelectParser {
             // FROM {regex}: [(]+
             if (p.expectOptional("FROM")) {
                 do {
-                    //Pass whole FROM statement
-                    String fromQuery = p.getExpression(CLAUSES); 
-                    from(new Parser(removeExcessParens(fromQuery)), tableAliases, columns);
+                    from(new Parser(removeExcessParens(p.getExpression(CLAUSES))),
+                            tableAliases, columns);
                 } while (p.expectOptional(","));
             }
             
@@ -140,7 +142,7 @@ public class SelectParser {
                 } while (p.expectOptional(","));
             }
 
-            if (parens > 0 && p.expectOptional(")")) {
+            while (parens > 0 && p.expectOptional(")")) {
                 --parens;
             }
             
@@ -149,17 +151,11 @@ public class SelectParser {
                 
                 parseSelectRecursive(p.getRest());
             }
-            
-            // resolve aliased columns
-            
         } while (parens > 0);
     }
     
     /**
      * Resolve aliased columns and add them to accumulating object
-     * 
-     * @param columns
-     * @param tableAliases
      */
     private void resolveAliases(List<GenericColumn> columns, Map<String, String> tableAliases){
         for (GenericColumn column : columns) {
@@ -172,8 +168,6 @@ public class SelectParser {
                             column.column);
                 }
             }
-            
-            // and add them to the accumulating object
             select.addColumn(column);
         }
     }
@@ -185,6 +179,7 @@ public class SelectParser {
      * @param initial Query string
      * @return Query string with excessive parens replaced by spaces
      */
+    // FIXME quoted parens, optimize substring contains and stuff
     private String removeExcessParens(String initial){
         Parser p = new Parser(initial);
         StringBuilder sb = new StringBuilder(initial);
@@ -206,7 +201,7 @@ public class SelectParser {
         return sb.toString();
     }
     
-    private int getClosingParenthesisIndex(StringBuilder part, int openingIndex){
+    private int getClosingParenthesisIndex(CharSequence part, int openingIndex){
         int parensCount = 0;
         for (int i = openingIndex + 1; i < part.length(); i++){
             if (part.charAt(i) == '('){
@@ -222,10 +217,9 @@ public class SelectParser {
     }
     
     private void from(Parser pf, Map<String, String> tableAliases, List<GenericColumn> outerSelectColumns) {
-        boolean wasSubselect;
-        // just skip for now
         pf.expectOptional("LATERAL");
-        /**
+        String joinOp = null;
+        /*
          * If subselect is present in the first place
          * 
          * From PostgreSQL 9.3.4 Documentation:
@@ -235,14 +229,11 @@ public class SelectParser {
          *     by parentheses, and an alias must be provided for it. 
          *     A VALUES command can also be used here.
          */
-        if (wasSubselect = pf.expectOptional("(")){
+        if (pf.expectOptional("(")) { // subselect
             int start = pf.getPosition();
-            pf.expect("SELECT");
+            int end = getClosingParenthesisIndex(pf.getString(), start);
             
-            StringBuilder sb = new StringBuilder(pf.getString().substring(start));
-            
-            int end = getClosingParenthesisIndex(sb, 0);
-            
+            // pf.expect("SELECT"); unnecessary, done in parseSelectRecursive()
             // parse subselect recursively as usually
             parseSelectRecursive(pf.getSubString(start, start + end));
             
@@ -253,35 +244,34 @@ public class SelectParser {
             String alias = pf.parseIdentifier();
             
             // If external SELECT selects columns from subselect,
-            // remove them from external select columns list as they will be 
-            // dealiased and added to PgSelect when parsing subselect
-            List<GenericColumn> toBeRemoved = new ArrayList <GenericColumn> (5);
-            for(GenericColumn c : outerSelectColumns){
-                if (c.schema == null && c.table != null && c.table.equals(alias)){
-                    toBeRemoved.add(c);
+            // remove them from external select columns list as they are already
+            // dealiased and added to PgSelect when subselect is parsed
+            Iterator<GenericColumn> it = outerSelectColumns.iterator();
+            while (it.hasNext()) {
+                GenericColumn c = it.next();
+                if (c.schema == null && alias.equals(c.table)) {
+                    it.remove();
                 }
-            }
-            // remove all subselect columns
-            for (GenericColumn c : toBeRemoved){
-                outerSelectColumns.remove(c);
             }
             
             joinCondition(pf);
-        }
-        String joinOp = null;
-        if (!wasSubselect){
+        } else {
             pf.expectOptional("ONLY");
             
             String table = pf.parseIdentifier();
             pf.expectOptional("*");
             
-            
             if (!joinCondition(pf)) {
                 boolean as = pf.expectOptional("AS");
                 if (!as) {
                     joinOp = pf.expectOptionalOneOf(SelectParser.JOIN_WORDS);
-                    if (joinOp != null || pf.isConsumed()){
+                    if (joinOp != null || pf.isConsumed()) {
+                        // TODO существует ли необходиомсть деалиасить таблицы?
+                        // они уже кладутся в селект как table.column
                         tableAliases.put(table, table);
+                        // FIXME данный код не детектит случай JOIN table ON | USING ...
+                        // данная ветка - для обработки отсутствующего джойн кондишена
+                        // isConsumed() тоже здесь толком не работает
                     }
                 }
                 if (as || (joinOp == null && !pf.isConsumed())) {
@@ -290,7 +280,6 @@ public class SelectParser {
                     joinCondition(pf);
                 }
             }
-            
         }
         
         boolean join = joinOp != null;
