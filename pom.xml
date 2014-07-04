@@ -18,11 +18,11 @@
 	     <plugin>
 	 	    <groupId>org.eclipse.tycho</groupId>
 	 	    <artifactId>tycho-surefire-plugin</artifactId>
-	 	    <version>0.19.0</version>
+	 	    <version>${tycho.version}</version>
 	 	    <configuration>
 	 	      <product>ru.taximaxim.codeKeeper</product>
 	        </configuration>
 	 	  </plugin>
 	 </plugins>
  </build>
-</project> 
+</project>
