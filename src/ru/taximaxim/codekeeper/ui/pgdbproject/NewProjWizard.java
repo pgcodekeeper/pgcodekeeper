@@ -333,8 +333,7 @@ class PageRepo extends WizardPage implements Listener {
             }else if (JGitExec.PATTERN_FILE_URL.matcher(txtRepoUrl.getText()).matches()){
                 lblWarnPass.setText(""); //$NON-NLS-1$
             }else {
-                lblWarnPass.setText(Messages.make_sure_you_have_priv_and_public_keys
-                        + Messages.filenames_entered_in_application_preferences);
+                lblWarnPass.setText(Messages.make_sure_you_have_priv_and_public_keys);
             }
     }
 
@@ -347,7 +346,7 @@ class PageRepo extends WizardPage implements Listener {
         container.setLayout(new GridLayout(2, false));
         
         grpRepo = new Group(container, SWT.NONE);
-        grpRepo.setText(repoTypeName + Messages.settings_lwhtitespace);
+        grpRepo.setText(repoTypeName + Messages.NewProjWizard_settings);
         grpRepo.setLayout(new GridLayout(2, false));
         grpRepo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
 

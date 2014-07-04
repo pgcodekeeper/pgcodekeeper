@@ -451,8 +451,7 @@ class PageDiff extends WizardPage implements Listener {
                 }else {
                     txtGitUser.setEnabled(false);
                     txtGitPass.setEnabled(false);
-                    lblWarnGitPass.setText(Messages.make_sure_you_have_priv_and_public_keys
-                            + Messages.filenames_entered_in_application_preferences);
+                    lblWarnGitPass.setText(Messages.make_sure_you_have_priv_and_public_keys);
                     txtGitPass.notifyListeners(SWT.Modify, new Event());
                 }
             }

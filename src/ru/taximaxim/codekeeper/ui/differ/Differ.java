@@ -77,8 +77,8 @@ public class Differ implements IRunnableWithProgress {
             throw new InvocationTargetException(ex);
         }
         
-        Log.log(Log.LOG_INFO, "Diff from: " + this.dbSource.getOrigin()
-                + " to: " + this.dbTarget.getOrigin());
+        Log.log(Log.LOG_INFO, "Diff from: " + this.dbSource.getOrigin() //$NON-NLS-1$
+                + " to: " + this.dbTarget.getOrigin()); //$NON-NLS-1$
         
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
         PgDiffArguments args = new PgDiffArguments();
@@ -91,8 +91,8 @@ public class Differ implements IRunnableWithProgress {
         diffDirect = diffOut.toString().trim();
 
         if (needTwoWay) {
-            Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin()
-                    + " to: " + this.dbSource.getOrigin());
+            Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin() //$NON-NLS-1$
+                    + " to: " + this.dbSource.getOrigin()); //$NON-NLS-1$
             
             pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
             diffOut.reset();

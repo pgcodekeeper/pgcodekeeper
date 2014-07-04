@@ -43,14 +43,12 @@ public class Messages extends NLS {
     public static String project_modifier_thread_cancelled_shouldnt_happen;
     public static String undefined_source_for_db_changes;
     public static String browse;
-    public static String filenames_entered_in_application_preferences;
     public static String make_sure_you_have_priv_and_public_keys;
     public static String path_to_db_schema_dump;
     public static String select_readable_db_dump_file;
     public static String user_;
     public static String dump_file;
     public static String miscellaneous;
-    public static String settings_lwhtitespace;
     
     // ui
     public static String exceptionNotifier_copy_stack_trace;
@@ -290,6 +288,10 @@ public class Messages extends NLS {
     public static String dynamicMenuRecent_recent_list_is_empty;
 
     public static String JGitExec_exception_thrown_at_jgit_push;
+
+    public static String NewProjWizard_settings;
+
+    public static String ProjProps_settings;
 
     static {
         // initialize resource bundle

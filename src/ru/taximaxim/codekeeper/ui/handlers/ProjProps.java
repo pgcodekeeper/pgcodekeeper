@@ -53,7 +53,7 @@ public class ProjProps {
         FakePrefPageExtension[] propPages = {
                 new FakePrefPageExtension("projprefs.0.pagerepo",  //$NON-NLS-1$
                         proj.getString(UIConsts.PROJ_PREF_REPO_TYPE)
-                        + Messages.settings_lwhtitespace, new RepoSettingsPage(), null), 
+                        + Messages.ProjProps_settings, new RepoSettingsPage(), null), 
 
                 new FakePrefPageExtension("projprefs.1.pagedbsouce", //$NON-NLS-1$
                         Messages.db_source, new DbSrcPage(mainPrefs), null), 
