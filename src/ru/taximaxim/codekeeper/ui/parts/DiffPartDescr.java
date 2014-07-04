@@ -168,7 +168,7 @@ public class DiffPartDescr {
         });
         
         btnAddDepcy = new Button(containerUpper, SWT.PUSH);
-        btnAddDepcy.setText("Add Dependencies...");
+        btnAddDepcy.setText(Messages.diffPartDescr_add_dependencies);
         btnAddDepcy.setEnabled(false);
         btnAddDepcy.addSelectionListener(new SelectionAdapter() {
             

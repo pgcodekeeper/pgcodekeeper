@@ -86,6 +86,10 @@ public class Messages extends NLS {
     public static String uIConsts_icons_warning;
     public static String xmlCommitCommentHistory_error_reading_comment_history_xml;
     public static String xmlCommitCommentHistory_error_while_trying_to_write_comment;
+    public static String manualDepciesDialog_dependant_dependency;
+    public static String manualDepciesDialog_depends_on;
+    public static String manualDepciesDialog_object;
+    public static String manualDepciesDialog_remove;
     
     // ui.addons
     public static String addonExternalTools_error_while_trying_to_run_pg_admin;
@@ -190,6 +194,8 @@ public class Messages extends NLS {
     public static String commitPartDescr_please_enter_a_comment_for_the_commit;
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_to;
+    public static String diffPartDescr_add_dependencies;
+
     public static String diffPartDescr_diff_script;
     public static String diffPartDescr_from;
     public static String diffPartDescr_get_changes_for;
@@ -203,7 +209,7 @@ public class Messages extends NLS {
     // ui.pgdbproject
     public static String diffWizard_consider_using_ssh_authentication_instead;
     public static String diffWizard_db_taget;
-    public static String diffWizard_diff;
+    public static String diffWizard_Diff;
     public static String diffWizard_diff_parameters;
     public static String diffWizard_diff_result;
     public static String diffWizard_diff_target;
@@ -233,6 +239,8 @@ public class Messages extends NLS {
     public static String diffWizard_this_project;
     public static String diffWizard_unexpected_error_while_saving_diff;
     public static String diffWizard_unexpected_target_type_value;
+
+    public static String diffWizard_diff;
     public static String initProjectFromSource_exporting_db_model;
     public static String initProjectFromSource_init_request_but_no_schema_source;
     public static String initProjectFromSource_initializing_project;

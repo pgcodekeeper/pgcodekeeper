@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class ManualDepciesDialog extends TrayDialog {
@@ -82,7 +83,7 @@ public class ManualDepciesDialog extends TrayDialog {
         grpSelectors.setLayout(new GridLayout(2, false));
         grpSelectors.setLayoutData(new GridData(GridData.FILL_BOTH));
         
-        new Label(grpSelectors, SWT.NONE).setText("Object:");
+        new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_object);
         
         cmbDependants = new ComboViewer(grpSelectors, SWT.DROP_DOWN | SWT.READ_ONLY);
         cmbDependants.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -90,7 +91,7 @@ public class ManualDepciesDialog extends TrayDialog {
         cmbDependants.setLabelProvider(new PgStatementLabelProvider());
         cmbDependants.addSelectionChangedListener(new ComboSelectionListener());
         
-        new Label(grpSelectors, SWT.NONE).setText("Depends on:");
+        new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_depends_on);
         
         cmbDependencies = new ComboViewer(grpSelectors, SWT.DROP_DOWN | SWT.READ_ONLY);
         cmbDependencies.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -100,7 +101,7 @@ public class ManualDepciesDialog extends TrayDialog {
         
         btnAdd = new Button(grpSelectors, SWT.PUSH);
         btnAdd.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false, 2, 1));
-        btnAdd.setText("\u2192");
+        btnAdd.setText("\u2192"); //$NON-NLS-1$
         btnAdd.setEnabled(false);
         btnAdd.addSelectionListener(new SelectionAdapter() {
             
@@ -115,7 +116,7 @@ public class ManualDepciesDialog extends TrayDialog {
         grpList.setLayout(new GridLayout());
         grpList.setLayoutData(new GridData(GridData.FILL_BOTH));
         
-        new Label(grpList, SWT.NONE).setText("Dependant \u2192 Dependency");
+        new Label(grpList, SWT.NONE).setText(Messages.manualDepciesDialog_dependant_dependency);
         
         listDepcies = new ListViewer(grpList);
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -161,7 +162,7 @@ public class ManualDepciesDialog extends TrayDialog {
             public String getText(Object element) {
                 @SuppressWarnings("unchecked")
                 Entry<PgStatement, PgStatement> e = (Entry<PgStatement, PgStatement>) element;
-                return e.getKey().getQualifiedName() + " \u2192 " 
+                return e.getKey().getQualifiedName() + " \u2192 "  //$NON-NLS-1$
                         + e.getValue().getQualifiedName();
             }
             
@@ -179,7 +180,7 @@ public class ManualDepciesDialog extends TrayDialog {
         });
         
         btnRemove = new Button(grpList, SWT.PUSH);
-        btnRemove.setText("Remove");
+        btnRemove.setText(Messages.manualDepciesDialog_remove);
         btnRemove.setEnabled(false);
         btnRemove.addSelectionListener(new SelectionAdapter() {
             

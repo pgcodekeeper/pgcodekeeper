@@ -66,7 +66,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     private final IPreferenceStore mainPrefs;
 
     public DiffWizard(PgDbProject proj, IPreferenceStore mainPrefs) {
-        setWindowTitle(Messages.diffWizard_diff);
+        setWindowTitle(Messages.diffWizard_Diff);
         setNeedsProgressMonitor(true);
 
         this.proj = proj;
@@ -836,7 +836,7 @@ class PageResult extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 FileDialog saveDialog = new FileDialog(getShell(), SWT.SAVE);
                 saveDialog.setText(Messages.diffWizard_save__ + tabs.getSelection()[0].getText()
-                        + " diff..."); //$NON-NLS-1$
+                        + Messages.diffWizard_diff);
                 saveDialog.setOverwrite(true);
                 saveDialog.setFilterExtensions(new String[] { "*.sql", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
                 saveDialog.setFilterPath(proj.getProjectFile().getParent());
