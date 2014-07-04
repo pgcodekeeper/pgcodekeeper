@@ -141,7 +141,7 @@ public class Messages extends NLS {
     public static String jGitExec_couldnt_find_git_repository_in;
     public static String jGitExec_eception_thrown_at_jgit_clone;
     public static String jGitExec_exception_thrown_at_jgit_commit;
-    public static String jGitExec_exception_thrown_at_jgit_commit_status_isnt_ok_or_up_to_date;
+    public static String jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date;
     public static String jGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new;
     public static String jGitExec_exception_thrown_at_jgit_repo_update;
     public static String pgDumper_bad_pg_dump_version_output;
@@ -310,6 +310,8 @@ public class Messages extends NLS {
     
     // ui.recentprojs
     public static String dynamicMenuRecent_recent_list_is_empty;
+
+    public static String JGitExec_exception_thrown_at_jgit_push;
 
     static {
         // initialize resource bundle

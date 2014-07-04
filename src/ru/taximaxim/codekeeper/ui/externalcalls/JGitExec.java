@@ -96,8 +96,12 @@ public class JGitExec implements IRepoWorker{
             String urlRepo = config.getString("remote", "origin", "url"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
             Log.log(Log.LOG_INFO, "git commit " + urlRepo); //$NON-NLS-1$
+            try {
+                git.commit().setMessage(comment).call();
+            } catch (GitAPIException ex) {
+                throw new IOException(Messages.jGitExec_exception_thrown_at_jgit_commit, ex);
+            }
             
-            git.commit().setMessage(comment).call();
             PushCommand pushCom = git.push();
             if (PATTERN_HTTP_URL.matcher(url).matches()) {
                 pushCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
@@ -106,9 +110,16 @@ public class JGitExec implements IRepoWorker{
             if (head != null){
                 pushCom.add(head);
             }
-            Log.log(Log.LOG_INFO, "git push " + urlRepo); //$NON-NLS-1$
             
-            for (PushResult pushRes : pushCom.call()){
+            Log.log(Log.LOG_INFO, "git push " + urlRepo); //$NON-NLS-1$
+            Iterable<PushResult> pushResult;
+            try {
+                 pushResult = pushCom.call();
+            } catch (GitAPIException ex) {
+                throw new IOException(Messages.JGitExec_exception_thrown_at_jgit_push, ex);
+            }
+            
+            for (PushResult pushRes : pushResult) {
                 for (RemoteRefUpdate b : pushRes.getRemoteUpdates()){
                     if (b.getStatus() !=  RemoteRefUpdate.Status.OK && 
                             b.getStatus() !=  RemoteRefUpdate.Status.UP_TO_DATE){
@@ -117,13 +128,11 @@ public class JGitExec implements IRepoWorker{
                             "\n                Status: " + b.getStatus() +  //$NON-NLS-1$
                             "\n               Message: " + b.getMessage()); //$NON-NLS-1$
                         throw new IOException(
-                                Messages.jGitExec_exception_thrown_at_jgit_commit_status_isnt_ok_or_up_to_date);
+                                Messages.jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date);
                     }
                 }
             }
-        } catch (GitAPIException e){
-            throw new IOException (Messages.jGitExec_exception_thrown_at_jgit_commit, e);
-        }finally{
+        } finally {
             git.close();
         }
     }
