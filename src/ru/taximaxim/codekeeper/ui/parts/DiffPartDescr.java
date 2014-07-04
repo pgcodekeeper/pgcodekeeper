@@ -1,6 +1,9 @@
 package ru.taximaxim.codekeeper.ui.parts;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map.Entry;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -19,6 +22,7 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.Document;
@@ -46,6 +50,7 @@ import org.eclipse.swt.widgets.Shell;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.ManualDepciesDialog;
 import ru.taximaxim.codekeeper.ui.SqlScriptDialog;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
@@ -57,6 +62,7 @@ import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class DiffPartDescr {
 
@@ -77,7 +83,7 @@ public class DiffPartDescr {
     @Preference(UIConsts.PREF_PGDUMP_CUSTOM_PARAMS)
     private String pgdumpCustom;
 
-    private Button btnGetLatest;
+    private Button btnGetLatest, btnAddDepcy;
     private DiffTableViewer diffTable;
     private Button btnNone, btnDump, btnDb;
     private Button btnGetChanges;
@@ -92,6 +98,12 @@ public class DiffPartDescr {
      * Local repo cache.
      */
     private DbSource dbTarget;
+    
+    /**
+     * A collection of manually added object dependencies.
+     * Keys are dependants, values are lists of dependencies.
+     */
+    private List<Entry<PgStatement, PgStatement>> manualDepcies = new LinkedList<>();
 
     @PostConstruct
     private void postConstruct(Composite parent, final PgDbProject proj,
@@ -102,7 +114,7 @@ public class DiffPartDescr {
         parent.setLayout(new GridLayout());
         // upper container
         Composite containerUpper = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(1, false);
+        GridLayout gl = new GridLayout(2, false);
         gl.marginHeight = gl.marginWidth = 0;
         containerUpper.setLayout(gl);
         containerUpper.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -127,6 +139,8 @@ public class DiffPartDescr {
                         DbSource.fromFilter(dbTarget,filtered, DiffSide.RIGHT),
                         false);
                 differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
+                differ.setAdditionalDepcies(manualDepcies);
+                
                 try {
                     new ProgressMonitorDialog(shell).run(true, false, differ);
                 } catch (InvocationTargetException ex) {
@@ -146,9 +160,24 @@ public class DiffPartDescr {
                 
                 dialog.setScript(mainPrefs.getString(UIConsts.PREF_LAST_ROLLON_SCRIPT));
                 dialog.open();
-                if (!dialog.getScript().equals("")){ //$NON-NLS-1$
+                if (!dialog.getScript().isEmpty()){
                     AddonPrefLoader.savePreference(mainPrefs, 
                             UIConsts.PREF_LAST_ROLLON_SCRIPT, dialog.getScript());
+                }
+            }
+        });
+        
+        btnAddDepcy = new Button(containerUpper, SWT.PUSH);
+        btnAddDepcy.setText("Add Dependencies...");
+        btnAddDepcy.setEnabled(false);
+        btnAddDepcy.addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                ManualDepciesDialog dialog = new ManualDepciesDialog(shell,
+                        manualDepcies, dbSource.getDbObject().flatten());
+                if (dialog.open() == Dialog.OK) {
+                    manualDepcies = dialog.getDepciesList();
                 }
             }
         });
@@ -307,6 +336,8 @@ public class DiffPartDescr {
                 diffTable.setInput(treediffer);
                 diffPane.setInput(null);
                 btnGetLatest.setEnabled(true);
+                btnAddDepcy.setEnabled(true);
+                manualDepcies.clear();
             }
         });
 
@@ -481,6 +512,8 @@ public class DiffPartDescr {
                     diffTable.setInput(null);
                     diffPane.setInput(null);
                     btnGetLatest.setEnabled(false);
+                    btnAddDepcy.setEnabled(false);
+                    manualDepcies.clear();
                 }
             });
         }

@@ -12,8 +12,8 @@ public class Dir {
      * @throws IOException
      */
     public static void deleteRecursive(File f) throws IOException {
-        if(f.isDirectory()) {
-            for(File sub : f.listFiles()) {
+        if (f.isDirectory()) {
+            for (File sub : f.listFiles()) {
                 deleteRecursive(sub);
             }
         }
