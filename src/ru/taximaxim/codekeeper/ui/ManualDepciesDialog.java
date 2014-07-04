@@ -101,7 +101,7 @@ public class ManualDepciesDialog extends TrayDialog {
         
         btnAdd = new Button(grpSelectors, SWT.PUSH);
         btnAdd.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false, 2, 1));
-        btnAdd.setText("\u2192"); //$NON-NLS-1$
+        btnAdd.setText(Messages.manualDepciesDialog_add);
         btnAdd.setEnabled(false);
         btnAdd.addSelectionListener(new SelectionAdapter() {
             

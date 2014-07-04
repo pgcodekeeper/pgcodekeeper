@@ -411,7 +411,7 @@ public class CommitPartDescr {
                             proj.getString(UIConsts.PROJ_PREF_ENCODING));
                 } else {
                     throw new IllegalStateException(
-                            Messages.undefined_surce_for_db_changes);
+                            Messages.undefined_source_for_db_changes);
                 }
                 
                 Log.log(Log.LOG_INFO, "Getting changes for commit"); //$NON-NLS-1$

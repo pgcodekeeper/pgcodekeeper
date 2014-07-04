@@ -2,6 +2,7 @@
 package ru.taximaxim.codekeeper.ui.addons;
 
 
+
 public class AddonOpenLast {
 
     // FIXME cannot create parts on startup, luna probably bugged
@@ -10,7 +11,6 @@ public class AddonOpenLast {
     @Optional
     private void openLast(
             @EventTopic(UIEvents.UILifeCycle.APP_STARTUP_COMPLETE)
-            //@EventTopic(UIConsts.EVENT_WELCOME_ACTIVE)
             final MApplication app,
             
             final EModelService model,
@@ -21,9 +21,11 @@ public class AddonOpenLast {
             
             @Preference(UIConsts.PREF_OPEN_LAST_ON_START) String prefOpenLast,
 
-            @Preference(= UIConsts.PREF_RECENT_PROJECTS) String prefRecentProjects,
+            @Preference(UIConsts.PREF_RECENT_PROJECTS) String prefRecentProjects,
             
-            UISynchronize sync) {
+            UISynchronize sync,
+            
+            final @Named(IServiceConstants.ACTIVE_SHELL) Shell shell) {
         if (prefOpenLast != null && prefOpenLast.equals("true")) {
             String[] recent = RecentProjects.getRecent(prefRecentProjects);
             if (recent == null) {
@@ -39,7 +41,7 @@ public class AddonOpenLast {
                     @Override
                     public void run() {
                         LoadProj.load(proj, app.getContext(), partService, model, app,
-                                mainPrefs);
+                                mainPrefs, shell);
                     }
                 });
             } else {

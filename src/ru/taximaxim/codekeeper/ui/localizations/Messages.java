@@ -16,7 +16,6 @@ public class Messages extends NLS {
     public static String providing_password_here_is_insecure;
     public static String warning;
     public static String calculating_diff;
-    public static String diff_is_undefined;
     public static String runnable_has_not_finished;
     public static String select_all;
     public static String select_none;
@@ -25,7 +24,6 @@ public class Messages extends NLS {
     public static String load_failed;
     public static String manually_and_try_again;
     public static String missing_marker_file_in_working_directory;
-    public static String properties_file_not_found;
     public static String consider_using_ssh_authentication_instead_use_git;
     public static String repo_url;
     public static String this_password_will_show_up_in_logs;
@@ -43,7 +41,7 @@ public class Messages extends NLS {
     public static String please_check_at_least_one_row;
     public static String port_must_be_a_number;
     public static String project_modifier_thread_cancelled_shouldnt_happen;
-    public static String undefined_surce_for_db_changes;
+    public static String undefined_source_for_db_changes;
     public static String browse;
     public static String filenames_entered_in_application_preferences;
     public static String make_sure_you_have_priv_and_public_keys;
@@ -59,7 +57,6 @@ public class Messages extends NLS {
     public static String exceptionNotifier_open_log_file;
     public static String exceptionNotifier_string_reader_ioexception_world_ends;
     public static String exceptionNotifier_unhandled_exception;
-    public static String partContextInjector_as_key_in_ieclipsecontext;
     public static String partContextInjector_empty_values_map;
     public static String partContextInjector_only_class_and_string_are_allowed;
     public static String sqlScriptDialog_denote_place_where_sql_script_fname_be_inserted;
@@ -76,19 +73,12 @@ public class Messages extends NLS {
     public static String sqlScriptDialog_stop_script;
     public static String sqlScriptDialog_stop_script_before_closing_dialog;
     public static String sqlScriptDialog_use;
-    public static String uIConsts_icons_add_obj;
-    public static String uIConsts_icons_delete_obj;
-    public static String uIConsts_icons_editor;
-    public static String uIConsts_icons_exportdir_wiz;
-    public static String uIConsts_icons_file_obj;
-    public static String uIConsts_icons_pgadmin;
-    public static String uIConsts_icons_save_edit;
-    public static String uIConsts_icons_warning;
     public static String xmlCommitCommentHistory_error_reading_comment_history_xml;
     public static String xmlCommitCommentHistory_error_while_trying_to_write_comment;
     public static String manualDepciesDialog_dependant_dependency;
     public static String manualDepciesDialog_depends_on;
     public static String manualDepciesDialog_object;
+    public static String manualDepciesDialog_add;
     public static String manualDepciesDialog_remove;
     
     // ui.addons
@@ -116,10 +106,8 @@ public class Messages extends NLS {
     public static String dbSource_loading_dump;
     public static String dbSource_loading_tree;
     public static String dbSource_repository_rev_checkout;
-    public static String differ_diff_from;
     public static String differ_direct_diff;
     public static String differ_reverse_diff;
-    public static String differ_to;
     public static String diffTableViewer_change_type;
     public static String diffTableViewer_container;
     public static String diffTableViewer_filtering_diff_tree_based_on_gui_selection;
@@ -139,7 +127,7 @@ public class Messages extends NLS {
     // ui.externalcalls
     public static String jGitExec_and_higher;
     public static String jGitExec_couldnt_find_git_repository_in;
-    public static String jGitExec_eception_thrown_at_jgit_clone;
+    public static String jGitExec_exception_thrown_at_jgit_clone;
     public static String jGitExec_exception_thrown_at_jgit_commit;
     public static String jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date;
     public static String jGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new;
@@ -167,9 +155,7 @@ public class Messages extends NLS {
     public static String projProps_settings_for_database_schema_source;
     public static String projProps_database;
     public static String projProps_source_of_the_db_schema;
-    public static String projSyncSrc_and_reload_project_before_continuing;
     public static String projSyncSrc_checking_conflicts;
-    public static String projSyncSrc_conflicts_or_update_repository;
     public static String projSyncSrc_couldnt_synchronize_repository_with_remote;
     public static String projSyncSrc_error_while_checking;
     public static String projSyncSrc_repository_cache_has_conflict_resolve_them_manually;
@@ -177,7 +163,7 @@ public class Messages extends NLS {
     public static String projSyncSrc_sync_error;
     public static String projSyncSrc_syncing_repository_cache;
     public static String projSyncSrc_updating_cache;
-    public static String pwitchBranch_exception_during_switching_branch;
+    public static String switchBranch_exception_during_switching_branch;
     public static String switchBranch_wrong_repository_or_ref_name;
     public static String switchPerspective_open_perspective;
     
@@ -252,25 +238,19 @@ public class Messages extends NLS {
     public static String newProjWizard_cannt_be_saved_in_working;
     public static String newProjWizard_couldnt_create_empty_database_in;
     public static String newProjWizard_db_source_settings;
-    public static String newProjWizard_dir_because_itll_be_deleted_during_init_stage;
-    public static String newProjWizard_do_you_want_to_clone_repo;
     public static String newProjWizard_dump_file_source_settings;
-    public static String newProjWizard_either_empty_folder_or_existing_repository;
     public static String newProjWizard_enter;
     public static String newProjWizard_error_cloning_repository;
     public static String newProjWizard_error_in_initializing_repo_from_source;
     public static String newProjWizard_error_while_saving_project_properties;
-    public static String newProjWizard_existing_git_repository;
-    public static String newProjWizard_from_schema_source;
     public static String newProjWizard_init_project_subdir_from_schema_source;
-    public static String newProjWizard_leave_unchaged_to_use_root;
     public static String newProjWizard_new_pg_db_project;
     public static String newProjWizard_no_schema_source_selected;
     public static String newProjWizard_password;
     public static String newProjWizard_project_encoding;
     public static String newProjWizard_project_fiel;
     public static String newProjWizard_project_initializer_thread_interrupted;
-    public static String newProjWizard_repo_usrl_demand;
+    public static String newProjWizard_repo_url_demand;
     public static String newProjWizard_repository_settings;
     public static String newProjWizard_schema_source;
     public static String newProjWizard_schema_source_settings;
@@ -284,11 +264,9 @@ public class Messages extends NLS {
     public static String newProjWizard_selected_directory_is_empty;
     public static String newProjWizard_selecterd_dir_must_be_empty_or_be_a_root_dir_of;
     public static String newProjWizard_target_dir_isnt_git_repository_root_dir;
-    public static String newProjWizard_that_will_contain_db_schema;
     public static String newProjWizard_this_will_delete_contents_and_recreate_them;
     public static String newProjWizard_to_selected_dir_now;
     public static String newProjWizard_workdirectory_settings;
-    public static String newProjWizard_you_need_to_clone_the_repo_first_in_order_to_select_work_dir;
     public static String pgDbProject_error_loading_project_file;
     
     // ui.prefs

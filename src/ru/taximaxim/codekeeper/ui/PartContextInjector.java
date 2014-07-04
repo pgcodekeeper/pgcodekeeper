@@ -65,8 +65,7 @@ public class PartContextInjector implements EventHandler {
                                 ctx.set((String) key, entry.getValue());
                             } else {
                                 throw new IllegalArgumentException(
-                                        Messages.partContextInjector_only_class_and_string_are_allowed
-                                        + Messages.partContextInjector_as_key_in_ieclipsecontext);
+                                        Messages.partContextInjector_only_class_and_string_are_allowed);
                             }
                         }
                     } finally {

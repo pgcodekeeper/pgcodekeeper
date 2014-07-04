@@ -54,8 +54,8 @@ public class LoadProj {
             } else {
                 MessageBox mb = new MessageBox(shell);
                 mb.setText(Messages.load_failed);
-                mb.setMessage(Messages.directory_isnt_valid_project
-                        + Messages.properties_file_not_found);
+                // TODO wrong message
+                mb.setMessage(Messages.directory_isnt_valid_project);
                 mb.open();
             }
         }

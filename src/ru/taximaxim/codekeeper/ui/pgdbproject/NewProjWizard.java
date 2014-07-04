@@ -123,8 +123,6 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
             
             if (MessageDialog.openQuestion(getShell(), Messages.newProjWizard_selected_directory_is_empty,
                             Messages.newProjWizard_target_dir_isnt_git_repository_root_dir
-                            + Messages.newProjWizard_you_need_to_clone_the_repo_first_in_order_to_select_work_dir
-                            + Messages.newProjWizard_do_you_want_to_clone_repo
                             + pageRepo.getRepoUrl()
                             + Messages.newProjWizard_to_selected_dir_now)) {
 
@@ -433,8 +431,7 @@ class PageRepo extends WizardPage implements Listener {
         lblWarnPass.setVisible(false);
 
         lblRepoRoot = new Label(container, SWT.NONE);
-        lblRepoRoot.setText(Messages.newProjWizard_select_git_repository_root_directory
-                + Messages.newProjWizard_either_empty_folder_or_existing_repository);
+        lblRepoRoot.setText(Messages.newProjWizard_select_git_repository_root_directory);
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
@@ -500,14 +497,13 @@ class PageRepo extends WizardPage implements Listener {
         String errMsg = null;
         
         if (getRepoUrl().isEmpty()) {
-            errMsg = Messages.newProjWizard_enter + repoTypeName + Messages.newProjWizard_repo_usrl_demand;
+            errMsg = Messages.newProjWizard_enter + repoTypeName + Messages.newProjWizard_repo_url_demand;
         } else if (getRepoRootPath().isEmpty()
                 || !new File(getRepoRootPath()).isDirectory()) {
             errMsg = Messages.newProjWizard_select_repo_root_directory;
         } else if (!JGitExec.isGitRepo(getRepoRootPath())
                 && new File(txtRepoRoot.getText()).list().length != 0) {
-            errMsg = Messages.newProjWizard_selecterd_dir_must_be_empty_or_be_a_root_dir_of
-                    + Messages.newProjWizard_existing_git_repository;
+            errMsg = Messages.newProjWizard_selecterd_dir_must_be_empty_or_be_a_root_dir_of;
         } else if (getProjectFile().isEmpty()
                 || !getProjectFile().endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)) {
             errMsg = Messages.newProjWizard_select_project_filename_demand;
@@ -588,17 +584,14 @@ class PageSubdir extends WizardPage implements Listener {
                 .createFromURL(Activator.getContext().getBundle()
                         .getResource(UIConsts.FILENAME_ICONWARNING))));
         lblWarnInit.setText(Messages.warning
-                        + Messages.newProjWizard_this_will_delete_contents_and_recreate_them
-                        + Messages.newProjWizard_from_schema_source);        
+                        + Messages.newProjWizard_this_will_delete_contents_and_recreate_them);        
         gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
         gd.exclude = true;
         lblWarnInit.setLayoutData(gd);
         lblWarnInit.setVisible(false);
         
         lblRepoSubdir = new Label(container, SWT.NONE);
-        lblRepoSubdir.setText(Messages.newProjWizard_select_a_dir_inside_the_repo
-                            + Messages.newProjWizard_that_will_contain_db_schema
-                            + Messages.newProjWizard_leave_unchaged_to_use_root);
+        lblRepoSubdir.setText(Messages.newProjWizard_select_a_dir_inside_the_repo);
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
@@ -645,8 +638,8 @@ class PageSubdir extends WizardPage implements Listener {
                 || !Paths.get(repoSubdir).startsWith(Paths.get(repoRoot))) {
             errMsg = Messages.newProjWizard_select_correct_subdir_of_the_git_repo;
         }else if (isDoInit() && Paths.get(projectFile).startsWith(getRepoSubdir())){
-            errMsg = Messages.newProjWizard_project_fiel + projectFile + Messages.newProjWizard_cannt_be_saved_in_working
-                    + Messages.newProjWizard_dir_because_itll_be_deleted_during_init_stage;
+            errMsg = Messages.newProjWizard_project_fiel + projectFile 
+                    + Messages.newProjWizard_cannt_be_saved_in_working;
         }
         
         setErrorMessage(errMsg);
@@ -850,8 +843,8 @@ class PageDb extends WizardPage implements Listener {
     public boolean isPageComplete() {
         String errMsg = null;
         if (radioDump.getSelection()
-                && (txtDumpPath.getText().isEmpty() || !new File(
-                        txtDumpPath.getText()).isFile())) {
+                && (txtDumpPath.getText().isEmpty()
+                        || !new File(txtDumpPath.getText()).isFile())) {
             errMsg = Messages.select_readable_db_dump_file;
         } else if (radioDb.getSelection()
                 && !grpDb.txtDbPort.getText().isEmpty()) {

@@ -8,7 +8,7 @@ import org.eclipse.swt.program.Program;
 public class OpenLog {
     
     @Execute
-    public void execute() {
+    private void execute() {
         openExternalViewer();
     }
     

@@ -76,8 +76,7 @@ public class ProjSyncSrc {
                         conflicted.set(!repo.repoUpdate(repoDir));
                     }
                 } catch (IOException ex) {
-                    throw new InvocationTargetException(ex, Messages.projSyncSrc_error_while_checking
-                            + Messages.projSyncSrc_conflicts_or_update_repository);
+                    throw new InvocationTargetException(ex, Messages.projSyncSrc_error_while_checking);
                 }
                 monitor.done();
             }
@@ -96,8 +95,7 @@ public class ProjSyncSrc {
         if (conflicted.get()) {
             MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR);
             mb.setText(Messages.projSyncSrc_sync_error);
-            mb.setMessage(Messages.projSyncSrc_repository_cache_has_conflict_resolve_them_manually
-                    + Messages.projSyncSrc_and_reload_project_before_continuing);
+            mb.setMessage(Messages.projSyncSrc_repository_cache_has_conflict_resolve_them_manually);
             mb.open();
         }else{
             events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);

@@ -318,7 +318,7 @@ public class DiffPartDescr {
                             proj.getString(UIConsts.PROJ_PREF_ENCODING));
                 } else {
                     throw new IllegalStateException(
-                            Messages.undefined_surce_for_db_changes);
+                            Messages.undefined_source_for_db_changes);
                 }
                 
                 Log.log(Log.LOG_INFO, "Getting changes to generate script"); //$NON-NLS-1$

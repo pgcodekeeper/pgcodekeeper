@@ -39,18 +39,18 @@ public class SwitchBranch {
     @Inject
     UISynchronize sync;
     
-	@Execute
-	public void execute(final PgDbProject proj,
-	        @Named(IServiceConstants.ACTIVE_SHELL)
-	        final Shell shell) {
-	    final AtomicReference<Git> git = new AtomicReference<>();
+    @Execute
+    public void execute(final PgDbProject proj,
+            @Named(IServiceConstants.ACTIVE_SHELL)
+            final Shell shell) {
+        final AtomicReference<Git> git = new AtomicReference<>();
         try {
             git.set(Git.open(
                     new File(proj.getString(UIConsts.PROJ_PREF_REPO_ROOT_PATH))));
-    	    final Ref headOld = git.get().getRepository().getRef(Constants.HEAD);
-    	    BranchOperationUI.checkout(git.get().getRepository()).start();
-    	    
-    	    Thread t = new Thread(new Runnable() {
+            final Ref headOld = git.get().getRepository().getRef(Constants.HEAD);
+            BranchOperationUI.checkout(git.get().getRepository()).start();
+            
+            Thread t = new Thread(new Runnable() {
                 
                 @Override
                 public void run() {
@@ -78,7 +78,7 @@ public class SwitchBranch {
                 
                 @Override
                 public void uncaughtException(Thread t, Throwable ex) {
-                    ExceptionNotifier.notify(Messages.pwitchBranch_exception_during_switching_branch, ex);
+                    ExceptionNotifier.notify(Messages.switchBranch_exception_during_switching_branch, ex);
                 }
             });
             t.start();

@@ -43,8 +43,7 @@ public class TreeDiffer implements IRunnableWithProgress {
     
     private void checkFinished() {
         if(!finished) {
-            throw new IllegalStateException(Messages.runnable_has_not_finished
-                    + Messages.diff_is_undefined);
+            throw new IllegalStateException(Messages.runnable_has_not_finished);
         }
     }
     

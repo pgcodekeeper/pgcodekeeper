@@ -2,8 +2,6 @@ package ru.taximaxim.codekeeper.ui;
 
 import org.eclipse.e4.core.contexts.IEclipseContext;
 
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
-
 /**
  * Stores string ids for model objects, objects in {@link IEclipseContext}, etc,
  * that sort of string constants.
@@ -68,14 +66,14 @@ public interface UIConsts {
     
     String FILENAME_PROJ_PREF_STORE = ".project"; //$NON-NLS-1$
     
-    String FILENAME_ICONPGADMIN = Messages.uIConsts_icons_pgadmin;
-    String FILENAME_ICONWARNING = Messages.uIConsts_icons_warning;
-    String FILENAME_ICONDIR = Messages.uIConsts_icons_exportdir_wiz;
-    String FILENAME_ICONFILE = Messages.uIConsts_icons_file_obj;
-    String FILENAME_ICONADD = Messages.uIConsts_icons_add_obj;
-    String FILENAME_ICONSAVE = Messages.uIConsts_icons_save_edit;
-    String FILENAME_ICONDEL = Messages.uIConsts_icons_delete_obj;
-    String FILENAME_ICONEDIT = Messages.uIConsts_icons_editor;
+    String FILENAME_ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
+    String FILENAME_ICONWARNING = "/icons/warning.gif"; //$NON-NLS-1$
+    String FILENAME_ICONDIR = "/icons/exportdir_wiz.gif"; //$NON-NLS-1$
+    String FILENAME_ICONFILE = "/icons/file_obj.gif"; //$NON-NLS-1$
+    String FILENAME_ICONADD = "/icons/add_obj.gif"; //$NON-NLS-1$
+    String FILENAME_ICONSAVE = "/icons/save_edit.gif"; //$NON-NLS-1$
+    String FILENAME_ICONDEL = "/icons/delete_obj.gif"; //$NON-NLS-1$
+    String FILENAME_ICONEDIT = "/icons/editor.gif"; //$NON-NLS-1$
     
     String EVENT_REOPEN_PROJECT = "ru/taximaxim/codekeeper/ui/project/changed"; //$NON-NLS-1$
 }
