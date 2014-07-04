@@ -53,13 +53,13 @@ public class ProjProps {
         FakePrefPageExtension[] propPages = {
                 new FakePrefPageExtension("projprefs.0.pagerepo",  //$NON-NLS-1$
                         proj.getString(UIConsts.PROJ_PREF_REPO_TYPE)
-                        + " Settings", new RepoSettingsPage(), null), //$NON-NLS-1$
+                        + Messages.settings_lwhtitespace, new RepoSettingsPage(), null), 
 
                 new FakePrefPageExtension("projprefs.1.pagedbsouce", //$NON-NLS-1$
-                        "DB Source", new DbSrcPage(mainPrefs), null), //$NON-NLS-1$
+                        Messages.db_source, new DbSrcPage(mainPrefs), null), 
 
                 new FakePrefPageExtension("projprefs.2.pagemisc", //$NON-NLS-1$
-                        "Miscellaneous", new MiscSettingPage(), null) }; //$NON-NLS-1$
+                        Messages.miscellaneous, new MiscSettingPage(), null) }; 
 
         Log.log(Log.LOG_DEBUG, "About to show proj props dialog"); //$NON-NLS-1$
         
@@ -94,10 +94,10 @@ class DbSrcPage extends FieldEditorPreferencePage {
                 getFieldEditorParent());
 
         RadioGroupFieldEditor radio = new RadioGroupFieldEditor(
-                UIConsts.PROJ_PREF_SOURCE, "Source of the DB schema", 1, //$NON-NLS-1$
-                new String[][] { { "None", UIConsts.PROJ_SOURCE_TYPE_NONE }, //$NON-NLS-1$
-                        { "Dump file", UIConsts.PROJ_SOURCE_TYPE_DUMP }, //$NON-NLS-1$
-                        { "Database", UIConsts.PROJ_SOURCE_TYPE_DB } }, //$NON-NLS-1$
+                UIConsts.PROJ_PREF_SOURCE, Messages.projProps_source_of_the_db_schema, 1, 
+                new String[][] { { Messages.none, UIConsts.PROJ_SOURCE_TYPE_NONE }, 
+                        { Messages.dump_file, UIConsts.PROJ_SOURCE_TYPE_DUMP }, 
+                        { Messages.projProps_database, UIConsts.PROJ_SOURCE_TYPE_DB } }, 
                 getFieldEditorParent(), true);
         addField(radio);
 

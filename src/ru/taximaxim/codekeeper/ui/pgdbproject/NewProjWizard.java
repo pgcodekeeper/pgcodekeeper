@@ -82,7 +82,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
         addPage(pageSubdir);
         pageDb = new PageDb(Messages.newProjWizard_schema_source_settings, mainPrefStore);
         addPage(pageDb);
-        pageMisc = new PageMisc(Messages.newProjWizard_miscellaneous);
+        pageMisc = new PageMisc(Messages.miscellaneous);
         addPage(pageMisc);
     }
 
@@ -349,7 +349,7 @@ class PageRepo extends WizardPage implements Listener {
         container.setLayout(new GridLayout(2, false));
         
         grpRepo = new Group(container, SWT.NONE);
-        grpRepo.setText(repoTypeName + Messages.newProjWizard_settings);
+        grpRepo.setText(repoTypeName + Messages.settings_lwhtitespace);
         grpRepo.setLayout(new GridLayout(2, false));
         grpRepo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
 
@@ -759,7 +759,7 @@ class PageDb extends WizardPage implements Listener {
         radioDb.addListener(SWT.Selection, this);
 
         radioDump = new Button(radioGrp, SWT.RADIO);
-        radioDump.setText(Messages.newProjWizard_dump_file);
+        radioDump.setText(Messages.dump_file);
 
         radioDump.addSelectionListener(new SelectionAdapter() {
             @Override

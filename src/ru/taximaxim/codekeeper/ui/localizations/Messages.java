@@ -50,6 +50,9 @@ public class Messages extends NLS {
     public static String path_to_db_schema_dump;
     public static String select_readable_db_dump_file;
     public static String user_;
+    public static String dump_file;
+    public static String miscellaneous;
+    public static String settings_lwhtitespace;
     
     // ui
     public static String exceptionNotifier_copy_stack_trace;
@@ -158,6 +161,8 @@ public class Messages extends NLS {
     public static String projProps_password;
     public static String projProps_project_encoding;
     public static String projProps_settings_for_database_schema_source;
+    public static String projProps_database;
+    public static String projProps_source_of_the_db_schema;
     public static String projSyncSrc_and_reload_project_before_continuing;
     public static String projSyncSrc_checking_conflicts;
     public static String projSyncSrc_conflicts_or_update_repository;
@@ -193,7 +198,6 @@ public class Messages extends NLS {
     public static String diffPartDescr_to_database;
     public static String projectExplorer_generating_object_hashes;
     public static String projectExplorer_loading_project;
-
     public static String projectExplorer_project_explorer;
     
     // ui.pgdbproject
@@ -242,7 +246,6 @@ public class Messages extends NLS {
     public static String newProjWizard_db_source_settings;
     public static String newProjWizard_dir_because_itll_be_deleted_during_init_stage;
     public static String newProjWizard_do_you_want_to_clone_repo;
-    public static String newProjWizard_dump_file;
     public static String newProjWizard_dump_file_source_settings;
     public static String newProjWizard_either_empty_folder_or_existing_repository;
     public static String newProjWizard_enter;
@@ -253,7 +256,6 @@ public class Messages extends NLS {
     public static String newProjWizard_from_schema_source;
     public static String newProjWizard_init_project_subdir_from_schema_source;
     public static String newProjWizard_leave_unchaged_to_use_root;
-    public static String newProjWizard_miscellaneous;
     public static String newProjWizard_new_pg_db_project;
     public static String newProjWizard_no_schema_source_selected;
     public static String newProjWizard_password;
@@ -273,7 +275,6 @@ public class Messages extends NLS {
     public static String newProjWizard_select_repo_root_directory;
     public static String newProjWizard_selected_directory_is_empty;
     public static String newProjWizard_selecterd_dir_must_be_empty_or_be_a_root_dir_of;
-    public static String newProjWizard_settings;
     public static String newProjWizard_target_dir_isnt_git_repository_root_dir;
     public static String newProjWizard_that_will_contain_db_schema;
     public static String newProjWizard_this_will_delete_contents_and_recreate_them;
