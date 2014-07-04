@@ -17,6 +17,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <tycho.version>0.20.0</tycho.version>
   </properties>
 
   <dependencies>
@@ -38,7 +39,7 @@
       <plugin>
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-compiler-plugin</artifactId>
-          <version>0.19.0</version>
+          <version>${tycho.version}</version>
           <configuration>
               <source>1.7</source>
               <target>1.7</target>
@@ -48,14 +49,14 @@
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-maven-plugin</artifactId>
-        <version>0.19.0</version>
+        <version>${tycho.version}</version>
         <extensions>true</extensions>
       </plugin>
 
       <plugin>
     	<groupId>org.eclipse.tycho</groupId>
     	<artifactId>target-platform-configuration</artifactId>
-    	<version>0.19.0</version>
+    	<version>${tycho.version}</version>
     	<configuration>
           	<resolver>p2</resolver>
               <target>
