@@ -50,14 +50,8 @@ public class TestPart {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 
-                txt.setText(txt.getText() + "\n" //$NON-NLS-1$
-                        + prefPgdumpPath + "\n" //$NON-NLS-1$
-                        + shell);
-                txt.setText(txt.getText() + "\n" //$NON-NLS-1$
-                        + shell.getDisplay());
-                
-                txt.setText(txt.getText() + "\n" //$NON-NLS-1$
-                        + shell_);
+                txt.setText(txt.getText() + "\n" +
+                        System.getenv("SWT_GTK3"));
                 
                 
             }
