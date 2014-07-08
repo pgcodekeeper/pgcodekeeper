@@ -106,7 +106,7 @@ public class ManualDepciesDialog extends TrayDialog {
             elements[i++] = object.getQualifiedName();
         }
         
-        new AutoCompleteField(cmbDependants.getCombo(), new ComboViewerContentAdapter(), elements);
+        new AutoCompleteField(cmbDependants.getCombo(), new ComboContentAdapter(), elements);
         
         new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_depends_on);
         
@@ -117,7 +117,7 @@ public class ManualDepciesDialog extends TrayDialog {
         cmbDependencies.addSelectionChangedListener(new ComboSelectionListener());
         cmbDependencies.getCombo().addModifyListener(new ComboModifyListener());
         
-        new AutoCompleteField(cmbDependencies.getCombo(), new ComboViewerContentAdapter(), elements);
+        new AutoCompleteField(cmbDependencies.getCombo(), new ComboContentAdapter(), elements);
         
         btnAdd = new Button(grpSelectors, SWT.PUSH);
         btnAdd.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false, 2, 1));
@@ -271,29 +271,14 @@ public class ManualDepciesDialog extends TrayDialog {
 
         @Override
         public void modifyText(ModifyEvent e) {
-            ComboSelectAndNotify.comboSelectAndNotify((Combo)e.widget);
+            Combo cmb = (Combo)e.widget;
+            cmb.select(
+                    Arrays.asList(cmb.getItems()).indexOf(cmb.getText()));
+            Event evnt = new Event();
+            evnt.type = SWT.SELECTED | SWT.Selection;
+            cmb.notifyListeners(SWT.Selection, evnt);
         }
     }
-}
-
-class ComboViewerContentAdapter extends ComboContentAdapter {
-
-    public void setControlContents(Control control, String contents,
-            int cursorPosition) {
-        ((Combo) control).setText(contents);
-        ComboSelectAndNotify.comboSelectAndNotify((Combo) control);
-    }    
-}
-
-class ComboSelectAndNotify {
-    public static void comboSelectAndNotify(Combo cmb) {
-        cmb.select(
-                Arrays.asList(cmb.getItems()).indexOf(cmb.getText()));
-        Event evnt = new Event();
-        evnt.type = SWT.SELECTED | SWT.Selection;
-        cmb.notifyListeners(SWT.Selection, evnt);
-    }
-    private ComboSelectAndNotify() {};
 }
 
 class PgStatementLabelProvider implements ILabelProvider {
