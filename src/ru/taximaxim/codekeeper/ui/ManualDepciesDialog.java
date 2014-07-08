@@ -182,10 +182,6 @@ public class ManualDepciesDialog extends TrayDialog {
             public String getText(Object element) {
                 @SuppressWarnings("unchecked")
                 Entry<PgStatement, PgStatement> e = (Entry<PgStatement, PgStatement>) element;
-                if (element == null || 
-                        e.getKey() == null || 
-                        e.getValue() == null)
-                    return null;
                 return e.getKey().getQualifiedName() + " \u2192 " //$NON-NLS-1$
                         + e.getValue().getQualifiedName();
             }
@@ -258,27 +254,24 @@ public class ManualDepciesDialog extends TrayDialog {
                 (PgStatement) dependencySel.getFirstElement());
     }
     
-    private void setAddBtnEnabled() {
-        Entry<PgStatement, PgStatement> selection = getComboSelections();
-        btnAdd.setEnabled(
-                selection.getKey() != null 
-                && selection.getValue() != null
-                && !selection.getKey().compare(selection.getValue()));
-    }
-    
     private class ComboSelectionListener implements ISelectionChangedListener {
         
         @Override
         public void selectionChanged(SelectionChangedEvent event) {
-            ManualDepciesDialog.this.setAddBtnEnabled();
+            Entry<PgStatement, PgStatement> selection = 
+                    ManualDepciesDialog.this.getComboSelections();
+            btnAdd.setEnabled(
+                    selection.getKey() != null 
+                    && selection.getValue() != null
+                    && !selection.getKey().compare(selection.getValue()));
         }
     }
+    
     private class ComboModifyListener implements ModifyListener {
 
         @Override
         public void modifyText(ModifyEvent e) {
-            ManualDepciesDialog.this.setAddBtnEnabled();
-            
+            ComboSelectAndNotify.comboSelectAndNotify((Combo)e.widget);
         }
     }
 }
@@ -288,12 +281,19 @@ class ComboViewerContentAdapter extends ComboContentAdapter {
     public void setControlContents(Control control, String contents,
             int cursorPosition) {
         ((Combo) control).setText(contents);
-        ((Combo) control).select(
-                Arrays.binarySearch(((Combo) control).getItems(), contents));
+        ComboSelectAndNotify.comboSelectAndNotify((Combo) control);
+    }    
+}
+
+class ComboSelectAndNotify {
+    public static void comboSelectAndNotify(Combo cmb) {
+        cmb.select(
+                Arrays.asList(cmb.getItems()).indexOf(cmb.getText()));
         Event evnt = new Event();
         evnt.type = SWT.SELECTED | SWT.Selection;
-        ((Combo) control).notifyListeners(SWT.Selection, evnt);
-    }    
+        cmb.notifyListeners(SWT.Selection, evnt);
+    }
+    private ComboSelectAndNotify() {};
 }
 
 class PgStatementLabelProvider implements ILabelProvider {
