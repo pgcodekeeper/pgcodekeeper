@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -10,6 +11,8 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.fieldassist.AutoCompleteField;
+import org.eclipse.jface.fieldassist.ComboContentAdapter;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -21,14 +24,18 @@ import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -85,19 +92,32 @@ public class ManualDepciesDialog extends TrayDialog {
         
         new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_object);
         
-        cmbDependants = new ComboViewer(grpSelectors, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cmbDependants = new ComboViewer(grpSelectors, SWT.DROP_DOWN);
         cmbDependants.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbDependants.setContentProvider(new ArrayContentProvider());
         cmbDependants.setLabelProvider(new PgStatementLabelProvider());
         cmbDependants.addSelectionChangedListener(new ComboSelectionListener());
+        cmbDependants.getCombo().addModifyListener(new ComboModifyListener());
+        
+        // Add ComboViewer elements to AutoCompleteField
+        String[] elements = new String[objects.size()];
+        int i = 0;
+        for (PgStatement object : objects) {
+            elements[i++] = object.getQualifiedName();
+        }
+        
+        new AutoCompleteField(cmbDependants.getCombo(), new ComboViewerContentAdapter(), elements);
         
         new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_depends_on);
         
-        cmbDependencies = new ComboViewer(grpSelectors, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cmbDependencies = new ComboViewer(grpSelectors, SWT.DROP_DOWN);
         cmbDependencies.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbDependencies.setContentProvider(new ArrayContentProvider());
         cmbDependencies.setLabelProvider(new PgStatementLabelProvider());
         cmbDependencies.addSelectionChangedListener(new ComboSelectionListener());
+        cmbDependencies.getCombo().addModifyListener(new ComboModifyListener());
+        
+        new AutoCompleteField(cmbDependencies.getCombo(), new ComboViewerContentAdapter(), elements);
         
         btnAdd = new Button(grpSelectors, SWT.PUSH);
         btnAdd.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false, 2, 1));
@@ -162,7 +182,11 @@ public class ManualDepciesDialog extends TrayDialog {
             public String getText(Object element) {
                 @SuppressWarnings("unchecked")
                 Entry<PgStatement, PgStatement> e = (Entry<PgStatement, PgStatement>) element;
-                return e.getKey().getQualifiedName() + " \u2192 "  //$NON-NLS-1$
+                if (element == null || 
+                        e.getKey() == null || 
+                        e.getValue() == null)
+                    return null;
+                return e.getKey().getQualifiedName() + " \u2192 " //$NON-NLS-1$
                         + e.getValue().getQualifiedName();
             }
             
@@ -225,23 +249,51 @@ public class ManualDepciesDialog extends TrayDialog {
         dependantSel = (IStructuredSelection) cmbDependants.getSelection();
         dependencySel = (IStructuredSelection) cmbDependencies.getSelection();
         
+        if (dependantSel == null || dependencySel == null) {
+            return new AbstractMap.SimpleEntry<PgStatement, PgStatement>(
+                    null, null);
+        }
         return new AbstractMap.SimpleEntry<PgStatement, PgStatement>(
                 (PgStatement) dependantSel.getFirstElement(),
                 (PgStatement) dependencySel.getFirstElement());
+    }
+    
+    private void setAddBtnEnabled() {
+        Entry<PgStatement, PgStatement> selection = getComboSelections();
+        btnAdd.setEnabled(
+                selection.getKey() != null 
+                && selection.getValue() != null
+                && !selection.getKey().compare(selection.getValue()));
     }
     
     private class ComboSelectionListener implements ISelectionChangedListener {
         
         @Override
         public void selectionChanged(SelectionChangedEvent event) {
-            Entry<PgStatement, PgStatement> selection = 
-                    ManualDepciesDialog.this.getComboSelections();
-            btnAdd.setEnabled(
-                    selection.getKey() != null 
-                    && selection.getValue() != null
-                    && !selection.getKey().compare(selection.getValue()));
+            ManualDepciesDialog.this.setAddBtnEnabled();
         }
     }
+    private class ComboModifyListener implements ModifyListener {
+
+        @Override
+        public void modifyText(ModifyEvent e) {
+            ManualDepciesDialog.this.setAddBtnEnabled();
+            
+        }
+    }
+}
+
+class ComboViewerContentAdapter extends ComboContentAdapter {
+
+    public void setControlContents(Control control, String contents,
+            int cursorPosition) {
+        ((Combo) control).setText(contents);
+        ((Combo) control).select(
+                Arrays.binarySearch(((Combo) control).getItems(), contents));
+        Event evnt = new Event();
+        evnt.type = SWT.SELECTED | SWT.Selection;
+        ((Combo) control).notifyListeners(SWT.Selection, evnt);
+    }    
 }
 
 class PgStatementLabelProvider implements ILabelProvider {
