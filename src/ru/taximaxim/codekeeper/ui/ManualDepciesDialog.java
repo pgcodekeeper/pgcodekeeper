@@ -245,10 +245,6 @@ public class ManualDepciesDialog extends TrayDialog {
         dependantSel = (IStructuredSelection) cmbDependants.getSelection();
         dependencySel = (IStructuredSelection) cmbDependencies.getSelection();
         
-        if (dependantSel == null || dependencySel == null) {
-            return new AbstractMap.SimpleEntry<PgStatement, PgStatement>(
-                    null, null);
-        }
         return new AbstractMap.SimpleEntry<PgStatement, PgStatement>(
                 (PgStatement) dependantSel.getFirstElement(),
                 (PgStatement) dependencySel.getFirstElement());
