@@ -8,9 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -24,6 +27,8 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -41,6 +46,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.XMLStringBuild;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -55,9 +61,20 @@ public class DiffTableViewer extends Composite {
     private PgDatabase dbSource;
     private PgDatabase dbTarget;
     private Label lblObjectCount;
+    private List<String> ignoredElements = new ArrayList<String>();
+    private IPreferenceStore mainPrefs;
+    private PropertyChangeListener propChangeListener = new PropertyChangeListener();
     
-    public DiffTableViewer(Composite parent, int style) {
+    public DiffTableViewer(Composite parent, int style, 
+            IPreferenceStore preferenceStore) {
+        
         super(parent, style);
+        
+        this.mainPrefs = preferenceStore;
+        mainPrefs.addPropertyChangeListener(propChangeListener);
+        this.ignoredElements = XMLStringBuild.getListFromXMLString(
+                mainPrefs.getString(UIConsts.PREF_IGNORE_OBJECTS));
+        
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
@@ -70,6 +87,13 @@ public class DiffTableViewer extends Composite {
         comparator = new TableViewerComparator();
         viewer.getTable().setHeaderVisible(true);
         viewer.setComparator(comparator);
+        viewer.getTable().addDisposeListener(new DisposeListener() {
+            
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                mainPrefs.removePropertyChangeListener(propChangeListener);
+            }
+        });
         
         initColumns();
     
@@ -85,7 +109,7 @@ public class DiffTableViewer extends Composite {
                 }
             }
         });
-        
+
         viewer.setContentProvider(new IStructuredContentProvider() {
             @Override
             public void dispose() {
@@ -121,10 +145,12 @@ public class DiffTableViewer extends Composite {
                                         subtree.getPgStatement(dbTarget)))) {
                     return;
                 }
-                list.add(subtree);
+                // Do not add elements, which contain in ignore list
+                if (!ignoredElements.contains(subtree.getName())) {
+                    list.add(subtree);
+                }
             }
         });
-
         
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -375,6 +401,19 @@ public class DiffTableViewer extends Composite {
         }
         
         return tree.getFilteredCopy(checkedSet);
+    }
+    
+    class PropertyChangeListener implements IPropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+            if (event.getProperty().equals(UIConsts.PREF_IGNORE_OBJECTS) &&
+                    ! event.getNewValue().equals(event.getOldValue())) {
+                ignoredElements = XMLStringBuild.getListFromXMLString(
+                        mainPrefs.getString(UIConsts.PREF_IGNORE_OBJECTS));
+                viewer.refresh();
+            }
+        }
     }
 }
 

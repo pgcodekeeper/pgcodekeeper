@@ -193,7 +193,7 @@ public class DiffPartDescr {
         gl.horizontalSpacing = gl.verticalSpacing = 2;
         containerDb.setLayout(gl);
         
-        diffTable = new DiffTableViewer(containerDb, SWT.FILL);
+        diffTable = new DiffTableViewer(containerDb, SWT.FILL, mainPrefs);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 

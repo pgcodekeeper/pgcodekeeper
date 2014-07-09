@@ -286,7 +286,7 @@ public class CommitPartDescr {
         gl.horizontalSpacing = gl.verticalSpacing = 2;
         containerDb.setLayout(gl);
         
-        diffTable = new DiffTableViewer(containerDb, SWT.NONE);
+        diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
                     

@@ -44,8 +44,8 @@
       </page>
       <page
             category="ru.taximaxim.codekeeper.ui.general"
-            class="ru.taximaxim.codekeeper.ui.prefs.IgnoreObjectsPrefPage"
-            id="ru.taximaxim.codekeeper.ui.ignoreobjects"
+            class="ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage"
+            id="ru.taximaxim.codekeeper.ui.ignoredobjects"
             name="%page.name.ignored_objects">
       </page>
    </extension>
