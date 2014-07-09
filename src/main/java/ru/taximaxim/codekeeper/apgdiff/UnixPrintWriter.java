@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff;
+package ru.taximaxim.codekeeper.apgdiff;
 
 import java.io.File;
 import java.io.FileNotFoundException;
