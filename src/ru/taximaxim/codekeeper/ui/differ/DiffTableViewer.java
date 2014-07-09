@@ -40,6 +40,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -48,8 +51,6 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.XMLStringBuild;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class DiffTableViewer extends Composite {
 
@@ -62,18 +63,14 @@ public class DiffTableViewer extends Composite {
     private PgDatabase dbTarget;
     private Label lblObjectCount;
     private List<String> ignoredElements = new ArrayList<String>();
-    private IPreferenceStore mainPrefs;
-    private PropertyChangeListener propChangeListener = new PropertyChangeListener();
+    private IgnoresChangeListener ignoresChangeListener = new IgnoresChangeListener();
     
-    public DiffTableViewer(Composite parent, int style, 
-            IPreferenceStore preferenceStore) {
-        
+    public DiffTableViewer(Composite parent, int style, final IPreferenceStore prefs) {
         super(parent, style);
         
-        this.mainPrefs = preferenceStore;
-        mainPrefs.addPropertyChangeListener(propChangeListener);
+        prefs.addPropertyChangeListener(ignoresChangeListener);
         this.ignoredElements = XMLStringBuild.getListFromXMLString(
-                mainPrefs.getString(UIConsts.PREF_IGNORE_OBJECTS));
+                prefs.getString(UIConsts.PREF_IGNORE_OBJECTS));
         
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         GridLayout gl = new GridLayout();
@@ -91,7 +88,7 @@ public class DiffTableViewer extends Composite {
             
             @Override
             public void widgetDisposed(DisposeEvent e) {
-                mainPrefs.removePropertyChangeListener(propChangeListener);
+                prefs.removePropertyChangeListener(ignoresChangeListener);
             }
         });
         
@@ -403,14 +400,14 @@ public class DiffTableViewer extends Composite {
         return tree.getFilteredCopy(checkedSet);
     }
     
-    class PropertyChangeListener implements IPropertyChangeListener {
+    class IgnoresChangeListener implements IPropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent event) {
             if (event.getProperty().equals(UIConsts.PREF_IGNORE_OBJECTS) &&
                     ! event.getNewValue().equals(event.getOldValue())) {
                 ignoredElements = XMLStringBuild.getListFromXMLString(
-                        mainPrefs.getString(UIConsts.PREF_IGNORE_OBJECTS));
+                        (String) event.getNewValue());
                 viewer.refresh();
             }
         }
