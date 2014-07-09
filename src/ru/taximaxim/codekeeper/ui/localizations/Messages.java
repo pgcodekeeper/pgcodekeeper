@@ -223,7 +223,6 @@ public class Messages extends NLS {
     public static String diffWizard_this_project;
     public static String diffWizard_unexpected_error_while_saving_diff;
     public static String diffWizard_unexpected_target_type_value;
-
     public static String diffWizard_diff;
     public static String initProjectFromSource_exporting_db_model;
     public static String initProjectFromSource_init_request_but_no_schema_source;
@@ -283,7 +282,9 @@ public class Messages extends NLS {
     public static String gitPrefPage_public_key_file;
     public static String gitPrefPage_save_priv_key_to_file;
     public static String gitPrefPage_select_file_to_save_priv_key;
-    
+    public static String ignoreObjectsPrefPage_add_ignore;
+    public static String ignoreObjectsPrefPage_delete_ignore;
+    public static String ignoreObjectsPrefPage_Exception_thrown_during_parse_ignore_objects_preferences;
     // ui.recentprojs
     public static String dynamicMenuRecent_recent_list_is_empty;
 
