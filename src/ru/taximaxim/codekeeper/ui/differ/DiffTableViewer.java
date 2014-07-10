@@ -67,7 +67,6 @@ public class DiffTableViewer extends Composite {
     
     public DiffTableViewer(Composite parent, int style, final IPreferenceStore prefs) {
         super(parent, style);
-        
 
         prefs.addPropertyChangeListener(ignoresChangeListener);
         ignoredElements = new XMLListBuilder(UIConsts.IGNORED_OBJS_TAG,
