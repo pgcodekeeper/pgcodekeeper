@@ -15,14 +15,15 @@ import java.util.Set;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
-import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+
+import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 
 /**
  * Creates diff of two database schemas.
@@ -127,13 +128,17 @@ public class PgDiff {
             PgDiffArguments arguments, PgDatabase oldDatabase, PgDatabase newDatabase,
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
+        // since we cannot into OOP here - null the global vars at least
+        oldDepcyGraph = null;
+        depcyOld = null;
+        
         if (arguments.isAddTransaction()) {
             writer.println("START TRANSACTION;");
         }
 
         // temp solution
         if (oldDbFull != null && newDbFull != null){
-            depcyOld = new DepcyGraph((PgDatabase) oldDbFull);
+            depcyOld = new DepcyGraph(oldDbFull);
             
             if (additionalDepcies != null) {
                 depcyOld.addCustomDepcies(additionalDepcies);
@@ -158,15 +163,19 @@ public class PgDiff {
             writer.println("COMMENT ON DATABASE current_database() IS NULL;");
         }
 
-        dropOldSchemas(writer, arguments, oldDatabase, newDatabase);
-        createNewSchemas(writer, oldDatabase, newDatabase);
+        PgDiffScript script = new PgDiffScript();
         
-        dropOldExtensions(writer, oldDatabase, newDatabase);
-        createNewExtensions(writer, oldDatabase, newDatabase);
-        updateExtensions(writer, oldDatabase, newDatabase);
+        dropOldSchemas(script, arguments, oldDatabase, newDatabase);
+        createNewSchemas(script, oldDatabase, newDatabase);
         
-        updateSchemas(writer, arguments, oldDatabase, newDatabase);
+        dropOldExtensions(script, oldDatabase, newDatabase);
+        createNewExtensions(script, oldDatabase, newDatabase);
+        updateExtensions(script, oldDatabase, newDatabase);
+        
+        updateSchemas(script, arguments, oldDatabase, newDatabase);
 
+        script.printStatements(writer);
+        
         if (arguments.isAddTransaction()) {
             writer.println();
             writer.println("COMMIT TRANSACTION;");
@@ -279,11 +288,11 @@ public class PgDiff {
      * @param newDatabase new database schema
      */
     
-    private static void createNewExtensions(final PrintWriter writer, 
+    private static void createNewExtensions(final PgDiffScript script, 
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension newExt : newDatabase.getExtensions()) {
             if(oldDatabase.getExtension(newExt.getName()) == null) {
-                writeCreationSql(writer, null, newExt);
+                writeCreationSql(script, null, newExt);
             }
         }
     }
@@ -295,11 +304,11 @@ public class PgDiff {
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
-    private static void dropOldExtensions(final PrintWriter writer, 
+    private static void dropOldExtensions(final PgDiffScript script, 
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension oldExt : oldDatabase.getExtensions()) {
             if(newDatabase.getExtension(oldExt.getName()) == null) {
-                writeDropSql(writer, null, oldExt);
+                writeDropSql(script, null, oldExt);
             }
         }
     }
@@ -311,20 +320,16 @@ public class PgDiff {
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
-    private static void updateExtensions(final PrintWriter writer,
+    private static void updateExtensions(final PgDiffScript script,
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension newExt : newDatabase.getExtensions()) {
-            final PgExtension oldExt = oldDatabase.getExtension(
-                    newExt.getName());
+            final PgExtension oldExt = oldDatabase.getExtension(newExt.getName());
             if(oldExt == null) {
                 continue;
             }
             
-            if(newExt.getSchema() != null
-                    && !newExt.getSchema().equals(
-                            oldExt.getSchema())) {
-                writer.println();
-                writer.println("ALTER EXTENSION "
+            if(!Objects.equals(newExt.getSchema(), oldExt.getSchema())) {
+                script.addStatement("ALTER EXTENSION "
                         + PgDiffUtils.getQuotedName(oldExt.getName())
                         + " SET SCHEMA " + newExt.getSchema() + ";");
             }
@@ -338,11 +343,11 @@ public class PgDiff {
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
-    private static void createNewSchemas(final PrintWriter writer,
+    private static void createNewSchemas(final PgDiffScript script,
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for (final PgSchema newSchema : newDatabase.getSchemas()) {
             if (oldDatabase.getSchema(newSchema.getName()) == null) {
-                writeCreationSql(writer, null, newSchema);
+                writeCreationSql(script, null, newSchema);
             }
         }
     }
@@ -355,24 +360,22 @@ public class PgDiff {
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
-    private static void dropOldSchemas(final PrintWriter writer,
+    private static void dropOldSchemas(final PgDiffScript script,
             PgDiffArguments arguments, final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for (final PgSchema oldSchema : oldDatabase.getSchemas()) {
             if (newDatabase.getSchema(oldSchema.getName()) == null) {
                 if (!isFullSelection(oldSchema)){
-                    writer.println("-- schema " + oldSchema.getName() + " was "
+                    script.addStatement("-- schema " + oldSchema.getName() + " was "
                             + "not dropped because it was not selected entirely");
-                    writer.println();
                     continue;
                 }
                 // drop all contents of the schema
                 PgSchema newSchema = new PgSchema(oldSchema.getName(),
                         "CREATE SCHEMA " + oldSchema.getName());
-                updateSchemaContent(writer,
+                updateSchemaContent(script,
                         depcyOld.getDb().getSchema(oldSchema.getName()), newSchema,
                         new SearchPathHelper(oldSchema.getName()), arguments);
-                writer.println();
-                writer.println(oldSchema.getDropSQL());
+                script.addStatementUnique(oldSchema.getDropSQL());
             }
         }
     }
@@ -401,7 +404,7 @@ public class PgDiff {
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
-    private static void updateSchemas(final PrintWriter writer,
+    private static void updateSchemas(final PgDiffScript script,
             final PgDiffArguments arguments, final PgDatabase oldDatabase,
             final PgDatabase newDatabase) {
         final boolean setSearchPath = newDatabase.getSchemas().size() > 1
@@ -414,20 +417,17 @@ public class PgDiff {
                 searchPathHelper.setWasOutput(true);
             }
 
-            final PgSchema oldSchema =
-                    oldDatabase.getSchema(newSchema.getName());
+            final PgSchema oldSchema = oldDatabase.getSchema(newSchema.getName());
 
             if (oldSchema != null) {
 
                 if (!Objects.equals(oldSchema.getOwner(), newSchema.getOwner())) {
-                    searchPathHelper.outputSearchPath(writer);
-                    writer.println(newSchema.getOwnerSQL());
-                    writer.println();
+                    searchPathHelper.outputSearchPath(script);
+                    script.addStatement(newSchema.getOwnerSQL());
                 }
                 
                 if (!oldSchema.getPrivileges().equals(newSchema.getPrivileges())) {
-                    writer.println(newSchema.getPrivilegesSQL());
-                    writer.println();
+                    script.addStatement(newSchema.getPrivilegesSQL());
                 }
                 
                 if (oldSchema.getComment() == null
@@ -436,23 +436,17 @@ public class PgDiff {
                         && newSchema.getComment() != null
                         && !oldSchema.getComment().equals(
                                 newSchema.getComment())) {
-                    writer.println();
-                    writer.print("COMMENT ON SCHEMA ");
-                    writer.print(
-                            PgDiffUtils.getQuotedName(newSchema.getName()));
-                    writer.print(" IS ");
-                    writer.print(newSchema.getComment());
-                    writer.println(';');
+                    script.addStatement("COMMENT ON SCHEMA "
+                            + PgDiffUtils.getQuotedName(newSchema.getName())
+                            + " IS " + newSchema.getComment() + ';');
                 } else if (oldSchema.getComment() != null
                         && newSchema.getComment() == null) {
-                    writer.println();
-                    writer.print("COMMENT ON SCHEMA ");
-                    writer.print(
-                            PgDiffUtils.getQuotedName(newSchema.getName()));
-                    writer.println(" IS NULL;");
+                    script.addStatement("COMMENT ON SCHEMA "
+                                + PgDiffUtils.getQuotedName(newSchema.getName())
+                                + " IS NULL;");
                 }
             }
-            updateSchemaContent(writer, oldSchema, newSchema, searchPathHelper, arguments);
+            updateSchemaContent(script, oldSchema, newSchema, searchPathHelper, arguments);
         }
         
         // КОСТЫЛЬ
@@ -467,94 +461,92 @@ public class PgDiff {
                 newSchema.setComment(oldSchema.getComment());
                 newSchema.setDefinition(oldSchema.getDefinition());
                 
-                updateSchemaContent(writer, oldSchema, newSchema, searchPath, arguments);
+                updateSchemaContent(script, oldSchema, newSchema, searchPath, arguments);
             }
         }// КОСТЫЛЬ
     }
 
-    private static void updateSchemaContent(PrintWriter writer, PgSchema oldSchema,
+    private static void updateSchemaContent(PgDiffScript script, PgSchema oldSchema,
             PgSchema newSchema, SearchPathHelper searchPathHelper, PgDiffArguments arguments) {
         PgDiffTriggers.dropTriggers(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffFunctions.dropFunctions(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffViews.dropViews(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffConstraints.dropConstraints(
-                writer, oldSchema, newSchema, true, searchPathHelper);
+                script, oldSchema, newSchema, true, searchPathHelper);
         PgDiffConstraints.dropConstraints(
-                writer, oldSchema, newSchema, false, searchPathHelper);
+                script, oldSchema, newSchema, false, searchPathHelper);
         PgDiffIndexes.dropIndexes(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.dropClusters(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.dropTables(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.dropSequences(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
 
         PgDiffSequences.createSequences(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.alterSequences(
-                writer, arguments, oldSchema, newSchema, searchPathHelper);
+                script, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.createTables(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.alterTables(
-                writer, arguments, oldSchema, newSchema, searchPathHelper);
+                script, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.alterCreatedSequences(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffFunctions.createFunctions(
-                writer, arguments, oldSchema, newSchema, searchPathHelper);
+                script, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffConstraints.createConstraints(
-                writer, oldSchema, newSchema, true, searchPathHelper);
+                script, oldSchema, newSchema, true, searchPathHelper);
         PgDiffConstraints.createConstraints(
-                writer, oldSchema, newSchema, false, searchPathHelper);
+                script, oldSchema, newSchema, false, searchPathHelper);
         PgDiffIndexes.createIndexes(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.createClusters(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffTriggers.createTriggers(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffViews.createViews(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffViews.alterViews(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
 
         PgDiffFunctions.alterComments(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffConstraints.alterComments(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffIndexes.alterComments(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
         PgDiffTriggers.alterComments(
-                writer, oldSchema, newSchema, searchPathHelper);
+                script, oldSchema, newSchema, searchPathHelper);
     }
     
     static void tempSwitchSearchPath(String switchTo, 
-            final SearchPathHelper searchPathHelper, final PrintWriter writer){
+            final SearchPathHelper searchPathHelper, final PgDiffScript script){
         
         if (searchPathHelper.getWasOutput() == false ||
                 !searchPathHelper.getSchemaName().equals(switchTo)){
-            new SearchPathHelper(switchTo).outputSearchPath(writer);
+            new SearchPathHelper(switchTo).outputSearchPath(script);
             
             searchPathHelper.setWasOutput(false);
         }
     }
     
-    static void writeCreationSql(PrintWriter writer, String comment, PgStatement pgObject){
-        writer.println();
-        if (comment != null){
-            writer.println(comment);
+    static void writeCreationSql(PgDiffScript script, String comment, PgStatement pgObject) {
+        if (comment != null) {
+            script.addStatement(comment);
         }
-        writer.println(pgObject.getCreationSQL());
+        script.addStatementUnique(pgObject.getCreationSQL());
     }
     
-    static void writeDropSql(PrintWriter writer, String comment, PgStatement pgObject){
-        writer.println();
-        if (comment != null){
-            writer.println(comment);
+    static void writeDropSql(PgDiffScript script, String comment, PgStatement pgObject) {
+        if (comment != null) {
+            script.addStatement(comment);
         }
-        writer.println(pgObject.getDropSQL());
+        script.addStatementUnique(pgObject.getDropSQL());
     }
     
     private PgDiff() {

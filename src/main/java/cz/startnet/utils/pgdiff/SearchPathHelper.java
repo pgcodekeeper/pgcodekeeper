@@ -34,7 +34,7 @@ public class SearchPathHelper {
      *
      * @param writer writer
      */
-    public void outputSearchPath(final PrintWriter writer) {
+    public void outputSearchPath(final PgDiffScript script) {
         if (!wasOutput && !schemaName.isEmpty()) {
             writer.println();
             writer.println(searchPath);

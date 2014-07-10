@@ -11,7 +11,7 @@ import java.io.Writer;
 
 public class UnixPrintWriter extends PrintWriter {
     
-    private boolean autoFlush = false; 
+    private boolean autoFlush = false;
 
     public UnixPrintWriter(Writer out) {
         super(out);

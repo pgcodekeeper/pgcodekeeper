@@ -5,7 +5,6 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -31,7 +30,7 @@ public class PgDiffViews {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void createViews(final PrintWriter writer,
+    public static void createViews(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgView newView : newSchema.getViews()) {
@@ -70,7 +69,7 @@ public class PgDiffViews {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropViews(final PrintWriter writer,
+    public static void dropViews(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -131,7 +130,6 @@ public class PgDiffViews {
      */
     private static boolean isViewModified(final PgView oldView,
             final PgView newView) {
-        // TODO replace list by set? order of columns does not matter
         List<String> oldColumnNames = oldView.getColumnNames();
         List<String> newColumnNames = newView.getColumnNames();
 
@@ -154,7 +152,7 @@ public class PgDiffViews {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterViews(final PrintWriter writer,
+    public static void alterViews(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -277,7 +275,7 @@ public class PgDiffViews {
      * @param newView          new view
      * @param searchPathHelper search path helper
      */
-    private static void diffDefaultValues(final PrintWriter writer,
+    private static void diffDefaultValues(final PgDiffScript script,
             final PgView oldView, final PgView newView,
             final SearchPathHelper searchPathHelper) {
         final List<PgView.DefaultValue> oldValues =

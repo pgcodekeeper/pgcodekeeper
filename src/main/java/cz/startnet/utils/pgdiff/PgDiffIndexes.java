@@ -5,7 +5,6 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +27,7 @@ public class PgDiffIndexes {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void createIndexes(final PrintWriter writer,
+    public static void createIndexes(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgTable newTable : newSchema.getTables()) {
@@ -37,16 +36,13 @@ public class PgDiffIndexes {
             // Add new indexes
             if (oldSchema == null) {
                 for (PgIndex index : newTable.getIndexes()) {
-                    searchPathHelper.outputSearchPath(writer);
-                    writer.println();
-                    writer.println(index.getCreationSQL());
+                    searchPathHelper.outputSearchPath(script);
+                    PgDiff.writeCreationSql(script, null, index);
                 }
             } else {
-                for (PgIndex index : getNewIndexes(
-                        oldSchema.getTable(newTableName), newTable)) {
-                    searchPathHelper.outputSearchPath(writer);
-                    writer.println();
-                    writer.println(index.getCreationSQL());
+                for (PgIndex index : getNewIndexes(oldSchema.getTable(newTableName), newTable)) {
+                    searchPathHelper.outputSearchPath(script);
+                    PgDiff.writeCreationSql(script, null, index);
                 }
             }
         }
@@ -60,7 +56,7 @@ public class PgDiffIndexes {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropIndexes(final PrintWriter writer,
+    public static void dropIndexes(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgTable newTable : newSchema.getTables()) {
@@ -75,8 +71,8 @@ public class PgDiffIndexes {
 
             // Drop indexes that do not exist in new schema or are modified
             for (final PgIndex index : getDropIndexes(oldTable, newTable)) {
-                searchPathHelper.outputSearchPath(writer);
-                PgDiff.writeDropSql(writer, null, index);
+                searchPathHelper.outputSearchPath(script);
+                PgDiff.writeDropSql(script, null, index);
             }
         }
         
@@ -89,8 +85,8 @@ public class PgDiffIndexes {
             if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
                 PgTable newTable = new PgTable(oldTable.getName(), null, null);
                 for (final PgIndex index : getDropIndexes(oldTable, newTable)) {
-                    searchPathHelper.outputSearchPath(writer);
-                    PgDiff.writeDropSql(writer, null, index);
+                    searchPathHelper.outputSearchPath(script);
+                    PgDiff.writeDropSql(script, null, index);
                 }
             }
         }// КОСТЫЛЬ
@@ -162,7 +158,7 @@ public class PgDiffIndexes {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterComments(final PrintWriter writer,
+    public static void alterComments(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -189,22 +185,16 @@ public class PgDiffIndexes {
                         && newIndex.getComment() != null
                         && !oldIndex.getComment().equals(
                         newIndex.getComment())) {
-                    searchPathHelper.outputSearchPath(writer);
-                    writer.println();
-                    writer.print("COMMENT ON INDEX ");
-                    writer.print(
-                            PgDiffUtils.getQuotedName(newIndex.getName()));
-                    writer.print(" IS ");
-                    writer.print(newIndex.getComment());
-                    writer.println(';');
+                    searchPathHelper.outputSearchPath(script);
+                    script.addStatement("COMMENT ON INDEX "
+                            + PgDiffUtils.getQuotedName(newIndex.getName())
+                            + " IS " + newIndex.getComment() + ';');
                 } else if (oldIndex.getComment() != null
                         && newIndex.getComment() == null) {
-                    searchPathHelper.outputSearchPath(writer);
-                    writer.println();
-                    writer.print("COMMENT ON INDEX ");
-                    writer.print(
-                            PgDiffUtils.getQuotedName(newIndex.getName()));
-                    writer.println(" IS NULL;");
+                    searchPathHelper.outputSearchPath(script);
+                    script.addStatement("COMMENT ON INDEX "
+                            + PgDiffUtils.getQuotedName(newIndex.getName())
+                            + " IS NULL;");
                 }
             }
         }

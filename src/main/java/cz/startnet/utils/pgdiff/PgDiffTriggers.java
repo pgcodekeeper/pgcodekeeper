@@ -28,7 +28,7 @@ public class PgDiffTriggers {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void createTriggers(final PrintWriter writer,
+    public static void createTriggers(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgTable newTable : newSchema.getTables()) {
@@ -56,7 +56,7 @@ public class PgDiffTriggers {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropTriggers(final PrintWriter writer,
+    public static void dropTriggers(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgTable newTable : newSchema.getTables()) {
@@ -152,7 +152,7 @@ public class PgDiffTriggers {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterComments(final PrintWriter writer,
+    public static void alterComments(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
