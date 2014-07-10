@@ -35,12 +35,12 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  * &lt;/rootTagName&gt;<br>
  * </code>
  */
-public class XMLListBuilder {
+public class XmlStringList {
     
     private final String rootTagName;
     private final String elementTagName;
     
-    public XMLListBuilder(String rootTagName, String elementTagName) {
+    public XmlStringList(String rootTagName, String elementTagName) {
         this.rootTagName = rootTagName;
         this.elementTagName = elementTagName;
     }

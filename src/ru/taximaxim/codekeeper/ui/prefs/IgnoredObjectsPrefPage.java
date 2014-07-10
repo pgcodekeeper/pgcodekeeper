@@ -29,7 +29,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.XMLListBuilder;
+import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
@@ -56,7 +56,7 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
         preference = getPreferenceStore().getString(UIConsts.PREF_IGNORE_OBJECTS);
 
         if (!preference.isEmpty()) {
-            XMLListBuilder xml = new XMLListBuilder(IGNORED_OBJS_TAG, IGNORED_OBJS_ELEMENT);
+            XmlStringList xml = new XmlStringList(IGNORED_OBJS_TAG, IGNORED_OBJS_ELEMENT);
             try {
                 ignoredObjects = xml.deserialize(new StringReader(preference));
             } catch (IOException | SAXException ex) {
@@ -148,7 +148,7 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
     public boolean performOk() {
         if (getPreferenceStore() != null) {
             StringWriter sw = new StringWriter();
-            XMLListBuilder xml = new XMLListBuilder(IGNORED_OBJS_TAG, IGNORED_OBJS_ELEMENT);
+            XmlStringList xml = new XmlStringList(IGNORED_OBJS_TAG, IGNORED_OBJS_ELEMENT);
             try {
                 xml.serialize(ignoredObjects, true, sw);
             } catch (TransformerException ex) {

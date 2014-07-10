@@ -75,7 +75,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.XMLListBuilder;
+import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -235,7 +235,7 @@ public class CommitPartDescr {
                 }
                 
                 try (Writer xmlWriter = new FileWriter(getCommentsHistoryXmlFile())) {
-                    XMLListBuilder xml = new XMLListBuilder(COMMENTS_HIST_ROOT, COMMENTS_HIST_EL);
+                    XmlStringList xml = new XmlStringList(COMMENTS_HIST_ROOT, COMMENTS_HIST_EL);
                     xml.serialize(comments, false, xmlWriter);
                 } catch (IOException | TransformerException ex) {
                     throw new IllegalStateException(
@@ -618,7 +618,7 @@ public class CommitPartDescr {
     private LinkedList<String> getCommitCommentHistory() {
         LinkedList<String> comments;
         try (Reader xmlReader = new FileReader(getCommentsHistoryXmlFile())) {
-            XMLListBuilder xml = new XMLListBuilder(COMMENTS_HIST_ROOT, COMMENTS_HIST_EL);
+            XmlStringList xml = new XmlStringList(COMMENTS_HIST_ROOT, COMMENTS_HIST_EL);
             comments = xml.deserialize(xmlReader);
         } catch (FileNotFoundException ex) {
             comments = null;

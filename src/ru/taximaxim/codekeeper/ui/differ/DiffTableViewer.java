@@ -53,7 +53,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.XMLListBuilder;
+import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage;
 
@@ -417,7 +417,7 @@ public class DiffTableViewer extends Composite {
         public void propertyChange(PropertyChangeEvent event) {
             if (event.getProperty().equals(UIConsts.PREF_IGNORE_OBJECTS)
                     && !event.getNewValue().equals(event.getOldValue())) {
-                XMLListBuilder xml = new XMLListBuilder(
+                XmlStringList xml = new XmlStringList(
                         IgnoredObjectsPrefPage.IGNORED_OBJS_TAG,
                         IgnoredObjectsPrefPage.IGNORED_OBJS_ELEMENT);
                 try {
