@@ -1,9 +1,12 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +42,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.xml.sax.SAXException;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -51,6 +55,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.XMLListBuilder;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage;
 
 public class DiffTableViewer extends Composite {
 
@@ -62,20 +67,12 @@ public class DiffTableViewer extends Composite {
     private PgDatabase dbSource;
     private PgDatabase dbTarget;
     private Label lblObjectCount;
-    private List<String> ignoredElements = new ArrayList<String>();
-    private IgnoresChangeListener ignoresChangeListener = new IgnoresChangeListener();
+    private List<String> ignoredElements;
+    private final IgnoresChangeListener ignoresChangeListener = new IgnoresChangeListener();
     
-    public DiffTableViewer(Composite parent, int style, final IPreferenceStore prefs) {
+    public DiffTableViewer(Composite parent, int style, final IPreferenceStore mainPrefs) {
         super(parent, style);
 
-        prefs.addPropertyChangeListener(ignoresChangeListener);
-        ignoredElements = new XMLListBuilder(UIConsts.IGNORED_OBJS_TAG,
-                UIConsts.IGNORED_OBJS_ELEMENT).getListFromXMLString(
-                        prefs.getString(UIConsts.PREF_IGNORE_OBJECTS));
-        if (ignoredElements == null) {
-            ignoredElements = new ArrayList<String>();
-        }
-        
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
@@ -88,13 +85,6 @@ public class DiffTableViewer extends Composite {
         comparator = new TableViewerComparator();
         viewer.getTable().setHeaderVisible(true);
         viewer.setComparator(comparator);
-        viewer.getTable().addDisposeListener(new DisposeListener() {
-            
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                prefs.removePropertyChangeListener(ignoresChangeListener);
-            }
-        });
         
         initColumns();
     
@@ -148,8 +138,8 @@ public class DiffTableViewer extends Composite {
                 }
                 // Do not add elements, which contain in ignore list
                 if (!ignoredElements.contains(subtree.getName())) {
-                        list.add(subtree);
-                    }
+                    list.add(subtree);
+                }
             }
         });
         
@@ -179,6 +169,23 @@ public class DiffTableViewer extends Composite {
         
         lblObjectCount = new Label(contButtons, SWT.RIGHT);
         lblObjectCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
+
+        mainPrefs.addPropertyChangeListener(ignoresChangeListener);
+        viewer.getTable().addDisposeListener(new DisposeListener() {
+            
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                mainPrefs.removePropertyChangeListener(ignoresChangeListener);
+            }
+        });
+        
+        String ignoredObjectsPref = mainPrefs.getString(UIConsts.PREF_IGNORE_OBJECTS);
+        if (!ignoredObjectsPref.isEmpty()) {
+            ignoresChangeListener.propertyChange(new PropertyChangeEvent(
+                    mainPrefs, UIConsts.PREF_IGNORE_OBJECTS, null, ignoredObjectsPref));
+        } else {
+            ignoredElements = new LinkedList<>();
+        }
     }
 
     private void initColumns() {
@@ -410,9 +417,15 @@ public class DiffTableViewer extends Composite {
         public void propertyChange(PropertyChangeEvent event) {
             if (event.getProperty().equals(UIConsts.PREF_IGNORE_OBJECTS)
                     && !event.getNewValue().equals(event.getOldValue())) {
-                ignoredElements = new XMLListBuilder(UIConsts.IGNORED_OBJS_TAG,
-                        UIConsts.IGNORED_OBJS_ELEMENT)
-                        .getListFromXMLString((String) event.getNewValue());
+                XMLListBuilder xml = new XMLListBuilder(
+                        IgnoredObjectsPrefPage.IGNORED_OBJS_TAG,
+                        IgnoredObjectsPrefPage.IGNORED_OBJS_ELEMENT);
+                try {
+                    ignoredElements = xml.deserialize(
+                            new StringReader((String) event.getNewValue()));
+                } catch (IOException | SAXException ex) {
+                    throw new IllegalStateException(ex);
+                }
                 viewer.refresh();
             }
         }

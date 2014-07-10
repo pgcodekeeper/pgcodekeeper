@@ -1,18 +1,27 @@
 package ru.taximaxim.codekeeper.ui.parts;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.xml.transform.TransformerException;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
@@ -55,6 +64,9 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.xml.sax.SAXException;
+
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
@@ -74,9 +86,15 @@ import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class CommitPartDescr {
+    
+    private final static String COMMENTS_HIST_ROOT = "comments"; //$NON-NLS-1$
+    private final static String COMMENTS_HIST_EL = "c"; //$NON-NLS-1$
+    private final static String COMMENTS_HIST_FILENAME = "commit_comments.xml"; //$NON-NLS-1$
+    
+
+    private final static int COMMENT_HIST_MAX_STORED = 40;
 
     @Inject
     private MPart part;
@@ -107,8 +125,6 @@ public class CommitPartDescr {
     private DbPicker dbSrc;
     private TextMergeViewer diffPane;
     private String repoName;
-    static final String COMMENTS_TAG = "comments"; //$NON-NLS-1$
-    static final String COMMENT_TAG = "c"; //$NON-NLS-1$
     /**
      * Local repository cache.
      */
@@ -147,9 +163,7 @@ public class CommitPartDescr {
         btnPrevComments.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                List<String> comments = new XMLListBuilder(UIConsts.COMMENTS_TAG,
-                        UIConsts.COMMENTS_ELEMENT).read();
-                
+                List<String> comments = getCommitCommentHistory();
                 MenuManager mmComments = new MenuManager();
                 if (comments == null || comments.isEmpty()) {
                     mmComments.add(new Action(Messages.commitPartDescr_no_previous_comments) {
@@ -169,6 +183,7 @@ public class CommitPartDescr {
                             @Override
                             public void run() {
                                 txtCommitComment.setText(comment);
+                                txtCommitComment.setFocus();
                             }
                         });
                     }
@@ -190,6 +205,7 @@ public class CommitPartDescr {
         btnCommit.setText(Messages.commitPartDescr_commit);
         btnCommit.setEnabled(false);
         btnCommit.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
                 final String commitComment = txtCommitComment.getText();
@@ -208,7 +224,24 @@ public class CommitPartDescr {
                     return;
                 }
                 
-                new XMLListBuilder(COMMENTS_TAG, COMMENT_TAG).add(commitComment);
+                LinkedList<String> comments = getCommitCommentHistory();
+                if (comments == null) {
+                    comments = new LinkedList<>();
+                }
+                comments.add(0, commitComment);
+                
+                while (comments.size() > COMMENT_HIST_MAX_STORED) {
+                    comments.removeLast();
+                }
+                
+                try (Writer xmlWriter = new FileWriter(getCommentsHistoryXmlFile())) {
+                    XMLListBuilder xml = new XMLListBuilder(COMMENTS_HIST_ROOT, COMMENTS_HIST_EL);
+                    xml.serialize(comments, false, xmlWriter);
+                } catch (IOException | TransformerException ex) {
+                    throw new IllegalStateException(
+                            Messages.CommitPartDescr_commit_hist_read_error,
+                            ex);
+                }
 
                 final TreeElement filtered = diffTable.filterDiffTree();
                 IRunnableWithProgress commitRunnable = new IRunnableWithProgress() {
@@ -580,6 +613,35 @@ public class CommitPartDescr {
         dbSrc.setVisible(show);
 
         dbSrc.getParent().layout();
+    }
+    
+    private LinkedList<String> getCommitCommentHistory() {
+        LinkedList<String> comments;
+        try (Reader xmlReader = new FileReader(getCommentsHistoryXmlFile())) {
+            XMLListBuilder xml = new XMLListBuilder(COMMENTS_HIST_ROOT, COMMENTS_HIST_EL);
+            comments = xml.deserialize(xmlReader);
+        } catch (FileNotFoundException ex) {
+            comments = null;
+        } catch (IOException | SAXException ex) {
+            throw new IllegalStateException(
+                    Messages.CommitPartDescr_commit_hist_write_error,
+                    ex);
+        }
+        return comments;
+    }
+    
+    private File getCommentsHistoryXmlFile() {
+        File fileComments;
+        try {
+            fileComments = new File(Platform.getInstanceLocation().getURL().toURI());
+        } catch(URISyntaxException ex) {
+            throw new IllegalStateException(ex);
+        }
+        fileComments = new File(fileComments, ".metadata"); //$NON-NLS-1$
+        fileComments = new File(fileComments, ".plugins"); //$NON-NLS-1$
+        fileComments = new File(fileComments, UIConsts.PLUGIN_ID);
+        fileComments = new File(fileComments, COMMENTS_HIST_FILENAME);
+        return fileComments;
     }
 
     @Inject

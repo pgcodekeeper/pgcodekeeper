@@ -33,16 +33,6 @@ public interface UIConsts {
     String HANDLER_RECENT_PROJ = "bundleclass://" + PLUGIN_ID + "/" + PLUGIN_ID //$NON-NLS-1$ //$NON-NLS-2$
             + ".handlers.OpenRecent"; //$NON-NLS-1$
     
-    // XML names
-    String COMMENTS_TAG = "comments"; //$NON-NLS-1$
-    String COMMENTS_ELEMENT = "c"; //$NON-NLS-1$
-    String IGNORED_OBJS_TAG = "ignored_objects"; //$NON-NLS-1$
-    String IGNORED_OBJS_ELEMENT = "obj"; //$NON-NLS-1$
-    String COMMENTS_XML_FILENAME = "commit_comments.xml"; //$NON-NLS-1$
-    
-    // Comments
-    int MAX_STORED_COMMENTS = 40;
-    
     // Preferences
     String PREF_PGDUMP_EXE_PATH = "prefPgdumpExePath"; //$NON-NLS-1$
     String PREF_PGDUMP_CUSTOM_PARAMS = "prefPgdumpCustomParams"; //$NON-NLS-1$

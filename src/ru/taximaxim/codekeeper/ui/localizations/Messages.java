@@ -71,9 +71,6 @@ public class Messages extends NLS {
     public static String sqlScriptDialog_stop_script;
     public static String sqlScriptDialog_stop_script_before_closing_dialog;
     public static String sqlScriptDialog_use;
-    public static String xmlCommitCommentHistory_error_reading_comment_history_xml;
-    public static String xmlCommitCommentHistory_error_while_trying_to_write_comment;
-    public static String xMLStringBuild_Exception_thrown_during_parse_ignore_objects_preferences;
     public static String manualDepciesDialog_dependant_dependency;
     public static String manualDepciesDialog_depends_on;
     public static String manualDepciesDialog_object;
@@ -169,6 +166,10 @@ public class Messages extends NLS {
     // ui.parts
     public static String commitPartDescr_comment_required;
     public static String commitPartDescr_commit;
+
+    public static String CommitPartDescr_commit_hist_read_error;
+
+    public static String CommitPartDescr_commit_hist_write_error;
     public static String commitPartDescr_commiting;
     public static String commitPartDescr_exporting_db_model;
     public static String commitPartDescr_from_database;
@@ -288,9 +289,13 @@ public class Messages extends NLS {
     
     // ui.recentprojs
     public static String dynamicMenuRecent_recent_list_is_empty;
+
+    public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
     public static String JGitExec_exception_thrown_at_jgit_push;
     public static String NewProjWizard_settings;
     public static String ProjProps_settings;
+
+    public static String XMLListBuilder_root_name_invalid;
 
     static {
         // initialize resource bundle
