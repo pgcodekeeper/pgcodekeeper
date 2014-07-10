@@ -46,7 +46,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.XMLStringBuild;
+import ru.taximaxim.codekeeper.ui.XMLListBuilder;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -72,8 +72,12 @@ public class DiffTableViewer extends Composite {
         
         this.mainPrefs = preferenceStore;
         mainPrefs.addPropertyChangeListener(propChangeListener);
-        this.ignoredElements = XMLStringBuild.getListFromXMLString(
+        ignoredElements = new XMLListBuilder(UIConsts.IGNORED_OBJS_TAG,
+                UIConsts.IGNORED_OBJS_ELEMENT).getListFromXMLString(
                 mainPrefs.getString(UIConsts.PREF_IGNORE_OBJECTS));
+        if (ignoredElements == null) {
+            ignoredElements = new ArrayList<String>();
+        }
         
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         GridLayout gl = new GridLayout();
@@ -147,8 +151,8 @@ public class DiffTableViewer extends Composite {
                 }
                 // Do not add elements, which contain in ignore list
                 if (!ignoredElements.contains(subtree.getName())) {
-                    list.add(subtree);
-                }
+                        list.add(subtree);
+                    }
             }
         });
         
@@ -409,8 +413,9 @@ public class DiffTableViewer extends Composite {
         public void propertyChange(PropertyChangeEvent event) {
             if (event.getProperty().equals(UIConsts.PREF_IGNORE_OBJECTS) &&
                     ! event.getNewValue().equals(event.getOldValue())) {
-                ignoredElements = XMLStringBuild.getListFromXMLString(
-                        mainPrefs.getString(UIConsts.PREF_IGNORE_OBJECTS));
+                ignoredElements = new XMLListBuilder(UIConsts.IGNORED_OBJS_TAG,
+                        UIConsts.IGNORED_OBJS_ELEMENT)
+                        .getListFromXMLString(mainPrefs.getString(UIConsts.PREF_IGNORE_OBJECTS));
                 viewer.refresh();
             }
         }

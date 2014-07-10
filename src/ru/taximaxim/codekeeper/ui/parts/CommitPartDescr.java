@@ -63,7 +63,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.XmlCommitCommentHistory;
+import ru.taximaxim.codekeeper.ui.XMLListBuilder;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -107,6 +107,8 @@ public class CommitPartDescr {
     private DbPicker dbSrc;
     private TextMergeViewer diffPane;
     private String repoName;
+    static final String COMMENTS_TAG = "comments"; //$NON-NLS-1$
+    static final String COMMENT_TAG = "c"; //$NON-NLS-1$
     /**
      * Local repository cache.
      */
@@ -145,7 +147,8 @@ public class CommitPartDescr {
         btnPrevComments.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                List<String> comments = XmlCommitCommentHistory.read();
+                List<String> comments = new XMLListBuilder(UIConsts.COMMENTS_TAG,
+                        UIConsts.COMMENTS_ELEMENT).read();
                 
                 MenuManager mmComments = new MenuManager();
                 if (comments == null || comments.isEmpty()) {
@@ -205,7 +208,7 @@ public class CommitPartDescr {
                     return;
                 }
                 
-                XmlCommitCommentHistory.add(commitComment);
+                new XMLListBuilder(COMMENTS_TAG, COMMENT_TAG).add(commitComment);
 
                 final TreeElement filtered = diffTable.filterDiffTree();
                 IRunnableWithProgress commitRunnable = new IRunnableWithProgress() {

@@ -26,7 +26,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.XMLStringBuild;
+import ru.taximaxim.codekeeper.ui.XMLListBuilder;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
@@ -42,7 +42,8 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage implements
     private ListViewer listIgnoredObjs;
     private Text addingValue;
     private List<String> ignoredObjects = new ArrayList<String>();
-
+    
+    
     @Override
     public void init(IWorkbench workbench) {
         setPreferenceStore(UIScopedPreferenceStore.get());
@@ -54,7 +55,9 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage implements
                 UIConsts.PREF_IGNORE_OBJECTS);
 
         if (!preference.isEmpty()) {
-            ignoredObjects = XMLStringBuild.getListFromXMLString(preference);
+            ignoredObjects = new XMLListBuilder(UIConsts.IGNORED_OBJS_TAG,
+                    UIConsts.IGNORED_OBJS_ELEMENT)
+                    .getListFromXMLString(preference);
             listIgnoredObjs.refresh(false);
         }
     }
@@ -128,7 +131,9 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage implements
 
     @Override
     public boolean performOk() {
-        preference = XMLStringBuild.getXMLStringFromList(ignoredObjects);
+        preference = new XMLListBuilder(UIConsts.IGNORED_OBJS_TAG,
+                UIConsts.IGNORED_OBJS_ELEMENT)
+                .getXMLStringFromList(ignoredObjects);
         if (getPreferenceStore() != null) {
             getPreferenceStore().setValue(UIConsts.PREF_IGNORE_OBJECTS,
                     preference);

@@ -74,7 +74,6 @@ public class Messages extends NLS {
     public static String xmlCommitCommentHistory_error_reading_comment_history_xml;
     public static String xmlCommitCommentHistory_error_while_trying_to_write_comment;
     public static String xMLStringBuild_Exception_thrown_during_parse_ignore_objects_preferences;
-    public static String xMLStringBuild_Can_not_transform_xml_to_string;
     public static String manualDepciesDialog_dependant_dependency;
     public static String manualDepciesDialog_depends_on;
     public static String manualDepciesDialog_object;
