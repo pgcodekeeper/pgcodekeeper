@@ -1,4 +1,4 @@
-package cz.startnet.utils.pgdiff;
+package ru.taximaxim.codekeeper.apgdiff;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,7 +11,7 @@ import java.io.Writer;
 
 public class UnixPrintWriter extends PrintWriter {
     
-    private boolean autoFlush = false;
+    private boolean autoFlush = false; 
 
     public UnixPrintWriter(Writer out) {
         super(out);
