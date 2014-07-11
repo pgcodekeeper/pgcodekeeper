@@ -159,7 +159,7 @@ public final class Parser {
      * @return parsed identifier
      */
     public String parseIdentifier() {
-        String identifier = "";
+        StringBuilder identifier = new StringBuilder();
         boolean firstPass = true;
         
         do {
@@ -168,14 +168,14 @@ public final class Parser {
             } else {
                 position++;
                 skipWhitespace();
-                identifier += '.';
+                identifier.append('.');
             }
             
-            identifier += parseIdentifierInternal();
+            identifier.append(parseIdentifierInternal());
             skipWhitespace();
         } while (position < string.length() && string.charAt(position) == '.');
         
-        return identifier;
+        return identifier.toString();
     }
 
     /**
