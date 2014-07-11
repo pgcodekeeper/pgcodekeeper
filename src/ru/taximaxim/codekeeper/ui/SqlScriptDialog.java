@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -136,7 +137,10 @@ public class SqlScriptDialog extends MessageDialog {
         
         cmbScript = new ComboViewer(parent, SWT.NONE);
         cmbScript.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        cmbScript.add(history.getHistory().toArray());
+        LinkedList<String> elements =history.getHistory(); 
+        if (elements != null){
+            cmbScript.add(elements.toArray());
+        }
         cmbScript.getCombo().setToolTipText(Messages.sqlScriptDialog_use + SCRIPT_PLACEHOLDER
                 + Messages.sqlScriptDialog_denote_place_where_sql_script_fname_be_inserted);
         cmbScript.getCombo().addModifyListener(new ModifyListener() {
