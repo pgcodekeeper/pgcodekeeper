@@ -41,7 +41,6 @@ public interface UIConsts {
     String PREF_RECENT_PROJECTS = "prefRecentProject"; //$NON-NLS-1$
     String PREF_OPEN_LAST_ON_START = "prefOpenLastOnStart"; //$NON-NLS-1$
     String PREF_LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
-    String PREF_LAST_ROLLON_SCRIPT = "prefLastRollonScript"; //$NON-NLS-1$
     String PREF_LAST_REPO = "prefLastRepo"; //$NON-NLS-1$
     String PREF_IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
     

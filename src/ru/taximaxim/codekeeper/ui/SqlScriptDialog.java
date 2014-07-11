@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -44,8 +45,13 @@ public class SqlScriptDialog extends MessageDialog {
     public static final String runScriptText =  Messages.sqlScriptDialog_run_script;
     public static final String stopScriptText = Messages.sqlScriptDialog_stop_script;
     
+    private final static String SCRIPTS_HIST_ROOT = "scripts"; //$NON-NLS-1$
+    private final static String SCRIPTS_HIST_EL = "s"; //$NON-NLS-1$
+    private final static String SCRIPTS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
+    private final static int SCRIPTS_HIST_MAX_STORED = 20;
+
+    private final XmlHistory history;
     private final String text;
-    private String execScript = ""; //$NON-NLS-1$
     
     private String dbHost;
     private String dbPort;
@@ -54,8 +60,8 @@ public class SqlScriptDialog extends MessageDialog {
     private String dbPass;
     
     private Text txtMain;
-    private Text txtScript;
     private Text txtCommand;
+    private ComboViewer cmbScript;
     private Button runScriptBtn;
     
     private boolean isRunning;
@@ -71,7 +77,7 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     private String getReplacedString() {
-        String s = txtScript.getText();
+        String s = cmbScript.getCombo().getText();
         if (dbHost != null) {
             s = s.replace(DB_HOST_PLACEHOLDER, dbHost);
         }
@@ -89,13 +95,6 @@ public class SqlScriptDialog extends MessageDialog {
         }
         return s;
     }
-    public void setScript(String rollScript) {
-        this.execScript = rollScript;
-    }
-    
-    public String getScript() {
-        return execScript;
-    }
     
     public SqlScriptDialog(Shell parentShell, int type, String title, String message,
             String text) {
@@ -103,7 +102,12 @@ public class SqlScriptDialog extends MessageDialog {
                 runScriptText, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }, 2);
         
         setShellStyle(getShellStyle() | SWT.RESIZE);
+        
         this.text = text;
+        this.history = new XmlHistory(SCRIPTS_HIST_MAX_STORED, 
+                SCRIPTS_HIST_FILENAME, 
+                SCRIPTS_HIST_ROOT, 
+                SCRIPTS_HIST_EL);
     }
     
     @Override
@@ -111,7 +115,6 @@ public class SqlScriptDialog extends MessageDialog {
         txtMain = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
                 | SWT.MULTI);
         txtMain.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        
         txtMain.setText(text);
         
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -129,16 +132,22 @@ public class SqlScriptDialog extends MessageDialog {
         gd.verticalIndent = 12;
         l.setLayoutData(gd);
         
-        txtScript = new Text(parent, SWT.BORDER);
-        txtScript.setText(execScript);
+        cmbScript = new ComboViewer(parent, SWT.DROP_DOWN);
+        cmbScript.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         String n = System.lineSeparator();
-        txtScript.setToolTipText(DB_NAME_PLACEHOLDER + '=' +dbName + n +
+        cmbScript.getCombo().setToolTipText(DB_NAME_PLACEHOLDER + '=' +dbName + n +
                 DB_HOST_PLACEHOLDER + '=' + dbHost + n + 
                 DB_PORT_PLACEHOLDER + '=' + dbPort + n + 
                 DB_USER_PLACEHOLDER + '=' + dbUser + n + 
                 DB_PASS_PLACEHOLDER + '=' + dbPass);
-        txtScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtScript.addModifyListener(new ModifyListener() {
+
+        List<String> prev = history.getHistory();
+        if (prev != null && !prev.isEmpty()) {
+            cmbScript.add(prev.toArray());
+            cmbScript.getCombo().select(0);
+        }
+        
+        cmbScript.getCombo().addModifyListener(new ModifyListener() {
             
             @Override
             public void modifyText(ModifyEvent e) {
@@ -257,10 +266,7 @@ public class SqlScriptDialog extends MessageDialog {
                 Console.addMessage(fileSaved);
                 Log.log(Log.LOG_INFO, fileSaved);
             }
-        }
-        // case Ok
-        else if (buttonId == 2){
-            execScript = txtScript.getText();
+        } else {
             super.buttonPressed(buttonId);
         }
     }
@@ -273,6 +279,7 @@ public class SqlScriptDialog extends MessageDialog {
             errorDialog.open();
             return false;
         } else {
+            history.addHistoryEntry(cmbScript.getCombo().getText());
             return super.close();
         }
     }

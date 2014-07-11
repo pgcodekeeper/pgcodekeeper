@@ -55,7 +55,6 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ManualDepciesDialog;
 import ru.taximaxim.codekeeper.ui.SqlScriptDialog;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -165,14 +164,7 @@ public class DiffPartDescr {
                             dbSrc.txtDbPort.getText(), dbSrc.txtDbName.getText(),
                             dbSrc.txtDbUser.getText(), dbSrc.txtDbPass.getText());
                 }
-                
-                dialog.setScript(mainPrefs.getString(UIConsts.PREF_LAST_ROLLON_SCRIPT));
-                
                 dialog.open();
-                if (!dialog.getScript().isEmpty()){
-                    AddonPrefLoader.savePreference(mainPrefs, 
-                            UIConsts.PREF_LAST_ROLLON_SCRIPT, dialog.getScript());
-                }
             }
         });
         

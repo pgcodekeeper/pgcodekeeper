@@ -9,17 +9,17 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class InitProjectFromSource implements IRunnableWithProgress {
 
@@ -103,7 +103,5 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         pm.newChild(25).subTask(UIConsts.PROJ_REPO_TYPE_GIT_NAME + " committing..."); // 100 //$NON-NLS-1$
         repo.repoRemoveMissingAddNew(dirRepo);
         repo.repoCommit(dirRepo, "new rev"); //$NON-NLS-1$
-        AddonPrefLoader.savePreference(mainPrefStore, 
-                UIConsts.PREF_LAST_ROLLON_SCRIPT, props.getString(UIConsts.PROJ_PREF_REPO_URL));
     }
 }
