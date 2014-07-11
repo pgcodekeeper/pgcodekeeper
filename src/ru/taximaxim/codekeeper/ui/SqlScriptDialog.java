@@ -14,12 +14,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
@@ -62,7 +62,7 @@ public class SqlScriptDialog extends MessageDialog {
     
     private Text txtMain;
     private Text txtCommand;
-    private ComboViewer cmbScript;
+    private Combo cmbScript;
     private boolean isRunning = false;
     private boolean isReplacementEnabled;
     private Button runScriptBtn;
@@ -135,15 +135,15 @@ public class SqlScriptDialog extends MessageDialog {
         gd.verticalIndent = 12;
         lbl.setLayoutData(gd);
         
-        cmbScript = new ComboViewer(parent, SWT.NONE);
-        cmbScript.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        cmbScript = new Combo(parent, SWT.NONE);
+        cmbScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         LinkedList<String> elements = history.getHistory(); 
         if (elements != null){
-            cmbScript.add(elements.toArray());
+            cmbScript.setItems(elements.toArray(new String[elements.size()]));
         }
-        cmbScript.getCombo().setToolTipText(Messages.sqlScriptDialog_use + SCRIPT_PLACEHOLDER
+        cmbScript.setToolTipText(Messages.sqlScriptDialog_use + SCRIPT_PLACEHOLDER
                 + Messages.sqlScriptDialog_denote_place_where_sql_script_fname_be_inserted);
-        cmbScript.getCombo().addModifyListener(new ModifyListener() {
+        cmbScript.addModifyListener(new ModifyListener() {
             
             @Override
             public void modifyText(ModifyEvent e) {
@@ -163,7 +163,7 @@ public class SqlScriptDialog extends MessageDialog {
         txtCommand.setEditable(false);
         txtCommand.setText(getReplacedString());
         
-        cmbScript.getCombo().setText(execScript);
+        cmbScript.setText(execScript);
         
         return parent;
     }
@@ -267,14 +267,14 @@ public class SqlScriptDialog extends MessageDialog {
         }
         // case Ok
         else if (buttonId == 2){
-            execScript = cmbScript.getCombo().getText();
+            execScript = cmbScript.getText();
             super.buttonPressed(buttonId);
         }
     }
     
     @Override
     public boolean close() {
-        history.updatePrevHistory(cmbScript.getCombo().getText(), 
+        history.updatePrevHistory(cmbScript.getText(), 
                 Messages.CommitPartDescr_commit_hist_read_error);
         
         if (isRunning) {
@@ -288,12 +288,12 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     private String getReplacedString() {
-        return isReplacementEnabled ? cmbScript.getCombo().getText()
+        return isReplacementEnabled ? cmbScript.getText()
                 .replaceFirst(DB_HOST_PLACEHOLDER, txtDbHost)
                 .replaceFirst(DB_NAME_PLACEHOLDER, txtDbName)
                 .replaceFirst(DB_PASS_PLACEHOLDER, txtDbPass)
                 .replaceFirst(DB_PORT_PLACEHOLDER, txtDbPort)
                 .replaceFirst(DB_USER_PLACEHOLDER, txtDbUser) : 
-                    cmbScript.getCombo().getText();
+                    cmbScript.getText();
     }
 }
