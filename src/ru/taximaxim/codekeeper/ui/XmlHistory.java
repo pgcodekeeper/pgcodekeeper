@@ -15,6 +15,8 @@ import javax.xml.transform.TransformerException;
 import org.eclipse.core.runtime.Platform;
 import org.xml.sax.SAXException;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 public class XmlHistory {
     
     private final int maxEntries;
@@ -37,7 +39,7 @@ public class XmlHistory {
         } catch (FileNotFoundException ex) {
             history = null;
         } catch (IOException | SAXException ex) {
-            throw new IllegalStateException("Error while reading history XML", ex);
+            throw new IllegalStateException(Messages.XmlHistory_read_error, ex);
         }
         return history;
     }
@@ -78,7 +80,7 @@ public class XmlHistory {
                 xml.serialize(scripts, false, xmlWriter);
             } catch (IOException | TransformerException ex) {
                 throw new IllegalStateException(
-                        "Error while writing history XML", ex);
+                        Messages.XmlHistory_write_error, ex);
             }
         }
     }

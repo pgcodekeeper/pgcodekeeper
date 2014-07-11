@@ -78,6 +78,7 @@ public class Messages extends NLS {
     public static String manualDepciesDialog_object;
     public static String manualDepciesDialog_add;
     public static String manualDepciesDialog_remove;
+    public static String history_history_file_read_error;
     
     // ui.addons
     public static String addonExternalTools_error_while_trying_to_run_pg_admin;
@@ -300,6 +301,10 @@ public class Messages extends NLS {
     public static String SqlScriptDialog_command_to_execute;
 
     public static String SqlScriptDialog_will_be_replaced;
+
+    public static String XmlHistory_read_error;
+
+    public static String XmlHistory_write_error;
 
     public static String XmlStringList_root_name_invalid;
 

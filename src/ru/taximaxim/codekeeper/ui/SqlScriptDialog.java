@@ -13,12 +13,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
@@ -61,7 +61,7 @@ public class SqlScriptDialog extends MessageDialog {
     
     private Text txtMain;
     private Text txtCommand;
-    private ComboViewer cmbScript;
+    private Combo cmbScript;
     private Button runScriptBtn;
     
     private boolean isRunning;
@@ -77,7 +77,7 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     private String getReplacedString() {
-        String s = cmbScript.getCombo().getText();
+        String s = cmbScript.getText();
         if (dbHost != null) {
             s = s.replace(DB_HOST_PLACEHOLDER, dbHost);
         }
@@ -132,10 +132,10 @@ public class SqlScriptDialog extends MessageDialog {
         gd.verticalIndent = 12;
         l.setLayoutData(gd);
         
-        cmbScript = new ComboViewer(parent, SWT.DROP_DOWN);
-        cmbScript.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        cmbScript = new Combo(parent, SWT.DROP_DOWN);
+        cmbScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         String n = System.lineSeparator();
-        cmbScript.getCombo().setToolTipText(DB_NAME_PLACEHOLDER + '=' +dbName + n +
+        cmbScript.setToolTipText(DB_NAME_PLACEHOLDER + '=' +dbName + n +
                 DB_HOST_PLACEHOLDER + '=' + dbHost + n + 
                 DB_PORT_PLACEHOLDER + '=' + dbPort + n + 
                 DB_USER_PLACEHOLDER + '=' + dbUser + n + 
@@ -143,11 +143,13 @@ public class SqlScriptDialog extends MessageDialog {
 
         List<String> prev = history.getHistory();
         if (prev != null && !prev.isEmpty()) {
-            cmbScript.add(prev.toArray());
-            cmbScript.getCombo().select(0);
+            for (String el : prev) {
+                cmbScript.add(el);
+            }
+            cmbScript.select(0);
         }
         
-        cmbScript.getCombo().addModifyListener(new ModifyListener() {
+        cmbScript.addModifyListener(new ModifyListener() {
             
             @Override
             public void modifyText(ModifyEvent e) {
@@ -279,7 +281,7 @@ public class SqlScriptDialog extends MessageDialog {
             errorDialog.open();
             return false;
         } else {
-            history.addHistoryEntry(cmbScript.getCombo().getText());
+            history.addHistoryEntry(cmbScript.getText());
             return super.close();
         }
     }
