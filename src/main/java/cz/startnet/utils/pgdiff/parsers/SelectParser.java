@@ -121,8 +121,9 @@ public class SelectParser {
             // FROM {regex}: [(]+
             if (p.expectOptional("FROM")) {
                 do {
-                    from(new Parser(removeExcessParens(p.getExpression(CLAUSES))),
-                            tableAliases, columns);
+                    String withoutParens = removeExcessParens(
+                            new StringBuilder(p.getExpression(CLAUSES)), 0, 0, 0).toString();
+                    from(new Parser(withoutParens), tableAliases, columns);
                 } while (p.expectOptional(","));
             }
             
@@ -174,31 +175,46 @@ public class SelectParser {
     
     /**
      * Replaces excessive (non-needed) parentheses in FROM query by spaces.
-     * Leaves parens around SELECT query, as it is expected to be wrapped
+     * Leaves parens around SELECT query intact, as it is expected to be wrapped
+     * Leaves single-quoted parens intact
      * 
-     * @param initial Query string
-     * @return Query string with excessive parens replaced by spaces
+     * @param sb    Initial query string
+     * @return      Query string with excessive parens replaced by spaces
      */
-    // FIXME quoted parens, optimize substring contains and stuff
-    private String removeExcessParens(String initial){
-        Parser p = new Parser(initial);
-        StringBuilder sb = new StringBuilder(initial);
-        int startIndex = 0;
-        
-        while(sb.substring(startIndex, sb.length()).contains("(")){
-            int opening = sb.indexOf("(", startIndex);
-            p = new Parser(sb.toString());
-            p.setPosition(opening + 1);
-            p.skipWhitespace();
-            if (!p.expectOptional("SELECT")){
-                int closing = getClosingParenthesisIndex(sb, opening);
-                sb.setCharAt(opening, ' ');
-                sb.setCharAt(closing, ' ');
-            }else{
-                startIndex = opening + 1;
+    private StringBuilder removeExcessParens(StringBuilder sb, int startIndex, 
+            int parensCount, int subselectCounter) {
+        // parens counter at subselect start - used to detect subselect end parenthesis
+        final int initialCount = parensCount;
+        for(int j = startIndex; j < sb.length(); j++){
+            if (sb.charAt(j) == '('){
+                parensCount++;
+                String next = sb.substring(j + 1).trim();
+                if (next.startsWith("SELECT ")){
+                    subselectCounter++;
+                    removeExcessParens(sb, j + 1, parensCount, subselectCounter);
+                    break;
+                }else{
+                    sb.replace(j, j+1, " ");
+                }
+            }else if (sb.charAt(j) == ')'){
+                if (subselectCounter > 0){
+                    if (initialCount < parensCount){
+                        parensCount--;
+                        sb.replace(j, j+1, " ");
+                    }else{
+                        subselectCounter--;
+                    }
+                }else{
+                    parensCount--;
+                    sb.replace(j, j+1, " ");
+                }
+            }else if (sb.charAt(j) == '\''){
+                int nextQuoteIndex = sb.toString().indexOf('\'', j + 1);
+                removeExcessParens(sb, nextQuoteIndex + 1, parensCount, subselectCounter);
+                break;
             }
         }
-        return sb.toString();
+        return sb;
     }
     
     private int getClosingParenthesisIndex(CharSequence part, int openingIndex){
