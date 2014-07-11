@@ -8,10 +8,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
+
+import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class SelectParser {
     
@@ -188,25 +189,25 @@ public class SelectParser {
         for(int j = startIndex; j < sb.length(); j++){
             if (sb.charAt(j) == '('){
                 parensCount++;
-                String next = sb.substring(j + 1).trim();
+                String next = sb.substring(j + 1);
                 if (next.startsWith("SELECT ")){
                     subselectCounter++;
                     removeExcessParens(sb, j + 1, parensCount, subselectCounter);
                     break;
                 }else{
-                    sb.replace(j, j+1, " ");
+                    sb.setCharAt(j, ' ');
                 }
             }else if (sb.charAt(j) == ')'){
                 if (subselectCounter > 0){
                     if (initialCount < parensCount){
                         parensCount--;
-                        sb.replace(j, j+1, " ");
+                        sb.setCharAt(j, ' ');
                     }else{
                         subselectCounter--;
                     }
                 }else{
                     parensCount--;
-                    sb.replace(j, j+1, " ");
+                    sb.setCharAt(j, ' ');
                 }
             }else if (sb.charAt(j) == '\''){
                 int nextQuoteIndex = sb.toString().indexOf('\'', j + 1);
