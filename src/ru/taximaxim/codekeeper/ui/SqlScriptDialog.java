@@ -37,9 +37,9 @@ public class SqlScriptDialog extends MessageDialog {
     private static final String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
     private static final String DB_HOST_PLACEHOLDER = "%host"; //$NON-NLS-1$
     private static final String DB_PORT_PLACEHOLDER = "%port"; //$NON-NLS-1$
-    private static final String DB_NAME_PLACEHOLDER = "%dbname"; //$NON-NLS-1$
-    private static final String DB_USER_PLACEHOLDER = "%username"; //$NON-NLS-1$
-    private static final String DB_PASS_PLACEHOLDER = "%password"; //$NON-NLS-1$
+    private static final String DB_NAME_PLACEHOLDER = "%db"; //$NON-NLS-1$
+    private static final String DB_USER_PLACEHOLDER = "%user"; //$NON-NLS-1$
+    private static final String DB_PASS_PLACEHOLDER = "%pass"; //$NON-NLS-1$
     
     public static final String runScriptText =  Messages.sqlScriptDialog_run_script;
     public static final String stopScriptText = Messages.sqlScriptDialog_stop_script;
@@ -47,48 +47,47 @@ public class SqlScriptDialog extends MessageDialog {
     private final String text;
     private String execScript = ""; //$NON-NLS-1$
     
-    private String txtDbHost = ""; //$NON-NLS-1$
-    private String txtDbPort = ""; //$NON-NLS-1$
-    private String txtDbName = ""; //$NON-NLS-1$
-    private String txtDbUser = ""; //$NON-NLS-1$
-    private String txtDbPass = ""; //$NON-NLS-1$
+    private String dbHost;
+    private String dbPort;
+    private String dbName;
+    private String dbUser;
+    private String dbPass;
     
     private Text txtMain;
     private Text txtScript;
-    private Text txtCommand; 
-    private boolean isRunning = false;
-    private boolean isReplacementEnabled;
+    private Text txtCommand;
     private Button runScriptBtn;
     
+    private boolean isRunning;
     private Thread scriptThread;
 
-    public void setDbParams(String DbHost, 
-            String DbPort,
-            String DbName,
-            String DbUser, 
-            String DbPass) {
-        txtDbHost = DbHost;
-        txtDbName = DbName; 
-        txtDbUser = DbUser;
-        txtDbPass = DbPass;
-        txtDbPort = DbPort;
+    public void setDbParams(String dbHost, String dbPort, String dbName,
+            String dbUser, String dbPass) {
+        this.dbHost = dbHost;
+        this.dbName = dbName; 
+        this.dbUser = dbUser;
+        this.dbPass = dbPass;
+        this.dbPort = dbPort;
     }
     
-    public boolean getIsReplacementEnabled() {
-        return isReplacementEnabled;
-    }
-    
-    public void setIsReplacementEnabled(boolean value) {
-        isReplacementEnabled = value;
-    }
     private String getReplacedString() {
-        return isReplacementEnabled ? txtScript.getText()
-                .replaceFirst(DB_HOST_PLACEHOLDER, txtDbHost)
-                .replaceFirst(DB_NAME_PLACEHOLDER, txtDbName)
-                .replaceFirst(DB_PASS_PLACEHOLDER, txtDbPass)
-                .replaceFirst(DB_PORT_PLACEHOLDER, txtDbPort)
-                .replaceFirst(DB_USER_PLACEHOLDER, txtDbUser) : 
-                    txtScript.getText();
+        String s = txtScript.getText();
+        if (dbHost != null) {
+            s = s.replace(DB_HOST_PLACEHOLDER, dbHost);
+        }
+        if (dbName != null) {
+            s = s.replace(DB_NAME_PLACEHOLDER, dbName);
+        }
+        if (dbUser != null) {
+            s = s.replace(DB_USER_PLACEHOLDER, dbUser);
+        }
+        if (dbPass != null) {
+            s = s.replace(DB_PASS_PLACEHOLDER, dbPass);
+        }
+        if (dbPort != null) {
+            s = s.replace(DB_PORT_PLACEHOLDER, dbPort);
+        }
+        return s;
     }
     public void setScript(String rollScript) {
         this.execScript = rollScript;
@@ -120,19 +119,24 @@ public class SqlScriptDialog extends MessageDialog {
         gd.heightHint = 400;
         txtMain.setLayoutData(gd);
         
-        Label lbl = new Label(parent, SWT.NONE);
-        lbl.setText(Messages.sqlScriptDialog_input_command + 
-                (isReplacementEnabled ? 
-                        Messages.sqlScriptDialog_regulars_host_port_dbname_username_pass_be_replaced_by_db_setting
-                        : "") + ":");
+        Label l = new Label(parent, SWT.NONE);
+        l.setText(Messages.sqlScriptDialog_Enter_cmd_to_roll_on_sql_script
+                + SCRIPT_PLACEHOLDER + ' '
+                + DB_NAME_PLACEHOLDER + ' '
+                + DB_HOST_PLACEHOLDER + ' ' + DB_PORT_PLACEHOLDER + ' '
+                + DB_USER_PLACEHOLDER + ' ' + DB_PASS_PLACEHOLDER + ')' + ':');
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
-        lbl.setLayoutData(gd);
+        l.setLayoutData(gd);
         
         txtScript = new Text(parent, SWT.BORDER);
         txtScript.setText(execScript);
-        txtScript.setToolTipText(Messages.sqlScriptDialog_use + SCRIPT_PLACEHOLDER
-                + Messages.sqlScriptDialog_denote_place_where_sql_script_fname_be_inserted);
+        String n = System.lineSeparator();
+        txtScript.setToolTipText(DB_NAME_PLACEHOLDER + '=' +dbName + n +
+                DB_HOST_PLACEHOLDER + '=' + dbHost + n + 
+                DB_PORT_PLACEHOLDER + '=' + dbPort + n + 
+                DB_USER_PLACEHOLDER + '=' + dbUser + n + 
+                DB_PASS_PLACEHOLDER + '=' + dbPass);
         txtScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtScript.addModifyListener(new ModifyListener() {
             
@@ -142,14 +146,14 @@ public class SqlScriptDialog extends MessageDialog {
             }
         });
         
-        Label l = new Label(parent, SWT.NONE);
-        l.setText(Messages.sqlScriptDialog_Enter_cmd_to_roll_on_sql_script
-                + SCRIPT_PLACEHOLDER + Messages.sqlScriptDialog_replaced_by_sql_script_file);
+        l = new Label(parent, SWT.NONE);
+        l.setText(Messages.SqlScriptDialog_command_to_execute + SCRIPT_PLACEHOLDER
+                + Messages.SqlScriptDialog_will_be_replaced);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         l.setLayoutData(gd);
         
-        txtCommand = new Text(parent, SWT.BORDER | SWT.H_SCROLL);
+        txtCommand = new Text(parent, SWT.BORDER);
         txtCommand.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtCommand.setEditable(false);
         txtCommand.setText(getReplacedString());
@@ -177,8 +181,8 @@ public class SqlScriptDialog extends MessageDialog {
                         Messages.sqlScriptDialog_error_saving_script_to_tmp_file, ex);
             }
                 
-            List<String> command = Arrays.asList(txtCommand.getText()
-                    .replaceFirst(SCRIPT_PLACEHOLDER, fileTmpScript.getAbsolutePath())
+            List<String> command = Arrays.asList(getReplacedString()
+                    .replace(SCRIPT_PLACEHOLDER, fileTmpScript.getAbsolutePath())
                     .split(Pattern.quote(" "))); //$NON-NLS-1$
             final ProcessBuilder pb = new ProcessBuilder(command);
             

@@ -86,7 +86,7 @@ public class XmlStringList {
             xml.normalize();
             
             if (!xml.getDocumentElement().getNodeName().equals(rootTagName)) {
-                throw new IOException(Messages.XMLListBuilder_root_name_invalid);
+                throw new IOException(Messages.XmlStringList_root_name_invalid);
             }
             
             return xml;

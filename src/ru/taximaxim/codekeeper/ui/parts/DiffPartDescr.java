@@ -47,6 +47,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -62,7 +64,6 @@ import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class DiffPartDescr {
 
@@ -123,6 +124,7 @@ public class DiffPartDescr {
         btnGetLatest.setText(Messages.diffPartDescr_get_latest);
         btnGetLatest.setEnabled(false);
         btnGetLatest.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (diffTable.viewer.getCheckedElements().length < 1){
@@ -158,10 +160,11 @@ public class DiffPartDescr {
                         Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
                         differ.getDiffDirect());
                 
-                dialog.setDbParams(dbSrc.txtDbHost.getText(),
-                        dbSrc.txtDbPort.getText(), dbSrc.txtDbName.getText(),
-                        dbSrc.txtDbUser.getText(), dbSrc.txtDbPass.getText());
-                dialog.setIsReplacementEnabled(btnDb.getSelection());
+                if (btnDb.getSelection()) {
+                    dialog.setDbParams(dbSrc.txtDbHost.getText(),
+                            dbSrc.txtDbPort.getText(), dbSrc.txtDbName.getText(),
+                            dbSrc.txtDbUser.getText(), dbSrc.txtDbPass.getText());
+                }
                 
                 dialog.setScript(mainPrefs.getString(UIConsts.PREF_LAST_ROLLON_SCRIPT));
                 

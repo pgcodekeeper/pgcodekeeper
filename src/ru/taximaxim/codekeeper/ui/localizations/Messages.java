@@ -297,7 +297,11 @@ public class Messages extends NLS {
     public static String NewProjWizard_settings;
     public static String ProjProps_settings;
 
-    public static String XMLListBuilder_root_name_invalid;
+    public static String SqlScriptDialog_command_to_execute;
+
+    public static String SqlScriptDialog_will_be_replaced;
+
+    public static String XmlStringList_root_name_invalid;
 
     static {
         // initialize resource bundle
