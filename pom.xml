@@ -181,7 +181,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 							<goal>prepare-agent</goal>
 						</goals>
 					</execution>
-					<execution>
+<!-- 					<execution>
 						<id>report</id>
 						<phase>prepare-package</phase>
 						<goals>
@@ -194,7 +194,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 						<goals>
 							<goal>check</goal>
 						</goals>
-					</execution>
+					</execution> -->
 				</executions>
 			</plugin>
         </plugins>
