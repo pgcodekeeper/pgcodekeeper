@@ -14,6 +14,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -33,19 +35,61 @@ import ru.taximaxim.codekeeper.ui.parts.Console;
 public class SqlScriptDialog extends MessageDialog {
     
     private static final String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
+    private static final String DB_HOST_PLACEHOLDER = "%host"; //$NON-NLS-1$
+    private static final String DB_PORT_PLACEHOLDER = "%port"; //$NON-NLS-1$
+    private static final String DB_NAME_PLACEHOLDER = "%dbname"; //$NON-NLS-1$
+    private static final String DB_USER_PLACEHOLDER = "%username"; //$NON-NLS-1$
+    private static final String DB_PASS_PLACEHOLDER = "%password"; //$NON-NLS-1$
+    
     public static final String runScriptText =  Messages.sqlScriptDialog_run_script;
     public static final String stopScriptText = Messages.sqlScriptDialog_stop_script;
     
     private final String text;
     private String execScript = ""; //$NON-NLS-1$
     
+    private String txtDbHost = ""; //$NON-NLS-1$
+    private String txtDbPort = ""; //$NON-NLS-1$
+    private String txtDbName = ""; //$NON-NLS-1$
+    private String txtDbUser = ""; //$NON-NLS-1$
+    private String txtDbPass = ""; //$NON-NLS-1$
+    
     private Text txtMain;
     private Text txtScript;
+    private Text txtCommand; 
     private boolean isRunning = false;
+    private boolean isReplacementEnabled;
     private Button runScriptBtn;
     
     private Thread scriptThread;
 
+    public void setDbParams(String DbHost, 
+            String DbPort,
+            String DbName,
+            String DbUser, 
+            String DbPass) {
+        txtDbHost = DbHost;
+        txtDbName = DbName; 
+        txtDbUser = DbUser;
+        txtDbPass = DbPass;
+        txtDbPort = DbPort;
+    }
+    
+    public boolean getIsReplacementEnabled() {
+        return isReplacementEnabled;
+    }
+    
+    public void setIsReplacementEnabled(boolean value) {
+        isReplacementEnabled = value;
+    }
+    private String getReplacedString() {
+        return isReplacementEnabled ? txtScript.getText()
+                .replaceFirst(DB_HOST_PLACEHOLDER, txtDbHost)
+                .replaceFirst(DB_NAME_PLACEHOLDER, txtDbName)
+                .replaceFirst(DB_PASS_PLACEHOLDER, txtDbPass)
+                .replaceFirst(DB_PORT_PLACEHOLDER, txtDbPort)
+                .replaceFirst(DB_USER_PLACEHOLDER, txtDbUser) : 
+                    txtScript.getText();
+    }
     public void setScript(String rollScript) {
         this.execScript = rollScript;
     }
@@ -76,6 +120,28 @@ public class SqlScriptDialog extends MessageDialog {
         gd.heightHint = 400;
         txtMain.setLayoutData(gd);
         
+        Label lbl = new Label(parent, SWT.NONE);
+        lbl.setText(Messages.sqlScriptDialog_input_command + 
+                (isReplacementEnabled ? 
+                        Messages.sqlScriptDialog_regulars_host_port_dbname_username_pass_be_replaced_by_db_setting
+                        : "") + ":");
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = 12;
+        lbl.setLayoutData(gd);
+        
+        txtScript = new Text(parent, SWT.BORDER);
+        txtScript.setText(execScript);
+        txtScript.setToolTipText(Messages.sqlScriptDialog_use + SCRIPT_PLACEHOLDER
+                + Messages.sqlScriptDialog_denote_place_where_sql_script_fname_be_inserted);
+        txtScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtScript.addModifyListener(new ModifyListener() {
+            
+            @Override
+            public void modifyText(ModifyEvent e) {
+                txtCommand.setText(getReplacedString());
+            }
+        });
+        
         Label l = new Label(parent, SWT.NONE);
         l.setText(Messages.sqlScriptDialog_Enter_cmd_to_roll_on_sql_script
                 + SCRIPT_PLACEHOLDER + Messages.sqlScriptDialog_replaced_by_sql_script_file);
@@ -83,11 +149,10 @@ public class SqlScriptDialog extends MessageDialog {
         gd.verticalIndent = 12;
         l.setLayoutData(gd);
         
-        txtScript = new Text(parent, SWT.BORDER);
-        txtScript.setText(execScript);
-        txtScript.setToolTipText(Messages.sqlScriptDialog_use + SCRIPT_PLACEHOLDER
-                + Messages.sqlScriptDialog_denote_place_where_sql_script_fname_be_inserted);
-        txtScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtCommand = new Text(parent, SWT.BORDER | SWT.H_SCROLL);
+        txtCommand.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtCommand.setEditable(false);
+        txtCommand.setText(getReplacedString());
         
         return parent;
     }
@@ -112,7 +177,7 @@ public class SqlScriptDialog extends MessageDialog {
                         Messages.sqlScriptDialog_error_saving_script_to_tmp_file, ex);
             }
                 
-            List<String> command = Arrays.asList(txtScript.getText()
+            List<String> command = Arrays.asList(txtCommand.getText()
                     .replaceFirst(SCRIPT_PLACEHOLDER, fileTmpScript.getAbsolutePath())
                     .split(Pattern.quote(" "))); //$NON-NLS-1$
             final ProcessBuilder pb = new ProcessBuilder(command);

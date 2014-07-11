@@ -62,6 +62,8 @@ public class Messages extends NLS {
     public static String sqlScriptDialog_error_saving_script_to_file;
     public static String sqlScriptDialog_error_saving_script_to_tmp_file;
     public static String sqlScriptDialog_exception_during_script_execution;
+    public static String sqlScriptDialog_input_command;
+    public static String sqlScriptDialog_regulars_host_port_dbname_username_pass_be_replaced_by_db_setting;
     public static String sqlScriptDialog_replaced_by_sql_script_file;
     public static String sqlScriptDialog_run_script;
     public static String sqlScriptDialog_save_as;

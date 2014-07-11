@@ -50,8 +50,8 @@ public class TestPart {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 
-                txt.setText(txt.getText() + "\n" +
-                        System.getenv("SWT_GTK3"));
+                txt.setText(txt.getText() + "\n" + //$NON-NLS-1$
+                        System.getenv("SWT_GTK3")); //$NON-NLS-1$
                 
                 
             }

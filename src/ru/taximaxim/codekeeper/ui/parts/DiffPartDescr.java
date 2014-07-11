@@ -158,7 +158,13 @@ public class DiffPartDescr {
                         Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
                         differ.getDiffDirect());
                 
+                dialog.setDbParams(dbSrc.txtDbHost.getText(),
+                        dbSrc.txtDbPort.getText(), dbSrc.txtDbName.getText(),
+                        dbSrc.txtDbUser.getText(), dbSrc.txtDbPass.getText());
+                dialog.setIsReplacementEnabled(btnDb.getSelection());
+                
                 dialog.setScript(mainPrefs.getString(UIConsts.PREF_LAST_ROLLON_SCRIPT));
+                
                 dialog.open();
                 if (!dialog.getScript().isEmpty()){
                     AddonPrefLoader.savePreference(mainPrefs, 
