@@ -189,7 +189,7 @@ public class SelectParser {
         for(int j = startIndex; j < sb.length(); j++){
             if (sb.charAt(j) == '('){
                 parensCount++;
-                String next = sb.substring(j + 1);
+                String next = sb.substring(j + 1).trim();
                 if (next.startsWith("SELECT ")){
                     subselectCounter++;
                     removeExcessParens(sb, j + 1, parensCount, subselectCounter);
