@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -44,6 +45,11 @@ public class SqlScriptDialog extends MessageDialog {
     public static final String runScriptText =  Messages.sqlScriptDialog_run_script;
     public static final String stopScriptText = Messages.sqlScriptDialog_stop_script;
     
+    private final static String SCRIPTS_HIST_ROOT = "scripts"; //$NON-NLS-1$
+    private final static String SCRIPTS_HIST_EL = "s"; //$NON-NLS-1$
+    private final static String SCRIPTS_HIST_FILENAME = "scripts.xml"; //$NON-NLS-1$
+    private final static int SCRIPTS_HIST_MAX_STORED = 10;
+    
     private final String text;
     private String execScript = ""; //$NON-NLS-1$
     
@@ -54,11 +60,13 @@ public class SqlScriptDialog extends MessageDialog {
     private String txtDbPass = ""; //$NON-NLS-1$
     
     private Text txtMain;
-    private Text txtScript;
-    private Text txtCommand; 
+    private Text txtCommand;
+    private ComboViewer cmbScript;
     private boolean isRunning = false;
     private boolean isReplacementEnabled;
     private Button runScriptBtn;
+    
+    private History history;
     
     private Thread scriptThread;
 
@@ -81,15 +89,7 @@ public class SqlScriptDialog extends MessageDialog {
     public void setIsReplacementEnabled(boolean value) {
         isReplacementEnabled = value;
     }
-    private String getReplacedString() {
-        return isReplacementEnabled ? txtScript.getText()
-                .replaceFirst(DB_HOST_PLACEHOLDER, txtDbHost)
-                .replaceFirst(DB_NAME_PLACEHOLDER, txtDbName)
-                .replaceFirst(DB_PASS_PLACEHOLDER, txtDbPass)
-                .replaceFirst(DB_PORT_PLACEHOLDER, txtDbPort)
-                .replaceFirst(DB_USER_PLACEHOLDER, txtDbUser) : 
-                    txtScript.getText();
-    }
+    
     public void setScript(String rollScript) {
         this.execScript = rollScript;
     }
@@ -115,6 +115,11 @@ public class SqlScriptDialog extends MessageDialog {
         
         txtMain.setText(text);
         
+        history = new History(SCRIPTS_HIST_MAX_STORED, 
+                SCRIPTS_HIST_FILENAME, 
+                SCRIPTS_HIST_ROOT, 
+                SCRIPTS_HIST_EL);
+        
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
         gd.heightHint = 400;
@@ -129,12 +134,12 @@ public class SqlScriptDialog extends MessageDialog {
         gd.verticalIndent = 12;
         lbl.setLayoutData(gd);
         
-        txtScript = new Text(parent, SWT.BORDER);
-        txtScript.setText(execScript);
-        txtScript.setToolTipText(Messages.sqlScriptDialog_use + SCRIPT_PLACEHOLDER
+        cmbScript = new ComboViewer(parent, SWT.NONE);
+        cmbScript.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        cmbScript.add(history.getHistory().toArray());
+        cmbScript.getCombo().setToolTipText(Messages.sqlScriptDialog_use + SCRIPT_PLACEHOLDER
                 + Messages.sqlScriptDialog_denote_place_where_sql_script_fname_be_inserted);
-        txtScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtScript.addModifyListener(new ModifyListener() {
+        cmbScript.getCombo().addModifyListener(new ModifyListener() {
             
             @Override
             public void modifyText(ModifyEvent e) {
@@ -153,6 +158,8 @@ public class SqlScriptDialog extends MessageDialog {
         txtCommand.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtCommand.setEditable(false);
         txtCommand.setText(getReplacedString());
+        
+        cmbScript.getCombo().setText(execScript);
         
         return parent;
     }
@@ -256,13 +263,16 @@ public class SqlScriptDialog extends MessageDialog {
         }
         // case Ok
         else if (buttonId == 2){
-            execScript = txtScript.getText();
+            execScript = cmbScript.getCombo().getText();
             super.buttonPressed(buttonId);
         }
     }
     
     @Override
     public boolean close() {
+        history.updatePrevHistory(cmbScript.getCombo().getText(), 
+                Messages.CommitPartDescr_commit_hist_read_error);
+        
         if (isRunning) {
             MessageBox errorDialog = new MessageBox(getShell(), SWT.OK);
             errorDialog.setMessage(Messages.sqlScriptDialog_stop_script_before_closing_dialog);
@@ -271,5 +281,15 @@ public class SqlScriptDialog extends MessageDialog {
         } else {
             return super.close();
         }
+    }
+    
+    private String getReplacedString() {
+        return isReplacementEnabled ? cmbScript.getCombo().getText()
+                .replaceFirst(DB_HOST_PLACEHOLDER, txtDbHost)
+                .replaceFirst(DB_NAME_PLACEHOLDER, txtDbName)
+                .replaceFirst(DB_PASS_PLACEHOLDER, txtDbPass)
+                .replaceFirst(DB_PORT_PLACEHOLDER, txtDbPort)
+                .replaceFirst(DB_USER_PLACEHOLDER, txtDbUser) : 
+                    cmbScript.getCombo().getText();
     }
 }

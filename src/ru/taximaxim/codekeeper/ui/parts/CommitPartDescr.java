@@ -1,27 +1,18 @@
 package ru.taximaxim.codekeeper.ui.parts;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.xml.transform.TransformerException;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
@@ -64,18 +55,15 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.xml.sax.SAXException;
-
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.ui.History;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -86,6 +74,7 @@ import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class CommitPartDescr {
     
@@ -125,6 +114,7 @@ public class CommitPartDescr {
     private DbPicker dbSrc;
     private TextMergeViewer diffPane;
     private String repoName;
+    private History history;
     /**
      * Local repository cache.
      */
@@ -143,6 +133,10 @@ public class CommitPartDescr {
         parent.setLayout(new GridLayout());
         repoName = proj.getString(UIConsts.PROJ_PREF_REPO_TYPE);
         
+        history = new History(COMMENT_HIST_MAX_STORED, 
+                COMMENTS_HIST_FILENAME, 
+                COMMENTS_HIST_ROOT, 
+                COMMENTS_HIST_EL);
         // upper container
         final Composite containerUpper = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(3, false);
@@ -163,7 +157,7 @@ public class CommitPartDescr {
         btnPrevComments.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                List<String> comments = getCommitCommentHistory();
+                List<String> comments = history.getHistory();
                 MenuManager mmComments = new MenuManager();
                 if (comments == null || comments.isEmpty()) {
                     mmComments.add(new Action(Messages.commitPartDescr_no_previous_comments) {
@@ -223,26 +217,10 @@ public class CommitPartDescr {
                     mb.open();
                     return;
                 }
-                
-                LinkedList<String> comments = getCommitCommentHistory();
-                if (comments == null) {
-                    comments = new LinkedList<>();
-                }
-                comments.add(0, commitComment);
-                
-                while (comments.size() > COMMENT_HIST_MAX_STORED) {
-                    comments.removeLast();
-                }
-                
-                try (Writer xmlWriter = new FileWriter(getCommentsHistoryXmlFile())) {
-                    XmlStringList xml = new XmlStringList(COMMENTS_HIST_ROOT, COMMENTS_HIST_EL);
-                    xml.serialize(comments, false, xmlWriter);
-                } catch (IOException | TransformerException ex) {
-                    throw new IllegalStateException(
-                            Messages.CommitPartDescr_commit_hist_read_error,
-                            ex);
-                }
 
+                history.updatePrevHistory(commitComment, 
+                        Messages.CommitPartDescr_commit_hist_read_error);
+                
                 final TreeElement filtered = diffTable.filterDiffTree();
                 IRunnableWithProgress commitRunnable = new IRunnableWithProgress() {
 
@@ -615,35 +593,6 @@ public class CommitPartDescr {
         dbSrc.getParent().layout();
     }
     
-    private LinkedList<String> getCommitCommentHistory() {
-        LinkedList<String> comments;
-        try (Reader xmlReader = new FileReader(getCommentsHistoryXmlFile())) {
-            XmlStringList xml = new XmlStringList(COMMENTS_HIST_ROOT, COMMENTS_HIST_EL);
-            comments = xml.deserialize(xmlReader);
-        } catch (FileNotFoundException ex) {
-            comments = null;
-        } catch (IOException | SAXException ex) {
-            throw new IllegalStateException(
-                    Messages.CommitPartDescr_commit_hist_write_error,
-                    ex);
-        }
-        return comments;
-    }
-    
-    private File getCommentsHistoryXmlFile() {
-        File fileComments;
-        try {
-            fileComments = new File(Platform.getInstanceLocation().getURL().toURI());
-        } catch(URISyntaxException ex) {
-            throw new IllegalStateException(ex);
-        }
-        fileComments = new File(fileComments, ".metadata"); //$NON-NLS-1$
-        fileComments = new File(fileComments, ".plugins"); //$NON-NLS-1$
-        fileComments = new File(fileComments, UIConsts.PLUGIN_ID);
-        fileComments = new File(fileComments, COMMENTS_HIST_FILENAME);
-        return fileComments;
-    }
-
     @Inject
     private void changeProject(
             PgDbProject proj,
