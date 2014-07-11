@@ -3,7 +3,6 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.io.PrintWriter;
 
 /**
  * Helps to output search path only if it was not output yet.
@@ -36,8 +35,7 @@ public class SearchPathHelper {
      */
     public void outputSearchPath(final PgDiffScript script) {
         if (!wasOutput && !schemaName.isEmpty()) {
-            writer.println();
-            writer.println(searchPath);
+            script.addStatement(searchPath);
             wasOutput = true;
         }
     }

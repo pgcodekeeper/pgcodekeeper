@@ -450,8 +450,8 @@ public class PgDiffTables {
         searchPathHelper.outputSearchPath(script);
         
         StringBuilder sb = new StringBuilder();
-        sb.append("ALTER TABLE ")
-                .append(PgDiffUtils.getQuotedName(newTable.getName()));
+        sb.append("ALTER TABLE ");
+        sb.append(PgDiffUtils.getQuotedName(newTable.getName()));
 
         if (newTable.getWith() == null
                 || "OIDS=false".equalsIgnoreCase(newTable.getWith())) {
@@ -460,9 +460,9 @@ public class PgDiffTables {
                 || "OIDS=true".equalsIgnoreCase(newTable.getWith())) {
             sb.append("\n\tSET WITH OIDS;");
         } else {
-            sb.append("\n\tSET ")
-                    .append(newTable.getWith())
-                    .append(';');
+            sb.append("\n\tSET ");
+            sb.append(newTable.getWith());
+            sb.append(';');
         }
         script.addStatement(sb.toString());
     }
@@ -573,8 +573,8 @@ public class PgDiffTables {
                 for (PgStatement depnt : dependantsSet){
                     if (depnt instanceof PgView){
                         PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
-                                searchPathHelper, writer);
-                        PgDiff.writeCreationSql(writer, "-- DEPCY: Following view depends"
+                                searchPathHelper, script);
+                        PgDiff.writeCreationSql(script, "-- DEPCY: Following view depends"
                                 + " on the dropped table " + table.getName(), depnt);
                     }
                 }
@@ -621,42 +621,47 @@ public class PgDiffTables {
             
             if (depnt instanceof PgView){
                 PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
-                        searchPathHelper, writer);
+                        searchPathHelper, script);
             }else if (depnt instanceof PgForeignKey){
                 PgDiff.tempSwitchSearchPath(depnt.getParent().getParent().getName(),
-                        searchPathHelper, writer);
+                        searchPathHelper, script);
             } else {
                 // explicitly specify objects to work on in the ifs above
                 // skip everything else (i.e. columns)
                 continue;
             }
-            PgDiff.writeDropSql(writer, "-- DEPCY: dropping dependant object: " + reason, depnt);
+            PgDiff.writeDropSql(script, "-- DEPCY: dropping dependant object: " + reason, depnt);
         }// end write dependent PgViews/PgForeignKey drop sql code before table altering
         
         if (!statements.isEmpty()) {
-            final String quotedTableName =
-                    PgDiffUtils.getQuotedName(newTable.getName());
-            searchPathHelper.outputSearchPath(writer);
-            writer.println();
-            writer.println("ALTER TABLE " + quotedTableName);
+            final String quotedTableName = PgDiffUtils.getQuotedName(newTable.getName());
+            searchPathHelper.outputSearchPath(script);
+            
+            StringBuilder sb = new StringBuilder();
+            sb.append("ALTER TABLE ");
+            sb.append(quotedTableName);
+            sb.append('\n');
 
             for (int i = 0; i < statements.size(); i++) {
-                writer.print(statements.get(i));
-                writer.println((i + 1) < statements.size() ? "," : ";");
+                sb.append(statements.get(i));
+                sb.append((i + 1) < statements.size() ? ",\n" : ";");
             }
+            script.addStatement(sb.toString());
 
             if (!dropDefaultsColumns.isEmpty()) {
-                writer.println();
-                writer.println("ALTER TABLE " + quotedTableName);
+                StringBuilder sb2 = new StringBuilder();
+                sb2.append("ALTER TABLE ");
+                sb2.append(quotedTableName);
+                sb2.append('\n');
 
                 for (int i = 0; i < dropDefaultsColumns.size(); i++) {
-                    writer.print("\tALTER COLUMN ");
-                    writer.print(PgDiffUtils.getQuotedName(
+                    sb2.append("\tALTER COLUMN ");
+                    sb2.append(PgDiffUtils.getQuotedName(
                             dropDefaultsColumns.get(i).getName()));
-                    writer.print(" DROP DEFAULT");
-                    writer.println(
-                            (i + 1) < dropDefaultsColumns.size() ? "," : ";");
+                    sb.append(" DROP DEFAULT");
+                    sb.append((i + 1) < dropDefaultsColumns.size() ? ",\n" : ";");
                 }
+                script.addStatement(sb2.toString());
             }
         }
         
@@ -671,8 +676,8 @@ public class PgDiffTables {
             if (depnt instanceof PgView){
                 PgView view = (PgView) depnt;
                 PgDiff.tempSwitchSearchPath(view.getParent().getName(),
-                        searchPathHelper, writer);
-                PgDiff.writeCreationSql(writer, "-- DEPCY: recreating dropped dependant"
+                        searchPathHelper, script);
+                PgDiff.writeCreationSql(script, "-- DEPCY: recreating dropped dependant"
                         + " object: " + reason, view);
             }
         }// end write dependent PgViews create sql code after table altering
@@ -695,20 +700,20 @@ public class PgDiffTables {
                 || oldTable.getComment() != null
                 && newTable.getComment() != null
                 && !oldTable.getComment().equals(newTable.getComment())) {
-            searchPathHelper.outputSearchPath(writer);
-            writer.println();
-            writer.print("COMMENT ON TABLE ");
-            writer.print(PgDiffUtils.getQuotedName(newTable.getName()));
-            writer.print(" IS ");
-            writer.print(newTable.getComment());
-            writer.println(';');
+            searchPathHelper.outputSearchPath(script);
+            
+            script.addStatement("COMMENT ON TABLE "
+                    + PgDiffUtils.getQuotedName(newTable.getName())
+                    + " IS "
+                    + newTable.getComment()
+                    + ';');
         } else if (oldTable.getComment() != null
                 && newTable.getComment() == null) {
-            searchPathHelper.outputSearchPath(writer);
-            writer.println();
-            writer.print("COMMENT ON TABLE ");
-            writer.print(PgDiffUtils.getQuotedName(newTable.getName()));
-            writer.println(" IS NULL;");
+            searchPathHelper.outputSearchPath(script);
+            
+            script.addStatement("COMMENT ON TABLE "
+                     + PgDiffUtils.getQuotedName(newTable.getName())
+                     + " IS NULL;");
         }
 
         for (final PgColumn newColumn : newTable.getColumns()) {
@@ -719,23 +724,23 @@ public class PgDiffTables {
 
             if (newComment != null && (oldComment == null ? newComment != null
                     : !oldComment.equals(newComment))) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.print("COMMENT ON COLUMN ");
-                writer.print(PgDiffUtils.getQuotedName(newTable.getName()));
-                writer.print('.');
-                writer.print(PgDiffUtils.getQuotedName(newColumn.getName()));
-                writer.print(" IS ");
-                writer.print(newColumn.getComment());
-                writer.println(';');
+                searchPathHelper.outputSearchPath(script);
+
+                script.addStatement("COMMENT ON COLUMN "
+                        + PgDiffUtils.getQuotedName(newTable.getName())
+                        + '.'
+                        + PgDiffUtils.getQuotedName(newColumn.getName())
+                        + " IS "
+                        + newColumn.getComment()
+                        + ';');
             } else if (oldComment != null && newComment == null) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.print("COMMENT ON COLUMN ");
-                writer.print(PgDiffUtils.getQuotedName(newTable.getName()));
-                writer.print('.');
-                writer.print(PgDiffUtils.getQuotedName(newColumn.getName()));
-                writer.println(" IS NULL;");
+                searchPathHelper.outputSearchPath(script);
+
+                script.addStatement("COMMENT ON COLUMN "
+                        + PgDiffUtils.getQuotedName(newTable.getName())
+                        + '.'
+                        + PgDiffUtils.getQuotedName(newColumn.getName())
+                        + " IS NULL;");
             }
         }
     }

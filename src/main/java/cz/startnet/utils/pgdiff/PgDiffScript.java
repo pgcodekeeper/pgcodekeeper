@@ -1,10 +1,11 @@
 package cz.startnet.utils.pgdiff;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Set;
+
+import cz.startnet.utils.pgdiff.PgDiffStatement.DiffStatementType;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -17,36 +18,51 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
  */
 public class PgDiffScript {
 
-    private final List<String> statements = new ArrayList<>();
+    private final LinkedList<PgDiffStatement> statements = new LinkedList<>();
     
     // this is faster because HashSet.contains() is O(1)
     // List.contains() is O(n)
     // also String caches hashcodes, so that's a minor performance plus 
-    private final Set<String> unique = new HashSet<>();
+    private final Set<PgDiffStatement> unique = new HashSet<>();
     
     /**
      * Add a statement to the script.
      */
     public void addStatement(String statement) {
-        statements.add(statement);
-        unique.add(statement);
+        statements.add(new PgDiffStatement(DiffStatementType.OTHER, null, statement));
+    }
+    
+    public void addDrop(String objname, String statement) {
+        addStatementUnique(DiffStatementType.DROP, objname, statement);
+    }
+    
+    public void addCreate(String objname, String statement) {
+        addStatementUnique(DiffStatementType.CREATE, objname, statement);
     }
     
     /**
      * Adds statement only if it's not present in the statements list.
      */
-    public void addStatementUnique(String statement) {
-        if (!unique.contains(statement)) {
-            addStatement(statement);
+    private void addStatementUnique(DiffStatementType type, String objname, String statement) {
+        if (type != DiffStatementType.DROP && type != DiffStatementType.CREATE) {
+            throw new IllegalArgumentException(
+                    "Only DROPs and CREATEs can be tracked as unique statements!");
+        }
+        
+        PgDiffStatement st = new PgDiffStatement(type, objname, statement);
+        if (!unique.contains(st)) {
+            statements.add(st);
+            unique.add(st);
         } else {
-            // FIXME need to replace w/ new??
-            // should/can we move them to the back of the list?
-            // linked list?
-            
-            // FUCK drop/creates are not grouped after all
-            
             Log.log(Log.LOG_DEBUG, "PgDiffScript: ignoring unique statement:\n"
                     + statement);
+            
+            // move duplicated CREATEs to the back of the list
+            // this updates the statement to the most recent too
+            if (type == DiffStatementType.CREATE) {
+               statements.remove(st);
+               statements.add(st);
+            }
         }
     }
 
@@ -54,8 +70,8 @@ public class PgDiffScript {
      * Prints all statements into {@link PrintWriter}.
      */
     public void printStatements(PrintWriter printer) {
-        for (String s : statements) {
-            printer.println(s);
+        for (PgDiffStatement st : statements) {
+            printer.println(st.statement);
         }
     }
 }

@@ -40,8 +40,8 @@ public class PgDiffViews {
             if (oldSchema == null
                     || !oldSchema.containsView(newView.getName())
                     || isModified) {
-                searchPathHelper.outputSearchPath(writer);
-                PgDiff.writeCreationSql(writer, null, newView);
+                searchPathHelper.outputSearchPath(script);
+                PgDiff.writeCreationSql(script, null, newView);
                 
                 if (isModified){
                  // check all dependants, drop them if blocking
@@ -51,8 +51,8 @@ public class PgDiffViews {
                     for (PgStatement depnt : dependantsSet){
                         if (depnt instanceof PgView){
                             PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
-                                    searchPathHelper, writer);
-                            PgDiff.writeCreationSql(writer,"-- DEPCY: Following view depends"
+                                    searchPathHelper, script);
+                            PgDiff.writeCreationSql(script,"-- DEPCY: Following view depends"
                                     + " on the altered view " + newView.getName(), depnt);
                         }
                     }
@@ -92,15 +92,15 @@ public class PgDiffViews {
                     
                     if (depnt instanceof PgView) {
                         PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
-                                searchPathHelper, writer);
-                        PgDiff.writeDropSql(writer, "-- DEPCY: This view depends on the "
+                                searchPathHelper, script);
+                        PgDiff.writeDropSql(script, "-- DEPCY: This view depends on the "
                                 + "view we are about to drop: " + oldView.getName(), depnt);
                     }
                 }
                 
                 // output initial view drop
-                searchPathHelper.outputSearchPath(writer);
-                PgDiff.writeDropSql(writer, null, oldView);
+                searchPathHelper.outputSearchPath(script);
+                PgDiff.writeDropSql(script, null, oldView);
     
                 // recreate dependant views in straight order if view isn't modified
                 if (isModified){
@@ -110,8 +110,8 @@ public class PgDiffViews {
                 for (PgStatement depnt : dependantsSet){
                     if (depnt instanceof PgView){
                         PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
-                                searchPathHelper, writer);
-                        PgDiff.writeCreationSql(writer,"-- DEPCY: Following view depends"
+                                searchPathHelper, script);
+                        PgDiff.writeCreationSql(script,"-- DEPCY: Following view depends"
                                 + " on the dropped view " + oldView.getName(), depnt);
                     }
                 }
@@ -166,18 +166,16 @@ public class PgDiffViews {
                 continue;
             }
 
-            diffDefaultValues(writer, oldView, newView, searchPathHelper);
+            diffDefaultValues(script, oldView, newView, searchPathHelper);
 
             if (!Objects.equals(oldView.getOwner(), newView.getOwner())) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println(newView.getOwnerSQL());
-                writer.println();
+                searchPathHelper.outputSearchPath(script);
+                script.addStatement(newView.getOwnerSQL());
             }
             
             if (!oldView.getPrivileges().equals(newView.getPrivileges())) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println(newView.getPrivilegesSQL());
-                writer.println();
+                searchPathHelper.outputSearchPath(script);
+                script.addStatement(newView.getPrivilegesSQL());
             }
 
             if (oldView.getComment() == null
@@ -186,21 +184,20 @@ public class PgDiffViews {
                     && newView.getComment() != null
                     && !oldView.getComment().equals(
                     newView.getComment())) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.print("COMMENT ON VIEW ");
-                writer.print(
-                        PgDiffUtils.getQuotedName(newView.getName()));
-                writer.print(" IS ");
-                writer.print(newView.getComment());
-                writer.println(';');
+                searchPathHelper.outputSearchPath(script);
+                
+                script.addStatement("COMMENT ON VIEW "
+                        + PgDiffUtils.getQuotedName(newView.getName())
+                        + " IS "
+                        + newView.getComment()
+                        + ';');
             } else if (oldView.getComment() != null
                     && newView.getComment() == null) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.print("COMMENT ON VIEW ");
-                writer.print(PgDiffUtils.getQuotedName(newView.getName()));
-                writer.println(" IS NULL;");
+                searchPathHelper.outputSearchPath(script);
+
+                script.addStatement("COMMENT ON VIEW "
+                        + PgDiffUtils.getQuotedName(newView.getName())
+                        + " IS NULL;");
             }
 
             final List<String> columnNames =
@@ -242,26 +239,24 @@ public class PgDiffViews {
                         || oldColumnComment != null && newColumnComment != null
                         && !oldColumnComment.getComment().equals(
                         newColumnComment.getComment())) {
-                    searchPathHelper.outputSearchPath(writer);
-                    writer.println();
-                    writer.print("COMMENT ON COLUMN ");
-                    writer.print(PgDiffUtils.getQuotedName(newView.getName()));
-                    writer.print('.');
-                    writer.print(PgDiffUtils.getQuotedName(
-                            newColumnComment.getColumnName()));
-                    writer.print(" IS ");
-                    writer.print(newColumnComment.getComment());
-                    writer.println(';');
+                    searchPathHelper.outputSearchPath(script);
+
+                    script.addStatement("COMMENT ON COLUMN "
+                            + PgDiffUtils.getQuotedName(newView.getName())
+                            + '.'
+                            + PgDiffUtils.getQuotedName(newColumnComment.getColumnName())
+                            + " IS "
+                            + newColumnComment.getComment()
+                            + ';');
                 } else if (oldColumnComment != null
                         && newColumnComment == null) {
-                    searchPathHelper.outputSearchPath(writer);
-                    writer.println();
-                    writer.print("COMMENT ON COLUMN ");
-                    writer.print(PgDiffUtils.getQuotedName(newView.getName()));
-                    writer.print('.');
-                    writer.print(PgDiffUtils.getQuotedName(
-                            oldColumnComment.getColumnName()));
-                    writer.println(" IS NULL;");
+                    searchPathHelper.outputSearchPath(script);
+
+                    script.addStatement("COMMENT ON COLUMN "
+                            + PgDiffUtils.getQuotedName(newView.getName())
+                            + '.'
+                            + PgDiffUtils.getQuotedName(oldColumnComment.getColumnName())
+                            + " IS NULL;");
                 }
             }
         }
@@ -291,19 +286,16 @@ public class PgDiffViews {
                 if (oldValue.getColumnName().equals(newValue.getColumnName())) {
                     found = true;
 
-                    if (!oldValue.getDefaultValue().equals(
-                            newValue.getDefaultValue())) {
-                        searchPathHelper.outputSearchPath(writer);
-                        writer.println();
-                        writer.print("ALTER TABLE ");
-                        writer.print(
-                                PgDiffUtils.getQuotedName(newView.getName()));
-                        writer.print(" ALTER COLUMN ");
-                        writer.print(PgDiffUtils.getQuotedName(
-                                newValue.getColumnName()));
-                        writer.print(" SET DEFAULT ");
-                        writer.print(newValue.getDefaultValue());
-                        writer.println(';');
+                    if (!oldValue.getDefaultValue().equals(newValue.getDefaultValue())) {
+                        searchPathHelper.outputSearchPath(script);
+
+                        script.addStatement("ALTER TABLE "
+                                + PgDiffUtils.getQuotedName(newView.getName())
+                                + " ALTER COLUMN "
+                                + PgDiffUtils.getQuotedName(newValue.getColumnName())
+                                + " SET DEFAULT "
+                                + newValue.getDefaultValue()
+                                + ';');
                     }
 
                     break;
@@ -311,14 +303,13 @@ public class PgDiffViews {
             }
 
             if (!found) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.print("ALTER TABLE ");
-                writer.print(PgDiffUtils.getQuotedName(newView.getName()));
-                writer.print(" ALTER COLUMN ");
-                writer.print(PgDiffUtils.getQuotedName(
-                        oldValue.getColumnName()));
-                writer.println(" DROP DEFAULT;");
+                searchPathHelper.outputSearchPath(script);
+
+                script.addStatement("ALTER TABLE "
+                        + PgDiffUtils.getQuotedName(newView.getName())
+                        + " ALTER COLUMN "
+                        + PgDiffUtils.getQuotedName(oldValue.getColumnName())
+                        + " DROP DEFAULT;");
             }
         }
 
@@ -337,15 +328,15 @@ public class PgDiffViews {
                 continue;
             }
 
-            searchPathHelper.outputSearchPath(writer);
-            writer.println();
-            writer.print("ALTER TABLE ");
-            writer.print(PgDiffUtils.getQuotedName(newView.getName()));
-            writer.print(" ALTER COLUMN ");
-            writer.print(PgDiffUtils.getQuotedName(newValue.getColumnName()));
-            writer.print(" SET DEFAULT ");
-            writer.print(newValue.getDefaultValue());
-            writer.println(';');
+            searchPathHelper.outputSearchPath(script);
+
+            script.addStatement("ALTER TABLE "
+                    + PgDiffUtils.getQuotedName(newView.getName())
+                    + " ALTER COLUMN "
+                    + PgDiffUtils.getQuotedName(newValue.getColumnName())
+                    + " SET DEFAULT "
+                    + newValue.getDefaultValue()
+                    + ';');
         }
     }
 
