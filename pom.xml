@@ -175,12 +175,12 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.7.0.201403182114</version>
 				<executions>
-<!-- 					<execution>
+					<execution>
 						<id>prepare-agent</id>
 						<goals>
 							<goal>prepare-agent</goal>
 						</goals>
-					</execution> -->
+					</execution>
 					<execution>
 						<id>report</id>
 						<phase>prepare-package</phase>
@@ -198,11 +198,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 				</executions>
 			</plugin>
         </plugins>
-     <!--    
+        
         <pluginManagement>
 			<plugins>
-				This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself.
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -232,7 +230,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 					</configuration>
 				</plugin>
 			</plugins>
-		</pluginManagement> -->
+		</pluginManagement>
 		
     </build>
 
