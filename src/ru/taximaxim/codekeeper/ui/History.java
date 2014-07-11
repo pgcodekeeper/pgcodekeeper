@@ -15,33 +15,35 @@ import javax.xml.transform.TransformerException;
 import org.eclipse.core.runtime.Platform;
 import org.xml.sax.SAXException;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 public class History {
     
-    private int maxLength;
+    private int maxCapacity;
     private String fileName;
-    private String root;
-    private String element;
+    private String rootTagName;
+    private String elementTagName;
     
-    public History(int maxLength,
+    public History(int maxCapacity,
     String fileName,
-    String root,
-    String element) {
-        this.maxLength = maxLength;
+    String rootTagName,
+    String elementTagName) {
+        this.maxCapacity = maxCapacity;
         this.fileName = fileName;
-        this.root = root;
-        this.element = element;
+        this.rootTagName = rootTagName;
+        this.elementTagName = elementTagName;
     }
 
     public LinkedList<String> getHistory() {
         LinkedList<String> comments;
         try (Reader xmlReader = new FileReader(getHistoryXmlFile())) {
-            XmlStringList xml = new XmlStringList(root, element);
+            XmlStringList xml = new XmlStringList(rootTagName, elementTagName);
             comments = xml.deserialize(xmlReader);
         } catch (FileNotFoundException ex) {
             comments = null;
         } catch (IOException | SAXException ex) {
             throw new IllegalStateException(
-                    "History file read error",
+                    Messages.history_history_file_read_error,
                     ex);
         }
         return comments;
@@ -71,12 +73,12 @@ public class History {
                 scripts.remove(scriptComment);
                 scripts.add(0, scriptComment);
     
-                while (scripts.size() > maxLength) {
+                while (scripts.size() > maxCapacity) {
                     scripts.removeLast();
                 }
                 try (Writer xmlWriter = new FileWriter(getHistoryXmlFile())) {
-                    XmlStringList xml = new XmlStringList(root,
-                            element);
+                    XmlStringList xml = new XmlStringList(rootTagName,
+                            elementTagName);
                     xml.serialize(scripts, false, xmlWriter);
                 } catch (IOException | TransformerException ex) {
                     throw new IllegalStateException(errMsg, ex);

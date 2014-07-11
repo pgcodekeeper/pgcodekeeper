@@ -130,14 +130,14 @@ public class SqlScriptDialog extends MessageDialog {
         lbl.setText(Messages.sqlScriptDialog_input_command + 
                 (isReplacementEnabled ? 
                         Messages.sqlScriptDialog_regulars_host_port_dbname_username_pass_be_replaced_by_db_setting
-                        : "") + ":");
+                        : "") + ":"); //$NON-NLS-1$ //$NON-NLS-2$
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         lbl.setLayoutData(gd);
         
         cmbScript = new ComboViewer(parent, SWT.NONE);
         cmbScript.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        LinkedList<String> elements =history.getHistory(); 
+        LinkedList<String> elements = history.getHistory(); 
         if (elements != null){
             cmbScript.add(elements.toArray());
         }
