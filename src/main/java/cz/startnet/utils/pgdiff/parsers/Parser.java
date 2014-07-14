@@ -564,6 +564,7 @@ public final class Parser {
                 || "time".equalsIgnoreCase(dataType);
 
         if (expectOptional("(")) {
+            dataType += '(';
             boolean comma;
             do {
                 dataType += getExpression();
@@ -573,6 +574,7 @@ public final class Parser {
                 }
             } while (comma);
             expect(")");
+            dataType += ')';
         }
 
         if (timestamp) {

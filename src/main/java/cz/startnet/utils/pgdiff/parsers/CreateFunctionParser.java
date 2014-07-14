@@ -80,8 +80,7 @@ public class CreateFunctionParser {
                     && !parser.expectOptional("=")
                     && !parser.expectOptional("DEFAULT")) {
                 parser.setPosition(position);
-                argumentName =
-                        ParserUtils.getObjectName(parser.parseIdentifier());
+                argumentName = ParserUtils.getObjectName(parser.parseIdentifier());
                 dataType = parser.parseDataType();
             } else {
                 parser.setPosition(position2);
@@ -89,8 +88,7 @@ public class CreateFunctionParser {
 
             final String defaultExpression;
 
-            if (parser.expectOptional("=")
-                    || parser.expectOptional("DEFAULT")) {
+            if (parser.expectOptional("=") || parser.expectOptional("DEFAULT")) {
                 defaultExpression = parser.getExpression();
             } else {
                 defaultExpression = null;
