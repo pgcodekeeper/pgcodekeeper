@@ -563,8 +563,16 @@ public final class Parser {
         final boolean timestamp = "timestamp".equalsIgnoreCase(dataType)
                 || "time".equalsIgnoreCase(dataType);
 
-        if (string.charAt(position) == '(') {
-            dataType += getExpression();
+        if (expectOptional("(")) {
+            boolean comma;
+            do {
+                dataType += getExpression();
+                comma = expectOptional(",");
+                if (comma) {
+                    dataType += ',';
+                }
+            } while (comma);
+            expect(")");
         }
 
         if (timestamp) {
