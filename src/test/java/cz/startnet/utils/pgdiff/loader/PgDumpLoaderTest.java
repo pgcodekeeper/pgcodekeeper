@@ -82,7 +82,8 @@ public class PgDumpLoaderTest {
                     {13},
                     {14},
                     {15},
-                    {16}
+                    {16},
+                    {17}
                 });
     }
     /**
@@ -110,7 +111,8 @@ public class PgDumpLoaderTest {
         new PgDB13(),
         new PgDB14(),
         new PgDB15(),
-        new PgDB16()
+        new PgDB16(),
+        new PgDB17()
     };
 
     /**
@@ -968,6 +970,57 @@ class PgDB16 extends PgDatabaseObjectCreator {
 
     PgSelect select = new PgSelect("", "");
     select.addColumn(new GenericColumn("public", "t_work", "id"));
+    select.addColumn(new GenericColumn("public", "t_chart", "id"));
+    
+    view.setSelect(select);
+    
+    return d;
+    }
+}
+
+/**
+ * Tests subselect parser with double subselect
+ * 
+ * @author ryabinin_av
+ *
+ */
+class PgDB17 extends PgDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+    PgDatabase d = new PgDatabase();
+    PgSchema schema = d.getDefaultSchema();
+
+    // table1
+    PgTable table = new PgTable("t_work", "", "");
+    schema.addTable(table);
+    
+    PgColumn col = new PgColumn("id");
+    col.setType("integer");
+    table.addColumn(col);
+    
+    // table2
+    PgTable table2 = new PgTable("t_chart", "", "");
+    schema.addTable(table2);
+    col = new PgColumn("id");
+    col.setType("integer");
+    table2.addColumn(col);
+    
+    // table 3
+    PgTable table3 = new PgTable("t_memo", "", "");
+    schema.addTable(table3);
+    col = new PgColumn("name");
+    col.setType("text");
+    table3.addColumn(col);
+    
+    // view
+    PgView view = new PgView("v_subselect", "", "");
+    view.setQuery("SELECT c.id, t.id, t.name FROM  ( SELECT w.id, m.name FROM "
+            + "(SELECT t_work.id FROM t_work) w JOIN t_memo m )  t JOIN t_chart c ON t.id = c.id");
+    schema.addView(view);
+
+    PgSelect select = new PgSelect("", "");
+    select.addColumn(new GenericColumn("public", "t_work", "id"));
+    select.addColumn(new GenericColumn("public", "t_memo", "name"));
     select.addColumn(new GenericColumn("public", "t_chart", "id"));
     
     view.setSelect(select);
