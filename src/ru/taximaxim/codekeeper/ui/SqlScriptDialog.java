@@ -164,10 +164,11 @@ public class SqlScriptDialog extends MessageDialog {
         gd.verticalIndent = 12;
         l.setLayoutData(gd);
         
-        txtCommand = new Text(parent, SWT.BORDER);
-        txtCommand.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtCommand.setEditable(false);
+        txtCommand = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
         txtCommand.setText(getReplacedString());
+        txtCommand.setBackground(getShell().getDisplay()
+                .getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        txtCommand.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
         return parent;
     }
