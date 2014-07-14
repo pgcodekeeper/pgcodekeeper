@@ -81,7 +81,8 @@ public class PgDumpLoaderTest {
                     {12},
                     {13},
                     {14},
-                    {15}
+                    {15},
+                    {16}
                 });
     }
     /**
@@ -108,7 +109,8 @@ public class PgDumpLoaderTest {
         new PgDB12(),
         new PgDB13(),
         new PgDB14(),
-        new PgDB15()
+        new PgDB15(),
+        new PgDB16()
     };
 
     /**
@@ -931,3 +933,45 @@ class PgDB15 extends PgDatabaseObjectCreator {
     }
 }
 
+/**
+ * Tests subselect parser
+ * 
+ * @author ryabinin_av
+ *
+ */
+class PgDB16 extends PgDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+    PgDatabase d = new PgDatabase();
+    PgSchema schema = d.getDefaultSchema();
+
+    // table1
+    PgTable table = new PgTable("t_work", "", "");
+    schema.addTable(table);
+    
+    PgColumn col = new PgColumn("id");
+    col.setType("integer");
+    table.addColumn(col);
+    
+    // table2
+    PgTable table2 = new PgTable("t_chart", "", "");
+    schema.addTable(table2);
+    col = new PgColumn("id");
+    col.setType("integer");
+    table2.addColumn(col);
+    
+    // view
+    PgView view = new PgView("v_subselect", "", "");
+    view.setQuery("SELECT c.id, t.id FROM ( SELECT t_work.id FROM t_work) t"
+            + " JOIN t_chart c ON t.id = c.id");
+    schema.addView(view);
+
+    PgSelect select = new PgSelect("", "");
+    select.addColumn(new GenericColumn("public", "t_work", "id"));
+    select.addColumn(new GenericColumn("public", "t_chart", "id"));
+    
+    view.setSelect(select);
+    
+    return d;
+    }
+}
