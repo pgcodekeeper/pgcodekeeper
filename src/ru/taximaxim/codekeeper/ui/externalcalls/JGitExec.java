@@ -24,16 +24,16 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.util.FS;
 
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.KeyPair;
+import com.jcraft.jsch.Session;
+
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.KeyPair;
-import com.jcraft.jsch.Session;
 
 public class JGitExec implements IRepoWorker{
 
@@ -128,7 +128,8 @@ public class JGitExec implements IRepoWorker{
                             "\n                Status: " + b.getStatus() +  //$NON-NLS-1$
                             "\n               Message: " + b.getMessage()); //$NON-NLS-1$
                         throw new IOException(
-                                Messages.jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date);
+                                Messages.jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date
+                                        + "git status: " + b.getStatus());
                     }
                 }
             }
