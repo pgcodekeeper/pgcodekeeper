@@ -77,6 +77,7 @@ public class XmlHistory {
 
             File histFile = getHistoryXmlFile();
             try (Writer xmlWriter = new FileWriter(histFile)) {
+                histFile.getParentFile().mkdirs();
                 histFile.createNewFile();
                 XmlStringList xml = new XmlStringList(rootTag, elementTag);
                 xml.serialize(scripts, false, xmlWriter);
