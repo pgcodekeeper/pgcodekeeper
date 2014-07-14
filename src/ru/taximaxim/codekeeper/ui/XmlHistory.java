@@ -76,11 +76,14 @@ public class XmlHistory {
             }
 
             File histFile = getHistoryXmlFile();
-            try (Writer xmlWriter = new FileWriter(histFile)) {
+            try {
                 histFile.getParentFile().mkdirs();
                 histFile.createNewFile();
-                XmlStringList xml = new XmlStringList(rootTag, elementTag);
-                xml.serialize(scripts, false, xmlWriter);
+                
+                try (Writer xmlWriter = new FileWriter(histFile)) {
+                    XmlStringList xml = new XmlStringList(rootTag, elementTag);
+                    xml.serialize(scripts, false, xmlWriter);
+                }
             } catch (IOException | TransformerException ex) {
                 throw new IllegalStateException(
                         Messages.XmlHistory_write_error, ex);
