@@ -109,10 +109,12 @@ public class Messages extends NLS {
     public static String differ_reverse_diff;
     public static String diffTableViewer_change_type;
     public static String diffTableViewer_container;
+    public static String diffTableViewer_deselect_child_elements;
     public static String diffTableViewer_filtering_diff_tree_based_on_gui_selection;
     public static String diffTableViewer_object_name;
     public static String diffTableViewer_object_type;
     public static String diffTableViewer_objects;
+    public static String diffTableViewer_select_child_elements;
     public static String diffTableViewer_tried_to_add_equal_elements_to_checkedset;
     public static String diffTreeViewer_collapse_all;
     public static String diffTreeViewer_collapse_subtree;
@@ -131,6 +133,7 @@ public class Messages extends NLS {
     public static String jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date;
     public static String jGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new;
     public static String jGitExec_exception_thrown_at_jgit_repo_update;
+    public static String jGitExec_git_status;
     public static String pgDumper_bad_pg_dump_version_output;
     public static String svnExec_bad_svn_version_output;
     public static String svnExec_cannot_svn_rm_an_empty_file_list;

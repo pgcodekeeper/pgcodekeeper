@@ -129,7 +129,7 @@ public class JGitExec implements IRepoWorker{
                             "\n               Message: " + b.getMessage()); //$NON-NLS-1$
                         throw new IOException(
                                 Messages.jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date
-                                        + "git status: " + b.getStatus());
+                                        + Messages.jGitExec_git_status + b.getStatus());
                     }
                 }
             }
