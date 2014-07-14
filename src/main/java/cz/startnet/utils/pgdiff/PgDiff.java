@@ -157,10 +157,12 @@ public class PgDiff {
             writer.print("COMMENT ON DATABASE current_database() IS ");
             writer.print(newDatabase.getComment());
             writer.println(';');
+            writer.println();
         } else if (oldDatabase.getComment() != null
                 && newDatabase.getComment() == null) {
             writer.println();
             writer.println("COMMENT ON DATABASE current_database() IS NULL;");
+            writer.println();
         }
 
         PgDiffScript script = new PgDiffScript();
@@ -546,7 +548,7 @@ public class PgDiff {
         if (comment != null) {
             script.addStatement(comment);
         }
-        script.addDrop(pgObject.getName(), pgObject.getCreationSQL());
+        script.addDrop(pgObject.getName(), pgObject.getDropSQL());
     }
     
     private PgDiff() {

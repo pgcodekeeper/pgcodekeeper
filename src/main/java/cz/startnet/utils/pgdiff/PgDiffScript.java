@@ -72,6 +72,7 @@ public class PgDiffScript {
     public void printStatements(PrintWriter printer) {
         for (PgDiffStatement st : statements) {
             printer.println(st.statement);
+            printer.println();
         }
     }
 }

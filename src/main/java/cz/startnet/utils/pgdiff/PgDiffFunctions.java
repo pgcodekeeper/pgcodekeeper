@@ -102,7 +102,6 @@ public class PgDiffFunctions {
                 
                 StringBuilder sb = new StringBuilder();
                 sb.append("COMMENT ON FUNCTION ");
-                sb.append(PgDiffUtils.getQuotedName(newFunction.getBareName()));
                 newFunction.appendFunctionSignature(sb, false);
                 sb.append(" IS ");
                 sb.append(newFunction.getComment());
@@ -114,7 +113,6 @@ public class PgDiffFunctions {
                 
                 StringBuilder sb = new StringBuilder();
                 sb.append("COMMENT ON FUNCTION ");
-                sb.append(PgDiffUtils.getQuotedName(newFunction.getBareName()));
                 newFunction.appendFunctionSignature(sb, false);
                 sb.append(" IS NULL;");
                 script.addStatement(sb.toString());

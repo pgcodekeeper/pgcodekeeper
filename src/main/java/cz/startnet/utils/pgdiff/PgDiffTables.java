@@ -632,9 +632,9 @@ public class PgDiffTables {
             }
             PgDiff.writeDropSql(script, "-- DEPCY: dropping dependant object: " + reason, depnt);
         }// end write dependent PgViews/PgForeignKey drop sql code before table altering
-        
+
+        final String quotedTableName = PgDiffUtils.getQuotedName(newTable.getName());
         if (!statements.isEmpty()) {
-            final String quotedTableName = PgDiffUtils.getQuotedName(newTable.getName());
             searchPathHelper.outputSearchPath(script);
             
             StringBuilder sb = new StringBuilder();
@@ -647,22 +647,22 @@ public class PgDiffTables {
                 sb.append((i + 1) < statements.size() ? ",\n" : ";");
             }
             script.addStatement(sb.toString());
+        }
 
-            if (!dropDefaultsColumns.isEmpty()) {
-                StringBuilder sb2 = new StringBuilder();
-                sb2.append("ALTER TABLE ");
-                sb2.append(quotedTableName);
-                sb2.append('\n');
+        if (!dropDefaultsColumns.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("ALTER TABLE ");
+            sb.append(quotedTableName);
+            sb.append('\n');
 
-                for (int i = 0; i < dropDefaultsColumns.size(); i++) {
-                    sb2.append("\tALTER COLUMN ");
-                    sb2.append(PgDiffUtils.getQuotedName(
-                            dropDefaultsColumns.get(i).getName()));
-                    sb.append(" DROP DEFAULT");
-                    sb.append((i + 1) < dropDefaultsColumns.size() ? ",\n" : ";");
-                }
-                script.addStatement(sb2.toString());
+            for (int i = 0; i < dropDefaultsColumns.size(); i++) {
+                sb.append("\tALTER COLUMN ");
+                sb.append(PgDiffUtils.getQuotedName(
+                        dropDefaultsColumns.get(i).getName()));
+                sb.append(" DROP DEFAULT");
+                sb.append((i + 1) < dropDefaultsColumns.size() ? ",\n" : ";");
             }
+            script.addStatement(sb.toString());
         }
         
         // write dependent PgViews create sql code after table altering
