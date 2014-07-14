@@ -60,7 +60,7 @@ public class XmlStringList {
         
         Element root = xml.createElement(rootTagName);
         xml.appendChild(root);
-    
+        
         for (String listElement : listToConvert) {
             Element newElement = xml.createElement(elementTagName);
             newElement.setTextContent(listElement);

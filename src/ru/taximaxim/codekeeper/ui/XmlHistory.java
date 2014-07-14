@@ -74,8 +74,10 @@ public class XmlHistory {
             while (scripts.size() > maxEntries) {
                 scripts.removeLast();
             }
-            
-            try (Writer xmlWriter = new FileWriter(getHistoryXmlFile())) {
+
+            File histFile = getHistoryXmlFile();
+            try (Writer xmlWriter = new FileWriter(histFile)) {
+                histFile.createNewFile();
                 XmlStringList xml = new XmlStringList(rootTag, elementTag);
                 xml.serialize(scripts, false, xmlWriter);
             } catch (IOException | TransformerException ex) {

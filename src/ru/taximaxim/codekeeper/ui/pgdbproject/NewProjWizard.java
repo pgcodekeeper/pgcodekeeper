@@ -41,6 +41,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -51,7 +53,6 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class NewProjWizard extends Wizard implements IPageChangingListener {
 
@@ -325,8 +326,8 @@ class PageRepo extends WizardPage implements Listener {
     
     private void redrawLabels() {
             if (JGitExec.PATTERN_HTTP_URL.matcher(txtRepoUrl.getText()).matches()){
-                lblWarnPass
-                .setText(Messages.warning
+                // TODO concatenate localizations
+                lblWarnPass.setText(Messages.warning
                         + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
                         + Messages.this_password_will_show_up_in_logs
                         + Messages.consider_using_ssh_authentication_instead_use_git);
