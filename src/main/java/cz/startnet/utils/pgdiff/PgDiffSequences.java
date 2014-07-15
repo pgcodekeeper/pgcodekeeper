@@ -5,7 +5,6 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.io.PrintWriter;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -26,15 +25,15 @@ public class PgDiffSequences {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void createSequences(final PrintWriter writer,
+    public static void createSequences(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         // Add new sequences
         for (final PgSequence sequence : newSchema.getSequences()) {
             if (oldSchema == null
                     || !oldSchema.containsSequence(sequence.getName())) {
-                searchPathHelper.outputSearchPath(writer);
-                PgDiff.writeCreationSql(writer, null, sequence);
+                searchPathHelper.outputSearchPath(script);
+                PgDiff.writeCreationSql(script, null, sequence);
             }
         }
     }
@@ -47,7 +46,7 @@ public class PgDiffSequences {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterCreatedSequences(final PrintWriter writer,
+    public static void alterCreatedSequences(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         // Alter created sequences
@@ -56,9 +55,8 @@ public class PgDiffSequences {
                     || !oldSchema.containsSequence(sequence.getName()))
                     && sequence.getOwnedBy() != null
                     && !sequence.getOwnedBy().isEmpty()) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.println(sequence.getOwnedBySQL());
+                searchPathHelper.outputSearchPath(script);
+                script.addStatement(sequence.getOwnedBySQL());
             }
         }
     }
@@ -71,7 +69,7 @@ public class PgDiffSequences {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropSequences(final PrintWriter writer,
+    public static void dropSequences(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -81,8 +79,8 @@ public class PgDiffSequences {
         // Drop sequences that do not exist in new schema
         for (final PgSequence sequence : oldSchema.getSequences()) {
             if (!newSchema.containsSequence(sequence.getName())) {
-                searchPathHelper.outputSearchPath(writer);
-                PgDiff.writeDropSql(writer, null, sequence);
+                searchPathHelper.outputSearchPath(script);
+                PgDiff.writeDropSql(script, null, sequence);
             }
         }
     }
@@ -96,7 +94,7 @@ public class PgDiffSequences {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterSequences(final PrintWriter writer,
+    public static void alterSequences(final PgDiffScript script,
             final PgDiffArguments arguments, final PgSchema oldSchema,
             final PgSchema newSchema, final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -182,24 +180,20 @@ public class PgDiffSequences {
             }
 
             if (sbSQL.length() > 0) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.print("ALTER SEQUENCE "
-                        + PgDiffUtils.getQuotedName(newSequence.getName()));
-                writer.print(sbSQL.toString());
-                writer.println(';');
+                searchPathHelper.outputSearchPath(script);
+                script.addStatement("ALTER SEQUENCE "
+                        + PgDiffUtils.getQuotedName(newSequence.getName())
+                        + sbSQL.toString() + ';');
             }
             
             if (!Objects.equals(oldSequence.getOwner(), newSequence.getOwner())) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println(newSequence.getOwnerSQL());
-                writer.println();
+                searchPathHelper.outputSearchPath(script);
+                script.addStatement(newSequence.getOwnerSQL());
             }
             
             if (!oldSequence.getPrivileges().equals(newSequence.getPrivileges())) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println(newSequence.getPrivilegesSQL());
-                writer.println();
+                searchPathHelper.outputSearchPath(script);
+                script.addStatement(newSequence.getPrivilegesSQL());
             }
 
             if (oldSequence.getComment() == null
@@ -208,20 +202,15 @@ public class PgDiffSequences {
                     && newSequence.getComment() != null
                     && !oldSequence.getComment().equals(
                     newSequence.getComment())) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.print("COMMENT ON SEQUENCE ");
-                writer.print(PgDiffUtils.getQuotedName(newSequence.getName()));
-                writer.print(" IS ");
-                writer.print(newSequence.getComment());
-                writer.println(';');
+                searchPathHelper.outputSearchPath(script);
+                script.addStatement("COMMENT ON SEQUENCE "
+                        + PgDiffUtils.getQuotedName(newSequence.getName())
+                        + " IS " + newSequence.getComment() + ';');
             } else if (oldSequence.getComment() != null
                     && newSequence.getComment() == null) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.print("COMMENT ON SEQUENCE ");
-                writer.print(newSequence.getName());
-                writer.println(" IS NULL;");
+                searchPathHelper.outputSearchPath(script);
+                script.addStatement("COMMENT ON SEQUENCE "
+                        + newSequence.getName() + " IS NULL;");
             }
         }
     }

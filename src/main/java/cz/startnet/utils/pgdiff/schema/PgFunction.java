@@ -36,6 +36,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         this.comment = comment;
     }
 
+    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(500);
         sbSQL.append("CREATE OR REPLACE FUNCTION ");
@@ -73,7 +74,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         return sb;
     }
     
-    private StringBuilder appendFunctionSignature(StringBuilder sb,
+    public StringBuilder appendFunctionSignature(StringBuilder sb,
             boolean includeDefaulValues) {
         sb.append(PgDiffUtils.getQuotedName(name));
         
@@ -100,6 +101,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         return body;
     }
 
+    @Override
     public String getDropSQL() {
         final StringBuilder sbString = new StringBuilder(100);
         sbString.append("DROP FUNCTION ");
@@ -132,6 +134,7 @@ public class PgFunction extends PgStatementWithSearchPath {
      * 
      * Use {@link #getBareName()} to get just the function name.
      */
+    @Override
     public String getName() {
         return getSignature();
     }

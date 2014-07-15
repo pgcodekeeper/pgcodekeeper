@@ -5,7 +5,6 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +27,7 @@ public class PgDiffTriggers {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void createTriggers(final PrintWriter writer,
+    public static void createTriggers(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgTable newTable : newSchema.getTables()) {
@@ -42,8 +41,8 @@ public class PgDiffTriggers {
 
             // Add new triggers
             for (final PgTrigger trigger : getNewTriggers(oldTable, newTable)) {
-                searchPathHelper.outputSearchPath(writer);
-                PgDiff.writeCreationSql(writer, null, trigger);
+                searchPathHelper.outputSearchPath(script);
+                PgDiff.writeCreationSql(script, null, trigger);
             }
         }
     }
@@ -56,7 +55,7 @@ public class PgDiffTriggers {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropTriggers(final PrintWriter writer,
+    public static void dropTriggers(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgTable newTable : newSchema.getTables()) {
@@ -71,8 +70,8 @@ public class PgDiffTriggers {
             // Drop triggers that no more exist or are modified
             for (final PgTrigger trigger :
                     getDropTriggers(oldTable, newTable)) {
-                searchPathHelper.outputSearchPath(writer);
-                PgDiff.writeDropSql(writer, null, trigger);
+                searchPathHelper.outputSearchPath(script);
+                PgDiff.writeDropSql(script, null, trigger);
             }
         }
         
@@ -85,8 +84,8 @@ public class PgDiffTriggers {
             if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
                 PgTable newTable = new PgTable(oldTable.getName(), null, null);
                 for (final PgTrigger trigger : getDropTriggers(oldTable, newTable)) {
-                    searchPathHelper.outputSearchPath(writer);
-                    PgDiff.writeDropSql(writer, null, trigger);
+                    searchPathHelper.outputSearchPath(script);
+                    PgDiff.writeDropSql(script, null, trigger);
                 }
             }
         }// КОСТЫЛЬ
@@ -152,7 +151,7 @@ public class PgDiffTriggers {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterComments(final PrintWriter writer,
+    public static void alterComments(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -180,28 +179,24 @@ public class PgDiffTriggers {
                         && newTrigger.getComment() != null
                         && !oldTrigger.getComment().equals(
                         newTrigger.getComment())) {
-                    searchPathHelper.outputSearchPath(writer);
-                    writer.println();
-                    writer.print("COMMENT ON TRIGGER ");
-                    writer.print(
-                            PgDiffUtils.getQuotedName(newTrigger.getName()));
-                    writer.print(" ON ");
-                    writer.print(PgDiffUtils.getQuotedName(
-                            newTrigger.getTableName()));
-                    writer.print(" IS ");
-                    writer.print(newTrigger.getComment());
-                    writer.println(';');
+                    searchPathHelper.outputSearchPath(script);
+
+                    script.addStatement("COMMENT ON TRIGGER "
+                            + PgDiffUtils.getQuotedName(newTrigger.getName())
+                            + " ON "
+                            + PgDiffUtils.getQuotedName(newTrigger.getTableName())
+                            + " IS "
+                            + newTrigger.getComment()
+                            + ';');
                 } else if (oldTrigger.getComment() != null
                         && newTrigger.getComment() == null) {
-                    searchPathHelper.outputSearchPath(writer);
-                    writer.println();
-                    writer.print("COMMENT ON TRIGGER ");
-                    writer.print(
-                            PgDiffUtils.getQuotedName(newTrigger.getName()));
-                    writer.print(" ON ");
-                    writer.print(PgDiffUtils.getQuotedName(
-                            newTrigger.getTableName()));
-                    writer.println(" IS NULL;");
+                    searchPathHelper.outputSearchPath(script);
+
+                    script.addStatement("COMMENT ON TRIGGER "
+                            + PgDiffUtils.getQuotedName(newTrigger.getName())
+                            + " ON "
+                            + PgDiffUtils.getQuotedName(newTrigger.getTableName())
+                            + " IS NULL;");
                 }
             }
         }

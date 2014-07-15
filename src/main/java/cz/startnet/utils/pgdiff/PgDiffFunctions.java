@@ -5,8 +5,6 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.io.PrintWriter;
-
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 
@@ -26,7 +24,7 @@ public class PgDiffFunctions {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void createFunctions(final PrintWriter writer,
+    public static void createFunctions(final PgDiffScript script,
             final PgDiffArguments arguments, final PgSchema oldSchema,
             final PgSchema newSchema, final SearchPathHelper searchPathHelper) {
         // Add new functions and replace modified functions
@@ -41,8 +39,8 @@ public class PgDiffFunctions {
 
             if ((oldFunction == null) || !newFunction.equalsWhitespace(
                     oldFunction, arguments.isIgnoreFunctionWhitespace())) {
-                searchPathHelper.outputSearchPath(writer);
-                PgDiff.writeCreationSql(writer, null, newFunction);
+                searchPathHelper.outputSearchPath(script);
+                PgDiff.writeCreationSql(script, null, newFunction);
             }
         }
     }
@@ -55,7 +53,7 @@ public class PgDiffFunctions {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropFunctions(final PrintWriter writer,
+    public static void dropFunctions(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -65,8 +63,8 @@ public class PgDiffFunctions {
         // Drop functions that exist no more
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
             if (!newSchema.containsFunction(oldFunction.getSignature())) {
-                searchPathHelper.outputSearchPath(writer);
-                PgDiff.writeDropSql(writer, null, oldFunction);
+                searchPathHelper.outputSearchPath(script);
+                PgDiff.writeDropSql(script, null, oldFunction);
             }
         }
     }
@@ -79,7 +77,7 @@ public class PgDiffFunctions {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterComments(final PrintWriter writer,
+    public static void alterComments(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -100,50 +98,24 @@ public class PgDiffFunctions {
                     && newFunction.getComment() != null
                     && !oldfunction.getComment().equals(
                     newFunction.getComment())) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.print("COMMENT ON FUNCTION ");
-                writer.print(PgDiffUtils.getQuotedName(newFunction.getBareName()));
-                writer.print('(');
-
-                boolean addComma = false;
-
-                for (final PgFunction.Argument argument :
-                        newFunction.getArguments()) {
-                    if (addComma) {
-                        writer.print(", ");
-                    } else {
-                        addComma = true;
-                    }
-
-                    writer.print(argument.getDeclaration(false));
-                }
-
-                writer.print(") IS ");
-                writer.print(newFunction.getComment());
-                writer.println(';');
+                searchPathHelper.outputSearchPath(script);
+                
+                StringBuilder sb = new StringBuilder();
+                sb.append("COMMENT ON FUNCTION ");
+                newFunction.appendFunctionSignature(sb, false);
+                sb.append(" IS ");
+                sb.append(newFunction.getComment());
+                sb.append(';');
+                script.addStatement(sb.toString());
             } else if (oldfunction.getComment() != null
                     && newFunction.getComment() == null) {
-                searchPathHelper.outputSearchPath(writer);
-                writer.println();
-                writer.print("COMMENT ON FUNCTION ");
-                writer.print(PgDiffUtils.getQuotedName(newFunction.getBareName()));
-                writer.print('(');
-
-                boolean addComma = false;
-
-                for (final PgFunction.Argument argument :
-                        newFunction.getArguments()) {
-                    if (addComma) {
-                        writer.print(", ");
-                    } else {
-                        addComma = true;
-                    }
-
-                    writer.print(argument.getDeclaration(false));
-                }
-
-                writer.println(") IS NULL;");
+                searchPathHelper.outputSearchPath(script);
+                
+                StringBuilder sb = new StringBuilder();
+                sb.append("COMMENT ON FUNCTION ");
+                newFunction.appendFunctionSignature(sb, false);
+                sb.append(" IS NULL;");
+                script.addStatement(sb.toString());
             }
         }
     }
