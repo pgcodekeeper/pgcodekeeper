@@ -377,7 +377,7 @@ public class PgDiff {
                 updateSchemaContent(script,
                         depcyOld.getDb().getSchema(oldSchema.getName()), newSchema,
                         new SearchPathHelper(oldSchema.getName()), arguments);
-                script.addDrop(oldSchema.getName(), oldSchema.getDropSQL());
+                script.addDrop(oldSchema, oldSchema.getDropSQL());
             }
         }
     }
@@ -541,14 +541,14 @@ public class PgDiff {
         if (comment != null) {
             script.addStatement(comment);
         }
-        script.addCreate(pgObject.getName(), pgObject.getCreationSQL());
+        script.addCreate(pgObject, pgObject.getCreationSQL());
     }
     
     static void writeDropSql(PgDiffScript script, String comment, PgStatement pgObject) {
         if (comment != null) {
             script.addStatement(comment);
         }
-        script.addDrop(pgObject.getName(), pgObject.getDropSQL());
+        script.addDrop(pgObject, pgObject.getDropSQL());
     }
     
     private PgDiff() {

@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import cz.startnet.utils.pgdiff.PgDiffStatement.DiffStatementType;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
@@ -32,24 +33,24 @@ public class PgDiffScript {
         statements.add(new PgDiffStatement(DiffStatementType.OTHER, null, statement));
     }
     
-    public void addDrop(String objname, String statement) {
-        addStatementUnique(DiffStatementType.DROP, objname, statement);
+    public void addDrop(PgStatement obj, String statement) {
+        addStatementUnique(DiffStatementType.DROP, obj, statement);
     }
     
-    public void addCreate(String objname, String statement) {
-        addStatementUnique(DiffStatementType.CREATE, objname, statement);
+    public void addCreate(PgStatement obj, String statement) {
+        addStatementUnique(DiffStatementType.CREATE, obj, statement);
     }
     
     /**
      * Adds statement only if it's not present in the statements list.
      */
-    private void addStatementUnique(DiffStatementType type, String objname, String statement) {
+    private void addStatementUnique(DiffStatementType type, PgStatement obj, String statement) {
         if (type != DiffStatementType.DROP && type != DiffStatementType.CREATE) {
             throw new IllegalArgumentException(
                     "Only DROPs and CREATEs can be tracked as unique statements!");
         }
         
-        PgDiffStatement st = new PgDiffStatement(type, objname, statement);
+        PgDiffStatement st = new PgDiffStatement(type, obj, statement);
         if (!unique.contains(st)) {
             statements.add(st);
             unique.add(st);

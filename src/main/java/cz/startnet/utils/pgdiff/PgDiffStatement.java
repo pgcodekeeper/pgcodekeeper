@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff;
 
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 /**
  * A diff-script statement.
@@ -18,9 +19,9 @@ public class PgDiffStatement {
     public final String objname;
     public final String statement;
     
-    public PgDiffStatement(DiffStatementType type, String objname, String statement) {
+    public PgDiffStatement(DiffStatementType type, PgStatement obj, String statement) {
         this.type = type;
-        this.objname = objname;
+        this.objname = (obj == null) ? null : obj.getQualifiedName();
         this.statement = statement;
     }
     
