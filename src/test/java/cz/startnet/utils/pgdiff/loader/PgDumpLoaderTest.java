@@ -14,17 +14,12 @@ import java.util.Collection;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -39,6 +34,13 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
+
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
 /**
  * An abstract 'factory' that creates 'artificial'
@@ -189,7 +191,7 @@ public class PgDumpLoaderTest {
     @Test
     public void exportDb() throws IOException {
         // skip cases with illegal object names (with file-system reserved chars)
-        org.junit.Assume.assumeFalse(skipForExport.contains(fileIndex));
+        Assume.assumeFalse(skipForExport.contains(fileIndex));
 
         // prepare db object from sql file
         String filename = "schema_" + fileIndex + ".sql";

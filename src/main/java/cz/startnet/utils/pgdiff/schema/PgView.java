@@ -54,6 +54,7 @@ public class PgView extends PgStatementWithSearchPath {
         this.comment = comment;
     }
 
+    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(query.length() * 2);
         sbSQL.append("CREATE OR REPLACE VIEW ");
@@ -102,8 +103,9 @@ public class PgView extends PgStatementWithSearchPath {
             if (columnComment.getComment() != null
                     && !columnComment.getComment().isEmpty()) {
                 sbSQL.append("\n\nCOMMENT ON COLUMN ");
-                sbSQL.append(PgDiffUtils.getQuotedName(name).concat(".").concat(
-                        PgDiffUtils.getQuotedName(columnComment.getColumnName())));
+                sbSQL.append(PgDiffUtils.getQuotedName(name));
+                sbSQL.append('.');
+                sbSQL.append(PgDiffUtils.getQuotedName(columnComment.getColumnName()));
                 sbSQL.append(" IS ");
                 sbSQL.append(columnComment.getComment());
                 sbSQL.append(';');
@@ -113,6 +115,7 @@ public class PgView extends PgStatementWithSearchPath {
         return sbSQL.toString();
     }
 
+    @Override
     public String getDropSQL() {
         return "DROP VIEW IF EXISTS " + PgDiffUtils.getQuotedName(getName()) + ';';
     }
