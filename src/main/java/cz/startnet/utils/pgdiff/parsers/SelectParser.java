@@ -8,10 +8,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
+
+import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class SelectParser {
     
@@ -266,9 +267,15 @@ public class SelectParser {
                 if (!as) {
                     joinOp = pf.expectOptionalOneOf(SelectParser.JOIN_WORDS);
                     if (joinOp != null || pf.isConsumed()) {
+                        tableAliases.put(table, table);
+                        // simple cross-schema selects are normalized by pg_dump to the following
+                        // SELECT t1.c1 FROM s1.t1;
+                        // thus an alias t1 = s1.t1 is required
+                        tableAliases.put(ParserUtils.getObjectName(table), table);
+                        
                         // TODO существует ли необходиомсть деалиасить таблицы?
                         // они уже кладутся в селект как table.column
-                        tableAliases.put(table, table);
+                        
                         // FIXME данный код не детектит случай JOIN table ON | USING ...
                         // данная ветка - для обработки отсутствующего джойн кондишена
                         // isConsumed() тоже здесь толком не работает
