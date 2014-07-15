@@ -108,6 +108,8 @@ public class Messages extends NLS {
     public static String differ_direct_diff;
     public static String differ_reverse_diff;
     public static String diffTableViewer_change_type;
+
+    public static String diffTableViewer_reset_sorting;
     public static String diffTableViewer_container;
     public static String diffTableViewer_deselect_child_elements;
     public static String diffTableViewer_filtering_diff_tree_based_on_gui_selection;

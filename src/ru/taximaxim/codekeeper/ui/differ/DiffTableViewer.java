@@ -70,6 +70,13 @@ public class DiffTableViewer extends Composite {
     private Label lblObjectCount;
     private List<String> ignoredElements;
     private final IgnoresChangeListener ignoresChangeListener = new IgnoresChangeListener();
+    enum Columns {
+        CHECK,
+        NAME,
+        TYPE, 
+        CHANGE,
+        LOCATION
+    }
     
     public DiffTableViewer(Composite parent, int style, final IPreferenceStore mainPrefs) {
         super(parent, style);
@@ -85,6 +92,8 @@ public class DiffTableViewer extends Composite {
         viewer.getTable().setLinesVisible(true);        
         comparator = new TableViewerComparator();
         viewer.getTable().setHeaderVisible(true);
+        viewer.getControl().setMenu(getMenuSelection().createContextMenu(viewer.getControl()));
+        
         viewer.setComparator(comparator);
         
         initColumns();
@@ -146,7 +155,7 @@ public class DiffTableViewer extends Composite {
         
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout contButtonsLayout = new GridLayout(3, false);
+        GridLayout contButtonsLayout = new GridLayout(4, false);
         contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
         contButtons.setLayout(contButtonsLayout);
         
@@ -165,6 +174,15 @@ public class DiffTableViewer extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 viewer.setAllChecked(false);
+            }
+        });
+        
+        Button bntClearSort = new Button(contButtons, SWT.PUSH);
+        bntClearSort.setText(Messages.diffTableViewer_reset_sorting);
+        bntClearSort.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                comparator.clearSorting();
             }
         });
         
@@ -187,7 +205,7 @@ public class DiffTableViewer extends Composite {
         } else {
             ignoredElements = new LinkedList<>();
         }
-        viewer.getControl().setMenu(getMenuSelection().createContextMenu(viewer.getControl()));
+        
     }
 
     private void initColumns() {
@@ -217,11 +235,16 @@ public class DiffTableViewer extends Composite {
         columnLocation.getColumn().setText(Messages.diffTableViewer_container);
         columnLocation.getColumn().setMoveable(true);
         
-        columnName.getColumn().addSelectionListener(getSelectionAdapter(columnName.getColumn(), 1));
-        columnType.getColumn().addSelectionListener(getSelectionAdapter(columnType.getColumn(), 2));
-        columnCheck.getColumn().addSelectionListener(getSelectionAdapter(columnCheck.getColumn(), 0));
-        columnChange.getColumn().addSelectionListener(getSelectionAdapter(columnChange.getColumn(), 3));
-        columnLocation.getColumn().addSelectionListener(getSelectionAdapter(columnLocation.getColumn(), 4));
+        columnName.getColumn().addSelectionListener(
+                getSelectionAdapter(columnName.getColumn(), Columns.NAME));
+        columnType.getColumn().addSelectionListener(
+                getSelectionAdapter(columnType.getColumn(), Columns.TYPE));
+        columnCheck.getColumn().addSelectionListener(
+                getSelectionAdapter(columnCheck.getColumn(), Columns.CHECK));
+        columnChange.getColumn().addSelectionListener(
+                getSelectionAdapter(columnChange.getColumn(), Columns.CHANGE));
+        columnLocation.getColumn().addSelectionListener(
+                getSelectionAdapter(columnLocation.getColumn(), Columns.LOCATION));
         
         for (TableColumn c : viewer.getTable().getColumns()){
             c.pack();
@@ -358,11 +381,11 @@ public class DiffTableViewer extends Composite {
     }
     
     private SelectionAdapter getSelectionAdapter(final TableColumn column,
-            final int index) {
+            final Columns index) {
         SelectionAdapter selectionAdapter = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (index == 0) {
+                if (index == Columns.CHECK) {
                     comparator.setSelected(viewer.getCheckedElements());
                 }
                 comparator.setColumn(index);
@@ -474,13 +497,14 @@ public class DiffTableViewer extends Composite {
 }
 
 class TableViewerComparator extends ViewerComparator {
-    private int propertyIndex;
+    private DiffTableViewer.Columns propertyIndex;
     private static final int DESCENDING = 1;
     private int direction = DESCENDING;
     private Object[] selected = {};
+    private LinkedList<DiffTableViewer.Columns> columnSortOrder = new LinkedList<DiffTableViewer.Columns>();
 
     public TableViewerComparator() {
-        this.propertyIndex = 1;
+        this.propertyIndex = DiffTableViewer.Columns.NAME;
         direction = 1 - DESCENDING;
     }
 
@@ -488,28 +512,49 @@ class TableViewerComparator extends ViewerComparator {
         return direction == 1 ? SWT.DOWN : SWT.UP;
     }
 
-    public void setColumn(int column) {
+    public void setColumn(DiffTableViewer.Columns column) {
+        columnSortOrder.remove(column);
+        columnSortOrder.add(column);
+        
         if (column == this.propertyIndex) {
             // Same column as last sort; toggle the direction
             direction = 1 - direction;
         } else {
-            // New column; do an ascending sort
+            // New column;
             this.propertyIndex = column;
-            direction = DESCENDING;
         }
+    }
+    
+    public void clearSorting() {
+        columnSortOrder.clear();
     }
 
     @Override
-    public int compare(Viewer viewer, Object e1, Object e2) {
+    public int compare(Viewer viewer, Object e1, Object e2) {        
         TreeElement p1 = (TreeElement) e1;
         TreeElement p2 = (TreeElement) e2;
+        int rc = comparebyColumns(p1, p2, 0);
+        
+        // If descending order, flip the direction
+        if (direction == DESCENDING) {
+            rc = -rc;
+        }
+        return rc;
+    }
+
+    private int comparebyColumns(TreeElement el1, TreeElement el2, int position) {
         int rc = 0;
-        switch (propertyIndex) {
-        case 0:
+        
+        if (columnSortOrder.size() <= position) {
+            return rc;
+        }
+        
+        switch (columnSortOrder.get(position)) {
+        case CHECK:
             ArrayList<Object> selectedList = new ArrayList<Object>(
                     Arrays.asList(selected));
-            boolean p1s = selectedList.contains(p1);
-            boolean p2s = selectedList.contains(p2);
+            boolean p1s = selectedList.contains(el1);
+            boolean p2s = selectedList.contains(el2);
             if (p1s == p2s) {
                 rc = 0;
             } else if (p1s) {
@@ -518,29 +563,28 @@ class TableViewerComparator extends ViewerComparator {
                 rc = -1;
             }
             break;
-        case 1:
-            rc = p1.getName().compareTo(p2.getName());
+        case NAME:
+            rc = el1.getName().compareTo(el2.getName());
             break;
-        case 2:
-            rc = p1.getType().name().compareTo(p2.getType().name());
+        case TYPE:
+            rc = el1.getType().name().compareTo(el2.getType().name());
             break;
-        case 3:
-            rc = p1.getSide().toString().compareTo(p2.getSide().toString());
+        case CHANGE:
+            rc = el1.getSide().toString().compareTo(el2.getSide().toString());
             break;
-        case 4:
-            rc = DiffTableViewer.getLocationColumntText(p1).compareTo(
-                    DiffTableViewer.getLocationColumntText(p2));
+        case LOCATION:
+            rc = DiffTableViewer.getLocationColumntText(el1).compareTo(
+                    DiffTableViewer.getLocationColumntText(el2));
             break;
         default:
             rc = 0;
         }
-        // If descending order, flip the direction
-        if (direction == DESCENDING) {
-            rc = -rc;
+        if (rc == 0) {
+            position ++;
+            rc = comparebyColumns(el1, el2, position);
         }
         return rc;
     }
-
     public void setSelected(Object[] selected) {
         this.selected = selected;
     }
