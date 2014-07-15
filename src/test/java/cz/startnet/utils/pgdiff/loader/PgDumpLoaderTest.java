@@ -5,20 +5,21 @@
  */
 package cz.startnet.utils.pgdiff.loader;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -33,6 +34,13 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
+
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
 /**
  * An abstract 'factory' that creates 'artificial'
@@ -58,6 +66,8 @@ abstract class PgDatabaseObjectCreator {
 @RunWith(value = Parameterized.class)
 public class PgDumpLoaderTest {
 
+    private final String encoding = "UTF-8";
+    private final List<Integer> skipForExport = Arrays.asList(8);
     /**
      * Provides parameters for running the tests.
      *
@@ -81,7 +91,9 @@ public class PgDumpLoaderTest {
                     {12},
                     {13},
                     {14},
-                    {15}
+                    {15},
+                    {16},
+                    {17}
                 });
     }
     /**
@@ -108,7 +120,9 @@ public class PgDumpLoaderTest {
         new PgDB12(),
         new PgDB13(),
         new PgDB14(),
-        new PgDB15()
+        new PgDB15(),
+        new PgDB16(),
+        new PgDB17()
     };
 
     /**
@@ -127,7 +141,7 @@ public class PgDumpLoaderTest {
         String filename = "schema_" + fileIndex + ".sql";
         PgDatabase d = PgDumpLoader.loadDatabaseSchemaFromDump(
                 getClass().getResourceAsStream(filename),
-                "UTF-8", false, false);
+                encoding, false, false);
         
         // then check result's validity against handmade DB object
         if(fileIndex > dbCreators.length) {        
@@ -167,6 +181,58 @@ public class PgDumpLoaderTest {
                 new DiffTreeApplier(d, oneDiff, onlyNew).apply());
         Assert.assertEquals("DiffTreeApplier: not old", d,
                 new DiffTreeApplier(d, oneDiff, onlyOld).apply());
+    }
+
+    /**
+     * Tests ModelExporter export() method
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void exportDb() throws IOException {
+        // skip cases with illegal object names (with file-system reserved chars)
+        Assume.assumeFalse(skipForExport.contains(fileIndex));
+
+        // prepare db object from sql file
+        String filename = "schema_" + fileIndex + ".sql";
+        PgDatabase dbFromFile = PgDumpLoader.loadDatabaseSchemaFromDump(
+                getClass().getResourceAsStream(filename), encoding, false, false);
+        
+        PgDatabase dbPredefined = dbCreators[fileIndex - 1].getDatabase();
+        Path exportDir = null;
+        try{
+            exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
+            new ModelExporter(exportDir.toString(), dbPredefined, encoding).export();
+            
+            PgDatabase dbAfterExport = PgDumpLoader.loadDatabaseSchemaFromDirTree(
+                    exportDir.toString(), encoding, true, true);
+
+            // check the same db similarity before and after export
+            Assert.assertEquals("ModelExporter: predefined object PgDB" + fileIndex + 
+                    " is not equal to exported'n'loaded.", dbPredefined, dbAfterExport);
+            
+            Assert.assertEquals("ModelExporter: exported predefined object is not "
+                    + "equal to file " + filename, dbAfterExport, dbFromFile);
+        }finally{
+            if (exportDir != null){
+                deleteRecursive(exportDir.toFile());
+            }
+        }
+    }
+    
+    /**
+     * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
+     * 
+     * @param f Directory
+     * @throws IOException
+     */
+    public static void deleteRecursive(File f) throws IOException {
+        if (f.isDirectory()) {
+            for (File sub : f.listFiles()) {
+                deleteRecursive(sub);
+            }
+        }
+        Files.delete(f.toPath());
     }
 }
 
@@ -546,7 +612,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
     d.addSchema(schema);
     d.setDefaultSchema("common");
     
-    PgFunction func = new PgFunction("t_common_casttotext", "", "");
+    PgFunction func = new PgFunction("t_common_casttotext", "", "SET search_path = common, pg_catalog;");
     func.setBody("RETURNS text\n    AS $_$SELECT textin(timetz_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
     schema.addFunction(func);
     
@@ -554,7 +620,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
     arg.setDataType("time with time zone");
     func.addArgument(arg);
     
-    func = new PgFunction("t_common_casttotext", "", "");
+    func = new PgFunction("t_common_casttotext", "", "SET search_path = common, pg_catalog;");
     func.setBody("RETURNS text\n    AS $_$SELECT textin(time_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
     schema.addFunction(func);
     
@@ -562,7 +628,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
     arg.setDataType("time without time zone");
     func.addArgument(arg);
     
-    func = new PgFunction("t_common_casttotext", "", "");
+    func = new PgFunction("t_common_casttotext", "", "SET search_path = common, pg_catalog;");
     func.setBody("RETURNS text\n    AS $_$SELECT textin(timestamptz_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
     schema.addFunction(func);
     
@@ -570,7 +636,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
     arg.setDataType("timestamp with time zone");
     func.addArgument(arg);
     
-    func = new PgFunction("t_common_casttotext", "", "");
+    func = new PgFunction("t_common_casttotext", "", "SET search_path = common, pg_catalog;");
     func.setBody("RETURNS text\n    AS $_$SELECT textin(timestamp_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
     schema.addFunction(func);
     
@@ -678,7 +744,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
     
     schema.setOwner("postgres");
     
-    PgTable table = new PgTable("acl_role", "", "");
+    PgTable table = new PgTable("acl_role", "", "SET search_path = admin, pg_catalog;");
     schema.addTable(table);
     
     PgColumn col = new PgColumn("id");
@@ -693,7 +759,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
     
     table.setOwner("postgres");
     
-    table = new PgTable("user", "", "");
+    table = new PgTable("user", "", "SET search_path = admin, pg_catalog;");
     schema.addTable(table);
     
     col = new PgColumn("id");
@@ -931,3 +997,96 @@ class PgDB15 extends PgDatabaseObjectCreator {
     }
 }
 
+/**
+ * Tests subselect parser
+ * 
+ * @author ryabinin_av
+ *
+ */
+class PgDB16 extends PgDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+    PgDatabase d = new PgDatabase();
+    PgSchema schema = d.getDefaultSchema();
+
+    // table1
+    PgTable table = new PgTable("t_work", "", "");
+    schema.addTable(table);
+    
+    PgColumn col = new PgColumn("id");
+    col.setType("integer");
+    table.addColumn(col);
+    
+    // table2
+    PgTable table2 = new PgTable("t_chart", "", "");
+    schema.addTable(table2);
+    col = new PgColumn("id");
+    col.setType("integer");
+    table2.addColumn(col);
+    
+    // view
+    PgView view = new PgView("v_subselect", "", "");
+    view.setQuery("SELECT c.id, t.id FROM ( SELECT t_work.id FROM t_work) t"
+            + " JOIN t_chart c ON t.id = c.id");
+    schema.addView(view);
+
+    PgSelect select = new PgSelect("", "");
+    select.addColumn(new GenericColumn("public", "t_work", "id"));
+    select.addColumn(new GenericColumn("public", "t_chart", "id"));
+    
+    view.setSelect(select);
+    
+    return d;
+    }
+}
+
+/**
+ * Tests subselect parser with double subselect
+ * 
+ * @author ryabinin_av
+ *
+ */
+class PgDB17 extends PgDatabaseObjectCreator {
+    @Override
+    public PgDatabase getDatabase() {
+    PgDatabase d = new PgDatabase();
+    PgSchema schema = d.getDefaultSchema();
+
+    // table1
+    PgTable table = new PgTable("t_work", "", "");
+    schema.addTable(table);
+    
+    PgColumn col = new PgColumn("id");
+    col.setType("integer");
+    table.addColumn(col);
+    
+    // table2
+    PgTable table2 = new PgTable("t_chart", "", "");
+    schema.addTable(table2);
+    col = new PgColumn("id");
+    col.setType("integer");
+    table2.addColumn(col);
+    
+    // table 3
+    PgTable table3 = new PgTable("t_memo", "", "");
+    schema.addTable(table3);
+    col = new PgColumn("name");
+    col.setType("text");
+    table3.addColumn(col);
+    
+    // view
+    PgView view = new PgView("v_subselect", "", "");
+    view.setQuery("SELECT c.id, t.id, t.name FROM  ( SELECT w.id, m.name FROM "
+            + "(SELECT t_work.id FROM t_work) w JOIN t_memo m )  t JOIN t_chart c ON t.id = c.id");
+    schema.addView(view);
+
+    PgSelect select = new PgSelect("", "");
+    select.addColumn(new GenericColumn("public", "t_work", "id"));
+    select.addColumn(new GenericColumn("public", "t_memo", "name"));
+    select.addColumn(new GenericColumn("public", "t_chart", "id"));
+    
+    view.setSelect(select);
+    
+    return d;
+    }
+}

@@ -103,8 +103,9 @@ public class PgView extends PgStatementWithSearchPath {
             if (columnComment.getComment() != null
                     && !columnComment.getComment().isEmpty()) {
                 sbSQL.append("\n\nCOMMENT ON COLUMN ");
-                sbSQL.append(PgDiffUtils.getQuotedName(
-                        columnComment.getColumnName()));
+                sbSQL.append(PgDiffUtils.getQuotedName(name));
+                sbSQL.append('.');
+                sbSQL.append(PgDiffUtils.getQuotedName(columnComment.getColumnName()));
                 sbSQL.append(" IS ");
                 sbSQL.append(columnComment.getComment());
                 sbSQL.append(';');
