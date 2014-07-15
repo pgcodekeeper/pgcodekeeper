@@ -214,7 +214,9 @@ public class PgDiffTest {
                     // Tests adding empty table
                     {"add_empty_table", false, false, false, false},
                     // Tests adding and an extension and changing it's schema
-                    {"add_ext", false, false, false, false}
+                    {"add_ext", false, false, false, false},
+                    // Test changes in the middle of a simple dependency chain
+                    {"depcy_simple1", false, false, false, false},
                 });
     }
     
