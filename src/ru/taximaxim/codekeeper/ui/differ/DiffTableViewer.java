@@ -385,17 +385,22 @@ public class DiffTableViewer extends Composite {
         SelectionAdapter selectionAdapter = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (index == Columns.CHECK) {
-                    comparator.setSelected(viewer.getCheckedElements());
-                }
-                comparator.setColumn(index);
-                int dir = comparator.getDirection();
-                viewer.getTable().setSortDirection(dir);
-                viewer.getTable().setSortColumn(column);
+                sortViewer(column, index);
                 viewer.refresh();
-            }
+            }            
         };
         return selectionAdapter;
+    }
+    
+    private void sortViewer(final TableColumn column,
+            final Columns index) {
+        if (index == Columns.CHECK) {
+            comparator.setSelected(viewer.getCheckedElements());
+        }
+        comparator.setColumn(index);
+        int dir = comparator.getDirection();
+        viewer.getTable().setSortDirection(dir);
+        viewer.getTable().setSortColumn(column);
     }
     
     public void setInput(TreeDiffer treediffer) {
@@ -414,7 +419,16 @@ public class DiffTableViewer extends Composite {
         lblObjectCount.setText(Messages.diffTableViewer_objects +
                 String.valueOf(viewer.getTable().getItemCount()));
         lblObjectCount.getParent().layout();
+        initialSorting();
     }
+    
+    public void initialSorting() {
+        sortViewer(columnChange.getColumn(), Columns.CHANGE);
+        sortViewer(columnType.getColumn(), Columns.TYPE);
+        sortViewer(columnLocation.getColumn(), Columns.LOCATION);
+        viewer.refresh();
+        comparator.clearSorting();
+    } 
     
     public TreeElement filterDiffTree() {
         if (tree == null){
@@ -501,7 +515,8 @@ class TableViewerComparator extends ViewerComparator {
     private static final int DESCENDING = 1;
     private int direction = DESCENDING;
     private Object[] selected = {};
-    private LinkedList<DiffTableViewer.Columns> columnSortOrder = new LinkedList<DiffTableViewer.Columns>();
+    private LinkedList<DiffTableViewer.Columns> columnSortOrder = 
+            new LinkedList<DiffTableViewer.Columns>();
 
     public TableViewerComparator() {
         this.propertyIndex = DiffTableViewer.Columns.NAME;
@@ -525,6 +540,9 @@ class TableViewerComparator extends ViewerComparator {
         }
     }
     
+    /**
+     * Clear sorting sequence
+     */
     public void clearSorting() {
         columnSortOrder.clear();
     }
