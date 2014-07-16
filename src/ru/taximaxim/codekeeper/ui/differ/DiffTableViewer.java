@@ -30,10 +30,13 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerComparator;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -44,6 +47,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.Text;
 import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -70,6 +74,9 @@ public class DiffTableViewer extends Composite {
     private Label lblObjectCount;
     private List<String> ignoredElements;
     private final IgnoresChangeListener ignoresChangeListener = new IgnoresChangeListener();
+    private Text filterName;
+    private ViewerFilter[] viewerFilters = new ViewerFilter[1];;
+    
     enum Columns {
         CHECK,
         NAME,
@@ -86,6 +93,18 @@ public class DiffTableViewer extends Composite {
         gl.marginHeight = gl.marginWidth = 0;
         setLayout(gl);
 
+        filterName = new Text(this, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH);
+        filterName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        filterName.setMessage(Messages.diffTableViewer_object_name);
+        filterName.addModifyListener(new ModifyListener() {
+            
+            @Override
+            public void modifyText(ModifyEvent e) {
+                ((TableViewerFilter)viewerFilters[0]).setFilteName(filterName.getText());
+                viewerRefresh();
+            }
+        });
+        
         viewer = new CheckboxTableViewer(new Table(this, SWT.CHECK | SWT.MULTI
                 | SWT.FULL_SELECTION | SWT.BORDER));
         viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -95,6 +114,9 @@ public class DiffTableViewer extends Composite {
         viewer.getControl().setMenu(getMenuSelection().createContextMenu(viewer.getControl()));
         
         viewer.setComparator(comparator);
+        
+        viewerFilters[0] = new TableViewerFilter();
+        viewer.setFilters(viewerFilters);
         
         initColumns();
     
@@ -416,9 +438,6 @@ public class DiffTableViewer extends Composite {
         }
         columnName.getColumn().setWidth(widthOfColumns-viewer.getTable().getSize().x);
         
-        lblObjectCount.setText(Messages.diffTableViewer_objects +
-                String.valueOf(viewer.getTable().getItemCount()));
-        lblObjectCount.getParent().layout();
         initialSorting();
     }
     
@@ -426,9 +445,16 @@ public class DiffTableViewer extends Composite {
         sortViewer(columnChange.getColumn(), Columns.CHANGE);
         sortViewer(columnType.getColumn(), Columns.TYPE);
         sortViewer(columnLocation.getColumn(), Columns.LOCATION);
-        viewer.refresh();
+        viewerRefresh();
         comparator.clearSorting();
     } 
+    
+    private void viewerRefresh() {
+        viewer.refresh();
+        lblObjectCount.setText(Messages.diffTableViewer_objects +
+                String.valueOf(viewer.getTable().getItemCount()));
+        lblObjectCount.getParent().layout();
+    }
     
     public TreeElement filterDiffTree() {
         if (tree == null){
@@ -606,4 +632,22 @@ class TableViewerComparator extends ViewerComparator {
     public void setSelected(Object[] selected) {
         this.selected = selected;
     }
+}
+
+class TableViewerFilter extends ViewerFilter {
+
+    private String filterName;
+    
+    public void setFilteName(String value) {
+        filterName = value == null || value.isEmpty() ? null : 
+            value.toLowerCase();
+    }
+    @Override
+    public boolean select(Viewer viewer, Object parentElement, Object element) {
+        if (filterName == null) {
+            return true;
+        }
+        return ((TreeElement) element).getName().toLowerCase().contains(filterName);
+    }
+    
 }
