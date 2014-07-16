@@ -131,6 +131,8 @@ public class Messages extends NLS {
     public static String jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date;
     public static String jGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new;
     public static String jGitExec_exception_thrown_at_jgit_repo_update;
+    public static String jGitExec_skip_pull_branch_does_not_exist;
+    public static String jGitExec_skip_pull_branch_does_not_exist_skipped;
     public static String pgDumper_bad_pg_dump_version_output;
     public static String svnExec_bad_svn_version_output;
     public static String svnExec_cannot_svn_rm_an_empty_file_list;
