@@ -28,7 +28,9 @@ public class PgDiffStatement {
     @Override
     public boolean equals(Object obj) {
         boolean eq = false;
-        if (obj instanceof PgDiffStatement) {
+        if (this == obj) {
+            eq = true;
+        } else if (obj instanceof PgDiffStatement) {
             PgDiffStatement st = (PgDiffStatement) obj;
             
             if (st.type == DiffStatementType.OTHER) {
