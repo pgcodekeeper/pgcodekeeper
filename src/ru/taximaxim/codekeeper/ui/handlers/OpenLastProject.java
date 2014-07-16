@@ -28,12 +28,12 @@ public class OpenLastProject {
             final EPartService partService,
             
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs,
-            @Preference(UIConsts.PREF_OPEN_LAST_ON_START) String prefOpenLast,
+//            @Preference(UIConsts.PREF_OPEN_LAST_ON_START) String prefOpenLast,
             @Preference(UIConsts.PREF_RECENT_PROJECTS) String prefRecentProjects,
 
             UISynchronize sync,
             final @Named(IServiceConstants.ACTIVE_SHELL) Shell shell) {
-        if (prefOpenLast != null && prefOpenLast.equals("true")) { //$NON-NLS-1$
+//        if (prefOpenLast != null && prefOpenLast.equals("true")) { //$NON-NLS-1$
             String[] recent = RecentProjects.getRecent(prefRecentProjects);
             if (recent == null) {
                 return;
@@ -57,7 +57,7 @@ public class OpenLastProject {
                                 + proj.getProjectFile()
                                 + ". Project pref store either doesn't exist or not a file."); //$NON-NLS-1$
             }
-        }
+//        }
     }
     
     @CanExecute
