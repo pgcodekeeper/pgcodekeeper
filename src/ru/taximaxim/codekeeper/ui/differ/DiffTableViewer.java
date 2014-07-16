@@ -3,9 +3,9 @@ package ru.taximaxim.codekeeper.ui.differ;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -27,14 +27,11 @@ import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
@@ -65,18 +62,22 @@ import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage;
 
+/*
+ * Call CheckStateListener.updateCountLabels() when programmatically changing 
+ * elements' checked state. 
+ */
 public class DiffTableViewer extends Composite {
 
     private final IgnoresChangeListener ignoresListener = new IgnoresChangeListener();
-    
     private final CheckStateListener checkListener = new CheckStateListener();
 
+    private final TableViewerComparator comparator = new TableViewerComparator();
+    
     private final LocalResourceManager lrm;
     
     private TreeElement tree;
     public final CheckboxTableViewer viewer;
     private TableViewerColumn columnCheck, columnType, columnChange, columnName, columnLocation;
-    private TableViewerComparator comparator;
     private Label lblObjectCount;
     private Label lblCheckedCount;
     
@@ -120,17 +121,16 @@ public class DiffTableViewer extends Composite {
         viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         viewer.getTable().setLinesVisible(true);  
         viewer.getTable().setHeaderVisible(true);
-        viewer.getControl().setMenu(getViewerMenu().createContextMenu(viewer.getControl()));      
-        comparator = new TableViewerComparator();
+        viewer.getControl().setMenu(getViewerMenu().createContextMenu(viewer.getControl()));     
         
         viewer.setComparator(comparator);
-        viewer.addCheckStateListener(checkListener);
         
         viewerFilters[0] = new TableViewerFilter();
         viewer.setFilters(viewerFilters);
         
         initColumns();
-    
+
+        viewer.addCheckStateListener(checkListener);
         viewer.addDoubleClickListener(new IDoubleClickListener() {
             @Override
             public void doubleClick(DoubleClickEvent e) {
@@ -138,7 +138,7 @@ public class DiffTableViewer extends Composite {
                         .getSelection()).getFirstElement();
                 if (el != null) {
                     viewer.setChecked(el, !viewer.getChecked(el));
-                    checkListener.updateCountLabel();
+                    checkListener.updateCountLabels();
                 }
             }
         });
@@ -149,8 +149,7 @@ public class DiffTableViewer extends Composite {
             }
 
             @Override
-            public void inputChanged(Viewer viewer, Object oldInput,
-                    Object newInput) {
+            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
             }
 
             @Override
@@ -196,7 +195,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 viewer.setAllChecked(true);
-                checkListener.updateCountLabel();
+                checkListener.updateCountLabels();
             }
         });
         
@@ -207,7 +206,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 viewer.setAllChecked(false);
-                checkListener.updateCountLabel();
+                checkListener.updateCountLabels();
             }
         });
         
@@ -217,7 +216,7 @@ public class DiffTableViewer extends Composite {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                comparator.clearSorting();
+                initialSorting();
             }
         });
         
@@ -288,6 +287,7 @@ public class DiffTableViewer extends Composite {
         }
         
         columnCheck.setLabelProvider(new ColumnLabelProvider(){
+            
             @Override
             public String getText(Object element) {
                 return " "; //$NON-NLS-1$
@@ -295,18 +295,16 @@ public class DiffTableViewer extends Composite {
         });
         
         columnName.setLabelProvider(new ColumnLabelProvider(){
+            
             @Override
             public String getText(Object element) {
-                TreeElement tree = (TreeElement) element;
-                return tree.getName();
+                return ((TreeElement) element).getName();
             }
         });
 
-        columnType.setLabelProvider(new StyledCellLabelProvider() {
+        columnType.setLabelProvider(new ColumnLabelProvider() {
 
             private final Map<DbObjType, Image> mapObjIcons = new HashMap<>(
-                    DbObjType.values().length);
-            private final Map<DbObjType, Image> mapContIcons = new HashMap<>(
                     DbObjType.values().length);
 
             {
@@ -317,75 +315,59 @@ public class DiffTableViewer extends Composite {
                                     .getBundle()
                                     .getResource(
                                             UIConsts.FILENAME_ICONPGADMIN
-                                                    + objType.toString()
-                                                            .toLowerCase()
+                                                    + objType.toString().toLowerCase()
                                                     + ".png")); //$NON-NLS-1$
-                    ImageDescriptor iCont = ImageDescriptor
-                            .createFromURL(Activator
-                                    .getContext()
-                                    .getBundle()
-                                    .getResource(
-                                            UIConsts.FILENAME_ICONPGADMIN
-                                                    + objType.toString()
-                                                            .toLowerCase()
-                                                    + "s.png")); //$NON-NLS-1$
-
                     mapObjIcons.put(objType, lrm.createImage(iObj));
-                    mapContIcons.put(objType, lrm.createImage(iCont));
                 }
             }
 
             @Override
-            public void update(ViewerCell cell) {
-                TreeElement el = (TreeElement) cell.getElement();
-                List<StyleRange> styles = new ArrayList<>();
-
-                Image icon = mapObjIcons.get(el.getType());
-                String name = el.getType().name();
-
-                StringBuilder label = new StringBuilder(name);
-
-                cell.setText(label.toString());
-
-                cell.setStyleRanges(styles.toArray(new StyleRange[styles.size()]));
-                cell.setImage(icon);
-
-                super.update(cell);
+            public String getText(Object element) {
+                return ((TreeElement) element).getType().toString();
+            }
+            
+            @Override
+            public Image getImage(Object element) {
+                return mapObjIcons.get(((TreeElement) element).getType());
             }
         });
 
-        columnChange.setLabelProvider(new StyledCellLabelProvider() {
-            @Override
-            public void update(ViewerCell cell) {
-                TreeElement el = (TreeElement) cell.getElement();
-                Image icon = null;
-                switch (el.getSide()) {
-                case BOTH:
-                    icon = lrm.createImage(ImageDescriptor.createFromURL(
+        columnChange.setLabelProvider(new ColumnLabelProvider() {
+            
+            private Image both = 
+                    lrm.createImage(ImageDescriptor.createFromURL(
                             Activator.getContext().getBundle().getResource(
                                     UIConsts.FILENAME_ICONEDIT)));
-                    break;
-                case LEFT:
-                    icon = lrm.createImage(ImageDescriptor.createFromURL(
+            private Image left = 
+                    lrm.createImage(ImageDescriptor.createFromURL(
                             Activator.getContext().getBundle().getResource(
                                     UIConsts.FILENAME_ICONDEL)));
-                    break;
-                case RIGHT:
-                    icon = lrm.createImage(ImageDescriptor.createFromURL(
+            private Image right = 
+                    lrm.createImage(ImageDescriptor.createFromURL(
                             Activator.getContext().getBundle().getResource(
                                     UIConsts.FILENAME_ICONADD)));
-                    break;
+            
+            @Override
+            public String getText(Object element) {
+                return ((TreeElement) element).getSide().toString();
+            }
+            
+            @Override
+            public Image getImage(Object element) {
+                switch (((TreeElement) element).getSide()) {
+                case BOTH: return both;
+                case LEFT: return left;
+                case RIGHT: return right;
                 }
-                cell.setText(el.getSide().toString());
-                cell.setImage(icon);
-                super.update(cell);
+                return null;
             }
         });
         
         columnLocation.setLabelProvider(new ColumnLabelProvider() {
+            
             @Override
             public String getText(Object element) {
-                return getLocationColumntText(element);
+                return getLocationColumnText(element);
             }
         });
         
@@ -393,8 +375,8 @@ public class DiffTableViewer extends Composite {
         viewer.getTable().setSortDirection(SWT.UP);
     }
 
-    public static String getLocationColumntText(Object element) {
-        TreeElement e = (TreeElement)element;
+    private String getLocationColumnText(Object element) {
+        TreeElement e = (TreeElement) element;
         if (e.getType() == DbObjType.EXTENSION || e.getType() == DbObjType.SCHEMA){
             return ""; //$NON-NLS-1$
         }
@@ -424,20 +406,17 @@ public class DiffTableViewer extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 sortViewer(column, index);
-                viewerRefresh();
             }            
         };
         return selectionAdapter;
     }
     
-    private void sortViewer(final TableColumn column,
-            final Columns index) {
-        if (index == Columns.CHECK) {
-            comparator.setSelected(viewer.getCheckedElements());
-        }
-        comparator.setColumn(index);
-        int dir = comparator.getDirection();
-        viewer.getTable().setSortDirection(dir);
+    private void sortViewer(final TableColumn column, final Columns index) {
+        comparator.addSort(index);
+        
+        viewer.refresh();
+        
+        viewer.getTable().setSortDirection(comparator.getSwtDirection());
         viewer.getTable().setSortColumn(column);
     }
     
@@ -461,12 +440,12 @@ public class DiffTableViewer extends Composite {
         initialSorting();
     }
     
-    public void initialSorting() {
+    private void initialSorting() {
+        comparator.clearSortList();
+        sortViewer(columnName.getColumn(), Columns.NAME);
         sortViewer(columnChange.getColumn(), Columns.CHANGE);
         sortViewer(columnType.getColumn(), Columns.TYPE);
         sortViewer(columnLocation.getColumn(), Columns.LOCATION);
-        viewerRefresh();
-        comparator.clearSorting();
     } 
     
     private void viewerRefresh() {
@@ -475,7 +454,7 @@ public class DiffTableViewer extends Composite {
         lblObjectCount.setText(Messages.diffTableViewer_objects
                 + viewer.getTable().getItemCount());
         lblObjectCount.getParent().layout();
-        checkListener.updateCountLabel();
+        checkListener.updateCountLabels();
     }
     
     public TreeElement filterDiffTree() {
@@ -547,7 +526,7 @@ public class DiffTableViewer extends Composite {
     
     private void setSubTreeChecked(TreeElement element, boolean selected) {
         viewer.setChecked(element, selected);
-        checkListener.updateCountLabel();
+        checkListener.updateCountLabels();
         
         for (TreeElement child : element.getChildren()) {
             setSubTreeChecked(child, selected);
@@ -558,128 +537,119 @@ public class DiffTableViewer extends Composite {
         
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
-            updateCountLabel();
+            updateCountLabels();
         }
         
-        void updateCountLabel() {
-            DiffTableViewer.this.lblCheckedCount.setText("Selected: "
-                    + DiffTableViewer.this.viewer.getCheckedElements().length);
-            DiffTableViewer.this.lblCheckedCount.getParent().layout();
-        }
-    }
-}
-
-class TableViewerComparator extends ViewerComparator {
-    private DiffTableViewer.Columns propertyIndex;
-    private static final int DESCENDING = 1;
-    private int direction = DESCENDING;
-    private Object[] selected = {};
-    private LinkedList<DiffTableViewer.Columns> columnSortOrder = 
-            new LinkedList<DiffTableViewer.Columns>();
-
-    public TableViewerComparator() {
-        this.propertyIndex = DiffTableViewer.Columns.NAME;
-        direction = 1 - DESCENDING;
-    }
-
-    public int getDirection() {
-        return direction == 1 ? SWT.DOWN : SWT.UP;
-    }
-
-    public void setColumn(DiffTableViewer.Columns column) {
-        columnSortOrder.remove(column);
-        columnSortOrder.add(column);
-        
-        if (column == this.propertyIndex) {
-            // Same column as last sort; toggle the direction
-            direction = 1 - direction;
-        } else {
-            // New column;
-            this.propertyIndex = column;
+        void updateCountLabels() {
+            lblCheckedCount.setText("Selected: " + viewer.getCheckedElements().length);
+            lblCheckedCount.getParent().layout();
         }
     }
     
-    /**
-     * Clear sorting sequence
-     */
-    public void clearSorting() {
-        columnSortOrder.clear();
-    }
-
-    @Override
-    public int compare(Viewer viewer, Object e1, Object e2) {        
-        TreeElement p1 = (TreeElement) e1;
-        TreeElement p2 = (TreeElement) e2;
-        int rc = comparebyColumns(p1, p2, 0);
+    private class TableViewerComparator extends ViewerComparator {
         
-        // If descending order, flip the direction
-        if (direction == DESCENDING) {
-            rc = -rc;
-        }
-        return rc;
-    }
-
-    private int comparebyColumns(TreeElement el1, TreeElement el2, int position) {
-        int rc = 0;
-        
-        if (columnSortOrder.size() <= position) {
-            return rc;
-        }
-        
-        switch (columnSortOrder.get(position)) {
-        case CHECK:
-            ArrayList<Object> selectedList = new ArrayList<Object>(
-                    Arrays.asList(selected));
-            boolean p1s = selectedList.contains(el1);
-            boolean p2s = selectedList.contains(el2);
-            if (p1s == p2s) {
-                rc = 0;
-            } else if (p1s) {
-                rc = 1;
-            } else {
-                rc = -1;
+        private class SortingColumn {
+            
+            public final Columns col;
+            public final boolean desc;
+            
+            public SortingColumn(Columns col, boolean desc) {
+                this.col = col;
+                this.desc = desc;
             }
-            break;
-        case NAME:
-            rc = el1.getName().compareTo(el2.getName());
-            break;
-        case TYPE:
-            rc = el1.getType().name().compareTo(el2.getType().name());
-            break;
-        case CHANGE:
-            rc = el1.getSide().toString().compareTo(el2.getSide().toString());
-            break;
-        case LOCATION:
-            rc = DiffTableViewer.getLocationColumntText(el1).compareTo(
-                    DiffTableViewer.getLocationColumntText(el2));
-            break;
-        default:
-            rc = 0;
+            
+            @Override
+            public boolean equals(Object obj) {
+                if (obj instanceof SortingColumn) {
+                    return ((SortingColumn) obj).col == col;
+                } else {
+                    return false;
+                }
+            }
+            
+            @Override
+            public int hashCode() {
+                return col.hashCode();
+            }
         }
-        if (rc == 0) {
-            position ++;
-            rc = comparebyColumns(el1, el2, position);
-        }
-        return rc;
-    }
-    public void setSelected(Object[] selected) {
-        this.selected = selected;
-    }
-}
+        
+        private LinkedList<SortingColumn> sortOrder = new LinkedList<>();
 
-class TableViewerFilter extends ViewerFilter {
-
-    private String filterName;
-    
-    public void setFilteName(String value) {
-        filterName = value == null || value.isEmpty() ? null : 
-            value.toLowerCase();
-    }
-    @Override
-    public boolean select(Viewer viewer, Object parentElement, Object element) {
-        if (filterName == null) {
-            return true;
+        public void clearSortList() {
+            sortOrder.clear();
         }
-        return ((TreeElement) element).getName().toLowerCase().contains(filterName);
+        
+        public int getSwtDirection() {
+            if (sortOrder.isEmpty() || !sortOrder.getLast().desc) {
+                return SWT.UP;
+            } else {
+                return SWT.DOWN;
+            }
+        }
+
+        public void addSort(Columns column) {
+            if (!sortOrder.isEmpty() && column.equals(sortOrder.getLast().col)) {
+                SortingColumn oldCol = sortOrder.pollLast();
+                sortOrder.addLast(new SortingColumn(column, !oldCol.desc));
+            } else {
+                SortingColumn c = new SortingColumn(column, false);
+                sortOrder.remove(c);
+                sortOrder.addLast(c);
+            }
+        }
+        
+        @Override
+        public int compare(Viewer v, Object e1, Object e2) {
+            TreeElement el1 = (TreeElement) e1;
+            TreeElement el2 = (TreeElement) e2;
+            
+            Iterator<SortingColumn> it = sortOrder.descendingIterator();
+            while (it.hasNext()) {
+                SortingColumn c = it.next();
+                int res = 0;
+                switch (c.col) {
+                case CHANGE:
+                    res = el1.getSide().toString().compareTo(el2.getSide().toString());
+                    break;
+                case LOCATION:
+                    res = getLocationColumnText(el1).compareTo(getLocationColumnText(el2));
+                    break;
+                case CHECK:
+                    res = Boolean.compare(viewer.getChecked(el1), viewer.getChecked(el2));
+                    break;
+                case NAME:
+                    res = el1.getName().compareTo(el2.getName());
+                    break;
+                case TYPE:
+                    res = el1.getType().toString().compareTo(el2.getType().toString());
+                    break;
+                }
+                if (res != 0) {
+                    if (c.desc) {
+                        res = -res;
+                    }
+                    return res;
+                }
+            }
+            
+            return 0;
+        }
+    }
+
+    class TableViewerFilter extends ViewerFilter {
+
+        private String filterName;
+        
+        public void setFilteName(String value) {
+            filterName = value == null || value.isEmpty() ? null : 
+                value.toLowerCase();
+        }
+        @Override
+        public boolean select(Viewer viewer, Object parentElement, Object element) {
+            if (filterName == null) {
+                return true;
+            }
+            return ((TreeElement) element).getName().toLowerCase().contains(filterName);
+        }
     }
 }
