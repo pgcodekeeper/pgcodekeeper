@@ -19,9 +19,11 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -46,6 +48,9 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.xml.sax.SAXException;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -55,21 +60,26 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage;
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class DiffTableViewer extends Composite {
 
+    private final IgnoresChangeListener ignoresListener = new IgnoresChangeListener();
+    
+    private final CheckStateListener checkListener = new CheckStateListener();
+
+    private final LocalResourceManager lrm;
+    
     private TreeElement tree;
     public final CheckboxTableViewer viewer;
     private TableViewerColumn columnCheck, columnType, columnChange, columnName, columnLocation;
-    private final LocalResourceManager lrm;
     private TableViewerComparator comparator;
+    private Label lblObjectCount;
+    private Label lblCheckedCount;
+    
+    private List<String> ignoredElements;
     private PgDatabase dbSource;
     private PgDatabase dbTarget;
-    private Label lblObjectCount;
-    private List<String> ignoredElements;
-    private final IgnoresChangeListener ignoresChangeListener = new IgnoresChangeListener();
+    
     enum Columns {
         CHECK,
         NAME,
@@ -89,24 +99,23 @@ public class DiffTableViewer extends Composite {
         viewer = new CheckboxTableViewer(new Table(this, SWT.CHECK | SWT.MULTI
                 | SWT.FULL_SELECTION | SWT.BORDER));
         viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-        viewer.getTable().setLinesVisible(true);        
-        comparator = new TableViewerComparator();
+        viewer.getTable().setLinesVisible(true);  
         viewer.getTable().setHeaderVisible(true);
-        viewer.getControl().setMenu(getMenuSelection().createContextMenu(viewer.getControl()));
-        
+        viewer.getControl().setMenu(getViewerMenu().createContextMenu(viewer.getControl()));      
+        comparator = new TableViewerComparator();
         viewer.setComparator(comparator);
+        viewer.addCheckStateListener(checkListener);
         
         initColumns();
     
         viewer.addDoubleClickListener(new IDoubleClickListener() {
             @Override
             public void doubleClick(DoubleClickEvent e) {
-                CheckboxTableViewer viewer = (CheckboxTableViewer) e
-                        .getViewer();
                 TreeElement el = (TreeElement) ((IStructuredSelection) e
                         .getSelection()).getFirstElement();
                 if (el != null) {
                     viewer.setChecked(el, !viewer.getChecked(el));
+                    checkListener.updateCountLabel();
                 }
             }
         });
@@ -123,7 +132,7 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public Object[] getElements(Object inputElement) {
-                ArrayList<TreeElement> list = new ArrayList<TreeElement>();
+                ArrayList<TreeElement> list = new ArrayList<>();
                 for (TreeElement subtree : ((TreeElement) inputElement).getChildren()) {
                     visit(subtree, list);
                 }
@@ -137,13 +146,11 @@ public class DiffTableViewer extends Composite {
                     }
                 }
 
-                if ((subtree.getSide() == DiffSide.BOTH && subtree.getParent()
-                        .getSide() != DiffSide.BOTH)
+                if ((subtree.getSide() == DiffSide.BOTH && subtree.getParent().getSide() != DiffSide.BOTH)
                         || subtree.getType() == DbObjType.CONTAINER
                         || subtree.getType() == DbObjType.DATABASE
                         || (subtree.getSide() == DiffSide.BOTH && 
-                                subtree.getPgStatement(dbSource).compare(
-                                        subtree.getPgStatement(dbTarget)))) {
+                                subtree.getPgStatement(dbSource).compare(subtree.getPgStatement(dbTarget)))) {
                     return;
                 }
                 // Do not add elements, which contain in ignore list
@@ -155,57 +162,64 @@ public class DiffTableViewer extends Composite {
         
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout contButtonsLayout = new GridLayout(4, false);
+        GridLayout contButtonsLayout = new GridLayout(5, false);
         contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
         contButtons.setLayout(contButtonsLayout);
         
         Button btnSelectAll = new Button(contButtons, SWT.PUSH);
         btnSelectAll.setText(Messages.select_all);
         btnSelectAll.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
                 viewer.setAllChecked(true);
+                checkListener.updateCountLabel();
             }
         });
         
         Button btnSelectNone = new Button(contButtons, SWT.PUSH);
         btnSelectNone.setText(Messages.select_none);
         btnSelectNone.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
                 viewer.setAllChecked(false);
+                checkListener.updateCountLabel();
             }
         });
         
         Button bntClearSort = new Button(contButtons, SWT.PUSH);
         bntClearSort.setText(Messages.diffTableViewer_reset_sorting);
         bntClearSort.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
                 comparator.clearSorting();
             }
         });
         
+        lblCheckedCount = new Label(contButtons, SWT.RIGHT);
+        lblCheckedCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
+        
         lblObjectCount = new Label(contButtons, SWT.RIGHT);
-        lblObjectCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
+        lblObjectCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false));
 
-        mainPrefs.addPropertyChangeListener(ignoresChangeListener);
+        mainPrefs.addPropertyChangeListener(ignoresListener);
         viewer.getTable().addDisposeListener(new DisposeListener() {
             
             @Override
             public void widgetDisposed(DisposeEvent e) {
-                mainPrefs.removePropertyChangeListener(ignoresChangeListener);
+                mainPrefs.removePropertyChangeListener(ignoresListener);
             }
         });
         
         String ignoredObjectsPref = mainPrefs.getString(UIConsts.PREF_IGNORE_OBJECTS);
         if (!ignoredObjectsPref.isEmpty()) {
-            ignoresChangeListener.propertyChange(new PropertyChangeEvent(
+            ignoresListener.propertyChange(new PropertyChangeEvent(
                     mainPrefs, UIConsts.PREF_IGNORE_OBJECTS, null, ignoredObjectsPref));
         } else {
             ignoredElements = new LinkedList<>();
         }
-        
     }
 
     private void initColumns() {
@@ -416,8 +430,8 @@ public class DiffTableViewer extends Composite {
         }
         columnName.getColumn().setWidth(widthOfColumns-viewer.getTable().getSize().x);
         
-        lblObjectCount.setText(Messages.diffTableViewer_objects +
-                String.valueOf(viewer.getTable().getItemCount()));
+        lblObjectCount.setText(Messages.diffTableViewer_objects
+                + viewer.getTable().getItemCount());
         lblObjectCount.getParent().layout();
         initialSorting();
     }
@@ -470,28 +484,28 @@ public class DiffTableViewer extends Composite {
         }
     }
 
-    private MenuManager getMenuSelection() {
+    private MenuManager getViewerMenu() {
         MenuManager menuMgr = new MenuManager();
         menuMgr.add(new Action(Messages.diffTableViewer_select_child_elements) {
+            
             @Override
             public void run() {
                 TreeElement el = (TreeElement)((IStructuredSelection)viewer.getSelection())
                         .getFirstElement();
                 if (el != null) {
-                    viewer.setChecked(el, true);
-                    setSubElementsChecked(el, true);
+                    setSubTreeChecked(el, true);
                     viewer.refresh();
                 }
             }
         });
         menuMgr.add(new Action(Messages.diffTableViewer_deselect_child_elements) {
+            
             @Override
             public void run() {
                 TreeElement el = (TreeElement)((IStructuredSelection)viewer.getSelection())
                         .getFirstElement();
                 if (el != null) {
-                    viewer.setChecked(el, false);
-                    setSubElementsChecked(el, false);
+                    setSubTreeChecked(el, false);
                     viewer.refresh();
                 }
             }
@@ -499,13 +513,26 @@ public class DiffTableViewer extends Composite {
         return menuMgr;
     }
     
-    private void setSubElementsChecked(TreeElement element, boolean selected) {
-        if (!element.hasChildren()) {
-            return;
-        }
+    private void setSubTreeChecked(TreeElement element, boolean selected) {
+        viewer.setChecked(element, selected);
+        checkListener.updateCountLabel();
+        
         for (TreeElement child : element.getChildren()) {
-            viewer.setChecked(child, selected);
-            setSubElementsChecked(child, selected);
+            setSubTreeChecked(child, selected);
+        }
+    }
+    
+    private class CheckStateListener implements ICheckStateListener {
+        
+        @Override
+        public void checkStateChanged(CheckStateChangedEvent event) {
+            updateCountLabel();
+        }
+        
+        void updateCountLabel() {
+            DiffTableViewer.this.lblCheckedCount.setText("Selected: "
+                    + DiffTableViewer.this.viewer.getCheckedElements().length);
+            DiffTableViewer.this.lblCheckedCount.getParent().layout();
         }
     }
 }

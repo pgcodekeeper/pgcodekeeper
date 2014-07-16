@@ -78,7 +78,7 @@ public class ProjSyncSrc {
                 } catch (IOException ex) {
                     throw new InvocationTargetException(ex, Messages.projSyncSrc_error_while_checking);
                 }
-                monitor.done();
+                pm.done();
             }
         };
 

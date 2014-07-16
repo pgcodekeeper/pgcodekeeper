@@ -11,14 +11,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
-import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
-
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class Differ implements IRunnableWithProgress {
     
@@ -101,7 +101,7 @@ public class Differ implements IRunnableWithProgress {
             writer.flush();
             diffReverse = diffOut.toString().trim();
         }
-        monitor.done();
+        pm.done();
         finished = true;
     }
 }

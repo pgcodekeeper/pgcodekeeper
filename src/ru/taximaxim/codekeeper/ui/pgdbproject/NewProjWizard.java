@@ -150,7 +150,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
                         } catch (IOException e) {
                             throw new InvocationTargetException(e, Messages.newProjWizard_error_cloning_repository);
                         }
-                        monitor.done();
+                        pm.done();
                     }
                 };
                 
