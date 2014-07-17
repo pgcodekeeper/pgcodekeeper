@@ -3,10 +3,13 @@ package ru.taximaxim.codekeeper.ui.externalcalls;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand.ListMode;
+import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.api.PullCommand;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
@@ -14,6 +17,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.IndexDiff;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
@@ -24,16 +28,17 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.util.FS;
 
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.KeyPair;
-import com.jcraft.jsch.Session;
-
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.parts.Console;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.KeyPair;
+import com.jcraft.jsch.Session;
 
 public class JGitExec implements IRepoWorker{
 
@@ -192,7 +197,46 @@ public class JGitExec implements IRepoWorker{
     public boolean repoUpdate(File dirIn) throws IOException  {
         File gitRoot = getGitRoot(dirIn);
         Git git = Git.open(gitRoot);
+        
+        boolean hasRemoteBranch = false;
+        
+        // current branch
+        String workingBranchName = git.getRepository().getBranch();
         try {
+            // first check if local branch exists in tracked remote branches
+            List<Ref> branches = git.branchList().setListMode(ListMode.REMOTE).call();
+            for (Ref ref : branches) {
+                String remoteBranch = git.getRepository().
+                        shortenRemoteBranchName(ref.getLeaf().getName());
+                
+                if (workingBranchName.equals(remoteBranch)){
+                    hasRemoteBranch = true;
+                    break;
+                }
+            }
+            
+            // if does not exist, check not tracked branches on remote side
+            if (!hasRemoteBranch){
+                LsRemoteCommand lsRemotes = git.lsRemote();
+                for (Ref ref : lsRemotes.call()) {
+                    String remoteBranch = Repository.shortenRefName(ref.getName());
+                    if (!ref.getName().equals(Constants.HEAD) && 
+                            workingBranchName.equals(remoteBranch)){
+                        hasRemoteBranch = true;
+                        break;
+                    }
+                }
+            }
+            
+            // if no (un)tracked remote ref with local branch name, skip pull quietly
+            if (!hasRemoteBranch){
+                String pullSkipped = Messages.jGitExec_skip_pull_branch_does_not_exist + 
+                        workingBranchName + Messages.jGitExec_skip_pull_branch_does_not_exist_skipped;
+                Console.addMessage(pullSkipped);
+                Log.log(Log.LOG_INFO, pullSkipped);
+                return true;
+            }
+            
             PullCommand pullCom = git.pull();
             if (PATTERN_HTTP_URL.matcher(url).matches()) {
                 pullCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
