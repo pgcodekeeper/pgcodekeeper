@@ -344,26 +344,11 @@ class MyAutoCompleteField {
         adapter
                 .setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
     }
-
-    /**
-     * Set the Strings to be used as content proposals.
-     * 
-     * @param proposals
-     *            the array of Strings to be used as proposals.
-     */
-    public void setProposals(String[] proposals) {
-        proposalProvider.setProposals(proposals);
-    }
-
 }
 
 class MyContentProposalProvider implements IContentProposalProvider {
 
-    /*
-     * The proposals provided.
-     */
-    private String[] proposals;
-    
+    private final String[] proposals;
     /*
      * The proposals mapped to IContentProposal. Cached for speed in the case
      * where filtering is not used.
@@ -407,17 +392,6 @@ class MyContentProposalProvider implements IContentProposalProvider {
         return contentProposals;
     }
 
-    /**
-     * Set the Strings to be used as content proposals.
-     * 
-     * @param items
-     *            the array of Strings to be used as proposals.
-     */
-    public void setProposals(String[] items) {
-        this.proposals = items;
-        contentProposals = null;
-    }
-    
     public void setFiltering(boolean filterProposals) {
         this.filterProposals = filterProposals;
         // Clear any cached proposals.
