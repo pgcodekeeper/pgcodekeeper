@@ -42,13 +42,15 @@ public class TreeElement {
         }
     }
     
-    final private String name;
+    private volatile int hashcode;
     
-    final private DbObjType type;
+    private final String name;
     
-    final private DbObjType containerType;
+    private final DbObjType type;
     
-    final private DiffSide side;
+    private final DbObjType containerType;
+    
+    private final DiffSide side;
     
     private TreeElement parent;
     
@@ -165,6 +167,7 @@ public class TreeElement {
         }
         
         child.parent = this;
+        child.hashcode = 0;
         children.add(child);
     }
     
@@ -266,15 +269,22 @@ public class TreeElement {
     
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((containerType == null) ? 0 : containerType.hashCode());
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((side == null) ? 0 : side.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
-        result = prime * result + System.identityHashCode(parent);
-        return result;
+        if (hashcode == 0) {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((containerType == null) ? 0 : containerType.hashCode());
+            result = prime * result + ((name == null) ? 0 : name.hashCode());
+            result = prime * result + ((side == null) ? 0 : side.hashCode());
+            result = prime * result + ((type == null) ? 0 : type.hashCode());
+            result = prime * result + System.identityHashCode(parent);
+            
+            if (result == 0) {
+                ++result;
+            }
+            hashcode = result;
+        }
+        
+        return hashcode;
     }
 
     @Override
