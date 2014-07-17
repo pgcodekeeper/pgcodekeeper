@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -88,6 +89,8 @@ public class DiffTableViewer extends Composite {
     private Text txtFilterName;
     private ViewerFilter[] viewerFilters = new ViewerFilter[1];
     
+    private HashSet<TreeElement> checkedElementsHash = new HashSet<TreeElement>();
+    
     enum Columns {
         CHECK,
         NAME,
@@ -137,8 +140,8 @@ public class DiffTableViewer extends Composite {
                 TreeElement el = (TreeElement) ((IStructuredSelection) e
                         .getSelection()).getFirstElement();
                 if (el != null) {
-                    viewer.setChecked(el, !viewer.getChecked(el));
-                    checkListener.updateCountLabels();
+                    viewer.setChecked(el, !viewer.getChecked(el));                    
+                    checkListener.setElementToHashUpdateLabels(el, !viewer.getChecked(el));
                 }
             }
         });
@@ -182,6 +185,20 @@ public class DiffTableViewer extends Composite {
             }
         });
         
+        viewer.setCheckStateProvider(new ICheckStateProvider() {
+
+            @Override
+            public boolean isChecked(Object element) {
+                return checkedElementsHash.contains(element);
+            }
+
+            @Override
+            public boolean isGrayed(Object element) {
+                // TODO Auto-generated method stub
+                return false;
+            }
+            
+        });
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         GridLayout contButtonsLayout = new GridLayout(5, false);
@@ -195,7 +212,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 viewer.setAllChecked(true);
-                checkListener.updateCountLabels();
+                checkListener.setElementsToHashUpdateLabels(viewer.getCheckedElements(), true);
             }
         });
         
@@ -205,8 +222,8 @@ public class DiffTableViewer extends Composite {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
+                checkListener.setElementsToHashUpdateLabels(viewer.getCheckedElements(), false);
                 viewer.setAllChecked(false);
-                checkListener.updateCountLabels();
             }
         });
         
@@ -455,7 +472,7 @@ public class DiffTableViewer extends Composite {
         lblObjectCount.setText(Messages.diffTableViewer_objects
                 + viewer.getTable().getItemCount());
         lblObjectCount.getParent().layout();
-        checkListener.updateCountLabels();
+        checkListener.setElementsToHashUpdateLabels(viewer.getCheckedElements(), true);
     }
     
     public TreeElement filterDiffTree() {
@@ -527,7 +544,8 @@ public class DiffTableViewer extends Composite {
     
     private void setSubTreeChecked(TreeElement element, boolean selected) {
         viewer.setChecked(element, selected);
-        checkListener.updateCountLabels();
+        
+        checkListener.setElementToHashUpdateLabels(element, selected);
         
         for (TreeElement child : element.getChildren()) {
             setSubTreeChecked(child, selected);
@@ -538,10 +556,30 @@ public class DiffTableViewer extends Composite {
         
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
+            setElementToHashUpdateLabels((TreeElement)event.getElement(), event.getChecked());
+        }
+        
+        void setElementsToHashUpdateLabels(Object[] elements, boolean state) {
+            for (Object element : elements) {
+                setElementToHash((TreeElement)element, state);
+            }
             updateCountLabels();
         }
         
-        void updateCountLabels() {
+        void setElementToHashUpdateLabels(TreeElement element, boolean state) {
+            setElementToHash(element, state);
+            updateCountLabels();
+        }
+        
+        private void setElementToHash(TreeElement element, boolean state) {
+            if (state) {
+                checkedElementsHash.add(element);
+            } else {
+                checkedElementsHash.remove(element);
+            }
+        }
+        
+        private void updateCountLabels() {
             lblCheckedCount.setText(Messages.DiffTableViewer_selected + viewer.getCheckedElements().length);
             lblCheckedCount.getParent().layout();
         }
