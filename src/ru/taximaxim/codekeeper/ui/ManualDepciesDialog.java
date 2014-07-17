@@ -44,9 +44,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class ManualDepciesDialog extends TrayDialog {
 
@@ -377,21 +376,27 @@ class MyContentProposalProvider implements IContentProposalProvider {
     private boolean filterProposals = false;
     
     public MyContentProposalProvider(String[] proposals) {
-        super();
-        this.proposals = proposals;
+        this.proposals = new String[proposals.length];
+        
+        for (int i = 0; i < proposals.length; ++i) {
+            this.proposals[i] = proposals[i].toLowerCase();
+        }
     }
     
     @Override
     public IContentProposal[] getProposals(String contents, int position) {
         if (filterProposals) {
+            String contentsLc = contents.toLowerCase();
+            String contentsNq = contentsLc.replace("\"", "");
             ArrayList<ContentProposal> list = new ArrayList<ContentProposal>();
-            for (int i = 0; i < proposals.length; i++) {
-                if (proposals[i].toLowerCase().contains(contents.toLowerCase())) {
-                    list.add(new ContentProposal(proposals[i]));
+            for (String proposal : proposals) {
+                if (proposal.contains(contentsLc)
+                        // ignore quotes
+                        || proposal.replace("\"", "").contains(contentsNq)) {
+                    list.add(new ContentProposal(proposal));
                 }
             }
-            return list.toArray(new IContentProposal[list
-                    .size()]);
+            return list.toArray(new IContentProposal[list.size()]);
         }
         if (contentProposals == null) {
             contentProposals = new IContentProposal[proposals.length];
