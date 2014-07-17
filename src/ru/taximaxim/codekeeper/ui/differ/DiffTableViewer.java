@@ -216,7 +216,8 @@ public class DiffTableViewer extends Composite {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                initialSorting();
+                comparator.clearSortList();
+                sortViewer(columnName.getColumn(), Columns.NAME);
             }
         });
         
@@ -541,7 +542,7 @@ public class DiffTableViewer extends Composite {
         }
         
         void updateCountLabels() {
-            lblCheckedCount.setText("Selected: " + viewer.getCheckedElements().length);
+            lblCheckedCount.setText(Messages.DiffTableViewer_selected + viewer.getCheckedElements().length);
             lblCheckedCount.getParent().layout();
         }
     }
