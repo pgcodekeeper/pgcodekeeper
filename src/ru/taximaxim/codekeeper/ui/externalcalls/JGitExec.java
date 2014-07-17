@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import org.eclipse.jgit.api.CloneCommand;
@@ -20,7 +19,6 @@ import org.eclipse.jgit.lib.IndexDiff;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.lib.SymbolicRef;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
 import org.eclipse.jgit.transport.PushResult;
@@ -221,8 +219,8 @@ public class JGitExec implements IRepoWorker{
             if (!hasRemoteBranch){
                 LsRemoteCommand lsRemotes = git.lsRemote();
                 for (Ref ref : lsRemotes.call()) {
-                    String remoteBranch = git.getRepository().shortenRefName(ref.getName());
-                    if (!ref.getName().equals("HEAD") && 
+                    String remoteBranch = Repository.shortenRefName(ref.getName());
+                    if (!ref.getName().equals(Constants.HEAD) && 
                             workingBranchName.equals(remoteBranch)){
                         hasRemoteBranch = true;
                         break;
