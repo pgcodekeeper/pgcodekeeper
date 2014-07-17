@@ -28,36 +28,33 @@ public class OpenLastProject {
             final EPartService partService,
             
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs,
-//            @Preference(UIConsts.PREF_OPEN_LAST_ON_START) String prefOpenLast,
             @Preference(UIConsts.PREF_RECENT_PROJECTS) String prefRecentProjects,
 
             UISynchronize sync,
             final @Named(IServiceConstants.ACTIVE_SHELL) Shell shell) {
-//        if (prefOpenLast != null && prefOpenLast.equals("true")) { //$NON-NLS-1$
-            String[] recent = RecentProjects.getRecent(prefRecentProjects);
-            if (recent == null) {
-                return;
-            }
-            
-            String last = recent[0];
-            final PgDbProject proj = new PgDbProject(last);
+        String[] recent = RecentProjects.getRecent(prefRecentProjects);
+        if (recent == null) {
+            return;
+        }
+        
+        String last = recent[0];
+        final PgDbProject proj = new PgDbProject(last);
 
-            if (proj.getProjectFile().isFile()) {
-                sync.syncExec(new Runnable() {
+        if (proj.getProjectFile().isFile()) {
+            sync.syncExec(new Runnable() {
 
-                    @Override
-                    public void run() {
-                        LoadProj.load(proj, app.getContext(), partService, model, app,
-                                mainPrefs, shell);
-                    }
-                });
-            } else {
-                Log.log(Log.LOG_WARNING,
-                        "Couldn't open last project at " //$NON-NLS-1$
-                                + proj.getProjectFile()
-                                + ". Project pref store either doesn't exist or not a file."); //$NON-NLS-1$
-            }
-//        }
+                @Override
+                public void run() {
+                    LoadProj.load(proj, app.getContext(), partService, model, app,
+                            mainPrefs, shell);
+                }
+            });
+        } else {
+            Log.log(Log.LOG_WARNING,
+                    "Couldn't open last project at " //$NON-NLS-1$
+                            + proj.getProjectFile()
+                            + ". Project pref store either doesn't exist or not a file."); //$NON-NLS-1$
+        }
     }
     
     @CanExecute
