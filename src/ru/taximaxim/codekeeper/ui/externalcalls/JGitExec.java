@@ -18,7 +18,9 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.IndexDiff;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.lib.SymbolicRef;
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig;
 import org.eclipse.jgit.transport.PushResult;
@@ -200,13 +202,16 @@ public class JGitExec implements IRepoWorker{
         
         boolean hasRemoteBranch = false;
         
-        // current branch name
+        // current branch
         String workingBranchName = git.getRepository().getBranch();
         try {
             // first check if local branch exists in tracked remote branches
             List<Ref> branches = git.branchList().setListMode(ListMode.REMOTE).call();
             for (Ref ref : branches) {
-                if (workingBranchName.equals(getRefName(ref))){
+                String remoteBranch = git.getRepository().
+                        shortenRemoteBranchName(ref.getLeaf().getName());
+                
+                if (workingBranchName.equals(remoteBranch)){
                     hasRemoteBranch = true;
                     break;
                 }
@@ -216,8 +221,9 @@ public class JGitExec implements IRepoWorker{
             if (!hasRemoteBranch){
                 LsRemoteCommand lsRemotes = git.lsRemote();
                 for (Ref ref : lsRemotes.call()) {
+                    String remoteBranch = git.getRepository().shortenRefName(ref.getName());
                     if (!ref.getName().equals("HEAD") && 
-                            workingBranchName.equals(getRefName(ref))){
+                            workingBranchName.equals(remoteBranch)){
                         hasRemoteBranch = true;
                         break;
                     }
@@ -290,23 +296,6 @@ public class JGitExec implements IRepoWorker{
         } finally {
             git.close();
         }
-    }
-    
-    /**
-     * Returns last part of ref name <br>
-     * Example: ref with name "refs/remotes/origin/branch_name" results in "branch_name"
-     * 
-     * @param ref
-     * @return last part of ref name
-     */
-    private String getRefName(Ref ref){
-        Scanner sc = new Scanner(ref.getName()).useDelimiter("/");
-        String name = ref.getName();
-        while(sc.hasNext()){
-            name = sc.next();
-        }
-        sc.close();
-        return name;
     }
     
     private File getGitRoot(File subDir) {
