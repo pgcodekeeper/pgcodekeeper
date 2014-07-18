@@ -47,8 +47,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -63,6 +61,7 @@ import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class DiffPartDescr {
 
@@ -126,7 +125,7 @@ public class DiffPartDescr {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (diffTable.viewer.getCheckedElements().length < 1){
+                if (diffTable.getCheckedElementsCount() < 1){
                     MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
                     mb.setMessage(Messages.please_check_at_least_one_row);
                     mb.setText(Messages.empty_selection);

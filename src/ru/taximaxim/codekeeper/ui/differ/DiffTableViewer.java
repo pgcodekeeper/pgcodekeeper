@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.jface.action.Action;
@@ -463,14 +464,28 @@ public class DiffTableViewer extends Composite {
     }
     
     private void updateCheckedLabel() {
-        int selCount = 0;
+        lblCheckedCount.setText(Messages.DiffTableViewer_selected + getCheckedElementsCount());
+        lblCheckedCount.getParent().layout();
+    }
+    
+    public int getCheckedElementsCount() {
+        int i = 0;
         for (boolean checked : elements.values()) {
             if (checked) {
-                ++selCount;
+                ++i;
             }
         }
-        lblCheckedCount.setText(Messages.DiffTableViewer_selected + selCount);
-        lblCheckedCount.getParent().layout();
+        return i;
+    }
+    
+    private Set<TreeElement> getCheckedElements() {
+        Set<TreeElement> checked = new HashSet<>(elements.size());
+        for (Entry<TreeElement, Boolean> el : elements.entrySet()) {
+            if (el.getValue()) {
+                checked.add(el.getKey());
+            }
+        }
+        return checked;
     }
     
     public TreeElement filterDiffTree() {
@@ -480,17 +495,7 @@ public class DiffTableViewer extends Composite {
         
         Log.log(Log.LOG_INFO, Messages.diffTableViewer_filtering_diff_tree_based_on_gui_selection);
         
-        Object[] checked = viewer.getCheckedElements();
-        Set<TreeElement> checkedSet = new HashSet<>(checked.length);
-        
-        for (Object o : checked) {
-            if (!checkedSet.add((TreeElement) o)) {
-                throw new IllegalStateException(
-                        Messages.diffTableViewer_tried_to_add_equal_elements_to_checkedset);
-            }
-        }
-        
-        return treeRoot.getFilteredCopy(checkedSet);
+        return treeRoot.getFilteredCopy(getCheckedElements());
     }
     
     private class IgnoresChangeListener implements IPropertyChangeListener {
