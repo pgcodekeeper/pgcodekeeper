@@ -42,6 +42,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -51,7 +53,6 @@ import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class ProjectExplorer {
     
@@ -218,6 +219,7 @@ public class ProjectExplorer {
             
             @Override
             protected PgDatabase loadInternal(SubMonitor monitor) {
+                SubMonitor.convert(monitor, 1).newChild(1);
                 return new PgDatabase();
             }
         });
@@ -254,13 +256,14 @@ public class ProjectExplorer {
             
             if(proj != null) {
                 IRunnableWithProgress loadRunnable = new IRunnableWithProgress() {
+                    
                     @Override
                     public void run(IProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException {
                         SubMonitor pm = SubMonitor.convert(monitor, Messages.projectExplorer_loading_project, 10);
                         initialHash(proj, pm.newChild(10));
                         
-                        monitor.done();
+                        pm.done();
                     }
                 };
                 new ProgressMonitorDialog(parent.getShell())

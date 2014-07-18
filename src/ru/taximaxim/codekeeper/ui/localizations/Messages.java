@@ -57,14 +57,10 @@ public class Messages extends NLS {
     public static String exceptionNotifier_unhandled_exception;
     public static String partContextInjector_empty_values_map;
     public static String partContextInjector_only_class_and_string_are_allowed;
-    public static String sqlScriptDialog_denote_place_where_sql_script_fname_be_inserted;
     public static String sqlScriptDialog_Enter_cmd_to_roll_on_sql_script;
     public static String sqlScriptDialog_error_saving_script_to_file;
     public static String sqlScriptDialog_error_saving_script_to_tmp_file;
     public static String sqlScriptDialog_exception_during_script_execution;
-    public static String sqlScriptDialog_input_command;
-    public static String sqlScriptDialog_regulars_host_port_dbname_username_pass_be_replaced_by_db_setting;
-    public static String sqlScriptDialog_replaced_by_sql_script_file;
     public static String sqlScriptDialog_run_script;
     public static String sqlScriptDialog_save_as;
     public static String sqlScriptDialog_script_execution_interrupted;
@@ -72,13 +68,11 @@ public class Messages extends NLS {
     public static String sqlScriptDialog_script_saved_to_file;
     public static String sqlScriptDialog_stop_script;
     public static String sqlScriptDialog_stop_script_before_closing_dialog;
-    public static String sqlScriptDialog_use;
     public static String manualDepciesDialog_dependant_dependency;
     public static String manualDepciesDialog_depends_on;
     public static String manualDepciesDialog_object;
     public static String manualDepciesDialog_add;
     public static String manualDepciesDialog_remove;
-    public static String history_history_file_read_error;
     
     // ui.addons
     public static String addonExternalTools_error_while_trying_to_run_pg_admin;
@@ -108,11 +102,15 @@ public class Messages extends NLS {
     public static String differ_direct_diff;
     public static String differ_reverse_diff;
     public static String diffTableViewer_change_type;
+
+    public static String diffTableViewer_reset_sorting;
     public static String diffTableViewer_container;
+    public static String diffTableViewer_deselect_child_elements;
     public static String diffTableViewer_filtering_diff_tree_based_on_gui_selection;
     public static String diffTableViewer_object_name;
     public static String diffTableViewer_object_type;
     public static String diffTableViewer_objects;
+    public static String diffTableViewer_select_child_elements;
     public static String diffTableViewer_tried_to_add_equal_elements_to_checkedset;
     public static String diffTreeViewer_collapse_all;
     public static String diffTreeViewer_collapse_subtree;
@@ -131,6 +129,7 @@ public class Messages extends NLS {
     public static String jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date;
     public static String jGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new;
     public static String jGitExec_exception_thrown_at_jgit_repo_update;
+    public static String jGitExec_git_status;
     public static String jGitExec_skip_pull_branch_does_not_exist;
     public static String jGitExec_skip_pull_branch_does_not_exist_skipped;
     public static String pgDumper_bad_pg_dump_version_output;
@@ -171,10 +170,6 @@ public class Messages extends NLS {
     // ui.parts
     public static String commitPartDescr_comment_required;
     public static String commitPartDescr_commit;
-
-    public static String CommitPartDescr_commit_hist_read_error;
-
-    public static String CommitPartDescr_commit_hist_write_error;
     public static String commitPartDescr_commiting;
     public static String commitPartDescr_exporting_db_model;
     public static String commitPartDescr_from_database;
@@ -276,6 +271,8 @@ public class Messages extends NLS {
     // ui.prefs
     public static String dbStorePrefPage_clear_db_store;
     public static String dbStorePrefPage_edit_db_store;
+
+    public static String DiffTableViewer_selected;
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
     public static String generalPrefPage_open_last_project_on_startup;
     public static String generalPrefPage_pg_dump_custom_parameters;

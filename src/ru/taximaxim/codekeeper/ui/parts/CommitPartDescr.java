@@ -263,7 +263,7 @@ public class CommitPartDescr {
                                     Messages.commitPartDescr_ioexception_while_modifying_project);
                         }
 
-                        monitor.done();
+                        pm.done();
                     }
                 };
 

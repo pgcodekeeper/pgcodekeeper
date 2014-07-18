@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -9,8 +10,12 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.eclipse.jface.dialogs.TrayDialog;
-import org.eclipse.jface.fieldassist.AutoCompleteField;
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
+import org.eclipse.jface.fieldassist.ContentProposal;
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
+import org.eclipse.jface.fieldassist.IContentProposal;
+import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.eclipse.jface.fieldassist.IControlContentAdapter;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -39,9 +44,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class ManualDepciesDialog extends TrayDialog {
 
@@ -106,7 +110,7 @@ public class ManualDepciesDialog extends TrayDialog {
         cmbDependants.getCombo().addListener(SWT.Traverse, new ComboReturnKeyListener());
         cmbDependants.getCombo().addModifyListener(new ComboModifyListener());
         
-        new AutoCompleteField(cmbDependants.getCombo(), new ComboContentAdapter(), names);
+        new MyAutoCompleteField(cmbDependants.getCombo(), new ComboContentAdapter(), names);
         
         new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_depends_on);
         
@@ -118,7 +122,7 @@ public class ManualDepciesDialog extends TrayDialog {
         cmbDependencies.getCombo().addListener(SWT.Traverse, new ComboReturnKeyListener());
         cmbDependencies.getCombo().addModifyListener(new ComboModifyListener());
         
-        new AutoCompleteField(cmbDependencies.getCombo(), new ComboContentAdapter(), names);
+        new MyAutoCompleteField(cmbDependencies.getCombo(), new ComboContentAdapter(), names);
         
         btnAdd = new Button(grpSelectors, SWT.PUSH);
         btnAdd.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false, 2, 1));
@@ -308,5 +312,89 @@ class PgStatementLabelProvider implements ILabelProvider {
     @Override
     public String getText(Object element) {
         return ((PgStatement) element).getQualifiedName();
+    }
+}
+
+class MyAutoCompleteField {
+
+    private MyContentProposalProvider proposalProvider;
+    private ContentProposalAdapter adapter;
+
+    /**
+     * Construct an AutoComplete field on the specified control, whose
+     * completions are characterized by the specified array of Strings.
+     * 
+     * @param control
+     *            the control for which autocomplete is desired. May not be
+     *            <code>null</code>.
+     * @param controlContentAdapter
+     *            the <code>IControlContentAdapter</code> used to obtain and
+     *            update the control's contents. May not be <code>null</code>.
+     * @param proposals
+     *            the array of Strings representing valid content proposals for
+     *            the field.
+     */
+    public MyAutoCompleteField(Control control,
+            IControlContentAdapter controlContentAdapter, String[] proposals) {
+        proposalProvider = new MyContentProposalProvider(proposals);
+        proposalProvider.setFiltering(true);
+        adapter = new ContentProposalAdapter(control, controlContentAdapter,
+                proposalProvider, null, null);
+        adapter.setPropagateKeys(true);
+        adapter
+                .setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
+    }
+}
+
+class MyContentProposalProvider implements IContentProposalProvider {
+
+    private final String[] proposals;
+    /*
+     * The proposals mapped to IContentProposal. Cached for speed in the case
+     * where filtering is not used.
+     */
+    private IContentProposal[] contentProposals;
+    
+    /*
+     * Boolean that tracks whether filtering is used.
+     */
+    private boolean filterProposals = false;
+    
+    public MyContentProposalProvider(String[] proposals) {
+        this.proposals = new String[proposals.length];
+        
+        for (int i = 0; i < proposals.length; ++i) {
+            this.proposals[i] = proposals[i].toLowerCase();
+        }
+    }
+    
+    @Override
+    public IContentProposal[] getProposals(String contents, int position) {
+        if (filterProposals) {
+            String contentsLc = contents.toLowerCase();
+            String contentsNq = contentsLc.replace("\"", "");
+            ArrayList<ContentProposal> list = new ArrayList<ContentProposal>();
+            for (String proposal : proposals) {
+                if (proposal.contains(contentsLc)
+                        // ignore quotes
+                        || proposal.replace("\"", "").contains(contentsNq)) {
+                    list.add(new ContentProposal(proposal));
+                }
+            }
+            return list.toArray(new IContentProposal[list.size()]);
+        }
+        if (contentProposals == null) {
+            contentProposals = new IContentProposal[proposals.length];
+            for (int i = 0; i < proposals.length; i++) {
+                contentProposals[i] = new ContentProposal(proposals[i]);
+            }
+        }
+        return contentProposals;
+    }
+
+    public void setFiltering(boolean filterProposals) {
+        this.filterProposals = filterProposals;
+        // Clear any cached proposals.
+        contentProposals = null;
     }
 }

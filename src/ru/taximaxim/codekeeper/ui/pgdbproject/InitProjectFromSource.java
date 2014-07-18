@@ -51,7 +51,7 @@ public class InitProjectFromSource implements IRunnableWithProgress {
                     mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
             initRepoFromSource(pm, repo);
             
-            monitor.done();
+            pm.done();
         } catch (IOException ex) {
             throw new InvocationTargetException(ex, Messages.initProjectFromSource_ioexception_while_creating_project);
         }
