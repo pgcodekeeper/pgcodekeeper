@@ -39,6 +39,5 @@ public class GeneralPrefPage extends FieldEditorPreferencePage
                 UIConsts.PREF_OPEN_LAST_ON_START, Messages.generalPrefPage_open_last_project_on_startup,
                 FileFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());
         addField(openLast);
-        openLast.setEnabled(false, getFieldEditorParent());
     }
 }
