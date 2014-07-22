@@ -61,6 +61,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.ui.CommitDialog;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
@@ -122,7 +123,7 @@ public class CommitPartDescr {
      * Remote DB.
      */
     private DbSource dbTarget;
-
+    
     @PostConstruct
     private void postConstruct(Composite parent, final PgDbProject proj,
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs,
@@ -266,25 +267,45 @@ public class CommitPartDescr {
                     }
                 };
 
+                String branchName;
                 try {
-                    Log.log(Log.LOG_INFO, "Commit pressed. Commiting to " + //$NON-NLS-1$
-                            proj.getString(UIConsts.PROJ_PREF_REPO_URL));
-                    new ProgressMonitorDialog(shell).run(true, false,
-                            commitRunnable);
-                } catch (InvocationTargetException ex) {
-                    throw new IllegalStateException(
-                            Messages.error_in_the_project_modifier_thread, ex);
-                } catch (InterruptedException ex) {
-                    // assume run() was called as non cancelable
-                    throw new IllegalStateException(
-                            Messages.project_modifier_thread_cancelled_shouldnt_happen,
-                            ex);
+                    Log.log(Log.LOG_INFO, "Trying to get branch name"); //$NON-NLS-1$
+                    branchName = new JGitExec().getCurrentBranch(proj
+                            .getRepoRoot().toString());
+                } catch (IOException e1) {
+                    throw new IllegalStateException(Messages.commitPartDescr_cannot_get_branch_name);
+                }                
+                
+                CommitDialog cd = new CommitDialog(shell,
+                        Messages.commitPartDescr_commit_confirmation,
+                        Messages.commitPartDescr_the_following_changes_be_included_in_commit
+                                + Messages.commitPartDescr_repository
+                                + proj.getString(UIConsts.PROJ_PREF_REPO_URL)
+                                + Messages.commitPartDescr_branch + branchName, filtered, mainPrefs);
+                cd.open();
+                
+                if (cd.getReturnCode() == CommitDialog.OK) {
+                    try {
+                        Log.log(Log.LOG_INFO, "Commit confirmed. Commiting to " + //$NON-NLS-1$
+                                proj.getString(UIConsts.PROJ_PREF_REPO_URL));
+                        new ProgressMonitorDialog(shell).run(true, false,
+                                commitRunnable);
+                    } catch (InvocationTargetException ex) {
+                        throw new IllegalStateException(
+                                Messages.error_in_the_project_modifier_thread,
+                                ex);
+                    } catch (InterruptedException ex) {
+                        // assume run() was called as non cancelable
+                        throw new IllegalStateException(
+                                Messages.project_modifier_thread_cancelled_shouldnt_happen,
+                                ex);
+                    }
+
+                    Console.addMessage(Messages.commitPartDescr_success_project_updated);
+
+                    // reopen project because file structure has been changed
+                    events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
                 }
-
-                Console.addMessage(Messages.commitPartDescr_success_project_updated);
-
-                // reopen project because file structure has been changed
-                events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
             }
         });
         // end upper commit comment container
@@ -299,7 +320,7 @@ public class CommitPartDescr {
         gl.horizontalSpacing = gl.verticalSpacing = 2;
         containerDb.setLayout(gl);
         
-        diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs);
+        diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs, false);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
                     

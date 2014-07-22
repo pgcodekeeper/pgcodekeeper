@@ -165,11 +165,15 @@ public class Messages extends NLS {
     public static String switchBranch_exception_during_switching_branch;
     public static String switchBranch_wrong_repository_or_ref_name;
     public static String switchPerspective_open_perspective;
-    
+
     // ui.parts
+    public static String commitPartDescr_branch;
+    public static String commitPartDescr_cannot_get_branch_name;
     public static String commitPartDescr_comment_required;
     public static String commitPartDescr_commit;
+    public static String commitPartDescr_commit_confirmation;
     public static String commitPartDescr_commiting;
+    public static String commitPartDescr_repository;
     public static String commitPartDescr_exporting_db_model;
     public static String commitPartDescr_from_database;
     public static String commitPartDescr_get_changes_from;
@@ -178,9 +182,9 @@ public class Messages extends NLS {
     public static String commitPartDescr_no_previous_comments;
     public static String commitPartDescr_please_enter_a_comment_for_the_commit;
     public static String commitPartDescr_success_project_updated;
+    public static String commitPartDescr_the_following_changes_be_included_in_commit;
     public static String commitPartDescr_to;
     public static String diffPartDescr_add_dependencies;
-
     public static String diffPartDescr_diff_script;
     public static String diffPartDescr_from;
     public static String diffPartDescr_get_changes_for;
