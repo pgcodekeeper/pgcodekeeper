@@ -30,7 +30,8 @@ import org.eclipse.jgit.util.FS;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.parts.Console;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -54,9 +55,9 @@ public class JGitExec implements IRepoWorker{
     }
 
     public JGitExec(PgDbProject proj, String privateKeyFile) {
-        this(proj.getString(UIConsts.PROJ_PREF_REPO_URL),
-                proj.getString(UIConsts.PROJ_PREF_REPO_USER),
-                proj.getString(UIConsts.PROJ_PREF_REPO_PASS), privateKeyFile);
+        this(proj.getString(PROJ_PREF.REPO_URL),
+                proj.getString(PROJ_PREF.REPO_USER),
+                proj.getString(PROJ_PREF.REPO_PASS), privateKeyFile);
     }
 
     public JGitExec(String url, String user, String pass, String privateKeyFile) {
@@ -255,7 +256,7 @@ public class JGitExec implements IRepoWorker{
 
     @Override
     public String repoGetVersion() throws IOException {
-        return Activator.getPluginVersions().get(UIConsts.JGIT_PLUGIN_ID).get(0);
+        return Activator.getPluginVersions().get(PLUGIN_ID.JGIT).get(0);
     }
     
     public static boolean isGitRepo(String path){

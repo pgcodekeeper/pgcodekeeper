@@ -11,7 +11,7 @@ import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PART;
 
 public class CloseEditor {
     
@@ -22,7 +22,7 @@ public class CloseEditor {
     @Execute
     private void execute(EPartService partService) {
         Log.log(Log.LOG_DEBUG, "Editor about to close: "  //$NON-NLS-1$
-                + part.getPersistedState().get(UIConsts.PART_SQL_EDITOR_FILENAME));
+                + part.getPersistedState().get(PART.SQL_EDITOR_FILENAME));
         
         partService.hidePart(part);
     }
@@ -30,6 +30,6 @@ public class CloseEditor {
     @CanExecute
     private boolean canExecute() {
         String id = part.getElementId();
-        return id.equals(UIConsts.PART_SQL_EDITOR);
+        return id.equals(PART.SQL_EDITOR);
     }
 }

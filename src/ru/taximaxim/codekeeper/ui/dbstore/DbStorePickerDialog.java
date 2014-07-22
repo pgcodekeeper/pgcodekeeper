@@ -20,7 +20,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbStorePickerDialog extends TrayDialog {
@@ -76,7 +77,7 @@ public class DbStorePickerDialog extends TrayDialog {
         Button btnEditStore = new Button(container, SWT.PUSH);
         btnEditStore.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(
-                        UIConsts.FILENAME_ICONEDIT))));
+                        FILE.ICONEDIT))));
         btnEditStore.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -90,7 +91,7 @@ public class DbStorePickerDialog extends TrayDialog {
     }
     
     private void loadStore() {
-        store = DbInfo.preferenceToStore(prefStore.getString(UIConsts.PREF_DB_STORE));
+        store = DbInfo.preferenceToStore(prefStore.getString(PREF.DB_STORE));
         
         cmbDbNames.setItems(store.keySet().toArray(new String[store.size()]));
         if(cmbDbNames.getItemCount() > 0) {

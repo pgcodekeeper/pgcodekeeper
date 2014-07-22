@@ -21,6 +21,8 @@ import org.eclipse.swt.widgets.Shell;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PART;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.parts.CommitPartDescr;
@@ -41,7 +43,7 @@ public class LoadProj {
         FileDialog dialog = new FileDialog(shell);
         dialog.setText(Messages.loadProj_open_project);
         dialog.setOverwrite(false);
-        dialog.setFilterPath(mainPrefs.getString(UIConsts.PREF_LAST_OPENED_LOCATION));
+        dialog.setFilterPath(mainPrefs.getString(PREF.LAST_OPENED_LOCATION));
         dialog.setFilterExtensions(new String[] { "*.project", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
         
         String path = dialog.open();
@@ -50,7 +52,7 @@ public class LoadProj {
             if(proj.getProjectFile().isFile()) {
                 if (load(proj, ctx, partService, model, app, mainPrefs, shell)){
                     AddonPrefLoader.savePreference(mainPrefs, 
-                            UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());
+                            PREF.LAST_OPENED_LOCATION, new File (path).getParent());
                 }
             } else {
                 MessageBox mb = new MessageBox(shell);
@@ -94,7 +96,7 @@ public class LoadProj {
         // по причине невозврата фокуса/селекшена/чего-то главному окну
         // модальным прогресс диалогом, показывающемся при парсинге дерева файлов
         // при реинжекте PgDbProject в ProjectExplorer парте
-        ((MPart) model.find(UIConsts.PART_WELCOME, app)).getContext().activateBranch();
+        ((MPart) model.find(PART.WELCOME, app)).getContext().activateBranch();
         
         CommitPartDescr.openNew(proj.getProjectFile().toString(),
                 partService, model, app);

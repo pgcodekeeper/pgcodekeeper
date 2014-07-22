@@ -22,7 +22,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -46,7 +46,7 @@ public class GitPrefPage extends FieldEditorPreferencePage
 
     @Override
     protected void createFieldEditors() {
-        editorPrivate = new FileFieldEditor(UIConsts.PREF_GIT_KEY_PRIVATE_FILE, 
+        editorPrivate = new FileFieldEditor(PREF.GIT_KEY_PRIVATE_FILE, 
                 Messages.gitPrefPage_private_key, true, FileFieldEditor.VALIDATE_ON_KEY_STROKE,
                 getFieldEditorParent());
         addField(editorPrivate);

@@ -63,6 +63,11 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
+import ru.taximaxim.codekeeper.ui.UIConsts.PART;
+import ru.taximaxim.codekeeper.ui.UIConsts.PART_STACK;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -94,11 +99,11 @@ public class CommitPartDescr {
     private EPartService partService;
     
     @Inject
-    @Preference(UIConsts.PREF_PGDUMP_EXE_PATH)
+    @Preference(PREF.PGDUMP_EXE_PATH)
     private String exePgdump;
 
     @Inject
-    @Preference(UIConsts.PREF_PGDUMP_CUSTOM_PARAMS)
+    @Preference(PREF.PGDUMP_CUSTOM_PARAMS)
     private String pgdumpCustom;
     
     @Inject
@@ -127,7 +132,7 @@ public class CommitPartDescr {
     private void postConstruct(Composite parent, final PgDbProject proj,
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs,
             final EModelService model, final MApplication app) {
-        repoName = proj.getString(UIConsts.PROJ_PREF_REPO_TYPE);
+        repoName = proj.getString(PROJ_PREF.REPO_TYPE);
         history = new XmlHistory(COMMENT_HIST_MAX_STORED, 
                 COMMENTS_HIST_FILENAME, 
                 COMMENTS_HIST_ROOT, 
@@ -240,7 +245,7 @@ public class CommitPartDescr {
                         File workingDir = proj.getProjectWorkingDir();
                         try {
                             IRepoWorker repo = new JGitExec(proj,
-                                    mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+                                    mainPrefs.getString(PREF.GIT_KEY_PRIVATE_FILE));
 
                             for (ApgdiffConsts.WORK_DIR_NAMES subdirName : ApgdiffConsts.WORK_DIR_NAMES.values()) {
                                 File subdir = new File(workingDir, subdirName.toString());
@@ -251,7 +256,7 @@ public class CommitPartDescr {
                             
                             new ModelExporter(workingDir.getAbsolutePath(),
                                     dbNew,
-                                    proj.getString(UIConsts.PROJ_PREF_ENCODING))
+                                    proj.getString(PROJ_PREF.ENCODING))
                                     .export();
 
                             pm.newChild(1).subTask(repoName + " committing..."); // 3 //$NON-NLS-1$
@@ -268,7 +273,7 @@ public class CommitPartDescr {
 
                 try {
                     Log.log(Log.LOG_INFO, "Commit pressed. Commiting to " + //$NON-NLS-1$
-                            proj.getString(UIConsts.PROJ_PREF_REPO_URL));
+                            proj.getString(PROJ_PREF.REPO_URL));
                     new ProgressMonitorDialog(shell).run(true, false,
                             commitRunnable);
                 } catch (InvocationTargetException ex) {
@@ -284,7 +289,7 @@ public class CommitPartDescr {
                 Console.addMessage(Messages.commitPartDescr_success_project_updated);
 
                 // reopen project because file structure has been changed
-                events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
+                events.send(EVENT.REOPEN_PROJECT, proj);
             }
         });
         // end upper commit comment container
@@ -400,7 +405,7 @@ public class CommitPartDescr {
                     String dumpfile = dialog.open();
                     if (dumpfile != null) {
                         dbTarget = DbSource.fromFile(dumpfile,
-                                proj.getString(UIConsts.PROJ_PREF_ENCODING));
+                                proj.getString(PROJ_PREF.ENCODING));
                     } else {
                         return;
                     }
@@ -421,7 +426,7 @@ public class CommitPartDescr {
                             dbSrc.txtDbUser.getText(),
                             dbSrc.txtDbPass.getText(),
                             dbSrc.txtDbName.getText(),
-                            proj.getString(UIConsts.PROJ_PREF_ENCODING));
+                            proj.getString(PROJ_PREF.ENCODING));
                 } else {
                     throw new IllegalStateException(
                             Messages.undefined_source_for_db_changes);
@@ -451,11 +456,11 @@ public class CommitPartDescr {
                 1));
 
         boolean useDbPicker = false;
-        String src = proj.getString(UIConsts.PROJ_PREF_SOURCE);
-        if (src.equals(UIConsts.PROJ_SOURCE_TYPE_NONE)) {
+        String src = proj.getString(PROJ_PREF.SOURCE);
+        if (src.equals(PROJ_PREF.SOURCE_TYPE_NONE)) {
             btnNone.setSelection(true);
             btnGetChanges.setEnabled(false);
-        } else if (src.equals(UIConsts.PROJ_SOURCE_TYPE_DUMP)) {
+        } else if (src.equals(PROJ_PREF.SOURCE_TYPE_DUMP)) {
             btnDump.setSelection(true);
         } else {
             btnDb.setSelection(true);
@@ -464,12 +469,12 @@ public class CommitPartDescr {
         showDbPicker(useDbPicker);
 
         if (useDbPicker) {
-            dbSrc.txtDbName.setText(proj.getString(UIConsts.PROJ_PREF_DB_NAME));
-            dbSrc.txtDbUser.setText(proj.getString(UIConsts.PROJ_PREF_DB_USER));
-            dbSrc.txtDbPass.setText(proj.getString(UIConsts.PROJ_PREF_DB_PASS));
-            dbSrc.txtDbHost.setText(proj.getString(UIConsts.PROJ_PREF_DB_HOST));
+            dbSrc.txtDbName.setText(proj.getString(PROJ_PREF.DB_NAME));
+            dbSrc.txtDbUser.setText(proj.getString(PROJ_PREF.DB_USER));
+            dbSrc.txtDbPass.setText(proj.getString(PROJ_PREF.DB_PASS));
+            dbSrc.txtDbHost.setText(proj.getString(PROJ_PREF.DB_HOST));
             dbSrc.txtDbPort.setText(String.valueOf(proj
-                    .getInt(UIConsts.PROJ_PREF_DB_PORT)));
+                    .getInt(PROJ_PREF.DB_PORT)));
         }
         // end middle right container
         // end middle container
@@ -596,11 +601,11 @@ public class CommitPartDescr {
     private void changeProject(
             PgDbProject proj,
             @Optional
-            @EventTopic(UIConsts.EVENT_REOPEN_PROJECT)
+            @EventTopic(EVENT.REOPEN_PROJECT)
             PgDbProject proj2) {
         if (proj == null
                 || !proj.getProjectFile().toString().equals(
-                        part.getPersistedState().get(UIConsts.PART_SYNC_ID))) {
+                        part.getPersistedState().get(PART.SYNC_ID))) {
             sync.asyncExec(new Runnable() {
                 
                 @Override
@@ -624,18 +629,18 @@ public class CommitPartDescr {
 
     public static void openNew(String projectPath, EPartService partService,
             EModelService model, MApplication app) {
-        for (MPart existingPart : model.findElements(app, UIConsts.PART_SYNC,
+        for (MPart existingPart : model.findElements(app, PART.SYNC,
                 MPart.class, null)) {
             if (projectPath.equals(existingPart.getPersistedState().get(
-                    UIConsts.PART_SYNC_ID))) {
+                    PART.SYNC_ID))) {
                 partService.hidePart(existingPart);
                 break;
             }
         }
 
-        MPart syncPart = partService.createPart(UIConsts.PART_SYNC);
-        syncPart.getPersistedState().put(UIConsts.PART_SYNC_ID, projectPath);
-        ((MPartStack) model.find(UIConsts.PART_STACK_EDITORS, app))
+        MPart syncPart = partService.createPart(PART.SYNC);
+        syncPart.getPersistedState().put(PART.SYNC_ID, projectPath);
+        ((MPartStack) model.find(PART_STACK.EDITORS, app))
                 .getChildren().add(syncPart);
         partService.showPart(syncPart, PartState.CREATE);
     }

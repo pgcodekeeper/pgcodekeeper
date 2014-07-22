@@ -11,7 +11,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -32,7 +32,7 @@ public class DbStorePrefPage extends FieldEditorPreferencePage
     @Override
     protected void createFieldEditors() {
         // this is our "hidden field editor"
-        preference = getPreferenceStore().getString(UIConsts.PREF_DB_STORE);
+        preference = getPreferenceStore().getString(PREF.DB_STORE);
     }
     
     @Override
@@ -66,13 +66,13 @@ public class DbStorePrefPage extends FieldEditorPreferencePage
     
     @Override
     protected void performDefaults() {
-        preference = getPreferenceStore().getDefaultString(UIConsts.PREF_DB_STORE);
+        preference = getPreferenceStore().getDefaultString(PREF.DB_STORE);
     }
     
     @Override
     public boolean performOk() {
         if(getPreferenceStore() != null) {
-            getPreferenceStore().setValue(UIConsts.PREF_DB_STORE, preference);
+            getPreferenceStore().setValue(PREF.DB_STORE, preference);
         }
         return true;
     }

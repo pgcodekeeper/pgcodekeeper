@@ -18,13 +18,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 
 
 public class TestPart {
     
     @Inject
-    @Preference(UIConsts.PREF_PGDUMP_CUSTOM_PARAMS)
+    @Preference(PREF.PGDUMP_CUSTOM_PARAMS)
     private String prefPgdumpPath;
     
     @Inject

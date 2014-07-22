@@ -53,6 +53,11 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ManualDepciesDialog;
 import ru.taximaxim.codekeeper.ui.SqlScriptDialog;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
+import ru.taximaxim.codekeeper.ui.UIConsts.PART;
+import ru.taximaxim.codekeeper.ui.UIConsts.PART_STACK;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -75,11 +80,11 @@ public class DiffPartDescr {
     private EPartService partService;
     
     @Inject
-    @Preference(UIConsts.PREF_PGDUMP_EXE_PATH)
+    @Preference(PREF.PGDUMP_EXE_PATH)
     private String exePgdump;
     
     @Inject
-    @Preference(UIConsts.PREF_PGDUMP_CUSTOM_PARAMS)
+    @Preference(PREF.PGDUMP_CUSTOM_PARAMS)
     private String pgdumpCustom;
 
     private Button btnGetLatest, btnAddDepcy;
@@ -293,7 +298,7 @@ public class DiffPartDescr {
                     String dumpfile = dialog.open();
                     if (dumpfile != null) {
                         dbSource = DbSource.fromFile(dumpfile,
-                                proj.getString(UIConsts.PROJ_PREF_ENCODING));
+                                proj.getString(PROJ_PREF.ENCODING));
                     } else {
                         return;
                     }
@@ -315,7 +320,7 @@ public class DiffPartDescr {
                             dbSrc.txtDbUser.getText(),
                             dbSrc.txtDbPass.getText(),
                             dbSrc.txtDbName.getText(),
-                            proj.getString(UIConsts.PROJ_PREF_ENCODING));
+                            proj.getString(PROJ_PREF.ENCODING));
                 } else {
                     throw new IllegalStateException(
                             Messages.undefined_source_for_db_changes);
@@ -347,11 +352,11 @@ public class DiffPartDescr {
                 1));
 
         boolean useDbPicker = false;
-        String src = proj.getString(UIConsts.PROJ_PREF_SOURCE);
-        if (src.equals(UIConsts.PROJ_SOURCE_TYPE_NONE)) {
+        String src = proj.getString(PROJ_PREF.SOURCE);
+        if (src.equals(PROJ_PREF.SOURCE_TYPE_NONE)) {
             btnNone.setSelection(true);
             btnGetChanges.setEnabled(false);
-        } else if (src.equals(UIConsts.PROJ_SOURCE_TYPE_DUMP)) {
+        } else if (src.equals(PROJ_PREF.SOURCE_TYPE_DUMP)) {
             btnDump.setSelection(true);
         } else {
             btnDb.setSelection(true);
@@ -360,12 +365,12 @@ public class DiffPartDescr {
         showDbPicker(useDbPicker);
 
         if (useDbPicker) {
-            dbSrc.txtDbName.setText(proj.getString(UIConsts.PROJ_PREF_DB_NAME));
-            dbSrc.txtDbUser.setText(proj.getString(UIConsts.PROJ_PREF_DB_USER));
-            dbSrc.txtDbPass.setText(proj.getString(UIConsts.PROJ_PREF_DB_PASS));
-            dbSrc.txtDbHost.setText(proj.getString(UIConsts.PROJ_PREF_DB_HOST));
+            dbSrc.txtDbName.setText(proj.getString(PROJ_PREF.DB_NAME));
+            dbSrc.txtDbUser.setText(proj.getString(PROJ_PREF.DB_USER));
+            dbSrc.txtDbPass.setText(proj.getString(PROJ_PREF.DB_PASS));
+            dbSrc.txtDbHost.setText(proj.getString(PROJ_PREF.DB_HOST));
             dbSrc.txtDbPort.setText(String.valueOf(proj
-                    .getInt(UIConsts.PROJ_PREF_DB_PORT)));
+                    .getInt(PROJ_PREF.DB_PORT)));
         }
         // end middle right container
         // end middle container
@@ -420,7 +425,7 @@ public class DiffPartDescr {
             
             @Override
             public String getRightLabel(Object input) {
-                return Messages.diffPartDescr_from + proj.getString(UIConsts.PROJ_PREF_REPO_TYPE);
+                return Messages.diffPartDescr_from + proj.getString(PROJ_PREF.REPO_TYPE);
             }
             
             @Override
@@ -492,11 +497,11 @@ public class DiffPartDescr {
     private void changeProject(
             PgDbProject proj,
             @Optional
-            @EventTopic(UIConsts.EVENT_REOPEN_PROJECT)
+            @EventTopic(EVENT.REOPEN_PROJECT)
             PgDbProject proj2) {
         if (proj == null
                 || !proj.getProjectFile().toString().equals(
-                        part.getPersistedState().get(UIConsts.PART_DIFF_ID))) {
+                        part.getPersistedState().get(PART.DIFF_ID))) {
             sync.asyncExec(new Runnable() {
                 
                 @Override
@@ -521,18 +526,18 @@ public class DiffPartDescr {
 
     public static void openNew(String projectPath, EPartService partService,
             EModelService model, MApplication app) {
-        for (MPart existingPart : model.findElements(app, UIConsts.PART_DIFF,
+        for (MPart existingPart : model.findElements(app, PART.DIFF,
                 MPart.class, null)) {
             if (projectPath.equals(existingPart.getPersistedState().get(
-                    UIConsts.PART_DIFF_ID))) {
+                    PART.DIFF_ID))) {
                 partService.hidePart(existingPart);
                 break;
             }
         }
 
-        MPart diffPart = partService.createPart(UIConsts.PART_DIFF);
-        diffPart.getPersistedState().put(UIConsts.PART_DIFF_ID, projectPath);
-        ((MPartStack) model.find(UIConsts.PART_STACK_EDITORS, app))
+        MPart diffPart = partService.createPart(PART.DIFF);
+        diffPart.getPersistedState().put(PART.DIFF_ID, projectPath);
+        ((MPartStack) model.find(PART_STACK.EDITORS, app))
                 .getChildren().add(diffPart);
         partService.showPart(diffPart, PartState.CREATE);
     }
