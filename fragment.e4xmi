@@ -130,12 +130,6 @@
           </children>
         </children>
       </children>
-      <children xsi:type="advanced:Perspective" xmi:id="_OGm9sC_vEeO2acHPThBe1g" elementId="ru.taximaxim.codekeeper.ui.perspective.testbs" label="%perspective.label.2" iconURI="platform:/plugin/ru.taximaxim.codekeeper.ui/icons/beta_violet.png">
-        <children xsi:type="basic:PartStack" xmi:id="_o7nrECnKEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.partstack.testbs">
-          <children xsi:type="basic:Part" xmi:id="_pXUIkCnKEeObfOm2RjyZmw" elementId="ru.taximaxim.codekeeper.ui.part.TestPart" contributionURI="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.parts.TestPart" label="%part.label.4"/>
-          <children xsi:type="basic:Part" xmi:id="_tH1W4C_rEeOAX7xkg-kwLg" elementId="ru.taximaxim.codekeeper.ui.part.CtXp" contributionURI="bundleclass://com.opcoach.e4.contextExplorer/com.opcoach.e4.contextExplorer.parts.ContextExplorerPart" label="%part.label.5"/>
-        </children>
-      </children>
     </elements>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_MRaWUGl5EeO0LoNj8g6FWw" featurename="descriptors" parentElementId="ru.taximaxim.codekeeper.mainapp.application">

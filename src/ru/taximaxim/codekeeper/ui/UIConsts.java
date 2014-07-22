@@ -21,6 +21,7 @@ public interface UIConsts {
     
     interface PART_STACK {
         String EDITORS = UIConsts.PLUGIN_ID.THIS + ".partstack.Editors"; //$NON-NLS-1$
+        String DEVTEST = UIConsts.PLUGIN_ID.THIS + ".partstack.Devtest"; //$NON-NLS-1$
     }
     
     interface PART {
@@ -31,6 +32,9 @@ public interface UIConsts {
         String DIFF = UIConsts.PLUGIN_ID.THIS + ".partdescriptor.Diff"; //$NON-NLS-1$
         String DIFF_ID = DIFF + ".Id"; //$NON-NLS-1$
         String WELCOME = UIConsts.PLUGIN_ID.THIS + ".part.Welcome"; //$NON-NLS-1$
+        
+        String DEVTEST = "ru.taximaxim.codekeeper.ui.part.TestPart";
+        String CTXP = "ru.taximaxim.codekeeper.ui.part.CtXp";
     }
     
     interface PERSP {

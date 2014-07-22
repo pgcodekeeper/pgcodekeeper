@@ -9,6 +9,32 @@
       </fragment>
    </extension>
    <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            name="pgCodeKeeper">
+      </category>
+      <category
+            id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
+            name="Devtest"
+            parentCategory="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper">
+      </category>
+      <e4view
+            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
+            class="ru.taximaxim.codekeeper.ui.parts.TestPart"
+            id="ru.taximaxim.codekeeper.ui.part.TestPart"
+            name="%part.label.4"
+            restorable="true">
+      </e4view>
+      <e4view
+            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
+            class="com.opcoach.e4.contextExplorer.parts.ContextExplorerPart"
+            id="ru.taximaxim.codekeeper.ui.part.CtXp"
+            name="%part.label.5"
+            restorable="true">
+      </e4view>
+   </extension>
+   <extension
          point="org.eclipse.ui.perspectives">
       <perspective
             class="ru.taximaxim.codekeeper.ui.FakePerspectiveFactory"
@@ -17,7 +43,7 @@
             name="pgCodeKeeper">
       </perspective>
       <perspective
-            class="ru.taximaxim.codekeeper.ui.FakePerspectiveFactory"
+            class="ru.taximaxim.codekeeper.ui.perspectives.DevtestPersp"
             icon="icons/beta_violet.png"
             id="ru.taximaxim.codekeeper.ui.perspective.testbs"
             name="pgCodeKeeper - Devtest">
