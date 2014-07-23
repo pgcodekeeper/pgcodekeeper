@@ -273,7 +273,7 @@ public class CommitPartDescr {
                     branchName = new JGitExec().getCurrentBranch(proj
                             .getRepoRoot().toString());
                 } catch (IOException e1) {
-                    throw new IllegalStateException(Messages.commitPartDescr_cannot_get_branch_name);
+                    throw new IllegalStateException(Messages.commitPartDescr_cannot_get_branch_name, e1);
                 }                
                 
                 CommitDialog cd = new CommitDialog(shell,
