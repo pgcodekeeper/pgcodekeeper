@@ -127,7 +127,7 @@ public class PgTable extends PgStatementWithSearchPath {
                 }
 
                 sbSQL.append("\t");
-                sbSQL.append(column.getFullDefinition(false));
+                sbSQL.append(column.getFullDefinition(false, null, false));
             }
 
             sbSQL.append("\n)");

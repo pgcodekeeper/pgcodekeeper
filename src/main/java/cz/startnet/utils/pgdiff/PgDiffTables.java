@@ -260,17 +260,23 @@ public class PgDiffTables {
      */
     private static void addCreateTableColumns(final List<String> statements,
             final PgDiffArguments arguments, final PgTable oldTable,
-            final PgTable newTable, final List<PgColumn> dropDefaultsColumns) {
+            final PgTable newTable, final List<PgColumn> dropDefaultsColumns, 
+            final List<String> defaultStatements) {
+        StringBuilder defaultStatement = new StringBuilder(100);
         for (final PgColumn column : newTable.getColumns()) {
             if (!oldTable.containsColumn(column.getName())) {
                 statements.add("\tADD COLUMN "
-                        + column.getFullDefinition(arguments.isAddDefaults()));
-
+                        + column.getFullDefinition(arguments.isAddDefaults(), 
+                                defaultStatement, true));
                 if (arguments.isAddDefaults() && !column.getNullValue()
                         && (column.getDefaultValue() == null
                         || column.getDefaultValue().isEmpty())) {
                     dropDefaultsColumns.add(column);
                 }
+            }
+            if (defaultStatement.length() > 0) {
+                defaultStatements.add("\tALTER COLUMN " + defaultStatement);
+                defaultStatement.setLength(0);
             }
         }
     }
@@ -597,13 +603,15 @@ public class PgDiffTables {
             final PgTable newTable, final SearchPathHelper searchPathHelper) {
         final List<String> statements = new ArrayList<>();
         final List<PgColumn> dropDefaultsColumns = new ArrayList<>();
+        final List<String> defaultStatements = new ArrayList<>();
         
         // ordered pairs of <statementToDrop, reasonOfDrop>
         Map<PgStatement, String> statementsToDrop = new LinkedHashMap<>(10);
         
         addDropTableColumns(statementsToDrop, statements, oldTable, newTable);
         addCreateTableColumns( 
-                statements, arguments, oldTable, newTable, dropDefaultsColumns);
+                statements, arguments, oldTable, newTable, dropDefaultsColumns,
+                defaultStatements);
         addModifyTableColumns(statementsToDrop, 
                 statements, arguments, oldTable, newTable, dropDefaultsColumns);
 
@@ -634,20 +642,10 @@ public class PgDiffTables {
         }// end write dependent PgViews/PgForeignKey drop sql code before table altering
 
         final String quotedTableName = PgDiffUtils.getQuotedName(newTable.getName());
-        if (!statements.isEmpty()) {
-            searchPathHelper.outputSearchPath(script);
-            
-            StringBuilder sb = new StringBuilder();
-            sb.append("ALTER TABLE ");
-            sb.append(quotedTableName);
-            sb.append('\n');
-
-            for (int i = 0; i < statements.size(); i++) {
-                sb.append(statements.get(i));
-                sb.append((i + 1) < statements.size() ? ",\n" : ";");
-            }
-            script.addStatement(sb.toString());
-        }
+        
+        alterTblStatement(script, searchPathHelper, statements, quotedTableName);
+        
+        alterTblStatement(script, searchPathHelper, defaultStatements, quotedTableName);
 
         if (!dropDefaultsColumns.isEmpty()) {
             StringBuilder sb = new StringBuilder();
@@ -681,6 +679,25 @@ public class PgDiffTables {
                         + " object: " + reason, view);
             }
         }// end write dependent PgViews create sql code after table altering
+    }
+
+    private static void alterTblStatement(final PgDiffScript script,
+            final SearchPathHelper searchPathHelper,
+            final List<String> statements, final String quotedTableName) {
+        if (!statements.isEmpty()) {
+            searchPathHelper.outputSearchPath(script);
+            
+            StringBuilder sb = new StringBuilder();
+            sb.append("ALTER TABLE ");
+            sb.append(quotedTableName);
+            sb.append('\n');
+
+            for (int i = 0; i < statements.size(); i++) {
+                sb.append(statements.get(i));
+                sb.append((i + 1) < statements.size() ? ",\n" : ";");
+            }
+            script.addStatement(sb.toString());
+        }
     }
 
     /**

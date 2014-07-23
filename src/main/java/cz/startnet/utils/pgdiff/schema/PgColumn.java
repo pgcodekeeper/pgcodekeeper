@@ -61,12 +61,34 @@ public class PgColumn extends PgStatement {
      *
      * @return full definition of the column
      */
-    public String getFullDefinition(final boolean addDefaults) {
+    public String getFullDefinition(final boolean addDefaults, 
+            StringBuilder defaultStatement,
+            final boolean separateDefStatement) {
+        final StringBuilder sbDefDefinition = new StringBuilder(100);
         final StringBuilder sbDefinition = new StringBuilder(100);
-        sbDefinition.append(PgDiffUtils.getQuotedName(name));
+        String strDefStatement = 
+                sbDefinition.append(PgDiffUtils.getQuotedName(name)).toString();
         sbDefinition.append(' ');
         sbDefinition.append(type);
+        
+        if (separateDefStatement && nullValue) {
+            getDefaultValues(addDefaults, sbDefDefinition);
+            
+            if (sbDefDefinition.length() > 0) {
+                defaultStatement.append(strDefStatement + sbDefDefinition);
+            }
+        } else {
+            getDefaultValues(addDefaults, sbDefinition);
+            if (!nullValue) {
+                sbDefinition.append(" NOT NULL");
+            }
+        }
+        
+        return sbDefinition.toString();
+    }
 
+    private void getDefaultValues(final boolean addDefaults,
+            final StringBuilder sbDefinition) {
         if (defaultValue != null && !defaultValue.isEmpty()) {
             sbDefinition.append(" DEFAULT ");
             sbDefinition.append(defaultValue);
@@ -78,12 +100,6 @@ public class PgColumn extends PgStatement {
                 sbDefinition.append(defaultColValue);
             }
         }
-
-        if (!nullValue) {
-            sbDefinition.append(" NOT NULL");
-        }
-
-        return sbDefinition.toString();
     }
 
     public void setNullValue(final boolean nullValue) {
