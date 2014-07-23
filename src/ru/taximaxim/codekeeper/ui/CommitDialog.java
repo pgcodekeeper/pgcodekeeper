@@ -45,7 +45,6 @@ public class CommitDialog extends TrayDialog {
         lblMessage.setText(message);
         
         DiffTableViewer dtv = new DiffTableViewer(parent, SWT.None, prefs, true);
-        prefs = null;
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 400;
         gd.widthHint = 600;
