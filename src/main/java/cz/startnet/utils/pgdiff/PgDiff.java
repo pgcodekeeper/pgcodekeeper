@@ -215,20 +215,36 @@ public class PgDiff {
             }
         }
     }
-
+    
     /**
-     * Fills in the result list with all PgStatements, that are dependent from parent.
+     * Fills in the result list with all PgStatements, that are dependent from parent
      * <br>
      * (that is, finds those vertices, that have common edge with parent where 
      * parent is the target)
      */
     public static Set<PgStatement> getDependantsSet(PgStatement parent,
             Set<PgStatement> result) {
-        if (oldDepcyGraph.containsVertex(parent)){
-            for (DefaultEdge edge : oldDepcyGraph.incomingEdgesOf(parent)) {
-                PgStatement dependant = oldDepcyGraph.getEdgeSource(edge);
+        return getDependants(parent, result, oldDepcyGraph);
+    }
+
+    /**
+     * Fills in the result list with all PgStatements, that are dependent from parent <b>based on depcyGraph</b>
+     * <br>
+     * (that is, finds those vertices, that have common edge with parent where 
+     * parent is the target)
+     */
+    public static Set<PgStatement> getDependantsSet(PgStatement parent,
+            Set<PgStatement> result, DirectedGraph<PgStatement, DefaultEdge> depcyGraph) {
+        return getDependants(parent, result, depcyGraph);
+    }
+    
+    private static Set<PgStatement> getDependants(PgStatement parent,
+            Set<PgStatement> result, DirectedGraph<PgStatement, DefaultEdge> depcyGraph) {
+        if (depcyGraph.containsVertex(parent)){
+            for (DefaultEdge edge : depcyGraph.incomingEdgesOf(parent)) {
+                PgStatement dependant = depcyGraph.getEdgeSource(edge);
                 if (result.add(dependant)) {
-                    getDependantsSet(dependant, result);
+                    getDependants(dependant, result, depcyGraph);
                 }
             }
         }
