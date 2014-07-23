@@ -173,7 +173,6 @@ public class Messages extends NLS {
     public static String commitPartDescr_commit;
     public static String commitPartDescr_commit_confirmation;
     public static String commitPartDescr_commiting;
-    public static String commitPartDescr_repository;
     public static String commitPartDescr_exporting_db_model;
     public static String commitPartDescr_from_database;
     public static String commitPartDescr_get_changes_from;
@@ -297,6 +296,8 @@ public class Messages extends NLS {
 
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
     public static String JGitExec_exception_thrown_at_jgit_push;
+
+    public static String ManualDepciesDialog_set_add_depcies;
     public static String NewProjWizard_settings;
     public static String ProjProps_settings;
 

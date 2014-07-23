@@ -86,6 +86,12 @@ public class ManualDepciesDialog extends TrayDialog {
     }
     
     @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        newShell.setText(Messages.ManualDepciesDialog_set_add_depcies);
+    }
+    
+    @Override
     protected Control createDialogArea(Composite parent) {
         parent = (Composite) super.createDialogArea(parent);
         

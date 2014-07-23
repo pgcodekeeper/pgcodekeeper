@@ -287,8 +287,8 @@ public class JGitExec implements IRepoWorker{
         keys.writePublicKey(publicKeyFile.getAbsolutePath(), ""); //$NON-NLS-1$
     }
 
-    public String getCurrentBranch(String repoRoot) throws IOException{
-        Git git = Git.open(new File(repoRoot));
+    public String getCurrentBranch(File repoRoot) throws IOException {
+        Git git = Git.open(repoRoot);
         try {
             return git.getRepository().getBranch();
         } finally {

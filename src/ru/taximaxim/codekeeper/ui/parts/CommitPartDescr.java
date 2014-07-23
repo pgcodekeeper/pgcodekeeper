@@ -218,10 +218,16 @@ public class CommitPartDescr {
                     mb.open();
                     return;
                 }
+                
+                final TreeElement filtered = diffTable.filterDiffTree();
+                
+                CommitDialog cd = new CommitDialog(shell, filtered, mainPrefs, proj);
+                if (cd.open() != CommitDialog.OK) {
+                    return;
+                }
 
                 history.addHistoryEntry(commitComment);
                 
-                final TreeElement filtered = diffTable.filterDiffTree();
                 IRunnableWithProgress commitRunnable = new IRunnableWithProgress() {
 
                     @Override
@@ -267,45 +273,24 @@ public class CommitPartDescr {
                     }
                 };
 
-                String branchName;
                 try {
-                    Log.log(Log.LOG_INFO, "Trying to get branch name"); //$NON-NLS-1$
-                    branchName = new JGitExec().getCurrentBranch(proj
-                            .getRepoRoot().toString());
-                } catch (IOException e1) {
-                    throw new IllegalStateException(Messages.commitPartDescr_cannot_get_branch_name);
-                }                
-                
-                CommitDialog cd = new CommitDialog(shell,
-                        Messages.commitPartDescr_commit_confirmation,
-                        Messages.commitPartDescr_the_following_changes_be_included_in_commit
-                                + Messages.commitPartDescr_repository
-                                + proj.getString(UIConsts.PROJ_PREF_REPO_URL)
-                                + Messages.commitPartDescr_branch + branchName, filtered, mainPrefs);
-                cd.open();
-                
-                if (cd.getReturnCode() == CommitDialog.OK) {
-                    try {
-                        Log.log(Log.LOG_INFO, "Commit confirmed. Commiting to " + //$NON-NLS-1$
-                                proj.getString(UIConsts.PROJ_PREF_REPO_URL));
-                        new ProgressMonitorDialog(shell).run(true, false,
-                                commitRunnable);
-                    } catch (InvocationTargetException ex) {
-                        throw new IllegalStateException(
-                                Messages.error_in_the_project_modifier_thread,
-                                ex);
-                    } catch (InterruptedException ex) {
-                        // assume run() was called as non cancelable
-                        throw new IllegalStateException(
-                                Messages.project_modifier_thread_cancelled_shouldnt_happen,
-                                ex);
-                    }
-
-                    Console.addMessage(Messages.commitPartDescr_success_project_updated);
-
-                    // reopen project because file structure has been changed
-                    events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
+                    Log.log(Log.LOG_INFO, "Commit confirmed. Commiting to " + //$NON-NLS-1$
+                            proj.getString(UIConsts.PROJ_PREF_REPO_URL));
+                    new ProgressMonitorDialog(shell).run(true, false,
+                            commitRunnable);
+                } catch (InvocationTargetException ex) {
+                    throw new IllegalStateException(
+                            Messages.error_in_the_project_modifier_thread, ex);
+                } catch (InterruptedException ex) {
+                    // assume run() was called as non cancelable
+                    throw new IllegalStateException(
+                            Messages.project_modifier_thread_cancelled_shouldnt_happen, ex);
                 }
+
+                Console.addMessage(Messages.commitPartDescr_success_project_updated);
+
+                // reopen project because file structure has been changed
+                events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
             }
         });
         // end upper commit comment container

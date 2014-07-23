@@ -68,6 +68,8 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
  */
 public class DiffTableViewer extends Composite {
 
+    private final boolean viewOnly;
+    
     private TreeElement treeRoot;
     // values are checked states of the elements
     private Map<TreeElement, Boolean> elements = new HashMap<>();
@@ -91,8 +93,6 @@ public class DiffTableViewer extends Composite {
     private PgDatabase dbSource;
     private PgDatabase dbTarget;
     
-    private boolean viewOnly;
-
     private enum Columns {
         CHECK,
         NAME,
@@ -179,7 +179,7 @@ public class DiffTableViewer extends Composite {
         
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout contButtonsLayout = new GridLayout(5, false);
+        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 5, false);
         contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
         contButtons.setLayout(contButtonsLayout);
         
@@ -209,9 +209,7 @@ public class DiffTableViewer extends Composite {
         
         Button btnClearSort = new Button(contButtons, SWT.PUSH);
         if (viewOnly) {
-            GridData gd = new GridData();
-            gd.grabExcessHorizontalSpace = true;
-            btnClearSort.setLayoutData(gd);
+            btnClearSort.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, true, false));
         }
         btnClearSort.setText(Messages.diffTableViewer_reset_sorting);
         btnClearSort.addSelectionListener(new SelectionAdapter() {
@@ -474,23 +472,21 @@ public class DiffTableViewer extends Composite {
                 generateFlatElementsMap(child);
             }
         }
-        boolean cond = (subtree.getSide() == DiffSide.BOTH && subtree.getParent() != null 
+        
+        boolean doNotInclude = 
+                (subtree.getSide() == DiffSide.BOTH && subtree.getParent() != null 
                 && subtree.getParent().getSide() != DiffSide.BOTH)
                 || subtree.getType() == DbObjType.CONTAINER
-                || subtree.getType() == DbObjType.DATABASE; 
-        
-        if (viewOnly) {
-            if (cond) {
-                return;
-            }
-        } else { 
-            if (cond || (subtree.getSide() == DiffSide.BOTH && 
-                    subtree.getPgStatement(dbSource).compare(
-                            subtree.getPgStatement(dbTarget)))) {
-                return;
-            }
+                || subtree.getType() == DbObjType.DATABASE;
+        if (doNotInclude) {
+            return;
         }
-        // Do not add elements, which contain in ignore list
+        if (!viewOnly && (subtree.getSide() == DiffSide.BOTH && 
+                subtree.getPgStatement(dbSource).compare(
+                        subtree.getPgStatement(dbTarget)))) {
+            return;
+        }
+        // Do not add elements, that are in ignore list
         if (!ignoredElements.contains(subtree.getName())) {
             elements.put(subtree, false);
         }
