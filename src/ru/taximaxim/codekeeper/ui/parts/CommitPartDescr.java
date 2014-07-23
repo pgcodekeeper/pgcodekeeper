@@ -124,6 +124,8 @@ public class CommitPartDescr {
      */
     private DbSource dbTarget;
     
+    private TreeDiffer treediffer;
+    
     @PostConstruct
     private void postConstruct(Composite parent, final PgDbProject proj,
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs,
@@ -241,6 +243,10 @@ public class CommitPartDescr {
                         DiffTreeApplier applier = new DiffTreeApplier(dbSource
                                 .getDbObject(), dbTarget.getDbObject(),
                                 filtered);
+
+                        // set diff tree root element (provide all available changes) 
+                        applier.setDiffTree(treediffer.getDiffTree());
+                        
                         PgDatabase dbNew = applier.apply();
 
                         pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
@@ -434,7 +440,7 @@ public class CommitPartDescr {
                 }
                 
                 Log.log(Log.LOG_INFO, "Getting changes for commit"); //$NON-NLS-1$
-                TreeDiffer treediffer = new TreeDiffer(dbSource, dbTarget);
+                treediffer = new TreeDiffer(dbSource, dbTarget);
                 try {
                     new ProgressMonitorDialog(shell).run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
