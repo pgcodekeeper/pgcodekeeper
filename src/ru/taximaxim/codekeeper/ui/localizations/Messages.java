@@ -129,9 +129,11 @@ public class Messages extends NLS {
     public static String jGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new;
     public static String jGitExec_exception_thrown_at_jgit_repo_update;
     public static String jGitExec_failed;
+    public static String jGitExec_get_conflicts;
     public static String jGitExec_git_failed_cause;
     public static String jGitExec_git_result;
     public static String jGitExec_git_setting_creditials;
+    public static String jGitExec_git_start;
     public static String jGitExec_git_start_url;
     public static String jGitExec_git_status;
     public static String jGitExec_git_success;

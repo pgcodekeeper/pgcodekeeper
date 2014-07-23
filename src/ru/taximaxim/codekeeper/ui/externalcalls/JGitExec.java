@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.externalcalls;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -76,10 +77,12 @@ public class JGitExec implements IRepoWorker{
     @Override
     public void repoCheckOut(File dirTo, String rev) throws IOException {
         String action = "clone"; //$NON-NLS-1$
-        Console.addMessage(String.format(Messages.jGitExec_git_start_url, action, url));
+        Console.addMessage(MessageFormat.format(Messages.jGitExec_git_start_url, 
+                action, url));
         CloneCommand cloneCom = new CloneCommand();
         if (PATTERN_HTTP_URL.matcher(url).matches()) {
-            Console.addMessage(String.format(Messages.jGitExec_git_setting_creditials, action));
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_setting_creditials, 
+                    action));
             cloneCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
         }
         
@@ -87,9 +90,11 @@ public class JGitExec implements IRepoWorker{
         
         try {
             cloneCom.setURI(url).setDirectory(dirTo).call().close();
-            Console.addMessage(String.format(Messages.jGitExec_git_success, action));
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_success, 
+                    action));
         } catch (GitAPIException e) {
-            Console.addMessage(String.format(Messages.jGitExec_git_failed_cause, action, e));
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_failed_cause, 
+                    action, e));
             throw new IOException (Messages.jGitExec_exception_thrown_at_jgit_clone, e);
         }
     }
@@ -106,21 +111,26 @@ public class JGitExec implements IRepoWorker{
             StoredConfig config = git.getRepository().getConfig();
             String urlRepo = config.getString("remote", "origin", "url"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
-            Console.addMessage(String.format(Messages.jGitExec_git_start_url, action, urlRepo));
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_start, 
+                    action));
             Log.log(Log.LOG_INFO, "git commit " + urlRepo); //$NON-NLS-1$
             try {
                 git.commit().setMessage(comment).call();
-                Console.addMessage(String.format(Messages.jGitExec_git_success, action));
+                Console.addMessage(MessageFormat.format(Messages.jGitExec_git_success, 
+                        action));
             } catch (GitAPIException ex) {
-                Console.addMessage(String.format(Messages.jGitExec_git_failed_cause, action, ex));
+                Console.addMessage(MessageFormat.format(Messages.jGitExec_git_failed_cause, 
+                        action, ex));
                 throw new IOException(Messages.jGitExec_exception_thrown_at_jgit_commit, ex);
             }
             
             action = "push"; //$NON-NLS-1$
-            Console.addMessage(String.format(Messages.jGitExec_git_start_url, action, urlRepo));
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_start_url, 
+                    action, urlRepo));
             PushCommand pushCom = git.push();
             if (PATTERN_HTTP_URL.matcher(url).matches()) {
-                Console.addMessage(String.format(Messages.jGitExec_git_setting_creditials, action));
+                Console.addMessage(MessageFormat.format(Messages.jGitExec_git_setting_creditials, 
+                        action));
                 pushCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
             }
             Ref head = git.getRepository().getRef(Constants.HEAD);
@@ -133,7 +143,8 @@ public class JGitExec implements IRepoWorker{
             try {
                  pushResult = pushCom.call();
             } catch (GitAPIException ex) {
-                Console.addMessage(String.format(Messages.jGitExec_git_failed_cause, action, ex));
+                Console.addMessage(MessageFormat.format(Messages.jGitExec_git_failed_cause, 
+                        action, ex));
                 throw new IOException(Messages.JGitExec_exception_thrown_at_jgit_push, ex);
             }
             
@@ -144,16 +155,19 @@ public class JGitExec implements IRepoWorker{
                         String pushError = b.getRemoteName() + 
                                 Messages.jGitExec_status + b.getStatus() +
                                 Messages.jGitExec_message + b.getMessage();
-                        Console.addMessage(String.format(Messages.jGitExec_git_failed_cause, action, pushError));
+                        Console.addMessage(MessageFormat.format(Messages.jGitExec_git_failed_cause, 
+                                action, pushError));
                         Log.log(Log.LOG_ERROR, "git push failed. Cause: " + //$NON-NLS-1$  
-                                pushError); 
+                                b.getRemoteName() + 
+                                "\n                Status: " + b.getStatus() +
+                                "\n               Message: " + b.getMessage()); 
                         throw new IOException(
                                 Messages.jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date
                                         + Messages.jGitExec_git_status + b.getStatus());
                     }
                 }
             }
-            Console.addMessage(String.format(Messages.jGitExec_git_success, action));
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_success, action));
         } finally {
             git.close();
         }
@@ -172,21 +186,21 @@ public class JGitExec implements IRepoWorker{
         
         try {
 
-            Console.addMessage(String.format(Messages.jGitExec_git_start_url, action, url));
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_start, action));
             Log.log(Log.LOG_INFO, "git add update " + url); //$NON-NLS-1$
             
             git.add().addFilepattern(subDir).setUpdate(true).call();
-            Console.addMessage(String.format(Messages.jGitExec_git_success, action));
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_success, action));
             
             action = "add"; //$NON-NLS-1$
-            Console.addMessage(String.format(Messages.jGitExec_git_start_url, action, url));
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_start, action));
             Log.log(Log.LOG_INFO, "git add " + url); //$NON-NLS-1$
             
             git.add().addFilepattern(subDir).call();
-            Console.addMessage(String.format(Messages.jGitExec_git_success, action));
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_success, action));
         } catch (GitAPIException e) {
             action = "add update"; //$NON-NLS-1$
-            Console.addMessage(String.format(Messages.jGitExec_git_failed_cause, action, e));
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_failed_cause, action, e));
             throw new IOException(
                     Messages.jGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new, e);
         } finally {
@@ -208,12 +222,12 @@ public class JGitExec implements IRepoWorker{
             IndexDiff id = new IndexDiff(git.getRepository(), "HEAD", //$NON-NLS-1$
                     new FileTreeIterator(git.getRepository()));
 
-            String action = "get conflicts"; //$NON-NLS-1$
+            String action = Messages.jGitExec_get_conflicts;
             Log.log(Log.LOG_INFO, "git indexdiff " + url); //$NON-NLS-1$
-            Console.addMessage(String.format(Messages.jGitExec_git_start_url, action, url));
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_start, action));
             id.diff();
             boolean hasConflicts = !id.getConflicting().isEmpty();
-            Console.addMessage(String.format(Messages.jGitExec_git_result, action) + 
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_result, action) + 
                     (hasConflicts ? Messages.jGitExec_repository_has_conflicts : 
                         Messages.jGitExec_repository_doesnt_have_conflicts));
             return hasConflicts;
@@ -259,17 +273,19 @@ public class JGitExec implements IRepoWorker{
             
             // if no (un)tracked remote ref with local branch name, skip pull quietly
             if (!hasRemoteBranch){
-                String pullSkipped = Messages.jGitExec_skip_pull_branch_does_not_exist + 
-                        workingBranchName + Messages.jGitExec_skip_pull_branch_does_not_exist_skipped;
-                Console.addMessage(pullSkipped);
-                Log.log(Log.LOG_INFO, pullSkipped);
+                Console.addMessage(Messages.jGitExec_skip_pull_branch_does_not_exist + 
+                        workingBranchName + Messages.jGitExec_skip_pull_branch_does_not_exist_skipped);
+                Log.log(Log.LOG_INFO, "pull from not existing remote branch " +  //$NON-NLS-1$
+                        workingBranchName + " skipped."); //$NON-NLS-1$
                 return true;
             }
             String action = "pull"; //$NON-NLS-1$
-            Console.addMessage(String.format(Messages.jGitExec_git_start_url, action, url));
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_start_url, 
+                    action, url));
             PullCommand pullCom = git.pull();
             if (PATTERN_HTTP_URL.matcher(url).matches()) {
-                Console.addMessage(String.format(Messages.jGitExec_git_setting_creditials, action));
+                Console.addMessage(MessageFormat.format(Messages.jGitExec_git_setting_creditials, 
+                        action));
                 pullCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
             }
 
@@ -277,15 +293,17 @@ public class JGitExec implements IRepoWorker{
             
             PullResult pr =  pullCom.call();
             
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_success, action));
+            
             action = "merge"; //$NON-NLS-1$
-            Console.addMessage(String.format(Messages.jGitExec_git_start_url, action, url));
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_start, action));
             boolean mergeResult = pr.getMergeResult().getMergeStatus().isSuccessful();
-            Console.addMessage(String.format(Messages.jGitExec_git_result, action) + 
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_result, action) + 
                     (mergeResult ? Messages.jGitExec_success : Messages.jGitExec_failed));
             
             return mergeResult;
         } catch (GitAPIException e){
-            Console.addMessage(String.format(Messages.jGitExec_git_failed_cause, 
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_failed_cause, 
                     Messages.jGitExec_repository_update, e));
             throw new IOException(Messages.jGitExec_exception_thrown_at_jgit_repo_update, e);
         }finally{
