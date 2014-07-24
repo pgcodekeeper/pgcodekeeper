@@ -159,8 +159,8 @@ public class JGitExec implements IRepoWorker{
                                 action, pushError));
                         Log.log(Log.LOG_ERROR, "git push failed. Cause: " + //$NON-NLS-1$  
                                 b.getRemoteName() + 
-                                "\n                Status: " + b.getStatus() +
-                                "\n               Message: " + b.getMessage()); 
+                                "\n                Status: " + b.getStatus() + //$NON-NLS-1$
+                                "\n               Message: " + b.getMessage());  //$NON-NLS-1$
                         throw new IOException(
                                 Messages.jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date
                                         + Messages.jGitExec_git_status + b.getStatus());

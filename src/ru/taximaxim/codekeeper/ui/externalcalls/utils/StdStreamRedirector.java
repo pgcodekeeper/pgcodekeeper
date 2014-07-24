@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.parts.Console;
 
 /**
@@ -99,6 +100,7 @@ public class StdStreamRedirector implements Runnable {
             } catch (InterruptedException ex) {
                 throw new IllegalStateException("Interrupted wait on redirectorThread ", ex); //$NON-NLS-1$
             }
+            Console.addMessage(pb.command().get(0) + Messages.stdStreamRedirector_completed_with_code + p.exitValue());
 
             if (!redirector.isDestroyed.get() && p.exitValue() != 0) {
                 throw new IOException("Process returned with error: " //$NON-NLS-1$

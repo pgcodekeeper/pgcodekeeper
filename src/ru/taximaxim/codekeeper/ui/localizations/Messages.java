@@ -68,6 +68,7 @@ public class Messages extends NLS {
     public static String sqlScriptDialog_script_saved_to_file;
     public static String sqlScriptDialog_stop_script;
     public static String sqlScriptDialog_stop_script_before_closing_dialog;
+    public static String stdStreamRedirector_completed_with_code;
     public static String manualDepciesDialog_dependant_dependency;
     public static String manualDepciesDialog_depends_on;
     public static String manualDepciesDialog_object;
