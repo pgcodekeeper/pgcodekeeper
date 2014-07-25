@@ -268,15 +268,15 @@ public class PgDiffTables {
                 statements.add("\tADD COLUMN "
                         + column.getFullDefinition(arguments.isAddDefaults(), 
                                 defaultStatement));
+                if (defaultStatement.length() > 0) {
+                    defaultStatements.add("\tALTER COLUMN " + defaultStatement);
+                    defaultStatement.setLength(0);
+                }
                 if (arguments.isAddDefaults() && !column.getNullValue()
                         && (column.getDefaultValue() == null
                         || column.getDefaultValue().isEmpty())) {
                     dropDefaultsColumns.add(column);
                 }
-            }
-            if (defaultStatement.length() > 0) {
-                defaultStatements.add("\tALTER COLUMN " + defaultStatement);
-                defaultStatement.setLength(0);
             }
         }
     }
