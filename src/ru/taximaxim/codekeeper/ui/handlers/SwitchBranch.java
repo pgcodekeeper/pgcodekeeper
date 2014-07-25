@@ -47,8 +47,6 @@ public class SwitchBranch {
         try {
             git.set(Git.open(
                     new File(proj.getString(UIConsts.PROJ_PREF_REPO_ROOT_PATH))));
-            final ObjectId headOld = git.get().getRepository()
-                    .getRef(Constants.HEAD).getObjectId();
             final String branchFullNameOld = git.get().getRepository().getFullBranch();
             BranchOperationUI.checkout(git.get().getRepository()).start();
             
@@ -59,10 +57,8 @@ public class SwitchBranch {
                     try {
                         jobs.join(JobFamilies.CHECKOUT, null);
                         
-                        if (!headOld.equals(git.get().getRepository()
-                                .getRef(Constants.HEAD).getObjectId()) || 
-                                !branchFullNameOld.equals(git.get()
-                                        .getRepository().getFullBranch())) {
+                        if (!branchFullNameOld.equals(git.get()
+                                .getRepository().getFullBranch())) {
                             sync.asyncExec(new Runnable() {
                                 
                                 @Override
