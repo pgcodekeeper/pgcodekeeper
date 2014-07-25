@@ -19,7 +19,7 @@ import org.eclipse.egit.ui.JobFamilies;
 import org.eclipse.egit.ui.internal.branch.BranchOperationUI;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
@@ -47,8 +47,9 @@ public class SwitchBranch {
         try {
             git.set(Git.open(
                     new File(proj.getString(UIConsts.PROJ_PREF_REPO_ROOT_PATH))));
-            final Ref headOld = git.get().getRepository().getRef(Constants.HEAD);
-            final String oldBranchName = git.get().getRepository().getFullBranch();
+            final ObjectId headOld = git.get().getRepository()
+                    .getRef(Constants.HEAD).getObjectId();
+            final String branchFullNameOld = git.get().getRepository().getFullBranch();
             BranchOperationUI.checkout(git.get().getRepository()).start();
             
             Thread t = new Thread(new Runnable() {
@@ -58,9 +59,10 @@ public class SwitchBranch {
                     try {
                         jobs.join(JobFamilies.CHECKOUT, null);
                         
-                        if (!headOld.getObjectId().equals(git.get().getRepository()
+                        if (!headOld.equals(git.get().getRepository()
                                 .getRef(Constants.HEAD).getObjectId()) || 
-                                !oldBranchName.equals(git.get().getRepository().getFullBranch())) {
+                                !branchFullNameOld.equals(git.get()
+                                        .getRepository().getFullBranch())) {
                             sync.asyncExec(new Runnable() {
                                 
                                 @Override
