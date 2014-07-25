@@ -6,7 +6,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.eclipse.e4.core.di.extensions.Preference;
+import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
+import org.eclipse.e4.ui.model.application.ui.basic.MStackElement;
 import org.eclipse.e4.ui.services.IServiceConstants;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -18,8 +22,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import ru.taximaxim.codekeeper.ui.UIConsts.PART_STACK;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
-
 
 public class TestPart {
     
@@ -30,6 +34,12 @@ public class TestPart {
     @Inject
     @Named(IServiceConstants.ACTIVE_SHELL)
     private Shell shell_;
+    
+    @Inject
+    private EModelService model;
+    
+    @Inject
+    private MApplication app;
     
     private Text txt;
     
@@ -48,12 +58,17 @@ public class TestPart {
         btn.addSelectionListener(new SelectionAdapter() {
             
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent ev) {
                 
-                txt.setText(txt.getText() + "\n" + //$NON-NLS-1$
-                        System.getenv("SWT_GTK3")); //$NON-NLS-1$
+                MPartStack s = (MPartStack) model.find(PART_STACK.DEVTEST, app);
                 
+                for (MStackElement e : s.getChildren()) {
+                    
+                    txt.setText(txt.getText() + "\n" + //$NON-NLS-1$
+                            e.getElementId()); 
+                }
                 
+                txt.setText(txt.getText() + "\n");
             }
         });
         

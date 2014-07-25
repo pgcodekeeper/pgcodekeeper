@@ -42,18 +42,17 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.MENU;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class ProjectExplorer {
     
@@ -192,8 +191,8 @@ public class ProjectExplorer {
                 }
             }
         });
-        menuService.registerContextMenu(treeDb.getControl(),
-                MENU.PROJXP_TREE_POPUP);
+        // FIXME menu pending migration
+       // menuService.registerContextMenu(treeDb.getControl(), MENU.PROJXP_TREE_POPUP);
         
         changeProject(proj, proj);
     }

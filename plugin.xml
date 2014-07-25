@@ -9,6 +9,16 @@
       </fragment>
    </extension>
    <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:ru.taximaxim.codekeeper.ui.popupmenu.project">
+         <menu
+               label="%popupmenu.label.1">
+         </menu>
+      </menuContribution>
+   </extension>
+   <extension
          point="org.eclipse.ui.views">
       <category
             id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
@@ -16,7 +26,7 @@
       </category>
       <category
             id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
-            name="Devtest"
+            name="pgCodeKeeper - Devtest"
             parentCategory="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper">
       </category>
       <e4view
@@ -37,16 +47,16 @@
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
-            class="ru.taximaxim.codekeeper.ui.FakePerspectiveFactory"
+            class="ru.taximaxim.codekeeper.ui.perspectives.MainPersp"
             icon="icons/app_icon.png"
             id="ru.taximaxim.codekeeper.ui.perspective.Main"
-            name="pgCodeKeeper">
+            name="%perspective.label.1">
       </perspective>
       <perspective
             class="ru.taximaxim.codekeeper.ui.perspectives.DevtestPersp"
             icon="icons/beta_violet.png"
             id="ru.taximaxim.codekeeper.ui.perspective.testbs"
-            name="pgCodeKeeper - Devtest">
+            name="%perspective.label.2">
       </perspective>
    </extension>
    <extension

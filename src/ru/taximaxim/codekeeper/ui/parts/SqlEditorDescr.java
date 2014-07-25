@@ -70,7 +70,8 @@ public class SqlEditorDescr {
         File myFile = new File(
                 part.getPersistedState().get(PART.SQL_EDITOR_FILENAME));
         if(proj == null
-                || !myFile.toPath().startsWith(proj.getProjectWorkingDir().toPath()) || !myFile.exists()) {
+                || !myFile.toPath().startsWith(proj.getProjectWorkingDir().toPath())
+                || !myFile.exists()) {
             sync.asyncExec(new Runnable() {
                 
                 @Override
