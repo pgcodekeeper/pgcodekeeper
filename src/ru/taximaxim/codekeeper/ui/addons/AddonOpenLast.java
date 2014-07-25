@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.handlers.LoadProj;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.recentprojs.RecentProjects;
@@ -38,9 +39,9 @@ public class AddonOpenLast {
             
             final EPartService partService,
             
-            @Preference(UIConsts.PREF_OPEN_LAST_ON_START) String prefOpenLast,
+            @Preference(PREF.OPEN_LAST_ON_START) String prefOpenLast,
 
-            @Preference(UIConsts.PREF_RECENT_PROJECTS) String prefRecentProjects,
+            @Preference(PREF.RECENT_PROJECTS) String prefRecentProjects,
             
             UISynchronize sync,
             

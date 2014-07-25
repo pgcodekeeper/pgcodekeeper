@@ -22,7 +22,8 @@ import org.eclipse.jgit.lib.Constants;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -45,7 +46,7 @@ public class SwitchBranch {
         final AtomicReference<Git> git = new AtomicReference<>();
         try {
             git.set(Git.open(
-                    new File(proj.getString(UIConsts.PROJ_PREF_REPO_ROOT_PATH))));
+                    new File(proj.getString(PROJ_PREF.REPO_ROOT_PATH))));
             final String branchFullNameOld = git.get().getRepository().getFullBranch();
             BranchOperationUI.checkout(git.get().getRepository()).start();
             
@@ -62,7 +63,7 @@ public class SwitchBranch {
                                 
                                 @Override
                                 public void run() {
-                                    events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
+                                    events.send(EVENT.REOPEN_PROJECT, proj);
                                 }
                             });
                         }

@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -32,7 +33,7 @@ public class CommitDialog extends TrayDialog {
 
         try {
             message = Messages.commitPartDescr_the_following_changes_be_included_in_commit
-                    + proj.getString(UIConsts.PROJ_PREF_REPO_URL)
+                    + proj.getString(PROJ_PREF.REPO_URL)
                     + Messages.commitPartDescr_branch 
                     + new JGitExec().getCurrentBranch(proj.getRepoRoot());
         } catch (IOException ex) {

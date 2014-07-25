@@ -55,7 +55,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage;
@@ -237,10 +238,10 @@ public class DiffTableViewer extends Composite {
             }
         });
         
-        String ignoredObjectsPref = mainPrefs.getString(UIConsts.PREF_IGNORE_OBJECTS);
+        String ignoredObjectsPref = mainPrefs.getString(PREF.IGNORE_OBJECTS);
         if (!ignoredObjectsPref.isEmpty()) {
             ignoresListener.propertyChange(new PropertyChangeEvent(
-                    mainPrefs, UIConsts.PREF_IGNORE_OBJECTS, null, ignoredObjectsPref));
+                    mainPrefs, PREF.IGNORE_OBJECTS, null, ignoredObjectsPref));
         } else {
             ignoredElements = new LinkedList<>();
         }
@@ -321,7 +322,7 @@ public class DiffTableViewer extends Composite {
                                     .getContext()
                                     .getBundle()
                                     .getResource(
-                                            UIConsts.FILENAME_ICONPGADMIN
+                                            FILE.ICONPGADMIN
                                                     + objType.toString().toLowerCase()
                                                     + ".png")); //$NON-NLS-1$
                     mapObjIcons.put(objType, lrm.createImage(iObj));
@@ -344,15 +345,15 @@ public class DiffTableViewer extends Composite {
             private Image both = 
                     lrm.createImage(ImageDescriptor.createFromURL(
                             Activator.getContext().getBundle().getResource(
-                                    UIConsts.FILENAME_ICONEDIT)));
+                                    FILE.ICONEDIT)));
             private Image left = 
                     lrm.createImage(ImageDescriptor.createFromURL(
                             Activator.getContext().getBundle().getResource(
-                                    UIConsts.FILENAME_ICONDEL)));
+                                    FILE.ICONDEL)));
             private Image right = 
                     lrm.createImage(ImageDescriptor.createFromURL(
                             Activator.getContext().getBundle().getResource(
-                                    UIConsts.FILENAME_ICONADD)));
+                                    FILE.ICONADD)));
             
             @Override
             public String getText(Object element) {
@@ -544,7 +545,7 @@ public class DiffTableViewer extends Composite {
 
         @Override
         public void propertyChange(PropertyChangeEvent event) {
-            if (event.getProperty().equals(UIConsts.PREF_IGNORE_OBJECTS)
+            if (event.getProperty().equals(PREF.IGNORE_OBJECTS)
                     && !event.getNewValue().equals(event.getOldValue())) {
                 XmlStringList xml = new XmlStringList(
                         IgnoredObjectsPrefPage.IGNORED_OBJS_TAG,

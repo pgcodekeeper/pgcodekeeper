@@ -15,6 +15,7 @@ import javax.xml.transform.TransformerException;
 import org.eclipse.core.runtime.Platform;
 import org.xml.sax.SAXException;
 
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class XmlHistory {
@@ -53,7 +54,7 @@ public class XmlHistory {
         }
         fileHistory = new File(fileHistory, ".metadata"); //$NON-NLS-1$
         fileHistory = new File(fileHistory, ".plugins"); //$NON-NLS-1$
-        fileHistory = new File(fileHistory, UIConsts.PLUGIN_ID);
+        fileHistory = new File(fileHistory, PLUGIN_ID.THIS);
         fileHistory = new File(fileHistory, fileName);
         return fileHistory;
     }

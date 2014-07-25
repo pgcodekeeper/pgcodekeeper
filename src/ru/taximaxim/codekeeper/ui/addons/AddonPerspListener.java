@@ -15,7 +15,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PerspectiveAdapter;
 
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
+import ru.taximaxim.codekeeper.ui.UIConsts.PERSP;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class AddonPerspListener {
@@ -36,8 +37,8 @@ public class AddonPerspListener {
             @Override
             public void perspectiveActivated(IWorkbenchPage page,
                     IPerspectiveDescriptor perspective) {
-                if (perspective.getId().equals(UIConsts.PERSP_MAIN_ID)) {
-                    events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
+                if (perspective.getId().equals(PERSP.MAIN)) {
+                    events.send(EVENT.REOPEN_PROJECT, proj);
                 }
             }
         });

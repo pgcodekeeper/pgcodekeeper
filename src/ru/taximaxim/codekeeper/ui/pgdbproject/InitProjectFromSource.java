@@ -10,11 +10,11 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
@@ -35,8 +35,8 @@ public class InitProjectFromSource implements IRunnableWithProgress {
     public InitProjectFromSource(final IPreferenceStore mainPrefStore,
             final PgDbProject props, final String dumpPath) {
         this.mainPrefStore = mainPrefStore;
-        this.exePgdump = mainPrefStore.getString(UIConsts.PREF_PGDUMP_EXE_PATH);
-        this.pgdumpCustom = mainPrefStore.getString(UIConsts.PREF_PGDUMP_CUSTOM_PARAMS);
+        this.exePgdump = mainPrefStore.getString(PREF.PGDUMP_EXE_PATH);
+        this.pgdumpCustom = mainPrefStore.getString(PREF.PGDUMP_CUSTOM_PARAMS);
         this.props = props;
         this.dumpPath = dumpPath;
     }
@@ -48,7 +48,7 @@ public class InitProjectFromSource implements IRunnableWithProgress {
             
             SubMonitor pm = SubMonitor.convert(monitor, Messages.initProjectFromSource_initializing_project, 100);
             IRepoWorker repo = new JGitExec(props, 
-                    mainPrefStore.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+                    mainPrefStore.getString(PREF.GIT_KEY_PRIVATE_FILE));
             initRepoFromSource(pm, repo);
             
             pm.done();
@@ -73,14 +73,14 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         SubMonitor taskpm = pm.newChild(25); // 50
 
         PgDatabase db;
-        switch (props.getString(UIConsts.PROJ_PREF_SOURCE)) {
-        case UIConsts.PROJ_SOURCE_TYPE_DB:
+        switch (props.getString(PROJ_PREF.SOURCE)) {
+        case PROJ_PREF.SOURCE_TYPE_DB:
             db = DbSource.fromDb(exePgdump, pgdumpCustom, props).get(taskpm);
             break;
 
-        case UIConsts.PROJ_SOURCE_TYPE_DUMP:
+        case PROJ_PREF.SOURCE_TYPE_DUMP:
             db = DbSource.fromFile(dumpPath,
-                    props.getString(UIConsts.PROJ_PREF_ENCODING)).get(taskpm);
+                    props.getString(PROJ_PREF.ENCODING)).get(taskpm);
             break;
 
         default:
@@ -98,9 +98,9 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         }
         
         new ModelExporter(dirRepo.getAbsolutePath(), db,
-                props.getString(UIConsts.PROJ_PREF_ENCODING)).export();
+                props.getString(PROJ_PREF.ENCODING)).export();
 
-        pm.newChild(25).subTask(UIConsts.PROJ_REPO_TYPE_GIT_NAME + " committing..."); // 100 //$NON-NLS-1$
+        pm.newChild(25).subTask(PROJ_PREF.REPO_TYPE_GIT_NAME + " committing..."); // 100 //$NON-NLS-1$
         repo.repoRemoveMissingAddNew(dirRepo);
         repo.repoCommit(dirRepo, "new rev"); //$NON-NLS-1$
     }

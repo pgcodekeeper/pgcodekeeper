@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class RecentProjects {
@@ -22,7 +22,7 @@ public class RecentProjects {
     }
     
     public static void addRecent(String recent, IPreferenceStore prefStore){
-        LinkedList<String> l = getList(prefStore.getString(UIConsts.PREF_RECENT_PROJECTS));
+        LinkedList<String> l = getList(prefStore.getString(PREF.RECENT_PROJECTS));
         l.remove(recent);
         l.addFirst(recent);
         while (l.size() > 10){
@@ -32,7 +32,7 @@ public class RecentProjects {
     }
 
     public static void deleteRecent(String recent, IPreferenceStore prefStore) {
-        LinkedList<String> l = getList(prefStore.getString(UIConsts.PREF_RECENT_PROJECTS));
+        LinkedList<String> l = getList(prefStore.getString(PREF.RECENT_PROJECTS));
         l.remove(recent);
         writePref(l, prefStore);
     }
@@ -50,7 +50,7 @@ public class RecentProjects {
                 sb.append("*"); //$NON-NLS-1$
             }
         }
-        prefStore.setValue(UIConsts.PREF_RECENT_PROJECTS, sb.toString());
+        prefStore.setValue(PREF.RECENT_PROJECTS, sb.toString());
         if(prefStore.needsSaving() && prefStore instanceof IPersistentPreferenceStore) {
             try {
                 ((IPersistentPreferenceStore) prefStore).save();

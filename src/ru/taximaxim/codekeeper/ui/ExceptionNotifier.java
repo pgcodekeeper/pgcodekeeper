@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.statushandlers.StatusManager;
 
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.handlers.OpenLog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.parts.Console;
@@ -55,7 +56,7 @@ public class ExceptionNotifier {
             Console.addMessage(message + ": " + initialReason); //$NON-NLS-1$
         }
         if (showInDialog){
-            final IStatus status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID,
+            final IStatus status = new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                     initialReason, source);
             Display.getDefault().syncExec(new Runnable() {
 
@@ -70,7 +71,7 @@ public class ExceptionNotifier {
     }
     
     public static void notify(String message, Throwable ex) {
-        Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+        Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS, 
                 message, ex);
         StatusManager.getManager().handle(status, StatusManager.BLOCK);
     }
