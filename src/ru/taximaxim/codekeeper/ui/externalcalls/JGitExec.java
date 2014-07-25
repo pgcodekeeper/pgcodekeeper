@@ -81,8 +81,6 @@ public class JGitExec implements IRepoWorker{
                 action, url));
         CloneCommand cloneCom = new CloneCommand();
         if (PATTERN_HTTP_URL.matcher(url).matches()) {
-            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_setting_creditials, 
-                    action));
             cloneCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
         }
         
@@ -129,8 +127,6 @@ public class JGitExec implements IRepoWorker{
                     action, urlRepo));
             PushCommand pushCom = git.push();
             if (PATTERN_HTTP_URL.matcher(url).matches()) {
-                Console.addMessage(MessageFormat.format(Messages.jGitExec_git_setting_creditials, 
-                        action));
                 pushCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
             }
             Ref head = git.getRepository().getRef(Constants.HEAD);
@@ -219,7 +215,7 @@ public class JGitExec implements IRepoWorker{
         File gitRoot = getGitRoot(dirIn);
         Git git = Git.open(gitRoot);
         try {
-            IndexDiff id = new IndexDiff(git.getRepository(), "HEAD", //$NON-NLS-1$
+            IndexDiff id = new IndexDiff(git.getRepository(), Constants.HEAD,
                     new FileTreeIterator(git.getRepository()));
 
             String action = Messages.jGitExec_get_conflicts;
@@ -284,22 +280,16 @@ public class JGitExec implements IRepoWorker{
                     action, url));
             PullCommand pullCom = git.pull();
             if (PATTERN_HTTP_URL.matcher(url).matches()) {
-                Console.addMessage(MessageFormat.format(Messages.jGitExec_git_setting_creditials, 
-                        action));
                 pullCom.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pass));
             }
 
             Log.log(Log.LOG_INFO, "git pull " + url); //$NON-NLS-1$
             
             PullResult pr =  pullCom.call();
-            
-            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_success, action));
-            
-            action = "merge"; //$NON-NLS-1$
-            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_start, action));
             boolean mergeResult = pr.getMergeResult().getMergeStatus().isSuccessful();
-            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_result, action) + 
-                    (mergeResult ? Messages.jGitExec_success : Messages.jGitExec_failed));
+
+            Console.addMessage(MessageFormat.format(Messages.jGitExec_git_success
+                    + " Merge " + (mergeResult? "" : "un") + "succesfull.", action)); 
             
             return mergeResult;
         } catch (GitAPIException e){
