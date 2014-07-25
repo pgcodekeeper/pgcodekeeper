@@ -95,21 +95,6 @@ public class PgColumn extends PgStatement {
         return sbDefinition.toString();
     }
 
-    private void getDefaultValues(final boolean addDefaults,
-            final StringBuilder sbDefinition) {
-        if (defaultValue != null && !defaultValue.isEmpty()) {
-            sbDefinition.append(" DEFAULT ");
-            sbDefinition.append(defaultValue);
-        } else if (!nullValue && addDefaults) {
-            final String defaultColValue = PgColumnUtils.getDefaultValue(type);
-
-            if (defaultColValue != null) {
-                sbDefinition.append(" DEFAULT ");
-                sbDefinition.append(defaultColValue);
-            }
-        }
-    }
-
     public void setNullValue(final boolean nullValue) {
         this.nullValue = nullValue;
         resetHash();
