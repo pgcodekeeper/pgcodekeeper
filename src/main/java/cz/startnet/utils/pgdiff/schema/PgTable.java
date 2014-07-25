@@ -108,6 +108,7 @@ public class PgTable extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(constraints);
     }
 
+    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(1000);
         sbSQL.append("CREATE TABLE ");
@@ -127,7 +128,7 @@ public class PgTable extends PgStatementWithSearchPath {
                 }
 
                 sbSQL.append("\t");
-                sbSQL.append(column.getFullDefinition(false, null, false));
+                sbSQL.append(column.getFullDefinition(false, null));
             }
 
             sbSQL.append("\n)");
@@ -212,6 +213,7 @@ public class PgTable extends PgStatementWithSearchPath {
         return sbSQL.toString();
     }
 
+    @Override
     public String getDropSQL() {
         return "DROP TABLE " + PgDiffUtils.getQuotedName(getName()) + ";";
     }

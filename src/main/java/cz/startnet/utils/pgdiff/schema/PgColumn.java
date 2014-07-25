@@ -62,28 +62,36 @@ public class PgColumn extends PgStatement {
      * @return full definition of the column
      */
     public String getFullDefinition(final boolean addDefaults, 
-            StringBuilder defaultStatement,
-            final boolean separateDefStatement) {
-        final StringBuilder sbDefDefinition = new StringBuilder(100);
+            StringBuilder separateDefault) {
         final StringBuilder sbDefinition = new StringBuilder(100);
-        String strDefStatement = 
-                sbDefinition.append(PgDiffUtils.getQuotedName(name)).toString();
+        
+        String cName = PgDiffUtils.getQuotedName(name);
+        sbDefinition.append(cName);
         sbDefinition.append(' ');
         sbDefinition.append(type);
-        
-        if (separateDefStatement && nullValue) {
-            getDefaultValues(addDefaults, sbDefDefinition);
-            
-            if (sbDefDefinition.length() > 0) {
-                defaultStatement.append(strDefStatement + sbDefDefinition);
+
+        if (defaultValue != null && !defaultValue.isEmpty()) {
+            StringBuilder sbDefault = sbDefinition;
+            if (separateDefault != null && nullValue) {
+                sbDefault = separateDefault;
+                sbDefault.append(cName);
+                sbDefault.append(" SET");
             }
-        } else {
-            getDefaultValues(addDefaults, sbDefinition);
-            if (!nullValue) {
-                sbDefinition.append(" NOT NULL");
+            sbDefault.append(" DEFAULT ");
+            sbDefault.append(defaultValue);
+        } else if (!nullValue && addDefaults) {
+            final String defaultColValue = PgColumnUtils.getDefaultValue(type);
+
+            if (defaultColValue != null) {
+                sbDefinition.append(" DEFAULT ");
+                sbDefinition.append(defaultColValue);
             }
         }
-        
+
+        if (!nullValue) {
+            sbDefinition.append(" NOT NULL");
+        }
+
         return sbDefinition.toString();
     }
 

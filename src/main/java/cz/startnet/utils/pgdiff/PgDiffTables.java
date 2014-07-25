@@ -267,7 +267,7 @@ public class PgDiffTables {
             if (!oldTable.containsColumn(column.getName())) {
                 statements.add("\tADD COLUMN "
                         + column.getFullDefinition(arguments.isAddDefaults(), 
-                                defaultStatement, true));
+                                defaultStatement));
                 if (arguments.isAddDefaults() && !column.getNullValue()
                         && (column.getDefaultValue() == null
                         || column.getDefaultValue().isEmpty())) {
