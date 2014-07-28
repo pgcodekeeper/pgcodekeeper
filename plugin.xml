@@ -9,6 +9,15 @@
       </fragment>
    </extension>
    <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.TestPopup3xHandler"
+            description="testpopupcommand"
+            id="ru.taximaxim.codekeeper.ui.testpopupcommand"
+            name="testpopupcommand">
+      </command>
+   </extension>
+   <extension
          point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="false"
@@ -16,6 +25,15 @@
          <menu
                label="%popupmenu.label.1">
          </menu>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:ru.taximaxim.codekeeper.popupmenu.welcometest">
+         <command
+               commandId="ru.taximaxim.codekeeper.ui.testpopupcommand"
+               label="testpopupcommand"
+               style="push">
+         </command>
       </menuContribution>
    </extension>
    <extension
