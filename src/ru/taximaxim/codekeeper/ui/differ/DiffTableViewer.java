@@ -49,6 +49,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -199,10 +200,9 @@ public class DiffTableViewer extends Composite {
         
         viewer.setContentProvider(new ArrayContentProvider());
         
-        
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 5, false);
+        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 7, false);
         contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
         contButtons.setLayout(contButtonsLayout);
         
@@ -229,13 +229,7 @@ public class DiffTableViewer extends Composite {
                 }
             });
             
-            Composite prevCheckedButtons = new Composite(this, SWT.NONE);
-            prevCheckedButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            GridLayout prevCheckedButtonsLayout = new GridLayout(2, false);
-            contButtonsLayout.marginWidth = prevCheckedButtonsLayout.marginHeight = 0;
-            prevCheckedButtons.setLayout(prevCheckedButtonsLayout);
-            
-            cmbPrevChecked = new ComboViewer(prevCheckedButtons, SWT.SIMPLE);
+            cmbPrevChecked = new ComboViewer(contButtons, SWT.SIMPLE);
             cmbPrevChecked.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             cmbPrevChecked.setContentProvider(new ArrayContentProvider());
             cmbPrevChecked.setLabelProvider(new LabelProvider());
@@ -259,7 +253,7 @@ public class DiffTableViewer extends Composite {
                 }
             });
             
-            Button saveChecked = new Button(prevCheckedButtons, SWT.PUSH);
+            Button saveChecked = new Button(contButtons, SWT.PUSH);
             saveChecked.setText(Messages.diffTableViewer_save_checked);
             saveChecked.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -586,12 +580,16 @@ public class DiffTableViewer extends Composite {
     
     private void updateObjectsLabel() {
         lblObjectCount.setText(Messages.diffTableViewer_objects + elements.size());
-        lblObjectCount.getParent().layout();
+        Control[] cArray = new Control[1];
+        cArray[0] = lblObjectCount;
+        lblObjectCount.getParent().layout(cArray);
     }
     
     private void updateCheckedLabel() {
         lblCheckedCount.setText(Messages.DiffTableViewer_selected + getCheckedElementsCount());
-        lblCheckedCount.getParent().layout();
+        Control[] cArray = new Control[1];
+        cArray[0] = lblCheckedCount;
+        lblCheckedCount.getParent().layout(cArray);
     }
     
     public int getCheckedElementsCount() {
