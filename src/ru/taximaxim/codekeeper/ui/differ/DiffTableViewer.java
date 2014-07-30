@@ -233,7 +233,9 @@ public class DiffTableViewer extends Composite {
             });
             
             cmbPrevChecked = new ComboViewer(contButtons, SWT.SIMPLE);
-            cmbPrevChecked.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            GridData gd = new GridData();
+            gd.widthHint = 200;
+            cmbPrevChecked.getCombo().setLayoutData(gd);
             cmbPrevChecked.setContentProvider(new ArrayContentProvider());
             cmbPrevChecked.setLabelProvider(new LabelProvider());
             bindReversData();
