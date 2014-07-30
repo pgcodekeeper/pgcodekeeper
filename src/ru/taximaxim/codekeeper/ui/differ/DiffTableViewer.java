@@ -33,6 +33,7 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
@@ -215,6 +216,7 @@ public class DiffTableViewer extends Composite {
                 public void widgetSelected(SelectionEvent e) {
                     viewer.setAllChecked(true);
                     checkListener.setElementsChecked(viewer.getCheckedElements(), true);
+                    cmbPrevChecked.setSelection(StructuredSelection.EMPTY);
                 }
             });
             
@@ -226,6 +228,7 @@ public class DiffTableViewer extends Composite {
                 public void widgetSelected(SelectionEvent e) {
                     checkListener.setElementsChecked(viewer.getCheckedElements(), false);
                     viewer.setAllChecked(false);
+                    cmbPrevChecked.setSelection(StructuredSelection.EMPTY);
                 }
             });
             
@@ -238,18 +241,7 @@ public class DiffTableViewer extends Composite {
                 
                 @Override
                 public void selectionChanged(SelectionChangedEvent event) {
-                    LinkedList<String> elementsToCheck = 
-                            prevChecked.get(cmbPrevChecked.getCombo().getText());
-                    List<TreeElement> prevCheckedList = new ArrayList<>();
-                    if (elementsToCheck != null) {
-                        for (TreeElement elementKey : elements.keySet()) {
-                            if (elementsToCheck.contains((elementKey.getName()))) {
-                                prevCheckedList.add(elementKey);
-                            }
-                        }
-                        checkListener.setElementsChecked(prevCheckedList.toArray(), true);
-                        viewerRefresh();
-                    }
+                    setCheckedFromPrevCheckedCombo();
                 }
             });
             
@@ -324,6 +316,25 @@ public class DiffTableViewer extends Composite {
         }
     }
 
+
+    private void setCheckedFromPrevCheckedCombo() {
+        String comboText = cmbPrevChecked.getCombo().getText();
+        if (comboText != null && !comboText.isEmpty()) {
+            LinkedList<String> elementsToCheck = prevChecked.get(comboText);
+            List<TreeElement> prevCheckedList = new ArrayList<>();
+            if (elementsToCheck != null) {
+                for (TreeElement elementKey : elements.keySet()) {
+                    if (elementsToCheck.contains((elementKey.getName()))) {
+                        prevCheckedList.add(elementKey);
+                    }
+                }
+                checkListener.setElementsChecked(prevCheckedList.toArray(),
+                        true);
+                viewerRefresh();
+            }
+        }
+    }
+    
     private void initColumns() {
         if (!viewOnly) {
             columnCheck = new TableViewerColumn(viewer, SWT.LEFT);
@@ -531,6 +542,7 @@ public class DiffTableViewer extends Composite {
         
         if (!viewOnly) {
             updateCheckedLabel();
+            setCheckedFromPrevCheckedCombo();
         }
         
         initialSorting();
