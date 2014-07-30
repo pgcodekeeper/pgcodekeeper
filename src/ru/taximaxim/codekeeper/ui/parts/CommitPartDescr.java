@@ -134,10 +134,10 @@ public class CommitPartDescr {
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs,
             final EModelService model, final MApplication app) {
         repoName = proj.getString(PROJ_PREF.REPO_TYPE);
-        history = new XmlHistory(COMMENT_HIST_MAX_STORED, 
+        history = new XmlHistory.Builder(COMMENT_HIST_MAX_STORED, 
                 COMMENTS_HIST_FILENAME, 
                 COMMENTS_HIST_ROOT, 
-                COMMENTS_HIST_EL);
+                COMMENTS_HIST_EL).build();
         
         final Shell shell = parent.getShell();
         parent.setLayout(new GridLayout());

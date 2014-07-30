@@ -3,8 +3,11 @@ package ru.taximaxim.codekeeper.ui;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -37,19 +40,34 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  */
 public class XmlStringList {
     
+    private static final String PROPERTY_NAME = "name"; //$NON-NLS-1$
+    
     private final String rootTagName;
     private final String elementTagName;
+    private String elementSetTagName;
+    
     
     public XmlStringList(String rootTagName, String elementTagName) {
         this.rootTagName = rootTagName;
         this.elementTagName = elementTagName;
     }
     
-    public LinkedList<String> deserialize(Reader reader) throws IOException, SAXException {
+    public XmlStringList(String rootTagName, String elementTagName, 
+            String elementSetTagName) {
+        this(rootTagName, elementTagName);
+        this.elementSetTagName = elementSetTagName;
+    }
+    
+    public LinkedList<String> deserializeList(Reader reader) throws IOException, SAXException {
         return readList(readXml(reader));
     }
+    
+    public LinkedHashMap<String, LinkedList<String>> deserializeMap(Reader reader) 
+            throws IOException, SAXException {
+        return readMap(readXml(reader));
+    }
 
-    public void serialize(List<String> listToConvert, boolean noFormatting,
+    public void serializeList(List<String> listToConvert, boolean noFormatting,
             Writer writer) throws TransformerException {
         Document xml;
         try {
@@ -75,6 +93,36 @@ public class XmlStringList {
         tf.transform(new DOMSource(xml), new StreamResult(writer));
     }
     
+    public void serializeMap(Map<String, LinkedList<String>> mapToConvert, boolean noFormatting,
+            Writer writer) throws TransformerException {
+        Document xml;
+        try {
+            xml = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        } catch (ParserConfigurationException ex) {
+            throw new IllegalStateException(ex);
+        }
+        
+        Element root = xml.createElement(rootTagName);
+        xml.appendChild(root);
+        
+        for (String key : mapToConvert.keySet()) {
+            Element keyElement = xml.createElement(elementSetTagName);
+            keyElement.setAttribute(PROPERTY_NAME, key);
+            root.appendChild(keyElement);
+            for (String listElement : mapToConvert.get(key)) {
+                Element newElement = xml.createElement(elementTagName);
+                newElement.setTextContent(listElement);
+                keyElement.appendChild(newElement);
+            }
+        }
+        
+        Transformer tf =  TransformerFactory.newInstance().newTransformer();
+        if (!noFormatting) {
+            tf.setOutputProperty(OutputKeys.INDENT, "yes"); //$NON-NLS-1$
+            tf.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4"); //$NON-NLS-1$ //$NON-NLS-2$
+        }
+        tf.transform(new DOMSource(xml), new StreamResult(writer));
+    }
     /**
      * Reads (well-formed) list XML and checks it for basic validity:
      * root node must be <code>&lt;rootTagName&gt;</code>
@@ -111,5 +159,30 @@ public class XmlStringList {
         }
         
         return list;
+    }
+    
+    private LinkedHashMap<String, LinkedList<String>> readMap(Document xml) {
+        LinkedHashMap<String, LinkedList<String>> lists= new LinkedHashMap<>();
+        LinkedList<String> list = new LinkedList<>();
+        
+        Element root = (Element) xml.getElementsByTagName(rootTagName).item(0);
+        NodeList nList = root.getChildNodes();
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node node = nList.item(i);
+            
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                NodeList nElements = ((Element)node).getElementsByTagName(elementTagName);
+                for (int j = 0; j < nElements.getLength(); j++) {
+                    list.add(nElements.item(j).getTextContent());
+                }
+                if (!list.isEmpty()) {
+                    lists.put(node.getAttributes().getNamedItem(PROPERTY_NAME)
+                            .getNodeValue(), list);
+                    list = new LinkedList<>();
+                }
+            }
+        }
+        
+        return lists;
     }
 }

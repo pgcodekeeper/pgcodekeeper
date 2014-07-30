@@ -105,10 +105,10 @@ public class SqlScriptDialog extends MessageDialog {
         setShellStyle(getShellStyle() | SWT.RESIZE);
         
         this.text = text;
-        this.history = new XmlHistory(SCRIPTS_HIST_MAX_STORED, 
+        this.history = new XmlHistory.Builder(SCRIPTS_HIST_MAX_STORED, 
                 SCRIPTS_HIST_FILENAME, 
                 SCRIPTS_HIST_ROOT, 
-                SCRIPTS_HIST_EL);
+                SCRIPTS_HIST_EL).build();
     }
     
     @Override
