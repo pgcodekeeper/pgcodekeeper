@@ -1,6 +1,8 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.DirectoryNotEmptyException;
@@ -8,10 +10,14 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Properties;
 
+import org.osgi.framework.Version;
+
+import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
-
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
@@ -137,7 +143,8 @@ public class ModelExporter {
             
             // indexes, triggers, constraints are saved when tables are processed
         }
-        new File (outDir, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).createNewFile();
+        writeProjVersion(new File(outDir.getPath(), 
+                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
     
     /**
@@ -228,5 +235,26 @@ public class ModelExporter {
     public static String getExportedFilename(PgStatement statement) {
         return statement.getBareName()
                 + "_" + PgDiffUtils.md5(statement.getName());
+    }
+    
+    private void writeProjVersion(File f) throws IOException {
+        Properties prop = new Properties();
+        Version progVersion = Activator.getPluginVersion();
+        if (f.exists()) {
+            prop.load(new FileInputStream(f));
+            String oldVersion = prop.getProperty(ApgdiffConsts.VERSION_PROP_NAME);
+            if (oldVersion != null) {
+                try {
+                    if (progVersion.compareTo(Version.parseVersion(oldVersion)) == 0) {
+                        return;
+                    }
+                } catch (IllegalArgumentException e) {
+                    Log.log(e);
+                }
+            }
+        }
+        prop = new Properties();
+        prop.setProperty(ApgdiffConsts.VERSION_PROP_NAME, progVersion.toString());
+        prop.store(new FileOutputStream(f), null);
     }
 }
