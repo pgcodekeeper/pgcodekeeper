@@ -128,6 +128,10 @@ public class CommitPartDescr {
      * Remote DB.
      */
     private DbSource dbTarget;
+    /**
+     * Differ local and remote db
+     */
+    private TreeDiffer treeDiffer;
     
     @PostConstruct
     private void postConstruct(Composite parent, final PgDbProject proj,
@@ -226,7 +230,8 @@ public class CommitPartDescr {
                 
                 final TreeElement filtered = diffTable.filterDiffTree();
                 
-                CommitDialog cd = new CommitDialog(shell, filtered, mainPrefs, proj);
+                CommitDialog cd = new CommitDialog(shell, filtered, treeDiffer, 
+                        mainPrefs, proj);
                 if (cd.open() != CommitDialog.OK) {
                     return;
                 }
@@ -439,9 +444,9 @@ public class CommitPartDescr {
                 }
                 
                 Log.log(Log.LOG_INFO, "Getting changes for commit"); //$NON-NLS-1$
-                TreeDiffer treediffer = new TreeDiffer(dbSource, dbTarget);
+                treeDiffer = new TreeDiffer(dbSource, dbTarget);
                 try {
-                    new ProgressMonitorDialog(shell).run(true, false, treediffer);
+                    new ProgressMonitorDialog(shell).run(true, false, treeDiffer);
                 } catch (InvocationTargetException ex) {
                     throw new IllegalStateException(Messages.error_in_differ_thread, ex);
                 } catch (InterruptedException ex) {
@@ -450,7 +455,7 @@ public class CommitPartDescr {
                             Messages.differ_thread_cancelled_shouldnt_happen, ex);
                 }
 
-                diffTable.setInput(treediffer);
+                diffTable.setInput(treeDiffer);
                 diffPane.setInput(null);
                 btnCommit.setEnabled(true);
             }

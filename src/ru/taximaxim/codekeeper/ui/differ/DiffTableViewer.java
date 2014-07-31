@@ -436,7 +436,16 @@ public class DiffTableViewer extends Composite {
         setInputTreeElement(treeRoot);
     }
     
-    public void setInputTreeElement(TreeElement treeElement) {
+    public void setFilteredInput(TreeElement filteredElement, 
+            TreeDiffer rootDiffer) {
+        this.treeRoot = (rootDiffer == null) ? null : rootDiffer.getDiffTree();
+        this.dbSource = (rootDiffer == null) ? null : rootDiffer.getDbSource().getDbObject();
+        this.dbTarget = (rootDiffer == null) ? null : rootDiffer.getDbTarget().getDbObject();
+        
+        setInputTreeElement(filteredElement);
+    }
+    
+    private void setInputTreeElement(TreeElement treeElement) {
         elements = new HashMap<>();
         if (treeElement != null) {
             generateFlatElementsMap(treeElement);
@@ -474,15 +483,11 @@ public class DiffTableViewer extends Composite {
             }
         }
         
-        boolean doNotInclude = 
-                (subtree.getSide() == DiffSide.BOTH && subtree.getParent() != null 
+        if ((subtree.getSide() == DiffSide.BOTH && subtree.getParent() != null 
                 && subtree.getParent().getSide() != DiffSide.BOTH)
                 || subtree.getType() == DbObjType.CONTAINER
-                || subtree.getType() == DbObjType.DATABASE;
-        if (doNotInclude) {
-            return;
-        }
-        if (!viewOnly && (subtree.getSide() == DiffSide.BOTH && 
+                || subtree.getType() == DbObjType.DATABASE 
+                ||(subtree.getSide() == DiffSide.BOTH && 
                 subtree.getPgStatement(dbSource).compare(
                         subtree.getPgStatement(dbTarget)))) {
             return;
