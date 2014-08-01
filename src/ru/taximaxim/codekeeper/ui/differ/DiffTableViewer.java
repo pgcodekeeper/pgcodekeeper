@@ -50,7 +50,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -238,7 +237,7 @@ public class DiffTableViewer extends Composite {
             cmbPrevChecked.getCombo().setLayoutData(gd);
             cmbPrevChecked.setContentProvider(new ArrayContentProvider());
             cmbPrevChecked.setLabelProvider(new LabelProvider());
-            bindReversData();
+            cmbPrevChecked.setInput(prevChecked.keySet());
             cmbPrevChecked.addSelectionChangedListener(new ISelectionChangedListener() {
                 
                 @Override
@@ -261,7 +260,7 @@ public class DiffTableViewer extends Composite {
                         prevCheckedHistory.addCheckedSetHistoryEntry(setName, 
                                     checkedElements);
                         prevChecked = prevCheckedHistory.getMapHistory();
-                        bindReversData();
+                        cmbPrevChecked.setInput(prevChecked.keySet());
                     }
                 }
             });
@@ -306,25 +305,12 @@ public class DiffTableViewer extends Composite {
         }
     }
 
-    private void bindReversData() {
-        if (prevChecked != null) {
-            List<String> lS = new ArrayList<>();
-            LinkedList<String> li = new LinkedList<String>(prevChecked.keySet());
-            Iterator<String> itr = li.descendingIterator();
-            while (itr.hasNext()) {
-                lS.add(itr.next());
-            }
-            cmbPrevChecked.setInput(lS);
-        }
-    }
-
     private void setCheckedFromPrevCheckedCombo() {
         String comboText = cmbPrevChecked.getCombo().getText();
         if (comboText != null && !comboText.isEmpty()) {
-            LinkedList<String> elementsToCheck = 
-                    prevChecked == null ? null : prevChecked.get(comboText);
+            LinkedList<String> elementsToCheck = prevChecked.get(comboText);
             List<TreeElement> prevCheckedList = new ArrayList<>();
-            if (elementsToCheck != null) {
+            if (!elementsToCheck.isEmpty()) {
                 for (TreeElement elementKey : elements.keySet()) {
                     if (elementsToCheck.contains((elementKey.getName()))) {
                         prevCheckedList.add(elementKey);
@@ -594,16 +580,12 @@ public class DiffTableViewer extends Composite {
     
     private void updateObjectsLabel() {
         lblObjectCount.setText(Messages.diffTableViewer_objects + elements.size());
-        Control[] cArray = new Control[1];
-        cArray[0] = lblObjectCount;
-        lblObjectCount.getParent().layout(cArray);
+        lblObjectCount.getParent().layout();
     }
     
     private void updateCheckedLabel() {
         lblCheckedCount.setText(Messages.DiffTableViewer_selected + getCheckedElementsCount());
-        Control[] cArray = new Control[1];
-        cArray[0] = lblCheckedCount;
-        lblCheckedCount.getParent().layout(cArray);
+        lblCheckedCount.getParent().layout();
     }
     
     public int getCheckedElementsCount() {

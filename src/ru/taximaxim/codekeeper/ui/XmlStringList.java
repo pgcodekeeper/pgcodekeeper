@@ -45,7 +45,6 @@ public class XmlStringList {
     private final String elementTagName;
     private String elementSetTagName;
     
-    
     public XmlStringList(String rootTagName, String elementTagName) {
         this.rootTagName = rootTagName;
         this.elementTagName = elementTagName;
@@ -162,11 +161,11 @@ public class XmlStringList {
     
     private LinkedHashMap<String, LinkedList<String>> readMap(Document xml) {
         LinkedHashMap<String, LinkedList<String>> lists= new LinkedHashMap<>();
-        LinkedList<String> list = new LinkedList<>();
         
         Element root = (Element) xml.getElementsByTagName(rootTagName).item(0);
         NodeList nList = root.getChildNodes();
         for (int i = 0; i < nList.getLength(); i++) {
+            LinkedList<String> list = new LinkedList<>();
             Node node = nList.item(i);
             
             if (node.getNodeType() == Node.ELEMENT_NODE) {
@@ -177,7 +176,6 @@ public class XmlStringList {
                 if (!list.isEmpty()) {
                     lists.put(node.getAttributes().getNamedItem(PROPERTY_NAME)
                             .getNodeValue(), list);
-                    list = new LinkedList<>();
                 }
             }
         }

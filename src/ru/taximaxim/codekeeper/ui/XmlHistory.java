@@ -65,7 +65,7 @@ public class XmlHistory {
             XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
             history = xml.deserializeMap(xmlReader);
         } catch (FileNotFoundException e) {
-            history = null;
+            history = new LinkedHashMap<String, LinkedList<String>>();
         } catch (IOException | SAXException e) {
             throw new IllegalStateException(Messages.XmlHistory_read_error, e);
         }
@@ -147,10 +147,8 @@ public class XmlHistory {
         checkedSets.put(checkSetName, values);
         
         LinkedHashMap<String, LinkedList<String>> oldCheckedSets = getMapHistory();
-        if (oldCheckedSets != null){
-            oldCheckedSets.remove(checkSetName);
-            checkedSets.putAll(oldCheckedSets);
-        }
+        oldCheckedSets.remove(checkSetName);
+        checkedSets.putAll(oldCheckedSets);
         
         File historyFile = getHistoryXmlFile();
         try {
