@@ -35,10 +35,14 @@
       <plugin id="javaewah"/>
       <plugin id="javax.annotation"/>
       <plugin id="javax.inject"/>
+      <plugin id="javax.servlet"/>
       <plugin id="javax.xml"/>
+      <plugin id="net.sourceforge.lpg.lpgjavaruntime"/>
       <plugin id="org.apache.batik.css"/>
       <plugin id="org.apache.batik.util"/>
       <plugin id="org.apache.batik.util.gui"/>
+      <plugin id="org.apache.lucene.analysis"/>
+      <plugin id="org.apache.lucene.core"/>
       <plugin id="org.eclipse.compare"/>
       <plugin id="org.eclipse.compare.core"/>
       <plugin id="org.eclipse.compare.core.nl_ru" fragment="true"/>
@@ -71,10 +75,59 @@
       <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
       <plugin id="org.eclipse.core.variables"/>
       <plugin id="org.eclipse.core.variables.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.connectivity"/>
+      <plugin id="org.eclipse.datatools.connectivity.db.generic"/>
+      <plugin id="org.eclipse.datatools.connectivity.db.generic.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.connectivity.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.connectivity.sqm.core"/>
+      <plugin id="org.eclipse.datatools.connectivity.sqm.core.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.connectivity.sqm.core.ui"/>
+      <plugin id="org.eclipse.datatools.connectivity.sqm.core.ui.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.connectivity.ui"/>
+      <plugin id="org.eclipse.datatools.connectivity.ui.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.help"/>
+      <plugin id="org.eclipse.datatools.modelbase.dbdefinition"/>
+      <plugin id="org.eclipse.datatools.modelbase.sql"/>
+      <plugin id="org.eclipse.datatools.modelbase.sql.query"/>
+      <plugin id="org.eclipse.datatools.modelbase.sql.query.edit"/>
+      <plugin id="org.eclipse.datatools.modelbase.sql.xml.query"/>
+      <plugin id="org.eclipse.datatools.sqltools.common.ui"/>
+      <plugin id="org.eclipse.datatools.sqltools.common.ui.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.editor.core"/>
+      <plugin id="org.eclipse.datatools.sqltools.editor.core.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.editor.core.ui"/>
+      <plugin id="org.eclipse.datatools.sqltools.editor.core.ui.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.parsers.sql"/>
+      <plugin id="org.eclipse.datatools.sqltools.parsers.sql.lexer"/>
+      <plugin id="org.eclipse.datatools.sqltools.parsers.sql.lexer.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.parsers.sql.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.parsers.sql.query"/>
+      <plugin id="org.eclipse.datatools.sqltools.parsers.sql.query.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.plan"/>
+      <plugin id="org.eclipse.datatools.sqltools.plan.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.result"/>
+      <plugin id="org.eclipse.datatools.sqltools.result.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.result.ui"/>
+      <plugin id="org.eclipse.datatools.sqltools.result.ui.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.schemaobjecteditor"/>
+      <plugin id="org.eclipse.datatools.sqltools.schemaobjecteditor.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.schemaobjecteditor.ui"/>
+      <plugin id="org.eclipse.datatools.sqltools.schemaobjecteditor.ui.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.schemaobjecteditor.ui.pages"/>
+      <plugin id="org.eclipse.datatools.sqltools.schemaobjecteditor.ui.pages.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.sql"/>
+      <plugin id="org.eclipse.datatools.sqltools.sql.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.sql.ui"/>
+      <plugin id="org.eclipse.datatools.sqltools.sql.ui.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.sqlbuilder"/>
+      <plugin id="org.eclipse.datatools.sqltools.sqlbuilder.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.datatools.sqltools.sqleditor"/>
+      <plugin id="org.eclipse.datatools.sqltools.sqleditor.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.debug.core"/>
       <plugin id="org.eclipse.debug.core.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.debug.ui"/>
       <plugin id="org.eclipse.debug.ui.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.draw2d"/>
       <plugin id="org.eclipse.e4.core.commands"/>
       <plugin id="org.eclipse.e4.core.commands.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.e4.core.contexts"/>
@@ -115,17 +168,21 @@
       <plugin id="org.eclipse.egit.core"/>
       <plugin id="org.eclipse.egit.ui"/>
       <plugin id="org.eclipse.emf.common"/>
+      <plugin id="org.eclipse.emf.common.ui"/>
       <plugin id="org.eclipse.emf.databinding"/>
       <plugin id="org.eclipse.emf.databinding.edit"/>
       <plugin id="org.eclipse.emf.ecore"/>
       <plugin id="org.eclipse.emf.ecore.change"/>
+      <plugin id="org.eclipse.emf.ecore.edit"/>
       <plugin id="org.eclipse.emf.ecore.xmi"/>
       <plugin id="org.eclipse.emf.edit"/>
+      <plugin id="org.eclipse.emf.edit.ui"/>
       <plugin id="org.eclipse.equinox.app"/>
       <plugin id="org.eclipse.equinox.bidi"/>
       <plugin id="org.eclipse.equinox.common"/>
       <plugin id="org.eclipse.equinox.ds"/>
       <plugin id="org.eclipse.equinox.event"/>
+      <plugin id="org.eclipse.equinox.http.registry"/>
       <plugin id="org.eclipse.equinox.launcher"/>
       <plugin id="org.eclipse.equinox.launcher.gtk.linux.x86" fragment="true"/>
       <plugin id="org.eclipse.equinox.launcher.gtk.linux.x86.nl_ru" fragment="true"/>
@@ -150,7 +207,10 @@
       <plugin id="org.eclipse.equinox.transforms.hook" fragment="true"/>
       <plugin id="org.eclipse.equinox.util"/>
       <plugin id="org.eclipse.equinox.weaving.hook" fragment="true"/>
+      <plugin id="org.eclipse.gef"/>
       <plugin id="org.eclipse.help"/>
+      <plugin id="org.eclipse.help.base"/>
+      <plugin id="org.eclipse.help.base.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.help.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.jdt.compiler.apt" fragment="true"/>
       <plugin id="org.eclipse.jdt.compiler.apt.nl_ru" fragment="true"/>
@@ -170,6 +230,8 @@
       <plugin id="org.eclipse.jsch.core.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.jsch.ui"/>
       <plugin id="org.eclipse.jsch.ui.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.ltk.core.refactoring"/>
+      <plugin id="org.eclipse.ltk.core.refactoring.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.osgi.compatibility.state" fragment="true"/>
       <plugin id="org.eclipse.osgi.compatibility.state.nl_ru" fragment="true"/>
@@ -178,6 +240,19 @@
       <plugin id="org.eclipse.osgi.services.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.pde.runtime"/>
       <plugin id="org.eclipse.pde.runtime.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.rap.jface"/>
+      <plugin id="org.eclipse.rap.jface.databinding"/>
+      <plugin id="org.eclipse.rap.jface.databinding.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.rap.jface.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.rap.rwt"/>
+      <plugin id="org.eclipse.rap.rwt.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.rap.rwt.osgi"/>
+      <plugin id="org.eclipse.rap.ui"/>
+      <plugin id="org.eclipse.rap.ui.forms"/>
+      <plugin id="org.eclipse.rap.ui.forms.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.rap.ui.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.rap.ui.workbench"/>
+      <plugin id="org.eclipse.rap.ui.workbench.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.swt"/>
       <plugin id="org.eclipse.swt.gtk.linux.x86" fragment="true"/>
       <plugin id="org.eclipse.swt.gtk.linux.x86.nl_ru" fragment="true"/>
@@ -192,6 +267,8 @@
       <plugin id="org.eclipse.text"/>
       <plugin id="org.eclipse.text.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.ui"/>
+      <plugin id="org.eclipse.ui.cheatsheets"/>
+      <plugin id="org.eclipse.ui.cheatsheets.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.ui.console"/>
       <plugin id="org.eclipse.ui.console.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.ui.editors"/>
