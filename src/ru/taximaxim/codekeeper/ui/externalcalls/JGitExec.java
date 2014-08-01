@@ -290,7 +290,7 @@ public class JGitExec implements IRepoWorker{
             boolean mergeResult = pr.getMergeResult().getMergeStatus().isSuccessful();
 
             Console.addMessage(MessageFormat.format(Messages.jGitExec_git_success
-                    + " Merge " + (mergeResult? "" : "un") + "succesfull.", action)); 
+                    + " Merge " + (mergeResult? "" : Messages.jGitExec_un) + Messages.jGitExec_successfull, action));  //$NON-NLS-1$ //$NON-NLS-2$
             
             return mergeResult;
         } catch (GitAPIException e){
