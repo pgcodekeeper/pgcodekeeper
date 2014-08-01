@@ -58,9 +58,11 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.parts.Console;
 import ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 /*
  * Call CheckStateListener.updateCountLabels() when programmatically changing 
@@ -125,9 +127,9 @@ public class DiffTableViewer extends Composite {
         });
         
         int viewerStyle = SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER;
-        if (!viewOnly) {
+//        if (!viewOnly) {
             viewerStyle |= SWT.CHECK;  
-        }
+//        }
         viewer = new CheckboxTableViewer(new Table(this, viewerStyle));
         
         viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -138,6 +140,7 @@ public class DiffTableViewer extends Composite {
             viewer.getControl().setMenu(
                     getViewerMenu().createContextMenu(viewer.getControl()));
 
+        }
             viewer.addDoubleClickListener(new IDoubleClickListener() {
 
                 @Override
@@ -167,7 +170,6 @@ public class DiffTableViewer extends Composite {
                 }
 
             });
-        }
         
         viewer.setComparator(comparator);
         viewer.setFilters(new ViewerFilter[] { viewerFilter });
@@ -221,10 +223,10 @@ public class DiffTableViewer extends Composite {
             }
         });
         
-        if (!viewOnly) {
+//        if (!viewOnly) {
             lblCheckedCount = new Label(contButtons, SWT.RIGHT);
             lblCheckedCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
-        }
+//        }
         lblObjectCount = new Label(contButtons, SWT.RIGHT);
         lblObjectCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false));
 
@@ -247,7 +249,7 @@ public class DiffTableViewer extends Composite {
     }
 
     private void initColumns() {
-        if (!viewOnly) {
+//        if (!viewOnly) {
             columnCheck = new TableViewerColumn(viewer, SWT.LEFT);
             
             columnCheck.getColumn().setResizable(false);
@@ -264,7 +266,7 @@ public class DiffTableViewer extends Composite {
                     return " "; //$NON-NLS-1$
                 }
             });
-        }
+//        }
         columnType = new TableViewerColumn(viewer, SWT.LEFT);
         columnChange = new TableViewerColumn(viewer, SWT.LEFT);
         columnName = new TableViewerColumn(viewer, SWT.LEFT);
@@ -429,10 +431,18 @@ public class DiffTableViewer extends Composite {
     
     public void setInput(TreeDiffer treediffer) {
         this.treeRoot = (treediffer == null) ? null : treediffer.getDiffTree();
+        Console.addMessage("treeRoot is " + treeRoot);
         this.dbSource = (treediffer == null) ? null : treediffer.getDbSource().getDbObject();
         this.dbTarget = (treediffer == null) ? null : treediffer.getDbTarget().getDbObject();
         
         setInputTreeElement(treeRoot);
+    }
+    
+    public void setset(TreeDiffer treediffer){
+        this.treeRoot = (treediffer == null) ? null : treediffer.getDiffTree();
+        Console.addMessage("treeRoot is " + treeRoot);
+        this.dbSource = (treediffer == null) ? null : treediffer.getDbSource().getDbObject();
+        this.dbTarget = (treediffer == null) ? null : treediffer.getDbTarget().getDbObject(); 
     }
     
     public void setInputTreeElement(TreeElement treeElement) {
@@ -520,16 +530,22 @@ public class DiffTableViewer extends Composite {
         return i;
     }
     
-    private Set<TreeElement> getCheckedElements() {
+    public Set<TreeElement> getCheckedElements(boolean checkedStatus) {
         Set<TreeElement> checked = new HashSet<>(elements.size());
         for (Entry<TreeElement, Boolean> el : elements.entrySet()) {
-            if (el.getValue()) {
+            if (el.getValue() == checkedStatus) {
                 checked.add(el.getKey());
             }
         }
         return checked;
     }
     
+    /**
+     * ВНИМАНИЕ!!!<br>
+     * 
+     * Список объектов в таблице должен быть поднабором рута, который попадает в таблицу из TreeDiffer
+     * @return
+     */
     public TreeElement filterDiffTree() {
         if (treeRoot == null){
             return null;
@@ -537,7 +553,7 @@ public class DiffTableViewer extends Composite {
         
         Log.log(Log.LOG_INFO, Messages.diffTableViewer_filtering_diff_tree_based_on_gui_selection);
         
-        return treeRoot.getFilteredCopy(getCheckedElements());
+        return treeRoot.getFilteredCopy(getCheckedElements(true));
     }
     
     private class IgnoresChangeListener implements IPropertyChangeListener {
@@ -729,5 +745,50 @@ public class DiffTableViewer extends Composite {
             }
             return ((TreeElement) element).getName().toLowerCase().contains(filterName);
         }
+    }
+
+    /**
+     * 
+     * @param dependencies
+     */
+    public HashSet<TreeElement> setChecked(HashSet<PgStatement> dependencies, PgDatabase db, boolean markChecked) {
+        HashSet<TreeElement> result = new HashSet<TreeElement>(5);
+        for (TreeElement element : elements.keySet()){
+            PgStatement elementInDb = element.getPgStatement(db);
+            if (elementInDb != null && dependencies.contains(elementInDb) && 
+                    (elements.get(element) != markChecked)){
+                if (element.getSide() == DiffSide.LEFT){
+                    // сюда когда-нибудь зайдет?
+                    elements.put(element, false);
+                }else{
+                    elements.put(element, markChecked);
+                    result.add(element);
+                }
+            }
+        }
+        return result;
+    }
+
+    public void setInputCollection(HashSet<TreeElement> shouldBeDeleted) {
+        elements = new HashMap<>();
+        for (TreeElement e : shouldBeDeleted){
+            elements.put(e, true);
+        }
+        viewer.setInput(elements.keySet());
+        
+        int widthOfColumns = 0;
+        for (TableColumn c : viewer.getTable().getColumns()){
+            c.pack();
+            widthOfColumns += c.getWidth();
+        }
+        columnName.getColumn().setWidth(widthOfColumns - viewer.getTable().getSize().x);
+        
+        updateObjectsLabel();
+        
+        if (!viewOnly) {
+            updateCheckedLabel();
+        }
+        
+        initialSorting();
     }
 }

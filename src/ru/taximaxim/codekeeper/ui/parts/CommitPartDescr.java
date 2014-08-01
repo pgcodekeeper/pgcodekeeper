@@ -3,7 +3,9 @@ package ru.taximaxim.codekeeper.ui.parts;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -59,8 +61,10 @@ import org.eclipse.swt.widgets.Text;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.CommitDialog;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -76,6 +80,7 @@ import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CommitPartDescr {
     
@@ -221,13 +226,69 @@ public class CommitPartDescr {
                     return;
                 }
                 
+                ///////////////////////////////////////////////////////
+                //      ВНИМАНИЕ!!! ЭТО УЖЕ копия ДЕРЕВА ДИФФА       //
+                ///////////////////////////////////////////////////////
                 final TreeElement filtered = diffTable.filterDiffTree();
                 
-                CommitDialog cd = new CommitDialog(shell, filtered, mainPrefs, proj);
+                // Расширить filtered потомками new/edit
+                DepcyTreeExtender dte = new DepcyTreeExtender(dbSource.getDbObject(), dbTarget.getDbObject(), filtered, treediffer.getDiffTree());
+                HashSet<PgStatement> dependencies = dte.getNew();
+                PgDatabase dbdbdb = dte.getDepcyTargetDb();
+                
+                // список элементов - потомков исходного treediffer
+                HashSet<TreeElement> elementsDepcyNEW = diffTable.setChecked(dependencies, dbdbdb, true);
+                // список элементов - потомков исходного treediffer
+                TreeElement filtered_with_new = diffTable.filterDiffTree();
+                diffTable.setChecked(dependencies, dbdbdb, false);
+                
+                //////////////////////////////////////////////////////////
+                // ЗДЕСЬ ДОБАВЛЯЕМ УДАЛЕННЫЕ
+                //////////////////////////////////////////////////////////
+                
+                // расширить дерево filtered_with_new элементами, зависящими от удаляемых
+                dte = new DepcyTreeExtender(dbSource.getDbObject(), dbTarget.getDbObject(), filtered_with_new, treediffer.getDiffTree());
+                final TreeElement filtered_with_new_and_delete = dte.getCopyWithDepcy();
+                
+                // (список элементов - потомков filtered_with_new_and_delete)
+                HashSet<TreeElement> elementsDepcyDELETE = dte.getDeletedElements();
+                
+                // переместить объекты (потомки filtered) из elementsDepcyNEW в 
+                // соответствующие объекты, но уже потомки filtered_with_new_and_delete
+                HashSet<TreeElement> elementsDepcyNEWCorresponding = new HashSet<TreeElement>(elementsDepcyNEW.size());
+                for(TreeElement el : elementsDepcyNEW){
+                    elementsDepcyNEWCorresponding.add(dte.getCorrespondingTreeElement(el, filtered_with_new_and_delete));
+                }
+                
+                HashSet<TreeElement> sumNewAndDelete = new HashSet<TreeElement>();
+                sumNewAndDelete.addAll(elementsDepcyNEWCorresponding);
+                sumNewAndDelete.addAll(elementsDepcyDELETE);
+                
+                // display commit dialog
+                CommitDialog cd = new CommitDialog(shell, filtered, sumNewAndDelete, mainPrefs, proj, treediffer);
                 if (cd.open() != CommitDialog.OK) {
                     return;
                 }
-
+                
+                ///////////////////////////////////////////////////////
+                // ПОЛУЧАЕМ ИТОГОВУЮ ВЫБОРКУ
+                ///////////////////////////////////////////////////////
+                
+                // список всех элементов в filtered_with_new_and_delete
+                Set<TreeElement> allElements = new HashSet<TreeElement>();
+                dte.generateFlatElementsSet(filtered_with_new_and_delete, allElements);
+                
+                // потомки filtered_with_new_and_delete
+                for(TreeElement unchecked : cd.getBottomTableViewer().getCheckedElements(false)){
+                    allElements.remove(unchecked);
+                }
+                
+                final TreeElement finalTree = filtered_with_new_and_delete.getFilteredCopy(allElements);
+                
+                boolean proceed = true;
+                if (!proceed)
+                    return;
+                // TreeElement userFinalSelection = filterAgain(filtered, cd.getTableViewer().getCheckedElements());
                 history.addHistoryEntry(commitComment);
                 
                 IRunnableWithProgress commitRunnable = new IRunnableWithProgress() {
@@ -242,10 +303,10 @@ public class CommitPartDescr {
                         pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
                         DiffTreeApplier applier = new DiffTreeApplier(dbSource
                                 .getDbObject(), dbTarget.getDbObject(),
-                                filtered);
+                                finalTree);
 
                         // set diff tree root element (provide all available changes) 
-                        applier.setDiffTree(treediffer.getDiffTree());
+                        // applier.setDiffTree(treediffer.getDiffTree());
                         
                         PgDatabase dbNew = applier.apply();
 
@@ -595,6 +656,55 @@ public class CommitPartDescr {
                 return null;
             }
         });
+    }
+
+    protected TreeElement getCorrespondingTreeElement(Object object,
+            TreeElement filtered_with_new_and_delete) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * 
+     * @param filtered Типа полное дерево
+     * @param checkedElements Типа элементы этого дерева, которые выбраны
+     * @return
+     */
+    private TreeElement filterAgain(TreeElement filtered, Set<TreeElement> checkedElements) {
+//        if (filtered.getContainerType() != DbObjType.CONTAINER){
+//            
+//        }
+        TreeElement copy = new TreeElement(filtered.getName(), filtered.getType(), 
+                filtered.getContainerType(), filtered.getSide());
+        for(TreeElement e : filtered.getChildren()){
+            boolean isSelected = e.getType() == DbObjType.CONTAINER || checkedElements.contains(e);
+            TreeElement child = null;
+            if (isSelected){
+                child = filterAgain(e, checkedElements);
+            }else if (isSubtreeSelected(e, checkedElements)){
+                
+            }
+            
+            if (child != null) {
+                copy.addChild(child);
+            }
+        }
+        
+//        if (filterSubset.contains(this) && copy == null){
+//            copy = new TreeElement(getName(), getType(), getContainerType(), getSide());
+//        }
+        return copy;
+    }
+    
+    private boolean isSubtreeSelected(TreeElement e, Set<TreeElement> checkedElements) {
+        for (TreeElement eee : e.getChildren()){
+            if (checkedElements.contains(eee)){
+                return true;
+            }else{
+                return isSubtreeSelected(eee, checkedElements);
+            }
+        }
+        return false;
     }
 
     private void showDbPicker(boolean show) {
