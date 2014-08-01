@@ -258,12 +258,28 @@ public class PgDiff {
      * child is the source)
      */
     public static Set<PgStatement> getDependenciesSet(PgStatement child,
-            Set<PgStatement> result) {
-        if (oldDepcyGraph.containsVertex(child)){
-            for (DefaultEdge edge : oldDepcyGraph.outgoingEdgesOf(child)){
-                    PgStatement dependency = oldDepcyGraph.getEdgeTarget(edge);
+            Set<PgStatement> result){
+        return getDependencies(child, result, oldDepcyGraph);
+    }
+    
+    /**
+     * Fills in the result list with all PgStatements, that child is dependent from <b>based on depcyGraph</b>.
+     * <br>
+     * (that is, finds those vertices, that have common edge with child where 
+     * child is the source)
+     */
+    public static Set<PgStatement> getDependenciesSet(PgStatement child,
+            Set<PgStatement> result, DirectedGraph<PgStatement, DefaultEdge> depcyGraph){
+        return getDependencies(child, result, depcyGraph);
+    }
+    
+    private static Set<PgStatement> getDependencies(PgStatement child,
+            Set<PgStatement> result, DirectedGraph<PgStatement, DefaultEdge> depcyGraph) {
+        if (depcyGraph.containsVertex(child)){
+            for (DefaultEdge edge : depcyGraph.outgoingEdgesOf(child)){
+                    PgStatement dependency = depcyGraph.getEdgeTarget(edge);
                     if (result.add(dependency)) {
-                        getDependenciesSet(dependency, result);
+                        getDependencies(dependency, result, depcyGraph);
                     }
             }
         }
