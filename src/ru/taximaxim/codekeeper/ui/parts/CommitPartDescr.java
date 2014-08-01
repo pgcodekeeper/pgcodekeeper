@@ -129,7 +129,7 @@ public class CommitPartDescr {
      */
     private DbSource dbTarget;
     /**
-     * Differ local and remote db
+     * Differ to obtain diff tree between two dbs 
      */
     private TreeDiffer treeDiffer;
     
