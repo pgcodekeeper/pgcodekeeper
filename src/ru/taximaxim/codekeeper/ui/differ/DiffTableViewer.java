@@ -318,11 +318,11 @@ public class DiffTableViewer extends Composite {
         }
     }
 
-
     private void setCheckedFromPrevCheckedCombo() {
         String comboText = cmbPrevChecked.getCombo().getText();
         if (comboText != null && !comboText.isEmpty()) {
-            LinkedList<String> elementsToCheck = prevChecked.get(comboText);
+            LinkedList<String> elementsToCheck = 
+                    prevChecked == null ? null : prevChecked.get(comboText);
             List<TreeElement> prevCheckedList = new ArrayList<>();
             if (elementsToCheck != null) {
                 for (TreeElement elementKey : elements.keySet()) {

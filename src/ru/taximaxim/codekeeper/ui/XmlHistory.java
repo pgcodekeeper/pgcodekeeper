@@ -133,6 +133,9 @@ public class XmlHistory {
     }
     
     public void addCheckedSetHistoryEntry(String checkSetName, LinkedList<String> values) {
+        if (values.isEmpty()) {
+            return;
+        }
         LinkedHashMap<String, LinkedList<String>> checkedSets = 
                 new LinkedHashMap<String, LinkedList<String>>() {
             @Override
@@ -140,27 +143,27 @@ public class XmlHistory {
                 return size() > maxEntries;
                 }
         };
+        
+        checkedSets.put(checkSetName, values);
+        
         LinkedHashMap<String, LinkedList<String>> oldCheckedSets = getMapHistory();
         if (oldCheckedSets != null){
+            oldCheckedSets.remove(checkSetName);
             checkedSets.putAll(oldCheckedSets);
         }
-                
-        if (!values.isEmpty()) {
-            checkedSets.remove(checkSetName);
-            checkedSets.put(checkSetName, values);
-            
-            File historyFile = getHistoryXmlFile();
-            try {
-                historyFile.getParentFile().mkdirs();
-                historyFile.createNewFile();
-                try (Writer xmlWriter = new FileWriter(historyFile)) {
-                    XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
-                    xml.serializeMap(checkedSets, false, xmlWriter);
-                }
-            } catch (IOException | TransformerException e) {
-                throw new IllegalStateException(
-                        Messages.XmlHistory_write_error, e);
+        
+        File historyFile = getHistoryXmlFile();
+        try {
+            historyFile.getParentFile().mkdirs();
+            historyFile.createNewFile();
+            try (Writer xmlWriter = new FileWriter(historyFile)) {
+                XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
+                xml.serializeMap(checkedSets, false, xmlWriter);
             }
+        } catch (IOException | TransformerException e) {
+            throw new IllegalStateException(
+                    Messages.XmlHistory_write_error, e);
         }
+        
     }
 }
