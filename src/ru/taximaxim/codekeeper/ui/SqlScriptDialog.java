@@ -10,9 +10,21 @@ import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.ISQLSourceViewerService;
+import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.SQLStatementArea;
+import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceEditingEnvironment;
+import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceViewerConfiguration;
+import org.eclipse.datatools.sqltools.sqleditor.internal.sql.ISQLPartitions;
+import org.eclipse.datatools.sqltools.sqleditor.internal.sql.SQLPartitionScanner;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.presentation.IPresentationReconciler;
+import org.eclipse.jface.text.rules.FastPartitioner;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -113,6 +125,73 @@ public class SqlScriptDialog extends MessageDialog {
     
     @Override
     protected Control createCustomArea(Composite parent) {
+//        SQLSegmentEditor se = new SQLSegmentEditor(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
+//                | SWT.MULTI, new GridLayout());
+//        se.setText(text);
+        
+        ISQLSourceViewerService viewerService = new ISQLSourceViewerService() {
+
+            @Override
+            public void setUpDocument(IDocument doc, String dbType) {
+                SQLPartitionScanner sqlPartitionSanner = new SQLPartitionScanner();
+                if(doc instanceof IDocumentExtension3)
+                {
+                IDocumentExtension3 extension3 = (IDocumentExtension3) doc;
+                FastPartitioner _partitioner = new FastPartitioner(sqlPartitionSanner, new String[]
+                {
+                SQLPartitionScanner.SQL_CODE,
+                SQLPartitionScanner.SQL_COMMENT,
+                SQLPartitionScanner.SQL_MULTILINE_COMMENT,
+                SQLPartitionScanner.SQL_STRING,
+                SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER
+                });
+                _partitioner.connect(doc);
+                extension3.setDocumentPartitioner(ISQLPartitions.SQL_PARTITIONING,     _partitioner);
+                }
+            }
+            
+        };
+        final SQLStatementArea sta = new SQLStatementArea(parent, SWT.BORDER, viewerService, true);
+        sta.setEditable(true);
+        sta.setEnabled(true);
+        
+        
+        SQLSourceViewerConfiguration sqlSourceViewerConfiguration = new SQLSourceViewerConfiguration() {
+
+            @Override
+            public IPresentationReconciler getPresentationReconciler(
+                    ISourceViewer sourceViewer) {
+                SQLSourceEditingEnvironment.connect();
+                return super.getPresentationReconciler(sourceViewer);
+            }
+        };
+        
+        sta.configureViewer(sqlSourceViewerConfiguration);
+        
+        
+        sta.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Document document = new Document();
+        document.set(text);
+        sta.getViewer().setDocument(document);
+        
+//        IHandlerService handlerService = (IHandlerService) editor.getSite().getService(IHandlerService.class);
+//        IHandler cahandler = new AbstractHandler() {
+//
+//        @Override
+//        public Object execute(ExecutionEvent event)
+//                throws org.eclipse.core.commands.ExecutionException {
+//            sta.getViewer().doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+//            return null;
+//        }
+//        };
+//        if(contentAssistHandlerActivation != null){
+//        handlerService.deactivateHandler(contentAssistHandlerActivation);
+//        }
+//        contentAssistHandlerActivation = handlerService.activateHandler(
+//                ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
+//        cahandler);       
+        
+        
         txtMain = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
                 | SWT.MULTI);
         txtMain.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
@@ -122,6 +201,7 @@ public class SqlScriptDialog extends MessageDialog {
         gd.widthHint = 600;
         gd.heightHint = 400;
         txtMain.setLayoutData(gd);
+//        se.setLayoutData(gd);
         
         Label l = new Label(parent, SWT.NONE);
         l.setText(Messages.sqlScriptDialog_Enter_cmd_to_roll_on_sql_script
