@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.statushandlers.StatusManager;
 
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -104,10 +105,10 @@ public class SqlScriptDialog extends MessageDialog {
         setShellStyle(getShellStyle() | SWT.RESIZE);
         
         this.text = text;
-        this.history = new XmlHistory(SCRIPTS_HIST_MAX_STORED, 
+        this.history = new XmlHistory.Builder(SCRIPTS_HIST_MAX_STORED, 
                 SCRIPTS_HIST_FILENAME, 
                 SCRIPTS_HIST_ROOT, 
-                SCRIPTS_HIST_EL);
+                SCRIPTS_HIST_EL).build();
     }
     
     @Override
@@ -228,7 +229,7 @@ public class SqlScriptDialog extends MessageDialog {
             scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler(){
                 @Override
                 public void uncaughtException(Thread t, Throwable e) {
-                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                    Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS, 
                             Messages.sqlScriptDialog_exception_during_script_execution, e);
                     StatusManager.getManager().handle(status, StatusManager.BLOCK);
                 }
@@ -259,7 +260,7 @@ public class SqlScriptDialog extends MessageDialog {
                 try (PrintWriter writer = new PrintWriter(script)) {
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
-                    Status status = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID, 
+                    Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS, 
                             Messages.sqlScriptDialog_error_saving_script_to_file, ex);
                     StatusManager.getManager().handle(status, StatusManager.BLOCK);
                     return;

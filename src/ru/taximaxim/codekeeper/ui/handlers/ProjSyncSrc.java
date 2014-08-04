@@ -23,6 +23,9 @@ import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -54,7 +57,7 @@ public class ProjSyncSrc {
             Shell shell,
             final IPreferenceStore mainPrefs) {
         Log.log(Log.LOG_INFO, "Syncing project " + proj.getProjectFile() + //$NON-NLS-1$
-                " with repo url " + proj.getString(UIConsts.PROJ_PREF_REPO_URL)); //$NON-NLS-1$
+                " with repo url " + proj.getString(PROJ_PREF.REPO_URL)); //$NON-NLS-1$
         
         final AtomicBoolean conflicted = new AtomicBoolean(true);
         IRunnableWithProgress syncRunnable = new IRunnableWithProgress() {
@@ -63,7 +66,7 @@ public class ProjSyncSrc {
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 SubMonitor pm = SubMonitor.convert(monitor, Messages.projSyncSrc_syncing_repository_cache, 10);
                 IRepoWorker repo = new JGitExec(proj, 
-                        mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+                        mainPrefs.getString(PREF.GIT_KEY_PRIVATE_FILE));
 
                 File repoDir = proj.getProjectWorkingDir();
 
@@ -98,7 +101,7 @@ public class ProjSyncSrc {
             mb.setMessage(Messages.projSyncSrc_repository_cache_has_conflict_resolve_them_manually);
             mb.open();
         }else{
-            events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
+            events.send(EVENT.REOPEN_PROJECT, proj);
         }
 
         return !conflicted.get();

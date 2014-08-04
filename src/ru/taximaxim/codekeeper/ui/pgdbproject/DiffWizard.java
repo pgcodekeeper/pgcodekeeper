@@ -45,7 +45,9 @@ import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -272,8 +274,8 @@ class PageDiff extends WizardPage implements Listener {
         switch (getTargetType()) {
         case DB:
             dbs = DbSource.fromDb(
-                    mainPrefs.getString(UIConsts.PREF_PGDUMP_EXE_PATH),
-                    mainPrefs.getString(UIConsts.PREF_PGDUMP_CUSTOM_PARAMS),
+                    mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
+                    mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     getDbHost(), getDbPort(), getDbUser(), getDbPass(),
                     getDbName(), getTargetEncoding());
             break;
@@ -285,7 +287,7 @@ class PageDiff extends WizardPage implements Listener {
         case GIT:
             dbs = DbSource.fromGit(
                     getGitUrl(), getGitUser(), getGitPass(), getGitRev(),
-                    getTargetEncoding(), mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+                    getTargetEncoding(), mainPrefs.getString(PREF.GIT_KEY_PRIVATE_FILE));
             break;
 
         case PROJ:
@@ -296,12 +298,12 @@ class PageDiff extends WizardPage implements Listener {
                 dbs = DbSource.fromProject(fromProj);
             } else {
                 dbs = DbSource.fromGit(
-                                fromProj.getString(UIConsts.PROJ_PREF_REPO_URL),
-                                fromProj.getString(UIConsts.PROJ_PREF_REPO_USER),
-                                fromProj.getString(UIConsts.PROJ_PREF_REPO_PASS),
+                                fromProj.getString(PROJ_PREF.REPO_URL),
+                                fromProj.getString(PROJ_PREF.REPO_USER),
+                                fromProj.getString(PROJ_PREF.REPO_PASS),
                                 getProjRev(),
-                                fromProj.getString(UIConsts.PROJ_PREF_ENCODING),
-                                mainPrefs.getString(UIConsts.PREF_GIT_KEY_PRIVATE_FILE));
+                                fromProj.getString(PROJ_PREF.ENCODING),
+                                mainPrefs.getString(PREF.GIT_KEY_PRIVATE_FILE));
             }
             break;
         default:
@@ -361,7 +363,7 @@ class PageDiff extends WizardPage implements Listener {
         radioDump.setText(Messages.dump);
         radioDump.addSelectionListener(switcher);
         radioGit = new Button(grpRadio, SWT.RADIO);
-        radioGit.setText(UIConsts.PROJ_REPO_TYPE_GIT_NAME);
+        radioGit.setText(PROJ_PREF.REPO_TYPE_GIT_NAME);
         radioGit.addSelectionListener(switcher);
 
         radioProj = new Button(grpRadio, SWT.RADIO);
@@ -493,7 +495,7 @@ class PageDiff extends WizardPage implements Listener {
         lblWarnGitPass = new CLabel(grpGit, SWT.NONE);
         lblWarnGitPass.setImage(lrm.createImage(ImageDescriptor
                 .createFromURL(Activator.getContext().getBundle()
-                        .getResource(UIConsts.FILENAME_ICONWARNING))));
+                        .getResource(FILE.ICONWARNING))));
         lblWarnGitPass.setText(Messages.warning
                 + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
                 + Messages.this_password_will_show_up_in_logs
@@ -553,11 +555,11 @@ class PageDiff extends WizardPage implements Listener {
                 String dir = txtProjPath.getText();
 
                 if (!dir.isEmpty() && new File(dir).isFile() &&
-                        dir.endsWith(UIConsts.FILENAME_PROJ_PREF_STORE)) {
+                        dir.endsWith(FILE.PROJ_PREF_STORE)) {
                     PgDbProject tmpProj = new PgDbProject(dir);
                     tmpProj.load();
                     cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getString(
-                            UIConsts.PROJ_PREF_ENCODING)));
+                            PROJ_PREF.ENCODING)));
                 }
             }
         });
@@ -572,13 +574,13 @@ class PageDiff extends WizardPage implements Listener {
                 dialog.setText(Messages.diffWizard_open_project_file);
                 dialog.setOverwrite(false);
                 dialog.setFilterExtensions(new String[] { "*.project", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
-                dialog.setFilterPath(mainPrefs.getString(UIConsts.PREF_LAST_OPENED_LOCATION));
+                dialog.setFilterPath(mainPrefs.getString(PREF.LAST_OPENED_LOCATION));
                 String path = dialog.open();
                 if (path != null) {
                     txtProjPath.setText(path);
                     txtProjPath.setEnabled(true);
                     btnThis.setSelection(false);
-                    AddonPrefLoader.savePreference(mainPrefs, UIConsts.PREF_LAST_OPENED_LOCATION, new File (path).getParent());
+                    AddonPrefLoader.savePreference(mainPrefs, PREF.LAST_OPENED_LOCATION, new File (path).getParent());
                 }
             }
         });
@@ -659,7 +661,7 @@ class PageDiff extends WizardPage implements Listener {
         case PROJ:
             String dir = txtProjPath.getText();
 
-            if (dir.isEmpty() || !dir.endsWith(UIConsts.FILENAME_PROJ_PREF_STORE) 
+            if (dir.isEmpty() || !dir.endsWith(FILE.PROJ_PREF_STORE) 
                     || !new File(dir).isFile()) {
                 errMsg = Messages.diffWizard_select_valid_project_file;
             }
@@ -845,7 +847,7 @@ class PageResult extends WizardPage {
                     try (final PrintWriter encodedWriter = new UnixPrintWriter(
                             new OutputStreamWriter(
                                     new FileOutputStream(saveTo),
-                                    proj.getString(UIConsts.PROJ_PREF_ENCODING)))) {
+                                    proj.getString(PROJ_PREF.ENCODING)))) {
                         Text txtDiff = (Text) tabs.getSelection()[0]
                                 .getControl();
                         encodedWriter.println(txtDiff.getText());

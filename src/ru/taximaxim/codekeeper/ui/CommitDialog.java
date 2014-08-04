@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
@@ -22,26 +23,28 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class CommitDialog extends TrayDialog {
     
-    private TreeElement treeDiffer;
+    private TreeElement filteredElements;
     private IPreferenceStore prefs;
     private String message;
     private DiffTableViewer dtvTop;
     private DiffTableViewer dtvBottom;
-    private TreeDiffer treeDiffer2;
+    private TreeDiffer treeDiffer;
     private TreeElement filteredDiffTree;
     private HashSet<TreeElement> shouldBeNew;
     
-    public CommitDialog(Shell parentShell, TreeElement treeDiffer,
-            HashSet<TreeElement> shouldBeNew, IPreferenceStore mainPrefs, PgDbProject proj, TreeDiffer treeDiffer2) {
+    public CommitDialog(Shell parentShell, TreeElement filteredElements,
+            HashSet<TreeElement> shouldBeNew, IPreferenceStore mainPrefs, PgDbProject proj, TreeDiffer treeDiffer) {
         super(parentShell);
+        
+        this.filteredElements = filteredElements;
+        this.prefs = mainPrefs;
         this.treeDiffer = treeDiffer;
         this.prefs = mainPrefs;
-        this.treeDiffer2 = treeDiffer2;
         this.shouldBeNew = shouldBeNew;
         
         try {
             message = Messages.commitPartDescr_the_following_changes_be_included_in_commit
-                    + proj.getString(UIConsts.PROJ_PREF_REPO_URL)
+                    + proj.getString(PROJ_PREF.REPO_URL)
                     + Messages.commitPartDescr_branch 
                     + new JGitExec().getCurrentBranch(proj.getRepoRoot());
         } catch (IOException ex) {
@@ -75,16 +78,14 @@ public class CommitDialog extends TrayDialog {
         gd.heightHint = 400;
         gd.widthHint = 600;
         dtvTop.setLayoutData(gd);
-        dtvTop.setInputTreeElement(treeDiffer);
-        dtvTop.setset(treeDiffer2);
+        dtvTop.setFilteredInput(filteredElements, treeDiffer);
         
         dtvBottom = new DiffTableViewer(container, SWT.BORDER, prefs, true);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 400;
         gd.widthHint = 600;
         dtvBottom.setLayoutData(gd);
-        dtvBottom.setInputCollection(shouldBeNew);
-        dtvBottom.setset(treeDiffer2);
+        dtvBottom.setInputCollection(shouldBeNew, treeDiffer);
         
         return parent;
     }

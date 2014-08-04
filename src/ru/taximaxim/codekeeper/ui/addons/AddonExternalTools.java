@@ -13,7 +13,7 @@ import org.eclipse.e4.ui.workbench.UIEvents;
 import org.osgi.service.application.ApplicationHandle;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -41,7 +41,7 @@ public class AddonExternalTools {
     private void getVersionsOnStartup(
             @EventTopic(UIEvents.UILifeCycle.APP_STARTUP_COMPLETE)
             MApplication app,
-            @Preference(UIConsts.PREF_PGDUMP_EXE_PATH)
+            @Preference(PREF.PGDUMP_EXE_PATH)
             String pgdumpExec) {
         
         try {
@@ -64,7 +64,7 @@ public class AddonExternalTools {
     @Optional
     private void prefsReinject(
             ApplicationHandle appHandle, // IApplicationContext actually
-            @Preference(UIConsts.PREF_PGDUMP_EXE_PATH)
+            @Preference(PREF.PGDUMP_EXE_PATH)
             String pgdumpExec) {
         if(appHandle.getState() == ApplicationHandle.RUNNING) {
             getVersionsOnStartup(null, pgdumpExec);

@@ -43,12 +43,13 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.MENU;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -154,11 +155,11 @@ public class ProjectExplorer {
             
             private final Image imgFolder = lrm.createImage(
                     ImageDescriptor.createFromURL(Activator.getContext()
-                            .getBundle().getResource(UIConsts.FILENAME_ICONDIR)));
+                            .getBundle().getResource(FILE.ICONDIR)));
             
             private final Image imgFile = lrm.createImage(
                     ImageDescriptor.createFromURL(Activator.getContext()
-                            .getBundle().getResource(UIConsts.FILENAME_ICONFILE)));
+                            .getBundle().getResource(FILE.ICONFILE)));
             
             @Override
             public String getText(Object element) {
@@ -192,7 +193,7 @@ public class ProjectExplorer {
             }
         });
         menuService.registerContextMenu(treeDb.getControl(),
-                UIConsts.PART_PROJXP_TREE_POPUP);
+                MENU.PROJXP_TREE_POPUP);
         
         changeProject(proj, proj);
     }
@@ -248,7 +249,7 @@ public class ProjectExplorer {
     private void changeProject(
             final PgDbProject proj,
             @Optional
-            @EventTopic(UIConsts.EVENT_REOPEN_PROJECT)
+            @EventTopic(EVENT.REOPEN_PROJECT)
             PgDbProject proj2)
             throws InvocationTargetException, InterruptedException {
         if (treeDb != null) {

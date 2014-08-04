@@ -6,20 +6,21 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbPicker extends Group {
@@ -27,10 +28,10 @@ public class DbPicker extends Group {
     final private boolean allowShellResize;
     
     private Label lblFieldName;
-    private Button btnStorePick;
     private CLabel lblWarnDbPass;
     
     private LocalResourceManager lrm;
+    private DbStorePicker dbStorePicker;
     
     public Label lblName;
     public Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort;
@@ -63,21 +64,38 @@ public class DbPicker extends Group {
         lblName.setLayoutData(gd);
         lblName.setVisible(false);
         
+        if (prefStore != null) {
+            dbStorePicker = new DbStorePicker(this, SWT.NONE, false, prefStore);
+            dbStorePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true,
+                    false, 4, 1));
+            final SelectionAdapter sa = new SelectionAdapter() {
+                
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    DbInfo dbInfo = dbStorePicker.getDbInfo();
+                    if (dbInfo != null) {
+                        txtDbName.setText(dbInfo.dbname);
+                        txtDbUser.setText(dbInfo.dbuser);
+                        txtDbPass.setText(dbInfo.dbpass);
+                        txtDbHost.setText(dbInfo.dbhost);
+                        txtDbPort.setText(String.valueOf(dbInfo.dbport));
+                    }
+                }
+            };
+            dbStorePicker.addListenerToCombo(sa);
+            dbStorePicker.addDisposeListener(new DisposeListener() {
+                
+                @Override
+                public void widgetDisposed(DisposeEvent e) {
+                    dbStorePicker.removeListenerToCombo(sa);
+                }
+            });
+        }
+
         new Label(this, SWT.NONE).setText(Messages.dB_name);
         
         txtDbName = new Text(this, SWT.BORDER);
-        txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-        
-        btnStorePick = new Button(this, SWT.PUSH);
-        btnStorePick.setText("..."); //$NON-NLS-1$
-        btnStorePick.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-        btnStorePick.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                DbStorePickerDialog dialog = new DbStorePickerDialog(getShell(), prefStore);
-                dialog.openAndSetText(txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort);
-            }
-        });
+        txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
         
         new Label(this, SWT.NONE).setText(Messages.dB_user);
         
@@ -107,7 +125,7 @@ public class DbPicker extends Group {
         lblWarnDbPass = new CLabel(this, SWT.NONE);
         lblWarnDbPass.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(
-                        UIConsts.FILENAME_ICONWARNING))));
+                        FILE.ICONWARNING))));
         lblWarnDbPass.setText(Messages.warning
                 + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
                 + Messages.consider_using_pgpass_file_instead);
@@ -140,8 +158,10 @@ public class DbPicker extends Group {
         ((GridData) lblName.getLayoutData()).exclude = false;
         lblName.setVisible(true);
         
-        ((GridData) btnStorePick.getLayoutData()).exclude = true;
-        btnStorePick.setVisible(false);
+        if (dbStorePicker != null) {
+            ((GridData) dbStorePicker.getLayoutData()).exclude = true;
+            dbStorePicker.setVisible(false);
+        }
         
         txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
         

@@ -9,7 +9,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
@@ -133,10 +133,10 @@ class DbSourceRepo extends DbSource {
 
     public DbSourceRepo(String repoExec, PgDbProject proj, String rev, String privateKeyFile) {
         this(repoExec, 
-                 proj.getString(UIConsts.PROJ_PREF_REPO_URL), proj
-                        .getString(UIConsts.PROJ_PREF_REPO_USER), proj
-                        .getString(UIConsts.PROJ_PREF_REPO_PASS), rev, proj
-                        .getString(UIConsts.PROJ_PREF_ENCODING), privateKeyFile);
+                 proj.getString(PROJ_PREF.REPO_URL), proj
+                        .getString(PROJ_PREF.REPO_USER), proj
+                        .getString(PROJ_PREF.REPO_PASS), rev, proj
+                        .getString(PROJ_PREF.ENCODING), privateKeyFile);
     }
 
     DbSourceRepo(String repoExec, String url, String user,
@@ -181,7 +181,7 @@ class DbSourceProject extends DbSource {
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(proj
                 .getProjectWorkingDir().getAbsolutePath(), proj
-                .getString(UIConsts.PROJ_PREF_ENCODING), false, false);
+                .getString(PROJ_PREF.ENCODING), false, false);
     }
 }
 
@@ -217,12 +217,12 @@ class DbSourceDb extends DbSource {
 
     DbSourceDb(String exePgdump, String customParams, PgDbProject props) {
         this(exePgdump, customParams,
-                props.getString(UIConsts.PROJ_PREF_DB_HOST),
-                props.getInt(UIConsts.PROJ_PREF_DB_PORT),
-                props.getString(UIConsts.PROJ_PREF_DB_USER),
-                props.getString(UIConsts.PROJ_PREF_DB_PASS),
-                props.getString(UIConsts.PROJ_PREF_DB_NAME),
-                props.getString(UIConsts.PROJ_PREF_ENCODING));
+                props.getString(PROJ_PREF.DB_HOST),
+                props.getInt(PROJ_PREF.DB_PORT),
+                props.getString(PROJ_PREF.DB_USER),
+                props.getString(PROJ_PREF.DB_PASS),
+                props.getString(PROJ_PREF.DB_NAME),
+                props.getString(PROJ_PREF.ENCODING));
     }
 
     DbSourceDb(String exePgdump, String customParams,

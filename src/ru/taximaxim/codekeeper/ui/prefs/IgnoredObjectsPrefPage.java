@@ -28,7 +28,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.xml.sax.SAXException;
 
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -53,12 +53,12 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
     }
     
     private void updateList() {
-        preference = getPreferenceStore().getString(UIConsts.PREF_IGNORE_OBJECTS);
+        preference = getPreferenceStore().getString(PREF.IGNORE_OBJECTS);
 
         if (!preference.isEmpty()) {
             XmlStringList xml = new XmlStringList(IGNORED_OBJS_TAG, IGNORED_OBJS_ELEMENT);
             try {
-                ignoredObjects = xml.deserialize(new StringReader(preference));
+                ignoredObjects = xml.deserializeList(new StringReader(preference));
             } catch (IOException | SAXException ex) {
                 throw new IllegalStateException(ex);
             }
@@ -150,13 +150,13 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
             StringWriter sw = new StringWriter();
             XmlStringList xml = new XmlStringList(IGNORED_OBJS_TAG, IGNORED_OBJS_ELEMENT);
             try {
-                xml.serialize(ignoredObjects, true, sw);
+                xml.serializeList(ignoredObjects, true, sw);
             } catch (TransformerException ex) {
                 throw new IllegalStateException(ex);
             }
             preference = sw.toString();
             getPreferenceStore().setValue(
-                    UIConsts.PREF_IGNORE_OBJECTS, preference);
+                    PREF.IGNORE_OBJECTS, preference);
         }
         return true;
     }

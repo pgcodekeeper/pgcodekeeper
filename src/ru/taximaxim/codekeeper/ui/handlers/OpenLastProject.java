@@ -16,6 +16,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.recentprojs.RecentProjects;
 
@@ -28,7 +29,7 @@ public class OpenLastProject {
             final EPartService partService,
             
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs,
-            @Preference(UIConsts.PREF_RECENT_PROJECTS) String prefRecentProjects,
+            @Preference(PREF.RECENT_PROJECTS) String prefRecentProjects,
 
             UISynchronize sync,
             final @Named(IServiceConstants.ACTIVE_SHELL) Shell shell) {
@@ -59,7 +60,7 @@ public class OpenLastProject {
     
     @CanExecute
     private boolean canExecute(
-            @Preference(UIConsts.PREF_RECENT_PROJECTS) String prefRecentProjects) {
+            @Preference(PREF.RECENT_PROJECTS) String prefRecentProjects) {
         return RecentProjects.getRecent(prefRecentProjects) != null;
     }
 }

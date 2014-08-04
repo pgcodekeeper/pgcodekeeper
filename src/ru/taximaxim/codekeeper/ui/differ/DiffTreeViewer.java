@@ -40,7 +40,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.copiedclasses.CheckedTreeViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -108,12 +108,12 @@ public class DiffTreeViewer extends Composite {
                 for(DbObjType objType : DbObjType.values()) {
                     ImageDescriptor iObj = ImageDescriptor.createFromURL(
                             Activator.getContext().getBundle().getResource(
-                                    UIConsts.FILENAME_ICONPGADMIN
+                                    FILE.ICONPGADMIN
                                     + objType.toString().toLowerCase()
                                     + ".png")); //$NON-NLS-1$
                     ImageDescriptor iCont = ImageDescriptor.createFromURL(
                             Activator.getContext().getBundle().getResource(
-                                    UIConsts.FILENAME_ICONPGADMIN
+                                    FILE.ICONPGADMIN
                                     + objType.toString().toLowerCase()
                                     + "s.png")); //$NON-NLS-1$
                     

@@ -10,7 +10,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.addons.AddonExternalTools;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -26,16 +26,16 @@ public class About {
                 + Messages.about_version_n
                 + Messages.about_pg_dump_version,
                 
-                versions.get(UIConsts.MAINAPP_PLUGIN_ID).get(0),
+                versions.get(PLUGIN_ID.MAINAPP).get(0),
                 
-                UIConsts.PLUGIN_ID,
-                versions.get(UIConsts.PLUGIN_ID).get(0),
+                PLUGIN_ID.THIS,
+                versions.get(PLUGIN_ID.THIS).get(0),
                 
-                UIConsts.APGDIFF_PLUGIN_ID,
-                versions.get(UIConsts.APGDIFF_PLUGIN_ID).get(0),
+                PLUGIN_ID.APGDIFF,
+                versions.get(PLUGIN_ID.APGDIFF).get(0),
                 
-                UIConsts.JGIT_PLUGIN_ID,
-                versions.get(UIConsts.JGIT_PLUGIN_ID).get(0),
+                PLUGIN_ID.JGIT,
+                versions.get(PLUGIN_ID.JGIT).get(0),
                 
                 AddonExternalTools.getPgdumpVersion());
         

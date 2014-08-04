@@ -19,11 +19,11 @@ import org.eclipse.egit.ui.JobFamilies;
 import org.eclipse.egit.ui.internal.branch.BranchOperationUI;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -46,8 +46,8 @@ public class SwitchBranch {
         final AtomicReference<Git> git = new AtomicReference<>();
         try {
             git.set(Git.open(
-                    new File(proj.getString(UIConsts.PROJ_PREF_REPO_ROOT_PATH))));
-            final Ref headOld = git.get().getRepository().getRef(Constants.HEAD);
+                    new File(proj.getString(PROJ_PREF.REPO_ROOT_PATH))));
+            final String branchFullNameOld = git.get().getRepository().getFullBranch();
             BranchOperationUI.checkout(git.get().getRepository()).start();
             
             Thread t = new Thread(new Runnable() {
@@ -57,13 +57,13 @@ public class SwitchBranch {
                     try {
                         jobs.join(JobFamilies.CHECKOUT, null);
                         
-                        if (!headOld.getObjectId().equals(git.get().getRepository()
-                                .getRef(Constants.HEAD).getObjectId())) {
+                        if (!branchFullNameOld.equals(git.get()
+                                .getRepository().getFullBranch())) {
                             sync.asyncExec(new Runnable() {
                                 
                                 @Override
                                 public void run() {
-                                    events.send(UIConsts.EVENT_REOPEN_PROJECT, proj);
+                                    events.send(EVENT.REOPEN_PROJECT, proj);
                                 }
                             });
                         }

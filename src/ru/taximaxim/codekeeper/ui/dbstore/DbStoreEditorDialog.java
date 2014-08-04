@@ -28,7 +28,8 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbStoreEditorDialog extends TrayDialog {
@@ -73,7 +74,7 @@ public class DbStoreEditorDialog extends TrayDialog {
      * @param prefStore
      */
     public DbStoreEditorDialog(Shell shell, IPreferenceStore prefStore) {
-        this(shell, prefStore.getString(UIConsts.PREF_DB_STORE), prefStore);
+        this(shell, prefStore.getString(PREF.DB_STORE), prefStore);
     }
     
     private DbStoreEditorDialog(Shell shell, String preference,
@@ -146,7 +147,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         Button btnAdd = new Button(container, SWT.PUSH);
         btnAdd.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(
-                        UIConsts.FILENAME_ICONADD))));
+                        FILE.ICONADD))));
         btnAdd.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -184,7 +185,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         btnSave = new Button(container, SWT.PUSH);
         btnSave.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(
-                        UIConsts.FILENAME_ICONSAVE))));
+                        FILE.ICONSAVE))));
         btnSave.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -196,7 +197,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         btnDel = new Button(container, SWT.PUSH);
         btnDel.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(
-                        UIConsts.FILENAME_ICONDEL))));
+                        FILE.ICONDEL))));
         btnDel.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -272,9 +273,9 @@ public class DbStoreEditorDialog extends TrayDialog {
             String preference = getPreferenceString();
             
             if(store.isEmpty() || preference.trim().isEmpty()) {
-                prefStore.setToDefault(UIConsts.PREF_DB_STORE);
+                prefStore.setToDefault(PREF.DB_STORE);
             } else {
-                prefStore.setValue(UIConsts.PREF_DB_STORE, preference);
+                prefStore.setValue(PREF.DB_STORE, preference);
             }
             
             if(prefStore.needsSaving() && prefStore instanceof IPersistentPreferenceStore) {

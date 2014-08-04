@@ -23,7 +23,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
+import ru.taximaxim.codekeeper.ui.UIConsts.PART;
+import ru.taximaxim.codekeeper.ui.UIConsts.PART_STACK;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class SqlEditorDescr {
@@ -48,9 +51,9 @@ public class SqlEditorDescr {
         txt.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         txt.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         
-        File fileText = new File(part.getPersistedState().get(UIConsts.PART_SQL_EDITOR_FILENAME));
+        File fileText = new File(part.getPersistedState().get(PART.SQL_EDITOR_FILENAME));
         txt.setText(new String(Files.readAllBytes(fileText.toPath()),
-                proj.getString(UIConsts.PROJ_PREF_ENCODING)));
+                proj.getString(PROJ_PREF.ENCODING)));
     }
     
     /**
@@ -62,10 +65,10 @@ public class SqlEditorDescr {
     private void projectChanged(
             PgDbProject proj,
             @Optional
-            @EventTopic(UIConsts.EVENT_REOPEN_PROJECT)
+            @EventTopic(EVENT.REOPEN_PROJECT)
             PgDbProject proj2) {
         File myFile = new File(
-                part.getPersistedState().get(UIConsts.PART_SQL_EDITOR_FILENAME));
+                part.getPersistedState().get(PART.SQL_EDITOR_FILENAME));
         if(proj == null
                 || !myFile.toPath().startsWith(proj.getProjectWorkingDir().toPath()) || !myFile.exists()) {
             sync.asyncExec(new Runnable() {
@@ -81,9 +84,9 @@ public class SqlEditorDescr {
     public static void openNew(File file, EModelService model, EPartService partService,
             MApplication app, String nameToDisplay) {
         for(MPart existingPart : model.findElements(
-                app, UIConsts.PART_SQL_EDITOR, MPart.class, null)) {
+                app, PART.SQL_EDITOR, MPart.class, null)) {
             if(file.getAbsolutePath().equals(
-                    existingPart.getPersistedState().get(UIConsts.PART_SQL_EDITOR_FILENAME))) {
+                    existingPart.getPersistedState().get(PART.SQL_EDITOR_FILENAME))) {
                 partService.activate(existingPart);
                 return;
             }
@@ -91,12 +94,12 @@ public class SqlEditorDescr {
         
         Log.log(Log.LOG_DEBUG, "About to show editor: " + file.getAbsolutePath()); //$NON-NLS-1$
         
-        MPart newEditor = partService.createPart(UIConsts.PART_SQL_EDITOR);
+        MPart newEditor = partService.createPart(PART.SQL_EDITOR);
         newEditor.setLabel(nameToDisplay);
         newEditor.setTooltip(file.getAbsolutePath());
         newEditor.getPersistedState().put(
-                UIConsts.PART_SQL_EDITOR_FILENAME, file.getAbsolutePath());
-        ((MPartStack) model.find(UIConsts.PART_STACK_EDITORS, app)).getChildren().add(newEditor);
+                PART.SQL_EDITOR_FILENAME, file.getAbsolutePath());
+        ((MPartStack) model.find(PART_STACK.EDITORS, app)).getChildren().add(newEditor);
         partService.activate(newEditor, false);
     }
 }

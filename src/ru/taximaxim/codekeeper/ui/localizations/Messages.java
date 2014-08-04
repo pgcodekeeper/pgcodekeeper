@@ -68,6 +68,7 @@ public class Messages extends NLS {
     public static String sqlScriptDialog_script_saved_to_file;
     public static String sqlScriptDialog_stop_script;
     public static String sqlScriptDialog_stop_script_before_closing_dialog;
+    public static String stdStreamRedirector_completed_with_code;
     public static String manualDepciesDialog_dependant_dependency;
     public static String manualDepciesDialog_depends_on;
     public static String manualDepciesDialog_object;
@@ -102,7 +103,6 @@ public class Messages extends NLS {
     public static String differ_direct_diff;
     public static String differ_reverse_diff;
     public static String diffTableViewer_change_type;
-
     public static String diffTableViewer_reset_sorting;
     public static String diffTableViewer_container;
     public static String diffTableViewer_deselect_child_elements;
@@ -110,6 +110,7 @@ public class Messages extends NLS {
     public static String diffTableViewer_object_name;
     public static String diffTableViewer_object_type;
     public static String diffTableViewer_objects;
+    public static String diffTableViewer_save_checked;
     public static String diffTableViewer_select_child_elements;
     public static String diffTreeViewer_collapse_all;
     public static String diffTreeViewer_collapse_subtree;
@@ -128,9 +129,25 @@ public class Messages extends NLS {
     public static String jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date;
     public static String jGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new;
     public static String jGitExec_exception_thrown_at_jgit_repo_update;
+    public static String jGitExec_failed;
+    public static String jGitExec_get_conflicts;
+    public static String jGitExec_git_failed_cause;
+    public static String jGitExec_git_result;
+    public static String jGitExec_git_setting_creditials;
+    public static String jGitExec_git_start;
+    public static String jGitExec_git_start_url;
     public static String jGitExec_git_status;
+    public static String jGitExec_git_success;
+    public static String jGitExec_message;
+    public static String jGitExec_repository_doesnt_have_conflicts;
+    public static String jGitExec_repository_has_conflicts;
+    public static String jGitExec_repository_update;
     public static String jGitExec_skip_pull_branch_does_not_exist;
     public static String jGitExec_skip_pull_branch_does_not_exist_skipped;
+    public static String jGitExec_status;
+    public static String jGitExec_success;
+    public static String jGitExec_successfull;
+    public static String jGitExec_un;
     public static String pgDumper_bad_pg_dump_version_output;
     public static String svnExec_bad_svn_version_output;
     public static String svnExec_cannot_svn_rm_an_empty_file_list;

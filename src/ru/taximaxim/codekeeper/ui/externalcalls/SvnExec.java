@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -44,9 +44,9 @@ public class SvnExec implements IRepoWorker {
     }
 
     public SvnExec(String svnExec, PgDbProject proj) {
-        this(svnExec, proj.getString(UIConsts.PROJ_PREF_REPO_URL), proj
-                .getString(UIConsts.PROJ_PREF_REPO_USER), proj
-                .getString(UIConsts.PROJ_PREF_REPO_PASS));
+        this(svnExec, proj.getString(PROJ_PREF.REPO_URL), proj
+                .getString(PROJ_PREF.REPO_USER), proj
+                .getString(PROJ_PREF.REPO_PASS));
     }
 
     /**
