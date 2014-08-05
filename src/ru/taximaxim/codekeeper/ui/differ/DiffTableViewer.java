@@ -231,7 +231,7 @@ public class DiffTableViewer extends Composite {
                 }
             });
             
-            cmbPrevChecked = new ComboViewer(contButtons, SWT.SIMPLE);
+            cmbPrevChecked = new ComboViewer(contButtons, SWT.DROP_DOWN);
             GridData gd = new GridData();
             gd.widthHint = 200;
             cmbPrevChecked.getCombo().setLayoutData(gd);
