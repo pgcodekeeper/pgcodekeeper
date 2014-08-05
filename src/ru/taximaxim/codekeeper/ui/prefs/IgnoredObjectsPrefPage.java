@@ -58,7 +58,7 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
         if (!preference.isEmpty()) {
             XmlStringList xml = new XmlStringList(IGNORED_OBJS_TAG, IGNORED_OBJS_ELEMENT);
             try {
-                ignoredObjects = xml.deserialize(new StringReader(preference));
+                ignoredObjects = xml.deserializeList(new StringReader(preference));
             } catch (IOException | SAXException ex) {
                 throw new IllegalStateException(ex);
             }
@@ -150,7 +150,7 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
             StringWriter sw = new StringWriter();
             XmlStringList xml = new XmlStringList(IGNORED_OBJS_TAG, IGNORED_OBJS_ELEMENT);
             try {
-                xml.serialize(ignoredObjects, true, sw);
+                xml.serializeList(ignoredObjects, true, sw);
             } catch (TransformerException ex) {
                 throw new IllegalStateException(ex);
             }

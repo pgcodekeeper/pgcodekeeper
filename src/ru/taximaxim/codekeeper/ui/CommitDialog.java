@@ -15,22 +15,26 @@ import org.eclipse.swt.widgets.Shell;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
+import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class CommitDialog extends TrayDialog {
     
-    private TreeElement treeDiffer;
+    private TreeElement filteredElements;
+    private TreeDiffer treeDiffer;
     private IPreferenceStore prefs;
     private String message;
     
-    public CommitDialog(Shell parentShell, TreeElement treeDiffer,
-            IPreferenceStore mainPrefs, PgDbProject proj) {
+    public CommitDialog(Shell parentShell, TreeElement filteredElements, 
+            TreeDiffer treeDiffer, IPreferenceStore mainPrefs, PgDbProject proj) {
         super(parentShell);
-        this.treeDiffer = treeDiffer;
+        
+        this.filteredElements = filteredElements;
         this.prefs = mainPrefs;
-
+        this.treeDiffer = treeDiffer;
+        
         try {
             message = Messages.commitPartDescr_the_following_changes_be_included_in_commit
                     + proj.getString(PROJ_PREF.REPO_URL)
@@ -67,7 +71,7 @@ public class CommitDialog extends TrayDialog {
         gd.heightHint = 400;
         gd.widthHint = 600;
         dtv.setLayoutData(gd);
-        dtv.setInputTreeElement(treeDiffer);
+        dtv.setFilteredInput(filteredElements, treeDiffer);
         
         return parent;
     }
