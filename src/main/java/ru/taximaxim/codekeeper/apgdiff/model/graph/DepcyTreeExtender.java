@@ -1,9 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
@@ -113,49 +110,6 @@ public class DepcyTreeExtender {
         elements.add(subtree);
     }
 
-    private void addNew(TreeElement copy) {
-        
-        List reversed = Arrays.asList(shouldBeNew.toArray());
-        Collections.reverse(reversed);
-        for (Object aaa : reversed) {
-            PgStatement toBeAdded = (PgStatement) aaa;
-            PgStatement emptyWithNew = getDbWithStatement(toBeAdded);
-            while (!(emptyWithNew instanceof PgDatabase)) {
-                emptyWithNew = emptyWithNew.getParent();
-            }
-            // Пустое дерево, содержащее только обин объект, который надо создать
-            TreeElement tree = DiffTree.create(new PgDatabase(), (PgDatabase) emptyWithNew);
-
-            TreeElement tee = tree;
-            TreeElement tee_root = copy;
-            while (tee_root != null) {
-                tee = getEmptyTreeChild(tee, DiffSide.RIGHT);
-
-                TreeElement tree_root_2 = null;
-                if ((tree_root_2 = tee_root.getChild(tee.getName(),
-                        tee.getType())) == null) {
-                    break;
-                }
-                tee_root = tree_root_2;
-            }
-
-            // пройтись вниз до конца дерева tree, копируя все листья в tee_root
-/*            while (tee != null) {
-                DiffSide side = tee.getSide();
-                // special case: default "public" schema
-                if (tee.getType() == DbObjType.SCHEMA
-                        && tee.getName().equals("public")) {
-                    side = DiffSide.BOTH;
-                }
-                tee_root.addChild(new TreeElement(tee.getName(), tee.getType(),
-                        tee.getContainerType(), side));
-                tee_root = tee_root.getChild(tee.getName());
-                tee = getEmptyTreeChild(tee, DiffSide.RIGHT);
-            }*/
-
-        }
-    }
-
     /**
      * Смотрит на стороне EDIT/NEW по базе TARGET
      * 
@@ -179,11 +133,14 @@ public class DepcyTreeExtender {
 
     private void addDeleted(TreeElement copy) {
         for (PgStatement toBeAdded : shouldBeDeleted) {
+            if (toBeAdded instanceof PgColumn){
+                continue;
+            }
             PgStatement emptyWithDeleted = getDbWithStatement(toBeAdded);
             while (!(emptyWithDeleted instanceof PgDatabase)) {
                 emptyWithDeleted = emptyWithDeleted.getParent();
             }
-            // Пустое дерево, содержащее только обин объект, который надо удалить
+            // Пустое дерево, содержащее только один объект, который надо удалить
             TreeElement tree = DiffTree.create((PgDatabase) emptyWithDeleted, new PgDatabase());
 
             TreeElement tee = tree;
@@ -279,17 +236,15 @@ public class DepcyTreeExtender {
     
     private void copyFilteredToNew(TreeElement filtered, TreeElement copy) {
         for (TreeElement child : filtered.getChildren()){
-            PgStatement zisInSource = child.getPgStatement(depcySource.getDb());
-            DiffSide side = child.getSide();
-            if (zisInSource != null && shouldBeDeleted.contains(zisInSource)){
-                side = DiffSide.LEFT;
-                TreeElement childCopy = new TreeElement(child.getName(), child.getType(), child.getContainerType(), side);
+            PgStatement zisInSource = null;
+            if (filtered.getSide() == DiffSide.LEFT && (zisInSource = child.getPgStatement(depcySource.getDb())) != null && shouldBeDeleted.contains(zisInSource)){
+                TreeElement childCopy = new TreeElement(child.getName(), child.getType(), child.getContainerType(), DiffSide.LEFT);
                 shouldBeDeleted.remove(zisInSource);
                 seeeet.add(childCopy);
-                addChildrenToSide(child, childCopy, side);
+                addChildrenToSide(child, childCopy, DiffSide.LEFT);
                 copy.addChild(childCopy);
             }else{
-                TreeElement childCopy = new TreeElement(child.getName(), child.getType(), child.getContainerType(), side);
+                TreeElement childCopy = new TreeElement(child.getName(), child.getType(), child.getContainerType(), child.getSide());
                 copy.addChild(childCopy);
                 copyFilteredToNew(child, childCopy);
             }
@@ -346,66 +301,6 @@ public class DepcyTreeExtender {
                 return side;
             }
         }
-        return null;
-    }
-    
-    @Deprecated
-    private TreeElement addDeletedRecur(PgStatement toBeAdded, TreeElement copy){
-        PgStatement emptyWithDeleted = getDbWithStatement(toBeAdded);
-        while(!(emptyWithDeleted instanceof PgDatabase)){
-            emptyWithDeleted = emptyWithDeleted.getParent();
-        }
-        // Пустое дерево, содержащее только обин объект, который надо удалить
-        TreeElement tree = DiffTree.create((PgDatabase)emptyWithDeleted, new PgDatabase());
-        
-        TreeElement tee = tree;
-        TreeElement tee_root = copy;
-        while (tee_root != null){
-            tee = getEmptyTreeChild(tee, DiffSide.LEFT);
-            
-            TreeElement tree_root_2 = null;
-            if ((tree_root_2 = tee_root.getChild(tee.getName(), tee.getType())) == null){
-                break;
-            }
-            tee_root = tree_root_2;
-        }
-        
-        /*
-         * Кусок кода, который находит пересечение двух деревьев при проходе снизу вверх.
-         * Это неправильно, так как может найти одинаковые контейнеры но с разными парентами
-         *  
-        TreeElement corresponding = getCorrespondingTreeElement(tree, toBeAdded, DiffSide.LEFT);
-        
-        TreeElement correspondingHere = hasLeaf(root, corresponding, DiffSide.LEFT); 
-        while (correspondingHere == null){
-            corresponding = corresponding.getParent();
-            correspondingHere = hasLeaf(root, corresponding, DiffSide.LEFT);
-        }
-        
-        // пройтись вниз до конца дерева tree, копируя все листья в correspondingHere
-        while (corresponding.getChild(0) != null){
-            corresponding = corresponding.getChild(0);
-            DiffSide side = corresponding.getSide();
-            // special case: default "public" schema
-            if (corresponding.getType() == DbObjType.SCHEMA && corresponding.getName().equals("public")){
-                side = DiffSide.BOTH;
-            }
-            correspondingHere.addChild(new TreeElement(corresponding.getName(), corresponding.getType(), corresponding.getContainerType(), side));
-            correspondingHere = correspondingHere.getChild(corresponding.getName());
-        }
-        */
-        
-        // пройтись вниз до конца дерева tree, копируя все листья в correspondingHere
-        while (tee != null){
-            DiffSide side = tee.getSide();
-            // special case: default "public" schema
-            if (tee.getType() == DbObjType.SCHEMA && tee.getName().equals("public")){
-                side = DiffSide.BOTH;
-            }
-            tee_root.addChild(new TreeElement(tee.getName(), tee.getType(), tee.getContainerType(), side));
-            tee_root = tee_root.getChild(tee.getName());
-            tee = getEmptyTreeChild(tee, DiffSide.LEFT);
-        }//
         return null;
     }
     
@@ -485,3 +380,65 @@ public class DepcyTreeExtender {
     }
 
 }
+
+/*    
+    @Deprecated
+    private TreeElement addDeletedRecur(PgStatement toBeAdded, TreeElement copy){
+        PgStatement emptyWithDeleted = getDbWithStatement(toBeAdded);
+        while(!(emptyWithDeleted instanceof PgDatabase)){
+            emptyWithDeleted = emptyWithDeleted.getParent();
+        }
+        // Пустое дерево, содержащее только обин объект, который надо удалить
+        TreeElement tree = DiffTree.create((PgDatabase)emptyWithDeleted, new PgDatabase());
+        
+        TreeElement tee = tree;
+        TreeElement tee_root = copy;
+        while (tee_root != null){
+            tee = getEmptyTreeChild(tee, DiffSide.LEFT);
+            
+            TreeElement tree_root_2 = null;
+            if ((tree_root_2 = tee_root.getChild(tee.getName(), tee.getType())) == null){
+                break;
+            }
+            tee_root = tree_root_2;
+        }
+        
+        
+ * Кусок кода, который находит пересечение двух деревьев при проходе снизу вверх.
+ * Это неправильно, так как может найти одинаковые контейнеры но с разными парентами
+ *  
+        TreeElement corresponding = getCorrespondingTreeElement(tree, toBeAdded, DiffSide.LEFT);
+        
+        TreeElement correspondingHere = hasLeaf(root, corresponding, DiffSide.LEFT); 
+        while (correspondingHere == null){
+            corresponding = corresponding.getParent();
+            correspondingHere = hasLeaf(root, corresponding, DiffSide.LEFT);
+        }
+        
+        // пройтись вниз до конца дерева tree, копируя все листья в correspondingHere
+        while (corresponding.getChild(0) != null){
+            corresponding = corresponding.getChild(0);
+            DiffSide side = corresponding.getSide();
+            // special case: default "public" schema
+            if (corresponding.getType() == DbObjType.SCHEMA && corresponding.getName().equals("public")){
+                side = DiffSide.BOTH;
+            }
+            correspondingHere.addChild(new TreeElement(corresponding.getName(), corresponding.getType(), corresponding.getContainerType(), side));
+            correspondingHere = correspondingHere.getChild(corresponding.getName());
+        }
+        
+        
+        // пройтись вниз до конца дерева tree, копируя все листья в correspondingHere
+        while (tee != null){
+            DiffSide side = tee.getSide();
+            // special case: default "public" schema
+            if (tee.getType() == DbObjType.SCHEMA && tee.getName().equals("public")){
+                side = DiffSide.BOTH;
+            }
+            tee_root.addChild(new TreeElement(tee.getName(), tee.getType(), tee.getContainerType(), side));
+            tee_root = tee_root.getChild(tee.getName());
+            tee = getEmptyTreeChild(tee, DiffSide.LEFT);
+        }//
+        return null;
+    }
+ */
