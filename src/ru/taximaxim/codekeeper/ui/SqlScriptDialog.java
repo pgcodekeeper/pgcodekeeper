@@ -186,7 +186,7 @@ public class SqlScriptDialog extends MessageDialog {
                 // TODO remove fileTmpScript if script is done or interrupted
                 fileTmpScript = new TempFile("tmp_rollon_", ".sql").get(); //$NON-NLS-1$ //$NON-NLS-2$
                 
-               try (PrintWriter writer = new PrintWriter(fileTmpScript)) {
+               try (PrintWriter writer = new PrintWriter(fileTmpScript, "UTF-8")) {
                    writer.write(textRetrieved);
                }
             } catch (IOException ex) {
@@ -257,7 +257,7 @@ public class SqlScriptDialog extends MessageDialog {
             
             if (scriptFileName != null) {
                 File script = new File(scriptFileName);
-                try (PrintWriter writer = new PrintWriter(script)) {
+                try (PrintWriter writer = new PrintWriter(script, "UTF-8")) {
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
                     Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS, 

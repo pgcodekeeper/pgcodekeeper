@@ -2,9 +2,10 @@ package ru.taximaxim.codekeeper.ui;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URISyntaxException;
@@ -121,7 +122,7 @@ public class XmlHistory {
                 histFile.getParentFile().mkdirs();
                 histFile.createNewFile();
                 
-                try (Writer xmlWriter = new FileWriter(histFile)) {
+                try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(histFile), "UTF-8")) {
                     XmlStringList xml = new XmlStringList(rootTag, elementTag);
                     xml.serializeList(historyEntries, false, xmlWriter);
                 }
@@ -154,7 +155,7 @@ public class XmlHistory {
         try {
             historyFile.getParentFile().mkdirs();
             historyFile.createNewFile();
-            try (Writer xmlWriter = new FileWriter(historyFile)) {
+            try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(historyFile), "UTF-8")) {
                 XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
                 xml.serializeMap(checkedSets, false, xmlWriter);
             }
