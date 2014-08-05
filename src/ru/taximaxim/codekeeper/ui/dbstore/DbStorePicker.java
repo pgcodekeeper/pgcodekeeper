@@ -59,7 +59,9 @@ public class DbStorePicker extends Group {
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
         
         cmbDbNames = new Combo(container, SWT.READ_ONLY | SWT.DROP_DOWN);
-        cmbDbNames.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 100;
+        cmbDbNames.setLayoutData(gd);
         cmbDbNames.addDisposeListener(new DisposeListener() {
             
             @Override

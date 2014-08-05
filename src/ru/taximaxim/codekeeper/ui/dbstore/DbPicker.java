@@ -66,7 +66,7 @@ public class DbPicker extends Group {
         
         if (prefStore != null) {
             dbStorePicker = new DbStorePicker(this, SWT.NONE, false, prefStore);
-            dbStorePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true,
+            dbStorePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
                     false, 4, 1));
             final SelectionAdapter sa = new SelectionAdapter() {
                 
