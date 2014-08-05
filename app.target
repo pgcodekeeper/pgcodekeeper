@@ -17,7 +17,6 @@
 <repository location="http://download.eclipse.org/egit/updates/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.datatools.enablement.sdk.feature.feature.group" version="1.12.0.v201406061321-7IAB-FE9JgeWjZZhMd-z0vb1ifD4"/>
 <unit id="org.eclipse.datatools.sdk.feature.feature.group" version="1.12.0.v201406061321-7PB21FEpPZQXdcX0z-_yMM0Hfz0w"/>
 <repository location="http://download.eclipse.org/releases/luna"/>
 </location>
