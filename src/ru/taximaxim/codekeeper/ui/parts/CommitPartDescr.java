@@ -63,6 +63,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.CommitDialog;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.SqlViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
@@ -117,7 +118,7 @@ public class CommitPartDescr {
     private Button btnGetChanges;
     private Composite containerSrc;
     private DbPicker dbSrc;
-    private TextMergeViewer diffPane;
+    private SqlViewer diffPane;
     private String repoName;
     private XmlHistory history;
     /**
@@ -489,17 +490,18 @@ public class CommitPartDescr {
         conf.setLeftEditable(false);
         conf.setRightEditable(false);
         
-        diffPane = new TextMergeViewer(sashOuter, SWT.BORDER, conf) {
-            
-            @Override
-            protected SourceViewer createSourceViewer(Composite parent, int textOrientation) {
-                CompositeRuler ruler = new CompositeRuler();
-                ruler.addDecorator(0, new LineNumberRulerColumn());
-                
-                return new SourceViewer(parent, ruler,
-                        textOrientation | SWT.H_SCROLL | SWT.V_SCROLL);
-            }
-        };
+//        diffPane = new TextMergeViewer(sashOuter, SWT.BORDER, conf) {
+//            
+//            @Override
+//            protected SourceViewer createSourceViewer(Composite parent, int textOrientation) {
+//                CompositeRuler ruler = new CompositeRuler();
+//                ruler.addDecorator(0, new LineNumberRulerColumn());
+//                
+//                return new SourceViewer(parent, ruler,
+//                        textOrientation | SWT.H_SCROLL | SWT.V_SCROLL);
+//            }
+//        };
+        diffPane = new SqlViewer(sashOuter, SWT.BORDER, conf);
         diffPane.setContentProvider(new IMergeViewerContentProvider() {
             
             @Override

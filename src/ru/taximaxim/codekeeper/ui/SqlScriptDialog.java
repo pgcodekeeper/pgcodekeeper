@@ -72,7 +72,8 @@ public class SqlScriptDialog extends MessageDialog {
     private String dbUser;
     private String dbPass;
     
-    private Text txtMain;
+//    private Text txtMain;
+    private SQLStatementArea sta;
     private Text txtCommand;
     private Combo cmbScript;
     private Button runScriptBtn;
@@ -146,12 +147,12 @@ public class SqlScriptDialog extends MessageDialog {
                 SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER
                 });
                 _partitioner.connect(doc);
-                extension3.setDocumentPartitioner(ISQLPartitions.SQL_PARTITIONING,     _partitioner);
+                extension3.setDocumentPartitioner(ISQLPartitions.SQL_PARTITIONING, _partitioner);
                 }
             }
             
         };
-        final SQLStatementArea sta = new SQLStatementArea(parent, SWT.BORDER, viewerService, true);
+        sta = new SQLStatementArea(parent, SWT.BORDER, viewerService, true);
         sta.setEditable(true);
         sta.setEnabled(true);
         
@@ -174,6 +175,11 @@ public class SqlScriptDialog extends MessageDialog {
         document.set(text);
         sta.getViewer().setDocument(document);
         
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 600;
+        gd.heightHint = 400;
+        sta.setLayoutData(gd);
+        
 //        IHandlerService handlerService = (IHandlerService) editor.getSite().getService(IHandlerService.class);
 //        IHandler cahandler = new AbstractHandler() {
 //
@@ -192,16 +198,15 @@ public class SqlScriptDialog extends MessageDialog {
 //        cahandler);       
         
         
-        txtMain = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
-                | SWT.MULTI);
-        txtMain.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        txtMain.setText(text);
-        
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 600;
-        gd.heightHint = 400;
-        txtMain.setLayoutData(gd);
-//        se.setLayoutData(gd);
+//        txtMain = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
+//                | SWT.MULTI);
+//        txtMain.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+//        txtMain.setText(text);
+//        
+//        GridData gd = new GridData(GridData.FILL_BOTH);
+//        gd.widthHint = 600;
+//        gd.heightHint = 400;
+//        txtMain.setLayoutData(gd);
         
         Label l = new Label(parent, SWT.NONE);
         l.setText(Messages.sqlScriptDialog_Enter_cmd_to_roll_on_sql_script
@@ -256,7 +261,7 @@ public class SqlScriptDialog extends MessageDialog {
     
     @Override
     protected void buttonPressed(int buttonId) {
-        final String textRetrieved = txtMain.getText();
+        final String textRetrieved = sta.getViewer().getDocument().get();
         
         // case Run script
         if (buttonId == 0 && !isRunning){
