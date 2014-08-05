@@ -72,14 +72,7 @@ public class DbPicker extends Group {
                 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    DbInfo dbInfo = dbStorePicker.getDbInfo();
-                    if (dbInfo != null) {
-                        txtDbName.setText(dbInfo.dbname);
-                        txtDbUser.setText(dbInfo.dbuser);
-                        txtDbPass.setText(dbInfo.dbpass);
-                        txtDbHost.setText(dbInfo.dbhost);
-                        txtDbPort.setText(String.valueOf(dbInfo.dbport));
-                    }
+                    fillDbFieldsFromDbInfo();
                 }
             };
             dbStorePicker.addListenerToCombo(sa);
@@ -146,6 +139,21 @@ public class DbPicker extends Group {
         txtDbPort = new Text(this, SWT.BORDER);
         gd = new GridData(60, SWT.DEFAULT);
         txtDbPort.setLayoutData(gd);
+        if (dbStorePicker != null) {
+            fillDbFieldsFromDbInfo();
+        }
+    }
+    
+
+    private void fillDbFieldsFromDbInfo() {
+        DbInfo dbInfo = dbStorePicker.getDbInfo();
+        if (dbInfo != null) {
+            txtDbName.setText(dbInfo.dbname);
+            txtDbUser.setText(dbInfo.dbuser);
+            txtDbPass.setText(dbInfo.dbpass);
+            txtDbHost.setText(dbInfo.dbhost);
+            txtDbPort.setText(String.valueOf(dbInfo.dbport));
+        }
     }
     
     /**

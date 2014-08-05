@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -19,6 +21,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -84,9 +87,15 @@ public class DbStorePicker extends Group {
     private void loadStore() {
         store = DbInfo.preferenceToStore(prefStore.getString(PREF.DB_STORE));
         
+        String selectedItem = null;
+        if (cmbDbNames.getSelectionIndex() > 0) {
+            selectedItem = cmbDbNames.getItem(cmbDbNames.getSelectionIndex());
+        }
         cmbDbNames.setItems(store.keySet().toArray(new String[store.size()]));
         if(cmbDbNames.getItemCount() > 0) {
-            cmbDbNames.select(0);
+            List<String> items = Arrays.asList(cmbDbNames.getItems());
+            cmbDbNames.select(items.indexOf(selectedItem) == -1 ? 0 : items.indexOf(selectedItem));
+            cmbDbNames.notifyListeners(SWT.Selection, new Event());
         }
     }
     
