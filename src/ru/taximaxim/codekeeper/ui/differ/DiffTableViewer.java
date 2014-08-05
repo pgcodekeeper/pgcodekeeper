@@ -828,16 +828,20 @@ public class DiffTableViewer extends Composite {
     public HashSet<TreeElement> setChecked(HashSet<PgStatement> dependencies, PgDatabase db, boolean markChecked) {
         HashSet<TreeElement> result = new HashSet<TreeElement>(5);
         for (TreeElement element : elements.keySet()){
-            PgStatement elementInDb = element.getPgStatement(db);
-            if (elementInDb != null && dependencies.contains(elementInDb) && 
-                    (elements.get(element) != markChecked)){
-                if (element.getSide() == DiffSide.LEFT){
-                    // сюда когда-нибудь зайдет?
-                    elements.put(element, false);
-                }else{
-                    elements.put(element, markChecked);
-                    result.add(element);
+            try{   
+                PgStatement elementInDb = element.getPgStatement(db);
+                if (elementInDb != null && dependencies.contains(elementInDb) && 
+                        (elements.get(element) != markChecked)){
+                    if (element.getSide() == DiffSide.LEFT){
+                        // сюда когда-нибудь зайдет?
+                        elements.put(element, false);
+                    }else{
+                        elements.put(element, markChecked);
+                        result.add(element);
+                    }
                 }
+            }catch(NullPointerException e){
+                
             }
         }
         return result;
