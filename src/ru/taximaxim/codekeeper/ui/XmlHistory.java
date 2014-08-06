@@ -11,7 +11,6 @@ import java.io.Writer;
 import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
@@ -138,18 +137,21 @@ public class XmlHistory {
             return;
         }
         LinkedHashMap<String, LinkedList<String>> checkedSets = 
-                new LinkedHashMap<String, LinkedList<String>>() {
-            @Override
-            protected boolean removeEldestEntry(Map.Entry eldest) {
-                return size() > maxEntries;
-                }
-        };
+                new LinkedHashMap<String, LinkedList<String>>();
         
         checkedSets.put(checkSetName, values);
+        int count = 1;
         
         LinkedHashMap<String, LinkedList<String>> oldCheckedSets = getMapHistory();
         oldCheckedSets.remove(checkSetName);
-        checkedSets.putAll(oldCheckedSets);
+        
+        for (String key : oldCheckedSets.keySet()) {
+            if (count >= maxEntries) {
+                break;
+            }
+            checkedSets.put(key, oldCheckedSets.get(key));
+            count++;
+        }
         
         File historyFile = getHistoryXmlFile();
         try {
