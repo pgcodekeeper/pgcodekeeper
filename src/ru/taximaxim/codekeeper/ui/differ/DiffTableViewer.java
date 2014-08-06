@@ -151,7 +151,7 @@ public class DiffTableViewer extends Composite {
         
         int viewerStyle = SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER;
         if (!viewOnly) {
-            viewerStyle |= SWT.CHECK;  
+            viewerStyle |= SWT.CHECK;
         }
         viewer = new CheckboxTableViewer(new Table(this, viewerStyle));
         
@@ -163,7 +163,6 @@ public class DiffTableViewer extends Composite {
             viewer.getControl().setMenu(
                     getViewerMenu().createContextMenu(viewer.getControl()));
 
-        }
             viewer.addDoubleClickListener(new IDoubleClickListener() {
 
                 @Override
@@ -193,7 +192,7 @@ public class DiffTableViewer extends Composite {
                 }
 
             });
-        
+        }
         viewer.setComparator(comparator);
         viewer.setFilters(new ViewerFilter[] { viewerFilter });
         
@@ -828,20 +827,19 @@ public class DiffTableViewer extends Composite {
     public HashSet<TreeElement> setChecked(HashSet<PgStatement> dependencies, PgDatabase db, boolean markChecked) {
         HashSet<TreeElement> result = new HashSet<TreeElement>(5);
         for (TreeElement element : elements.keySet()){
-            try{   
-                PgStatement elementInDb = element.getPgStatement(db);
-                if (elementInDb != null && dependencies.contains(elementInDb) && 
-                        (elements.get(element) != markChecked)){
-                    if (element.getSide() == DiffSide.LEFT){
-                        // сюда когда-нибудь зайдет?
-                        elements.put(element, false);
-                    }else{
-                        elements.put(element, markChecked);
-                        result.add(element);
-                    }
+            if (element.getSide() == DiffSide.LEFT){
+                continue;
+            }
+            PgStatement elementInDb = element.getPgStatement(db);
+            if (elementInDb != null && dependencies.contains(elementInDb) && 
+                    (elements.get(element) != markChecked)){
+                if (element.getSide() == DiffSide.LEFT){
+                    // сюда когда-нибудь зайдет?
+                    elements.put(element, false);
+                }else{
+                    elements.put(element, markChecked);
+                    result.add(element);
                 }
-            }catch(NullPointerException e){
-                
             }
         }
         return result;

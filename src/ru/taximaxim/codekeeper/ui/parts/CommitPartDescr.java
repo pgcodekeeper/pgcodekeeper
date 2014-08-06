@@ -233,14 +233,11 @@ public class CommitPartDescr {
                     return;
                 }
                 
-                ///////////////////////////////////////////////////////
-                //      ВНИМАНИЕ!!! ЭТО УЖЕ копия ДЕРЕВА ДИФФА       //
-                ///////////////////////////////////////////////////////
                 final TreeElement filtered = diffTable.filterDiffTree();
                 
                 // Расширить filtered потомками new/edit
-                DepcyTreeExtender dte = new DepcyTreeExtender(dbSource.getDbObject(), dbTarget.getDbObject(), filtered, treeDiffer.getDiffTree());
-                HashSet<PgStatement> dependencies = dte.getNew();
+                DepcyTreeExtender dte = new DepcyTreeExtender(dbSource.getDbObject(), dbTarget.getDbObject(), filtered);
+                HashSet<PgStatement> dependencies = dte.getDependenciesOfNew();
                 PgDatabase dbdbdb = dte.getDepcyTargetDb();
                 
                 // список элементов - потомков исходного treediffer
@@ -254,8 +251,8 @@ public class CommitPartDescr {
                 //////////////////////////////////////////////////////////
                 
                 // расширить дерево filtered_with_new элементами, зависящими от удаляемых
-                dte = new DepcyTreeExtender(dbSource.getDbObject(), dbTarget.getDbObject(), filtered_with_new, treeDiffer.getDiffTree());
-                final TreeElement filtered_with_new_and_delete = dte.getCopyWithDepcy();
+                dte = new DepcyTreeExtender(dbSource.getDbObject(), dbTarget.getDbObject(), filtered_with_new);
+                final TreeElement filtered_with_new_and_delete = dte.getFilteredCopyWithDepcy();
                 
                 // (список элементов - потомков filtered_with_new_and_delete)
                 HashSet<TreeElement> elementsDepcyDELETE = dte.getDeletedElements();
