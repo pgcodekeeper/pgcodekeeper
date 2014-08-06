@@ -21,42 +21,41 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class DepcyTreeExtender {
-    private HashSet<PgStatement> shouldBeDeleted = new HashSet<PgStatement>(5);
-    private HashSet<PgStatement> shouldBeNew = new HashSet<PgStatement>(5);
+    private HashSet<PgStatement> dependantsOfDeleted = new HashSet<PgStatement>(5);
+    private HashSet<TreeElement> newlyDeletedDependants;
     
     private DepcyGraph depcySource;
     private DepcyGraph depcyTarget;
     private PgDatabase dbSource;
     private PgDatabase dbTarget;
-    private TreeElement diffTree;
-    private HashSet<TreeElement> seeeet;
     /**
      * Root node of filtered tree (should not be modified)
      */
     final private TreeElement root;
     
-    public DepcyTreeExtender(PgDatabase dbSource, PgDatabase dbTarget, TreeElement root, TreeElement diffTree) {
+    public DepcyTreeExtender(PgDatabase dbSource, PgDatabase dbTarget, TreeElement root) {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
-        this.diffTree = diffTree;
+        this.root = root;
         
         // depcy graphs
         depcySource = new DepcyGraph(dbSource);
         depcyTarget = new DepcyGraph(dbTarget);
-        seeeet = new HashSet<TreeElement>();
-        this.root = root;
+        
+        newlyDeletedDependants = new HashSet<TreeElement>();
     }
     
     /**
-     * Возвращает список объектов, от которых зависят уже выбранные пользователем элементы EDIT/NEW
-     * (объекты в TARGET-базе)
+     * Возвращает список объектов, от которых зависят уже выбранные пользователем
+     * элементы EDIT/NEW (объекты в TARGET-базе)
      * 
      * @return
      */
-    public HashSet<PgStatement> getNew(){
-        // заполнить сет shouldBeNew зависимыми элементами, которые надо создать
-        extendNew(root);
-        return shouldBeNew;
+    public HashSet<PgStatement> getDependenciesOfNew(){
+        // заполнить сет зависимыми элементами, которые надо создать
+        HashSet<PgStatement> depcySet = new HashSet<PgStatement>();
+        extendNew(root, depcySet);
+        return depcySet;
     }
     
     /**
@@ -65,10 +64,9 @@ public class DepcyTreeExtender {
      * @param filtered
      * @return
      */
-    public TreeElement getCopyWithDepcy(){
+    public TreeElement getFilteredCopyWithDepcy(){
         TreeElement copy = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
-        // заполнить сет shouldBeDeleted зависимыми элементами, отмеченными на удаление
-        extendDelete(root, copy);
+        extendDelete(root);
         
         // скопировать дерево первоначального выбора пользователя, перемещая 
         // налево элементы, содержащиеся в сете shouldBeDeleted
@@ -80,35 +78,6 @@ public class DepcyTreeExtender {
 
         return copy;
     }
-    
-    /**
-     * Вспомогательный метод для генерации набора элементов, которые являются 
-     * объектами и могут быть выбраны пользователем.
-     * <br><br>Копия метода DiffTableViewer.generateFlatElementsMap
-     * @return
-     */
-    public void generateFlatElementsSet (TreeElement subtree,  Set<TreeElement> elements){
-        if (subtree.hasChildren()) {
-            for (TreeElement child : subtree.getChildren()) {
-                generateFlatElementsSet(child, elements);
-            }
-        }
-        
-        boolean doNotInclude = 
-                (subtree.getSide() == DiffSide.BOTH && subtree.getParent() != null 
-                && subtree.getParent().getSide() != DiffSide.BOTH)
-                || subtree.getType() == DbObjType.CONTAINER
-                || subtree.getType() == DbObjType.DATABASE;
-        if (doNotInclude) {
-            return;
-        }
-        if ((subtree.getSide() == DiffSide.BOTH && 
-                subtree.getPgStatement(dbSource).compare(
-                        subtree.getPgStatement(dbTarget)))) {
-            return;
-        }
-        elements.add(subtree);
-    }
 
     /**
      * Смотрит на стороне EDIT/NEW по базе TARGET
@@ -116,23 +85,28 @@ public class DepcyTreeExtender {
      * @param filtered
      * @param copy
      */
-    private void extendNew(TreeElement filtered) {
+    private void extendNew(TreeElement filtered, HashSet<PgStatement> depcySet) {
         PgStatement markedToCreate = null;
         
         // if not a Container and is marked for creation/edit
         if ((filtered.getSide() != DiffSide.LEFT && filtered.getType() != DbObjType.CONTAINER) && 
                 (markedToCreate = filtered.getPgStatement(dbTarget)) != null){
-            HashSet<PgStatement> sese = new HashSet<PgStatement>(5);
-            PgDiff.getDependenciesSet(markedToCreate, shouldBeNew, depcyTarget.getGraph());
+            PgDiff.getDependenciesSet(markedToCreate, depcySet, depcyTarget.getGraph());
         }
         
         for(TreeElement sub : filtered.getChildren()) {
-            extendNew(sub);
+            extendNew(sub, depcySet);
         }
     }
 
+    /**
+     * Дополняет дерево <code>copy</code> зависимостями, которые должны быть
+     * удалены, но не были в первоначальном фильтрованном дереве
+     * 
+     * @param copy
+     */
     private void addDeleted(TreeElement copy) {
-        for (PgStatement toBeAdded : shouldBeDeleted) {
+        for (PgStatement toBeAdded : dependantsOfDeleted) {
             if (toBeAdded instanceof PgColumn){
                 continue;
             }
@@ -148,6 +122,17 @@ public class DepcyTreeExtender {
             while (tee_root != null) {
                 tee = getEmptyTreeChild(tee, DiffSide.LEFT);
 
+                if(tee == null){
+                    if (tee_root.getSide() != DiffSide.LEFT){
+                        // TODO удалить/рефакторить дебаг эксепшен
+                        throw new IllegalStateException("Какой-то левый объект в"
+                                + " дереве при добавлении удаляемых зависимостей:"
+                                + " объект не с левой стороны");
+                    }
+                    newlyDeletedDependants.add(tee_root);
+                    tee_root = null;
+                    continue;
+                }
                 TreeElement tree_root_2 = null;
                 if ((tree_root_2 = tee_root.getChild(tee.getName(),
                         tee.getType())) == null) {
@@ -155,7 +140,6 @@ public class DepcyTreeExtender {
                 }
                 tee_root = tree_root_2;
             }
-            seeeet.add(tee);
             // пройтись вниз до конца дерева tree, копируя все листья в tee_root
             while (tee != null) {
                 DiffSide side = tee.getSide();
@@ -167,6 +151,9 @@ public class DepcyTreeExtender {
                 tee_root.addChild(new TreeElement(tee.getName(), tee.getType(),
                         tee.getContainerType(), side));
                 tee_root = tee_root.getChild(tee.getName());
+                if (tee.getChildren().isEmpty()){
+                    newlyDeletedDependants.add(tee);
+                }
                 tee = getEmptyTreeChild(tee, DiffSide.LEFT);
             }
 
@@ -234,62 +221,128 @@ public class DepcyTreeExtender {
         return copy;
     }
     
+    /**
+     * Копирует дерево в copy. Если находится объект, который есть в списке 
+     * зависимостей на удаление, то копирует его и всех его потомков по дереву со стороной LEFT
+     * 
+     * @param filtered
+     * @param copy
+     */
     private void copyFilteredToNew(TreeElement filtered, TreeElement copy) {
         for (TreeElement child : filtered.getChildren()){
             PgStatement zisInSource = null;
-            if (filtered.getSide() == DiffSide.LEFT && (zisInSource = child.getPgStatement(depcySource.getDb())) != null && shouldBeDeleted.contains(zisInSource)){
-                TreeElement childCopy = new TreeElement(child.getName(), child.getType(), child.getContainerType(), DiffSide.LEFT);
-                shouldBeDeleted.remove(zisInSource);
-                seeeet.add(childCopy);
-                addChildrenToSide(child, childCopy, DiffSide.LEFT);
-                copy.addChild(childCopy);
-            }else{
-                TreeElement childCopy = new TreeElement(child.getName(), child.getType(), child.getContainerType(), child.getSide());
-                copy.addChild(childCopy);
-                copyFilteredToNew(child, childCopy);
+            TreeElement childCopy = null;
+            DiffSide side = child.getSide();
+            boolean sideChanged = false;
+            // если это уже выбранный пользователем элемент на УДАЛЕНИЕ
+            if (child.getSide() == DiffSide.LEFT){
+                zisInSource = child.getPgStatement(depcySource.getDb());
+                dependantsOfDeleted.remove(zisInSource);
             }
-        }
-    }
-        
-    /**
-     * Помещает копии всех потомков child'a в childCopy, при этом задавая сторону LEFT
-     * 
-     * TODO Перемещать всю ветку в Source only (пока кладется туда, где было изначально)
-     *  
-     * @param child
-     * @param childCopy
-     */
-    private void addChildrenToSide(TreeElement child, TreeElement childCopy, DiffSide side) {
-        for(TreeElement chichi : child.getChildren()){
-            TreeElement chichiCopy = new TreeElement(chichi.getName(), chichi.getType(), chichi.getContainerType(), side);
-            childCopy.addChild(chichiCopy);
-            addChildrenToSide(chichi, chichiCopy, side);
+            // иначе если это элемент, который не надо было удалять (EDIT)
+            else if (child.getSide() == DiffSide.BOTH && (zisInSource = child.getPgStatement(depcySource.getDb())) != null && dependantsOfDeleted.contains(zisInSource)){
+                side = DiffSide.LEFT;
+                dependantsOfDeleted.remove(zisInSource);
+                sideChanged = true;
+            }
+            
+            childCopy = new TreeElement(child.getName(), child.getType(), child.getContainerType(), side);
+            copy.addChild(childCopy);
+            if(sideChanged){
+                newlyDeletedDependants.add(childCopy);
+            }
+            copyFilteredToNew(child, childCopy);
         }
     }
 
-    private TreeElement extendDelete(TreeElement filtered, TreeElement copy) {
+    /**
+     * Заполняет сет dependantsOfDeleted элементами, зависимыми от элементов в 
+     * отфильтрованном дереве, отмеченными на удаление
+     * 
+     * @param filtered
+     */
+    private void extendDelete(TreeElement filtered) {
         PgStatement markedToDelete = null;
         
         // if not a Container and is marked for deletion
         if ((filtered.getSide() == DiffSide.LEFT && filtered.getType() != DbObjType.CONTAINER) && 
                 (markedToDelete = filtered.getPgStatement(dbSource)) != null){
-            PgDiff.getDependantsSet(markedToDelete, shouldBeDeleted, depcySource.getGraph());
+            PgDiff.getDependantsSet(markedToDelete, dependantsOfDeleted, depcySource.getGraph());
         }
         
         for(TreeElement sub : filtered.getChildren()) {
-            extendDelete(sub, copy);
+            extendDelete(sub);
         }
-        return copy;
+    }
+    
+    public TreeElement getCorrespondingTreeElement(TreeElement element, TreeElement sourceTree) {
+        if (element == null){
+            return null;
+        }
+        
+        TreeElement pi = getCorrespondingTreeElement(element.getParent(), sourceTree);
+        if (pi != null){
+            return pi.getChild(element.getName(), element.getType());
+        }else{
+            return sourceTree;
+        }
+    }
+    
+    public PgDatabase getDepcyTargetDb() { 
+        return depcyTarget.getDb();
     }
     
     /**
+     * Возвращает набор элементов дерева, которые зависят от удаленных и должны 
+     * быть удалены, но не были в первоначальном фильтрованном дереве или были 
+     * отмечены как NEW/EDIT
+     * 
+     * @return
+     */
+    public HashSet<TreeElement> getDeletedElements(){
+        return newlyDeletedDependants;
+    }
+    
+    /**
+     * Вспомогательный метод для генерации набора элементов, которые являются 
+     * объектами и могут быть выбраны пользователем.
+     * <br><br>Копия метода DiffTableViewer.generateFlatElementsMap
+     * @return
+     */
+    public void generateFlatElementsSet (TreeElement subtree,  Set<TreeElement> elements){
+        if (subtree.hasChildren()) {
+            for (TreeElement child : subtree.getChildren()) {
+                generateFlatElementsSet(child, elements);
+            }
+        }
+        
+        boolean doNotInclude = 
+                (subtree.getSide() == DiffSide.BOTH && subtree.getParent() != null 
+                && subtree.getParent().getSide() != DiffSide.BOTH)
+                || subtree.getType() == DbObjType.CONTAINER
+                || subtree.getType() == DbObjType.DATABASE;
+        if (doNotInclude) {
+            return;
+        }
+        if ((subtree.getSide() == DiffSide.BOTH && 
+                subtree.getPgStatement(dbSource).compare(
+                        subtree.getPgStatement(dbTarget)))) {
+            return;
+        }
+        elements.add(subtree);
+    }
+}
+
+/*    
+
+    **
      * Returns the side of <code>object</code> in <code>tree</code>, if it is present there.
      * 
      * @param object DB object that we want to know the side of
      * @param tree Diff tree, in which the search for object equivalent is performed 
      * @param db Parent database for <code>object</code>
      * @return
-     */
+     *
     @Deprecated
     private DiffSide getObjectSide(PgStatement object, TreeElement tree, PgDatabase db){
         if (object.equals(tree.getPgStatement(db))){
@@ -303,15 +356,15 @@ public class DepcyTreeExtender {
         }
         return null;
     }
-    
-    /**
+
+    **
      * Returns <code>root</code>'s leaf, that is equal to <code>corresponding</code>.
      * Returns null, if no such leaf exists.
      * 
      * @param corresponding
      * @param left
      * @return
-     */
+     *
     @Deprecated
     private TreeElement hasLeaf(TreeElement root, TreeElement corresponding, DiffSide left) {
         if (root.getName().equals(corresponding.getName()) && 
@@ -331,7 +384,7 @@ public class DepcyTreeExtender {
         return null;
     }
 
-    /**
+    **
      * Возвращает элемент дерева (потомок <code>inputTree</code> со стороны <code>side</code>), 
      * который соответствует объекту <code>sta</code>, если тот либо его копия 
      * представлены в <code>source</code>.
@@ -339,7 +392,8 @@ public class DepcyTreeExtender {
      * @param inputTree
      * @param sta
      * @return
-     */
+     *
+    @Deprecated
     private TreeElement getCorrespondingTreeElement(TreeElement inputTree, PgStatement sta, DiffSide side){
         PgStatement stasta = inputTree.getPgStatement(dbSource);
         // check whether we are on the correct side
@@ -358,30 +412,26 @@ public class DepcyTreeExtender {
         return null;
     }
 
-    public TreeElement getCorrespondingTreeElement(TreeElement element, TreeElement sourceTree) {
-        if (element == null){
-            return null;
+     * Помещает копии всех потомков child'a в childCopy, при этом задавая сторону LEFT
+     * 
+     * TODO Перемещать всю ветку в Source only (пока кладется туда, где было изначально)
+     *  
+     * @param child
+     * @param childCopy
+    @Deprecated 
+    private void addChildrenToSide(TreeElement child, TreeElement childCopy, DiffSide side) {
+        for(TreeElement chichi : child.getChildren()){
+            TreeElement chichiCopy = new TreeElement(chichi.getName(), chichi.getType(), chichi.getContainerType(), side);
+            childCopy.addChild(chichiCopy);
+            addChildrenToSide(chichi, chichiCopy, side);
+            PgStatement zisInSource = null;
+            if (child.getSide() != DiffSide.RIGHT && (zisInSource = chichi.getPgStatement(depcySource.getDb())) != null && shouldBeDeleted.contains(zisInSource)){
+                shouldBeDeleted.remove(zisInSource);
+    //                seeeet.add(chichi);
+            }
         }
-        
-        TreeElement pi = getCorrespondingTreeElement(element.getParent(), sourceTree);
-        if (pi != null){
-            return pi.getChild(element.getName(), element.getType());
-        }else{
-            return sourceTree;
-        }
-    }
-    
-    public PgDatabase getDepcyTargetDb() { 
-        return depcyTarget.getDb();
-    }
-    
-    public HashSet<TreeElement> getDeletedElements(){
-        return seeeet;
     }
 
-}
-
-/*    
     @Deprecated
     private TreeElement addDeletedRecur(PgStatement toBeAdded, TreeElement copy){
         PgStatement emptyWithDeleted = getDbWithStatement(toBeAdded);
