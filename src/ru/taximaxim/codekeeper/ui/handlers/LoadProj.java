@@ -126,11 +126,9 @@ public class LoadProj {
     }
     
     public static boolean getProjVersion(File file, StringBuilder message) {
-        try {
+        try (FileInputStream fStream = new FileInputStream(file)) {
             Properties prop = new Properties();
-            FileInputStream fStream = new FileInputStream(file);
             prop.load(fStream);
-            fStream.close();
             String version = prop.getProperty(ApgdiffConsts.VERSION_PROP_NAME);
             
             if (version == null) {
