@@ -9,6 +9,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URISyntaxException;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
@@ -140,17 +141,14 @@ public class XmlHistory {
                 new LinkedHashMap<String, LinkedList<String>>();
         
         checkedSets.put(checkSetName, values);
-        int count = 1;
         
         LinkedHashMap<String, LinkedList<String>> oldCheckedSets = getMapHistory();
         oldCheckedSets.remove(checkSetName);
         
-        for (String key : oldCheckedSets.keySet()) {
-            if (count >= maxEntries) {
-                break;
-            }
+        Iterator<String> it = oldCheckedSets.keySet().iterator();
+        for (int count = 1; count < maxEntries && it.hasNext(); count++) {
+            String key = it.next();
             checkedSets.put(key, oldCheckedSets.get(key));
-            count++;
         }
         
         File historyFile = getHistoryXmlFile();
