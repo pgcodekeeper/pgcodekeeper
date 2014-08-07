@@ -128,7 +128,9 @@ public class LoadProj {
     public static boolean getProjVersion(File file, StringBuilder message) {
         try {
             Properties prop = new Properties();
-            prop.load(new FileInputStream(file));
+            FileInputStream fStream = new FileInputStream(file);
+            prop.load(fStream);
+            fStream.close();
             String version = prop.getProperty(ApgdiffConsts.VERSION_PROP_NAME);
             
             if (version == null) {
@@ -145,16 +147,11 @@ public class LoadProj {
             }
             if (projVersion.compareTo(minVersion) < 0) {
                 message.append(Messages.loadProj_proj_can_modified_because_it_was_created_in_program_with_version_smaller_than_allowed);
-                return true;
             }
-            if (projVersion.compareTo(minVersion) >= 0) {
-                return true;
-            }
-            message.append(Messages.loadProj_project_cannot_be_loaded_because_it_version_cannt_identified);
+            return true;
             
         } catch (IOException | IllegalArgumentException e) {
             throw new IllegalStateException(Messages.loadProj_ecseption_during_get_project_version, e);
         }
-        return false;
     }
 }

@@ -165,7 +165,6 @@ public class Messages extends NLS {
     public static String loadProj_open_project;
     public static String loadProj_proj_can_modified_because_it_was_created_in_program_with_version_smaller_than_allowed;
     public static String loadProj_proj_cannt_loaded_because_it_created_in_program_with_version_bigger_than_current;
-    public static String loadProj_project_cannot_be_loaded_because_it_version_cannt_identified;
     public static String projProps_db_port;
     public static String projProps_encoding_of_existing_files_willnt_be_changed;
     public static String projProps_password;
