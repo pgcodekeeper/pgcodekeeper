@@ -66,20 +66,13 @@ public class DbPicker extends Group {
         
         if (prefStore != null) {
             dbStorePicker = new DbStorePicker(this, SWT.NONE, false, prefStore);
-            dbStorePicker.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true,
+            dbStorePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
                     false, 4, 1));
             final SelectionAdapter sa = new SelectionAdapter() {
                 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    DbInfo dbInfo = dbStorePicker.getDbInfo();
-                    if (dbInfo != null) {
-                        txtDbName.setText(dbInfo.dbname);
-                        txtDbUser.setText(dbInfo.dbuser);
-                        txtDbPass.setText(dbInfo.dbpass);
-                        txtDbHost.setText(dbInfo.dbhost);
-                        txtDbPort.setText(String.valueOf(dbInfo.dbport));
-                    }
+                    fillDbFieldsFromDbInfo();
                 }
             };
             dbStorePicker.addListenerToCombo(sa);
@@ -146,6 +139,21 @@ public class DbPicker extends Group {
         txtDbPort = new Text(this, SWT.BORDER);
         gd = new GridData(60, SWT.DEFAULT);
         txtDbPort.setLayoutData(gd);
+        if (dbStorePicker != null) {
+            fillDbFieldsFromDbInfo();
+        }
+    }
+    
+
+    private void fillDbFieldsFromDbInfo() {
+        DbInfo dbInfo = dbStorePicker.getDbInfo();
+        if (dbInfo != null) {
+            txtDbName.setText(dbInfo.dbname);
+            txtDbUser.setText(dbInfo.dbuser);
+            txtDbPass.setText(dbInfo.dbpass);
+            txtDbHost.setText(dbInfo.dbhost);
+            txtDbPort.setText(String.valueOf(dbInfo.dbport));
+        }
     }
     
     /**
