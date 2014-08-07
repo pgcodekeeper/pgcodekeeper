@@ -239,10 +239,11 @@ public class ModelExporter {
     
     private void writeProjVersion(File f) throws IOException {
         Properties prop = new Properties();
-        List<String> pluginVersions = Activator.getPluginVersions().get(ApgdiffConsts.APGDIFF_PLUGIN_ID);
-        Version progVersion = new Version(pluginVersions.get(pluginVersions.size() - 1));
+        Version progVersion = Activator.getPluginVersion();
         if (f.exists()) {
-            prop.load(new FileInputStream(f));
+            try(FileInputStream fStream = new FileInputStream(f)){
+                prop.load(fStream);
+            }
             String oldVersion = prop.getProperty(ApgdiffConsts.VERSION_PROP_NAME);
             if (oldVersion != null) {
                 try {
@@ -256,6 +257,8 @@ public class ModelExporter {
         }
         prop = new Properties();
         prop.setProperty(ApgdiffConsts.VERSION_PROP_NAME, progVersion.toString());
-        prop.store(new FileOutputStream(f), null);
+        try(FileOutputStream fOutputStream = new FileOutputStream(f)){
+            prop.store(fOutputStream , null);
+        }
     }
 }
