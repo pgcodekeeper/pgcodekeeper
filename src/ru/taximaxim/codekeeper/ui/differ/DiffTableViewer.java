@@ -80,7 +80,7 @@ public class DiffTableViewer extends Composite {
     private final static String PREVCHECKED_HIST_SET = "CheckSet"; //$NON-NLS-1$
     private final static String PREVCHECKED_HIST_EL = "Checked"; //$NON-NLS-1$
     private final static String PREVCHECKED_HIST_FILENAME = "check_sets.xml"; //$NON-NLS-1$
-    private final static int PREVCHECKED_HIST_MAX_STORED = 10;
+    private final static int PREVCHECKED_HIST_MAX_STORED = 20;
     
     private final boolean viewOnly;
     
