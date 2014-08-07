@@ -9,7 +9,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 
-import ru.taximaxim.codekeeper.apgdiff.Activator;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.addons.AddonExternalTools;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
