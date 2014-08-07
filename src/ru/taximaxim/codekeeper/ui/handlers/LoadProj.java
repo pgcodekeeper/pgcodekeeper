@@ -2,6 +2,10 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
 
 import javax.inject.Named;
 
@@ -17,7 +21,9 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.osgi.framework.Version;
 
+import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -89,6 +95,20 @@ public class LoadProj {
             dialog.open();
             return false;
         }
+        StringBuilder message = new StringBuilder();
+        boolean allowContinue = getProjVersion(new File(proj.getProjectWorkingDir(), 
+                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER), message);
+            
+        if (message.length() != 0) {
+            MessageDialog dialog = new MessageDialog(shell,
+                    Messages.loadProj_bad_project, null, 
+                    message.toString(), MessageDialog.WARNING, 
+                    new String []{Messages.loadProj_ok}, 0);
+            dialog.open();
+            if (!allowContinue) {
+                return false; 
+            }
+        }
         ctx.modify(PgDbProject.class, proj);
         
         // магический костыль
@@ -104,5 +124,35 @@ public class LoadProj {
                 partService, model, app);
         RecentProjects.addRecent(proj.getProjectFile().toString(), mainPrefs);
         return true;
+    }
+    
+    public static boolean getProjVersion(File file, StringBuilder message) {
+        try (FileInputStream fStream = new FileInputStream(file)) {
+            Properties prop = new Properties();
+            prop.load(fStream);
+            String version = prop.getProperty(ApgdiffConsts.VERSION_PROP_NAME);
+            
+            if (version == null) {
+                message.append(Messages.loadProj_proj_can_modified_because_it_was_created_in_program_with_version_smaller_than_allowed);
+                return true;
+            }
+            Version projVersion = Version.parseVersion(version);
+            Version minVersion = Version.parseVersion(UIConsts.MIN_APPROVAL_VERSION);
+            List<String> apgdiffVersions = Activator.
+                    getPluginVersions().get(UIConsts.PLUGIN_ID.APGDIFF); 
+            Version curVersion = Version.parseVersion(
+                    apgdiffVersions.get(apgdiffVersions.size() - 1));
+            if (projVersion.compareTo(curVersion) > 0) {
+                message.append(Messages.loadProj_proj_cannt_loaded_because_it_created_in_program_with_version_bigger_than_current);
+                return false;
+            }
+            if (projVersion.compareTo(minVersion) < 0) {
+                message.append(Messages.loadProj_proj_can_modified_because_it_was_created_in_program_with_version_smaller_than_allowed);
+            }
+            return true;
+            
+        } catch (IOException | IllegalArgumentException e) {
+            throw new IllegalStateException(Messages.loadProj_ecseption_during_get_project_version, e);
+        }
     }
 }

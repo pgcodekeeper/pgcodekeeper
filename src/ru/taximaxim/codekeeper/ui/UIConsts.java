@@ -96,4 +96,6 @@ public interface UIConsts {
         String ICONDEL = "/icons/delete_obj.gif"; //$NON-NLS-1$
         String ICONEDIT = "/icons/editor.gif"; //$NON-NLS-1$
     }
+    
+    String MIN_APPROVAL_VERSION = "0.2.9.qualifier"; //$NON-NLS-1$
 }
