@@ -29,6 +29,8 @@ public class DepcyTreeExtender {
      */
     private HashSet<TreeElement> newlyDeletedDependants;
     
+    private HashSet<TreeElement> conflictingDeletedElements;
+    
     private DepcyGraph depcySource;
     private DepcyGraph depcyTarget;
     private PgDatabase dbSource;
@@ -52,6 +54,7 @@ public class DepcyTreeExtender {
         depcyTarget = new DepcyGraph(dbTarget);
         
         newlyDeletedDependants = new HashSet<TreeElement>();
+        conflictingDeletedElements = new HashSet<TreeElement>();
     }
     
     /**
@@ -258,7 +261,7 @@ public class DepcyTreeExtender {
             childCopy = new TreeElement(child.getName(), child.getType(), child.getContainerType(), side);
             copy.addChild(childCopy);
             if(sideChanged){
-                newlyDeletedDependants.add(childCopy);
+                conflictingDeletedElements.add(childCopy);
             }
             copyFilteredToNew(child, childCopy);
         }
@@ -347,7 +350,7 @@ public class DepcyTreeExtender {
         }
         HashSet<TreeElement> sumNewAndDelete = new HashSet<TreeElement>();
         sumNewAndDelete.addAll(newlyDeletedDependants);
-
+        sumNewAndDelete.addAll(conflictingDeletedElements);
         // переместить объекты (НЕ потомки filtered_with_new_and_delete) из elementsDepcyNEW в 
         // соответствующие объекты, но уже потомки filtered_with_new_and_delete
         for(TreeElement el : elementsDepcyNEW){
@@ -355,5 +358,9 @@ public class DepcyTreeExtender {
         }
         
         return sumNewAndDelete;
+    }
+    
+    public HashSet<TreeElement> getConflicting(){
+        return conflictingDeletedElements;
     }
 }
