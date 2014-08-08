@@ -401,7 +401,7 @@ public class PgDiff {
         return true;
     }
     
-    static boolean isSequenceExistinBothDB(String seqName, String schemaName) {
+    static boolean isSequenceExistInBothDB(String seqName, String schemaName) {
         PgSchema fullSchemaOld = depcyOld.getDb().getSchema(schemaName);
         PgSchema fullSchemaNew = dbNew == null ? null : dbNew.getSchema(schemaName);
         if (fullSchemaOld != null 
