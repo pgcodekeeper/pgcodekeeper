@@ -126,6 +126,7 @@ public class SelectParser {
                             new StringBuilder(p.getExpression(CLAUSES)), 0, 0, 0).toString();
                     from(new Parser(withoutParens), tableAliases, columns);
                 } while (p.expectOptional(","));
+                resolveAliases(columns, tableAliases);
             }
             
             if (p.expectOptional("WHERE")) {
@@ -321,8 +322,6 @@ public class SelectParser {
         }
         
         joinCondition(pf);
-        
-        resolveAliases(outerSelectColumns, tableAliases);
     }
     
     private boolean joinCondition(Parser pf) {
