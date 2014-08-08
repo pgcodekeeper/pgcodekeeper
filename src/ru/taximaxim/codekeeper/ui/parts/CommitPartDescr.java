@@ -301,9 +301,6 @@ public class CommitPartDescr {
                         DiffTreeApplier applier = new DiffTreeApplier(dbSource
                                 .getDbObject(), dbTarget.getDbObject(),
                                 resultingTree);
-
-                        // set diff tree root element (provide all available changes) 
-                        // applier.setDiffTree(treediffer.getDiffTree());
                         
                         PgDatabase dbNew = applier.apply();
 
