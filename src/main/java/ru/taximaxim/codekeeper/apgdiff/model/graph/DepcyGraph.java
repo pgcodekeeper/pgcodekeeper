@@ -96,6 +96,16 @@ public class DepcyGraph {
                     graph.addVertex(trig);
                     graph.addEdge(trig, table);
                 }
+                
+                for(String seqName : table.getSequences()){
+                    for(PgSequence sequence : schema.getSequences()) {
+                        if (sequence.getName().equals(seqName)){
+                            graph.addVertex(sequence);
+                            graph.addEdge(sequence, table);
+                            break;
+                        }
+                    }
+                }
             }
         }
 

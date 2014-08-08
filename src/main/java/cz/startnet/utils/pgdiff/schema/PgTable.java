@@ -25,6 +25,9 @@ public class PgTable extends PgStatementWithSearchPath {
     private final List<PgConstraint> constraints = new ArrayList<PgConstraint>();
     private final List<PgIndex> indexes = new ArrayList<PgIndex>();
     private final List<PgTrigger> triggers = new ArrayList<PgTrigger>();
+    // Костыль позволяет отследить использование Sequence в выражениях вставки
+    // DEFAULT (nextval)('sequenceName'::Type)
+    private final List<String> sequences = new ArrayList<String>();
 
     private String clusterIndexName;
     /**
@@ -374,6 +377,7 @@ public class PgTable extends PgStatementWithSearchPath {
                     && inherits.equals(table.inherits)
                     && columns.equals(table.columns)
                     && privileges.equals(table.privileges)
+                    && sequences.equals(table.sequences)
                     && Objects.equals(owner, table.getOwner());
         }
         
@@ -412,6 +416,7 @@ public class PgTable extends PgStatementWithSearchPath {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((tablespace == null) ? 0 : tablespace.hashCode());
         result = prime * result + new HashSet<>(triggers).hashCode();
+        result = prime * result + new HashSet<>(sequences).hashCode();
         result = prime * result + ((with == null) ? 0 : with.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         return result;
@@ -438,6 +443,9 @@ public class PgTable extends PgStatementWithSearchPath {
         for (PgPrivilege priv : privileges) {
             tableDst.addPrivilege(priv.shallowCopy());
         }
+        for (String segName : sequences) {
+            tableDst.addSequence(segName);
+        }
         tableDst.setOwner(getOwner());
         return tableDst;
     }
@@ -457,5 +465,16 @@ public class PgTable extends PgStatementWithSearchPath {
         }
         
         return copy;
+    }
+
+    public List<String> getSequences() {
+        return Collections.unmodifiableList(sequences);
+    }
+
+    public void addSequence(final String string) {
+        if (!sequences.contains(string)) {
+            sequences.add(string);
+            resetHash();
+        }
     }
 }

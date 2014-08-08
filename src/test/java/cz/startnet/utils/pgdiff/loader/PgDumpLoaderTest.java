@@ -400,6 +400,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
     col.setDefaultValue("nextval('\"admins_aid_seq\"'::text)");
     col.setNullValue(false);
     table.addColumn(col);
+    table.addSequence("\"admins_aid_seq\"");
     
     col = new PgColumn("companyid");
     col.setType("integer");
@@ -490,6 +491,7 @@ class PgDB4 extends PgDatabaseObjectCreator {
     col.setNullValue(false);
     col.setDefaultValue("nextval('call_logs_id_seq'::regclass)");
     table.addColumn(col);
+    table.addSequence("call_logs_id_seq");
     
     return d;
     }
@@ -686,6 +688,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
     col.setNullValue(false);
     col.setDefaultValue("nextval('user_id_seq'::regclass)");
     table.addColumn(col);
+    table.addSequence("user_id_seq");
     
     col = new PgColumn("email");
     col.setType("character varying(128)");
@@ -913,6 +916,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
     col.setComment("'id column'");
     col.setDefaultValue("nextval('test_id_seq'::regclass)");
     table.addColumn(col);
+    table.addSequence("test_id_seq");
     
     col = new PgColumn("text");
     col.setType("character varying(20)");

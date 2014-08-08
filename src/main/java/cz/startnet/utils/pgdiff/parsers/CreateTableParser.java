@@ -135,7 +135,11 @@ public class CreateTableParser {
         final PgColumn column = new PgColumn(
                 ParserUtils.getObjectName(parser.parseIdentifier()));
         table.addColumn(column);
-        column.parseDefinition(parser.getExpression());
+        StringBuilder seqName = new StringBuilder(); 
+        column.parseDefinition(parser.getExpression(), seqName);
+        if (seqName.length() > 0) {
+            table.addSequence(seqName.toString());
+        }
     }
 
     /**

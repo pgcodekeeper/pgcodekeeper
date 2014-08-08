@@ -259,7 +259,11 @@ public class AlterTableParser {
             if (parser.expectOptional("STATISTICS")) {
                 column.setStatistics(parser.parseInteger());
             } else if (parser.expectOptional("DEFAULT")) {
-                column.setDefaultValue(parser.getExpression());
+                String defaultValue = parser.getExpression();
+                column.setDefaultValue(defaultValue);
+                if (column.getParent() != null) {
+                    table.addSequence(column.parseSequence(defaultValue));
+                }
             } else if (parser.expectOptional("STORAGE")) {
                 if (parser.expectOptional("PLAIN")) {
                     column.setStorage("PLAIN");
