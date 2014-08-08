@@ -20,6 +20,14 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import static org.mockito.Mockito.*;
+
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.Version;
+
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -34,7 +42,8 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
-
+import ru.taximaxim.codekeeper.apgdiff.Activator;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
@@ -185,11 +194,10 @@ public class PgDumpLoaderTest {
 
     /**
      * Tests ModelExporter export() method
-     * 
-     * @throws IOException
+     * @throws Exception 
      */
     @Test
-    public void exportDb() throws IOException {
+    public void exportDb() throws Exception {
         // skip cases with illegal object names (with file-system reserved chars)
         Assume.assumeFalse(skipForExport.contains(fileIndex));
 
@@ -202,6 +210,34 @@ public class PgDumpLoaderTest {
         Path exportDir = null;
         try{
             exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
+
+            BundleContext context = mock(BundleContext.class);
+            new Activator().start(context);
+            when(context.getBundles()).thenAnswer(new Answer<Bundle[]>() {
+                @Override
+                public Bundle[] answer(InvocationOnMock invocation) throws Throwable {
+                    Bundle[] b = { mock(Bundle.class) };
+
+                    when(b[0].getSymbolicName()).thenAnswer(
+                            new Answer<String>() {
+                                @Override
+                                public String answer(InvocationOnMock invocation)
+                                        throws Throwable {
+                                    return ApgdiffConsts.APGDIFF_PLUGIN_ID;
+                                }
+                            });
+
+                    when(b[0].getVersion()).thenAnswer(new Answer<Version>() {
+                        @Override
+                        public Version answer(InvocationOnMock invocation)
+                                throws Throwable {
+                            return new Version("0.1.0.mockversion");
+                        }
+                    });
+                    return b;
+                }
+            });
+
             new ModelExporter(exportDir.toString(), dbPredefined, encoding).export();
             
             PgDatabase dbAfterExport = PgDumpLoader.loadDatabaseSchemaFromDirTree(

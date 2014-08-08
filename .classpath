@@ -29,5 +29,6 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/apgdiff/lib/jgrapht-core-0.9.0-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="lib/mockito-all-1.9.5.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
