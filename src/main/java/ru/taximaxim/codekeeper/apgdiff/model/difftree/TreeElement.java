@@ -261,7 +261,7 @@ public class TreeElement {
             }
         }
         
-        if (filterSubset.contains(this) && copy == null){
+        if (copy == null && filterSubset.contains(this)){
             copy = new TreeElement(getName(), getType(), getContainerType(), getSide());
         }
         return copy;
