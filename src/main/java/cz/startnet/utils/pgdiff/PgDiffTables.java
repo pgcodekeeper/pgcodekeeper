@@ -532,7 +532,7 @@ public class PgDiffTables {
             String statement = "";
             for (String seqName : table.getSequences()) {
                 if (newSchema.getSequence(seqName) == null
-                        && !PgDiff.isSequenceExistDB(seqName, newSchema.getName())) {
+                        && !PgDiff.isSequenceExistinBothDB(seqName, newSchema.getName())) {
                     statement += ", " + seqName;
                 }
             }
