@@ -529,25 +529,23 @@ public class PgDiffTables {
     private static void createCheckSequenceDepcy(final PgDiffScript script,
             final PgSchema newSchema, final PgTable table) {
         if (!table.getSequences().isEmpty()) {
-            String statement = "";
+            String errorStatement = "";
             for (String seqName : table.getSequences()) {
                 if (newSchema.getSequence(seqName) == null
                         && !PgDiff.isSequenceExistInBothDB(seqName, newSchema.getName())) {
-                    statement += ", " + seqName;
+                    errorStatement = errorStatement.concat(", " + seqName);
                 }
             }
-            if (statement.isEmpty()) {
-                PgDiff.writeCreationSql(script, null, table);
-            } else {
-                statement = MessageFormat.format("-- table \"" + table.getName()
+            if(!errorStatement.isEmpty()){
+                errorStatement = MessageFormat.format("-- table \"" + table.getName()
                                 + "\" was not created because it was not selected entirely "
                                 + "\n-- (sequences: {0})",
-                                statement.substring(2));
-                script.addStatement(statement);
+                                errorStatement.substring(2));
+                script.addStatement(errorStatement);
+                return;
             }
-        } else {
-            PgDiff.writeCreationSql(script, null, table);
         }
+        PgDiff.writeCreationSql(script, null, table);
     }
 
     /**

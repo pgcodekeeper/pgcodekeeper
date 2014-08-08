@@ -472,7 +472,7 @@ public class PgTable extends PgStatementWithSearchPath {
     }
 
     public void addSequence(final String string) {
-        if (!sequences.contains(string)) {
+        if (string != null && !sequences.contains(string)) {
             sequences.add(string);
             resetHash();
         }
