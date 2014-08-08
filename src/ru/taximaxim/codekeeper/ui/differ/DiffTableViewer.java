@@ -821,6 +821,11 @@ public class DiffTableViewer extends Composite {
     }
 
     /**
+     * Помечает элементы из списка <code>dependencies</code> отметкой 
+     * <code>markChecked</code> (устанавливает/снимает галочку). 
+     * Поиск соответствия элементов TreeElement объектам БД производится 
+     * по базе <code>db</code>. Ожидается, что эта БД не содержит в себе элементы, 
+     * которые отмечены как удаляемые (иными словами, она source изменений)
      * 
      * @param dependencies
      */
@@ -833,13 +838,9 @@ public class DiffTableViewer extends Composite {
             PgStatement elementInDb = element.getPgStatement(db);
             if (elementInDb != null && dependencies.contains(elementInDb) && 
                     (elements.get(element) != markChecked)){
-                if (element.getSide() == DiffSide.LEFT){
-                    // сюда когда-нибудь зайдет?
-                    elements.put(element, false);
-                }else{
+                
                     elements.put(element, markChecked);
                     result.add(element);
-                }
             }
         }
         return result;
