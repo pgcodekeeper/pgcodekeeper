@@ -59,6 +59,7 @@ public interface UIConsts {
         String GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile"; //$NON-NLS-1$
         String RECENT_PROJECTS = "prefRecentProject"; //$NON-NLS-1$
         String OPEN_LAST_ON_START = "prefOpenLastOnStart"; //$NON-NLS-1$
+        String CONSIDER_DEPCY_IN_COMMIT = "considerDepcyInCommit";
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String LAST_REPO = "prefLastRepo"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$

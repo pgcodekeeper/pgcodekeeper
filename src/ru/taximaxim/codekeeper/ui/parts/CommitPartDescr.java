@@ -232,43 +232,59 @@ public class CommitPartDescr {
                     mb.open();
                     return;
                 }
+                boolean considerDepcy = mainPrefs.getBoolean(PREF.CONSIDER_DEPCY_IN_COMMIT);
                 
                 final TreeElement filtered = diffTable.filterDiffTree();
                 
-                // Получить список зависимых от NEW/EDIT элементов
-                DepcyTreeExtender dte = new DepcyTreeExtender(dbSource.getDbObject(), dbTarget.getDbObject(), filtered);
-                HashSet<PgStatement> dependencies = dte.getDependenciesOfNew();
-                PgDatabase depcyTargetDb = dte.getDepcyTargetDb();
+                DepcyTreeExtender dte = null;
+                HashSet<TreeElement> sumNewAndDelete = null;
+                TreeElement filteredWithNewAndDelete = null;
+                TreeElement filteredTwiceWithAllDepcy = null;
                 
-                // Дополнительно пометить в таблице зависимости от NEW/EDIT и
-                // получить новое фильтрованное дерево с этими зависимостями
-                HashSet<TreeElement> elementsNewEditDependentFrom = 
-                        diffTable.setChecked(dependencies, depcyTargetDb, true);
-                TreeElement filteredWithNew = diffTable.filterDiffTree();
-                diffTable.setChecked(dependencies, depcyTargetDb, false);
-
-                // Расширить дерево filteredWithNew элементами, зависящими от удаляемых
-                dte = new DepcyTreeExtender(dbSource.getDbObject(), dbTarget.getDbObject(), filteredWithNew);
-                TreeElement filteredWithNewAndDelete = dte.getTreeCopyWithDepcy();
-                // Получить список всех зависимостей для заполнения нижней таблицы CommitDialog'a
-                // Эти зависимости - потомки filteredWithNewAndDelete
-                HashSet<TreeElement> sumNewAndDelete = dte.sumAllDepcies(elementsNewEditDependentFrom);
+                if(considerDepcy){
+                    // Получить список зависимых от NEW/EDIT элементов
+                    dte = new DepcyTreeExtender(dbSource.getDbObject(), 
+                            dbTarget.getDbObject(), filtered);
+                    HashSet<PgStatement> dependencies = dte.getDependenciesOfNew();
+                    PgDatabase depcyTargetDb = dte.getDepcyTargetDb();
+                    
+                    // Дополнительно пометить в таблице зависимости от NEW/EDIT и
+                    // получить новое фильтрованное дерево с этими зависимостями
+                    HashSet<TreeElement> elementsNewEditDependentFrom = 
+                            diffTable.setChecked(dependencies, depcyTargetDb, true);
+                    TreeElement filteredWithNew = diffTable.filterDiffTree();
+                    diffTable.setChecked(dependencies, depcyTargetDb, false);
+    
+                    // Расширить дерево filteredWithNew элементами, зависящими от удаляемых
+                    dte = new DepcyTreeExtender(dbSource.getDbObject(), 
+                            dbTarget.getDbObject(), filteredWithNew);
+                    filteredWithNewAndDelete = dte.getTreeCopyWithDepcy();
+                    // Получить список всех зависимостей для заполнения нижней 
+                    // таблицы CommitDialog'a
+                    // Эти зависимости - потомки filteredWithNewAndDelete
+                    sumNewAndDelete = dte.sumAllDepcies(elementsNewEditDependentFrom);
+                }
                 
                 // display commit dialog
-                CommitDialog cd = new CommitDialog(shell, filtered, sumNewAndDelete, mainPrefs, proj, treeDiffer);
-                cd.setConflictingElements(dte.getConflicting());
+                CommitDialog cd = new CommitDialog(shell, filtered, sumNewAndDelete,
+                        mainPrefs, proj, treeDiffer);
+                cd.setConflictingElements(considerDepcy ? dte.getConflicting() : null);
                 if (cd.open() != CommitDialog.OK) {
                     return;
                 }
                 
-                // Убрать из списка всех элементов в filteredWithNewAndDelete те
-                // элементы, с которых пользователь снял отметку в нижней таблице
-                Set<TreeElement> allElements = new HashSet<TreeElement>();
-                dte.generateFlatElementsSet(filteredWithNewAndDelete, allElements);
-                allElements.removeAll(cd.getBottomTableViewer().getCheckedElements(false));
+                if(considerDepcy){
+                    // Убрать из списка всех элементов в filteredWithNewAndDelete те
+                    // элементы, с которых пользователь снял отметку в нижней таблице
+                    Set<TreeElement> allElements = new HashSet<TreeElement>();
+                    dte.generateFlatElementsSet(filteredWithNewAndDelete, allElements);
+                    allElements.removeAll(cd.getBottomTableViewer().getCheckedElements(false));
+                    
+                    filteredTwiceWithAllDepcy = 
+                            filteredWithNewAndDelete.getFilteredCopy(allElements);
+                }
                 
-                final TreeElement filteredTwiceWithAllDepcy = 
-                        filteredWithNewAndDelete.getFilteredCopy(allElements);
+                final TreeElement resultingTree = considerDepcy ? filteredTwiceWithAllDepcy : filtered;
                 
                 history.addHistoryEntry(commitComment);
                 
@@ -284,7 +300,7 @@ public class CommitPartDescr {
                         pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
                         DiffTreeApplier applier = new DiffTreeApplier(dbSource
                                 .getDbObject(), dbTarget.getDbObject(),
-                                filteredTwiceWithAllDepcy);
+                                resultingTree);
 
                         // set diff tree root element (provide all available changes) 
                         // applier.setDiffTree(treediffer.getDiffTree());

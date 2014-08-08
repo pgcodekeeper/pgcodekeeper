@@ -294,6 +294,7 @@ public class Messages extends NLS {
     public static String DiffTableViewer_selected;
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
     public static String generalPrefPage_open_last_project_on_startup;
+    public static String generalPrefPage_consider_depcy_on_commit;
     public static String generalPrefPage_pg_dump_custom_parameters;
     public static String generalPrefPage_pg_dump_executable;
     public static String gitPrefPage_copy_public_keys_to_clipboard;

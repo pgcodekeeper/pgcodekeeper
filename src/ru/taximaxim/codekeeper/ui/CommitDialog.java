@@ -81,14 +81,16 @@ public class CommitDialog extends TrayDialog {
         dtvTop.setLayoutData(gd);
         dtvTop.setFilteredInput(filteredElements, treeDiffer);
         
-        dtvBottom = new DiffTableViewer(container, SWT.BORDER, prefs, false);
-        gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 400;
-        gd.widthHint = 600;
-        dtvBottom.setLayoutData(gd);
-        dtvBottom.setInputCollection(shouldBeNew, treeDiffer);
-        dtvBottom.setCheckedElements(conflicting, false);
-        dtvBottom.redraw();
+        if (shouldBeNew != null){
+            dtvBottom = new DiffTableViewer(container, SWT.BORDER, prefs, false);
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 400;
+            gd.widthHint = 600;
+            dtvBottom.setLayoutData(gd);
+            dtvBottom.setInputCollection(shouldBeNew, treeDiffer);
+            dtvBottom.setCheckedElements(conflicting, false);
+            dtvBottom.redraw();
+        }
         // TODO fix size after initializing - not all labels/buttons are visible
         return parent;
     }
