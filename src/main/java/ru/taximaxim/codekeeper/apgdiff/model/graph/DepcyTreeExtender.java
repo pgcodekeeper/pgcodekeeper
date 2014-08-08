@@ -22,6 +22,11 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class DepcyTreeExtender {
     private HashSet<PgStatement> dependantsOfDeleted = new HashSet<PgStatement>(5);
+    /**
+     * Набор элементов дерева, которые зависят от удаленных и должны 
+     * быть удалены, но не были в первоначальном фильтрованном дереве или были 
+     * отмечены как NEW/EDIT
+     */
     private HashSet<TreeElement> newlyDeletedDependants;
     
     private DepcyGraph depcySource;
@@ -32,6 +37,10 @@ public class DepcyTreeExtender {
      * Root node of filtered tree (should not be modified)
      */
     final private TreeElement root;
+    /**
+     * Copy of root, including those dependant from DELETED
+     */
+    private TreeElement copy;
     
     public DepcyTreeExtender(PgDatabase dbSource, PgDatabase dbTarget, TreeElement root) {
         this.dbSource = dbSource;
@@ -59,13 +68,13 @@ public class DepcyTreeExtender {
     }
     
     /**
-     * Возвращает копию дерева filtered, дополненную зависимостями
+     * Возвращает копию дерева <code>root</code>, дополненную зависимостями
      * 
      * @param filtered
      * @return
      */
-    public TreeElement getFilteredCopyWithDepcy(){
-        TreeElement copy = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+    public TreeElement getTreeCopyWithDepcy(){
+        copy = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
         extendDelete(root);
         
         // скопировать дерево первоначального выбора пользователя, перемещая 
@@ -293,17 +302,6 @@ public class DepcyTreeExtender {
     }
     
     /**
-     * Возвращает набор элементов дерева, которые зависят от удаленных и должны 
-     * быть удалены, но не были в первоначальном фильтрованном дереве или были 
-     * отмечены как NEW/EDIT
-     * 
-     * @return
-     */
-    public HashSet<TreeElement> getDeletedElements(){
-        return newlyDeletedDependants;
-    }
-    
-    /**
      * Вспомогательный метод для генерации набора элементов, которые являются 
      * объектами и могут быть выбраны пользователем.
      * <br><br>Копия метода DiffTableViewer.generateFlatElementsMap
@@ -331,164 +329,31 @@ public class DepcyTreeExtender {
         }
         elements.add(subtree);
     }
+
+    /**
+     * Добавляет к существующим зависимостям (зависимым от DELETE-элементов)
+     * копии элементов из набора <code>elementsDepcyNEW</code>, являющиеся 
+     * потомками <code>copy</code><br>
+     * Входной набор <code>elementsDepcyNEW</code> может не быть набором потомков <code>copy</code>
+     * 
+     * @param elementsDepcyNEW
+     * @return
+     */
+    public HashSet<TreeElement> sumAllDepcies(HashSet<TreeElement> elementsDepcyNEW) {
+        if (copy == null){
+            throw new IllegalStateException("Root (filtered) tree has not been "
+                    + "copyed yet and no DELETED dependants 've been found! "
+                    + "Call getTreeCopyWithDepcy() first.");
+        }
+        HashSet<TreeElement> sumNewAndDelete = new HashSet<TreeElement>();
+        sumNewAndDelete.addAll(newlyDeletedDependants);
+
+        // переместить объекты (НЕ потомки filtered_with_new_and_delete) из elementsDepcyNEW в 
+        // соответствующие объекты, но уже потомки filtered_with_new_and_delete
+        for(TreeElement el : elementsDepcyNEW){
+            sumNewAndDelete.add(getCorrespondingTreeElement(el, copy));
+        }
+        
+        return sumNewAndDelete;
+    }
 }
-
-/*    
-
-    **
-     * Returns the side of <code>object</code> in <code>tree</code>, if it is present there.
-     * 
-     * @param object DB object that we want to know the side of
-     * @param tree Diff tree, in which the search for object equivalent is performed 
-     * @param db Parent database for <code>object</code>
-     * @return
-     *
-    @Deprecated
-    private DiffSide getObjectSide(PgStatement object, TreeElement tree, PgDatabase db){
-        if (object.equals(tree.getPgStatement(db))){
-            return tree.getSide();
-        }
-        for (TreeElement e : tree.getChildren()){
-            DiffSide side = getObjectSide(object, e, db);
-            if (side != null){
-                return side;
-            }
-        }
-        return null;
-    }
-
-    **
-     * Returns <code>root</code>'s leaf, that is equal to <code>corresponding</code>.
-     * Returns null, if no such leaf exists.
-     * 
-     * @param corresponding
-     * @param left
-     * @return
-     *
-    @Deprecated
-    private TreeElement hasLeaf(TreeElement root, TreeElement corresponding, DiffSide left) {
-        if (root.getName().equals(corresponding.getName()) && 
-                root.getSide() == corresponding.getSide() && 
-                root.getContainerType() == corresponding.getContainerType() && 
-                root.getSide() == corresponding.getSide() &&
-                root.getParent().getName().equals(corresponding.getParent().getName())){
-            return root;
-        }else{
-            for(TreeElement ele : root.getChildren()){
-                TreeElement ele2 = hasLeaf(ele, corresponding, left);
-                if (ele2 != null){
-                    return ele2;
-                }
-            }
-        }
-        return null;
-    }
-
-    **
-     * Возвращает элемент дерева (потомок <code>inputTree</code> со стороны <code>side</code>), 
-     * который соответствует объекту <code>sta</code>, если тот либо его копия 
-     * представлены в <code>source</code>.
-     * 
-     * @param inputTree
-     * @param sta
-     * @return
-     *
-    @Deprecated
-    private TreeElement getCorrespondingTreeElement(TreeElement inputTree, PgStatement sta, DiffSide side){
-        PgStatement stasta = inputTree.getPgStatement(dbSource);
-        // check whether we are on the correct side
-        if (inputTree.getType() == DbObjType.CONTAINER && inputTree.getContainerType() != DbObjType.DATABASE && inputTree.getSide() != side){
-            return null;
-        }
-        if (stasta.getName().equals(sta.getName()) && stasta.getClass() == sta.getClass()){
-            return inputTree;
-        }else{
-            for(TreeElement chi : inputTree.getChildren()){
-                TreeElement te = getCorrespondingTreeElement (chi, sta, side); 
-                if (te != null)
-                    return te;
-            }
-        }
-        return null;
-    }
-
-     * Помещает копии всех потомков child'a в childCopy, при этом задавая сторону LEFT
-     * 
-     * TODO Перемещать всю ветку в Source only (пока кладется туда, где было изначально)
-     *  
-     * @param child
-     * @param childCopy
-    @Deprecated 
-    private void addChildrenToSide(TreeElement child, TreeElement childCopy, DiffSide side) {
-        for(TreeElement chichi : child.getChildren()){
-            TreeElement chichiCopy = new TreeElement(chichi.getName(), chichi.getType(), chichi.getContainerType(), side);
-            childCopy.addChild(chichiCopy);
-            addChildrenToSide(chichi, chichiCopy, side);
-            PgStatement zisInSource = null;
-            if (child.getSide() != DiffSide.RIGHT && (zisInSource = chichi.getPgStatement(depcySource.getDb())) != null && shouldBeDeleted.contains(zisInSource)){
-                shouldBeDeleted.remove(zisInSource);
-    //                seeeet.add(chichi);
-            }
-        }
-    }
-
-    @Deprecated
-    private TreeElement addDeletedRecur(PgStatement toBeAdded, TreeElement copy){
-        PgStatement emptyWithDeleted = getDbWithStatement(toBeAdded);
-        while(!(emptyWithDeleted instanceof PgDatabase)){
-            emptyWithDeleted = emptyWithDeleted.getParent();
-        }
-        // Пустое дерево, содержащее только обин объект, который надо удалить
-        TreeElement tree = DiffTree.create((PgDatabase)emptyWithDeleted, new PgDatabase());
-        
-        TreeElement tee = tree;
-        TreeElement tee_root = copy;
-        while (tee_root != null){
-            tee = getEmptyTreeChild(tee, DiffSide.LEFT);
-            
-            TreeElement tree_root_2 = null;
-            if ((tree_root_2 = tee_root.getChild(tee.getName(), tee.getType())) == null){
-                break;
-            }
-            tee_root = tree_root_2;
-        }
-        
-        
- * Кусок кода, который находит пересечение двух деревьев при проходе снизу вверх.
- * Это неправильно, так как может найти одинаковые контейнеры но с разными парентами
- *  
-        TreeElement corresponding = getCorrespondingTreeElement(tree, toBeAdded, DiffSide.LEFT);
-        
-        TreeElement correspondingHere = hasLeaf(root, corresponding, DiffSide.LEFT); 
-        while (correspondingHere == null){
-            corresponding = corresponding.getParent();
-            correspondingHere = hasLeaf(root, corresponding, DiffSide.LEFT);
-        }
-        
-        // пройтись вниз до конца дерева tree, копируя все листья в correspondingHere
-        while (corresponding.getChild(0) != null){
-            corresponding = corresponding.getChild(0);
-            DiffSide side = corresponding.getSide();
-            // special case: default "public" schema
-            if (corresponding.getType() == DbObjType.SCHEMA && corresponding.getName().equals("public")){
-                side = DiffSide.BOTH;
-            }
-            correspondingHere.addChild(new TreeElement(corresponding.getName(), corresponding.getType(), corresponding.getContainerType(), side));
-            correspondingHere = correspondingHere.getChild(corresponding.getName());
-        }
-        
-        
-        // пройтись вниз до конца дерева tree, копируя все листья в correspondingHere
-        while (tee != null){
-            DiffSide side = tee.getSide();
-            // special case: default "public" schema
-            if (tee.getType() == DbObjType.SCHEMA && tee.getName().equals("public")){
-                side = DiffSide.BOTH;
-            }
-            tee_root.addChild(new TreeElement(tee.getName(), tee.getType(), tee.getContainerType(), side));
-            tee_root = tee_root.getChild(tee.getName());
-            tee = getEmptyTreeChild(tee, DiffSide.LEFT);
-        }//
-        return null;
-    }
- */
