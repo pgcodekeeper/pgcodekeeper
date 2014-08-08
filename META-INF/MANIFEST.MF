@@ -14,8 +14,8 @@ Require-Bundle: org.hamcrest.core,
  org.junit
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: lib/jgrapht-core-0.9.0.jar,
- .,
- lib/mockito-all-1.9.5.jar
+ lib/mockito-all-1.9.5.jar,
+ .
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: ru.taximaxim.codekeeper.apgdiff.Activator
 Import-Package: org.eclipse.equinox.log;version="1.0.0",
