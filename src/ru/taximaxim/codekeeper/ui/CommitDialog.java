@@ -31,6 +31,7 @@ public class CommitDialog extends TrayDialog {
     private TreeDiffer treeDiffer;
     private TreeElement filteredDiffTree;
     private HashSet<TreeElement> shouldBeNew;
+    private HashSet<TreeElement> conflicting;
     
     public CommitDialog(Shell parentShell, TreeElement filteredElements,
             HashSet<TreeElement> shouldBeNew, IPreferenceStore mainPrefs, PgDbProject proj, TreeDiffer treeDiffer) {
@@ -86,6 +87,8 @@ public class CommitDialog extends TrayDialog {
         gd.widthHint = 600;
         dtvBottom.setLayoutData(gd);
         dtvBottom.setInputCollection(shouldBeNew, treeDiffer);
+        dtvBottom.setCheckedElements(conflicting, false);
+        dtvBottom.redraw();
         // TODO fix size after initializing - not all labels/buttons are visible
         return parent;
     }
@@ -106,5 +109,9 @@ public class CommitDialog extends TrayDialog {
     
     public TreeElement getDiffTree (){
         return this.filteredDiffTree;
+    }
+
+    public void setConflictingElements(HashSet<TreeElement> conflicting) {
+        this.conflicting = conflicting;
     }
 }

@@ -256,6 +256,7 @@ public class CommitPartDescr {
                 
                 // display commit dialog
                 CommitDialog cd = new CommitDialog(shell, filtered, sumNewAndDelete, mainPrefs, proj, treeDiffer);
+                cd.setConflictingElements(dte.getConflicting());
                 if (cd.open() != CommitDialog.OK) {
                     return;
                 }

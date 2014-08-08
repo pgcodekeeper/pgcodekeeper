@@ -846,6 +846,11 @@ public class DiffTableViewer extends Composite {
         return result;
     }
 
+    public void setCheckedElements(HashSet<TreeElement> elementsToCheck, boolean markChecked) {
+        checkListener.setElementsChecked(elementsToCheck.toArray(), markChecked);
+        viewerRefresh();
+    }
+    
     public void setInputCollection(HashSet<TreeElement> shouldBeDeleted, TreeDiffer rootDiffer) {
         setDiffer(rootDiffer);
         elements = new HashMap<>();
