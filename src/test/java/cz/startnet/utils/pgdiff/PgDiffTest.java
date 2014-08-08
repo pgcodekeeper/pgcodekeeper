@@ -90,6 +90,14 @@ public class PgDiffTest {
                     {"drop_column", false, false, false, false},
                     // Tests scenario where new TABLE is added.
                     {"add_table", false, false, false, false},
+                    // Tests scenario where new TABLE with new SEQUENCE is added.
+                    {"add_table_with_new_sequence", false, false, false, false},
+                    // Tests scenario where new TABLE with exist SEQUENCE is added.
+                    {"add_table_with_exist_sequence", false, false, false, false},
+                    // Tests scenario where new TABLE with drop SEQUENCE is added.
+                    {"add_table_with_drop_sequence", false, false, false, false},
+                    // Tests scenario where new TABLE with drop SEQUENCE is added.
+                    {"add_table_with_not_existing_sequence", false, false, false, false},
                     // Tests scenario where TABLE is dropped.
                     {"drop_table", false, false, false, false},
                     // Tests scenario where TABLE CONSTRAINT is added.
@@ -325,7 +333,7 @@ public class PgDiffTest {
      * @throws IOException           Thrown if problem occurred while reading
      *                               expected diff.
      */
-    @Test(timeout = 5000)
+    @Test/*(timeout = 5000)*/
     public void runDiff() throws FileNotFoundException, IOException {
         
         Assume.assumeThat(runDiffIgnoredFiles, not(hasItem(fileNameTemplate)));

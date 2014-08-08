@@ -409,7 +409,7 @@ public class PgDiff {
             PgSequence oldSec = fullSchemaOld.getSequence(seqName);
             PgSequence newSec = fullSchemaNew.getSequence(seqName);
             if (oldSec != null) {
-                return oldSec.compare(newSec);
+                return oldSec.equals(newSec);
             }
         }
         return false;
