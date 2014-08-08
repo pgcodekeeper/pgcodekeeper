@@ -137,7 +137,7 @@ public class DepcyTreeExtender {
                 if(tee == null){
                     if (tee_root.getSide() != DiffSide.LEFT){
                         // TODO удалить/рефакторить дебаг эксепшен
-                        throw new IllegalStateException("Какой-то левый объект в"
+                        throw new IllegalStateException("Какой-то странный объект в"
                                 + " дереве при добавлении удаляемых зависимостей:"
                                 + " объект не с левой стороны");
                     }
@@ -164,7 +164,7 @@ public class DepcyTreeExtender {
                         tee.getContainerType(), side));
                 tee_root = tee_root.getChild(tee.getName());
                 if (tee.getChildren().isEmpty()){
-                    newlyDeletedDependants.add(tee);
+                    newlyDeletedDependants.add(tee_root);
                 }
                 tee = getEmptyTreeChild(tee, DiffSide.LEFT);
             }
@@ -256,6 +256,8 @@ public class DepcyTreeExtender {
                 side = DiffSide.LEFT;
                 dependantsOfDeleted.remove(zisInSource);
                 sideChanged = true;
+                copy.addChild(new TreeElement(child.getName(), child.getType(),
+                        child.getContainerType(), child.getSide()));
             }
             
             childCopy = new TreeElement(child.getName(), child.getType(), child.getContainerType(), side);
