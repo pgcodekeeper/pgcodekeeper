@@ -19,9 +19,9 @@ import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 
@@ -34,6 +34,8 @@ public class PgDiff {
 
     private static DirectedGraph<PgStatement, DefaultEdge> oldDepcyGraph;
     private static DepcyGraph depcyOld;
+    
+    private static PgDatabase dbNew;
 
     /**
      * Creates diff on the two database schemas.
@@ -139,6 +141,7 @@ public class PgDiff {
         // temp solution
         if (oldDbFull != null && newDbFull != null){
             depcyOld = new DepcyGraph(oldDbFull);
+            dbNew = newDbFull;
             
             if (additionalDepcies != null) {
                 depcyOld.addCustomDepcies(additionalDepcies);
@@ -396,6 +399,20 @@ public class PgDiff {
         }
         
         return true;
+    }
+    
+    static boolean isSequenceExistInBothDB(String seqName, String schemaName) {
+        PgSchema fullSchemaOld = depcyOld.getDb().getSchema(schemaName);
+        PgSchema fullSchemaNew = dbNew == null ? null : dbNew.getSchema(schemaName);
+        if (fullSchemaOld != null 
+                && fullSchemaNew != null) {
+            PgSequence oldSec = fullSchemaOld.getSequence(seqName);
+            PgSequence newSec = fullSchemaNew.getSequence(seqName);
+            if (oldSec != null) {
+                return oldSec.equals(newSec);
+            }
+        }
+        return false;
     }
 
     /**
