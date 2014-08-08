@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui;
 
 import java.io.IOException;
+import java.util.HashSet;
 
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -9,6 +10,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
@@ -23,17 +25,24 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 public class CommitDialog extends TrayDialog {
     
     private TreeElement filteredElements;
-    private TreeDiffer treeDiffer;
     private IPreferenceStore prefs;
     private String message;
+    private DiffTableViewer dtvTop;
+    private DiffTableViewer dtvBottom;
+    private TreeDiffer treeDiffer;
+    private TreeElement filteredDiffTree;
+    private HashSet<TreeElement> shouldBeNew;
+    private HashSet<TreeElement> conflicting;
     
-    public CommitDialog(Shell parentShell, TreeElement filteredElements, 
-            TreeDiffer treeDiffer, IPreferenceStore mainPrefs, PgDbProject proj) {
+    public CommitDialog(Shell parentShell, TreeElement filteredElements,
+            HashSet<TreeElement> shouldBeNew, IPreferenceStore mainPrefs, PgDbProject proj, TreeDiffer treeDiffer) {
         super(parentShell);
         
         this.filteredElements = filteredElements;
         this.prefs = mainPrefs;
         this.treeDiffer = treeDiffer;
+        this.prefs = mainPrefs;
+        this.shouldBeNew = shouldBeNew;
         
         try {
             message = Messages.commitPartDescr_the_following_changes_be_included_in_commit
@@ -65,14 +74,60 @@ public class CommitDialog extends TrayDialog {
         Label lblMessage = new Label(container, SWT.BORDER);
         lblMessage.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         lblMessage.setText(message);
+        Group gTop = new Group(container, SWT.NONE);
+        gTop.setLayout(new GridLayout(1, false));
         
-        DiffTableViewer dtv = new DiffTableViewer(container, SWT.NONE, prefs, true);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 400;
-        gd.widthHint = 600;
-        dtv.setLayoutData(gd);
-        dtv.setFilteredInput(filteredElements, treeDiffer);
+        gTop.setLayoutData(gd);
+        gTop.setText(Messages.commitDialog_user_selected_elements);
         
+        dtvTop = new DiffTableViewer(gTop, SWT.NONE, prefs, true);
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 300;
+        gd.widthHint = 1000;
+        dtvTop.setLayoutData(gd);
+        dtvTop.setFilteredInput(filteredElements, treeDiffer);
+        
+        if (shouldBeNew != null){
+            Group gBottom = new Group(container, SWT.NONE);
+            gBottom.setLayout(new GridLayout(1, false));
+            
+            gd = new GridData(GridData.FILL_BOTH);
+            gBottom.setLayoutData(gd);
+            gBottom.setText(Messages.commitDialog_depcy_elements);
+            
+            dtvBottom = new DiffTableViewer(gBottom, SWT.NONE, prefs, false);
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 300;
+            gd.widthHint = 1000;
+            dtvBottom.setLayoutData(gd);
+            dtvBottom.setInputCollection(shouldBeNew, treeDiffer);
+            dtvBottom.setCheckedElements(conflicting, false);
+            dtvBottom.redraw();
+        }
+        // TODO fix size after initializing - not all labels/buttons are visible
         return parent;
+    }
+    
+    public DiffTableViewer getTopTableViewer(){
+        return dtvTop;
+    }
+    
+    public DiffTableViewer getBottomTableViewer(){
+        return dtvBottom;
+    }
+    
+    @Override
+    protected void okPressed() {
+        this.filteredDiffTree = dtvTop.filterDiffTree();
+        super.okPressed();
+    }
+    
+    public TreeElement getDiffTree (){
+        return this.filteredDiffTree;
+    }
+
+    public void setConflictingElements(HashSet<TreeElement> conflicting) {
+        this.conflicting = conflicting;
     }
 }

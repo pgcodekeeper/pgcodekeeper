@@ -3,7 +3,9 @@ package ru.taximaxim.codekeeper.ui.parts;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -59,8 +61,10 @@ import org.eclipse.swt.widgets.Text;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.CommitDialog;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -81,6 +85,7 @@ import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CommitPartDescr {
     
@@ -227,15 +232,60 @@ public class CommitPartDescr {
                     mb.open();
                     return;
                 }
+                boolean considerDepcy = mainPrefs.getBoolean(PREF.CONSIDER_DEPCY_IN_COMMIT);
                 
                 final TreeElement filtered = diffTable.filterDiffTree();
                 
-                CommitDialog cd = new CommitDialog(shell, filtered, treeDiffer, 
-                        mainPrefs, proj);
+                DepcyTreeExtender dte = null;
+                HashSet<TreeElement> sumNewAndDelete = null;
+                TreeElement filteredWithNewAndDelete = null;
+                TreeElement filteredTwiceWithAllDepcy = null;
+                
+                if(considerDepcy){
+                    // Получить список зависимых от NEW/EDIT элементов
+                    dte = new DepcyTreeExtender(dbSource.getDbObject(), 
+                            dbTarget.getDbObject(), filtered);
+                    HashSet<PgStatement> dependencies = dte.getDependenciesOfNew();
+                    PgDatabase depcyTargetDb = dte.getDepcyTargetDb();
+                    
+                    // Дополнительно пометить в таблице зависимости от NEW/EDIT и
+                    // получить новое фильтрованное дерево с этими зависимостями
+                    HashSet<TreeElement> elementsNewEditDependentFrom = 
+                            diffTable.setChecked(dependencies, depcyTargetDb, true);
+                    TreeElement filteredWithNew = diffTable.filterDiffTree();
+                    diffTable.setChecked(dependencies, depcyTargetDb, false);
+    
+                    // Расширить дерево filteredWithNew элементами, зависящими от удаляемых
+                    dte = new DepcyTreeExtender(dbSource.getDbObject(), 
+                            dbTarget.getDbObject(), filteredWithNew);
+                    filteredWithNewAndDelete = dte.getTreeCopyWithDepcy();
+                    // Получить список всех зависимостей для заполнения нижней 
+                    // таблицы CommitDialog'a
+                    // Эти зависимости - потомки filteredWithNewAndDelete
+                    sumNewAndDelete = dte.sumAllDepcies(elementsNewEditDependentFrom);
+                }
+                
+                // display commit dialog
+                CommitDialog cd = new CommitDialog(shell, filtered, sumNewAndDelete,
+                        mainPrefs, proj, treeDiffer);
+                cd.setConflictingElements(considerDepcy ? dte.getConflicting() : null);
                 if (cd.open() != CommitDialog.OK) {
                     return;
                 }
-
+                
+                if(considerDepcy){
+                    // Убрать из списка всех элементов в filteredWithNewAndDelete те
+                    // элементы, с которых пользователь снял отметку в нижней таблице
+                    Set<TreeElement> allElements = new HashSet<TreeElement>();
+                    dte.generateFlatElementsSet(filteredWithNewAndDelete, allElements);
+                    allElements.removeAll(cd.getBottomTableViewer().getCheckedElements(false));
+                    
+                    filteredTwiceWithAllDepcy = 
+                            filteredWithNewAndDelete.getFilteredCopy(allElements);
+                }
+                
+                final TreeElement resultingTree = considerDepcy ? filteredTwiceWithAllDepcy : filtered;
+                
                 history.addHistoryEntry(commitComment);
                 
                 IRunnableWithProgress commitRunnable = new IRunnableWithProgress() {
@@ -250,7 +300,8 @@ public class CommitPartDescr {
                         pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
                         DiffTreeApplier applier = new DiffTreeApplier(dbSource
                                 .getDbObject(), dbTarget.getDbObject(),
-                                filtered);
+                                resultingTree);
+                        
                         PgDatabase dbNew = applier.apply();
 
                         pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
@@ -599,6 +650,55 @@ public class CommitPartDescr {
                 return null;
             }
         });
+    }
+
+    protected TreeElement getCorrespondingTreeElement(Object object,
+            TreeElement filtered_with_new_and_delete) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * 
+     * @param filtered Типа полное дерево
+     * @param checkedElements Типа элементы этого дерева, которые выбраны
+     * @return
+     */
+    private TreeElement filterAgain(TreeElement filtered, Set<TreeElement> checkedElements) {
+//        if (filtered.getContainerType() != DbObjType.CONTAINER){
+//            
+//        }
+        TreeElement copy = new TreeElement(filtered.getName(), filtered.getType(), 
+                filtered.getContainerType(), filtered.getSide());
+        for(TreeElement e : filtered.getChildren()){
+            boolean isSelected = e.getType() == DbObjType.CONTAINER || checkedElements.contains(e);
+            TreeElement child = null;
+            if (isSelected){
+                child = filterAgain(e, checkedElements);
+            }else if (isSubtreeSelected(e, checkedElements)){
+                
+            }
+            
+            if (child != null) {
+                copy.addChild(child);
+            }
+        }
+        
+//        if (filterSubset.contains(this) && copy == null){
+//            copy = new TreeElement(getName(), getType(), getContainerType(), getSide());
+//        }
+        return copy;
+    }
+    
+    private boolean isSubtreeSelected(TreeElement e, Set<TreeElement> checkedElements) {
+        for (TreeElement eee : e.getChildren()){
+            if (checkedElements.contains(eee)){
+                return true;
+            }else{
+                return isSubtreeSelected(eee, checkedElements);
+            }
+        }
+        return false;
     }
 
     private void showDbPicker(boolean show) {
