@@ -52,7 +52,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ManualDepciesDialog;
 import ru.taximaxim.codekeeper.ui.SqlScriptDialog;
-import ru.taximaxim.codekeeper.ui.SqlViewer;
+import ru.taximaxim.codekeeper.ui.SqlMergeViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
@@ -94,7 +94,7 @@ public class DiffPartDescr {
     private Button btnGetChanges;
     private Composite containerSrc;
     private DbPicker dbSrc;
-    private SqlViewer diffPane;
+    private SqlMergeViewer diffPane;
     /**
      * Remote DB.
      */
@@ -380,7 +380,7 @@ public class DiffPartDescr {
         conf.setLeftEditable(false);
         conf.setRightEditable(false);
         
-        diffPane = new SqlViewer(sashOuter, SWT.BORDER, conf);
+        diffPane = new SqlMergeViewer(sashOuter, SWT.BORDER, conf);
         diffPane.setContentProvider(new IMergeViewerContentProvider() {
             
             @Override

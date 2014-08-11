@@ -11,7 +11,6 @@ import javax.inject.Named;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
-import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.core.di.annotations.Optional;
@@ -31,9 +30,6 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.source.CompositeRuler;
-import org.eclipse.jface.text.source.LineNumberRulerColumn;
-import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -63,7 +59,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.CommitDialog;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.SqlViewer;
+import ru.taximaxim.codekeeper.ui.SqlMergeViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
@@ -118,7 +114,7 @@ public class CommitPartDescr {
     private Button btnGetChanges;
     private Composite containerSrc;
     private DbPicker dbSrc;
-    private SqlViewer diffPane;
+    private SqlMergeViewer diffPane;
     private String repoName;
     private XmlHistory history;
     /**
@@ -495,18 +491,7 @@ public class CommitPartDescr {
         conf.setLeftEditable(false);
         conf.setRightEditable(false);
         
-//        diffPane = new TextMergeViewer(sashOuter, SWT.BORDER, conf) {
-//            
-//            @Override
-//            protected SourceViewer createSourceViewer(Composite parent, int textOrientation) {
-//                CompositeRuler ruler = new CompositeRuler();
-//                ruler.addDecorator(0, new LineNumberRulerColumn());
-//                
-//                return new SourceViewer(parent, ruler,
-//                        textOrientation | SWT.H_SCROLL | SWT.V_SCROLL);
-//            }
-//        };
-        diffPane = new SqlViewer(sashOuter, SWT.BORDER, conf);
+        diffPane = new SqlMergeViewer(sashOuter, SWT.BORDER, conf);
         diffPane.setContentProvider(new IMergeViewerContentProvider() {
             
             @Override

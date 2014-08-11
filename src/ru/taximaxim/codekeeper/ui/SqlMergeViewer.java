@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
-import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceEditingEnvironment;
 import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceViewerConfiguration;
 import org.eclipse.datatools.sqltools.sqleditor.internal.sql.ISQLPartitions;
 import org.eclipse.datatools.sqltools.sqleditor.internal.sql.SQLPartitionScanner;
@@ -18,9 +17,9 @@ import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
-public class SqlViewer extends TextMergeViewer {
+public class SqlMergeViewer extends TextMergeViewer {
     
-    public SqlViewer( Composite parent, int style, CompareConfiguration configuration ) {
+    public SqlMergeViewer( Composite parent, int style, CompareConfiguration configuration ) {
         super( parent, style, configuration );
     }
  
@@ -33,7 +32,6 @@ public class SqlViewer extends TextMergeViewer {
                 @Override
                 public IPresentationReconciler getPresentationReconciler(
                         ISourceViewer sourceViewer) {
-                    SQLSourceEditingEnvironment.connect();
                     return super.getPresentationReconciler(sourceViewer);
                 }
             });

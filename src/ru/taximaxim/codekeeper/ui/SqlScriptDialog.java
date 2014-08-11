@@ -12,7 +12,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.ISQLSourceViewerService;
 import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.SQLStatementArea;
-import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceEditingEnvironment;
 import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceViewerConfiguration;
 import org.eclipse.datatools.sqltools.sqleditor.internal.sql.ISQLPartitions;
 import org.eclipse.datatools.sqltools.sqleditor.internal.sql.SQLPartitionScanner;
@@ -72,8 +71,7 @@ public class SqlScriptDialog extends MessageDialog {
     private String dbUser;
     private String dbPass;
     
-//    private Text txtMain;
-    private SQLStatementArea sta;
+    private SQLStatementArea sqlEditor;
     private Text txtCommand;
     private Combo cmbScript;
     private Button runScriptBtn;
@@ -126,87 +124,8 @@ public class SqlScriptDialog extends MessageDialog {
     
     @Override
     protected Control createCustomArea(Composite parent) {
-//        SQLSegmentEditor se = new SQLSegmentEditor(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
-//                | SWT.MULTI, new GridLayout());
-//        se.setText(text);
         
-        ISQLSourceViewerService viewerService = new ISQLSourceViewerService() {
-
-            @Override
-            public void setUpDocument(IDocument doc, String dbType) {
-                SQLPartitionScanner sqlPartitionSanner = new SQLPartitionScanner();
-                if(doc instanceof IDocumentExtension3)
-                {
-                IDocumentExtension3 extension3 = (IDocumentExtension3) doc;
-                FastPartitioner _partitioner = new FastPartitioner(sqlPartitionSanner, new String[]
-                {
-                SQLPartitionScanner.SQL_CODE,
-                SQLPartitionScanner.SQL_COMMENT,
-                SQLPartitionScanner.SQL_MULTILINE_COMMENT,
-                SQLPartitionScanner.SQL_STRING,
-                SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER
-                });
-                _partitioner.connect(doc);
-                extension3.setDocumentPartitioner(ISQLPartitions.SQL_PARTITIONING, _partitioner);
-                }
-            }
-            
-        };
-        sta = new SQLStatementArea(parent, SWT.BORDER, viewerService, true);
-        sta.setEditable(true);
-        sta.setEnabled(true);
-        
-        
-        SQLSourceViewerConfiguration sqlSourceViewerConfiguration = new SQLSourceViewerConfiguration() {
-
-            @Override
-            public IPresentationReconciler getPresentationReconciler(
-                    ISourceViewer sourceViewer) {
-                SQLSourceEditingEnvironment.connect();
-                return super.getPresentationReconciler(sourceViewer);
-            }
-        };
-        
-        sta.configureViewer(sqlSourceViewerConfiguration);
-        
-        
-        sta.setLayoutData(new GridData(GridData.FILL_BOTH));
-        Document document = new Document();
-        document.set(text);
-        sta.getViewer().setDocument(document);
-        
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 600;
-        gd.heightHint = 400;
-        sta.setLayoutData(gd);
-        
-//        IHandlerService handlerService = (IHandlerService) editor.getSite().getService(IHandlerService.class);
-//        IHandler cahandler = new AbstractHandler() {
-//
-//        @Override
-//        public Object execute(ExecutionEvent event)
-//                throws org.eclipse.core.commands.ExecutionException {
-//            sta.getViewer().doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
-//            return null;
-//        }
-//        };
-//        if(contentAssistHandlerActivation != null){
-//        handlerService.deactivateHandler(contentAssistHandlerActivation);
-//        }
-//        contentAssistHandlerActivation = handlerService.activateHandler(
-//                ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
-//        cahandler);       
-        
-        
-//        txtMain = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
-//                | SWT.MULTI);
-//        txtMain.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-//        txtMain.setText(text);
-//        
-//        GridData gd = new GridData(GridData.FILL_BOTH);
-//        gd.widthHint = 600;
-//        gd.heightHint = 400;
-//        txtMain.setLayoutData(gd);
+        configureSQLViewer(parent);
         
         Label l = new Label(parent, SWT.NONE);
         l.setText(Messages.sqlScriptDialog_Enter_cmd_to_roll_on_sql_script
@@ -214,7 +133,7 @@ public class SqlScriptDialog extends MessageDialog {
                 + DB_NAME_PLACEHOLDER + ' '
                 + DB_HOST_PLACEHOLDER + ' ' + DB_PORT_PLACEHOLDER + ' '
                 + DB_USER_PLACEHOLDER + ' ' + DB_PASS_PLACEHOLDER + ')' + ':');
-        gd = new GridData(GridData.FILL_HORIZONTAL);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         l.setLayoutData(gd);
         
@@ -258,10 +177,77 @@ public class SqlScriptDialog extends MessageDialog {
         
         return parent;
     }
+
+    private void configureSQLViewer(Composite parent) {
+        ISQLSourceViewerService viewerService = new ISQLSourceViewerService() {
+
+            @Override
+            public void setUpDocument(IDocument doc, String dbType) {
+                SQLPartitionScanner sqlPartitionSanner = new SQLPartitionScanner();
+                if(doc instanceof IDocumentExtension3)
+                {
+                IDocumentExtension3 extension3 = (IDocumentExtension3) doc;
+                FastPartitioner _partitioner = new FastPartitioner(sqlPartitionSanner, new String[]
+                {
+                SQLPartitionScanner.SQL_CODE,
+                SQLPartitionScanner.SQL_COMMENT,
+                SQLPartitionScanner.SQL_MULTILINE_COMMENT,
+                SQLPartitionScanner.SQL_STRING,
+                SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER
+                });
+                _partitioner.connect(doc);
+                extension3.setDocumentPartitioner(ISQLPartitions.SQL_PARTITIONING, _partitioner);
+                }
+            }
+        };
+        
+        sqlEditor = new SQLStatementArea(parent, SWT.BORDER, viewerService, true);
+        sqlEditor.setEditable(true);
+        sqlEditor.setEnabled(true);
+        sqlEditor.configureViewer(new SQLSourceViewerConfiguration() {
+
+            @Override
+            public IPresentationReconciler getPresentationReconciler(
+                    ISourceViewer sourceViewer) {
+                return super.getPresentationReconciler(sourceViewer);
+            }
+        });
+        sqlEditor.setLayoutData(new GridData(GridData.FILL_BOTH));
+        
+        Document document = new Document();
+        document.set(text);
+        sqlEditor.getViewer().setDocument(document);
+        
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 600;
+        gd.heightHint = 400;
+        sqlEditor.setLayoutData(gd);
+        sqlEditor.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+        
+        /** Этот кусочек скопипастен с сайта для поддержки автозавершения ввода
+         *  Не получилось прикрутить за незнанием некоторых классов
+         *  оставляю на будущее*/
+//        IHandlerService handlerService = (IHandlerService) editor.getSite().getService(IHandlerService.class);
+//        IHandler cahandler = new AbstractHandler() {
+//
+//        @Override
+//        public Object execute(ExecutionEvent event)
+//                throws org.eclipse.core.commands.ExecutionException {
+//            sta.getViewer().doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+//            return null;
+//        }
+//        };
+//        if(contentAssistHandlerActivation != null){
+//        handlerService.deactivateHandler(contentAssistHandlerActivation);
+//        }
+//        contentAssistHandlerActivation = handlerService.activateHandler(
+//                ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
+//        cahandler);       
+    }
     
     @Override
     protected void buttonPressed(int buttonId) {
-        final String textRetrieved = sta.getViewer().getDocument().get();
+        final String textRetrieved = sqlEditor.getViewer().getDocument().get();
         
         // case Run script
         if (buttonId == 0 && !isRunning){
