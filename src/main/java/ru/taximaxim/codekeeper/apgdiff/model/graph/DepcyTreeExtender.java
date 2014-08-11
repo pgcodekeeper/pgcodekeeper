@@ -289,7 +289,7 @@ public class DepcyTreeExtender {
         }
     }
     
-    public TreeElement getCorrespondingTreeElement(TreeElement element, TreeElement sourceTree) {
+    private TreeElement getCorrespondingTreeElement(TreeElement element, TreeElement sourceTree) {
         if (element == null){
             return null;
         }
