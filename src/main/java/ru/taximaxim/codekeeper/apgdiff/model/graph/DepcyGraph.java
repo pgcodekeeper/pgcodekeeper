@@ -102,6 +102,9 @@ public class DepcyGraph {
                         if (sequence.getName().equals(seqName)){
                             graph.addVertex(sequence);
                             graph.addEdge(table, sequence);
+                            if (sequence.getOwnedBy() != null){
+                                graph.addEdge(sequence, table);
+                            }
                             break;
                         }
                     }
