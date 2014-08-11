@@ -61,7 +61,6 @@ import org.eclipse.swt.widgets.Text;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
@@ -650,55 +649,6 @@ public class CommitPartDescr {
                 return null;
             }
         });
-    }
-
-    protected TreeElement getCorrespondingTreeElement(Object object,
-            TreeElement filtered_with_new_and_delete) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /**
-     * 
-     * @param filtered Типа полное дерево
-     * @param checkedElements Типа элементы этого дерева, которые выбраны
-     * @return
-     */
-    private TreeElement filterAgain(TreeElement filtered, Set<TreeElement> checkedElements) {
-//        if (filtered.getContainerType() != DbObjType.CONTAINER){
-//            
-//        }
-        TreeElement copy = new TreeElement(filtered.getName(), filtered.getType(), 
-                filtered.getContainerType(), filtered.getSide());
-        for(TreeElement e : filtered.getChildren()){
-            boolean isSelected = e.getType() == DbObjType.CONTAINER || checkedElements.contains(e);
-            TreeElement child = null;
-            if (isSelected){
-                child = filterAgain(e, checkedElements);
-            }else if (isSubtreeSelected(e, checkedElements)){
-                
-            }
-            
-            if (child != null) {
-                copy.addChild(child);
-            }
-        }
-        
-//        if (filterSubset.contains(this) && copy == null){
-//            copy = new TreeElement(getName(), getType(), getContainerType(), getSide());
-//        }
-        return copy;
-    }
-    
-    private boolean isSubtreeSelected(TreeElement e, Set<TreeElement> checkedElements) {
-        for (TreeElement eee : e.getChildren()){
-            if (checkedElements.contains(eee)){
-                return true;
-            }else{
-                return isSubtreeSelected(eee, checkedElements);
-            }
-        }
-        return false;
     }
 
     private void showDbPicker(boolean show) {
