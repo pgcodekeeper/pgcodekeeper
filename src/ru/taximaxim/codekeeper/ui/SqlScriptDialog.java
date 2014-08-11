@@ -21,10 +21,13 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
@@ -223,6 +226,33 @@ public class SqlScriptDialog extends MessageDialog {
         gd.heightHint = 400;
         sqlEditor.setLayoutData(gd);
         sqlEditor.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+        
+        sqlEditor.getViewer().getTextWidget().addKeyListener( new KeyListener() {
+            
+            @Override
+            public void keyPressed(KeyEvent e) {
+                // Listen to CTRL+Z for Undo, to CTRL+Y or CTRL+SHIFT+Z for Redo
+                boolean isCtrl = (e.stateMask & SWT.CTRL) > 0;
+                boolean isAlt = (e.stateMask & SWT.ALT) > 0;
+                if (isCtrl && !isAlt) {
+                    boolean isShift = (e.stateMask & SWT.SHIFT) > 0;
+                    if (!isShift && e.keyCode == 'z') {
+                        sqlEditor.getViewer().doOperation(
+                                ITextOperationTarget.UNDO);
+                    } else if (!isShift && e.keyCode == 'y' || isShift
+                            && e.keyCode == 'z') {
+                        sqlEditor.getViewer().doOperation(
+                                ITextOperationTarget.REDO);
+                    }
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                // TODO Auto-generated method stub
+                
+            }
+        });
         
         /** Этот кусочек скопипастен с сайта для поддержки автозавершения ввода
          *  Не получилось прикрутить за незнанием некоторых классов
