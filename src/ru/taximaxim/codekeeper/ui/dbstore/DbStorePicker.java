@@ -96,7 +96,7 @@ public class DbStorePicker extends Group {
         cmbDbNames.setItems(store.keySet().toArray(new String[store.size()]));
         if(cmbDbNames.getItemCount() > 0) {
             List<String> items = Arrays.asList(cmbDbNames.getItems());
-            cmbDbNames.select(items.indexOf(selectedItem) == -1 ? 0 : items.indexOf(selectedItem));
+            cmbDbNames.select(items.indexOf(selectedItem));
             cmbDbNames.notifyListeners(SWT.Selection, new Event());
         }
     }
