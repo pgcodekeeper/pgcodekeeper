@@ -251,7 +251,7 @@ public class CommitPartDescr {
                     HashSet<TreeElement> elementsNewEditDependentFrom = 
                             diffTable.setChecked(dependencies, depcyTargetDb, true);
                     TreeElement filteredWithNew = diffTable.filterDiffTree();
-                    diffTable.setChecked(dependencies, depcyTargetDb, false);
+                    diffTable.setCheckedElements(elementsNewEditDependentFrom, false);
     
                     // Расширить дерево filteredWithNew элементами, зависящими от удаляемых
                     dte = new DepcyTreeExtender(dbSource.getDbObject(), 

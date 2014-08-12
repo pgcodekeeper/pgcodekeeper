@@ -821,6 +821,8 @@ public class DiffTableViewer extends Composite {
     }
 
     /**
+     * Не выполняет обновления UI! После вызова необходимо вручную обновить вьювер.
+     * <br><br>
      * Помечает элементы из списка <code>dependencies</code> отметкой 
      * <code>markChecked</code> (устанавливает/снимает галочку). 
      * Поиск соответствия элементов TreeElement объектам БД производится 
