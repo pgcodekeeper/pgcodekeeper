@@ -238,7 +238,6 @@ public class CommitPartDescr {
                 DepcyTreeExtender dte = null;
                 HashSet<TreeElement> sumNewAndDelete = null;
                 TreeElement filteredWithNewAndDelete = null;
-                TreeElement filteredTwiceWithAllDepcy = null;
                 
                 if(considerDepcy){
                     // Получить список зависимых от NEW/EDIT элементов
@@ -272,13 +271,14 @@ public class CommitPartDescr {
                     return;
                 }
                 
+                TreeElement filteredTwiceWithAllDepcy = null;
                 if(considerDepcy){
                     // Убрать из списка всех элементов в filteredWithNewAndDelete те
                     // элементы, с которых пользователь снял отметку в нижней таблице
-                    Set<TreeElement> allElements = new HashSet<TreeElement>();
-                    dte.generateFlatElementsSet(filteredWithNewAndDelete, allElements);
+                    DiffTableViewer diffTable = new DiffTableViewer(new Shell(), SWT.NONE, mainPrefs, true);
+                    diffTable.setFilteredInput(filteredWithNewAndDelete, treeDiffer);
+                    Set<TreeElement> allElements = diffTable.getCheckedElements(false);
                     allElements.removeAll(cd.getBottomTableViewer().getCheckedElements(false));
-                    
                     filteredTwiceWithAllDepcy = 
                             filteredWithNewAndDelete.getFilteredCopy(allElements);
                 }

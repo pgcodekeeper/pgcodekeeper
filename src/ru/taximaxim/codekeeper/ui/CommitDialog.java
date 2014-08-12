@@ -24,25 +24,25 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class CommitDialog extends TrayDialog {
     
-    private TreeElement filteredElements;
+    private TreeElement filtered;
     private IPreferenceStore prefs;
     private String message;
     private DiffTableViewer dtvTop;
     private DiffTableViewer dtvBottom;
     private TreeDiffer treeDiffer;
     private TreeElement filteredDiffTree;
-    private HashSet<TreeElement> shouldBeNew;
-    private HashSet<TreeElement> conflicting;
+    private HashSet<TreeElement> depcyElementsSet;
+    private HashSet<TreeElement> conflictingElementsSet;
     
-    public CommitDialog(Shell parentShell, TreeElement filteredElements,
-            HashSet<TreeElement> shouldBeNew, IPreferenceStore mainPrefs, PgDbProject proj, TreeDiffer treeDiffer) {
+    public CommitDialog(Shell parentShell, TreeElement filtered,
+            HashSet<TreeElement> depcyElementsSet, IPreferenceStore mainPrefs, PgDbProject proj, TreeDiffer treeDiffer) {
         super(parentShell);
         
-        this.filteredElements = filteredElements;
+        this.filtered = filtered;
         this.prefs = mainPrefs;
         this.treeDiffer = treeDiffer;
         this.prefs = mainPrefs;
-        this.shouldBeNew = shouldBeNew;
+        this.depcyElementsSet = depcyElementsSet;
         
         try {
             message = Messages.commitPartDescr_the_following_changes_be_included_in_commit
@@ -86,9 +86,9 @@ public class CommitDialog extends TrayDialog {
         gd.heightHint = 300;
         gd.widthHint = 1000;
         dtvTop.setLayoutData(gd);
-        dtvTop.setFilteredInput(filteredElements, treeDiffer);
+        dtvTop.setFilteredInput(filtered, treeDiffer);
         
-        if (shouldBeNew != null){
+        if (depcyElementsSet != null){
             Group gBottom = new Group(container, SWT.NONE);
             gBottom.setLayout(new GridLayout(1, false));
             
@@ -101,20 +101,11 @@ public class CommitDialog extends TrayDialog {
             gd.heightHint = 300;
             gd.widthHint = 1000;
             dtvBottom.setLayoutData(gd);
-            dtvBottom.setInputCollection(shouldBeNew, treeDiffer);
-            dtvBottom.setCheckedElements(conflicting, false);
+            dtvBottom.setInputCollection(depcyElementsSet, treeDiffer);
+            dtvBottom.setCheckedElements(conflictingElementsSet, false);
             dtvBottom.redraw();
         }
-        // TODO fix size after initializing - not all labels/buttons are visible
         return parent;
-    }
-    
-    public DiffTableViewer getTopTableViewer(){
-        return dtvTop;
-    }
-    
-    public DiffTableViewer getBottomTableViewer(){
-        return dtvBottom;
     }
     
     @Override
@@ -123,11 +114,11 @@ public class CommitDialog extends TrayDialog {
         super.okPressed();
     }
     
-    public TreeElement getDiffTree (){
-        return this.filteredDiffTree;
+    public DiffTableViewer getBottomTableViewer(){
+        return dtvBottom;
     }
 
-    public void setConflictingElements(HashSet<TreeElement> conflicting) {
-        this.conflicting = conflicting;
+    public void setConflictingElements(HashSet<TreeElement> conflictingElementsSet) {
+        this.conflictingElementsSet = conflictingElementsSet;
     }
 }
