@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import java.util.HashSet;
-import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -40,7 +39,7 @@ public class DepcyTreeExtender {
      */
     final private TreeElement root;
     /**
-     * Copy of root, including those dependant from DELETED
+     * Copy of root, extended by dependent from DELETED elements
      */
     private TreeElement copy;
     
@@ -304,35 +303,6 @@ public class DepcyTreeExtender {
     
     public PgDatabase getDepcyTargetDb() { 
         return depcyTarget.getDb();
-    }
-    
-    /**
-     * Вспомогательный метод для генерации набора элементов, которые являются 
-     * объектами и могут быть выбраны пользователем.
-     * <br><br>Копия метода DiffTableViewer.generateFlatElementsMap
-     * @return
-     */
-    public void generateFlatElementsSet (TreeElement subtree,  Set<TreeElement> elements){
-        if (subtree.hasChildren()) {
-            for (TreeElement child : subtree.getChildren()) {
-                generateFlatElementsSet(child, elements);
-            }
-        }
-        
-        boolean doNotInclude = 
-                (subtree.getSide() == DiffSide.BOTH && subtree.getParent() != null 
-                && subtree.getParent().getSide() != DiffSide.BOTH)
-                || subtree.getType() == DbObjType.CONTAINER
-                || subtree.getType() == DbObjType.DATABASE;
-        if (doNotInclude) {
-            return;
-        }
-        if ((subtree.getSide() == DiffSide.BOTH && 
-                subtree.getPgStatement(dbSource).compare(
-                        subtree.getPgStatement(dbTarget)))) {
-            return;
-        }
-        elements.add(subtree);
     }
 
     /**
