@@ -41,7 +41,7 @@ public class GeneralPrefPage extends FieldEditorPreferencePage
         addField(openLast);
         
         BooleanFieldEditor useDepcyCommit = new BooleanFieldEditor(
-                PREF.CONSIDER_DEPCY_IN_COMMIT, "Использовать зависимости на вкладке коммита",
+                PREF.CONSIDER_DEPCY_IN_COMMIT, Messages.generalPrefPage_use_depcy_on_commit_page,
                 FileFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());
         addField(useDepcyCommit);
     }

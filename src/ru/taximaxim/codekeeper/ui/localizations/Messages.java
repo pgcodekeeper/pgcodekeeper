@@ -107,8 +107,10 @@ public class Messages extends NLS {
     public static String diffTableViewer_change_type;
     public static String diffTableViewer_reset_sorting;
     public static String diffTableViewer_container;
+    public static String diffTableViewer_delete_checked_set;
     public static String diffTableViewer_deselect_child_elements;
     public static String diffTableViewer_filtering_diff_tree_based_on_gui_selection;
+    public static String diffTableViewer_Input_name_for_save_checked_elements;
     public static String diffTableViewer_object_name;
     public static String diffTableViewer_object_type;
     public static String diffTableViewer_objects;
@@ -302,6 +304,7 @@ public class Messages extends NLS {
     public static String generalPrefPage_consider_depcy_on_commit;
     public static String generalPrefPage_pg_dump_custom_parameters;
     public static String generalPrefPage_pg_dump_executable;
+    public static String generalPrefPage_use_depcy_on_commit_page;
     public static String gitPrefPage_copy_public_keys_to_clipboard;
     public static String gitPrefPage_either_doesnt_exist_or_inaccessible;
     public static String gitPrefPage_error_while_rsa_keys_generation;

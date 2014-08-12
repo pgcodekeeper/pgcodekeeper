@@ -122,7 +122,7 @@ public class XmlHistory {
                 histFile.getParentFile().mkdirs();
                 histFile.createNewFile();
                 
-                try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(histFile), "UTF-8")) {
+                try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(histFile), "UTF-8")) { //$NON-NLS-1$
                     XmlStringList xml = new XmlStringList(rootTag, elementTag);
                     xml.serializeList(historyEntries, false, xmlWriter);
                 }
@@ -133,14 +133,16 @@ public class XmlHistory {
         }
     }
     
-    public void addCheckedSetHistoryEntry(String checkSetName, LinkedList<String> values) {
+    public void updateCheckedSetHistoryEntries(String checkSetName, 
+            LinkedList<String> values, boolean addEntry) {
         if (values.isEmpty()) {
             return;
         }
         LinkedHashMap<String, LinkedList<String>> checkedSets = 
                 new LinkedHashMap<String, LinkedList<String>>();
-        
-        checkedSets.put(checkSetName, values);
+        if (addEntry) {
+            checkedSets.put(checkSetName, values);
+        }
         
         LinkedHashMap<String, LinkedList<String>> oldCheckedSets = getMapHistory();
         oldCheckedSets.remove(checkSetName);
@@ -155,7 +157,7 @@ public class XmlHistory {
         try {
             historyFile.getParentFile().mkdirs();
             historyFile.createNewFile();
-            try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(historyFile), "UTF-8")) {
+            try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(historyFile), "UTF-8")) { //$NON-NLS-1$
                 XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
                 xml.serializeMap(checkedSets, false, xmlWriter);
             }
