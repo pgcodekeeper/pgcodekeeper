@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.osgi.framework.Version;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
@@ -136,9 +135,8 @@ public class LoadProj {
                 return true;
             }
             Version projVersion = Version.parseVersion(version);
-            Version minVersion = Version.parseVersion(UIConsts.MIN_APPROVAL_VERSION);
-            Version curVersion = Version.parseVersion(
-                    Activator.getPluginVersions().get(UIConsts.PLUGIN_ID.APGDIFF).get(0));
+            Version minVersion = Version.parseVersion(ApgdiffConsts.MIN_APPROVAL_VERSION);
+            Version curVersion = Version.parseVersion(ApgdiffConsts.CURRENT_VERSION);
             if (projVersion.compareTo(curVersion) > 0) {
                 message.append(Messages.loadProj_proj_cannt_loaded_because_it_created_in_program_with_version_bigger_than_current);
                 return false;
