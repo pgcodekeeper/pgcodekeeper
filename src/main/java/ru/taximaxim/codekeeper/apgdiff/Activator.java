@@ -1,10 +1,8 @@
 package ru.taximaxim.codekeeper.apgdiff;
 
 import org.eclipse.equinox.log.ExtendedLogService;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.Version;
 import org.osgi.util.tracker.ServiceTracker;
 
 public class Activator implements BundleActivator {
@@ -29,15 +27,5 @@ public class Activator implements BundleActivator {
         if(logTracker != null) {
             logTracker.close();
         }
-    }
-
-    public static Version getPluginVersion() {
-        Bundle[] bundles = bundleContext.getBundles();
-        for (Bundle b : bundles) {
-            if (b.getSymbolicName().equals(ApgdiffConsts.APGDIFF_PLUGIN_ID)) {
-                return b.getVersion();
-            }
-        }
-        throw new IllegalStateException("Cannot find apgdiff plugin version");
     }
 }

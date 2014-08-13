@@ -239,7 +239,7 @@ public class ModelExporter {
     
     private void writeProjVersion(File f) throws IOException {
         Properties prop = new Properties();
-        Version progVersion = Activator.getPluginVersion();
+        Version progVersion = Version.parseVersion(ApgdiffConsts.CURRENT_VERSION);
         if (f.exists()) {
             try(FileInputStream fStream = new FileInputStream(f)){
                 prop.load(fStream);
