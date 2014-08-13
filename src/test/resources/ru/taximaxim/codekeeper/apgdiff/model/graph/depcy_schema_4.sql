@@ -1,0 +1,21 @@
+
+CREATE TABLE t1 (
+    c1 integer
+);
+
+ALTER TABLE public.t1 OWNER TO ryabinin_av;
+
+
+CREATE SEQUENCE s1
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER TABLE public.s1 OWNER TO ryabinin_av;
+
+--ALTER SEQUENCE s1 OWNED BY t1.c1;
+
+
+ALTER TABLE ONLY t1 ALTER COLUMN c1 SET DEFAULT nextval('s1'::regclass);

@@ -43,14 +43,16 @@ public class DepcyTreeExtenderTest {
                 new Object[][]{
                     {1},
                     {2},
-                    {3}
+                    {3},
+                    {4}
                 });
     }
     
     private static final TreeElementCreator[] treeCreators = {
         new TreeElement1(),
         new TreeElement2(),
-        new TreeElement3()
+        new TreeElement3(),
+        new TreeElement4()
     };
     
     public DepcyTreeExtenderTest(final int fileIndex) {
@@ -129,9 +131,7 @@ class TreeElement1 extends TreeElementCreator{
         PgColumn column = table.getColumn("c1");
         return new HashSet<PgStatement>(Arrays.asList(db, schema, view, table, column));
     }
-    
 }
-
 
 class TreeElement2 extends TreeElementCreator{
 
@@ -164,7 +164,6 @@ class TreeElement2 extends TreeElementCreator{
     public Set<PgStatement> getDepcySet(PgDatabase db) {
         return new HashSet<PgStatement>(Arrays.asList(db, db.getSchema("public")));
     }
-    
 }
 
 class TreeElement3 extends TreeElementCreator{
@@ -201,5 +200,38 @@ class TreeElement3 extends TreeElementCreator{
         PgSequence seq = schema.getSequence("s1");
         return new HashSet<PgStatement>(Arrays.asList(db, schema, table, seq));
     }
-    
+}
+
+class TreeElement4 extends TreeElementCreator{
+
+    @Override
+    public TreeElement getFilteredTree() {
+        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
+        root.addChild(database);
+        
+        TreeElement sourceOnly = new TreeElement("Target only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.RIGHT);
+        database.addChild(sourceOnly);
+        
+        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.RIGHT);
+        sourceOnly.addChild(contSchemas);
+        
+        TreeElement publicSchema = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.RIGHT);
+        contSchemas.addChild(publicSchema);
+        
+        TreeElement contSequences = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.RIGHT);
+        publicSchema.addChild(contSequences);
+        
+        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, null, DiffSide.RIGHT);
+        contSequences.addChild(seq);
+        
+        return root;
+    }
+
+    @Override
+    public Set<PgStatement> getDepcySet(PgDatabase db) {
+        PgSchema schema = db.getSchema("public");
+        return new HashSet<PgStatement>(Arrays.asList(db, schema));
+    }
 }
