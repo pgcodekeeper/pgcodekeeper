@@ -20,7 +20,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.recentprojs.RecentProjects;
 
-public class OpenLastProject {
+public class OpenLastProject extends E4HandlerWrapper {
     
     @Execute
     private void execute(

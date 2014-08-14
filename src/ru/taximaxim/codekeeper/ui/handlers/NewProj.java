@@ -18,7 +18,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard;
 
-public class NewProj {
+public class NewProj extends E4HandlerWrapper {
 
     @Execute
     private void execute(

@@ -46,7 +46,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.FakePrefPageExtension;
 import ru.taximaxim.codekeeper.ui.prefs.PrefDialogFactory;
 
-public class ProjProps {
+public class ProjProps extends E4HandlerWrapper {
     
     @Execute
     private void execute(

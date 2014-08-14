@@ -21,7 +21,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.recentprojs.RecentProjects;
 
-public class OpenRecent {
+public class OpenRecent extends E4HandlerWrapper {
     
     private MMenuItem menuItem;
     

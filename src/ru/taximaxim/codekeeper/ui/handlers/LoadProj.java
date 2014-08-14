@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.ui.parts.DiffPartDescr;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.recentprojs.RecentProjects;
 
-public class LoadProj {
+public class LoadProj extends E4HandlerWrapper {
     
     @Execute
     private void execute(

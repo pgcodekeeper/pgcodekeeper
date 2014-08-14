@@ -14,7 +14,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.addons.AddonExternalTools;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class About {
+public class About extends E4HandlerWrapper {
     
     @Execute
     private void execute(Shell parentShell) {

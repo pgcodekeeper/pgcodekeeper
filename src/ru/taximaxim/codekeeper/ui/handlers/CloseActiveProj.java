@@ -8,7 +8,7 @@ import org.eclipse.e4.core.di.annotations.Execute;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
-public class CloseActiveProj {
+public class CloseActiveProj extends E4HandlerWrapper {
     
     @Execute
     private void execute(IEclipseContext ctx) {

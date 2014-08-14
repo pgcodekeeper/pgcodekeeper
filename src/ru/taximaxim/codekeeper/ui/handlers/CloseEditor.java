@@ -13,7 +13,7 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
 
-public class CloseEditor {
+public class CloseEditor extends E4HandlerWrapper {
     
     @Inject
     @Named(IServiceConstants.ACTIVE_PART)

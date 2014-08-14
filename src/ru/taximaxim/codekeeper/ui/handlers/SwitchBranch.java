@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 @SuppressWarnings("restriction")
-public class SwitchBranch {
+public class SwitchBranch extends E4HandlerWrapper {
     
     @Inject
     IEventBroker events;

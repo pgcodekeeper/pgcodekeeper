@@ -15,7 +15,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.pgdbproject.DiffWizard;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
-public class Diff {
+public class Diff extends E4HandlerWrapper {
 
     @Execute
     private void execute(

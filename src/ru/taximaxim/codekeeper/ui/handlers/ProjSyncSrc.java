@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
-public class ProjSyncSrc {
+public class ProjSyncSrc extends E4HandlerWrapper {
     
     @Inject
     private static IEventBroker events;
