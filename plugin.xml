@@ -296,7 +296,8 @@
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.Diff"
                   icon="icons/compare_view.gif"
-                  style="push">
+                  style="push"
+                  tooltip="%handledtoolitem.tooltip.3">
             </command>
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.SwitchBranch"
@@ -307,18 +308,21 @@
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.ProjSyncSrc"
                   icon="icons/synch_toc_nav.gif"
-                  style="push">
+                  style="push"
+                  tooltip="%handledtoolitem.tooltip.4">
             </command>
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.ProjProps"
                   icon="icons/properties.gif"
-                  style="push">
+                  style="push"
+                  tooltip="%handledtoolitem.tooltip.5">
             </command>
             <separator
                   name="separator">
             </separator>
             <command
-                  commandId="ru.taximaxim.codekeeper.ui.command23"
+                  commandId="org.eclipse.ui.window.preferences"
+                  icon="icons/sprocket_dark_gear.png"
                   style="push"
                   tooltip="%handledtoolitem.tooltip.6">
             </command>
@@ -378,10 +382,6 @@
    <extension
          point="org.eclipse.ui.views">
       <category
-            id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            name="pgCodeKeeper">
-      </category>
-      <category
             id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
             name="pgCodeKeeper - Devtest"
             parentCategory="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper">
@@ -399,6 +399,61 @@
             id="ru.taximaxim.codekeeper.ui.part.CtXp"
             name="%part.label.5"
             restorable="true">
+      </e4view>
+      <category
+            id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            name="pgCodeKeeper">
+      </category>
+      <e4view
+            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            class="ru.taximaxim.codekeeper.ui.parts.ProjectExplorer"
+            icon="icons/tree_explorer.gif"
+            id="ru.taximaxim.codekeeper.ui.part.ProjectExplorer"
+            name="%part.label.1"
+            restorable="true">
+      </e4view>
+      <e4view
+            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            class="ru.taximaxim.codekeeper.ui.parts.Welcome"
+            icon="icons/welcome16.gif"
+            id="ru.taximaxim.codekeeper.ui.part.Welcome"
+            name="%part.label.2"
+            restorable="true">
+      </e4view>
+      <e4view
+            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            class="ru.taximaxim.codekeeper.ui.parts.Console"
+            icon="icons/console_view.gif"
+            id="ru.taximaxim.codekeeper.ui.part.Console"
+            name="%part.label.3"
+            restorable="true">
+      </e4view>
+      <e4view
+            allowMultiple="true"
+            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            class="ru.taximaxim.codekeeper.ui.parts.SqlEditorDescr"
+            icon="icons/file_obj.gif"
+            id="ru.taximaxim.codekeeper.ui.partdescriptor.SQLEditorDescr"
+            name="%partdescriptor.label.1"
+            restorable="false">
+      </e4view>
+      <e4view
+            allowMultiple="false"
+            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            class="ru.taximaxim.codekeeper.ui.parts.CommitPartDescr"
+            icon="icons/ball_blue.png"
+            id="ru.taximaxim.codekeeper.ui.partdescriptor.Sync"
+            name="%partdescriptor.label.2"
+            restorable="false">
+      </e4view>
+      <e4view
+            allowMultiple="false"
+            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            class="ru.taximaxim.codekeeper.ui.parts.DiffPartDescr"
+            icon="icons/ball_red.png"
+            id="ru.taximaxim.codekeeper.ui.partdescriptor.Diff"
+            name="%partdescriptor.label.3"
+            restorable="false">
       </e4view>
    </extension>
    <extension
