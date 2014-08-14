@@ -14,7 +14,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../ru.taximaxim.codeKeeper/</relativePath>
   </parent>
-
+<!-- 
   <build>
        <extensions>
         <extension>
@@ -71,4 +71,5 @@
 
       </plugins>
   </build>
+   -->
 </project>

@@ -17,7 +17,10 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho.version>0.20.0</tycho.version>
+    <tycho.version>0.21.0</tycho.version>
+
+	<!-- Sonar -->
+	<sonar.java.source>1.7</sonar.java.source>
   </properties>
 
   <dependencies>
@@ -60,19 +63,12 @@
     	<configuration>
           	<resolver>p2</resolver>
               <target>
-
                 <artifact>
-
                   <groupId>ru.taximaxim.codeKeeper</groupId>
-
                   <artifactId>ru.taximaxim.codeKeeper</artifactId>
-
                   <version>0.0.1-SNAPSHOT</version>
-
                   <classifier>../app</classifier>
-
                 </artifact>
-
               </target>
           	<pomDependencies>consider</pomDependencies>
           	<environments>
