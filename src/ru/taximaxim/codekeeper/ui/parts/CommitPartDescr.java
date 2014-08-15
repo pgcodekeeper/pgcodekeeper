@@ -410,7 +410,7 @@ public class CommitPartDescr {
         containerSrc.setLayout(gl);
 
         gd = new GridData(SWT.FILL, SWT.FILL, false, true);
-        gd.minimumWidth = gd.minimumHeight = 300;
+        gd.minimumWidth = 300;
         containerSrc.setLayoutData(gd);
         
         Group grpSrc = new Group(containerSrc, SWT.NONE);
