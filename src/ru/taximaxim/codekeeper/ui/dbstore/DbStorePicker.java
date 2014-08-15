@@ -1,7 +1,5 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -91,12 +89,11 @@ public class DbStorePicker extends Group {
         
         String selectedItem = null;
         if (cmbDbNames.getSelectionIndex() > 0) {
-            selectedItem = cmbDbNames.getItem(cmbDbNames.getSelectionIndex());
+            selectedItem = cmbDbNames.getText();
         }
         cmbDbNames.setItems(store.keySet().toArray(new String[store.size()]));
         if(cmbDbNames.getItemCount() > 0) {
-            List<String> items = Arrays.asList(cmbDbNames.getItems());
-            cmbDbNames.select(items.indexOf(selectedItem) == -1 ? 0 : items.indexOf(selectedItem));
+            cmbDbNames.select(selectedItem == null ? -1 : cmbDbNames.indexOf(selectedItem));
             cmbDbNames.notifyListeners(SWT.Selection, new Event());
         }
     }
