@@ -8,6 +8,9 @@ import java.nio.file.Files;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.ISQLSourceViewerService;
+import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.SQLStatementArea;
+import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceViewerConfiguration;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.ui.di.UISynchronize;
@@ -16,13 +19,14 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
-import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.SqlMergeViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART_STACK;
@@ -45,15 +49,22 @@ public class SqlEditorDescr {
             throws UnsupportedEncodingException, IOException {
         parent.setLayout(new FillLayout());
         
-        Text txt = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
-                | SWT.READ_ONLY | SWT.MULTI);
+        ISQLSourceViewerService viewerService = new ISQLSourceViewerService() {
+
+            @Override
+            public void setUpDocument(IDocument doc, String dbType) {
+                SqlMergeViewer.configureSqlDocument(doc);
+            }
+        };
         
-        txt.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        txt.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        SQLStatementArea sqlEditor = new SQLStatementArea(parent, SWT.BORDER, viewerService, true);
+        sqlEditor.setEditable(false);
+        sqlEditor.setEnabled(true);
+        sqlEditor.configureViewer(new SQLSourceViewerConfiguration());
         
         File fileText = new File(part.getPersistedState().get(PART.SQL_EDITOR_FILENAME));
-        txt.setText(new String(Files.readAllBytes(fileText.toPath()),
-                proj.getString(PROJ_PREF.ENCODING)));
+        sqlEditor.getViewer().setDocument(new Document(new String(
+                Files.readAllBytes(fileText.toPath()), proj.getString(PROJ_PREF.ENCODING))));
     }
     
     /**
