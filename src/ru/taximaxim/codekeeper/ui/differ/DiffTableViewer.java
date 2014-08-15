@@ -69,7 +69,6 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 /*
  * Call CheckStateListener.updateCountLabels() when programmatically changing 
@@ -848,34 +847,6 @@ public class DiffTableViewer extends Composite {
             }
             return ((TreeElement) element).getName().toLowerCase().contains(filterName);
         }
-    }
-
-    /**
-     * Не выполняет обновления UI! После вызова необходимо вручную обновить вьювер.
-     * <br><br>
-     * Помечает элементы из списка <code>dependencies</code> отметкой 
-     * <code>markChecked</code> (устанавливает/снимает галочку). 
-     * Поиск соответствия элементов TreeElement объектам БД производится 
-     * по базе <code>db</code>. Ожидается, что эта БД не содержит в себе элементы, 
-     * которые отмечены как удаляемые (иными словами, она source изменений)
-     * 
-     * @param dependencies
-     */
-    public HashSet<TreeElement> setChecked(HashSet<PgStatement> dependencies, PgDatabase db, boolean markChecked) {
-        HashSet<TreeElement> result = new HashSet<TreeElement>(5);
-        for (TreeElement element : elements.keySet()){
-            if (element.getSide() == DiffSide.LEFT){
-                continue;
-            }
-            PgStatement elementInDb = element.getPgStatement(db);
-            if (elementInDb != null && dependencies.contains(elementInDb) && 
-                    (elements.get(element) != markChecked)){
-                
-                    elements.put(element, markChecked);
-                    result.add(element);
-            }
-        }
-        return result;
     }
 
     public void setCheckedElements(HashSet<TreeElement> elementsToCheck, boolean markChecked) {

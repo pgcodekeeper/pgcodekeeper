@@ -246,7 +246,10 @@ public class CommitPartDescr {
                     // Дополнительно пометить в таблице зависимости от NEW/EDIT и
                     // получить новое фильтрованное дерево с этими зависимостями
                     HashSet<TreeElement> elementsNewEditDependentFrom = 
-                            diffTable.setChecked(dependencies, depcyTargetDb, true);
+                            dte.getDepcyElementsContainedInDb(diffTable.getCheckedElements(false),
+                                    dependencies, depcyTargetDb); 
+                    
+                    diffTable.setCheckedElements(elementsNewEditDependentFrom, true);
                     TreeElement filteredWithNew = diffTable.filterDiffTree();
                     diffTable.setCheckedElements(elementsNewEditDependentFrom, false);
     
