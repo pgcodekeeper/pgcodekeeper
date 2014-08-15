@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: UI
 Bundle-SymbolicName: ru.taximaxim.codekeeper.ui;singleton:=true
-Bundle-Version: 0.3.6.qualifier
+Bundle-Version: 0.4.0.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.ui.Activator
 Export-Package: ru.taximaxim.codekeeper.ui,
  ru.taximaxim.codekeeper.ui.externalcalls,
