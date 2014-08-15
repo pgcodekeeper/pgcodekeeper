@@ -135,8 +135,8 @@ public class LoadProj {
                 return true;
             }
             Version projVersion = Version.parseVersion(version);
-            Version minVersion = Version.parseVersion(ApgdiffConsts.MIN_APPROVAL_VERSION);
-            Version curVersion = Version.parseVersion(ApgdiffConsts.CURRENT_VERSION);
+            Version minVersion = Version.parseVersion(ApgdiffConsts.EXPORT_MIN_VERSION);
+            Version curVersion = Version.parseVersion(ApgdiffConsts.EXPORT_CURRENT_VERSION);
             if (projVersion.compareTo(curVersion) > 0) {
                 message.append(Messages.loadProj_proj_cannt_loaded_because_it_created_in_program_with_version_bigger_than_current);
                 return false;
