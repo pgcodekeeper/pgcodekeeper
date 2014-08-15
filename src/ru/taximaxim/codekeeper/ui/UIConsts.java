@@ -100,6 +100,4 @@ public interface UIConsts {
         String ICONSELECTALL = "/icons/check_all.gif"; //$NON-NLS-1$
         String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
     }
-    
-    String MIN_APPROVAL_VERSION = "0.2.9.qualifier"; //$NON-NLS-1$
 }
