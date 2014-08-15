@@ -22,9 +22,7 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.ITextOperationTarget;
-import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.rules.FastPartitioner;
-import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
@@ -127,8 +125,7 @@ public class SqlScriptDialog extends MessageDialog {
     
     @Override
     protected Control createCustomArea(Composite parent) {
-        
-        configureSQLViewer(parent);
+        createSQLViewer(parent);
         
         Label l = new Label(parent, SWT.NONE);
         l.setText(Messages.sqlScriptDialog_Enter_cmd_to_roll_on_sql_script
@@ -181,25 +178,24 @@ public class SqlScriptDialog extends MessageDialog {
         return parent;
     }
 
-    private void configureSQLViewer(Composite parent) {
+    private void createSQLViewer(Composite parent) {
         ISQLSourceViewerService viewerService = new ISQLSourceViewerService() {
 
             @Override
             public void setUpDocument(IDocument doc, String dbType) {
-                SQLPartitionScanner sqlPartitionSanner = new SQLPartitionScanner();
-                if(doc instanceof IDocumentExtension3)
-                {
-                IDocumentExtension3 extension3 = (IDocumentExtension3) doc;
-                FastPartitioner _partitioner = new FastPartitioner(sqlPartitionSanner, new String[]
-                {
-                SQLPartitionScanner.SQL_CODE,
-                SQLPartitionScanner.SQL_COMMENT,
-                SQLPartitionScanner.SQL_MULTILINE_COMMENT,
-                SQLPartitionScanner.SQL_STRING,
-                SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER
-                });
-                _partitioner.connect(doc);
-                extension3.setDocumentPartitioner(ISQLPartitions.SQL_PARTITIONING, _partitioner);
+                if (doc instanceof IDocumentExtension3) {
+                    IDocumentExtension3 extension3 = (IDocumentExtension3) doc;
+                    FastPartitioner _partitioner = new FastPartitioner(
+                            new SQLPartitionScanner(), new String[] {
+                                    SQLPartitionScanner.SQL_CODE,
+                                    SQLPartitionScanner.SQL_COMMENT,
+                                    SQLPartitionScanner.SQL_MULTILINE_COMMENT,
+                                    SQLPartitionScanner.SQL_STRING,
+                                    SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER
+                                    });
+                    _partitioner.connect(doc);
+                    extension3.setDocumentPartitioner(
+                            ISQLPartitions.SQL_PARTITIONING,_partitioner);
                 }
             }
         };
@@ -207,14 +203,7 @@ public class SqlScriptDialog extends MessageDialog {
         sqlEditor = new SQLStatementArea(parent, SWT.BORDER, viewerService, true);
         sqlEditor.setEditable(true);
         sqlEditor.setEnabled(true);
-        sqlEditor.configureViewer(new SQLSourceViewerConfiguration() {
-
-            @Override
-            public IPresentationReconciler getPresentationReconciler(
-                    ISourceViewer sourceViewer) {
-                return super.getPresentationReconciler(sourceViewer);
-            }
-        });
+        sqlEditor.configureViewer(new SQLSourceViewerConfiguration());
         sqlEditor.setLayoutData(new GridData(GridData.FILL_BOTH));
         
         Document document = new Document();
@@ -227,7 +216,7 @@ public class SqlScriptDialog extends MessageDialog {
         sqlEditor.setLayoutData(gd);
         sqlEditor.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         
-        sqlEditor.getViewer().getTextWidget().addKeyListener( new KeyListener() {
+        sqlEditor.getViewer().getTextWidget().addKeyListener(new KeyListener() {
             
             @Override
             public void keyPressed(KeyEvent e) {
@@ -246,33 +235,34 @@ public class SqlScriptDialog extends MessageDialog {
                     }
                 }
             }
-
+            
             @Override
             public void keyReleased(KeyEvent e) {
-                // TODO Auto-generated method stub
-                
             }
         });
         
+        // TODO sql code completion
         /** Этот кусочек скопипастен с сайта для поддержки автозавершения ввода
          *  Не получилось прикрутить за незнанием некоторых классов
          *  оставляю на будущее*/
-//        IHandlerService handlerService = (IHandlerService) editor.getSite().getService(IHandlerService.class);
-//        IHandler cahandler = new AbstractHandler() {
-//
-//        @Override
-//        public Object execute(ExecutionEvent event)
-//                throws org.eclipse.core.commands.ExecutionException {
-//            sta.getViewer().doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
-//            return null;
-//        }
-//        };
-//        if(contentAssistHandlerActivation != null){
-//        handlerService.deactivateHandler(contentAssistHandlerActivation);
-//        }
-//        contentAssistHandlerActivation = handlerService.activateHandler(
-//                ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
-//        cahandler);       
+/*
+        IHandlerService handlerService = (IHandlerService) editor.getSite().getService(IHandlerService.class);
+        IHandler cahandler = new AbstractHandler() {
+
+        @Override
+        public Object execute(ExecutionEvent event)
+                throws org.eclipse.core.commands.ExecutionException {
+            sta.getViewer().doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+            return null;
+        }
+        };
+        if(contentAssistHandlerActivation != null){
+        handlerService.deactivateHandler(contentAssistHandlerActivation);
+        }
+        contentAssistHandlerActivation = handlerService.activateHandler(
+                ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
+        cahandler);
+*/
     }
     
     @Override
