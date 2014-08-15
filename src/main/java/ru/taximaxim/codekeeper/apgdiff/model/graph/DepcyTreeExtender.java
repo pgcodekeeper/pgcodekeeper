@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -332,5 +333,29 @@ public class DepcyTreeExtender {
     
     public HashSet<TreeElement> getConflicting(){
         return conflictingDeletedElements;
+    }
+
+    /**
+     * 
+     * Возвращает поднабор элементов из набора <code>elements</code>, для которых 
+     * существует объект бд в базе данных <code>db</code> и если этот объект 
+     * так же присутствует в наборе <code>dependencies</code>. 
+     * <br>
+     * Ожидается, что <code>db</code> не содержит в себе элементы, которые отмечены 
+     * как удаляемые (иными словами, она target).
+     */
+    public HashSet<TreeElement> getDepcyElementsContainedInDb(Set<TreeElement> elements,
+            HashSet<PgStatement> dependencies, PgDatabase db) {
+        HashSet<TreeElement> result = new HashSet<TreeElement>(5);
+        for (TreeElement element : elements){
+            if (element.getSide() == DiffSide.LEFT){
+                continue;
+            }
+            PgStatement elementInDb = element.getPgStatement(db);
+            if (elementInDb != null && dependencies.contains(elementInDb)){
+                result.add(element);
+            }
+        }
+        return result;
     }
 }
