@@ -96,9 +96,9 @@ public interface UIConsts {
         String ICONSAVE = "/icons/save_edit.gif"; //$NON-NLS-1$
         String ICONDEL = "/icons/delete_obj.gif"; //$NON-NLS-1$
         String ICONEDIT = "/icons/editor.gif"; //$NON-NLS-1$
-        String ICONSORTING = "/icons/sorting.ico"; //$NON-NLS-1$
-        String ICONLISTCHECKED = "/icons/list_checked.ico"; //$NON-NLS-1$
-        String ICONLISTUNCKECKED = "/icons/list_unckecked.ico"; //$NON-NLS-1$
+        String ICONDEFAULTSORT = "/icons/alpha_mode.gif"; //$NON-NLS-1$
+        String ICONSELECTALL = "/icons/check_all.gif"; //$NON-NLS-1$
+        String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
     }
     
     String MIN_APPROVAL_VERSION = "0.2.9.qualifier"; //$NON-NLS-1$

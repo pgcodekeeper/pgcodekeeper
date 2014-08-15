@@ -202,7 +202,7 @@ public class DiffTableViewer extends Composite {
         
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 8, false);
+        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 9, false);
         contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
         contButtons.setLayout(contButtonsLayout);
         
@@ -213,7 +213,7 @@ public class DiffTableViewer extends Composite {
         btnClearSort.setToolTipText(Messages.diffTableViewer_reset_sorting);
         btnClearSort.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(
-                        FILE.ICONSORTING))));
+                        FILE.ICONDEFAULTSORT))));
         btnClearSort.addSelectionListener(new SelectionAdapter() {
             
             @Override
@@ -228,7 +228,7 @@ public class DiffTableViewer extends Composite {
             btnSelectAll.setToolTipText(Messages.select_all);
             btnSelectAll.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(
-                            FILE.ICONLISTCHECKED))));
+                            FILE.ICONSELECTALL))));
             btnSelectAll.addSelectionListener(new SelectionAdapter() {
                 
                 @Override
@@ -243,7 +243,7 @@ public class DiffTableViewer extends Composite {
             btnSelectNone.setToolTipText(Messages.select_none);
             btnSelectNone.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(
-                            FILE.ICONLISTUNCKECKED))));
+                            FILE.ICONSELECTNONE))));
             btnSelectNone.addSelectionListener(new SelectionAdapter() {
                 
                 @Override
@@ -253,6 +253,8 @@ public class DiffTableViewer extends Composite {
                     cmbPrevChecked.setSelection(StructuredSelection.EMPTY);
                 }
             });
+            
+            new Label(contButtons, SWT.NONE).setText(Messages.diffTableViewer_stored_selections);
             
             cmbPrevChecked = new ComboViewer(contButtons, SWT.DROP_DOWN);
             GridData gd = new GridData();

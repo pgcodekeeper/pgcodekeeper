@@ -133,6 +133,9 @@ public class XmlHistory {
         }
     }
     
+    /**
+     * @param addEntry adds entry if true, removes if false
+     */
     public void updateCheckedSetHistoryEntries(String checkSetName, 
             LinkedList<String> values, boolean addEntry) {
         if (values.isEmpty()) {
