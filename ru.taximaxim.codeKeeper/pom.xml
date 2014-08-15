@@ -25,7 +25,7 @@
 	<sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
 	<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
 	<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
-	<sonar.junit.reportPath>../${project.artifactId}.tests/target/surefire-reports/</sonar.junit.reportPath>
+	<sonar.junit.reportPath>${project.basedir}/target/surefire-reports/</sonar.junit.reportPath>
 <!-- 	<sonar.skippedModules>ru.taximaxim.codekeeper.ui.tests</sonar.skippedModules> -->
 	
   </properties>
@@ -39,9 +39,9 @@
 	        <artifactId>jacoco-maven-plugin</artifactId>
 	        <version>0.7.0.201403182114</version>
 	         <configuration>
-				<includes>
-					<include>tests.*</include>
-				</includes>
+<!-- 				<includes> -->
+<!-- 					<include>tests.*</include> -->
+<!-- 				</includes> -->
 				<destFile>${project.basedir}/../target/jacoco.exec</destFile>
 				<append>true</append>
 			</configuration>
@@ -53,6 +53,13 @@
 				</execution>
 			</executions>
 	      </plugin>
+	    <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+            </plugin>
 	    </plugins>
 	  </build>
 	</profile>
