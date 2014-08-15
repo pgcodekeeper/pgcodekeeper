@@ -26,7 +26,7 @@
 	<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
 	<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
 	<sonar.junit.reportPath>../${project.artifactId}.tests/target/surefire-reports/</sonar.junit.reportPath>
-	<sonar.skippedModules>ru.taximaxim.codekeeper.ui.tests</sonar.skippedModules>
+<!-- 	<sonar.skippedModules>ru.taximaxim.codekeeper.ui.tests</sonar.skippedModules> -->
 	
   </properties>
   <profiles>
