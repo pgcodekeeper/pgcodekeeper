@@ -14,4 +14,8 @@ CREATE SEQUENCE s1
 --ALTER SEQUENCE s1 OWNED BY t1.c1;
 
 
-ALTER TABLE ONLY t1 ALTER COLUMN c1 SET DEFAULT nextval('s1'::regclass);
+CREATE TABLE t2 (
+    c2 integer
+);
+
+ALTER TABLE ONLY t2 ALTER COLUMN c2 SET DEFAULT nextval('s1'::regclass);
