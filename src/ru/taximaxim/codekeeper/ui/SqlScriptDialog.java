@@ -13,16 +13,11 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.ISQLSourceViewerService;
 import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.SQLStatementArea;
 import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceViewerConfiguration;
-import org.eclipse.datatools.sqltools.sqleditor.internal.sql.ISQLPartitions;
-import org.eclipse.datatools.sqltools.sqleditor.internal.sql.SQLPartitionScanner;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentExtension3;
 import org.eclipse.jface.text.ITextOperationTarget;
-import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
@@ -183,20 +178,7 @@ public class SqlScriptDialog extends MessageDialog {
 
             @Override
             public void setUpDocument(IDocument doc, String dbType) {
-                if (doc instanceof IDocumentExtension3) {
-                    IDocumentExtension3 extension3 = (IDocumentExtension3) doc;
-                    FastPartitioner _partitioner = new FastPartitioner(
-                            new SQLPartitionScanner(), new String[] {
-                                    SQLPartitionScanner.SQL_CODE,
-                                    SQLPartitionScanner.SQL_COMMENT,
-                                    SQLPartitionScanner.SQL_MULTILINE_COMMENT,
-                                    SQLPartitionScanner.SQL_STRING,
-                                    SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER
-                                    });
-                    _partitioner.connect(doc);
-                    extension3.setDocumentPartitioner(
-                            ISQLPartitions.SQL_PARTITIONING,_partitioner);
-                }
+                SqlMergeViewer.configureSqlDocument(doc);
             }
         };
         
@@ -204,17 +186,13 @@ public class SqlScriptDialog extends MessageDialog {
         sqlEditor.setEditable(true);
         sqlEditor.setEnabled(true);
         sqlEditor.configureViewer(new SQLSourceViewerConfiguration());
-        sqlEditor.setLayoutData(new GridData(GridData.FILL_BOTH));
-        
-        Document document = new Document();
-        document.set(text);
-        sqlEditor.getViewer().setDocument(document);
-        
+
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
         gd.heightHint = 400;
         sqlEditor.setLayoutData(gd);
-        sqlEditor.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+        
+        sqlEditor.getViewer().setDocument(new Document(text));
         
         sqlEditor.getViewer().getTextWidget().addKeyListener(new KeyListener() {
             

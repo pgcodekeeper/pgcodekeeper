@@ -40,23 +40,28 @@ public class SqlMergeViewer extends TextMergeViewer {
             
             @Override
             public void setDocument(IDocument doc) {
-                if (doc instanceof IDocumentExtension3) {
-                    IDocumentExtension3 extension3 = (IDocumentExtension3) doc;
-                    
-                    FastPartitioner _partitioner = new FastPartitioner(
-                            new SQLPartitionScanner(), new String[] {
-                                    SQLPartitionScanner.SQL_CODE,
-                                    SQLPartitionScanner.SQL_COMMENT,
-                                    SQLPartitionScanner.SQL_MULTILINE_COMMENT,
-                                    SQLPartitionScanner.SQL_STRING,
-                                    SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER
-                                    });
-                    _partitioner.connect(doc);
-                    extension3.setDocumentPartitioner(
-                            ISQLPartitions.SQL_PARTITIONING, _partitioner);
-                }
+                configureSqlDocument(doc);
                 super.setDocument(doc);
             }
         };
+    }
+    
+    public static IDocument configureSqlDocument(IDocument doc) {
+        if (doc instanceof IDocumentExtension3) {
+            IDocumentExtension3 extension3 = (IDocumentExtension3) doc;
+            
+            FastPartitioner _partitioner = new FastPartitioner(
+                    new SQLPartitionScanner(), new String[] {
+                            SQLPartitionScanner.SQL_CODE,
+                            SQLPartitionScanner.SQL_COMMENT,
+                            SQLPartitionScanner.SQL_MULTILINE_COMMENT,
+                            SQLPartitionScanner.SQL_STRING,
+                            SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER
+                            });
+            _partitioner.connect(doc);
+            extension3.setDocumentPartitioner(
+                    ISQLPartitions.SQL_PARTITIONING, _partitioner);
+        }
+        return doc;
     }
 }
