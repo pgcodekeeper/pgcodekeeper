@@ -23,7 +23,6 @@
 	<sonar.language>java</sonar.language>
 	<sonar.java.source>1.7</sonar.java.source>
 	<sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
-<!-- 	<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis> -->
 	<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
 	<sonar.junit.reportPath>${project.basedir}/target/surefire-reports/</sonar.junit.reportPath>
 	
