@@ -202,13 +202,33 @@ public class DiffTableViewer extends Composite {
         
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 7, false);
+        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 9, false);
         contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
         contButtons.setLayout(contButtonsLayout);
         
+        Button btnClearSort = new Button(contButtons, SWT.PUSH);
+        if (viewOnly) {
+            btnClearSort.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, true, false));
+        }
+        btnClearSort.setToolTipText(Messages.diffTableViewer_reset_sorting);
+        btnClearSort.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(
+                        FILE.ICONDEFAULTSORT))));
+        btnClearSort.addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                comparator.clearSortList();
+                sortViewer(columnName.getColumn(), Columns.NAME);
+            }
+        });
+        
         if (!viewOnly) {
             Button btnSelectAll = new Button(contButtons, SWT.PUSH);
-            btnSelectAll.setText(Messages.select_all);
+            btnSelectAll.setToolTipText(Messages.select_all);
+            btnSelectAll.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(
+                            FILE.ICONSELECTALL))));
             btnSelectAll.addSelectionListener(new SelectionAdapter() {
                 
                 @Override
@@ -220,7 +240,10 @@ public class DiffTableViewer extends Composite {
             });
             
             Button btnSelectNone = new Button(contButtons, SWT.PUSH);
-            btnSelectNone.setText(Messages.select_none);
+            btnSelectNone.setToolTipText(Messages.select_none);
+            btnSelectNone.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(
+                            FILE.ICONSELECTNONE))));
             btnSelectNone.addSelectionListener(new SelectionAdapter() {
                 
                 @Override
@@ -231,10 +254,14 @@ public class DiffTableViewer extends Composite {
                 }
             });
             
+            new Label(contButtons, SWT.NONE).setText(Messages.diffTableViewer_stored_selections);
+            
             cmbPrevChecked = new ComboViewer(contButtons, SWT.DROP_DOWN);
             GridData gd = new GridData();
             gd.widthHint = 200;
             cmbPrevChecked.getCombo().setLayoutData(gd);
+            cmbPrevChecked.getCombo().setToolTipText(
+                    Messages.diffTableViewer_Input_name_for_save_checked_elements);
             cmbPrevChecked.setContentProvider(new ArrayContentProvider());
             cmbPrevChecked.setLabelProvider(new LabelProvider());
             cmbPrevChecked.setInput(prevChecked.keySet());
@@ -247,43 +274,32 @@ public class DiffTableViewer extends Composite {
             });
             
             Button saveChecked = new Button(contButtons, SWT.PUSH);
-            saveChecked.setText(Messages.diffTableViewer_save_checked);
+            saveChecked.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(
+                            FILE.ICONSAVE))));
+            saveChecked.setToolTipText(Messages.diffTableViewer_save_checked);
             saveChecked.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    String setName = cmbPrevChecked.getCombo().getText();
-                    if (!setName.isEmpty()) {
-                        LinkedList<String> checkedElements = new LinkedList<>();
-                        for (TreeElement element : getCheckedElements(true)) {
-                            checkedElements.add(element.getName());
-                        }
-                        prevCheckedHistory.addCheckedSetHistoryEntry(setName, 
-                                    checkedElements);
-                        prevChecked = prevCheckedHistory.getMapHistory();
-                        cmbPrevChecked.setInput(prevChecked.keySet());
-                    }
+                    updateChekedSet(true);
                 }
             });
-        }
+            Button deleteCheckSet = new Button(contButtons, SWT.PUSH);
+            deleteCheckSet.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(
+                            FILE.ICONDEL))));
+            deleteCheckSet.setToolTipText(Messages.diffTableViewer_delete_checked_set);
+            deleteCheckSet.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    updateChekedSet(false);
+                }
+            });
         
-        Button btnClearSort = new Button(contButtons, SWT.PUSH);
-        if (viewOnly) {
-            btnClearSort.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, true, false));
-        }
-        btnClearSort.setText(Messages.diffTableViewer_reset_sorting);
-        btnClearSort.addSelectionListener(new SelectionAdapter() {
-            
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                comparator.clearSortList();
-                sortViewer(columnName.getColumn(), Columns.NAME);
-            }
-        });
-        
-        if (!viewOnly) {
             lblCheckedCount = new Label(contButtons, SWT.RIGHT);
             lblCheckedCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
         }
+        
         lblObjectCount = new Label(contButtons, SWT.RIGHT);
         lblObjectCount.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false));
 
@@ -310,7 +326,7 @@ public class DiffTableViewer extends Composite {
         if (comboText != null && !comboText.isEmpty()) {
             LinkedList<String> elementsToCheck = prevChecked.get(comboText);
             List<TreeElement> prevCheckedList = new ArrayList<>();
-            if (!elementsToCheck.isEmpty()) {
+            if (elementsToCheck != null && !elementsToCheck.isEmpty()) {
                 for (TreeElement elementKey : elements.keySet()) {
                     if (elementsToCheck.contains((elementKey.getName()))) {
                         prevCheckedList.add(elementKey);
@@ -480,6 +496,20 @@ public class DiffTableViewer extends Composite {
             parent = parent.getParent();
         }
         return path;
+    }
+    
+    private void updateChekedSet(boolean addEntry) {
+        String setName = cmbPrevChecked.getCombo().getText();
+        if (!setName.isEmpty()) {
+            LinkedList<String> checkedElements = new LinkedList<>();
+            for (TreeElement element : getCheckedElements(true)) {
+                checkedElements.add(element.getName());
+            }
+            prevCheckedHistory.updateCheckedSetHistoryEntries(setName, 
+                        checkedElements, addEntry);
+            prevChecked = prevCheckedHistory.getMapHistory();
+            cmbPrevChecked.setInput(prevChecked.keySet());
+        }
     }
     
     private SelectionAdapter getHeaderSelectionAdapter(final TableColumn column,

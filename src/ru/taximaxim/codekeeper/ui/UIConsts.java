@@ -59,7 +59,7 @@ public interface UIConsts {
         String GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile"; //$NON-NLS-1$
         String RECENT_PROJECTS = "prefRecentProject"; //$NON-NLS-1$
         String OPEN_LAST_ON_START = "prefOpenLastOnStart"; //$NON-NLS-1$
-        String CONSIDER_DEPCY_IN_COMMIT = "considerDepcyInCommit";
+        String CONSIDER_DEPCY_IN_COMMIT = "considerDepcyInCommit"; //$NON-NLS-1$
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String LAST_REPO = "prefLastRepo"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
@@ -96,6 +96,9 @@ public interface UIConsts {
         String ICONSAVE = "/icons/save_edit.gif"; //$NON-NLS-1$
         String ICONDEL = "/icons/delete_obj.gif"; //$NON-NLS-1$
         String ICONEDIT = "/icons/editor.gif"; //$NON-NLS-1$
+        String ICONDEFAULTSORT = "/icons/alpha_mode.gif"; //$NON-NLS-1$
+        String ICONSELECTALL = "/icons/check_all.gif"; //$NON-NLS-1$
+        String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
     }
     
     String MIN_APPROVAL_VERSION = "0.2.9.qualifier"; //$NON-NLS-1$
