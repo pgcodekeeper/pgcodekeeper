@@ -19,10 +19,10 @@ SET search_path = s, pg_catalog;
 
 -- DEPCY: Following view depends on the altered view v2
 
-SET search_path = s, pg_catalog;
-
 CREATE VIEW v3 AS
 	SELECT v2.id
    FROM public.v2;
 
 ALTER VIEW v3 OWNER TO levsha_aa;
+
+SET search_path = s, pg_catalog;
