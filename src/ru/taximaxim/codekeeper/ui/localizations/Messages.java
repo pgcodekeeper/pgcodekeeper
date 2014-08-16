@@ -68,11 +68,14 @@ public class Messages extends NLS {
     public static String sqlScriptDialog_script_saved_to_file;
     public static String sqlScriptDialog_stop_script;
     public static String sqlScriptDialog_stop_script_before_closing_dialog;
+    public static String stdStreamRedirector_completed_with_code;
     public static String manualDepciesDialog_dependant_dependency;
     public static String manualDepciesDialog_depends_on;
     public static String manualDepciesDialog_object;
     public static String manualDepciesDialog_add;
     public static String manualDepciesDialog_remove;
+    public static String commitDialog_user_selected_elements;
+    public static String commitDialog_depcy_elements;
     
     // ui.addons
     public static String addonExternalTools_error_while_trying_to_run_pg_admin;
@@ -102,15 +105,19 @@ public class Messages extends NLS {
     public static String differ_direct_diff;
     public static String differ_reverse_diff;
     public static String diffTableViewer_change_type;
-
     public static String diffTableViewer_reset_sorting;
     public static String diffTableViewer_container;
+    public static String diffTableViewer_delete_checked_set;
     public static String diffTableViewer_deselect_child_elements;
     public static String diffTableViewer_filtering_diff_tree_based_on_gui_selection;
+    public static String diffTableViewer_Input_name_for_save_checked_elements;
     public static String diffTableViewer_object_name;
     public static String diffTableViewer_object_type;
     public static String diffTableViewer_objects;
+    public static String diffTableViewer_save_checked;
     public static String diffTableViewer_select_child_elements;
+
+    public static String diffTableViewer_stored_selections;
     public static String diffTreeViewer_collapse_all;
     public static String diffTreeViewer_collapse_subtree;
     public static String diffTreeViewer_debug_view;
@@ -128,9 +135,25 @@ public class Messages extends NLS {
     public static String jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date;
     public static String jGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new;
     public static String jGitExec_exception_thrown_at_jgit_repo_update;
+    public static String jGitExec_failed;
+    public static String jGitExec_get_conflicts;
+    public static String jGitExec_git_failed_cause;
+    public static String jGitExec_git_result;
+    public static String jGitExec_git_setting_creditials;
+    public static String jGitExec_git_start;
+    public static String jGitExec_git_start_url;
     public static String jGitExec_git_status;
+    public static String jGitExec_git_success;
+    public static String jGitExec_message;
+    public static String jGitExec_repository_doesnt_have_conflicts;
+    public static String jGitExec_repository_has_conflicts;
+    public static String jGitExec_repository_update;
     public static String jGitExec_skip_pull_branch_does_not_exist;
     public static String jGitExec_skip_pull_branch_does_not_exist_skipped;
+    public static String jGitExec_status;
+    public static String jGitExec_success;
+    public static String jGitExec_successfull;
+    public static String jGitExec_un;
     public static String pgDumper_bad_pg_dump_version_output;
     public static String svnExec_bad_svn_version_output;
     public static String svnExec_cannot_svn_rm_an_empty_file_list;
@@ -144,9 +167,12 @@ public class Messages extends NLS {
     public static String loadProj_bad_project;
     public static String loadProj_because_working_directory;
     public static String loadProj_couldnt_open_project;
+    public static String loadProj_ecseption_during_get_project_version;
     public static String loadProj_either_doesnt_exist_or_not_a_directory;
     public static String loadProj_ok;
     public static String loadProj_open_project;
+    public static String loadProj_proj_can_modified_because_it_was_created_in_program_with_version_smaller_than_allowed;
+    public static String loadProj_proj_cannt_loaded_because_it_created_in_program_with_version_bigger_than_current;
     public static String projProps_db_port;
     public static String projProps_encoding_of_existing_files_willnt_be_changed;
     public static String projProps_password;
@@ -165,10 +191,13 @@ public class Messages extends NLS {
     public static String switchBranch_exception_during_switching_branch;
     public static String switchBranch_wrong_repository_or_ref_name;
     public static String switchPerspective_open_perspective;
-    
+
     // ui.parts
+    public static String commitPartDescr_branch;
+    public static String commitPartDescr_cannot_get_branch_name;
     public static String commitPartDescr_comment_required;
     public static String commitPartDescr_commit;
+    public static String commitPartDescr_commit_confirmation;
     public static String commitPartDescr_commiting;
     public static String commitPartDescr_exporting_db_model;
     public static String commitPartDescr_from_database;
@@ -178,9 +207,9 @@ public class Messages extends NLS {
     public static String commitPartDescr_no_previous_comments;
     public static String commitPartDescr_please_enter_a_comment_for_the_commit;
     public static String commitPartDescr_success_project_updated;
+    public static String commitPartDescr_the_following_changes_be_included_in_commit;
     public static String commitPartDescr_to;
     public static String diffPartDescr_add_dependencies;
-
     public static String diffPartDescr_diff_script;
     public static String diffPartDescr_from;
     public static String diffPartDescr_get_changes_for;
@@ -274,8 +303,10 @@ public class Messages extends NLS {
     public static String DiffTableViewer_selected;
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
     public static String generalPrefPage_open_last_project_on_startup;
+    public static String generalPrefPage_consider_depcy_on_commit;
     public static String generalPrefPage_pg_dump_custom_parameters;
     public static String generalPrefPage_pg_dump_executable;
+    public static String generalPrefPage_use_depcy_on_commit_page;
     public static String gitPrefPage_copy_public_keys_to_clipboard;
     public static String gitPrefPage_either_doesnt_exist_or_inaccessible;
     public static String gitPrefPage_error_while_rsa_keys_generation;
@@ -293,6 +324,8 @@ public class Messages extends NLS {
 
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
     public static String JGitExec_exception_thrown_at_jgit_push;
+
+    public static String ManualDepciesDialog_set_add_depcies;
     public static String NewProjWizard_settings;
     public static String ProjProps_settings;
 

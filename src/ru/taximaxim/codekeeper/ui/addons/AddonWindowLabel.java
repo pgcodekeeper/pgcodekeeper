@@ -35,9 +35,8 @@ public class AddonWindowLabel {
         String windowLabel = "pgCodeKeeper"; //$NON-NLS-1$
         
         if (proj != null) {
-            String p = proj.getRepoRoot().toString();
             windowLabel += "  \u2014  " + proj.getProjectWorkingDir() +  //$NON-NLS-1$
-                    " [branch: " + new JGitExec().getCurrentBranch(p) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+                    " [branch: " + new JGitExec().getCurrentBranch(proj.getRepoRoot()) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         final MWindow window = (MWindow) service.find(WINDOW.MAIN, app);

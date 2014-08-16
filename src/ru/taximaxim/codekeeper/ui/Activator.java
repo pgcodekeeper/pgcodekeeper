@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceEditingEnvironment;
 import org.eclipse.equinox.log.ExtendedLogService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -33,6 +34,7 @@ public class Activator implements BundleActivator {
         Activator.context = bundleContext;
         logTracker = new ServiceTracker<>(context, ExtendedLogService.class, null);
         logTracker.open();
+        SQLSourceEditingEnvironment.connect();
     }
 
     /*
@@ -44,8 +46,9 @@ public class Activator implements BundleActivator {
         if (logTracker != null){
             logTracker.close();
         }
+        SQLSourceEditingEnvironment.disconnect();
     }
-
+    
     /**
      * @return a Map in which keys are bundle names
      * and values are Lists of available versions for those bundles

@@ -3,7 +3,9 @@ package ru.taximaxim.codekeeper.ui.parts;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -11,7 +13,6 @@ import javax.inject.Named;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
-import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.core.di.annotations.Optional;
@@ -31,9 +32,6 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.source.CompositeRuler;
-import org.eclipse.jface.text.source.LineNumberRulerColumn;
-import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -61,7 +59,10 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
+import ru.taximaxim.codekeeper.ui.CommitDialog;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.SqlMergeViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
@@ -80,6 +81,7 @@ import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CommitPartDescr {
     
@@ -116,7 +118,7 @@ public class CommitPartDescr {
     private Button btnGetChanges;
     private Composite containerSrc;
     private DbPicker dbSrc;
-    private TextMergeViewer diffPane;
+    private SqlMergeViewer diffPane;
     private String repoName;
     private XmlHistory history;
     /**
@@ -127,16 +129,20 @@ public class CommitPartDescr {
      * Remote DB.
      */
     private DbSource dbTarget;
-
+    /**
+     * Differ to obtain diff tree between two dbs 
+     */
+    private TreeDiffer treeDiffer;
+    
     @PostConstruct
     private void postConstruct(Composite parent, final PgDbProject proj,
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs,
             final EModelService model, final MApplication app) {
         repoName = proj.getString(PROJ_PREF.REPO_TYPE);
-        history = new XmlHistory(COMMENT_HIST_MAX_STORED, 
+        history = new XmlHistory.Builder(COMMENT_HIST_MAX_STORED, 
                 COMMENTS_HIST_FILENAME, 
                 COMMENTS_HIST_ROOT, 
-                COMMENTS_HIST_EL);
+                COMMENTS_HIST_EL).build();
         
         final Shell shell = parent.getShell();
         parent.setLayout(new GridLayout());
@@ -222,10 +228,65 @@ public class CommitPartDescr {
                     mb.open();
                     return;
                 }
-
-                history.addHistoryEntry(commitComment);
+                boolean considerDepcy = mainPrefs.getBoolean(PREF.CONSIDER_DEPCY_IN_COMMIT);
                 
                 final TreeElement filtered = diffTable.filterDiffTree();
+                
+                DepcyTreeExtender dte = null;
+                HashSet<TreeElement> sumNewAndDelete = null;
+                TreeElement filteredWithNewAndDelete = null;
+                
+                if(considerDepcy){
+                    // Получить список зависимых от NEW/EDIT элементов
+                    dte = new DepcyTreeExtender(dbSource.getDbObject(), 
+                            dbTarget.getDbObject(), filtered);
+                    HashSet<PgStatement> dependencies = dte.getDependenciesOfNew();
+                    PgDatabase depcyTargetDb = dte.getDepcyTargetDb();
+                    
+                    // Дополнительно пометить в таблице зависимости от NEW/EDIT и
+                    // получить новое фильтрованное дерево с этими зависимостями
+                    HashSet<TreeElement> elementsNewEditDependentFrom = 
+                            dte.getDepcyElementsContainedInDb(diffTable.getCheckedElements(false),
+                                    dependencies, depcyTargetDb); 
+                    
+                    diffTable.setCheckedElements(elementsNewEditDependentFrom, true);
+                    TreeElement filteredWithNew = diffTable.filterDiffTree();
+                    diffTable.setCheckedElements(elementsNewEditDependentFrom, false);
+    
+                    // Расширить дерево filteredWithNew элементами, зависящими от удаляемых
+                    dte = new DepcyTreeExtender(dbSource.getDbObject(), 
+                            dbTarget.getDbObject(), filteredWithNew);
+                    filteredWithNewAndDelete = dte.getTreeCopyWithDepcy();
+                    // Получить список всех зависимостей для заполнения нижней 
+                    // таблицы CommitDialog'a
+                    // Эти зависимости - потомки filteredWithNewAndDelete
+                    sumNewAndDelete = dte.sumAllDepcies(elementsNewEditDependentFrom);
+                }
+                
+                // display commit dialog
+                CommitDialog cd = new CommitDialog(shell, filtered, sumNewAndDelete,
+                        mainPrefs, proj, treeDiffer);
+                cd.setConflictingElements(considerDepcy ? dte.getConflicting() : null);
+                if (cd.open() != CommitDialog.OK) {
+                    return;
+                }
+                
+                TreeElement filteredTwiceWithAllDepcy = null;
+                if(considerDepcy){
+                    // Убрать из списка всех элементов в filteredWithNewAndDelete те
+                    // элементы, с которых пользователь снял отметку в нижней таблице
+                    DiffTableViewer diffTable = new DiffTableViewer(new Shell(), SWT.NONE, mainPrefs, true);
+                    diffTable.setFilteredInput(filteredWithNewAndDelete, treeDiffer);
+                    Set<TreeElement> allElements = diffTable.getCheckedElements(false);
+                    allElements.removeAll(cd.getBottomTableViewer().getCheckedElements(false));
+                    filteredTwiceWithAllDepcy = 
+                            filteredWithNewAndDelete.getFilteredCopy(allElements);
+                }
+                
+                final TreeElement resultingTree = considerDepcy ? filteredTwiceWithAllDepcy : filtered;
+                
+                history.addHistoryEntry(commitComment);
+                
                 IRunnableWithProgress commitRunnable = new IRunnableWithProgress() {
 
                     @Override
@@ -238,7 +299,8 @@ public class CommitPartDescr {
                         pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
                         DiffTreeApplier applier = new DiffTreeApplier(dbSource
                                 .getDbObject(), dbTarget.getDbObject(),
-                                filtered);
+                                resultingTree);
+                        
                         PgDatabase dbNew = applier.apply();
 
                         pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
@@ -282,8 +344,7 @@ public class CommitPartDescr {
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     throw new IllegalStateException(
-                            Messages.project_modifier_thread_cancelled_shouldnt_happen,
-                            ex);
+                            Messages.project_modifier_thread_cancelled_shouldnt_happen, ex);
                 }
 
                 Console.addMessage(Messages.commitPartDescr_success_project_updated);
@@ -304,7 +365,7 @@ public class CommitPartDescr {
         gl.horizontalSpacing = gl.verticalSpacing = 2;
         containerDb.setLayout(gl);
         
-        diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs);
+        diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs, false);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
                     
@@ -349,7 +410,7 @@ public class CommitPartDescr {
         containerSrc.setLayout(gl);
 
         gd = new GridData(SWT.FILL, SWT.FILL, false, true);
-        gd.minimumWidth = gd.minimumHeight = 300;
+        gd.minimumWidth = 300;
         containerSrc.setLayoutData(gd);
         
         Group grpSrc = new Group(containerSrc, SWT.NONE);
@@ -433,9 +494,9 @@ public class CommitPartDescr {
                 }
                 
                 Log.log(Log.LOG_INFO, "Getting changes for commit"); //$NON-NLS-1$
-                TreeDiffer treediffer = new TreeDiffer(dbSource, dbTarget);
+                treeDiffer = new TreeDiffer(dbSource, dbTarget);
                 try {
-                    new ProgressMonitorDialog(shell).run(true, false, treediffer);
+                    new ProgressMonitorDialog(shell).run(true, false, treeDiffer);
                 } catch (InvocationTargetException ex) {
                     throw new IllegalStateException(Messages.error_in_differ_thread, ex);
                 } catch (InterruptedException ex) {
@@ -444,7 +505,7 @@ public class CommitPartDescr {
                             Messages.differ_thread_cancelled_shouldnt_happen, ex);
                 }
 
-                diffTable.setInput(treediffer);
+                diffTable.setInput(treeDiffer);
                 diffPane.setInput(null);
                 btnCommit.setEnabled(true);
             }
@@ -483,17 +544,7 @@ public class CommitPartDescr {
         conf.setLeftEditable(false);
         conf.setRightEditable(false);
         
-        diffPane = new TextMergeViewer(sashOuter, SWT.BORDER, conf) {
-            
-            @Override
-            protected SourceViewer createSourceViewer(Composite parent, int textOrientation) {
-                CompositeRuler ruler = new CompositeRuler();
-                ruler.addDecorator(0, new LineNumberRulerColumn());
-                
-                return new SourceViewer(parent, ruler,
-                        textOrientation | SWT.H_SCROLL | SWT.V_SCROLL);
-            }
-        };
+        diffPane = new SqlMergeViewer(sashOuter, SWT.BORDER, conf);
         diffPane.setContentProvider(new IMergeViewerContentProvider() {
             
             @Override

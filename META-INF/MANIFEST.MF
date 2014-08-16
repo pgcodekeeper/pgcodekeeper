@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: UI
 Bundle-SymbolicName: ru.taximaxim.codekeeper.ui;singleton:=true
-Bundle-Version: 0.3.3.qualifier
+Bundle-Version: 0.4.0.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.ui.Activator
 Export-Package: ru.taximaxim.codekeeper.ui,
  ru.taximaxim.codekeeper.ui.externalcalls,
@@ -35,7 +35,10 @@ Require-Bundle: apgdiff,
  org.eclipse.egit.ui,
  org.eclipse.ui,
  org.eclipse.ui.net,
- org.eclipse.ui.workbench
+ org.eclipse.ui.workbench,
+ org.eclipse.debug.ui,
+ org.eclipse.datatools.sqltools.common.ui,
+ org.eclipse.datatools.sqltools.sqlbuilder
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: javax.annotation;version="1.1.0",
  javax.inject;version="1.0.0",

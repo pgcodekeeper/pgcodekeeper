@@ -46,7 +46,7 @@ public class AddonOpenLast {
             UISynchronize sync,
             
             final @Named(IServiceConstants.ACTIVE_SHELL) Shell shell) {
-        if (prefOpenLast != null && prefOpenLast.equals("true")) {
+        if (prefOpenLast != null && prefOpenLast.equals("true")) { //$NON-NLS-1$
             String[] recent = RecentProjects.getRecent(prefRecentProjects);
             if (recent == null) {
                 return;
@@ -65,9 +65,9 @@ public class AddonOpenLast {
                     }
                 });
             } else {
-                Log.log(Log.LOG_WARNING, "Couldn't open last project at "
+                Log.log(Log.LOG_WARNING, "Couldn't open last project at " //$NON-NLS-1$
                         + proj.getProjectFile()
-                        + ". Project pref store either doesn't exist or not a file.");
+                        + ". Project pref store either doesn't exist or not a file."); //$NON-NLS-1$
             }
         }
     }

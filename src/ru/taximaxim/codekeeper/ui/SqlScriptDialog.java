@@ -10,10 +10,17 @@ import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.ISQLSourceViewerService;
+import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.SQLStatementArea;
+import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceViewerConfiguration;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
@@ -60,7 +67,7 @@ public class SqlScriptDialog extends MessageDialog {
     private String dbUser;
     private String dbPass;
     
-    private Text txtMain;
+    private SQLStatementArea sqlEditor;
     private Text txtCommand;
     private Combo cmbScript;
     private Button runScriptBtn;
@@ -105,23 +112,15 @@ public class SqlScriptDialog extends MessageDialog {
         setShellStyle(getShellStyle() | SWT.RESIZE);
         
         this.text = text;
-        this.history = new XmlHistory(SCRIPTS_HIST_MAX_STORED, 
+        this.history = new XmlHistory.Builder(SCRIPTS_HIST_MAX_STORED, 
                 SCRIPTS_HIST_FILENAME, 
                 SCRIPTS_HIST_ROOT, 
-                SCRIPTS_HIST_EL);
+                SCRIPTS_HIST_EL).build();
     }
     
     @Override
     protected Control createCustomArea(Composite parent) {
-        txtMain = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
-                | SWT.MULTI);
-        txtMain.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-        txtMain.setText(text);
-        
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 600;
-        gd.heightHint = 400;
-        txtMain.setLayoutData(gd);
+        createSQLViewer(parent);
         
         Label l = new Label(parent, SWT.NONE);
         l.setText(Messages.sqlScriptDialog_Enter_cmd_to_roll_on_sql_script
@@ -129,7 +128,7 @@ public class SqlScriptDialog extends MessageDialog {
                 + DB_NAME_PLACEHOLDER + ' '
                 + DB_HOST_PLACEHOLDER + ' ' + DB_PORT_PLACEHOLDER + ' '
                 + DB_USER_PLACEHOLDER + ' ' + DB_PASS_PLACEHOLDER + ')' + ':');
-        gd = new GridData(GridData.FILL_HORIZONTAL);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         l.setLayoutData(gd);
         
@@ -173,10 +172,80 @@ public class SqlScriptDialog extends MessageDialog {
         
         return parent;
     }
+
+    private void createSQLViewer(Composite parent) {
+        ISQLSourceViewerService viewerService = new ISQLSourceViewerService() {
+
+            @Override
+            public void setUpDocument(IDocument doc, String dbType) {
+                SqlMergeViewer.configureSqlDocument(doc);
+            }
+        };
+        
+        sqlEditor = new SQLStatementArea(parent, SWT.BORDER, viewerService, true);
+        sqlEditor.setEditable(true);
+        sqlEditor.setEnabled(true);
+        sqlEditor.configureViewer(new SQLSourceViewerConfiguration());
+
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 600;
+        gd.heightHint = 400;
+        sqlEditor.setLayoutData(gd);
+        
+        sqlEditor.getViewer().setDocument(new Document(text));
+        
+        sqlEditor.getViewer().getTextWidget().addKeyListener(new KeyListener() {
+            
+            @Override
+            public void keyPressed(KeyEvent e) {
+                // Listen to CTRL+Z for Undo, to CTRL+Y or CTRL+SHIFT+Z for Redo
+                boolean isCtrl = (e.stateMask & SWT.CTRL) > 0;
+                boolean isAlt = (e.stateMask & SWT.ALT) > 0;
+                if (isCtrl && !isAlt) {
+                    boolean isShift = (e.stateMask & SWT.SHIFT) > 0;
+                    if (!isShift && e.keyCode == 'z') {
+                        sqlEditor.getViewer().doOperation(
+                                ITextOperationTarget.UNDO);
+                    } else if (!isShift && e.keyCode == 'y' || isShift
+                            && e.keyCode == 'z') {
+                        sqlEditor.getViewer().doOperation(
+                                ITextOperationTarget.REDO);
+                    }
+                }
+            }
+            
+            @Override
+            public void keyReleased(KeyEvent e) {
+            }
+        });
+        
+        // TODO sql code completion
+        /** Этот кусочек скопипастен с сайта для поддержки автозавершения ввода
+         *  Не получилось прикрутить за незнанием некоторых классов
+         *  оставляю на будущее*/
+/*
+        IHandlerService handlerService = (IHandlerService) editor.getSite().getService(IHandlerService.class);
+        IHandler cahandler = new AbstractHandler() {
+
+        @Override
+        public Object execute(ExecutionEvent event)
+                throws org.eclipse.core.commands.ExecutionException {
+            sta.getViewer().doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+            return null;
+        }
+        };
+        if(contentAssistHandlerActivation != null){
+        handlerService.deactivateHandler(contentAssistHandlerActivation);
+        }
+        contentAssistHandlerActivation = handlerService.activateHandler(
+                ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
+        cahandler);
+*/
+    }
     
     @Override
     protected void buttonPressed(int buttonId) {
-        final String textRetrieved = txtMain.getText();
+        final String textRetrieved = sqlEditor.getViewer().getDocument().get();
         
         // case Run script
         if (buttonId == 0 && !isRunning){
@@ -186,7 +255,7 @@ public class SqlScriptDialog extends MessageDialog {
                 // TODO remove fileTmpScript if script is done or interrupted
                 fileTmpScript = new TempFile("tmp_rollon_", ".sql").get(); //$NON-NLS-1$ //$NON-NLS-2$
                 
-               try (PrintWriter writer = new PrintWriter(fileTmpScript)) {
+               try (PrintWriter writer = new PrintWriter(fileTmpScript, "UTF-8")) { //$NON-NLS-1$
                    writer.write(textRetrieved);
                }
             } catch (IOException ex) {
@@ -257,7 +326,7 @@ public class SqlScriptDialog extends MessageDialog {
             
             if (scriptFileName != null) {
                 File script = new File(scriptFileName);
-                try (PrintWriter writer = new PrintWriter(script)) {
+                try (PrintWriter writer = new PrintWriter(script, "UTF-8")) { //$NON-NLS-1$
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
                     Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS, 

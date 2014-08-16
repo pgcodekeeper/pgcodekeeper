@@ -52,6 +52,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ManualDepciesDialog;
 import ru.taximaxim.codekeeper.ui.SqlScriptDialog;
+import ru.taximaxim.codekeeper.ui.SqlMergeViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
@@ -93,7 +94,7 @@ public class DiffPartDescr {
     private Button btnGetChanges;
     private Composite containerSrc;
     private DbPicker dbSrc;
-    private TextMergeViewer diffPane;
+    private SqlMergeViewer diffPane;
     /**
      * Remote DB.
      */
@@ -198,7 +199,7 @@ public class DiffPartDescr {
         gl.horizontalSpacing = gl.verticalSpacing = 2;
         containerDb.setLayout(gl);
         
-        diffTable = new DiffTableViewer(containerDb, SWT.FILL, mainPrefs);
+        diffTable = new DiffTableViewer(containerDb, SWT.FILL, mainPrefs, false);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
@@ -243,7 +244,7 @@ public class DiffPartDescr {
         containerSrc.setLayout(gl);
         
         gd = new GridData(SWT.FILL, SWT.FILL, false, true);
-        gd.minimumWidth = gd.minimumHeight = 300;
+        gd.minimumWidth = 300;
         containerSrc.setLayoutData(gd);
         
         Group grpSrc = new Group(containerSrc, SWT.NONE);
@@ -379,17 +380,7 @@ public class DiffPartDescr {
         conf.setLeftEditable(false);
         conf.setRightEditable(false);
         
-        diffPane = new TextMergeViewer(sashOuter, SWT.BORDER, conf) {
-            
-            @Override
-            protected SourceViewer createSourceViewer(Composite parent, int textOrientation) {
-                CompositeRuler ruler = new CompositeRuler();
-                ruler.addDecorator(0, new LineNumberRulerColumn());
-                
-                return new SourceViewer(parent, ruler,
-                        textOrientation | SWT.H_SCROLL | SWT.V_SCROLL);
-            }
-        };
+        diffPane = new SqlMergeViewer(sashOuter, SWT.BORDER, conf);
         diffPane.setContentProvider(new IMergeViewerContentProvider() {
             
             @Override

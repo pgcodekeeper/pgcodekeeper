@@ -10,7 +10,6 @@ import javax.inject.Named;
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.ui.services.IServiceConstants;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
@@ -24,11 +23,12 @@ import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -40,7 +40,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbStorePickerDialog;
+import ru.taximaxim.codekeeper.ui.dbstore.DbStorePicker;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.FakePrefPageExtension;
@@ -83,7 +83,14 @@ class DbSrcPage extends FieldEditorPreferencePage {
     private CLabel lblWarn;
 
     private LocalResourceManager lrm;
-
+    
+    private DbStorePicker dbStorePicker;
+    private StringFieldEditor sfeName;
+    private StringFieldEditor sfeUser;
+    private StringFieldEditor sfePass;
+    private StringFieldEditor sfeHost;
+    private IntegerFieldEditor ifePort;
+    
     public DbSrcPage(IPreferenceStore mainPrefs) {
         super(GRID);
 
@@ -104,18 +111,43 @@ class DbSrcPage extends FieldEditorPreferencePage {
         addField(radio);
 
         grpSourceDb = new Group(getFieldEditorParent(), SWT.NONE);
-        grpSourceDb.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+        grpSourceDb.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 2));
         grpSourceDb.setText(Messages.projProps_settings_for_database_schema_source);
-
-        final StringFieldEditor sfeName = new StringFieldEditor(
+        
+        dbStorePicker = new DbStorePicker(grpSourceDb, SWT.NONE, false, mainPrefs);
+        dbStorePicker.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1));
+        final SelectionAdapter sa = new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                DbInfo dbInfo = dbStorePicker.getDbInfo();
+                if (dbInfo != null) {
+                    sfeName.setStringValue(dbInfo.dbname);
+                    sfeUser.setStringValue(dbInfo.dbuser);
+                    sfePass.setStringValue(dbInfo.dbpass);
+                    sfeHost.setStringValue(dbInfo.dbhost);
+                    ifePort.setStringValue(String.valueOf(dbInfo.dbport));
+                }
+            }
+        };
+        dbStorePicker.addListenerToCombo(sa);
+        dbStorePicker.addDisposeListener(new DisposeListener() {
+            
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                dbStorePicker.removeListenerToCombo(sa);
+            }
+        });
+        
+        sfeName = new StringFieldEditor(
                 PROJ_PREF.DB_NAME, Messages.dB_name, grpSourceDb);
         addField(sfeName);
 
-        final StringFieldEditor sfeUser = new StringFieldEditor(
+        sfeUser = new StringFieldEditor(
                 PROJ_PREF.DB_USER, Messages.dB_user, grpSourceDb);
         addField(sfeUser);
 
-        final StringFieldEditor sfePass = new StringFieldEditor(
+        sfePass = new StringFieldEditor(
                 PROJ_PREF.DB_PASS, Messages.dB_password, grpSourceDb);
         addField(sfePass);
         sfePass.getTextControl(grpSourceDb).setEchoChar('\u2022'); // •
@@ -137,34 +169,13 @@ class DbSrcPage extends FieldEditorPreferencePage {
 
         lblWarn.setLayoutData(gd);
 
-        final StringFieldEditor sfeHost = new StringFieldEditor(
+        sfeHost = new StringFieldEditor(
                 PROJ_PREF.DB_HOST, Messages.dB_host, grpSourceDb);
         addField(sfeHost);
 
-        final IntegerFieldEditor ifePort = new IntegerFieldEditor(
+        ifePort = new IntegerFieldEditor(
                 PROJ_PREF.DB_PORT, Messages.projProps_db_port, grpSourceDb);
         addField(ifePort);
-
-        Button btnStorePick = new Button(grpSourceDb, SWT.PUSH);
-        btnStorePick.setText("..."); //$NON-NLS-1$
-        btnStorePick.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false,
-                false, 2, 1));
-        btnStorePick.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                DbStorePickerDialog dialog = new DbStorePickerDialog(
-                        getShell(), mainPrefs);
-                if (dialog.open() == Dialog.OK) {
-                    DbInfo db = dialog.getDbInfo();
-
-                    sfeName.setStringValue(db.dbname);
-                    sfeUser.setStringValue(db.dbuser);
-                    sfePass.setStringValue(db.dbpass);
-                    sfeHost.setStringValue(db.dbhost);
-                    ifePort.setStringValue(String.valueOf(db.dbport));
-                }
-            }
-        });
 
         if (!PROJ_PREF.SOURCE_TYPE_DB.equals(getPreferenceStore()
                 .getString(PROJ_PREF.SOURCE))) {
