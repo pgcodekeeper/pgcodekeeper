@@ -275,6 +275,7 @@ public class CommitPartDescr {
                 if(considerDepcy){
                     // Убрать из списка всех элементов в filteredWithNewAndDelete те
                     // элементы, с которых пользователь снял отметку в нижней таблице
+                    // FIXME убрать шелл, отделить логику от UI
                     DiffTableViewer diffTable = new DiffTableViewer(new Shell(), SWT.NONE, mainPrefs, true);
                     diffTable.setFilteredInput(filteredWithNewAndDelete, treeDiffer);
                     Set<TreeElement> allElements = diffTable.getCheckedElements(false);
