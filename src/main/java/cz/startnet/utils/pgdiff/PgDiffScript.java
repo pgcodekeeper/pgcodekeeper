@@ -5,10 +5,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.PgDiffStatement.DiffStatementType;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-
-import ru.taximaxim.codekeeper.apgdiff.Log;
 
 /**
  * Contains list of SQL statements.<br>
@@ -61,8 +60,7 @@ public class PgDiffScript {
             // move duplicated CREATEs to the back of the list
             // this updates the statement to the most recent too
             if (type == DiffStatementType.CREATE) {
-               statements.remove(st);
-               statements.add(st);
+                statements.set(statements.indexOf(st), st);
             }
         }
     }
