@@ -166,7 +166,6 @@ public class DepcyTreeExtender {
                                 + " дереве при добавлении удаляемых зависимостей:"
                                 + " объект не с левой стороны");
                     }
-                    newlyDeletedDependants.add(elementInCopy);
                     break;
                 }
                 
@@ -189,11 +188,10 @@ public class DepcyTreeExtender {
                         elementInEmptyTree.getType(), elementInEmptyTree.getContainerType(), side);
                 elementInCopy.addChild(child);
                 elementInCopy = child;
-                if (children.isEmpty()){
-                    newlyDeletedDependants.add(elementInCopy);
-                }
+                
                 elementInEmptyTree = getEmptyTreeChild(elementInEmptyTree, DiffSide.LEFT);
             }
+            newlyDeletedDependants.add(elementInCopy);
         }
     }
     
