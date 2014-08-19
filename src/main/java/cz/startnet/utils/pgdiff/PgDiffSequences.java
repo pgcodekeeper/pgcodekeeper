@@ -9,6 +9,7 @@ import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 
 /**
  * Diffs sequences.
@@ -28,10 +29,11 @@ public class PgDiffSequences {
     public static void createSequences(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
-        // Add new sequences
         for (final PgSequence sequence : newSchema.getSequences()) {
             if (oldSchema == null
                     || !oldSchema.containsSequence(sequence.getName())) {
+                PgSequence fullSeq = PgDiff.dbNew.getSchema(newSchema.getName()).getSequence(sequence.getName());
+                PgDiff.addUniqueTableDependenciesOnCreateEdit(script, fullSeq);
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeCreationSql(script, null, sequence);
             }

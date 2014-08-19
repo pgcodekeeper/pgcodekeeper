@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -15,15 +16,19 @@ import java.util.Set;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
+import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
+import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
  * Creates diff of two database schemas.
@@ -33,9 +38,13 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 public class PgDiff {
 
     private static DirectedGraph<PgStatement, DefaultEdge> oldDepcyGraph;
+    private static DirectedGraph<PgStatement, DefaultEdge> newDepcyGraph;
     private static DepcyGraph depcyOld;
+    private static DepcyGraph depcyNew;
     
-    private static PgDatabase dbNew;
+    // TODO remove public!
+    public static PgDatabase dbNew;
+    private static PgDatabase dbOld;
 
     /**
      * Creates diff on the two database schemas.
@@ -131,8 +140,8 @@ public class PgDiff {
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
         // since we cannot into OOP here - null the global vars at least
-        oldDepcyGraph = null;
-        depcyOld = null;
+        oldDepcyGraph = newDepcyGraph = null;
+        depcyOld = depcyNew = null;
         
         if (arguments.isAddTransaction()) {
             writer.println("START TRANSACTION;");
@@ -141,6 +150,8 @@ public class PgDiff {
         // temp solution
         if (oldDbFull != null && newDbFull != null){
             depcyOld = new DepcyGraph(oldDbFull);
+            depcyNew = new DepcyGraph(newDbFull);
+            dbOld = oldDbFull;
             dbNew = newDbFull;
             
             if (additionalDepcies != null) {
@@ -148,8 +159,10 @@ public class PgDiff {
             }
         }else{
             depcyOld = new DepcyGraph(new PgDatabase());
+            depcyNew = new DepcyGraph(new PgDatabase());
         }
         oldDepcyGraph = depcyOld.getGraph();
+        newDepcyGraph = depcyNew.getGraph();
         
         if (oldDatabase.getComment() == null
                 && newDatabase.getComment() != null
@@ -262,7 +275,7 @@ public class PgDiff {
      */
     public static Set<PgStatement> getDependenciesSet(PgStatement child,
             Set<PgStatement> result){
-        return getDependencies(child, result, oldDepcyGraph);
+        return getDependencies(child, result, newDepcyGraph);
     }
     
     /**
@@ -602,4 +615,80 @@ public class PgDiff {
     
     private PgDiff() {
     }
+    
+    public static void addUniqueTableDependenciesOnCreateEdit(PgDiffScript script, PgStatement fullStatement){
+        Set<PgStatement> dependencies = new LinkedHashSet<PgStatement>();
+        PgDiff.getDependenciesSet(fullStatement, dependencies);
+        PgStatement [] depcies = dependencies.toArray(new PgStatement[dependencies.size()]);
+        for(int i = depcies.length - 1; i >= 0; i--){
+            PgStatement dep = depcies[i];
+            
+            if (dep instanceof PgView){
+                PgView v_new = (PgView)dep;
+                PgSchema old_schema = dbOld.getSchema(v_new.getParent().getName());
+                if (old_schema == null){
+                    writeCreationSql(script, null, v_new.getParent());
+                    writeCreationSql(script, null, v_new);
+                }else{
+                    PgView v_old = old_schema.getView(v_new.getName()); 
+                    if (v_old == null){
+                        writeCreationSql(script, null, v_new);
+                    }else if (v_old != null && !v_old.equals(v_new)){
+                        writeDropSql(script, null, v_new);
+                        writeCreationSql(script, null, v_new);
+                    }
+                }
+            }else if (dep instanceof PgSequence){
+                if (    fullStatement instanceof PgSequence && 
+                        dep.getName().equals(fullStatement.getName()) && 
+                        dep.getParent().getName().equals(fullStatement.getParent().getName())){
+                    continue;
+                }
+                PgSequence s_new = (PgSequence)dep;
+                PgSchema old_schema = dbOld.getSchema(s_new.getParent().getName());
+                if (old_schema == null){
+                    writeCreationSql(script, null, s_new.getParent());
+                    writeCreationSql(script, null, s_new);
+                }else if (old_schema.getSequence(s_new.getName()) == null){
+                    writeCreationSql(script, null, s_new);
+                }
+                // TODO нужно ли пересоздавать последовательность, если она изменяется???
+            }else if (dep instanceof PgTable){
+                if (    fullStatement instanceof PgTable && 
+                        dep.getName().equals(fullStatement.getName()) && 
+                        dep.getParent().getName().equals(fullStatement.getParent().getName())){
+                    continue;
+                }
+                PgTable t_new = (PgTable)dep;
+                PgSchema old_schema = dbOld.getSchema(t_new.getParent().getName());
+                if (old_schema == null){
+                    writeCreationSql(script, null, t_new.getParent());
+                    writeCreationSql(script, null, t_new);
+                }else{
+                    PgTable t_old = old_schema.getTable(t_new.getName());
+                    if (t_old == null){
+                        writeCreationSql(script, null, t_new);
+                    }else if (t_old != null && !t_old.equals(t_new)){
+                        // TODO а дропать ли старую таблицу?!
+//                        writeDropSql(script, null, t_new);
+//                        writeCreationSql(script, null, t_new);
+                    }
+                }
+            }else if (dep instanceof PgDatabase || dep instanceof PgSchema){
+                continue;
+            }else{
+                String objType = "Object";
+                if(fullStatement instanceof PgColumn){
+                    objType = "Column";
+                }else if (fullStatement instanceof PgTrigger){
+                    objType = "Trigger";
+                }else if (fullStatement instanceof PgConstraint){
+                    objType = "Constraint";
+                }
+                System.out.println("###" + objType + " " + fullStatement.getName() + " depends on " + dep.getBareName() + " (" + dep.getClass() + ")");
+            }
+        }
+    }
+    
+    
 }

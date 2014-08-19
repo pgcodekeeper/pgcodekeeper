@@ -1,8 +1,10 @@
 package cz.startnet.utils.pgdiff;
 
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -24,6 +26,8 @@ public class PgDiffScript {
     // List.contains() is O(n)
     // also String caches hashcodes, so that's a minor performance plus 
     private final Set<PgDiffStatement> unique = new HashSet<>();
+    
+//    private final HashMap<PgStatement, List<PgStatement>> mapa;
     
     /**
      * Add a statement to the script.

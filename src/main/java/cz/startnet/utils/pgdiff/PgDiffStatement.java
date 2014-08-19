@@ -20,6 +20,9 @@ public class PgDiffStatement {
     public final String statement;
     
     public PgDiffStatement(DiffStatementType type, PgStatement obj, String statement) {
+        if (obj == null && type != DiffStatementType.OTHER){
+            throw new IllegalArgumentException("null obj is only permitted when type is OTHER!");
+        }
         this.type = type;
         this.objname = (obj == null) ? null : obj.getQualifiedName();
         this.statement = statement;

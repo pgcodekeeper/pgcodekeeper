@@ -5,6 +5,7 @@
  */
 package cz.startnet.utils.pgdiff;
 
+import java.io.Console;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -509,6 +510,8 @@ public class PgDiffTables {
             final SearchPathHelper searchPathHelper) {
         for (final PgTable table : newSchema.getTables()) {
             if (oldSchema == null || !oldSchema.containsTable(table.getName())) {
+                PgTable fullTable = PgDiff.dbNew.getSchema(newSchema.getName()).getTable(table.getName());
+                PgDiff.addUniqueTableDependenciesOnCreateEdit(script, fullTable);
                 searchPathHelper.outputSearchPath(script);
                 createCheckSequenceDepcy(script, newSchema, table);
             }
