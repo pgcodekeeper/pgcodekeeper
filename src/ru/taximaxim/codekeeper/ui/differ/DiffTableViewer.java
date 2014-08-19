@@ -254,7 +254,7 @@ public class DiffTableViewer extends Composite {
             });
             
             Button btnInvertSelection = new Button(contButtons, SWT.PUSH);
-            btnInvertSelection.setToolTipText("Invert selection");
+            btnInvertSelection.setToolTipText(Messages.diffTableViewer_invert_selection);
             btnInvertSelection.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(
                             FILE.ICONINVERTSELECTION))));
