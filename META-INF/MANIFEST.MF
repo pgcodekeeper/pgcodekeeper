@@ -9,7 +9,6 @@ Import-Package: junit.framework,
  org.osgi.framework
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.junit,
- org.mockito.mockito-all;resolution:=optional,
  ru.taximaxim.codekeeper.ui,
  org.eclipse.e4.core.services,
  com.jcraft.jsch,
