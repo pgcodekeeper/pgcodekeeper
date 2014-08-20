@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
+import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceEditingEnvironment;
 import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceViewerConfiguration;
 import org.eclipse.datatools.sqltools.sqleditor.internal.sql.ISQLPartitions;
 import org.eclipse.datatools.sqltools.sqleditor.internal.sql.SQLPartitionScanner;
@@ -14,12 +15,14 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.LineNumberRulerColumn;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.widgets.Composite;
 
 public class SqlMergeViewer extends TextMergeViewer {
     
     public SqlMergeViewer(Composite parent, int style, CompareConfiguration configuration) {
         super(parent, style, configuration);
+        SQLSourceEditingEnvironment.connect();
     }
  
     @Override
@@ -63,5 +66,10 @@ public class SqlMergeViewer extends TextMergeViewer {
                     ISQLPartitions.SQL_PARTITIONING, _partitioner);
         }
         return doc;
+    }
+    @Override
+    protected void handleDispose(DisposeEvent event) {
+        SQLSourceEditingEnvironment.disconnect();
+        super.handleDispose(event);
     }
 }

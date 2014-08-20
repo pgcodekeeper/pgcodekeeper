@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.ISQLSourceViewerService;
 import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.SQLStatementArea;
+import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceEditingEnvironment;
 import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceViewerConfiguration;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -19,6 +20,8 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
@@ -183,6 +186,7 @@ public class SqlScriptDialog extends MessageDialog {
         };
         
         sqlEditor = new SQLStatementArea(parent, SWT.BORDER, viewerService, true);
+        SQLSourceEditingEnvironment.connect();
         sqlEditor.setEditable(true);
         sqlEditor.setEnabled(true);
         sqlEditor.configureViewer(new SQLSourceViewerConfiguration());
@@ -216,6 +220,14 @@ public class SqlScriptDialog extends MessageDialog {
             
             @Override
             public void keyReleased(KeyEvent e) {
+            }
+        });
+        
+        sqlEditor.addDisposeListener(new DisposeListener() {
+            
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                SQLSourceEditingEnvironment.disconnect();
             }
         });
         
