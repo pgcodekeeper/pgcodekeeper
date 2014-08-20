@@ -14,7 +14,6 @@ import java.util.Properties;
 
 import org.osgi.framework.Version;
 
-import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
