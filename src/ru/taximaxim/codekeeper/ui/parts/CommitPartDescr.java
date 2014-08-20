@@ -595,7 +595,7 @@ public class CommitPartDescr {
                         || el.getSide() == DiffSide.BOTH)) {
                     return new Document(
                             el.getPgStatement(dbSource.getDbObject())
-                                    .getCreationSQL());
+                                    .getFullCreationSQL());
                 } else {
                     return new Document();
                 }
@@ -618,7 +618,7 @@ public class CommitPartDescr {
                         || el.getSide() == DiffSide.BOTH)) {
                     return new Document(
                             el.getPgStatement(dbTarget.getDbObject())
-                                .getCreationSQL());
+                                .getFullCreationSQL());
                 } else {
                     return new Document();
                 }
