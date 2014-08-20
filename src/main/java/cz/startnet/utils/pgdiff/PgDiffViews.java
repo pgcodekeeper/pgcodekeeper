@@ -40,6 +40,8 @@ public class PgDiffViews {
             if (oldSchema == null
                     || !oldSchema.containsView(newView.getName())
                     || isModified) {
+                PgDiff.addUniqueTableDependenciesOnCreateEdit(script, newView);
+                
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeCreationSql(script, null, newView);
                 

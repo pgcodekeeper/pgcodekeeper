@@ -7,7 +7,6 @@ package cz.startnet.utils.pgdiff;
 
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSequence;
 
 /**
  * Diffs functions.
@@ -40,8 +39,7 @@ public class PgDiffFunctions {
 
             if ((oldFunction == null) || !newFunction.equalsWhitespace(
                     oldFunction, arguments.isIgnoreFunctionWhitespace())) {
-                PgFunction fullFunc = PgDiff.dbNew.getSchema(newSchema.getName()).getFunction(newFunction.getName());
-                PgDiff.addUniqueTableDependenciesOnCreateEdit(script, fullFunc);
+                PgDiff.addUniqueTableDependenciesOnCreateEdit(script, newFunction);
                 
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeCreationSql(script, null, newFunction);

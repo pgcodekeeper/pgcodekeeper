@@ -5,7 +5,6 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.io.Console;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;

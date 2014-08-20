@@ -41,6 +41,8 @@ public class PgDiffTriggers {
 
             // Add new triggers
             for (final PgTrigger trigger : getNewTriggers(oldTable, newTable)) {
+                PgDiff.addUniqueTableDependenciesOnCreateEdit(script, trigger);
+                
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeCreationSql(script, null, trigger);
             }
