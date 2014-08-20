@@ -131,15 +131,14 @@ public class PgSequence extends PgStatementWithSearchPath {
     public String getOwnedBySQL() {
         final StringBuilder sbSQL = new StringBuilder(100);
 
-        sbSQL.append("ALTER SEQUENCE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(name));
-
         if (ownedBy != null && !ownedBy.isEmpty()) {
+            sbSQL.append("ALTER SEQUENCE ");
+            sbSQL.append(PgDiffUtils.getQuotedName(name));
+            
             sbSQL.append("\n\tOWNED BY ");
             sbSQL.append(ownedBy);
+            sbSQL.append(';');
         }
-
-        sbSQL.append(';');
 
         return sbSQL.toString();
     }
