@@ -14,7 +14,6 @@ import java.util.Properties;
 
 import org.osgi.framework.Version;
 
-import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
@@ -223,6 +222,8 @@ public class ModelExporter {
         }
         
         try(PrintWriter outFile = new UnixPrintWriter(file, sqlEncoding)) {
+            Log.log(Log.LOG_DEBUG, "Write sql statement into file: "
+                    + file.getAbsolutePath());
             outFile.println(sql);
         }
         
