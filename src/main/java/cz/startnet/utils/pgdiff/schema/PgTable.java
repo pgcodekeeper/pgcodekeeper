@@ -215,6 +215,11 @@ public class PgTable extends PgStatementWithSearchPath {
 
         return sbSQL.toString();
     }
+    
+    @Override
+    public String getFullCreationSQL() {
+        return getCreationSQL();
+    }
 
     @Override
     public String getDropSQL() {

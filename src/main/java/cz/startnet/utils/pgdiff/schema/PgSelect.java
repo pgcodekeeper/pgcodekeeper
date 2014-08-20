@@ -36,6 +36,11 @@ public class PgSelect extends PgStatementWithSearchPath {
     }
     
     @Override
+    public String getFullCreationSQL() {
+        return null;
+    }
+    
+    @Override
     public String getDropSQL() {
         return null;
     }

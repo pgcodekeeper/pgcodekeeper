@@ -149,6 +149,11 @@ public class PgTrigger extends PgStatementWithSearchPath {
         return sbSQL.toString();
     }
 
+    @Override
+    public String getFullCreationSQL() {
+        return getCreationSQL();
+    }
+    
     public String getDropSQL() {
         return "DROP TRIGGER " + PgDiffUtils.getQuotedName(getName()) + " ON "
                 + PgDiffUtils.getQuotedName(getTableName()) + ";";

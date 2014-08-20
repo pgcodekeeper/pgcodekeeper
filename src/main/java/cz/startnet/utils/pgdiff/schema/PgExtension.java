@@ -89,6 +89,11 @@ public class PgExtension extends PgStatement {
     }
     
     @Override
+    public String getFullCreationSQL() {
+        return getCreationSQL();
+    }
+    
+    @Override
     public String getDropSQL() {
         return "DROP EXTENSION " + PgDiffUtils.getQuotedName(getName()) + ';';
     }

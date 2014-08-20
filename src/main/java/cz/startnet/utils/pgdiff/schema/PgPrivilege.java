@@ -33,6 +33,11 @@ public class PgPrivilege extends PgStatement {
     }
     
     @Override
+    public String getFullCreationSQL() {
+        return getCreationSQL();
+    }
+    
+    @Override
     public String getDropSQL() {
         return null;
     }

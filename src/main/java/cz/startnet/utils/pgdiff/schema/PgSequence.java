@@ -48,6 +48,27 @@ public class PgSequence extends PgStatementWithSearchPath {
 
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(100);
+        createSequence(sbSQL);
+
+        appendOwnerSQL(sbSQL);
+        appendPrivileges(sbSQL);
+
+        appendComment(sbSQL);
+
+        return sbSQL.toString();
+    }
+
+    private void appendComment(final StringBuilder sbSQL) {
+        if (comment != null && !comment.isEmpty()) {
+            sbSQL.append("\n\nCOMMENT ON SEQUENCE ");
+            sbSQL.append(PgDiffUtils.getQuotedName(name));
+            sbSQL.append(" IS ");
+            sbSQL.append(comment);
+            sbSQL.append(';');
+        }
+    }
+
+    private void createSequence(final StringBuilder sbSQL) {
         sbSQL.append("CREATE SEQUENCE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
@@ -89,19 +110,19 @@ public class PgSequence extends PgStatementWithSearchPath {
         }
 
         sbSQL.append(';');
-
+    }
+    
+    @Override
+    public String getFullCreationSQL() {
+        final StringBuilder sbSQL = new StringBuilder(2);
+        createSequence(sbSQL);
+        
         appendOwnerSQL(sbSQL);
+        sbSQL.append("\n\n" + getOwnedBySQL());
         appendPrivileges(sbSQL);
-
-        if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\nCOMMENT ON SEQUENCE ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
-            sbSQL.append(" IS ");
-            sbSQL.append(comment);
-            sbSQL.append(';');
-        }
-
-        return sbSQL.toString();
+        appendComment(sbSQL);
+        
+        return sbSQL.toString(); 
     }
 
     /**

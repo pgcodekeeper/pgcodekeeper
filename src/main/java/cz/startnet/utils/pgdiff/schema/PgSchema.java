@@ -85,6 +85,11 @@ public class PgSchema extends PgStatement {
 
         return sbSQL.toString();
     }
+    
+    @Override
+    public String getFullCreationSQL() {
+        return getCreationSQL();
+    }
 
     @Override
     public String getDropSQL() {

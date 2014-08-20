@@ -59,6 +59,11 @@ public class PgIndex extends PgStatementWithSearchPath {
 
         return sbSQL.toString();
     }
+    
+    @Override
+    public String getFullCreationSQL() {
+        return getCreationSQL();
+    }
 
     public void setDefinition(final String definition) {
         this.definition = definition;

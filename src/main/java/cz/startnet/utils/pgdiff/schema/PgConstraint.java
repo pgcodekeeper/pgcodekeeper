@@ -53,6 +53,11 @@ public class PgConstraint extends PgStatementWithSearchPath {
 
         return sbSQL.toString();
     }
+    
+    @Override
+    public String getFullCreationSQL() {
+        return getCreationSQL();
+    }
 
     public String getComment() {
         return comment;
