@@ -525,39 +525,6 @@ public class PgDiffTables {
     }
 
     /**
-     * Т.к. newSchema - shallow копия newSchemaFull, то не все таблицы  
-     * могут быть найдены в Графе зависимостей, построенном на полной newSchemaFull.
-     * Поэтому опираемся на добавленные имена Sequence в таблицу, и выводим 
-     * вместо скрипта создания предупреждение, почему скрипт не вставился в случаях:<br>
-     * 1. Пользователь не выбрал Sequence, на который ссылается таблица<br>
-     * 2. Sequence(на который ссылается таблица) отсутсвует в старой и новой бд
-     * @param script
-     * @param newSchema
-     * @param table
-     */
-    private static void createCheckSequenceDepcy(final PgDiffScript script,
-            final PgSchema newSchema, final PgTable table) {
-        if (!table.getSequences().isEmpty()) {
-            String errorStatement = "";
-            for (String seqName : table.getSequences()) {
-                if (newSchema.getSequence(seqName) == null
-                        && !PgDiff.isSequenceExistInBothDB(seqName, newSchema.getName())) {
-                    errorStatement = errorStatement.concat(", " + seqName);
-                }
-            }
-            if(!errorStatement.isEmpty()){
-                errorStatement = MessageFormat.format("-- table \"" + table.getName()
-                                + "\" was not created because it was not selected entirely "
-                                + "\n-- (sequences: {0})",
-                                errorStatement.substring(2));
-                script.addStatement(errorStatement);
-                return;
-            }
-        }
-        PgDiff.writeCreationSql(script, null, table);
-    }
-
-    /**
      * Outputs statements for dropping tables.
      *
      * @param writer           writer the output should be written to

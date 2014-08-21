@@ -445,20 +445,6 @@ public class PgDiff {
         
         return true;
     }
-    
-    static boolean isSequenceExistInBothDB(String seqName, String schemaName) {
-        PgSchema fullSchemaOld = depcyOld.getDb().getSchema(schemaName);
-        PgSchema fullSchemaNew = dbNew == null ? null : dbNew.getSchema(schemaName);
-        if (fullSchemaOld != null 
-                && fullSchemaNew != null) {
-            PgSequence oldSec = fullSchemaOld.getSequence(seqName);
-            PgSequence newSec = fullSchemaNew.getSequence(seqName);
-            if (oldSec != null) {
-                return oldSec.equals(newSec);
-            }
-        }
-        return false;
-    }
 
     /**
      * Updates objects in schemas.
@@ -624,7 +610,8 @@ public class PgDiff {
         SearchPathHelper searchPathHelper = newSearchPathHelper;
         for(int i = depcies.length - 1; i >= 0; i--){
             PgStatement dep = depcies[i];
-            
+            System.out.println("###" + " " + i + " " + " " + fullStatement.getName() + " depends on " + dep.getBareName() + " (" + dep.getClass() + ")");
+
             if (dep instanceof PgView){
                 PgView v_new = (PgView)dep;
                 String newSchemaName = v_new.getParent().getName();
@@ -635,20 +622,14 @@ public class PgDiff {
                     newSearchPathHelper.setWasOutput(false);
                 }
                 
-                if (old_schema == null){
-                    writeCreationSql(script, null, v_new.getParent());
+                PgView v_old = (old_schema == null) ? null : old_schema.getView(v_new.getName()); 
+                if (v_old == null){
                     searchPathHelper.outputSearchPath(script);
                     writeCreationSql(script, null, v_new);
-                }else{
-                    PgView v_old = old_schema.getView(v_new.getName()); 
-                    if (v_old == null){
-                        searchPathHelper.outputSearchPath(script);
-                        writeCreationSql(script, null, v_new);
-                    }else if (v_old != null && !v_old.equals(v_new)){
-                        searchPathHelper.outputSearchPath(script);
-                        writeDropSql(script, null, v_new);
-                        writeCreationSql(script, null, v_new);
-                    }
+                }else if (v_old != null && !v_old.equals(v_new)){
+                    searchPathHelper.outputSearchPath(script);
+                    writeDropSql(script, null, v_new);
+                    writeCreationSql(script, null, v_new);
                 }
             }else if (dep instanceof PgSequence){
                 if (    fullStatement instanceof PgSequence && 
@@ -665,11 +646,7 @@ public class PgDiff {
                 }
                 
                 PgSchema old_schema = dbOld.getSchema(newSchemaName);
-                if (old_schema == null){
-                    writeCreationSql(script, null, s_new.getParent());
-                    searchPathHelper.outputSearchPath(script);
-                    writeCreationSql(script, null, s_new);
-                }else if (old_schema.getSequence(s_new.getName()) == null){
+                if (old_schema == null || old_schema.getSequence(s_new.getName()) == null){
                     searchPathHelper.outputSearchPath(script);
                     writeCreationSql(script, null, s_new);
                 }
@@ -688,34 +665,31 @@ public class PgDiff {
                 }
                 
                 PgSchema old_schema = dbOld.getSchema(newSchemaName);
-                if (old_schema == null){
-                    writeCreationSql(script, null, t_new.getParent());
+
+                PgStatement statement = (i == depcies.length - 1) ? fullStatement : depcies[i+1];
+                PgTable t_old = (old_schema == null) ? null : old_schema.getTable(t_new.getName());
+                if (t_old == null){
                     searchPathHelper.outputSearchPath(script);
                     writeCreationSql(script, null, t_new);
-                }else{
-                    PgTable t_old = old_schema.getTable(t_new.getName());
-                    if (t_old == null){
-                        searchPathHelper.outputSearchPath(script);
-                        writeCreationSql(script, null, t_new);
-                    }else if (fullStatement instanceof PgView){                        
-                        // special case: modified table is required for view creation/edit
-                        PgStatement statement = (i == depcies.length - 1) ? fullStatement : depcies[i+1];
-                        if (statement instanceof PgView){
-                            PgView newView = (PgView) statement;
-                            for(String newColName : newView.getColumnNames()){
-                                if (t_old.getColumn(newColName) == null){
-                                    searchPathHelper.outputSearchPath(script);
-                                    PgDiffTables.alterTable(script, arguments, t_old, t_new, searchPathHelper);
-                                    continue;
-                                }
-                            }
-                            
+                }else if(statement instanceof PgView){
+                    // special case: modified table is required for view creation/edit
+                    PgView newView = (PgView) statement;
+                    for(String newColName : newView.getColumnNames()){
+                        if (t_old.getColumn(newColName) == null){
+                            searchPathHelper.outputSearchPath(script);
+                            PgDiffTables.alterTable(script, arguments, t_old, t_new, searchPathHelper);
+                            break;
                         }
-                        
                     }
                 }
-            }else if (dep instanceof PgDatabase || dep instanceof PgSchema){
-                continue;
+            }else if (dep instanceof PgSchema){
+                PgSchema schemaNew = (PgSchema) dep;
+                
+                // NB public schema always exists in dbOld, thus it will 
+                // never be created here
+                if (dbOld.getSchema(schemaNew.getName()) == null){
+                    writeCreationSql(script, null, schemaNew);
+                }
             }else{
                 String objType = "Object";
                 if(fullStatement instanceof PgColumn){
@@ -725,7 +699,7 @@ public class PgDiff {
                 }else if (fullStatement instanceof PgConstraint){
                     objType = "Constraint";
                 }
-                System.out.println("###" + objType + " " + fullStatement.getName() + " depends on " + dep.getBareName() + " (" + dep.getClass() + ")");
+//                System.out.println("###" + " " + i + " " + objType + " " + fullStatement.getName() + " depends on " + dep.getBareName() + " (" + dep.getClass() + ")");
             }
         }
     }
