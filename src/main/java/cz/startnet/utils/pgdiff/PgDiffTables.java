@@ -131,34 +131,40 @@ public class PgDiffTables {
         }
         
         for (final PgTable newTable : newSchema.getTables()) {
-            if (!oldSchema.containsTable(newTable.getName())) {
-                continue;
+            if (oldSchema.containsTable(newTable.getName())) {
+                PgTable oldTable = oldSchema.getTable(newTable.getName());
+                alterTable(script, arguments, oldTable, newTable, searchPathHelper);
             }
-
-            final PgTable oldTable = oldSchema.getTable(newTable.getName());
-            
-            updateTableColumns(
-                    script, arguments, oldTable, newTable, searchPathHelper);
-            checkWithOIDS(script, oldTable, newTable, searchPathHelper);
-            checkInherits(script, oldTable, newTable, searchPathHelper);
-            checkTablespace(script, oldTable, newTable, searchPathHelper);
-            addAlterStatistics(script, oldTable, newTable, searchPathHelper);
-            addAlterStorage(script, oldTable, newTable, searchPathHelper);
-            
-            if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement(newTable.getOwnerSQL());
-            }
-            
-            if (!oldTable.getPrivileges().equals(newTable.getPrivileges())) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement(newTable.getPrivilegesSQL());
-            }
-            
-            alterComments(script, oldTable, newTable, searchPathHelper);
         }
     }
 
+    public static void alterTable(final PgDiffScript script,
+            final PgDiffArguments arguments, final PgTable oldTable,
+            final PgTable newTable, final SearchPathHelper searchPathHelper) {
+        PgTable fullTable = PgDiff.dbNew.getSchema(newTable.getParent().getName()).getTable(newTable.getName());
+        PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, fullTable);
+        
+        updateTableColumns(
+                script, arguments, oldTable, newTable, searchPathHelper);
+        checkWithOIDS(script, oldTable, newTable, searchPathHelper);
+        checkInherits(script, oldTable, newTable, searchPathHelper);
+        checkTablespace(script, oldTable, newTable, searchPathHelper);
+        addAlterStatistics(script, oldTable, newTable, searchPathHelper);
+        addAlterStorage(script, oldTable, newTable, searchPathHelper);
+        
+        if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
+            searchPathHelper.outputSearchPath(script);
+            script.addStatement(newTable.getOwnerSQL());
+        }
+        
+        if (!oldTable.getPrivileges().equals(newTable.getPrivileges())) {
+            searchPathHelper.outputSearchPath(script);
+            script.addStatement(newTable.getPrivilegesSQL());
+        }
+        
+        alterComments(script, oldTable, newTable, searchPathHelper);
+    }
+    
     /**
      * Generate the needed alter table xxx set statistics when needed.
      *
@@ -510,9 +516,10 @@ public class PgDiffTables {
         for (final PgTable table : newSchema.getTables()) {
             if (oldSchema == null || !oldSchema.containsTable(table.getName())) {
                 PgTable fullTable = PgDiff.dbNew.getSchema(newSchema.getName()).getTable(table.getName());
-                PgDiff.addUniqueTableDependenciesOnCreateEdit(script, fullTable);
+                PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, fullTable);
+                
                 searchPathHelper.outputSearchPath(script);
-                createCheckSequenceDepcy(script, newSchema, table);
+                PgDiff.writeCreationSql(script, null, table);
             }
         }
     }

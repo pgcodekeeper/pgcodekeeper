@@ -576,7 +576,7 @@ public class PgDiff {
         PgDiffViews.createViews(
                 script, oldSchema, newSchema, searchPathHelper);
         PgDiffViews.alterViews(
-                script, oldSchema, newSchema, searchPathHelper);
+                script, arguments, oldSchema, newSchema, searchPathHelper);
 
         PgDiffFunctions.alterComments(
                 script, oldSchema, newSchema, searchPathHelper);
@@ -616,24 +616,36 @@ public class PgDiff {
     private PgDiff() {
     }
     
-    public static void addUniqueTableDependenciesOnCreateEdit(PgDiffScript script, PgStatement fullStatement){
+    public static void addUniqueDependenciesOnCreateEdit(PgDiffScript script,
+            PgDiffArguments arguments, SearchPathHelper newSearchPathHelper, PgStatement fullStatement){
         Set<PgStatement> dependencies = new LinkedHashSet<PgStatement>();
         PgDiff.getDependenciesSet(fullStatement, dependencies);
         PgStatement [] depcies = dependencies.toArray(new PgStatement[dependencies.size()]);
+        SearchPathHelper searchPathHelper = newSearchPathHelper;
         for(int i = depcies.length - 1; i >= 0; i--){
             PgStatement dep = depcies[i];
             
             if (dep instanceof PgView){
                 PgView v_new = (PgView)dep;
-                PgSchema old_schema = dbOld.getSchema(v_new.getParent().getName());
+                String newSchemaName = v_new.getParent().getName();
+                PgSchema old_schema = dbOld.getSchema(newSchemaName);
+
+                if(!searchPathHelper.getSchemaName().equals(newSchemaName)){
+                    searchPathHelper = new SearchPathHelper(newSchemaName);
+                    newSearchPathHelper.setWasOutput(false);
+                }
+                
                 if (old_schema == null){
                     writeCreationSql(script, null, v_new.getParent());
+                    searchPathHelper.outputSearchPath(script);
                     writeCreationSql(script, null, v_new);
                 }else{
                     PgView v_old = old_schema.getView(v_new.getName()); 
                     if (v_old == null){
+                        searchPathHelper.outputSearchPath(script);
                         writeCreationSql(script, null, v_new);
                     }else if (v_old != null && !v_old.equals(v_new)){
+                        searchPathHelper.outputSearchPath(script);
                         writeDropSql(script, null, v_new);
                         writeCreationSql(script, null, v_new);
                     }
@@ -645,14 +657,22 @@ public class PgDiff {
                     continue;
                 }
                 PgSequence s_new = (PgSequence)dep;
-                PgSchema old_schema = dbOld.getSchema(s_new.getParent().getName());
+                String newSchemaName = s_new.getParent().getName();
+
+                if(!searchPathHelper.getSchemaName().equals(newSchemaName)){
+                    searchPathHelper = new SearchPathHelper(newSchemaName);
+                    newSearchPathHelper.setWasOutput(false);
+                }
+                
+                PgSchema old_schema = dbOld.getSchema(newSchemaName);
                 if (old_schema == null){
                     writeCreationSql(script, null, s_new.getParent());
+                    searchPathHelper.outputSearchPath(script);
                     writeCreationSql(script, null, s_new);
                 }else if (old_schema.getSequence(s_new.getName()) == null){
+                    searchPathHelper.outputSearchPath(script);
                     writeCreationSql(script, null, s_new);
                 }
-                // TODO нужно ли пересоздавать последовательность, если она изменяется???
             }else if (dep instanceof PgTable){
                 if (    fullStatement instanceof PgTable && 
                         dep.getName().equals(fullStatement.getName()) && 
@@ -660,18 +680,38 @@ public class PgDiff {
                     continue;
                 }
                 PgTable t_new = (PgTable)dep;
-                PgSchema old_schema = dbOld.getSchema(t_new.getParent().getName());
+                String newSchemaName = t_new.getParent().getName();
+
+                if(!searchPathHelper.getSchemaName().equals(newSchemaName)){
+                    searchPathHelper = new SearchPathHelper(newSchemaName);
+                    newSearchPathHelper.setWasOutput(false);
+                }
+                
+                PgSchema old_schema = dbOld.getSchema(newSchemaName);
                 if (old_schema == null){
                     writeCreationSql(script, null, t_new.getParent());
+                    searchPathHelper.outputSearchPath(script);
                     writeCreationSql(script, null, t_new);
                 }else{
                     PgTable t_old = old_schema.getTable(t_new.getName());
                     if (t_old == null){
+                        searchPathHelper.outputSearchPath(script);
                         writeCreationSql(script, null, t_new);
-                    }else if (t_old != null && !t_old.equals(t_new)){
-                        // TODO а дропать ли старую таблицу?!
-//                        writeDropSql(script, null, t_new);
-//                        writeCreationSql(script, null, t_new);
+                    }else if (fullStatement instanceof PgView){                        
+                        // special case: modified table is required for view creation/edit
+                        PgStatement statement = (i == depcies.length - 1) ? fullStatement : depcies[i+1];
+                        if (statement instanceof PgView){
+                            PgView newView = (PgView) statement;
+                            for(String newColName : newView.getColumnNames()){
+                                if (t_old.getColumn(newColName) == null){
+                                    searchPathHelper.outputSearchPath(script);
+                                    PgDiffTables.alterTable(script, arguments, t_old, t_new, searchPathHelper);
+                                    continue;
+                                }
+                            }
+                            
+                        }
+                        
                     }
                 }
             }else if (dep instanceof PgDatabase || dep instanceof PgSchema){

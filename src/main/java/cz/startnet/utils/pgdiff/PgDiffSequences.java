@@ -9,7 +9,6 @@ import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
-import cz.startnet.utils.pgdiff.schema.PgTable;
 
 /**
  * Diffs sequences.
@@ -32,8 +31,8 @@ public class PgDiffSequences {
         for (final PgSequence sequence : newSchema.getSequences()) {
             if (oldSchema == null
                     || !oldSchema.containsSequence(sequence.getName())) {
-                PgSequence fullSeq = PgDiff.dbNew.getSchema(newSchema.getName()).getSequence(sequence.getName());
-                PgDiff.addUniqueTableDependenciesOnCreateEdit(script, fullSeq);
+                PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, sequence);
+                
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeCreationSql(script, null, sequence);
             }
@@ -177,6 +176,8 @@ public class PgDiffSequences {
             final String newOwnedBy = newSequence.getOwnedBy();
 
             if (newOwnedBy != null && !newOwnedBy.equals(oldOwnedBy)) {
+                PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newSequence);
+                
                 sbSQL.append("\n\tOWNED BY ");
                 sbSQL.append(newOwnedBy);
             }

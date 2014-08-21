@@ -39,7 +39,7 @@ public class PgDiffFunctions {
 
             if ((oldFunction == null) || !newFunction.equalsWhitespace(
                     oldFunction, arguments.isIgnoreFunctionWhitespace())) {
-                PgDiff.addUniqueTableDependenciesOnCreateEdit(script, newFunction);
+                PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newFunction);
                 
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeCreationSql(script, null, newFunction);

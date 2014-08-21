@@ -45,7 +45,7 @@ public class PgDiffConstraints {
             // Add new constraints
             for (final PgConstraint constraint :
                     getNewConstraints(oldTable, newTable, primaryKey)) {
-                PgDiff.addUniqueTableDependenciesOnCreateEdit(script, constraint);
+                PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, constraint);
                 
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeCreationSql(script, null, constraint);
