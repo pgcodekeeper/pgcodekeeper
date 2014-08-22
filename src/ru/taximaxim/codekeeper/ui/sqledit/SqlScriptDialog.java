@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,18 +10,11 @@ import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.ISQLSourceViewerService;
-import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.SQLStatementArea;
-import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceEditingEnvironment;
-import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceViewerConfiguration;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
@@ -38,7 +31,10 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.statushandlers.StatusManager;
 
+import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.XmlHistory.Builder;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -70,7 +66,7 @@ public class SqlScriptDialog extends MessageDialog {
     private String dbUser;
     private String dbPass;
     
-    private SQLStatementArea sqlEditor;
+    private SqlSourceViewer sqlEditor;
     private Text txtCommand;
     private Combo cmbScript;
     private Button runScriptBtn;
@@ -177,28 +173,18 @@ public class SqlScriptDialog extends MessageDialog {
     }
 
     private void createSQLViewer(Composite parent) {
-        ISQLSourceViewerService viewerService = new ISQLSourceViewerService() {
-
-            @Override
-            public void setUpDocument(IDocument doc, String dbType) {
-                SqlMergeViewer.configureSqlDocument(doc);
-            }
-        };
         
-        sqlEditor = new SQLStatementArea(parent, SWT.BORDER, viewerService, true);
-        SQLSourceEditingEnvironment.connect();
+        sqlEditor = new SqlSourceViewer(parent, SWT.NONE);
+        sqlEditor.addLineNumbers();
         sqlEditor.setEditable(true);
-        sqlEditor.setEnabled(true);
-        sqlEditor.configureViewer(new SQLSourceViewerConfiguration());
-
+        sqlEditor.setDocument(new Document(text));
+        
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
         gd.heightHint = 400;
-        sqlEditor.setLayoutData(gd);
+        sqlEditor.getControl().setLayoutData(gd);
         
-        sqlEditor.getViewer().setDocument(new Document(text));
-        
-        sqlEditor.getViewer().getTextWidget().addKeyListener(new KeyListener() {
+        sqlEditor.getTextWidget().addKeyListener(new KeyListener() {
             
             @Override
             public void keyPressed(KeyEvent e) {
@@ -208,29 +194,20 @@ public class SqlScriptDialog extends MessageDialog {
                 if (isCtrl && !isAlt) {
                     boolean isShift = (e.stateMask & SWT.SHIFT) > 0;
                     if (!isShift && e.keyCode == 'z') {
-                        sqlEditor.getViewer().doOperation(
+                        sqlEditor.doOperation(
                                 ITextOperationTarget.UNDO);
                     } else if (!isShift && e.keyCode == 'y' || isShift
                             && e.keyCode == 'z') {
-                        sqlEditor.getViewer().doOperation(
+                        sqlEditor.doOperation(
                                 ITextOperationTarget.REDO);
                     }
                 }
             }
             
             @Override
-            public void keyReleased(KeyEvent e) {
+            public void keyReleased(KeyEvent e) {                
             }
         });
-        
-        sqlEditor.addDisposeListener(new DisposeListener() {
-            
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                SQLSourceEditingEnvironment.disconnect();
-            }
-        });
-        
         // TODO sql code completion
         /** Этот кусочек скопипастен с сайта для поддержки автозавершения ввода
          *  Не получилось прикрутить за незнанием некоторых классов
@@ -257,7 +234,7 @@ public class SqlScriptDialog extends MessageDialog {
     
     @Override
     protected void buttonPressed(int buttonId) {
-        final String textRetrieved = sqlEditor.getViewer().getDocument().get();
+        final String textRetrieved = sqlEditor.getDocument().get();
         
         // case Run script
         if (buttonId == 0 && !isRunning){

@@ -13,6 +13,7 @@ import javax.inject.Named;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
+import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.core.di.annotations.Optional;
@@ -32,6 +33,8 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.TextViewer;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -62,7 +65,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.CommitDialog;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.SqlMergeViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
@@ -80,6 +82,7 @@ import ru.taximaxim.codekeeper.ui.fileutils.Dir;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -118,7 +121,7 @@ public class CommitPartDescr {
     private Button btnGetChanges;
     private Composite containerSrc;
     private DbPicker dbSrc;
-    private SqlMergeViewer diffPane;
+    private TextMergeViewer diffPane;
     private String repoName;
     private XmlHistory history;
     /**
@@ -275,6 +278,7 @@ public class CommitPartDescr {
                 if(considerDepcy){
                     // Убрать из списка всех элементов в filteredWithNewAndDelete те
                     // элементы, с которых пользователь снял отметку в нижней таблице
+                    // FIXME убрать шелл, отделить логику от UI
                     DiffTableViewer diffTable = new DiffTableViewer(new Shell(), SWT.NONE, mainPrefs, true);
                     diffTable.setFilteredInput(filteredWithNewAndDelete, treeDiffer);
                     Set<TreeElement> allElements = diffTable.getCheckedElements(false);
@@ -544,7 +548,19 @@ public class CommitPartDescr {
         conf.setLeftEditable(false);
         conf.setRightEditable(false);
         
-        diffPane = new SqlMergeViewer(sashOuter, SWT.BORDER, conf);
+        diffPane = new TextMergeViewer(sashOuter, SWT.BORDER, conf) {
+            
+            @Override
+            protected void configureTextViewer(TextViewer textViewer) {
+                // viewer configures itself
+            }
+            
+            @Override
+            protected SourceViewer createSourceViewer(Composite parent,
+                    int textOrientation) {
+                return new SqlSourceViewer(parent, textOrientation);
+            }
+        };
         diffPane.setContentProvider(new IMergeViewerContentProvider() {
             
             @Override

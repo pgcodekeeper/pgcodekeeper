@@ -8,10 +8,6 @@ import java.nio.file.Files;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
-import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.ISQLSourceViewerService;
-import org.eclipse.datatools.sqltools.common.ui.sqlstatementarea.SQLStatementArea;
-import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceEditingEnvironment;
-import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceViewerConfiguration;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.ui.di.UISynchronize;
@@ -23,18 +19,16 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.SqlMergeViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART_STACK;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
 
 public class SqlEditorDescr {
     
@@ -51,31 +45,16 @@ public class SqlEditorDescr {
     private void postConstruct(Composite parent, PgDbProject proj)
             throws UnsupportedEncodingException, IOException {
         parent.setLayout(new FillLayout());
-        
-        ISQLSourceViewerService viewerService = new ISQLSourceViewerService() {
 
-            @Override
-            public void setUpDocument(IDocument doc, String dbType) {
-                SqlMergeViewer.configureSqlDocument(doc);
-            }
-        };
-        
-        SQLStatementArea sqlEditor = new SQLStatementArea(parent, SWT.BORDER, viewerService, true);
-        SQLSourceEditingEnvironment.connect();
-        sqlEditor.setEditable(false);
-        sqlEditor.setEnabled(true);
-        sqlEditor.configureViewer(new SQLSourceViewerConfiguration());
-        sqlEditor.addDisposeListener(new DisposeListener() {
-            
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                SQLSourceEditingEnvironment.disconnect();
-            }
-        });
-        
         File fileText = new File(part.getPersistedState().get(PART.SQL_EDITOR_FILENAME));
-        sqlEditor.getViewer().setDocument(new Document(new String(
-                Files.readAllBytes(fileText.toPath()), proj.getString(PROJ_PREF.ENCODING))));
+        IDocument doc = new Document(new String(
+                Files.readAllBytes(fileText.toPath()), 
+                proj.getString(PROJ_PREF.ENCODING)));
+        
+        SqlSourceViewer v = new SqlSourceViewer(parent, SWT.NONE);
+        v.addLineNumbers();
+        v.setDocument(doc);
+        v.setEditable(false);
     }
     
     /**
