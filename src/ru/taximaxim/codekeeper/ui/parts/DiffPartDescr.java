@@ -11,7 +11,6 @@ import javax.inject.Named;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
-import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.di.extensions.Preference;
@@ -26,9 +25,6 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.source.CompositeRuler;
-import org.eclipse.jface.text.source.LineNumberRulerColumn;
-import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -51,8 +47,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ManualDepciesDialog;
-import ru.taximaxim.codekeeper.ui.SqlScriptDialog;
 import ru.taximaxim.codekeeper.ui.SqlMergeViewer;
+import ru.taximaxim.codekeeper.ui.SqlScriptDialog;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
@@ -430,8 +426,7 @@ public class DiffPartDescr {
                 if (el != null && (el.getSide() == DiffSide.RIGHT
                         || el.getSide() == DiffSide.BOTH)) {
                     return new Document(
-                            el.getPgStatement(dbTarget.getDbObject())
-                                .getFullCreationSQL());
+                            el.getPgStatement(dbTarget.getDbObject()).getFullSQL());
                 } else {
                     return new Document();
                 }
@@ -453,8 +448,7 @@ public class DiffPartDescr {
                 if (el != null && (el.getSide() == DiffSide.LEFT
                         || el.getSide() == DiffSide.BOTH)) {
                     return new Document(
-                            el.getPgStatement(dbSource.getDbObject())
-                                    .getFullCreationSQL());
+                            el.getPgStatement(dbSource.getDbObject()).getFullSQL());
                 } else {
                     return new Document();
                 }
