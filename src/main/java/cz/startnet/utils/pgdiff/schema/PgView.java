@@ -116,11 +116,6 @@ public class PgView extends PgStatementWithSearchPath {
     }
     
     @Override
-    public String getFullCreationSQL() {
-        return getCreationSQL();
-    }
-
-    @Override
     public String getDropSQL() {
         return "DROP VIEW " + PgDiffUtils.getQuotedName(getName()) + ';';
     }

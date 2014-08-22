@@ -46,29 +46,9 @@ public class PgSequence extends PgStatementWithSearchPath {
         this.comment = comment;
     }
 
+    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(100);
-        createSequence(sbSQL);
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
-        appendComment(sbSQL);
-
-        return sbSQL.toString();
-    }
-
-    private void appendComment(final StringBuilder sbSQL) {
-        if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\nCOMMENT ON SEQUENCE ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
-            sbSQL.append(" IS ");
-            sbSQL.append(comment);
-            sbSQL.append(';');
-        }
-    }
-
-    private void createSequence(final StringBuilder sbSQL) {
         sbSQL.append("CREATE SEQUENCE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
@@ -110,19 +90,19 @@ public class PgSequence extends PgStatementWithSearchPath {
         }
 
         sbSQL.append(';');
-    }
-    
-    @Override
-    public String getFullCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder(2);
-        createSequence(sbSQL);
-        
+
         appendOwnerSQL(sbSQL);
-        sbSQL.append("\n\n" + getOwnedBySQL());
         appendPrivileges(sbSQL);
-        appendComment(sbSQL);
-        
-        return sbSQL.toString(); 
+
+        if (comment != null && !comment.isEmpty()) {
+            sbSQL.append("\n\nCOMMENT ON SEQUENCE ");
+            sbSQL.append(PgDiffUtils.getQuotedName(name));
+            sbSQL.append(" IS ");
+            sbSQL.append(comment);
+            sbSQL.append(';');
+        }
+
+        return sbSQL.toString();
     }
 
     /**
@@ -131,16 +111,30 @@ public class PgSequence extends PgStatementWithSearchPath {
     public String getOwnedBySQL() {
         final StringBuilder sbSQL = new StringBuilder(100);
 
+        sbSQL.append("ALTER SEQUENCE ");
+        sbSQL.append(PgDiffUtils.getQuotedName(name));
+
         if (ownedBy != null && !ownedBy.isEmpty()) {
-            sbSQL.append("ALTER SEQUENCE ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
-            
             sbSQL.append("\n\tOWNED BY ");
             sbSQL.append(ownedBy);
-            sbSQL.append(';');
         }
 
+        sbSQL.append(';');
+
         return sbSQL.toString();
+    }
+    
+    @Override
+    public String getFullSQL() {
+        String superFull = super.getFullSQL();
+        
+        if (ownedBy != null && !ownedBy.isEmpty()) {
+            StringBuilder sb = new StringBuilder(superFull);
+            sb.append("\n\n").append(getOwnedBySQL());
+            return sb.toString();
+        } else {
+            return superFull;
+        }
     }
 
     public void setCycle(final boolean cycle) {
@@ -152,6 +146,7 @@ public class PgSequence extends PgStatementWithSearchPath {
         return cycle;
     }
 
+    @Override
     public String getDropSQL() {
         return "DROP SEQUENCE " + PgDiffUtils.getQuotedName(getName()) + ";";
     }

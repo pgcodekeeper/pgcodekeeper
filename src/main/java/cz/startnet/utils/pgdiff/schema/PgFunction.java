@@ -60,11 +60,6 @@ public class PgFunction extends PgStatementWithSearchPath {
     }
     
     @Override
-    public String getFullCreationSQL() {
-        return getCreationSQL();
-    }
-    
-    @Override
     protected StringBuilder appendOwnerSQL(StringBuilder sb) {
         if (owner == null) {
             return sb;

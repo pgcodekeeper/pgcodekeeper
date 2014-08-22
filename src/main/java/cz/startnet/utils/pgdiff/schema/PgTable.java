@@ -217,11 +217,6 @@ public class PgTable extends PgStatementWithSearchPath {
     }
     
     @Override
-    public String getFullCreationSQL() {
-        return getCreationSQL();
-    }
-
-    @Override
     public String getDropSQL() {
         return "DROP TABLE " + PgDiffUtils.getQuotedName(getName()) + ";";
     }

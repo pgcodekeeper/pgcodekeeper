@@ -176,11 +176,6 @@ public class PgDatabase extends PgStatement {
     }
     
     @Override
-    public String getFullCreationSQL() {
-        return null;
-    }
-    
-    @Override
     public String getDropSQL() {
         return null;
     }

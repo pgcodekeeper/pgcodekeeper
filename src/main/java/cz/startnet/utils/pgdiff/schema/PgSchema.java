@@ -87,11 +87,6 @@ public class PgSchema extends PgStatement {
     }
     
     @Override
-    public String getFullCreationSQL() {
-        return getCreationSQL();
-    }
-
-    @Override
     public String getDropSQL() {
         return "DROP SCHEMA "
                 + PgDiffUtils.getQuotedName(getName()) + ';';

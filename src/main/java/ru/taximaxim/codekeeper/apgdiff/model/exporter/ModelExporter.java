@@ -21,7 +21,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -181,12 +180,7 @@ public class ModelExporter {
         for(PgStatementWithSearchPath obj : objects) {
             String filename = null;
             filename = getExportedFilename(obj) + ".sql";
-            String sqlToDump = obj.getSearchPath() + "\n\n" + obj.getCreationSQL();
-            
-            // OWNED BY is exported as a separate statement for SEQUENCE
-            if(obj instanceof PgSequence) {
-                sqlToDump += "\n\n" + ((PgSequence)obj).getOwnedBySQL();
-            }
+            String sqlToDump = obj.getSearchPath() + "\n\n" + obj.getFullSQL();
             
             File objectSQL = new File(objectDir, filename);
             dumpSQL(sqlToDump, objectSQL);
