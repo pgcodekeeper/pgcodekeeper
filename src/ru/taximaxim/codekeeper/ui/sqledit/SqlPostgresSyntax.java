@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.sqledit;
 
 import org.eclipse.datatools.sqltools.sql.ISQLSyntax;
 

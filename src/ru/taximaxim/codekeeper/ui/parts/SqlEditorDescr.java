@@ -23,12 +23,12 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.SqlSourceViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART_STACK;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
 
 public class SqlEditorDescr {
     

@@ -50,8 +50,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ManualDepciesDialog;
-import ru.taximaxim.codekeeper.ui.SqlScriptDialog;
-import ru.taximaxim.codekeeper.ui.SqlSourceViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
@@ -66,6 +64,8 @@ import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
+import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class DiffPartDescr {
