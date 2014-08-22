@@ -54,10 +54,6 @@ public class ModelExporter {
      */
     private final String sqlEncoding;
     
-    /**
-     * List of written files' names.
-     */
-    private StringBuilder writtenFiles = new StringBuilder(3000 * 260);
     
     /**
      * Creates a new ModelExporter object with set {@link #outDir} and {@link #db}
@@ -222,12 +218,10 @@ public class ModelExporter {
         }
         
         try(PrintWriter outFile = new UnixPrintWriter(file, sqlEncoding)) {
-            Log.log(Log.LOG_DEBUG, "Write sql statement into file: "
-                    + file.getAbsolutePath());
+            Log.log(Log.LOG_DEBUG, "Dumped SQL:\n" + file.getAbsolutePath());
+            
             outFile.println(sql);
         }
-        
-        writtenFiles.append(outPath.relativize(file.toPath())).append('\n');
     }
     
     /**
