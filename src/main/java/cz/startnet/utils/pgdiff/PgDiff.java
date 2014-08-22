@@ -649,7 +649,8 @@ public class PgDiff {
             }else if (dep instanceof PgTable){
                 if (    fullStatement instanceof PgTable && 
                         dep.getName().equals(fullStatement.getName()) && 
-                        dep.getParent().getName().equals(fullStatement.getParent().getName())){
+                        dep.getParent().getName().equals(fullStatement.getParent().getName()) || 
+                        fullStatement instanceof PgSequence){
                     continue;
                 }
                 PgTable t_new = (PgTable)dep;

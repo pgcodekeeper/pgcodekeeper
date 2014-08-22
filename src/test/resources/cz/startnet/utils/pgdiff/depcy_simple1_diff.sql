@@ -60,3 +60,5 @@ SET search_path = public, pg_catalog;
 SET search_path = s, pg_catalog;
 
 -- DEPCY: Following view depends on the altered view v2
+
+SET search_path = public, pg_catalog;
