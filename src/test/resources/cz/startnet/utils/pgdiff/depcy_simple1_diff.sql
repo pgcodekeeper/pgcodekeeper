@@ -16,11 +16,7 @@ DROP VIEW v1;
 
 SET search_path = s, pg_catalog;
 
--- DEPCY: dropping dependant object: column id of table t1 is altered (type changed)
-
 SET search_path = public, pg_catalog;
-
--- DEPCY: dropping dependant object: column id of table t1 is altered (type changed)
 
 SET search_path = public, pg_catalog;
 
@@ -58,7 +54,5 @@ ALTER VIEW v1 OWNER TO levsha_aa;
 SET search_path = public, pg_catalog;
 
 SET search_path = s, pg_catalog;
-
--- DEPCY: Following view depends on the altered view v2
 
 SET search_path = public, pg_catalog;
