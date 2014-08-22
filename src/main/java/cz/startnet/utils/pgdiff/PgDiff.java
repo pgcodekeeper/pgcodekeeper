@@ -596,11 +596,13 @@ public class PgDiff {
     
     public static List<PgStatement> addUniqueDependenciesOnCreateEdit(PgDiffScript script,
             PgDiffArguments arguments, SearchPathHelper newSearchPathHelper, PgStatement fullStatement){
+        
         List<PgStatement> specialDependencies = new ArrayList<PgStatement>(3);
         Set<PgStatement> dependencies = new LinkedHashSet<PgStatement>();
         PgDiff.getDependenciesSet(fullStatement, dependencies);
         PgStatement [] depcies = dependencies.toArray(new PgStatement[dependencies.size()]);
         SearchPathHelper searchPathHelper = newSearchPathHelper;
+        
         for(int i = depcies.length - 1; i >= 0; i--){
             PgStatement dep = depcies[i];
 
@@ -652,11 +654,13 @@ public class PgDiff {
                         dep.getName().equals(fullStatement.getName()) && 
                         dep.getParent().getName().equals(fullStatement.getParent().getName()) || 
                         fullStatement instanceof PgSequence){
+                    // TODO WHY fullStatement instanceof PgSequence
                     continue;
                 }
                 PgTable t_new = (PgTable)dep;
                 String newSchemaName = t_new.getParent().getName();
 
+                // TODO убрать, такое уже реализовано в tempSwitchSearchPath
                 if(!searchPathHelper.getSchemaName().equals(newSchemaName)){
                     searchPathHelper = new SearchPathHelper(newSchemaName);
                     newSearchPathHelper.setWasOutput(false);

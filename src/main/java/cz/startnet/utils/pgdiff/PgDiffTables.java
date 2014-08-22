@@ -16,7 +16,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
-import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumnUtils;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
@@ -168,7 +167,7 @@ public class PgDiffTables {
         alterComments(script, oldTable, newTable, searchPathHelper);
         
         for(PgStatement depcy : specialDepcies){
-            if (depcy instanceof PgStatement){
+            if (depcy instanceof PgSequence && ((PgSequence)depcy).getOwnedBy() != null){
                 script.addStatement(((PgSequence)depcy).getOwnedBySQL());
             }
         }
@@ -532,7 +531,7 @@ public class PgDiffTables {
                 PgDiff.writeCreationSql(script, null, table);
                 
                 for(PgStatement depcy : specialDepcies){
-                    if (depcy instanceof PgStatement){
+                    if (depcy instanceof PgSequence && ((PgSequence)depcy).getOwnedBy() != null){
                         script.addStatement(((PgSequence)depcy).getOwnedBySQL());
                     }
                 }
