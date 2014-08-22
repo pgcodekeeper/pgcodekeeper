@@ -117,6 +117,7 @@ public class Messages extends NLS {
     public static String diffTableViewer_save_checked;
     public static String diffTableViewer_select_child_elements;
     public static String diffTableViewer_stored_selections;
+    public static String diffTableViewer_use_java_regular_expressions_see_more;
     public static String diffTableViewer_use_regular_expressions;
     public static String diffTreeViewer_collapse_all;
     public static String diffTreeViewer_collapse_subtree;

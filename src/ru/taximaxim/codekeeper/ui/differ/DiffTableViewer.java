@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.jface.action.Action;
@@ -39,6 +40,7 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -51,6 +53,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -133,7 +136,7 @@ public class DiffTableViewer extends Composite {
 
         Composite filterComp = new Composite(this, SWT.NONE);
         filterComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout filterLayout = new GridLayout(2, false);
+        GridLayout filterLayout = new GridLayout(3, false);
         filterLayout.marginWidth = filterLayout.marginHeight = 0;
         filterComp.setLayout(filterLayout);
         
@@ -151,7 +154,7 @@ public class DiffTableViewer extends Composite {
         });
         
         useRegEx = new Button(filterComp, SWT.CHECK);
-        useRegEx.setToolTipText(Messages.diffTableViewer_use_regular_expressions);
+        useRegEx.setToolTipText(Messages.diffTableViewer_use_java_regular_expressions_see_more);
         useRegEx.addSelectionListener(new SelectionAdapter() {
            @Override
             public void widgetSelected(SelectionEvent e) {
@@ -159,6 +162,8 @@ public class DiffTableViewer extends Composite {
                viewerRefresh();
             } 
         });
+        
+        new Label(filterComp, SWT.NONE).setText(Messages.diffTableViewer_use_regular_expressions);
         
         prevCheckedHistory = new XmlHistory.Builder(PREVCHECKED_HIST_MAX_STORED,
                 PREVCHECKED_HIST_FILENAME, 
@@ -856,7 +861,7 @@ public class DiffTableViewer extends Composite {
         
         public void setFilter(String value) {
             filterName = (value == null || value.isEmpty()) ?
-                    null : useRegEx ? value : value.toLowerCase();
+                    null : value.toLowerCase();
         }
         
         public void setUseRegEx(Boolean useRegEx) {
@@ -870,7 +875,8 @@ public class DiffTableViewer extends Composite {
             }
             if (useRegEx) {
                 try {
-                    return ((TreeElement) element).getName().matches(filterName);
+                    return Pattern.compile(filterName, Pattern.CASE_INSENSITIVE)
+                            .matcher(((TreeElement) element).getName()).matches();
                 } catch (PatternSyntaxException e) {
                     return false;
                 }
