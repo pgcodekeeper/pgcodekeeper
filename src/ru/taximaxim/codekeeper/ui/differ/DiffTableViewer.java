@@ -282,8 +282,16 @@ public class DiffTableViewer extends Composite {
                 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    checkListener.reverseCheckedState();
-                    viewerRefresh();
+                    Object[] initial = viewer.getCheckedElements();
+                    
+                    // select all
+                    viewer.setAllChecked(true);
+                    checkListener.setElementsChecked(viewer.getCheckedElements(), true);
+                    // deselect initial set
+                    for (Object el : initial) {
+                        viewer.setChecked(el, false);
+                    }
+                    checkListener.setElementsChecked(initial, false);
                 }
             });
             
@@ -765,12 +773,6 @@ public class DiffTableViewer extends Composite {
         public void setElementChecked(TreeElement element, boolean state) {
             setChecked(element, state);
             updateCheckedLabel();
-        }
-        
-        public void reverseCheckedState() {
-            for (TreeElement element : elements.keySet()) {
-                elements.put(element, !elements.get(element));
-            }
         }
         
         private void setChecked(TreeElement element, boolean state) {
