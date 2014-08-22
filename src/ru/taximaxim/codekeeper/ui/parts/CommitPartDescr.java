@@ -160,7 +160,7 @@ public class CommitPartDescr {
         txtCommitComment = new Text(containerUpper, SWT.BORDER | SWT.MULTI | 
                 SWT.H_SCROLL | SWT.V_SCROLL);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 80;
+        gd.heightHint = 50;
         txtCommitComment.setLayoutData(gd);
         
         final Button btnPrevComments = new Button(containerUpper, SWT.PUSH);
