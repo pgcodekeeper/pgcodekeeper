@@ -91,7 +91,8 @@ public class DepcyTreeExtenderTest {
     public void testGetDependenciesOfNew() {
         String filename = "depcy_schema_" + fileIndex + ".sql";
         PgDatabase dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
-                getClass().getResourceAsStream(filename), "UTF-8", false, false);
+                DepcyTreeExtenderTest.class.getResourceAsStream(filename),
+                "UTF-8", false, false);
         
         TreeElement filtered = treeCreators[fileIndex - 1].getFilteredTree();
         
@@ -106,7 +107,8 @@ public class DepcyTreeExtenderTest {
     public void testGetTreeCopyWithDepcy() {
         String filename = "depcy_schema_" + fileIndex + ".sql";
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
-                getClass().getResourceAsStream(filename), "UTF-8", false, false);
+                DepcyTreeExtenderTest.class.getResourceAsStream(filename),
+                "UTF-8", false, false);
         
         TreeElementCreator treeCreator = treeCreators[fileIndex - 1];
         
@@ -127,7 +129,8 @@ public class DepcyTreeExtenderTest {
     public void testSumAllDepcies() {
         String filename = "depcy_schema_" + fileIndex + ".sql";
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
-                getClass().getResourceAsStream(filename), "UTF-8", false, false);
+                DepcyTreeExtenderTest.class.getResourceAsStream(filename),
+                "UTF-8", false, false);
         
         TreeElementCreator treeCreator = treeCreators[fileIndex - 1];
         
@@ -151,12 +154,12 @@ public class DepcyTreeExtenderTest {
         String filename = "depcy_schema_" + fileIndex + ".sql";
         String filenameConflicting = "depcy_schema_conflicting_" + fileIndex + ".sql";
         PgDatabase dbRemote = PgDumpLoader.loadDatabaseSchemaFromDump(
-                        getClass().getResourceAsStream(filename), "UTF-8",
-                        false, false);
+                DepcyTreeExtenderTest.class.getResourceAsStream(filename), "UTF-8",
+                false, false);
 
         PgDatabase dbGit = PgDumpLoader.loadDatabaseSchemaFromDump(
-                        getClass().getResourceAsStream(filenameConflicting), "UTF-8",
-                        false, false);
+                DepcyTreeExtenderTest.class.getResourceAsStream(filenameConflicting), "UTF-8",
+                false, false);
 
         TreeElementCreator treeCreator = treeCreators[fileIndex - 1];
         
