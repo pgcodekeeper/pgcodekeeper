@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
+import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumnUtils;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
@@ -530,10 +531,11 @@ public class PgDiffTables {
             final PgSchema newSchema, final PgTable table) {
         if (!table.getSequences().isEmpty()) {
             String errorStatement = "";
-            for (String seqName : table.getSequences()) {
+            for (String seqDefinition : table.getSequences()) {
+                String seqName = ParserUtils.getObjectName(seqDefinition);
                 if (newSchema.getSequence(seqName) == null
                         && !PgDiff.isSequenceExistInBothDB(seqName, newSchema.getName())) {
-                    errorStatement = errorStatement.concat(", " + seqName);
+                    errorStatement = errorStatement.concat(", " + seqDefinition);
                 }
             }
             if(!errorStatement.isEmpty()){

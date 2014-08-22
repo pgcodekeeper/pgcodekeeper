@@ -25,7 +25,7 @@ public class PgColumn extends PgStatement {
     private static final Pattern PATTERN_DEFAULT = Pattern.compile(
             "^(.+)[\\s]+DEFAULT[\\s]+(.+)$", Pattern.CASE_INSENSITIVE);
     private static final Pattern PATTERN_SEQUENCE = Pattern.compile(
-            "^(nextval|setval)\\('(.+)'::.+\\)$", Pattern.CASE_INSENSITIVE);
+            "^(nextval|setval)\\('(.+)'(::regclass|\\s*)\\)$", Pattern.CASE_INSENSITIVE);
     
     private Integer statistics;
     private String defaultValue;

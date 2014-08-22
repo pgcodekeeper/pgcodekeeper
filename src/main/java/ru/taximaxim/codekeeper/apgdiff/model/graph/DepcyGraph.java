@@ -9,6 +9,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -96,19 +97,6 @@ public class DepcyGraph {
                     graph.addVertex(trig);
                     graph.addEdge(trig, table);
                 }
-                
-                for(String seqName : table.getSequences()){
-                    for(PgSequence sequence : schema.getSequences()) {
-                        if (sequence.getName().equals(seqName)){
-                            graph.addVertex(sequence);
-                            graph.addEdge(table, sequence);
-                            if (sequence.getOwnedBy() != null){
-                                graph.addEdge(sequence, table);
-                            }
-                            break;
-                        }
-                    }
-                }
             }
         }
 
@@ -128,6 +116,30 @@ public class DepcyGraph {
                             PgColumn referredColumn = 
                                     db.getSchema(ref.schema).getTable(ref.table).getColumn(ref.column);
                             graph.addEdge(cons, referredColumn);
+                        }
+                    }
+                }
+                
+                for (String seqDefinition : table.getSequences()) {
+                    String seqName = ParserUtils.getObjectName(seqDefinition);
+                    PgSchema schemaToSearch = null;
+                    try {
+                        schemaToSearch = db.getSchema(
+                                ParserUtils.getSecondObjectName(seqDefinition));
+                    } catch (IndexOutOfBoundsException e) {
+                        // nothing
+                    }
+                    if (schemaToSearch == null) {
+                        schemaToSearch = schema;
+                    }
+                    for (PgSequence sequence : schemaToSearch.getSequences()) {
+                        if (sequence.getName().equals(seqName)) {
+                            graph.addVertex(sequence);
+                            graph.addEdge(table, sequence);
+                            if (sequence.getOwnedBy() != null) {
+                                graph.addEdge(sequence, table);
+                            }
+                            break;
                         }
                     }
                 }

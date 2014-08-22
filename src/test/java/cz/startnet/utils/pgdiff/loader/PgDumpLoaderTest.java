@@ -433,7 +433,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
     
     PgColumn col = new PgColumn("aid");
     col.setType("integer");
-    col.setDefaultValue("nextval('\"admins_aid_seq\"'::text)");
+    col.setDefaultValue("nextval('\"admins_aid_seq\"'::regclass)");
     col.setNullValue(false);
     table.addColumn(col);
     table.addSequence("\"admins_aid_seq\"");
