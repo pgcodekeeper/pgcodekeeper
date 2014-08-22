@@ -55,7 +55,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.xml.sax.SAXException;
 
@@ -283,12 +282,16 @@ public class DiffTableViewer extends Composite {
                 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    List<Object> currentElements = new ArrayList<>(); 
-                    for (TableItem ti : viewer.getTable().getItems()) {
-                        currentElements.add(ti.getData()); 
+                    Object[] initial = viewer.getCheckedElements();
+                    
+                    // select all
+                    viewer.setAllChecked(true);
+                    checkListener.setElementsChecked(viewer.getCheckedElements(), true);
+                    // deselect initial set
+                    for (Object el : initial) {
+                        viewer.setChecked(el, false);
                     }
-                    checkListener.reverseCheckedState(currentElements);
-                    viewerRefresh();
+                    checkListener.setElementsChecked(initial, false);
                 }
             });
             
@@ -770,13 +773,6 @@ public class DiffTableViewer extends Composite {
         public void setElementChecked(TreeElement element, boolean state) {
             setChecked(element, state);
             updateCheckedLabel();
-        }
-        
-        public void reverseCheckedState(List<Object> elementsToReverse) {
-            for (Object elementObj : elementsToReverse) {
-                TreeElement element = (TreeElement)elementObj;
-                elements.put(element, !elements.get(element));
-            }
         }
         
         private void setChecked(TreeElement element, boolean state) {
