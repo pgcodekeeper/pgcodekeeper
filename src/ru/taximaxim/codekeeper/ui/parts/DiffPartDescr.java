@@ -441,8 +441,7 @@ public class DiffPartDescr {
                 if (el != null && (el.getSide() == DiffSide.RIGHT
                         || el.getSide() == DiffSide.BOTH)) {
                     return new Document(
-                            el.getPgStatement(dbTarget.getDbObject())
-                                .getCreationSQL());
+                            el.getPgStatement(dbTarget.getDbObject()).getFullSQL());
                 } else {
                     return new Document();
                 }
@@ -464,8 +463,7 @@ public class DiffPartDescr {
                 if (el != null && (el.getSide() == DiffSide.LEFT
                         || el.getSide() == DiffSide.BOTH)) {
                     return new Document(
-                            el.getPgStatement(dbSource.getDbObject())
-                                    .getCreationSQL());
+                            el.getPgStatement(dbSource.getDbObject()).getFullSQL());
                 } else {
                     return new Document();
                 }
