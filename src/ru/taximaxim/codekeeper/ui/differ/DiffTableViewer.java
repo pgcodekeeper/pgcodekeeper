@@ -873,7 +873,7 @@ public class DiffTableViewer extends Composite {
             if (useRegEx) {
                 try {
                     return Pattern.compile(filterName, Pattern.CASE_INSENSITIVE)
-                            .matcher(((TreeElement) element).getName()).matches();
+                            .matcher(((TreeElement) element).getName()).find();
                 } catch (PatternSyntaxException e) {
                     return false;
                 }
