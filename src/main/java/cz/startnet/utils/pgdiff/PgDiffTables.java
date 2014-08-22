@@ -20,6 +20,7 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumnUtils;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -142,7 +143,8 @@ public class PgDiffTables {
             final PgDiffArguments arguments, final PgTable oldTable,
             final PgTable newTable, final SearchPathHelper searchPathHelper) {
         PgTable fullTable = PgDiff.dbNew.getSchema(newTable.getParent().getName()).getTable(newTable.getName());
-        PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, fullTable);
+        List<PgStatement> specialDepcies = 
+                PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, fullTable);
         
         updateTableColumns(
                 script, arguments, oldTable, newTable, searchPathHelper);
@@ -163,6 +165,12 @@ public class PgDiffTables {
         }
         
         alterComments(script, oldTable, newTable, searchPathHelper);
+        
+        for(PgStatement depcy : specialDepcies){
+            if (depcy instanceof PgStatement){
+                script.addStatement(((PgSequence)depcy).getOwnedBySQL());
+            }
+        }
     }
     
     /**
@@ -516,10 +524,17 @@ public class PgDiffTables {
         for (final PgTable table : newSchema.getTables()) {
             if (oldSchema == null || !oldSchema.containsTable(table.getName())) {
                 PgTable fullTable = PgDiff.dbNew.getSchema(newSchema.getName()).getTable(table.getName());
-                PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, fullTable);
+                List<PgStatement> specialDepcies = 
+                        PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, fullTable);
                 
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeCreationSql(script, null, table);
+                
+                for(PgStatement depcy : specialDepcies){
+                    if (depcy instanceof PgStatement){
+                        script.addStatement(((PgSequence)depcy).getOwnedBySQL());
+                    }
+                }
             }
         }
     }

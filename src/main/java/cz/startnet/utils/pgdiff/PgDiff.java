@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -593,8 +594,9 @@ public class PgDiff {
     private PgDiff() {
     }
     
-    public static void addUniqueDependenciesOnCreateEdit(PgDiffScript script,
+    public static List<PgStatement> addUniqueDependenciesOnCreateEdit(PgDiffScript script,
             PgDiffArguments arguments, SearchPathHelper newSearchPathHelper, PgStatement fullStatement){
+        List<PgStatement> specialDependencies = new ArrayList<PgStatement>(3);
         Set<PgStatement> dependencies = new LinkedHashSet<PgStatement>();
         PgDiff.getDependenciesSet(fullStatement, dependencies);
         PgStatement [] depcies = dependencies.toArray(new PgStatement[dependencies.size()]);
@@ -643,6 +645,7 @@ public class PgDiff {
                     searchPathHelper.outputSearchPath(script);
                     writeCreationSql(script, "-- DEPCY: this sequence is in dependency tree of " + 
                             fullStatement.getBareName(), s_new);
+                    specialDependencies.add(s_new);
                 }
             }else if (dep instanceof PgTable){
                 if (    fullStatement instanceof PgTable && 
@@ -678,7 +681,7 @@ public class PgDiff {
                 }
             }
         }
+        return specialDependencies;
     }
-    
     
 }
