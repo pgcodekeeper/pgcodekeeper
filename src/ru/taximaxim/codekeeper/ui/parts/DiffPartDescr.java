@@ -26,8 +26,7 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.source.CompositeRuler;
-import org.eclipse.jface.text.source.LineNumberRulerColumn;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -52,7 +51,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ManualDepciesDialog;
 import ru.taximaxim.codekeeper.ui.SqlScriptDialog;
-import ru.taximaxim.codekeeper.ui.SqlMergeViewer;
+import ru.taximaxim.codekeeper.ui.SqlSourceViewer;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
@@ -94,7 +93,7 @@ public class DiffPartDescr {
     private Button btnGetChanges;
     private Composite containerSrc;
     private DbPicker dbSrc;
-    private SqlMergeViewer diffPane;
+    private TextMergeViewer diffPane;
     /**
      * Remote DB.
      */
@@ -380,7 +379,19 @@ public class DiffPartDescr {
         conf.setLeftEditable(false);
         conf.setRightEditable(false);
         
-        diffPane = new SqlMergeViewer(sashOuter, SWT.BORDER, conf);
+        diffPane = new TextMergeViewer(sashOuter, SWT.BORDER, conf) {
+
+            @Override
+            protected void configureTextViewer(TextViewer textViewer) {
+                // viewer configures itself
+            }
+            
+            @Override
+            protected SourceViewer createSourceViewer(Composite parent,
+                    int textOrientation) {
+                return new SqlSourceViewer(parent, textOrientation);
+            }
+        };
         diffPane.setContentProvider(new IMergeViewerContentProvider() {
             
             @Override
