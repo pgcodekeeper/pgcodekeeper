@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -310,7 +311,10 @@ public class PgDumpLoader { //NOPMD
             File folder = new File(dir, s);
             
             if (folder.exists() && folder.isDirectory()) {
-                for (File f : folder.listFiles()) {
+                File[] files = folder.listFiles();
+                Arrays.sort(files);
+                
+                for (File f : files) {
                     if (f.exists() && !f.isDirectory()) {
                         try (FileInputStream inputStream = new FileInputStream(f)) {
                             loadDatabaseSchemaCore(inputStream, charsetName,
