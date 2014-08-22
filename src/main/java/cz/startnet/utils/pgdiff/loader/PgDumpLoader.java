@@ -311,8 +311,9 @@ public class PgDumpLoader { //NOPMD
             File folder = new File(dir, s);
             
             if (folder.exists() && folder.isDirectory()) {
-                File[] files;
-                Arrays.sort(files = folder.listFiles());
+                File[] files = folder.listFiles();
+                Arrays.sort(files);
+                
                 for (File f : files) {
                     if (f.exists() && !f.isDirectory()) {
                         try (FileInputStream inputStream = new FileInputStream(f)) {
