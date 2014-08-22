@@ -615,11 +615,14 @@ public class PgDiff {
                 PgView v_old = (old_schema == null) ? null : old_schema.getView(v_new.getName()); 
                 if (v_old == null){
                     searchPathHelper.outputSearchPath(script);
-                    writeCreationSql(script, null, v_new);
+                    writeCreationSql(script, "-- DEPCY: this view is in dependency tree of " + 
+                    fullStatement.getBareName(), v_new);
                 }else if (v_old != null && !v_old.equals(v_new)){
                     searchPathHelper.outputSearchPath(script);
-                    writeDropSql(script, null, v_new);
-                    writeCreationSql(script, null, v_new);
+                    writeDropSql(script, "-- DEPCY: recreating view that is in dependency "
+                            + "tree of " + fullStatement.getBareName(), v_new);
+                    writeCreationSql(script, "-- DEPCY: recreating view that is in "
+                            + "dependency tree of " + fullStatement.getBareName(),  v_new);
                 }
             }else if (dep instanceof PgSequence){
                 if (    fullStatement instanceof PgSequence && 
@@ -638,7 +641,8 @@ public class PgDiff {
                 PgSchema old_schema = dbOld.getSchema(newSchemaName);
                 if (old_schema == null || old_schema.getSequence(s_new.getName()) == null){
                     searchPathHelper.outputSearchPath(script);
-                    writeCreationSql(script, null, s_new);
+                    writeCreationSql(script, "-- DEPCY: this sequence is in dependency tree of " + 
+                            fullStatement.getBareName(), s_new);
                 }
             }else if (dep instanceof PgTable){
                 if (    fullStatement instanceof PgTable && 
@@ -660,7 +664,8 @@ public class PgDiff {
                 PgTable t_old = (old_schema == null) ? null : old_schema.getTable(t_new.getName());
                 if (t_old == null){
                     searchPathHelper.outputSearchPath(script);
-                    writeCreationSql(script, null, t_new);
+                    writeCreationSql(script, "-- DEPCY: this table is in dependency tree of " + 
+                            fullStatement.getBareName(), t_new);
                 }
             }else if (dep instanceof PgSchema){
                 PgSchema schemaNew = (PgSchema) dep;
@@ -668,7 +673,8 @@ public class PgDiff {
                 // NB public schema always exists in dbOld, thus it will 
                 // never be created here
                 if (dbOld.getSchema(schemaNew.getName()) == null){
-                    writeCreationSql(script, null, schemaNew);
+                    writeCreationSql(script, "-- DEPCY: this schema is in dependency tree of " + 
+                            fullStatement.getBareName(), schemaNew);
                 }
             }
         }
