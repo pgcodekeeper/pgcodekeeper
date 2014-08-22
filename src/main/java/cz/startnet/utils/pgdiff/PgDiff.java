@@ -422,7 +422,7 @@ public class PgDiff {
                 updateSchemaContent(script,
                         depcyOld.getDb().getSchema(oldSchema.getName()), newSchema,
                         new SearchPathHelper(oldSchema.getName()), arguments);
-                script.addDrop(oldSchema, oldSchema.getDropSQL());
+                writeDropSql(script, null, oldSchema);
             }
         }
     }
@@ -583,17 +583,11 @@ public class PgDiff {
     }
     
     static void writeCreationSql(PgDiffScript script, String comment, PgStatement pgObject) {
-        if (comment != null) {
-            script.addStatement(comment);
-        }
-        script.addCreate(pgObject, pgObject.getCreationSQL());
+        script.addCreate(pgObject, comment, pgObject.getCreationSQL());
     }
     
     static void writeDropSql(PgDiffScript script, String comment, PgStatement pgObject) {
-        if (comment != null) {
-            script.addStatement(comment);
-        }
-        script.addDrop(pgObject, pgObject.getDropSQL());
+        script.addDrop(pgObject, comment, pgObject.getDropSQL());
     }
     
     private PgDiff() {
