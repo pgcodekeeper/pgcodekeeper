@@ -134,7 +134,7 @@ public class DiffTableViewer extends Composite {
 
         Composite filterComp = new Composite(this, SWT.NONE);
         filterComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout filterLayout = new GridLayout(3, false);
+        GridLayout filterLayout = new GridLayout(2, false);
         filterLayout.marginWidth = filterLayout.marginHeight = 0;
         filterComp.setLayout(filterLayout);
         
@@ -153,6 +153,7 @@ public class DiffTableViewer extends Composite {
         
         useRegEx = new Button(filterComp, SWT.CHECK);
         useRegEx.setToolTipText(Messages.diffTableViewer_use_java_regular_expressions_see_more);
+        useRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
         useRegEx.addSelectionListener(new SelectionAdapter() {
            @Override
             public void widgetSelected(SelectionEvent e) {
@@ -160,8 +161,6 @@ public class DiffTableViewer extends Composite {
                viewerRefresh();
             } 
         });
-        
-        new Label(filterComp, SWT.NONE).setText(Messages.diffTableViewer_use_regular_expressions);
         
         prevCheckedHistory = new XmlHistory.Builder(PREVCHECKED_HIST_MAX_STORED,
                 PREVCHECKED_HIST_FILENAME, 
