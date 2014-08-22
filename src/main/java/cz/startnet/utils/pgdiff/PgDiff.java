@@ -19,15 +19,12 @@ import org.jgrapht.graph.DefaultEdge;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
@@ -610,7 +607,6 @@ public class PgDiff {
         SearchPathHelper searchPathHelper = newSearchPathHelper;
         for(int i = depcies.length - 1; i >= 0; i--){
             PgStatement dep = depcies[i];
-            System.out.println("###" + " " + i + " " + " " + fullStatement.getName() + " depends on " + dep.getBareName() + " (" + dep.getClass() + ")");
 
             if (dep instanceof PgView){
                 PgView v_new = (PgView)dep;
@@ -666,21 +662,10 @@ public class PgDiff {
                 
                 PgSchema old_schema = dbOld.getSchema(newSchemaName);
 
-                PgStatement statement = (i == depcies.length - 1) ? fullStatement : depcies[i+1];
                 PgTable t_old = (old_schema == null) ? null : old_schema.getTable(t_new.getName());
                 if (t_old == null){
                     searchPathHelper.outputSearchPath(script);
                     writeCreationSql(script, null, t_new);
-                }else if(statement instanceof PgView){
-                    // special case: modified table is required for view creation/edit
-                    PgView newView = (PgView) statement;
-                    for(String newColName : newView.getColumnNames()){
-                        if (t_old.getColumn(newColName) == null){
-                            searchPathHelper.outputSearchPath(script);
-                            PgDiffTables.alterTable(script, arguments, t_old, t_new, searchPathHelper);
-                            break;
-                        }
-                    }
                 }
             }else if (dep instanceof PgSchema){
                 PgSchema schemaNew = (PgSchema) dep;
@@ -690,16 +675,6 @@ public class PgDiff {
                 if (dbOld.getSchema(schemaNew.getName()) == null){
                     writeCreationSql(script, null, schemaNew);
                 }
-            }else{
-                String objType = "Object";
-                if(fullStatement instanceof PgColumn){
-                    objType = "Column";
-                }else if (fullStatement instanceof PgTrigger){
-                    objType = "Trigger";
-                }else if (fullStatement instanceof PgConstraint){
-                    objType = "Constraint";
-                }
-//                System.out.println("###" + " " + i + " " + objType + " " + fullStatement.getName() + " depends on " + dep.getBareName() + " (" + dep.getClass() + ")");
             }
         }
     }
