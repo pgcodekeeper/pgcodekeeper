@@ -25,7 +25,7 @@ public class PgColumn extends PgStatement {
     private static final Pattern PATTERN_DEFAULT = Pattern.compile(
             "^(.+)[\\s]+DEFAULT[\\s]+(.+)$", Pattern.CASE_INSENSITIVE);
     private static final Pattern PATTERN_SEQUENCE = Pattern.compile(
-            "^(nextval|setval)\\('(.+)'::.+\\)$", Pattern.CASE_INSENSITIVE);
+            "^(?:nextval|setval)\\('([\\w]+)'(?:::[\\w]+)?\\)$", Pattern.CASE_INSENSITIVE);
     
     private Integer statistics;
     private String defaultValue;
@@ -167,7 +167,7 @@ public class PgColumn extends PgStatement {
     public String parseSequence(String definition) {
         Matcher seqMatcher = PATTERN_SEQUENCE.matcher(definition);
         if (seqMatcher.matches()) {
-            return seqMatcher.group(2).trim();
+            return seqMatcher.group(1).trim();
         }
         return null;
     }

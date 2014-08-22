@@ -85,7 +85,7 @@ public class PgSchema extends PgStatement {
 
         return sbSQL.toString();
     }
-
+    
     @Override
     public String getDropSQL() {
         return "DROP SCHEMA "

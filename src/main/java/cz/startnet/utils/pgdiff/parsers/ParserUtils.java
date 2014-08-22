@@ -42,7 +42,7 @@ public class ParserUtils {
     public static String getSecondObjectName(final String name) {
         final String[] names = splitNames(name);
 
-        return names[names.length - 2];
+        return names.length >= 2 ? names[names.length - 2] : null;
     }
 
     /**

@@ -5,13 +5,13 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
  * Stores trigger information.
@@ -64,6 +64,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         this.comment = comment;
     }
 
+    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(100);
         sbSQL.append("CREATE TRIGGER ");
@@ -149,6 +150,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         return sbSQL.toString();
     }
 
+    @Override
     public String getDropSQL() {
         return "DROP TRIGGER " + PgDiffUtils.getQuotedName(getName()) + " ON "
                 + PgDiffUtils.getQuotedName(getTableName()) + ";";

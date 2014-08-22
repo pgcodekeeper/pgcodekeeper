@@ -55,6 +55,7 @@ public class PgExtension extends PgStatement {
         this.comment = comment;
     }
     
+    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(50);
         sbSQL.append("CREATE EXTENSION ");

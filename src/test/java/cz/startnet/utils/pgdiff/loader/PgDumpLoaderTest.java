@@ -20,14 +20,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import static org.mockito.Mockito.*;
-
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.Version;
-
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -42,14 +40,6 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import ru.taximaxim.codekeeper.apgdiff.Activator;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
 /**
  * An abstract 'factory' that creates 'artificial'
@@ -149,7 +139,7 @@ public class PgDumpLoaderTest {
         // first test the dump loader itself
         String filename = "schema_" + fileIndex + ".sql";
         PgDatabase d = PgDumpLoader.loadDatabaseSchemaFromDump(
-                getClass().getResourceAsStream(filename),
+                PgDumpLoaderTest.class.getResourceAsStream(filename),
                 encoding, false, false);
         
         // then check result's validity against handmade DB object
@@ -204,40 +194,13 @@ public class PgDumpLoaderTest {
         // prepare db object from sql file
         String filename = "schema_" + fileIndex + ".sql";
         PgDatabase dbFromFile = PgDumpLoader.loadDatabaseSchemaFromDump(
-                getClass().getResourceAsStream(filename), encoding, false, false);
+                PgDumpLoaderTest.class.getResourceAsStream(filename),
+                encoding, false, false);
         
         PgDatabase dbPredefined = dbCreators[fileIndex - 1].getDatabase();
         Path exportDir = null;
         try{
             exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
-
-            BundleContext context = mock(BundleContext.class);
-            new Activator().start(context);
-            when(context.getBundles()).thenAnswer(new Answer<Bundle[]>() {
-                @Override
-                public Bundle[] answer(InvocationOnMock invocation) throws Throwable {
-                    Bundle[] b = { mock(Bundle.class) };
-
-                    when(b[0].getSymbolicName()).thenAnswer(
-                            new Answer<String>() {
-                                @Override
-                                public String answer(InvocationOnMock invocation)
-                                        throws Throwable {
-                                    return ApgdiffConsts.APGDIFF_PLUGIN_ID;
-                                }
-                            });
-
-                    when(b[0].getVersion()).thenAnswer(new Answer<Version>() {
-                        @Override
-                        public Version answer(InvocationOnMock invocation)
-                                throws Throwable {
-                            return new Version("0.1.0.mockversion");
-                        }
-                    });
-                    return b;
-                }
-            });
-
             new ModelExporter(exportDir.toString(), dbPredefined, encoding).export();
             
             PgDatabase dbAfterExport = PgDumpLoader.loadDatabaseSchemaFromDirTree(
@@ -433,7 +396,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
     
     PgColumn col = new PgColumn("aid");
     col.setType("integer");
-    col.setDefaultValue("nextval('\"admins_aid_seq\"'::text)");
+    col.setDefaultValue("nextval('\"admins_aid_seq\"'::regclass)");
     col.setNullValue(false);
     table.addColumn(col);
     table.addSequence("\"admins_aid_seq\"");

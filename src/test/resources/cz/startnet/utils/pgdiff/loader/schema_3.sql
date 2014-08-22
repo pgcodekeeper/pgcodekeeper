@@ -13,7 +13,7 @@ CREATE SEQUENCE "admins_aid_seq" start 1 increment 1 maxvalue 1000000000 minvalu
 --
 
 CREATE TABLE "admins" (
-    "aid" integer DEFAULT nextval('"admins_aid_seq"'::text) NOT NULL,
+    "aid" integer DEFAULT nextval('"admins_aid_seq"'::regclass) NOT NULL,
     "companyid" integer DEFAULT 0 NOT NULL,
     "groupid" integer DEFAULT 0 NOT NULL,
     "username" character varying NOT NULL,

@@ -33,6 +33,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         this.comment = comment;
     }
 
+    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(100);
         sbSQL.append("CREATE ");
@@ -59,7 +60,7 @@ public class PgIndex extends PgStatementWithSearchPath {
 
         return sbSQL.toString();
     }
-
+    
     public void setDefinition(final String definition) {
         this.definition = definition;
         resetHash();
@@ -69,6 +70,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         return definition;
     }
 
+    @Override
     public String getDropSQL() {
         return "DROP INDEX " + PgDiffUtils.getQuotedName(getName()) + ";";
     }

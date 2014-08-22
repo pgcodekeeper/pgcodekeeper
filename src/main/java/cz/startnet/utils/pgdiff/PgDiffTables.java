@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
+import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumnUtils;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
@@ -172,7 +173,7 @@ public class PgDiffTables {
             }
         }
     }
-    
+
     /**
      * Generate the needed alter table xxx set statistics when needed.
      *

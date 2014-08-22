@@ -46,6 +46,7 @@ public class PgSequence extends PgStatementWithSearchPath {
         this.comment = comment;
     }
 
+    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(100);
         sbSQL.append("CREATE SEQUENCE ");
@@ -122,6 +123,19 @@ public class PgSequence extends PgStatementWithSearchPath {
 
         return sbSQL.toString();
     }
+    
+    @Override
+    public String getFullSQL() {
+        String superFull = super.getFullSQL();
+        
+        if (ownedBy != null && !ownedBy.isEmpty()) {
+            StringBuilder sb = new StringBuilder(superFull);
+            sb.append("\n\n").append(getOwnedBySQL());
+            return sb.toString();
+        } else {
+            return superFull;
+        }
+    }
 
     public void setCycle(final boolean cycle) {
         this.cycle = cycle;
@@ -132,6 +146,7 @@ public class PgSequence extends PgStatementWithSearchPath {
         return cycle;
     }
 
+    @Override
     public String getDropSQL() {
         return "DROP SEQUENCE " + PgDiffUtils.getQuotedName(getName()) + ";";
     }

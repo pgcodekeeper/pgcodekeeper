@@ -114,7 +114,7 @@ public class PgView extends PgStatementWithSearchPath {
 
         return sbSQL.toString();
     }
-
+    
     @Override
     public String getDropSQL() {
         return "DROP VIEW " + PgDiffUtils.getQuotedName(getName()) + ';';
