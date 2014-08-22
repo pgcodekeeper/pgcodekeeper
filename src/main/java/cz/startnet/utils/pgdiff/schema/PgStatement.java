@@ -157,6 +157,10 @@ abstract public class PgStatement {
     
     abstract public String getCreationSQL();
     
+    public String getFullSQL() {
+        return getCreationSQL();
+    }
+    
     abstract public String getDropSQL();
     
     /**

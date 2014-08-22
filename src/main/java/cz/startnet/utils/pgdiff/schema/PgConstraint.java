@@ -5,10 +5,10 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
-import cz.startnet.utils.pgdiff.PgDiffUtils;
-
 import java.util.Objects;
 import java.util.regex.Pattern;
+
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
  * Stores table constraint information.
@@ -31,6 +31,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
         super(name, rawStatement, searchPath);
     }
 
+    @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(100);
         sbSQL.append("ALTER TABLE ");
@@ -53,7 +54,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
 
         return sbSQL.toString();
     }
-
+    
     public String getComment() {
         return comment;
     }
@@ -71,6 +72,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
         return definition;
     }
 
+    @Override
     public String getDropSQL() {
         final StringBuilder sbSQL = new StringBuilder(100);
         sbSQL.append("ALTER TABLE ");

@@ -14,7 +14,6 @@ import java.util.Properties;
 
 import org.osgi.framework.Version;
 
-import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
@@ -22,7 +21,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -55,10 +53,6 @@ public class ModelExporter {
      */
     private final String sqlEncoding;
     
-    /**
-     * List of written files' names.
-     */
-    private StringBuilder writtenFiles = new StringBuilder(3000 * 260);
     
     /**
      * Creates a new ModelExporter object with set {@link #outDir} and {@link #db}
@@ -182,12 +176,7 @@ public class ModelExporter {
         for(PgStatementWithSearchPath obj : objects) {
             String filename = null;
             filename = getExportedFilename(obj) + ".sql";
-            String sqlToDump = obj.getSearchPath() + "\n\n" + obj.getCreationSQL();
-            
-            // OWNED BY is exported as a separate statement for SEQUENCE
-            if(obj instanceof PgSequence) {
-                sqlToDump += "\n\n" + ((PgSequence)obj).getOwnedBySQL();
-            }
+            String sqlToDump = obj.getSearchPath() + "\n\n" + obj.getFullSQL();
             
             File objectSQL = new File(objectDir, filename);
             dumpSQL(sqlToDump, objectSQL);
@@ -223,10 +212,10 @@ public class ModelExporter {
         }
         
         try(PrintWriter outFile = new UnixPrintWriter(file, sqlEncoding)) {
+            Log.log(Log.LOG_DEBUG, "Dumped SQL:\n" + file.getAbsolutePath());
+            
             outFile.println(sql);
         }
-        
-        writtenFiles.append(outPath.relativize(file.toPath())).append('\n');
     }
     
     /**
