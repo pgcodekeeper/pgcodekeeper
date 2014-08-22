@@ -111,6 +111,7 @@ public class Messages extends NLS {
     public static String diffTableViewer_deselect_child_elements;
     public static String diffTableViewer_filtering_diff_tree_based_on_gui_selection;
     public static String diffTableViewer_Input_name_for_save_checked_elements;
+    public static String diffTableViewer_invert_selection;
     public static String diffTableViewer_object_name;
     public static String diffTableViewer_object_type;
     public static String diffTableViewer_objects;

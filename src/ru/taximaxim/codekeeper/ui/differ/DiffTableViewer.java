@@ -221,7 +221,7 @@ public class DiffTableViewer extends Composite {
         
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 9, false);
+        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 10, false);
         contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
         contButtons.setLayout(contButtonsLayout);
         
@@ -270,6 +270,20 @@ public class DiffTableViewer extends Composite {
                     checkListener.setElementsChecked(viewer.getCheckedElements(), false);
                     viewer.setAllChecked(false);
                     cmbPrevChecked.setSelection(StructuredSelection.EMPTY);
+                }
+            });
+            
+            Button btnInvertSelection = new Button(contButtons, SWT.PUSH);
+            btnInvertSelection.setToolTipText(Messages.diffTableViewer_invert_selection);
+            btnInvertSelection.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(
+                            FILE.ICONINVERTSELECTION))));
+            btnInvertSelection.addSelectionListener(new SelectionAdapter() {
+                
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    checkListener.reverseCheckedState();
+                    viewerRefresh();
                 }
             });
             
@@ -751,6 +765,12 @@ public class DiffTableViewer extends Composite {
         public void setElementChecked(TreeElement element, boolean state) {
             setChecked(element, state);
             updateCheckedLabel();
+        }
+        
+        public void reverseCheckedState() {
+            for (TreeElement element : elements.keySet()) {
+                elements.put(element, !elements.get(element));
+            }
         }
         
         private void setChecked(TreeElement element, boolean state) {

@@ -99,5 +99,6 @@ public interface UIConsts {
         String ICONDEFAULTSORT = "/icons/alpha_mode.gif"; //$NON-NLS-1$
         String ICONSELECTALL = "/icons/check_all.gif"; //$NON-NLS-1$
         String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
+        String ICONINVERTSELECTION = "/icons/loop_obj.gif"; //$NON-NLS-1$
     }
 }
