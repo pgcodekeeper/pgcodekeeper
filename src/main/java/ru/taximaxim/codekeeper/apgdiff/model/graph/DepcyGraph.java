@@ -123,20 +123,24 @@ public class DepcyGraph {
                 for (String seqDefinition : table.getSequences()) {
                     String seqName = ParserUtils.getObjectName(seqDefinition);
                     String schemaName = ParserUtils.getSecondObjectName(seqDefinition);
-                    PgSchema schemaToSearch = db.getSchema(schemaName) != null ? 
-                            db.getSchema(schemaName) : schema;
                     
-                    for (PgSequence sequence : schemaToSearch.getSequences()) {
-                        if (sequence.getName().equals(seqName)) {
-                            graph.addVertex(sequence);
-                            graph.addEdge(table, sequence);
-                             
-                            String owned = sequence.getOwnedBy();
-                            String ownedByTable = (owned != null) ? ParserUtils.getSecondObjectName(owned) : null;
-                            if (ownedByTable != null && table.getName().equals(ownedByTable)) {
-                                graph.addEdge(sequence, table);
-                            }
-                            break;
+                    PgSchema schemaToSearch = null;
+                    if (schemaName != null) {
+                        schemaToSearch = db.getSchema(schemaName);
+                    }
+                    if (schemaToSearch == null) {
+                        schemaToSearch = schema;
+                    }
+                    
+                    PgSequence seq = schemaToSearch.getSequence(seqName);
+                    if (seq != null) {
+                        graph.addVertex(seq);
+                        graph.addEdge(table, seq);
+                         
+                        String owned = seq.getOwnedBy();
+                        String ownedByTable = (owned != null) ? ParserUtils.getSecondObjectName(owned) : null;
+                        if (table.getName().equals(ownedByTable)) {
+                            graph.addEdge(seq, table);
                         }
                     }
                 }
