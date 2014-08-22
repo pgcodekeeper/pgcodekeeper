@@ -122,21 +122,18 @@ public class DepcyGraph {
                 
                 for (String seqDefinition : table.getSequences()) {
                     String seqName = ParserUtils.getObjectName(seqDefinition);
-                    PgSchema schemaToSearch = null;
-                    try {
-                        schemaToSearch = db.getSchema(
-                                ParserUtils.getSecondObjectName(seqDefinition));
-                    } catch (IndexOutOfBoundsException e) {
-                        // nothing
-                    }
-                    if (schemaToSearch == null) {
-                        schemaToSearch = schema;
-                    }
+                    String schemaName = ParserUtils.getSecondObjectName(seqDefinition);
+                    PgSchema schemaToSearch = db.getSchema(schemaName) != null ? 
+                            db.getSchema(schemaName) : schema;
+                    
                     for (PgSequence sequence : schemaToSearch.getSequences()) {
                         if (sequence.getName().equals(seqName)) {
                             graph.addVertex(sequence);
                             graph.addEdge(table, sequence);
-                            if (sequence.getOwnedBy() != null) {
+                             
+                            String owned = sequence.getOwnedBy();
+                            String ownedByTable = (owned != null) ? ParserUtils.getSecondObjectName(owned) : null;
+                            if (ownedByTable != null && table.getName().equals(ownedByTable)) {
                                 graph.addEdge(sequence, table);
                             }
                             break;
