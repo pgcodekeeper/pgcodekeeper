@@ -32,18 +32,18 @@ public class PgDiffScript {
         statements.add(new PgDiffStatement(DiffStatementType.OTHER, null, statement));
     }
     
-    public void addDrop(PgStatement obj, String statement) {
-        addStatementUnique(DiffStatementType.DROP, obj, statement);
+    public void addDrop(PgStatement obj, String comment, String statement) {
+        addStatementUnique(DiffStatementType.DROP, obj, comment, statement);
     }
     
-    public void addCreate(PgStatement obj, String statement) {
-        addStatementUnique(DiffStatementType.CREATE, obj, statement);
+    public void addCreate(PgStatement obj, String comment, String statement) {
+        addStatementUnique(DiffStatementType.CREATE, obj, comment, statement);
     }
     
     /**
      * Adds statement only if it's not present in the statements list.
      */
-    private void addStatementUnique(DiffStatementType type, PgStatement obj, String statement) {
+    private void addStatementUnique(DiffStatementType type, PgStatement obj, String comment, String statement) {
         if (type != DiffStatementType.DROP && type != DiffStatementType.CREATE) {
             throw new IllegalArgumentException(
                     "Only DROPs and CREATEs can be tracked as unique statements!");
@@ -51,6 +51,9 @@ public class PgDiffScript {
         
         PgDiffStatement st = new PgDiffStatement(type, obj, statement);
         if (!unique.contains(st)) {
+            if (comment != null){
+                addStatement(comment);
+            }
             statements.add(st);
             unique.add(st);
         } else {

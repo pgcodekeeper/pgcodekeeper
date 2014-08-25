@@ -16,11 +16,11 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
-import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumnUtils;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -132,31 +132,44 @@ public class PgDiffTables {
         }
         
         for (final PgTable newTable : newSchema.getTables()) {
-            if (!oldSchema.containsTable(newTable.getName())) {
-                continue;
+            if (oldSchema.containsTable(newTable.getName())) {
+                PgTable oldTable = oldSchema.getTable(newTable.getName());
+                alterTable(script, arguments, oldTable, newTable, searchPathHelper);
             }
+        }
+    }
 
-            final PgTable oldTable = oldSchema.getTable(newTable.getName());
-            
-            updateTableColumns(
-                    script, arguments, oldTable, newTable, searchPathHelper);
-            checkWithOIDS(script, oldTable, newTable, searchPathHelper);
-            checkInherits(script, oldTable, newTable, searchPathHelper);
-            checkTablespace(script, oldTable, newTable, searchPathHelper);
-            addAlterStatistics(script, oldTable, newTable, searchPathHelper);
-            addAlterStorage(script, oldTable, newTable, searchPathHelper);
-            
-            if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement(newTable.getOwnerSQL());
+    public static void alterTable(final PgDiffScript script,
+            final PgDiffArguments arguments, final PgTable oldTable,
+            final PgTable newTable, final SearchPathHelper searchPathHelper) {
+        PgTable fullTable = PgDiff.dbNew.getSchema(newTable.getParent().getName()).getTable(newTable.getName());
+        List<PgStatement> specialDepcies = 
+                PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, fullTable);
+        
+        updateTableColumns(
+                script, arguments, oldTable, newTable, searchPathHelper);
+        checkWithOIDS(script, oldTable, newTable, searchPathHelper);
+        checkInherits(script, oldTable, newTable, searchPathHelper);
+        checkTablespace(script, oldTable, newTable, searchPathHelper);
+        addAlterStatistics(script, oldTable, newTable, searchPathHelper);
+        addAlterStorage(script, oldTable, newTable, searchPathHelper);
+        
+        if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
+            searchPathHelper.outputSearchPath(script);
+            script.addStatement(newTable.getOwnerSQL());
+        }
+        
+        if (!oldTable.getPrivileges().equals(newTable.getPrivileges())) {
+            searchPathHelper.outputSearchPath(script);
+            script.addStatement(newTable.getPrivilegesSQL());
+        }
+        
+        alterComments(script, oldTable, newTable, searchPathHelper);
+        
+        for(PgStatement depcy : specialDepcies){
+            if (depcy instanceof PgSequence && ((PgSequence)depcy).getOwnedBy() != null){
+                script.addStatement(((PgSequence)depcy).getOwnedBySQL());
             }
-            
-            if (!oldTable.getPrivileges().equals(newTable.getPrivileges())) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement(newTable.getPrivilegesSQL());
-            }
-            
-            alterComments(script, oldTable, newTable, searchPathHelper);
         }
     }
 
@@ -510,44 +523,20 @@ public class PgDiffTables {
             final SearchPathHelper searchPathHelper) {
         for (final PgTable table : newSchema.getTables()) {
             if (oldSchema == null || !oldSchema.containsTable(table.getName())) {
+                PgTable fullTable = PgDiff.dbNew.getSchema(newSchema.getName()).getTable(table.getName());
+                List<PgStatement> specialDepcies = 
+                        PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, fullTable);
+                
                 searchPathHelper.outputSearchPath(script);
-                createCheckSequenceDepcy(script, newSchema, table);
-            }
-        }
-    }
-
-    /**
-     * Т.к. newSchema - shallow копия newSchemaFull, то не все таблицы  
-     * могут быть найдены в Графе зависимостей, построенном на полной newSchemaFull.
-     * Поэтому опираемся на добавленные имена Sequence в таблицу, и выводим 
-     * вместо скрипта создания предупреждение, почему скрипт не вставился в случаях:<br>
-     * 1. Пользователь не выбрал Sequence, на который ссылается таблица<br>
-     * 2. Sequence(на который ссылается таблица) отсутсвует в старой и новой бд
-     * @param script
-     * @param newSchema
-     * @param table
-     */
-    private static void createCheckSequenceDepcy(final PgDiffScript script,
-            final PgSchema newSchema, final PgTable table) {
-        if (!table.getSequences().isEmpty()) {
-            String errorStatement = "";
-            for (String seqDefinition : table.getSequences()) {
-                String seqName = ParserUtils.getObjectName(seqDefinition);
-                if (newSchema.getSequence(seqName) == null
-                        && !PgDiff.isSequenceExistInBothDB(seqName, newSchema.getName())) {
-                    errorStatement = errorStatement.concat(", " + seqDefinition);
+                PgDiff.writeCreationSql(script, null, table);
+                
+                for(PgStatement depcy : specialDepcies){
+                    if (depcy instanceof PgSequence && ((PgSequence)depcy).getOwnedBy() != null){
+                        script.addStatement(((PgSequence)depcy).getOwnedBySQL());
+                    }
                 }
             }
-            if(!errorStatement.isEmpty()){
-                errorStatement = MessageFormat.format("-- table \"" + table.getName()
-                                + "\" was not created because it was not selected entirely "
-                                + "\n-- (sequences: {0})",
-                                errorStatement.substring(2));
-                script.addStatement(errorStatement);
-                return;
-            }
         }
-        PgDiff.writeCreationSql(script, null, table);
     }
 
     /**

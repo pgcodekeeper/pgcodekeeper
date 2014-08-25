@@ -28,10 +28,11 @@ public class PgDiffSequences {
     public static void createSequences(final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
-        // Add new sequences
         for (final PgSequence sequence : newSchema.getSequences()) {
             if (oldSchema == null
                     || !oldSchema.containsSequence(sequence.getName())) {
+                PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, sequence);
+                
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeCreationSql(script, null, sequence);
             }
@@ -175,6 +176,8 @@ public class PgDiffSequences {
             final String newOwnedBy = newSequence.getOwnedBy();
 
             if (newOwnedBy != null && !newOwnedBy.equals(oldOwnedBy)) {
+                PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newSequence);
+                
                 sbSQL.append("\n\tOWNED BY ");
                 sbSQL.append(newOwnedBy);
             }

@@ -7,6 +7,8 @@ package cz.startnet.utils.pgdiff;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -15,6 +17,8 @@ import java.util.Set;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
+import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
@@ -22,8 +26,7 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
+import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
  * Creates diff of two database schemas.
@@ -33,9 +36,13 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 public class PgDiff {
 
     private static DirectedGraph<PgStatement, DefaultEdge> oldDepcyGraph;
+    private static DirectedGraph<PgStatement, DefaultEdge> newDepcyGraph;
     private static DepcyGraph depcyOld;
+    private static DepcyGraph depcyNew;
     
-    private static PgDatabase dbNew;
+    // TODO remove public!
+    public static PgDatabase dbNew;
+    private static PgDatabase dbOld;
 
     /**
      * Creates diff on the two database schemas.
@@ -131,8 +138,8 @@ public class PgDiff {
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
         // since we cannot into OOP here - null the global vars at least
-        oldDepcyGraph = null;
-        depcyOld = null;
+        oldDepcyGraph = newDepcyGraph = null;
+        depcyOld = depcyNew = null;
         
         if (arguments.isAddTransaction()) {
             writer.println("START TRANSACTION;");
@@ -141,6 +148,8 @@ public class PgDiff {
         // temp solution
         if (oldDbFull != null && newDbFull != null){
             depcyOld = new DepcyGraph(oldDbFull);
+            depcyNew = new DepcyGraph(newDbFull);
+            dbOld = oldDbFull;
             dbNew = newDbFull;
             
             if (additionalDepcies != null) {
@@ -148,8 +157,10 @@ public class PgDiff {
             }
         }else{
             depcyOld = new DepcyGraph(new PgDatabase());
+            depcyNew = new DepcyGraph(new PgDatabase());
         }
         oldDepcyGraph = depcyOld.getGraph();
+        newDepcyGraph = depcyNew.getGraph();
         
         if (oldDatabase.getComment() == null
                 && newDatabase.getComment() != null
@@ -262,7 +273,7 @@ public class PgDiff {
      */
     public static Set<PgStatement> getDependenciesSet(PgStatement child,
             Set<PgStatement> result){
-        return getDependencies(child, result, oldDepcyGraph);
+        return getDependencies(child, result, newDepcyGraph);
     }
     
     /**
@@ -412,7 +423,7 @@ public class PgDiff {
                 updateSchemaContent(script,
                         depcyOld.getDb().getSchema(oldSchema.getName()), newSchema,
                         new SearchPathHelper(oldSchema.getName()), arguments);
-                script.addDrop(oldSchema, oldSchema.getDropSQL());
+                writeDropSql(script, null, oldSchema);
             }
         }
     }
@@ -431,20 +442,6 @@ public class PgDiff {
         }
         
         return true;
-    }
-    
-    static boolean isSequenceExistInBothDB(String seqName, String schemaName) {
-        PgSchema fullSchemaOld = depcyOld.getDb().getSchema(schemaName);
-        PgSchema fullSchemaNew = dbNew == null ? null : dbNew.getSchema(schemaName);
-        if (fullSchemaOld != null 
-                && fullSchemaNew != null) {
-            PgSequence oldSec = fullSchemaOld.getSequence(seqName);
-            PgSequence newSec = fullSchemaNew.getSequence(seqName);
-            if (oldSec != null) {
-                return oldSec.equals(newSec);
-            }
-        }
-        return false;
     }
 
     /**
@@ -563,7 +560,7 @@ public class PgDiff {
         PgDiffViews.createViews(
                 script, oldSchema, newSchema, searchPathHelper);
         PgDiffViews.alterViews(
-                script, oldSchema, newSchema, searchPathHelper);
+                script, arguments, oldSchema, newSchema, searchPathHelper);
 
         PgDiffFunctions.alterComments(
                 script, oldSchema, newSchema, searchPathHelper);
@@ -587,19 +584,108 @@ public class PgDiff {
     }
     
     static void writeCreationSql(PgDiffScript script, String comment, PgStatement pgObject) {
-        if (comment != null) {
-            script.addStatement(comment);
-        }
-        script.addCreate(pgObject, pgObject.getCreationSQL());
+        script.addCreate(pgObject, comment, pgObject.getCreationSQL());
     }
     
     static void writeDropSql(PgDiffScript script, String comment, PgStatement pgObject) {
-        if (comment != null) {
-            script.addStatement(comment);
-        }
-        script.addDrop(pgObject, pgObject.getDropSQL());
+        script.addDrop(pgObject, comment, pgObject.getDropSQL());
     }
     
     private PgDiff() {
     }
+    
+    public static List<PgStatement> addUniqueDependenciesOnCreateEdit(PgDiffScript script,
+            PgDiffArguments arguments, SearchPathHelper newSearchPathHelper, PgStatement fullStatement){
+        
+        List<PgStatement> specialDependencies = new ArrayList<PgStatement>(3);
+        Set<PgStatement> dependencies = new LinkedHashSet<PgStatement>();
+        PgDiff.getDependenciesSet(fullStatement, dependencies);
+        PgStatement [] depcies = dependencies.toArray(new PgStatement[dependencies.size()]);
+        SearchPathHelper searchPathHelper = newSearchPathHelper;
+        
+        for(int i = depcies.length - 1; i >= 0; i--){
+            PgStatement dep = depcies[i];
+
+            if (dep instanceof PgView){
+                PgView v_new = (PgView)dep;
+                String newSchemaName = v_new.getParent().getName();
+                PgSchema old_schema = dbOld.getSchema(newSchemaName);
+
+                if(!searchPathHelper.getSchemaName().equals(newSchemaName)){
+                    searchPathHelper = new SearchPathHelper(newSchemaName);
+                    newSearchPathHelper.setWasOutput(false);
+                }
+                
+                PgView v_old = (old_schema == null) ? null : old_schema.getView(v_new.getName()); 
+                if (v_old == null){
+                    searchPathHelper.outputSearchPath(script);
+                    writeCreationSql(script, "-- DEPCY: this view is in dependency tree of " + 
+                    fullStatement.getBareName(), v_new);
+                }else if (v_old != null && !v_old.equals(v_new)){
+                    searchPathHelper.outputSearchPath(script);
+                    writeDropSql(script, "-- DEPCY: recreating view that is in dependency "
+                            + "tree of " + fullStatement.getBareName(), v_new);
+                    writeCreationSql(script, "-- DEPCY: recreating view that is in "
+                            + "dependency tree of " + fullStatement.getBareName(),  v_new);
+                }
+            }else if (dep instanceof PgSequence){
+                if (    fullStatement instanceof PgSequence && 
+                        dep.getName().equals(fullStatement.getName()) && 
+                        dep.getParent().getName().equals(fullStatement.getParent().getName())){
+                    continue;
+                }
+                PgSequence s_new = (PgSequence)dep;
+                String newSchemaName = s_new.getParent().getName();
+
+                if(!searchPathHelper.getSchemaName().equals(newSchemaName)){
+                    searchPathHelper = new SearchPathHelper(newSchemaName);
+                    newSearchPathHelper.setWasOutput(false);
+                }
+                
+                PgSchema old_schema = dbOld.getSchema(newSchemaName);
+                if (old_schema == null || old_schema.getSequence(s_new.getName()) == null){
+                    searchPathHelper.outputSearchPath(script);
+                    writeCreationSql(script, "-- DEPCY: this sequence is in dependency tree of " + 
+                            fullStatement.getBareName(), s_new);
+                    specialDependencies.add(s_new);
+                }
+            }else if (dep instanceof PgTable){
+                if (    fullStatement instanceof PgTable && 
+                        dep.getName().equals(fullStatement.getName()) && 
+                        dep.getParent().getName().equals(fullStatement.getParent().getName()) || 
+                        fullStatement instanceof PgSequence){
+                    // TODO WHY fullStatement instanceof PgSequence
+                    continue;
+                }
+                PgTable t_new = (PgTable)dep;
+                String newSchemaName = t_new.getParent().getName();
+
+                // TODO убрать, такое уже реализовано в tempSwitchSearchPath
+                if(!searchPathHelper.getSchemaName().equals(newSchemaName)){
+                    searchPathHelper = new SearchPathHelper(newSchemaName);
+                    newSearchPathHelper.setWasOutput(false);
+                }
+                
+                PgSchema old_schema = dbOld.getSchema(newSchemaName);
+
+                PgTable t_old = (old_schema == null) ? null : old_schema.getTable(t_new.getName());
+                if (t_old == null){
+                    searchPathHelper.outputSearchPath(script);
+                    writeCreationSql(script, "-- DEPCY: this table is in dependency tree of " + 
+                            fullStatement.getBareName(), t_new);
+                }
+            }else if (dep instanceof PgSchema){
+                PgSchema schemaNew = (PgSchema) dep;
+                
+                // NB public schema always exists in dbOld, thus it will 
+                // never be created here
+                if (dbOld.getSchema(schemaNew.getName()) == null){
+                    writeCreationSql(script, "-- DEPCY: this schema is in dependency tree of " + 
+                            fullStatement.getBareName(), schemaNew);
+                }
+            }
+        }
+        return specialDependencies;
+    }
+    
 }

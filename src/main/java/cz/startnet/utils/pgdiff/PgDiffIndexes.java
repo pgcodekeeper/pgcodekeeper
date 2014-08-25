@@ -36,11 +36,15 @@ public class PgDiffIndexes {
             // Add new indexes
             if (oldSchema == null) {
                 for (PgIndex index : newTable.getIndexes()) {
+                    PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, index);
+                    
                     searchPathHelper.outputSearchPath(script);
                     PgDiff.writeCreationSql(script, null, index);
                 }
             } else {
                 for (PgIndex index : getNewIndexes(oldSchema.getTable(newTableName), newTable)) {
+                    PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, index);
+                    
                     searchPathHelper.outputSearchPath(script);
                     PgDiff.writeCreationSql(script, null, index);
                 }

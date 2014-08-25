@@ -40,6 +40,8 @@ public class PgDiffViews {
             if (oldSchema == null
                     || !oldSchema.containsView(newView.getName())
                     || isModified) {
+                PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, newView);
+                
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeCreationSql(script, null, newView);
                 
@@ -146,6 +148,7 @@ public class PgDiffViews {
 
     /**
      * Outputs statements for altering view default values.
+     * @param arguments 
      *
      * @param writer           writer
      * @param oldSchema        old schema
@@ -153,7 +156,7 @@ public class PgDiffViews {
      * @param searchPathHelper search path helper
      */
     public static void alterViews(final PgDiffScript script,
-            final PgSchema oldSchema, final PgSchema newSchema,
+            PgDiffArguments arguments, final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
             return;
@@ -165,7 +168,9 @@ public class PgDiffViews {
             if (newView == null) {
                 continue;
             }
-
+            // TODO view may be not changed here
+            PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newView);
+            
             diffDefaultValues(script, oldView, newView, searchPathHelper);
 
             if (!Objects.equals(oldView.getOwner(), newView.getOwner())) {
