@@ -12,17 +12,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
         super(configurer);
     }
 
+    @Override
     public ActionBarAdvisor createActionBarAdvisor(IActionBarConfigurer configurer) {
         return new ActionBarAdvisor(configurer);
     }
     
+    @Override
     public void preWindowOpen() {
         IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
         configurer.setInitialSize(new Point(1280, 768));
         configurer.setShowMenuBar(true);
         configurer.setShowCoolBar(true);
         configurer.setShowPerspectiveBar(true);
-        configurer.setShowStatusLine(false);
+        configurer.setShowStatusLine(true);
         configurer.setTitle("pgCodeKeeper"); //$NON-NLS-1$
     }
 }

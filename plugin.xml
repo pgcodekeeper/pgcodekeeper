@@ -25,13 +25,6 @@
                name="clearPersistedState"
                value="true">
          </property>
-         <property
-               name="lifeCycleURI"
-               value="bundleclass://ru.taximaxim.codekeeper.ui/ru.taximaxim.codekeeper.ui.LifeCycleHandler">
-         </property>
-         <property
-               name="applicationXMI" value="ru.taximaxim.codekeeper.mainapp/Application.e4xmi">
-         </property>
       </product>
    </extension>
 
