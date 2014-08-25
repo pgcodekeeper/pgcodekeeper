@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.equinox.log.ExtendedLogService;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
 
-public class Activator implements BundleActivator {
+public class Activator extends AbstractUIPlugin {
 
     private static ServiceTracker<ExtendedLogService, ExtendedLogService> logTracker;
     

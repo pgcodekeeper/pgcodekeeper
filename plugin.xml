@@ -4,9 +4,11 @@
    <extension
          id="id1"
          point="org.eclipse.e4.workbench.model">
-      <fragment
-            uri="fragment.e4xmi">
-      </fragment>
+      <processor
+            apply="always"
+            beforefragment="false"
+            class="ru.taximaxim.codekeeper.ui.addons.AddonsProcessor">
+      </processor>
    </extension>
    <extension
          point="org.eclipse.ui.contexts">
@@ -187,7 +189,7 @@
             <menu
                   label="%menu.label.2">
                <dynamic
-                     class="ru.taximaxim.codekeeper.ui.ContributionItem"
+                     class="ru.taximaxim.codekeeper.ui.recentprojsContributionItem"
                      id="ru.taximaxim.codekeeper.ui.dynamicRecent">
                </dynamic>
             </menu>

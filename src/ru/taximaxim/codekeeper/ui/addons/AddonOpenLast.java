@@ -23,8 +23,6 @@ import ru.taximaxim.codekeeper.ui.handlers.LoadProj;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.recentprojs.RecentProjects;
 
-
-
 public class AddonOpenLast {
 
     @Inject

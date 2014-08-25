@@ -13,6 +13,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.UIScopedPreferenceStore;
 
+// migration TODO is this needed? rework prefstore
 public class AddonPrefLoader {
         
     @PostConstruct
