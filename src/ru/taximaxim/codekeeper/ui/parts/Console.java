@@ -4,13 +4,13 @@ package ru.taximaxim.codekeeper.ui.parts;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.eclipse.e4.ui.di.UISynchronize;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.e4.ui.di.UISynchronize;
-import org.eclipse.jface.resource.JFaceResources;
 
 public class Console {
     
@@ -32,7 +32,7 @@ public class Console {
         
         Text consoleLog = new Text(parent, SWT.MULTI
                 | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
-        consoleLog.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+        consoleLog.setFont(JFaceResources.getTextFont());
         consoleLog.setBackground(display.getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         
         log.setTextControl(consoleLog);

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceEditingEnvironment;
 import org.eclipse.equinox.log.ExtendedLogService;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -30,23 +29,23 @@ public class Activator implements BundleActivator {
      * (non-Javadoc)
      * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
      */
+    @Override
     public void start(BundleContext bundleContext) throws Exception {
         Activator.context = bundleContext;
         logTracker = new ServiceTracker<>(context, ExtendedLogService.class, null);
         logTracker.open();
-        SQLSourceEditingEnvironment.connect();
     }
 
     /*
      * (non-Javadoc)
      * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
      */
+    @Override
     public void stop(BundleContext bundleContext) throws Exception {
         Activator.context = null;
         if (logTracker != null){
             logTracker.close();
         }
-        SQLSourceEditingEnvironment.disconnect();
     }
     
     /**

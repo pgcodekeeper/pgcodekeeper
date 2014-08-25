@@ -86,6 +86,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         addPage(pageResult);
     }
 
+    @Override
     public void createPageControls(Composite pageContainer) {
         super.createPageControls(pageContainer);
 
@@ -810,7 +811,7 @@ class PageResult extends WizardPage {
         txtDirect.setLayoutData(new GridData(GridData.FILL_BOTH));
         txtDirect.setBackground(getShell().getDisplay().getSystemColor(
                 SWT.COLOR_LIST_BACKGROUND));
-        txtDirect.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+        txtDirect.setFont(JFaceResources.getTextFont());
 
         TabItem tabDirect = new TabItem(tabs, SWT.NONE);
         tabDirect.setText(Messages.diffWizard_source_target);

@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
@@ -97,6 +99,7 @@ public class DiffTableViewer extends Composite {
     private final LocalResourceManager lrm;
     
     private Text txtFilterName;
+    private Button useRegEx;
     public final CheckboxTableViewer viewer;
     private TableViewerFilter viewerFilter = new TableViewerFilter();
     private TableViewerColumn columnCheck, columnType, columnChange, columnName, columnLocation;
@@ -129,7 +132,13 @@ public class DiffTableViewer extends Composite {
         gl.marginHeight = gl.marginWidth = 0;
         setLayout(gl);
 
-        txtFilterName = new Text(this, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH 
+        Composite filterComp = new Composite(this, SWT.NONE);
+        filterComp.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridLayout filterLayout = new GridLayout(2, false);
+        filterLayout.marginWidth = filterLayout.marginHeight = 0;
+        filterComp.setLayout(filterLayout);
+        
+        txtFilterName = new Text(filterComp, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH 
                 | SWT.ICON_CANCEL);
         txtFilterName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtFilterName.setMessage(Messages.diffTableViewer_object_name);
@@ -140,6 +149,17 @@ public class DiffTableViewer extends Composite {
                 viewerFilter.setFilter(txtFilterName.getText());
                 viewerRefresh();
             }
+        });
+        
+        useRegEx = new Button(filterComp, SWT.CHECK);
+        useRegEx.setToolTipText(Messages.diffTableViewer_use_java_regular_expressions_see_more);
+        useRegEx.setText(Messages.diffTableViewer_use_regular_expressions);
+        useRegEx.addSelectionListener(new SelectionAdapter() {
+           @Override
+            public void widgetSelected(SelectionEvent e) {
+               viewerFilter.setUseRegEx(useRegEx.getSelection());
+               viewerRefresh();
+            } 
         });
         
         prevCheckedHistory = new XmlHistory.Builder(PREVCHECKED_HIST_MAX_STORED,
@@ -201,7 +221,7 @@ public class DiffTableViewer extends Composite {
         
         Composite contButtons = new Composite(this, SWT.NONE);
         contButtons.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 9, false);
+        GridLayout contButtonsLayout = new GridLayout(viewOnly? 2 : 10, false);
         contButtonsLayout.marginWidth = contButtonsLayout.marginHeight = 0;
         contButtons.setLayout(contButtonsLayout);
         
@@ -250,6 +270,28 @@ public class DiffTableViewer extends Composite {
                     checkListener.setElementsChecked(viewer.getCheckedElements(), false);
                     viewer.setAllChecked(false);
                     cmbPrevChecked.setSelection(StructuredSelection.EMPTY);
+                }
+            });
+            
+            Button btnInvertSelection = new Button(contButtons, SWT.PUSH);
+            btnInvertSelection.setToolTipText(Messages.diffTableViewer_invert_selection);
+            btnInvertSelection.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(
+                            FILE.ICONINVERTSELECTION))));
+            btnInvertSelection.addSelectionListener(new SelectionAdapter() {
+                
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    Object[] initial = viewer.getCheckedElements();
+                    
+                    // select all
+                    viewer.setAllChecked(true);
+                    checkListener.setElementsChecked(viewer.getCheckedElements(), true);
+                    // deselect initial set
+                    for (Object el : initial) {
+                        viewer.setChecked(el, false);
+                    }
+                    checkListener.setElementsChecked(initial, false);
                 }
             });
             
@@ -834,10 +876,15 @@ public class DiffTableViewer extends Composite {
     private class TableViewerFilter extends ViewerFilter {
 
         private String filterName;
+        private boolean useRegEx;
         
         public void setFilter(String value) {
-            filterName = (value == null || value.isEmpty()) ? 
+            filterName = (value == null || value.isEmpty()) ?
                     null : value.toLowerCase();
+        }
+        
+        public void setUseRegEx(Boolean useRegEx) {
+            this.useRegEx = useRegEx;
         }
         
         @Override
@@ -845,7 +892,16 @@ public class DiffTableViewer extends Composite {
             if (filterName == null) {
                 return true;
             }
-            return ((TreeElement) element).getName().toLowerCase().contains(filterName);
+            if (useRegEx) {
+                try {
+                    return Pattern.compile(filterName, Pattern.CASE_INSENSITIVE)
+                            .matcher(((TreeElement) element).getName()).find();
+                } catch (PatternSyntaxException e) {
+                    return false;
+                }
+            } else {
+                return ((TreeElement) element).getName().toLowerCase().contains(filterName);
+            }
         }
     }
 
