@@ -147,6 +147,7 @@ public class PrivilegeParser {
         case "FUNCTION":
             PgFunction tmp = new PgFunction(objName, null, null);
             CreateFunctionParser.parseArguments(p, tmp);
+            CreateFunctionParser.parseReturns(p, tmp);
             
             obj = schema.getFunction(tmp.getSignature());
             break;
