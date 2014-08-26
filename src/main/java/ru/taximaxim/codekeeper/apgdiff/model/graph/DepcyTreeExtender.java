@@ -105,7 +105,7 @@ public class DepcyTreeExtender {
         if (filtered.getSide() != DiffSide.LEFT && 
                 filtered.getType() != DbObjType.CONTAINER && 
                 (markedToCreate = filtered.getPgStatement(dbTarget)) != null){
-            PgDiff.getDependenciesSet(markedToCreate, depcySet, depcyTarget.getGraph());
+            PgDiff.getDependenciesSet(markedToCreate, depcySet, false, depcyTarget.getGraph());
         }
         
         for(TreeElement child : filtered.getChildren()) {

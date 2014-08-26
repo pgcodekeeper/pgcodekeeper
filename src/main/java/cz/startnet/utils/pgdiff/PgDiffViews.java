@@ -30,7 +30,7 @@ public class PgDiffViews {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void createViews(final PgDiffScript script,
+    public static void createViews(final PgDiffScript script, PgDiffArguments arguments,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgView newView : newSchema.getViews()) {
@@ -40,7 +40,7 @@ public class PgDiffViews {
             if (oldSchema == null
                     || !oldSchema.containsView(newView.getName())
                     || isModified) {
-                PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, newView);
+                PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newView);
                 
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeCreationSql(script, null, newView);

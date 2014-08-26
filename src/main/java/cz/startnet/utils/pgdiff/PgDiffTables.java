@@ -633,9 +633,8 @@ public class PgDiffTables {
         Map<PgStatement, String> statementsToDrop = new LinkedHashMap<>(10);
         
         addDropTableColumns(statementsToDrop, statements, oldTable, newTable);
-        addCreateTableColumns( 
-                statements, arguments, oldTable, newTable, dropDefaultsColumns,
-                defaultStatements);
+        addCreateTableColumns(statements, arguments, oldTable, newTable, 
+                dropDefaultsColumns, defaultStatements);
         addModifyTableColumns(statementsToDrop, 
                 statements, arguments, oldTable, newTable, dropDefaultsColumns);
 
