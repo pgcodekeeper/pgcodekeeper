@@ -110,7 +110,7 @@ public class PgDiffViews {
                 }
                 
                 for (PgStatement depnt : dependantsSet){
-                    if (depnt instanceof PgView){
+                    if (depnt instanceof PgView && !depnt.equals(oldSchema.getView(depnt.getName()))){
                         PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
                                 searchPathHelper, script);
                         PgDiff.writeCreationSql(script,"-- DEPCY: Following view depends"

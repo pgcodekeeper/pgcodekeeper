@@ -41,8 +41,8 @@ public class PgDiff {
     private static DepcyGraph depcyOld;
     private static DepcyGraph depcyNew;
     
-    // TODO remove public!
-    public static PgDatabase dbNew;
+    private static PgDatabase dbNew;
+
     private static PgDatabase dbOld;
 
     /**
@@ -702,5 +702,9 @@ public class PgDiff {
         }
 
         return specialDependencies;
+    }
+    
+    public static PgDatabase getFullDbNew() {
+        return dbNew;
     }
 }
