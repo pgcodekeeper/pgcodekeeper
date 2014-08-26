@@ -1,5 +1,6 @@
 
-CREATE OR REPLACE FUNCTION afunction(text, text, numeric) RETURNS numeric AS '
+CREATE OR REPLACE FUNCTION afunction(text, text, numeric) RETURNS numeric
+    AS '
 DECLARE
   param1 ALIAS FOR $1;
   param2 ALIAS FOR $2;

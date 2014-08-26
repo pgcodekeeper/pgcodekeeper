@@ -49,9 +49,16 @@ public class CreateFunctionParser {
         
         parseArguments(parser, function);
         
+        parseReturns(parser, function);
+        
         function.setBody(parser.getRest());
     }
     
+    private static void parseReturns(Parser parser, PgFunction function) {
+        parser.expect("RETURNS");
+        function.setReturns(parser.getExpression("AS", "LANGUAGE"));
+    }
+
     static void parseArguments(Parser parser, PgFunction function) {
         parser.expect("(");
 

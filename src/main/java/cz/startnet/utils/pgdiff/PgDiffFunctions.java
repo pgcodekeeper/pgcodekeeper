@@ -6,6 +6,7 @@
 package cz.startnet.utils.pgdiff;
 
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 
 /**
@@ -42,9 +43,32 @@ public class PgDiffFunctions {
                 PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newFunction);
                 
                 searchPathHelper.outputSearchPath(script);
+                if (oldFunction != null && (!newFunction.equalsReturns(oldFunction) 
+                        || isDefaultDifferent(newFunction, oldFunction))) {
+                    PgDiff.writeDropSql(script, null, oldFunction);
+                }
                 PgDiff.writeCreationSql(script, null, newFunction);
             }
         }
+    }
+    
+    private static boolean isDefaultDifferent(PgFunction newFunction, 
+            PgFunction oldFunction) {
+        for (Argument newArg : newFunction.getArguments()) {
+            for (Argument oldArg : oldFunction.getArguments()) {
+                if (newArg.getDeclaration(false).equals(oldArg.getDeclaration(false))) {
+                    if (newArg.getDefaultExpression() != null && 
+                            (!newArg.getDefaultExpression().equals(oldArg.getDefaultExpression()))) {
+                        return true;
+                    }
+                    if (oldArg.getDefaultExpression() != null && 
+                            (!oldArg.getDefaultExpression().equals(newArg.getDefaultExpression()))) {
+                        return true;
+                    }                    
+                }
+            }
+        }
+        return false;
     }
 
     /**
