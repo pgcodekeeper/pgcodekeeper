@@ -26,7 +26,7 @@ SET search_path = public, pg_catalog;
 -- Name: multiply_numbers(integer, integer); Type: FUNCTION; Schema: public; Owner: fordfrog
 --
 
-CREATE FUNCTION multiply_numbers(number1 integer = 2, number2 integer) RETURNS integer
+CREATE FUNCTION multiply_numbers(number1 integer = 2, number2 integer = 2) RETURNS integer
     AS $$
 begin
         return number1 * number2;

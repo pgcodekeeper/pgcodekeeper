@@ -54,17 +54,20 @@ public class PgDiffFunctions {
     
     private static boolean isDefaultDifferent(PgFunction newFunction, 
             PgFunction oldFunction) {
-        for (Argument newArg : newFunction.getArguments()) {
-            for (Argument oldArg : oldFunction.getArguments()) {
-                if (newArg.getDeclaration(false).equals(oldArg.getDeclaration(false))) {
-                    if (newArg.getDefaultExpression() != null && 
-                            (!newArg.getDefaultExpression().equals(oldArg.getDefaultExpression()))) {
-                        return true;
+        for (Argument oldArg : oldFunction.getArguments()) {
+            boolean found = false;
+            if (oldArg.getDefaultExpression() != null) {
+                for (Argument newArg : newFunction.getArguments()) {
+                    if (newArg.getDeclaration(false).equals(oldArg.getDeclaration(false))) {
+                        if (!oldArg.getDefaultExpression().equals(newArg.getDefaultExpression())) {
+                            return true;
+                        } else {
+                            found = true;
+                        }
                     }
-                    if (oldArg.getDefaultExpression() != null && 
-                            (!oldArg.getDefaultExpression().equals(newArg.getDefaultExpression()))) {
-                        return true;
-                    }                    
+                }
+                if (!found) {
+                    return true;
                 }
             }
         }
