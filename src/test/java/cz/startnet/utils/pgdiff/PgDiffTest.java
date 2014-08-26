@@ -166,6 +166,8 @@ public class PgDiffTest {
                     {"modify_function_add_default", false, false, false, false},
                     // Tests scenario where FUNCTION with args modify returns.
                     {"modify_function_modify_returns", false, false, false, false},
+                    // Tests scenario where FUNCTION with args not modify default value.
+                    {"same_function_default", false, false, false, false},
                     // Tests scenario where new FUNCTION with args is added.
                     {"add_function_args2", false, false, false, false},
                     // Tests scenario where FUNCTION with args is dropped.
@@ -293,7 +295,7 @@ public class PgDiffTest {
      * @throws IOException           Thrown if problem occurred while reading
      *                               expected diff.
      */
-    @Test(timeout = 5000)
+    @Test/*(timeout = 5000)*/
     public void runDiffSameOriginal() throws FileNotFoundException, IOException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
