@@ -41,8 +41,8 @@ public class PgDiff {
     private static DepcyGraph depcyOld;
     private static DepcyGraph depcyNew;
     
-    // TODO remove public!
-    public static PgDatabase dbNew;
+    // TODO make private!
+    static PgDatabase dbNew;
     private static PgDatabase dbOld;
 
     /**
@@ -302,7 +302,7 @@ public class PgDiff {
     }
     
     /**
-     * Checks, whether the child is in a subtree of the parent.
+     * Checks, whether the child is in a subtree of the parent. 
      * <br>
      * (as trigger would be a child of a table)
      * 
@@ -592,9 +592,6 @@ public class PgDiff {
         script.addDrop(pgObject, comment, pgObject.getDropSQL());
     }
     
-    private PgDiff() {
-    }
-    
     public static List<PgStatement> addUniqueDependenciesOnCreateEdit(PgDiffScript script,
             PgDiffArguments arguments, SearchPathHelper newSearchPathHelper, PgStatement fullStatement){
         
@@ -612,6 +609,9 @@ public class PgDiff {
         getDependenciesSet(fullStatement, dependencies, true);
         
         for (PgStatement dep : dependencies){
+            // специальный случай: так как ТАБЛИЦА <-> ПОСЛЕДОВАТЕЛЬНОСТЬ могут образовывать цикл и привести к StackOverflowError,
+            // мы проверяем объект из предыдущей итерации на равество с зависимыми объектами текущего.
+            // Если равенство выполняется, мы оказались в цикле и пропускаем текущую зависимость - прерываем цикл 
             if (dep instanceof PgTable && dep.equals(previous)){
                 continue;
             }
@@ -642,7 +642,6 @@ public class PgDiff {
                 }
                 
                 if(specialDependencies.contains(dep)){
-                    System.err.println("SEQ already contained, YO!");
                     continue;
                 }
                 PgSequence sequenceNew = (PgSequence)dep;
@@ -702,5 +701,8 @@ public class PgDiff {
         }
 
         return specialDependencies;
+    }
+    
+    private PgDiff() {
     }
 }
