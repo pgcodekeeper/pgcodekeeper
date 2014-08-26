@@ -295,7 +295,7 @@ public class PgDiffTest {
      * @throws IOException           Thrown if problem occurred while reading
      *                               expected diff.
      */
-    @Test/*(timeout = 5000)*/
+    @Test(timeout = 5000)
     public void runDiffSameOriginal() throws FileNotFoundException, IOException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
