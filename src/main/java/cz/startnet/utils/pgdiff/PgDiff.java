@@ -680,6 +680,8 @@ public class PgDiff {
                             if (    tableOld.getParent().getName().equals(newColumn.schema) && 
                                     tableOld.getName().equals(newColumn.table) && 
                                     tableOld.getColumn(newColumn.column) == null){
+                                script.addStatement("-- DEPCY: this table is in dependency tree of " + 
+                                    fullStatement.getBareName());
                                 PgDiffTables.alterTable(script, arguments,
                                         tableOld, tableNew, searchPathHelper);
                                 break;
