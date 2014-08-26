@@ -18,8 +18,6 @@ SET search_path = s, pg_catalog;
 
 SET search_path = public, pg_catalog;
 
-SET search_path = public, pg_catalog;
-
 ALTER TABLE t1
 	ALTER COLUMN id TYPE bigint /* TYPE change - table: t1 original: integer new: bigint */;
 

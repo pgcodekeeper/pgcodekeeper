@@ -29,7 +29,10 @@ public class PgDiffScript {
      * Add a statement to the script.
      */
     public void addStatement(String statement) {
-        statements.add(new PgDiffStatement(DiffStatementType.OTHER, null, statement));
+        PgDiffStatement st = new PgDiffStatement(DiffStatementType.OTHER, null, statement);
+        if (statements.isEmpty() || !st.equals(statements.getLast())){
+            statements.add(st);
+        }
     }
     
     public void addDrop(PgStatement obj, String comment, String statement) {

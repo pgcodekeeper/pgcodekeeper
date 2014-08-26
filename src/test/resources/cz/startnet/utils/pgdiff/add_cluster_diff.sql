@@ -1,3 +1,4 @@
+-- DEPCY: this sequence is in dependency tree of testtable2
 
 CREATE SEQUENCE testtable2_id_seq
 	START WITH 1
@@ -7,6 +8,8 @@ CREATE SEQUENCE testtable2_id_seq
 	CACHE 1;
 
 ALTER SEQUENCE testtable2_id_seq OWNER TO fordfrog;
+
+-- DEPCY: this table is in dependency tree of testtable2_id_seq
 
 CREATE TABLE testtable2 (
 	id integer DEFAULT nextval('testtable2_id_seq'::regclass) NOT NULL,
