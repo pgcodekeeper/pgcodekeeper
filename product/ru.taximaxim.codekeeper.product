@@ -3,6 +3,13 @@
 
 <product name="pgCodeKeeper" uid="ru.taximaxim.codekeeper.product" id="ru.taximaxim.codekeeper.mainapp.product_codekeeper" application="ru.taximaxim.codekeeper.mainapp.application" version="0.5.6.qualifier" useFeatures="false" includeLaunchers="true">
 
+   <aboutInfo>
+      <image path="/ru.taximaxim.codekeeper.mainapp/icons/product.png"/>
+      <text>
+         pgCodeKeeper
+      </text>
+   </aboutInfo>
+
    <configIni use="default">
    </configIni>
 
@@ -13,7 +20,8 @@
       </vmArgsMac>
    </launcherArgs>
 
-   <windowImages/>
+   <windowImages i128="/ru.taximaxim.codekeeper.mainapp/icons/product.png"/>
+
 
    <launcher name="pgcodekeeper">
       <linux icon="icons/product.xpm"/>
@@ -24,8 +32,10 @@
       </win>
    </launcher>
 
+
    <vm>
    </vm>
+
 
    <plugins>
       <plugin id="apgdiff"/>

@@ -19,16 +19,19 @@ import org.eclipse.ui.statushandlers.AbstractStatusHandler;
 import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.ui.StackTraceDialogStatusHandler;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 
 @SuppressWarnings("restriction")
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
+    @Override
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
         return new ApplicationWorkbenchWindowAdvisor(configurer);
     }
 
-	public String getInitialWindowPerspectiveId() {
-		return null;
+	@Override
+    public String getInitialWindowPerspectiveId() {
+		return UIConsts.PERSP.MAIN;
 	}
 	
 	@Override
