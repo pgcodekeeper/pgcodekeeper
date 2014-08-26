@@ -168,8 +168,6 @@ public class PgDiffViews {
             if (newView == null) {
                 continue;
             }
-            // TODO view may be not changed here
-            PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newView);
             
             diffDefaultValues(script, oldView, newView, searchPathHelper);
 
