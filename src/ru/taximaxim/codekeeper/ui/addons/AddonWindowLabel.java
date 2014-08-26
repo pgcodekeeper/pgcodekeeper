@@ -12,7 +12,6 @@ import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
-import ru.taximaxim.codekeeper.ui.UIConsts.WINDOW;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -38,8 +37,8 @@ public class AddonWindowLabel {
             windowLabel += "  \u2014  " + proj.getProjectWorkingDir() +  //$NON-NLS-1$
                     " [branch: " + new JGitExec().getCurrentBranch(proj.getRepoRoot()) + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         }
-
-        final MWindow window = (MWindow) service.find(WINDOW.MAIN, app);
+// FIXME window title
+        final MWindow window = null;//(MWindow) service.find(WINDOW.MAIN, app);
         final String newLabel = windowLabel;
         if (window != null) {
             sync.asyncExec(new Runnable() {

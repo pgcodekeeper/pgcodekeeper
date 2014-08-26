@@ -9,6 +9,8 @@ import org.eclipse.e4.core.contexts.IEclipseContext;
  * @author Alexander Levsha
  */
 public interface UIConsts {
+
+    String PREF_STORE = PLUGIN_ID.THIS + ".preferenceStore"; //$NON-NLS-1$
     
     interface PLUGIN_ID {
         String JGIT = "org.eclipse.jgit"; //$NON-NLS-1$
@@ -17,36 +19,34 @@ public interface UIConsts {
         String THIS = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
     }
     
-    String PREF_STORE = PLUGIN_ID.THIS + ".preferenceStore"; //$NON-NLS-1$
-    
     interface PART_STACK {
-        String EDITORS = UIConsts.PLUGIN_ID.THIS + ".partstack.Editors"; //$NON-NLS-1$
-        String DEVTEST = UIConsts.PLUGIN_ID.THIS + ".partstack.Devtest"; //$NON-NLS-1$
+        String PROJXP = PLUGIN_ID.THIS + ".partstack.pxp"; //$NON-NLS-1$
+        String EDITORS = PLUGIN_ID.THIS + ".partstack.Editors"; //$NON-NLS-1$
+        String CONSOLE = PLUGIN_ID.THIS + ".partstack.Console"; //$NON-NLS-1$
+        String DEVTEST = PLUGIN_ID.THIS + ".partstack.Devtest"; //$NON-NLS-1$
     }
     
     interface PART {
-        String SQL_EDITOR = UIConsts.PLUGIN_ID.THIS + ".partdescriptor.SQLEditorDescr"; //$NON-NLS-1$
+        String PROJXP = PLUGIN_ID.THIS + ".part.ProjectExplorer"; //$NON-NLS-1$
+        String SQL_EDITOR = PLUGIN_ID.THIS + ".partdescriptor.SQLEditorDescr"; //$NON-NLS-1$
         String SQL_EDITOR_FILENAME = SQL_EDITOR + ".filename"; //$NON-NLS-1$
-        String SYNC = UIConsts.PLUGIN_ID.THIS + ".partdescriptor.Sync"; //$NON-NLS-1$
+        String SYNC = PLUGIN_ID.THIS + ".partdescriptor.Sync"; //$NON-NLS-1$
         String SYNC_ID = SYNC + ".Id"; //$NON-NLS-1$
-        String DIFF = UIConsts.PLUGIN_ID.THIS + ".partdescriptor.Diff"; //$NON-NLS-1$
+        String DIFF = PLUGIN_ID.THIS + ".partdescriptor.Diff"; //$NON-NLS-1$
         String DIFF_ID = DIFF + ".Id"; //$NON-NLS-1$
-        String WELCOME = UIConsts.PLUGIN_ID.THIS + ".part.Welcome"; //$NON-NLS-1$
+        String WELCOME = PLUGIN_ID.THIS + ".part.Welcome"; //$NON-NLS-1$
+        String CONSOLE = PLUGIN_ID.THIS + ".part.Console"; //$NON-NLS-1$
         
-        String DEVTEST = "ru.taximaxim.codekeeper.ui.part.TestPart";
-        String CTXP = "ru.taximaxim.codekeeper.ui.part.CtXp";
+        String DEVTEST = PLUGIN_ID.THIS + ".part.TestPart";
+        String CTXP = PLUGIN_ID.THIS + ".part.CtXp";
     }
     
     interface PERSP {
-        String MAIN = "ru.taximaxim.codekeeper.ui.perspective.Main"; //$NON-NLS-1$
+        String MAIN = PLUGIN_ID.THIS + ".perspective.Main"; //$NON-NLS-1$
     }
     
     interface MENU {
-        String PROJXP_TREE_POPUP = UIConsts.PLUGIN_ID.THIS + ".popupmenu.project"; //$NON-NLS-1$
-    }
-    
-    interface WINDOW {
-        String MAIN = "ru.taximaxim.codekeeper.mainapp.mainwindow"; //$NON-NLS-1$
+        String PROJXP_TREE_POPUP = "popup:" + PLUGIN_ID.THIS + ".popupmenu.project"; //$NON-NLS-1$ //$NON-NLS-2$
     }
     
     interface EVENT {

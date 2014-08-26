@@ -21,9 +21,9 @@ import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.ui.di.UISynchronize;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
-import org.eclipse.e4.ui.services.EMenuService;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -41,6 +41,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.menus.IMenuService;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -48,6 +49,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.MENU;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -66,6 +68,8 @@ public class ProjectExplorer {
     UISynchronize sync;
     
     @Inject
+    IMenuService menuService;
+    @Inject
     private EModelService model;
     @Inject
     private EPartService partService;
@@ -81,7 +85,7 @@ public class ProjectExplorer {
     private Composite parent;
     
     @PostConstruct
-    private void postConstruct(Composite parent, EMenuService menuService)
+    private void postConstruct(Composite parent)
             throws IOException, InterruptedException, InvocationTargetException {
         parent.setLayout(new FillLayout());
         this.parent = parent;
@@ -191,8 +195,10 @@ public class ProjectExplorer {
                 }
             }
         });
-        // FIXME menu pending migration
-       // menuService.registerContextMenu(treeDb.getControl(), MENU.PROJXP_TREE_POPUP);
+        
+        MenuManager mm = new MenuManager();
+        menuService.populateContributionManager(mm, MENU.PROJXP_TREE_POPUP);
+        treeDb.getControl().setMenu(mm.createContextMenu(treeDb.getControl()));
         
         changeProject(proj, proj);
     }
