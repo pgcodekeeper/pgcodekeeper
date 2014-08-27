@@ -22,7 +22,7 @@ import cz.startnet.utils.pgdiff.Main;
 public class Application implements IApplication {
 
     boolean runMainClass = false;
-    final static String APGDIFF_TO_CONSOLE_MODE = "--console";
+    final static String APGDIFF_TO_CONSOLE_MODE = "--apgdiff";
     
 	/* (non-Javadoc)
 	 * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
