@@ -457,6 +457,8 @@ public class PgDiffArguments {
                 setOutputIgnoredStatements(true);
             } else if ("--version".equals(args[i])) {
                 setVersion(true);
+            } else if ("--help".equals(args[i])) {
+                success = false;
             } else {
                 writer.print(Resources.getString("ErrorUnknownOption"));
                 writer.print(": ");
