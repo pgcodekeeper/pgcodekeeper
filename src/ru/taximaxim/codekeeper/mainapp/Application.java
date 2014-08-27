@@ -28,7 +28,7 @@ public class Application implements IApplication {
 	 * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
 	 */
 	public Object start(IApplicationContext context) throws Exception {
-	    Display display = PlatformUI.createDisplay();
+	    Display display = null;
         try {
             int returnCode = PlatformUI.RETURN_OK;
             List<String> pgCommands = getApgdiffarguments();
@@ -36,6 +36,7 @@ public class Application implements IApplication {
             if (!pgCommands.isEmpty()) {
                 callApgdiffMain(pgCommands);
             } else {
+                display = PlatformUI.createDisplay();
                 returnCode = PlatformUI.createAndRunWorkbench(display,
                         new ApplicationWorkbenchAdvisor());
             }
@@ -45,7 +46,9 @@ public class Application implements IApplication {
             else
                 return IApplication.EXIT_OK;
         } finally {
-            display.dispose();
+            if (display != null) {
+                display.dispose();
+            }
         }
 
 	}
