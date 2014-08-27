@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.Main;
 public class Application implements IApplication {
 
     boolean runMainClass = false;
+    final static String APGDIFF_TO_CONSOLE_MODE = "--console";
     
 	/* (non-Javadoc)
 	 * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
@@ -65,7 +66,7 @@ public class Application implements IApplication {
         List<String> args = Arrays.asList(Platform.getApplicationArgs());
         List<String> pgCommands = new ArrayList<>();
         int i;
-        if ((i = args.indexOf(UIConsts.APGDIFF_TO_CONSOLE_MODE)) > -1) {
+        if ((i = args.indexOf(APGDIFF_TO_CONSOLE_MODE)) > -1) {
             for (i =  i + 1; i < args.size(); i++) {
                 pgCommands.add(args.get(i));
             }
