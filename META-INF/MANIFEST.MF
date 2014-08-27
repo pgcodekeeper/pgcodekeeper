@@ -18,7 +18,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.pde.runtime,
  org.eclipse.egit,
  org.eclipse.egit.ui,
- org.eclipse.e4.tools.css.spy
+ org.eclipse.e4.tools.css.spy,
+ apgdiff
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: javax.annotation,
  javax.inject
