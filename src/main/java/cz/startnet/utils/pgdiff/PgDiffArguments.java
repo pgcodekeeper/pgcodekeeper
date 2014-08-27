@@ -86,6 +86,11 @@ public class PgDiffArguments {
      */
     private boolean version;
     /**
+     * Whether to display apgdiff help.
+     */
+    private boolean help;
+
+    /**
      * Whether to output information about ignored statements.
      */
     private boolean outputIgnoredStatements;
@@ -389,6 +394,22 @@ public class PgDiffArguments {
     }
 
     /**
+     * Getter for {@link #help}.
+     * @return the help {@link ##help}
+     */
+    public boolean isHelp() {
+        return help;
+    }
+
+    /**
+     * Setter for {@link #help}.
+     * @param help {@link #help}
+     */
+    public void setHelp(boolean help) {
+        this.help = help;
+    }
+    
+    /**
      * Parses command line arguments or outputs instructions.
      *
      * @param writer writer to be used for info output
@@ -458,7 +479,7 @@ public class PgDiffArguments {
             } else if ("--version".equals(args[i])) {
                 setVersion(true);
             } else if ("--help".equals(args[i])) {
-                success = false;
+                setHelp(true);
             } else {
                 writer.print(Resources.getString("ErrorUnknownOption"));
                 writer.print(": ");
@@ -476,6 +497,9 @@ public class PgDiffArguments {
 
         if (args.length == 1 && isVersion()) {
             printVersion(writer);
+            return false;
+        } else if ((args.length == 1 && isHelp())) {
+            printUsage(writer);
             return false;
         } else if (args.length == 1 && isListCharsets()) {
             listCharsets(writer);
