@@ -140,12 +140,6 @@
             id="ru.taximaxim.codekeeper.ui.command.OpenLog"
             name="%command.commandname.15">
       </command>
-      <command
-            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenRecent"
-            id="ru.taximaxim.codekeeper.ui.command.openRecent"
-            name="%command.commandname.12">
-      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -187,11 +181,12 @@
                   visible="true">
             </separator>
             <menu
-                  label="%menu.label.2">
-               <!--dynamic
-                     class="ru.taximaxim.codekeeper.ui.recentprojsContributionItem"
+                  label="%menu.label.2"
+                  mnemonic="R">
+               <dynamic
+                     class="ru.taximaxim.codekeeper.ui.recentprojs.DynamicMenuRecent"
                      id="ru.taximaxim.codekeeper.ui.dynamicRecent">
-               </dynamic-->
+               </dynamic>
             </menu>
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.OpenLast"
