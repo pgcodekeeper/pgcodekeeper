@@ -217,8 +217,29 @@ public class PgTable extends PgStatementWithSearchPath {
     }
     
     @Override
+    public String getFullSQL() {
+        final StringBuilder sbSQL = new StringBuilder(10);
+        sbSQL.append(getCreationSQL());
+        sbSQL.append(getClusterSQL());
+        
+        return sbSQL.toString();
+    }
+    
+    @Override
     public String getDropSQL() {
         return "DROP TABLE " + PgDiffUtils.getQuotedName(getName()) + ";";
+    }
+    
+    private String getClusterSQL() {
+        final StringBuilder sbSQL = new StringBuilder(10);
+        if (clusterIndexName != null && !clusterIndexName.isEmpty()) {
+            sbSQL.append("\n\nALTER TABLE ");
+            sbSQL.append(PgDiffUtils.getQuotedName(name));
+            sbSQL.append(" CLUSTER ON ");
+            sbSQL.append(getClusterIndexName());
+            sbSQL.append(";");
+        }
+        return sbSQL.toString();
     }
 
     /**
