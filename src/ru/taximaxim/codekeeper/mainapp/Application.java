@@ -69,10 +69,8 @@ public class Application implements IApplication {
         List<String> args = Arrays.asList(Platform.getApplicationArgs());
         List<String> pgCommands = new ArrayList<>();
         int i;
-        if ((i = args.indexOf(APGDIFF_TO_CONSOLE_MODE)) > -1) {
-            for (i =  i + 1; i < args.size(); i++) {
-                pgCommands.add(args.get(i));
-            }
+        if ((i = args.indexOf(APGDIFF_TO_CONSOLE_MODE)) > -1 && i < args.size()) {
+            pgCommands = args.subList(i + 1, args.size());
         }
         return pgCommands;
     }
