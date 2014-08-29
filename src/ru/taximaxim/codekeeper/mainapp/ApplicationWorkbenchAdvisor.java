@@ -23,17 +23,19 @@ import ru.taximaxim.codekeeper.ui.StackTraceDialogStatusHandler;
 @SuppressWarnings("restriction")
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
+    @Override
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
         return new ApplicationWorkbenchWindowAdvisor(configurer);
     }
 
-	public String getInitialWindowPerspectiveId() {
+	@Override
+    public String getInitialWindowPerspectiveId() {
 		return null;
 	}
 	
-	@Override
+//	@Override
     @SuppressWarnings("unchecked")
-	public boolean openWindows() {
+	private boolean openWindows__our_old_fix() {
 		final Display display = PlatformUI.getWorkbench().getDisplay();
 		final AtomicBoolean result = new AtomicBoolean();
 		
@@ -45,6 +47,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		final AtomicReference<Throwable> error = new AtomicReference<>();
 		Thread initThread = new Thread() {
 			
+            @Override
             public void run() {
 				try {
 					//declare us to be a startup thread so that our syncs will be executed 
@@ -53,7 +56,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 					        new AtomicReference<>();
 					StartupThreading.runWithoutExceptions(new StartupRunnable() {
 	
-						public void runWithException() throws Throwable {
+						@Override
+                        public void runWithException() throws Throwable {
 							myConfigurer.set(getWorkbenchConfigurer());
 						}});
 					
