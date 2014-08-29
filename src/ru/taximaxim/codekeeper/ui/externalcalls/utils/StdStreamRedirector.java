@@ -74,7 +74,7 @@ public class StdStreamRedirector implements Runnable {
         final Process p = pb.start();
         
         final StdStreamRedirector redirector = new StdStreamRedirector(p.getInputStream());
-        try (BufferedReader t = redirector.in) {
+        try {
             Thread redirectorThread = new Thread(redirector);
             final AtomicReference<Throwable> lastException = new AtomicReference<>();
             redirectorThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
