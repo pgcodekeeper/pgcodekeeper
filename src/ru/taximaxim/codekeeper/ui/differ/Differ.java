@@ -9,13 +9,14 @@ import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.swt.widgets.Shell;
 
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -41,6 +42,29 @@ public class Differ implements IRunnableWithProgress {
     public void setAdditionalDepcies(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
         this.additionalDepcies = additionalDepcies;
+    }
+    
+    public void addAdditionDepcies(
+            List<Entry<PgStatement, PgStatement>> additionalDepcies) {
+        if (this.additionalDepcies == null) {
+            setAdditionalDepcies(additionalDepcies);
+        } else {
+            this.additionalDepcies.addAll(additionalDepcies);
+        }
+    }
+    
+    public void runProgressMonitorDiffer(final Shell shell) {
+        try {
+            new ProgressMonitorDialog(shell).run(true, false, this);
+        } catch (InvocationTargetException ex) {
+            throw new IllegalStateException(
+                    Messages.error_in_the_project_modifier_thread, ex);
+        } catch (InterruptedException ex) {
+            // assume run() was called as non cancelable
+            throw new IllegalStateException(
+                    Messages.project_modifier_thread_cancelled_shouldnt_happen,
+                    ex);
+        }
     }
     
     public Differ(DbSource dbSource, DbSource dbTarget, boolean needTwoWay) {

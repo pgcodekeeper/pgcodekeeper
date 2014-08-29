@@ -82,7 +82,7 @@ public class SvnExec implements IRepoWorker {
 
         svn.directory(dirTo);
 
-        StdStreamRedirector.launchAndRedirect(svn);
+        StdStreamRedirector.launchAndRedirect(svn, null);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class SvnExec implements IRepoWorker {
 
         svn.directory(dirFrom);
 
-        StdStreamRedirector.launchAndRedirect(svn);
+        StdStreamRedirector.launchAndRedirect(svn, null);
     }
 
     private void repoRemoveMissing(File dirIn) throws IOException {
@@ -126,7 +126,7 @@ public class SvnExec implements IRepoWorker {
         svn.command().addAll(files);
         svn.directory(dirIn);
 
-        StdStreamRedirector.launchAndRedirect(svn);
+        StdStreamRedirector.launchAndRedirect(svn, null);
     }
 
 
@@ -140,7 +140,7 @@ public class SvnExec implements IRepoWorker {
             svn.command().addAll(files);
             svn.directory(dirIn);
 
-            StdStreamRedirector.launchAndRedirect(svn);
+            StdStreamRedirector.launchAndRedirect(svn, null);
 
             files = repoGetUnversioned(dirIn);
         }
@@ -182,7 +182,7 @@ public class SvnExec implements IRepoWorker {
         }
 
         svn.directory(dirIn);
-        return StdStreamRedirector.launchAndRedirect(svn);
+        return StdStreamRedirector.launchAndRedirect(svn, null);
     }
 
     /**
@@ -200,7 +200,7 @@ public class SvnExec implements IRepoWorker {
         svn.directory(dirIn);
 
         return !PATTERN_UP_CONFLICTED.matcher(
-                StdStreamRedirector.launchAndRedirect(svn)).find();
+                StdStreamRedirector.launchAndRedirect(svn, null)).find();
     }
 
     private void addCredentials(ProcessBuilder pb) {
@@ -228,7 +228,7 @@ public class SvnExec implements IRepoWorker {
     public String repoGetVersion() throws IOException {
         ProcessBuilder svn = new ProcessBuilder(svnExec, "--version", //$NON-NLS-1$
                 "--quiet", "--non-interactive"); //$NON-NLS-1$ //$NON-NLS-2$
-        String version = StdStreamRedirector.launchAndRedirect(svn).trim();
+        String version = StdStreamRedirector.launchAndRedirect(svn, null).trim();
         if (!PATTERN_VERSION.matcher(version).matches()) {
             throw new IOException(Messages.svnExec_bad_svn_version_output + version);
         }

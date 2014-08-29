@@ -60,7 +60,7 @@ public class StdStreamRedirector implements Runnable {
      * @return captured stdout & stderr output
      * @throws IOException
      */
-    public static String launchAndRedirect(ProcessBuilder pb)
+    public static String launchAndRedirect(ProcessBuilder pb, Integer returnedValue)
             throws IOException {
         StringBuilder sb = new StringBuilder(1000 * pb.command().size());
         for(String param : pb.command()) {
@@ -110,6 +110,9 @@ public class StdStreamRedirector implements Runnable {
             if (lastException.get() != null){
                 throw new IOException("Exception thrown while reading external command output ",  //$NON-NLS-1$
                         lastException.get());
+            }
+            if (returnedValue != null) {
+                returnedValue = p.exitValue();
             }
             return redirector.storage.toString();
         } finally {

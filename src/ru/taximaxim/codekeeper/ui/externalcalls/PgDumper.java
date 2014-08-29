@@ -76,13 +76,13 @@ public class PgDumper {
         env.addEnv("PGPASSWORD", pass); //$NON-NLS-1$
         env.addEnv("PGCLIENTENCODING", encoding); //$NON-NLS-1$
         
-        StdStreamRedirector.launchAndRedirect(pgdump);
+        StdStreamRedirector.launchAndRedirect(pgdump, null);
     }
     
     public String getVersion() throws IOException {
         ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
                 "--version", "--no-password"); //$NON-NLS-1$ //$NON-NLS-2$
-        String version = StdStreamRedirector.launchAndRedirect(pgdump).trim();
+        String version = StdStreamRedirector.launchAndRedirect(pgdump, null).trim();
         Matcher m = PATTERN_VERSION.matcher(version);
         if(!m.matches()) {
             throw new IOException(Messages.pgDumper_bad_pg_dump_version_output + version);
