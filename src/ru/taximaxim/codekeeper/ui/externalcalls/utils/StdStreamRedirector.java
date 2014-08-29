@@ -93,6 +93,12 @@ public class StdStreamRedirector implements Runnable {
             } catch (InterruptedException ex) {
                 redirector.isDestroyed.set(true);
                 p.destroy();
+                try {
+                    // wait for destroy to get the exitValue()
+                    p.waitFor();
+                } catch (InterruptedException ex2) {
+                    throw new IllegalStateException("Wait for destroy was interrupted", ex2); //$NON-NLS-1$
+                }
             }
             
             try {
@@ -100,7 +106,8 @@ public class StdStreamRedirector implements Runnable {
             } catch (InterruptedException ex) {
                 throw new IllegalStateException("Interrupted wait on redirectorThread ", ex); //$NON-NLS-1$
             }
-            Console.addMessage(pb.command().get(0) + Messages.stdStreamRedirector_completed_with_code + p.exitValue());
+            Console.addMessage(pb.command().get(0) + 
+                    Messages.stdStreamRedirector_completed_with_code + p.exitValue());
 
             if (!redirector.isDestroyed.get() && p.exitValue() != 0) {
                 throw new IOException("Process returned with error: " //$NON-NLS-1$
