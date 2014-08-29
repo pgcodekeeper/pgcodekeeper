@@ -2,16 +2,6 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -28,10 +18,7 @@ import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgPrivilege;
-import cz.startnet.utils.pgdiff.schema.PgTable;
 
 public abstract class DbSource {
 
@@ -305,162 +292,5 @@ class DbSourceFilter extends DbSource {
         }
 
         return new PgDbFilter2(db, filter, side).apply();
-    }
-}
-
-class DbSourceJdbc extends DbSource {
-
-    final private static Map<String, String> DATA_TYPE_ALIASES = new HashMap<String, String>(){
-        {
-            put("int8","bigint");
-            put("serial8","bigserial");
-            put("varbit","bit varying");
-            put("bool","boolean");
-            put("char","character");
-            put("varchar","character varying");
-            put("float8","double precision");
-            put("int","integer");
-            put("int4","integer");
-            put("float4","real");
-            put("int2","smallint");
-            put("serial2","smallserial");
-            put("serial4","serial");
-            put("timetz","time with time zone");
-            put("timestamptz","timestamp with time zone");
-        }
-    };
-    
-    private String host;
-    private int port;
-    private String user;
-    private String pass;
-    private Object dbName;
-    private String encoding;
-    
-    private Connection connection;
-    private DatabaseMetaData metaData;
-    
-    static final String JDBC_DRIVER = "org.postgresql.Driver";
-    
-    DbSourceJdbc(String host, int port, String user, String pass, String dbName, String encoding) {
-        super(dbName);
-        this.host = host;
-        this.port = port;
-        this.user = user;
-        this.pass = pass;
-        this.dbName = dbName;
-        this.encoding = encoding;
-    }
-
-    @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
-        try {
-            Class.forName(JDBC_DRIVER);
-            connection = DriverManager.getConnection(
-                   "jdbc:postgresql://" + host + ":" + port + "/" + dbName, user, pass);
-            
-            metaData = connection.getMetaData();
-            ResultSet res = metaData.getTables(null, "public", "%" ,new String[] {"TABLE"} );
-            
-            while (res.next()) {
-                PgTable table = getTable("public", res.getString("table_name"));
-                System.out.println(table.getCreationSQL() + "\n");
-            }
-            
-            connection.close();
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return null;
-    }
-    
-    private PgTable getTable(String schema, String table) throws SQLException{
-        StringBuilder tableDef = new StringBuilder(); 
-
-        tableDef.append("CREATE TABLE " + table + " (\n");
-        
-        ResultSet res = metaData.getColumns(null, schema, table, "%");
-        List<PgColumn> columns = new ArrayList<PgColumn>(5);
-        while (res.next()) {
-            String columnName = res.getString("COLUMN_NAME");
-            PgColumn column = new PgColumn(columnName);
-            
-            String columnType = res.getString("TYPE_NAME");
-            // TODO надо ли проверку на наличие DEFULT, если serial?
-            if (DATA_TYPE_ALIASES.get(columnType) != null){
-                columnType = DATA_TYPE_ALIASES.get(columnType);
-            }else if (columnType.equals("bigserial")){
-                columnType = "bigint";
-            }else if (columnType.equals("serial")){
-                columnType = "integer";
-            }
-            column.setType(columnType);
-            
-            tableDef.append("   " + columnName + " " + columnType);
-            if (columnType.equals("character") || columnType.equals("character varying")){
-                String numOfChars = "(" + res.getInt("CHAR_OCTET_LENGTH") + ")";
-                tableDef.append(numOfChars);
-                column.setType(column.getType() + numOfChars);
-            }
-            
-            String columnDefault = res.getString("COLUMN_DEF");
-            if (columnDefault != null){
-                tableDef.append(" DEFAULT " + columnDefault);
-                column.setDefaultValue(columnDefault);
-            }
-            
-            if (res.getInt("NULLABLE") == DatabaseMetaData.columnNoNulls){
-                tableDef.append(" NOT NULL");
-                column.setNullValue(false);
-            }
-            
-            tableDef.append(",\n");
-            columns.add(column);
-        }
-        tableDef.append(");");
-        
-        String searchPath ="SET search_path = " + schema + ", pg_catalog";
-        PgTable t = new PgTable(table, tableDef.toString(), searchPath);
-        
-        for(PgColumn column : columns){
-            t.addColumn(column);
-        }
-        
-        // privileges
-        String revokeMaindb = "ALL ON TABLE " + table + " TO maindb";
-        String revokePublic = "ALL ON TABLE " + table + " TO PUBLIC";
-        PgPrivilege p = new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb);
-        t.addPrivilege(p);
-        p = new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic);
-        t.addPrivilege(p);
-        
-        res = metaData.getTablePrivileges(null, schema, table);
-        Map<String, List<String>> privileges = new HashMap<String, List<String>>(10);
-        while (res.next()) {
-            String grantee = res.getString("GRANTEE");
-            
-            if (privileges.get(grantee) == null){
-                privileges.put(grantee, new ArrayList<String>(Arrays.asList(res.getString("PRIVILEGE"))));
-            }else if (privileges.get(grantee).size() < 6){
-                privileges.get(grantee).add(res.getString("PRIVILEGE"));
-            }else {
-                privileges.put(grantee, new ArrayList<String>(Arrays.asList("ALL")));
-            }
-        }
-        for(String grantee : privileges.keySet()){
-            for(String priv : privileges.get(grantee)){
-                String privDef = priv + " ON TABLE " + table + " TO " + grantee;
-                p = new PgPrivilege(false, privDef, "GRANT " + privDef);
-                t.addPrivilege(p);            
-            }
-        }
-        // end privileges
-        
-        //TODO OWNER???
-        return t;
     }
 }
