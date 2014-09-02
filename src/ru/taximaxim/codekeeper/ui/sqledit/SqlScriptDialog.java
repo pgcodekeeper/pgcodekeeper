@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IStatus;
@@ -37,7 +36,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.statushandlers.StatusManager;
 
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
@@ -46,6 +44,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.parts.Console;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class SqlScriptDialog extends MessageDialog {
     
@@ -424,40 +423,37 @@ public class SqlScriptDialog extends MessageDialog {
         if (output == null || output.isEmpty()) {
             return new HashMap<String, String>();
         }
-        Pattern errorPattern = Pattern.compile(Messages.sqlScriptDialog_pattern_ERROR); 
-        Pattern advicePattern = Pattern.compile(Messages.sqlScriptDialog_pattern_HINT);
+        Pattern errorPattern = Pattern.compile("^.+(ERROR|ОШИБКА):.+$");
+        Pattern advicePattern = Pattern.compile("^(HINT|ПОДСКАЗКА):.+(DROP ... CASCADE.)$");
+        HashMap<String, String> dependenciesMap = new HashMap<>();
         int begin, end;
         begin = end = -1;
-//        if (returnedCode == 3) {
-            String[] lines = output.split(System.lineSeparator());
-            for (int i = 0; i < lines.length; i++) {
-                String line = lines[i];
-                if (errorPattern.matcher(line).matches()) {
-                    begin = i;
-                }
-                if (advicePattern.matcher(line).matches()) {
-                    end = i;
-                    break;
-                }
+        String[] lines = output.replaceAll("  ", " ").split(
+                System.lineSeparator());
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            if (errorPattern.matcher(line).matches()) {
+                begin = i;
             }
-            if (begin != -1 && end != -1) {
-                return parseDependencies(lines, begin, end);
+            if (advicePattern.matcher(line).matches()) {
+                end = i;
+                break;
             }
-            return new HashMap<String, String>();
-//        }
-        
+        }
+        if (begin != -1 && end != -1 && (end - begin) >= 2) {
+
+            String words[] = lines[begin + 1].split(" ");
+            dependenciesMap.put(words[2], words[words.length - 1]);
+            dependenciesMap.putAll(parseDependencies(lines, begin + 2, end));
+        }
+        return dependenciesMap;
     }
 
     private Map<String, String>  parseDependencies(String[] lines, int begin, int end) {
-        Pattern dependencies = 
-                Pattern.compile(Messages.sqlScriptDialog_pattern_DETAIL);
         HashMap<String, String> dependenciesMap = new HashMap<>();
         for (int i = begin; i < end; i++) {
-            String line = lines[i];
-            Matcher depcy = dependencies.matcher(line);
-            if (depcy.matches()) {
-                dependenciesMap.put(depcy.group(2), depcy.group(4));
-            }
+            String words[] = lines[i].split(" ");
+            dependenciesMap.put(words[1], words[words.length - 1]);
         }
         return dependenciesMap;
     }
