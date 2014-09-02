@@ -69,6 +69,7 @@ public class SqlScriptDialog extends MessageDialog {
     private final String text;
     private Map<String, String> addDepcy;
     private List<PgStatement> objList;
+    private boolean usePSQLDepcy;
     
     private String dbHost;
     private String dbPort;
@@ -114,7 +115,7 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     public SqlScriptDialog(Shell parentShell, int type, String title, String message,
-            Differ differ, List<PgStatement> objList) {
+            Differ differ, List<PgStatement> objList, boolean usePSQLDepcy) {
         super(parentShell, title, null, message, type, new String[] {
                 runScriptText, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }, 2);
         
@@ -123,6 +124,7 @@ public class SqlScriptDialog extends MessageDialog {
         this.text = differ.getDiffDirect();
         this.differ = differ;
         this.objList = objList;
+        this.usePSQLDepcy = usePSQLDepcy;
         this.history = new XmlHistory.Builder(SCRIPTS_HIST_MAX_STORED, 
                 SCRIPTS_HIST_FILENAME, 
                 SCRIPTS_HIST_ROOT, 
@@ -276,10 +278,13 @@ public class SqlScriptDialog extends MessageDialog {
                 public void run() {
                     try {
                         Integer returnedCode = new Integer(0);
-                        setNotEmptyAddDepcy(
-                                getDependenciesFromResult(returnedCode, 
-                                        StdStreamRedirector.launchAndRedirect(
-                                                pb, returnedCode)));
+                        String scriptOutputRes = StdStreamRedirector.launchAndRedirect(
+                                pb, returnedCode);
+                        if (usePSQLDepcy) {
+                            setNotEmptyAddDepcy(
+                                    getDependenciesFromResult(returnedCode, 
+                                            scriptOutputRes));
+                        }
                     } catch (IOException ex) {
                         throw new IllegalStateException(ex);
                     } finally {
@@ -351,11 +356,11 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     private void ShowDialog() {
-        if (getAddDepcy() != null && !getAddDepcy().isEmpty()) {
+        if (usePSQLDepcy && getAddDepcy() != null && !getAddDepcy().isEmpty()) {
             MessageBox mb = new MessageBox(SqlScriptDialog.this.getShell(), 
                     SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
-            mb.setMessage("Psql demands some dependencies \n" + DepcyToString() + 
-                    "Add it to script?");
+            mb.setMessage(Messages.SqlScriptDialog__results_of_script_revealed_dependent_objects + DepcyToString() + 
+                    Messages.SqlScriptDialog_add_it_to_script);
             if (mb.open() == SWT.OK) {
                 differ.addAdditionDepcies(getAdditionalDepcyFromnames(getAddDepcy()));
                 differ.runProgressMonitorDiffer(getParentShell());
@@ -400,9 +405,9 @@ public class SqlScriptDialog extends MessageDialog {
         StringBuilder sb = new StringBuilder(10);
         for (String key : addDepcy.keySet()) {
             sb.append(key);
-            sb.append(" -> ");
+            sb.append(" -> "); //$NON-NLS-1$
             sb.append(addDepcy.get(key));
-            sb.append("\n");
+            sb.append("\n"); //$NON-NLS-1$
         }
         return sb.toString();
     }
@@ -418,8 +423,8 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     private Map<String, String> getDependenciesFromResult(Integer returnedCode, String output) {
-        Pattern errorPattern = Pattern.compile("^.+(ОШИБКА:).+$");
-        Pattern advicePattern = Pattern.compile("^(ПОДСКАЗКА).+$");
+        Pattern errorPattern = Pattern.compile("^.+(ОШИБКА:).+$"); //$NON-NLS-1$
+        Pattern advicePattern = Pattern.compile("^(ПОДСКАЗКА).+$"); //$NON-NLS-1$
         int begin, end;
         begin = end = -1;
 //        if (returnedCode == 3) {
@@ -443,20 +448,20 @@ public class SqlScriptDialog extends MessageDialog {
     }
 
     private Map<String, String>  parseDependencies(String[] lines, int begin, int end) {
-        Pattern dependencies = Pattern.compile("^\\S+\\s(\\S+)\\s\\S+\\s\\S+\\s\\S+\\s\\S+\\s(\\S+)$");
-        Pattern depcyWidth = Pattern.compile("^ПОДРОБНОСТИ:\\s+\\S+\\s(\\S+)\\s\\S+\\s\\S+\\s\\S+\\s\\S+\\s(\\S+)$");
+        Pattern dependencies = Pattern.compile("^\\S+\\s(\\S+)(\\s\\S+){4}\\s(\\S+)$"); //$NON-NLS-1$
+        Pattern depcyWidth = Pattern.compile("^ПОДРОБНОСТИ:\\s+\\S+\\s(\\S+)(\\s\\S+){4}\\s(\\S+)$"); //$NON-NLS-1$
         HashMap<String, String> dependenciesMap = new HashMap<>();
         for (int i = begin; i < end; i++) {
             String line = lines[i];
             Matcher depcy = dependencies.matcher(line); 
             if (depcy.matches()) {
-                dependenciesMap.put(depcy.group(1), depcy.group(2));
-                System.out.println("TO DROP: " + depcy.group(1) + " "+ depcy.group(2));
+                dependenciesMap.put(depcy.group(1), depcy.group(3));
+                System.out.println("TO DROP: " + depcy.group(1) + " "+ depcy.group(3)); //$NON-NLS-1$ //$NON-NLS-2$
             }
             depcy = depcyWidth.matcher(line);
             if (depcy.matches()) {
-                dependenciesMap.put(depcy.group(1), depcy.group(2));
-                System.out.println("TO DROP: " + depcy.group(1) + " "+depcy.group(2));
+                dependenciesMap.put(depcy.group(1), depcy.group(3));
+                System.out.println("TO DROP: " + depcy.group(1) + " "+depcy.group(3)); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
         return dependenciesMap;

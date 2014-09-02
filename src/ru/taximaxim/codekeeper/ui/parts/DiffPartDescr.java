@@ -150,7 +150,8 @@ public class DiffPartDescr {
                 SqlScriptDialog dialog = new SqlScriptDialog(shell,
                         SqlScriptDialog.INFORMATION, Messages.diffPartDescr_diff_script,
                         Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
-                        differ, dbSource.getDbObject().flatten());
+                        differ, dbSource.getDbObject().flatten(), 
+                        mainPrefs.getBoolean(PREF.USE_PSQL_DEPCY));
                 
                 if (btnDb.getSelection()) {
                     dialog.setDbParams(dbSrc.txtDbHost.getText(),
