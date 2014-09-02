@@ -424,7 +424,7 @@ public class SqlScriptDialog extends MessageDialog {
             return new HashMap<String, String>();
         }
         Pattern errorPattern = Pattern.compile("^.+(ERROR|ОШИБКА):.+$");
-        Pattern advicePattern = Pattern.compile("^(HINT|ПОДСКАЗКА):.+(DROP ... CASCADE.).+$");
+        Pattern advicePattern = Pattern.compile("^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$");
         HashMap<String, String> dependenciesMap = new HashMap<>();
         int begin, end;
         begin = end = -1;
