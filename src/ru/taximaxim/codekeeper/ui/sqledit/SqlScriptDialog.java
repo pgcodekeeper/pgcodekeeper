@@ -8,6 +8,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -67,6 +68,7 @@ public class SqlScriptDialog extends MessageDialog {
     private final Differ differ;
     private final String text;
     private Map<String, String> addDepcy;
+    private List<Entry<PgStatement, PgStatement>> oldDepcy;
     private List<PgStatement> objList;
     private boolean usePSQLDepcy;
     
@@ -122,6 +124,7 @@ public class SqlScriptDialog extends MessageDialog {
         
         this.text = differ.getDiffDirect();
         this.differ = differ;
+        safeOldDepcy();
         this.objList = objList;
         this.usePSQLDepcy = usePSQLDepcy;
         this.history = new XmlHistory.Builder(SCRIPTS_HIST_MAX_STORED, 
@@ -406,6 +409,19 @@ public class SqlScriptDialog extends MessageDialog {
         addDepcy = dependenciesFromResult;
     }
     
+    private void safeOldDepcy() {
+        oldDepcy = differ.getAdditionalDependencies();
+        List<Entry<PgStatement, PgStatement>> additionalDependencies = new LinkedList<>();
+        for (Entry<PgStatement, PgStatement> depcy : oldDepcy) {
+            additionalDependencies.add(depcy);
+        }
+        differ.setAdditionalDepcies(additionalDependencies);
+    }
+    
+    private List<Entry<PgStatement, PgStatement>> getOldDepcy() {
+        return oldDepcy;
+    }
+    
     private String DepcyToString() {
         StringBuilder sb = new StringBuilder(10);
         for (String key : addDepcy.keySet()) {
@@ -466,6 +482,7 @@ public class SqlScriptDialog extends MessageDialog {
             errorDialog.open();
             return false;
         } else {
+            differ.setAdditionalDepcies(getOldDepcy());
             history.addHistoryEntry(cmbScript.getText());
             return super.close();
         }

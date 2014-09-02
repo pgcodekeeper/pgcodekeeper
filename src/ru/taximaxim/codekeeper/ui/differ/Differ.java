@@ -53,6 +53,10 @@ public class Differ implements IRunnableWithProgress {
         }
     }
     
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDependencies() {
+        return additionalDepcies;
+    } 
+    
     public void runProgressMonitorDiffer(final Shell shell) {
         try {
             new ProgressMonitorDialog(shell).run(true, false, this);
