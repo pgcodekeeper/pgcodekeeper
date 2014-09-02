@@ -281,8 +281,8 @@ public class SqlScriptDialog extends MessageDialog {
                         String scriptOutputRes = StdStreamRedirector.launchAndRedirect(
                                 pb, returnedCode);
                         if (usePSQLDepcy) {
-                            setNotEmptyAddDepcy(
-                                    getDependenciesFromResult(returnedCode, 
+                            setAddDepcy(
+                                    getDependenciesFromOutput(returnedCode, 
                                             scriptOutputRes));
                         }
                     } catch (IOException ex) {
@@ -359,23 +359,22 @@ public class SqlScriptDialog extends MessageDialog {
         if (usePSQLDepcy && getAddDepcy() != null && !getAddDepcy().isEmpty()) {
             MessageBox mb = new MessageBox(SqlScriptDialog.this.getShell(), 
                     SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
-            mb.setMessage(Messages.SqlScriptDialog__results_of_script_revealed_dependent_objects + DepcyToString() + 
-                    Messages.SqlScriptDialog_add_it_to_script);
+            mb.setMessage(Messages.SqlScriptDialog__results_of_script_revealed_dependent_objects 
+                    + DepcyToString() + "\n" + Messages.SqlScriptDialog_add_it_to_script); //$NON-NLS-1$
             if (mb.open() == SWT.OK) {
-                differ.addAdditionDepcies(getAdditionalDepcyFromnames(getAddDepcy()));
+                differ.addAdditionDepcies(getAdditionalDepcyFromNames(getAddDepcy()));
                 differ.runProgressMonitorDiffer(getParentShell());
                 sqlEditor.setDocument(new Document(differ.getDiffDirect()));
                 sqlEditor.refresh();
             }
         }
     }
-    private List<Entry<PgStatement, PgStatement>> getAdditionalDepcyFromnames(
+    private List<Entry<PgStatement, PgStatement>> getAdditionalDepcyFromNames(
             Map<String, String> addDepcy) {
         List<Entry<PgStatement, PgStatement>> result = new ArrayList<Entry<PgStatement, PgStatement>>();
         for (String key : addDepcy.keySet()) {
-            String value = addDepcy.get(key);
             PgStatement depcy1 = getPgObjByName(key);
-            PgStatement depcy2 = getPgObjByName(value);
+            PgStatement depcy2 = getPgObjByName(addDepcy.get(key));
             if (depcy1 != null && depcy2 != null) {
                 result.add(new AbstractMap.SimpleEntry<PgStatement, PgStatement>(
                     depcy1,
@@ -400,10 +399,18 @@ public class SqlScriptDialog extends MessageDialog {
     public Map<String, String> getAddDepcy() {
         return addDepcy;
     }
+    /**
+     * Set addDepcy
+     * @param dependenciesFromResult
+     */
+    private void setAddDepcy(Map<String, String> dependenciesFromResult) {
+        addDepcy = dependenciesFromResult;
+    }
     
     private String DepcyToString() {
         StringBuilder sb = new StringBuilder(10);
         for (String key : addDepcy.keySet()) {
+            sb.append(' ');
             sb.append(key);
             sb.append(" -> "); //$NON-NLS-1$
             sb.append(addDepcy.get(key));
@@ -412,19 +419,13 @@ public class SqlScriptDialog extends MessageDialog {
         return sb.toString();
     }
     
-    private boolean setNotEmptyAddDepcy(
-            Map<String, String> dependenciesFromResult) {
-        if (!dependenciesFromResult.isEmpty()) {
-            addDepcy = dependenciesFromResult;
-            return true;
-        } else {
-            return false;
-        }
-    }
     
-    private Map<String, String> getDependenciesFromResult(Integer returnedCode, String output) {
-        Pattern errorPattern = Pattern.compile("^.+(ОШИБКА:).+$"); //$NON-NLS-1$
-        Pattern advicePattern = Pattern.compile("^(ПОДСКАЗКА).+$"); //$NON-NLS-1$
+    private Map<String, String> getDependenciesFromOutput(Integer returnedCode, String output) {
+        if (output == null || output.isEmpty()) {
+            return new HashMap<String, String>();
+        }
+        Pattern errorPattern = Pattern.compile(Messages.sqlScriptDialog_pattern_ERROR); 
+        Pattern advicePattern = Pattern.compile(Messages.sqlScriptDialog_pattern_HINT);
         int begin, end;
         begin = end = -1;
 //        if (returnedCode == 3) {
@@ -448,20 +449,14 @@ public class SqlScriptDialog extends MessageDialog {
     }
 
     private Map<String, String>  parseDependencies(String[] lines, int begin, int end) {
-        Pattern dependencies = Pattern.compile("^\\S+\\s(\\S+)(\\s\\S+){4}\\s(\\S+)$"); //$NON-NLS-1$
-        Pattern depcyWidth = Pattern.compile("^ПОДРОБНОСТИ:\\s+\\S+\\s(\\S+)(\\s\\S+){4}\\s(\\S+)$"); //$NON-NLS-1$
+        Pattern dependencies = 
+                Pattern.compile(Messages.sqlScriptDialog_pattern_DETAIL);
         HashMap<String, String> dependenciesMap = new HashMap<>();
         for (int i = begin; i < end; i++) {
             String line = lines[i];
-            Matcher depcy = dependencies.matcher(line); 
+            Matcher depcy = dependencies.matcher(line);
             if (depcy.matches()) {
-                dependenciesMap.put(depcy.group(1), depcy.group(3));
-                System.out.println("TO DROP: " + depcy.group(1) + " "+ depcy.group(3)); //$NON-NLS-1$ //$NON-NLS-2$
-            }
-            depcy = depcyWidth.matcher(line);
-            if (depcy.matches()) {
-                dependenciesMap.put(depcy.group(1), depcy.group(3));
-                System.out.println("TO DROP: " + depcy.group(1) + " "+depcy.group(3)); //$NON-NLS-1$ //$NON-NLS-2$
+                dependenciesMap.put(depcy.group(2), depcy.group(4));
             }
         }
         return dependenciesMap;
