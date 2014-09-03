@@ -458,9 +458,9 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     private List<Entry<String, String>> getDependenciesFromOutput(Integer returnedCode, String output) {
-        List<Entry<String, String>> dependenciesMap = new ArrayList<>();
+        List<Entry<String, String>> depciesList = new ArrayList<>();
         if (output == null || output.isEmpty()) {
-            return dependenciesMap;
+            return depciesList;
         }
         Pattern errorPattern = Pattern.compile("^.+(ERROR|ОШИБКА):.+$"); //$NON-NLS-1$
         Pattern advicePattern = Pattern.compile("^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$"); //$NON-NLS-1$
@@ -482,21 +482,21 @@ public class SqlScriptDialog extends MessageDialog {
         if (begin != -1 && end != -1 && (end - begin) >= 2) {
 
             String words[] = lines[begin + 1].split(" "); //$NON-NLS-1$
-            dependenciesMap.add(new AbstractMap.SimpleEntry<String, String>(
+            depciesList.add(new AbstractMap.SimpleEntry<String, String>(
                     words[2], words[words.length - 1]));
-            dependenciesMap.addAll(parseDependencies(lines, begin + 2, end));
+            depciesList.addAll(parseDependencies(lines, begin + 2, end));
         }
-        return dependenciesMap;
+        return depciesList;
     }
 
     private List<Entry<String, String>> parseDependencies(String[] lines, int begin, int end) {
-        List<Entry<String, String>> dependenciesMap = new ArrayList<>();
+        List<Entry<String, String>> depciesList = new ArrayList<>();
         for (int i = begin; i < end; i++) {
             String words[] = lines[i].split(" "); //$NON-NLS-1$
-            dependenciesMap.add(new AbstractMap.SimpleEntry<String, String>(
+            depciesList.add(new AbstractMap.SimpleEntry<String, String>(
                     words[1], words[words.length - 1]));
         }
-        return dependenciesMap;
+        return depciesList;
     }
 
     @Override
