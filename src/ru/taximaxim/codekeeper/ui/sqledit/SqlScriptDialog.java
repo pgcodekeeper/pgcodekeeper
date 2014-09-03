@@ -436,21 +436,22 @@ public class SqlScriptDialog extends MessageDialog {
     
     
     private Map<String, String> getDependenciesFromOutput(Integer returnedCode, String output) {
+        HashMap<String, String> dependenciesMap = new HashMap<>();
         if (output == null || output.isEmpty()) {
-            return new HashMap<String, String>();
+            return dependenciesMap;
         }
         Pattern errorPattern = Pattern.compile("^.+(ERROR|ОШИБКА):.+$");
         Pattern advicePattern = Pattern.compile("^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$");
-        HashMap<String, String> dependenciesMap = new HashMap<>();
+        
         int begin, end;
         begin = end = -1;
-        String[] lines = output.replaceAll("  ", " ").split(
+        String[] lines = output.replaceAll("\\s{2,}", " ").split(
                 System.lineSeparator());
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             if (errorPattern.matcher(line).matches()) {
                 begin = i;
-            }
+            } 
             if (advicePattern.matcher(line).matches()) {
                 end = i;
                 break;
