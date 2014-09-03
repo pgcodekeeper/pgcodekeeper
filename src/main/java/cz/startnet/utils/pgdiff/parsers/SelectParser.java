@@ -185,8 +185,6 @@ public class SelectParser {
      */
     private StringBuilder removeExcessParens(StringBuilder sb, int startIndex, 
             int parensCount, int subselectCounter) {
-        // parens counter at subselect start - used to detect subselect end parenthesis
-        final int initialCount = parensCount;
         for(int j = startIndex; j < sb.length(); j++){
             if (sb.charAt(j) == '('){
                 parensCount++;
@@ -200,11 +198,12 @@ public class SelectParser {
                 }
             }else if (sb.charAt(j) == ')'){
                 if (subselectCounter > 0){
-                    if (initialCount < parensCount){
+                    if (subselectCounter < parensCount){
                         parensCount--;
                         sb.setCharAt(j, ' ');
                     }else{
                         subselectCounter--;
+                        parensCount--;
                     }
                 }else{
                     parensCount--;
