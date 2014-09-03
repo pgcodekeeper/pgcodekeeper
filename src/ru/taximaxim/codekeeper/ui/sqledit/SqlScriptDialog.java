@@ -7,10 +7,7 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
@@ -398,7 +395,7 @@ public class SqlScriptDialog extends MessageDialog {
     
     private List<Entry<PgStatement, PgStatement>> getAdditionalDepcyFromNames(
             List<Entry<String, String>> addDepcy) {
-        List<Entry<PgStatement, PgStatement>> result = new LinkedList<>();
+        List<Entry<PgStatement, PgStatement>> result = new ArrayList<>();
         for (Entry <String, String> entry : addDepcy) {
             PgStatement depcy1 = getPgObjByName(entry.getKey());
             PgStatement depcy2 = getPgObjByName(entry.getValue());
@@ -437,7 +434,7 @@ public class SqlScriptDialog extends MessageDialog {
     private void safeOldDepcy() {
         oldDepcy = differ.getAdditionalDependencies();
         List<Entry<PgStatement, PgStatement>> additionalDependencies = 
-                new LinkedList<>();
+                new ArrayList<>();
         for (Entry<PgStatement, PgStatement> depcy : oldDepcy) {
             additionalDependencies.add(depcy);
         }
@@ -461,7 +458,7 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     private List<Entry<String, String>> getDependenciesFromOutput(Integer returnedCode, String output) {
-        List<Entry<String, String>> dependenciesMap = new LinkedList<>();
+        List<Entry<String, String>> dependenciesMap = new ArrayList<>();
         if (output == null || output.isEmpty()) {
             return dependenciesMap;
         }
@@ -492,8 +489,8 @@ public class SqlScriptDialog extends MessageDialog {
         return dependenciesMap;
     }
 
-    private LinkedList<Entry<String, String>> parseDependencies(String[] lines, int begin, int end) {
-        LinkedList<Entry<String, String>> dependenciesMap = new LinkedList<>();
+    private List<Entry<String, String>> parseDependencies(String[] lines, int begin, int end) {
+        List<Entry<String, String>> dependenciesMap = new ArrayList<>();
         for (int i = begin; i < end; i++) {
             String words[] = lines[i].split(" "); //$NON-NLS-1$
             dependenciesMap.add(new AbstractMap.SimpleEntry<String, String>(
