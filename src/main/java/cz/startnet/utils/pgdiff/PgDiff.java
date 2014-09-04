@@ -41,8 +41,7 @@ public class PgDiff {
     private static DepcyGraph depcyOld;
     private static DepcyGraph depcyNew;
     
-    // TODO make private!
-    static PgDatabase dbNew;
+    private static PgDatabase dbNew;
     private static PgDatabase dbOld;
 
     /**
@@ -302,7 +301,7 @@ public class PgDiff {
     }
     
     /**
-     * Checks, whether the child is in a subtree of the parent. 
+     * Checks, whether the child is in a subtree of the parent.
      * <br>
      * (as trigger would be a child of a table)
      * 
@@ -703,6 +702,10 @@ public class PgDiff {
         return specialDependencies;
     }
     
+    public static PgDatabase getFullDbNew() {
+        return dbNew;
+    }
+
     private PgDiff() {
     }
 }

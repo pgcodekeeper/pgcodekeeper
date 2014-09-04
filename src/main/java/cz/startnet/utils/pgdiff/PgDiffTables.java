@@ -142,7 +142,8 @@ public class PgDiffTables {
     public static void alterTable(final PgDiffScript script,
             final PgDiffArguments arguments, final PgTable oldTable,
             final PgTable newTable, final SearchPathHelper searchPathHelper) {
-        PgTable fullTable = PgDiff.dbNew.getSchema(newTable.getParent().getName()).getTable(newTable.getName());
+        PgTable fullTable = PgDiff.getFullDbNew().getSchema(
+                newTable.getParent().getName()).getTable(newTable.getName());
         List<PgStatement> specialDepcies = 
                 PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, fullTable);
         
@@ -523,7 +524,8 @@ public class PgDiffTables {
             final SearchPathHelper searchPathHelper) {
         for (final PgTable table : newSchema.getTables()) {
             if (oldSchema == null || !oldSchema.containsTable(table.getName())) {
-                PgTable fullTable = PgDiff.dbNew.getSchema(newSchema.getName()).getTable(table.getName());
+                PgTable fullTable = PgDiff.getFullDbNew().getSchema(
+                        newSchema.getName()).getTable(table.getName());
                 List<PgStatement> specialDepcies = 
                         PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, fullTable);
                 
@@ -597,17 +599,6 @@ public class PgDiffTables {
                 
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeDropSql(script, null, table);
-                
-                // TODO remove, make optional or mark as a todo for DB programmer
-                // futile attempt to restore a view that depends on the dropped table
-                for (PgStatement depnt : dependantsSet){
-                    if (depnt instanceof PgView){
-                        PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
-                                searchPathHelper, script);
-                        PgDiff.writeCreationSql(script, "-- DEPCY: Following view depends"
-                                + " on the dropped table " + table.getName(), depnt);
-                    }
-                }
             }
         }
     }

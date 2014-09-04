@@ -237,6 +237,7 @@ public class PgDiffTest {
                     {"depcy_simple1", false, false, false, false},
                     // Test changes in the middle and tail of a simple dependency chain
                     {"depcy_simple2", false, false, false, false},
+                    {"dropped_view_recreation", false, false, false, false},
                 });
     }
     

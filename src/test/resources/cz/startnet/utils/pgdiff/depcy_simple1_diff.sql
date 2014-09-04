@@ -52,5 +52,3 @@ ALTER VIEW v1 OWNER TO levsha_aa;
 SET search_path = public, pg_catalog;
 
 SET search_path = s, pg_catalog;
-
-SET search_path = public, pg_catalog;
