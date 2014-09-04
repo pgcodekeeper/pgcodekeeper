@@ -231,29 +231,18 @@ public class PgFunction extends PgStatementWithSearchPath {
             if(equals) {
                 String thisBody, thatBody;
                 if(ignoreFunctionWhitespace) {
-                    thisBody = returns.replaceAll("\\s+", " ") + 
-                            body.replaceAll("\\s+", " ");
-                    thatBody = func.getReturns().replaceAll("\\s+", " ") + 
-                            func.getBody().replaceAll("\\s+", " ");
+                    thisBody = body.replaceAll("\\s+", " ");
+                    thatBody = func.getBody().replaceAll("\\s+", " ");
                 } else {
-                    thisBody = returns + body;
-                    thatBody = func.getReturns() + func.getBody();
+                    thisBody = body;
+                    thatBody = func.getBody();
                 }
-                equals = equals && Objects.equals(thisBody, thatBody);
+                equals = equals
+                        && Objects.equals(thisBody, thatBody)
+                        && Objects.equals(returns, func.getReturns());
             }
         }
         return equals;
-    }
-    
-    public boolean equalsReturns(PgFunction func) {
-        if (returns != null) {
-            return returns.equals(func.getReturns());
-        } else {
-            if (func.getReturns() != null) {
-                return false;
-            }
-        }
-        return true;
     }
     
     @Override

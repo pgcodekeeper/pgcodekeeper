@@ -18,6 +18,18 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
  * @author fordfrog
  */
 public class CreateFunctionParser {
+    
+    private static String[] RETURNS_TERMINATORS = {
+        "LANGUAGE",
+        "WINDOW",
+        "IMMUTABLE", "STABLE", "VOLATILE", "NOT", "LEAKPROOF",
+        "CALLED", "RETURNS", "STRICT",
+        "EXTERNAL", "SECURITY",
+        "COST",
+        "ROWS",
+        "SET",
+        "AS"
+    };
 
     /**
      * Parses CREATE FUNCTION and CREATE OR REPLACE FUNCTION statement.
@@ -55,8 +67,18 @@ public class CreateFunctionParser {
     }
     
     static void parseReturns(Parser parser, PgFunction function) {
+        int posBefore = parser.getPosition();
         if (parser.expectOptional("RETURNS")) {
-            function.setReturns(parser.getExpression("AS", "LANGUAGE"));
+            if (parser.expectOptional("NULL", "ON", "NULL", "INPUT")) {
+                // in case function does not return a value 
+                // and the args are immediately followed by RETURNS NULL ON NULL INPUT
+                
+                // also reset position
+                // because this clause should be stored in body not consumed and lost
+                parser.setPosition(posBefore);
+            } else {
+                function.setReturns(parser.getExpression(RETURNS_TERMINATORS));
+            }
         }
     }
 
