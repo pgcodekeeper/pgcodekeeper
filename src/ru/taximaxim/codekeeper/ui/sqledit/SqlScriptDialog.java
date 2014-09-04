@@ -8,19 +8,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.ITextOperationTarget;
-import org.eclipse.jface.text.TextViewer;
-import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
@@ -35,10 +29,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.statushandlers.StatusManager;
-import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -186,6 +177,7 @@ public class SqlScriptDialog extends MessageDialog {
         sqlEditor.addLineNumbers();
         sqlEditor.setEditable(true);
         sqlEditor.setDocument(new Document(text));
+        sqlEditor.activateAutocomplete();
         
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
@@ -216,27 +208,6 @@ public class SqlScriptDialog extends MessageDialog {
             public void keyReleased(KeyEvent e) {                
             }
         });
-        // TODO sql code completion
-        /** Этот кусочек скопипастен с сайта для поддержки автозавершения ввода*/
-
-        IHandlerService handlerService = (IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
-        IHandler cahandler = new AbstractHandler() {
-
-        @Override
-        public Object execute(ExecutionEvent event)
-                throws org.eclipse.core.commands.ExecutionException {
-            sqlEditor.doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
-            return null;
-        }
-        };
-        // TODO нужно перед активацией деактивировать если уже активирован этот Обработчик
-        /*if(contentAssistHandlerActivation != null){
-        handlerService.deactivateHandler(contentAssistHandlerActivation);
-        }
-        contentAssistHandlerActivation = */handlerService.activateHandler(
-                ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
-        cahandler);
-
     }
     
     @Override

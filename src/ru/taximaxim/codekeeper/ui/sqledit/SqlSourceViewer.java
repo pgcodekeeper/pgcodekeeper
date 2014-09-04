@@ -1,5 +1,8 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.IHandler;
 import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceEditingEnvironment;
 import org.eclipse.datatools.sqltools.sqlbuilder.views.source.SQLSourceViewerConfiguration;
 import org.eclipse.datatools.sqltools.sqleditor.internal.sql.ISQLPartitions;
@@ -9,7 +12,6 @@ import org.eclipse.datatools.sqltools.sqleditor.internal.utils.SQLColorProvider;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
-import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
@@ -23,12 +25,19 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.IHandlerActivation;
+import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 
 public class SqlSourceViewer extends SourceViewer {
 
     private FastPartitioner _partitioner = new FastPartitioner(
             new SQLPartitionScanner(), SQLPartitionScanner.SQL_PARTITION_TYPES);
+
+    private IHandlerActivation contentAssistHandlerActivation;
+    private IHandlerService handlerService;
     
     public SqlSourceViewer(Composite parent, int style) {
         super(parent, new CompositeRuler(), 
@@ -40,6 +49,10 @@ public class SqlSourceViewer extends SourceViewer {
             @Override
             public void widgetDisposed(DisposeEvent e) {
                 SQLSourceEditingEnvironment.disconnect();
+                if (handlerService != null
+                        && contentAssistHandlerActivation != null) {
+                    handlerService.deactivateHandler(contentAssistHandlerActivation);
+                }
             }
         });
         
@@ -79,6 +92,26 @@ public class SqlSourceViewer extends SourceViewer {
         });
         
         this.getTextWidget().setFont(JFaceResources.getTextFont());
+    }
+    
+    public void activateAutocomplete() {
+        handlerService = (IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
+        final SqlSourceViewer sqlEditor = this;
+        IHandler cahandler = new AbstractHandler() {
+
+        @Override
+        public Object execute(ExecutionEvent event)
+                throws org.eclipse.core.commands.ExecutionException {
+            sqlEditor.doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+            return null;
+        }
+        };
+        if (contentAssistHandlerActivation != null) {
+            handlerService.deactivateHandler(contentAssistHandlerActivation);
+        }
+        contentAssistHandlerActivation = handlerService.activateHandler(
+                ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
+        cahandler);
     }
     
     public void addLineNumbers() {
