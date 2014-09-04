@@ -38,7 +38,8 @@ public class DepcyGraph {
     private final DirectedGraph<PgStatement, DefaultEdge> graph = 
             new SimpleDirectedGraph<>(DefaultEdge.class);
     
-    private EdgeReversedGraph<PgStatement, DefaultEdge> reversedGraph;
+    private final EdgeReversedGraph<PgStatement, DefaultEdge> reversedGraph =
+            new EdgeReversedGraph<>(graph);
     
     /**
      * Направление связей в графе:<br>
@@ -67,7 +68,6 @@ public class DepcyGraph {
     public DepcyGraph(PgDatabase graphSrc) {
         db = graphSrc.deepCopy();
         create();
-        reversedGraph = new EdgeReversedGraph<PgStatement, DefaultEdge>(graph);
     }
     
     private void create() {
