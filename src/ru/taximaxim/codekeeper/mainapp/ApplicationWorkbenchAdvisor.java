@@ -18,16 +18,16 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         return new ApplicationWorkbenchWindowAdvisor(configurer);
     }
 
-	@Override
+    @Override
     public String getInitialWindowPerspectiveId() {
-		return null;
-	}
-	
-	@Override
-	public synchronized AbstractStatusHandler getWorkbenchErrorHandler() {
-	    return StackTraceDialogStatusHandler.get();
-	}
-	
+        return null;
+    }
+    
+    @Override
+    public synchronized AbstractStatusHandler getWorkbenchErrorHandler() {
+        return StackTraceDialogStatusHandler.get();
+    }
+    
     @Override
     public void eventLoopException(Throwable exception) {
         // Protection from client doing super(null) call

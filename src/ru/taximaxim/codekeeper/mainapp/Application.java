@@ -21,18 +21,18 @@ public class Application implements IApplication {
 
     private static final String APGDIFF_TO_CONSOLE_MODE = "--apgdiff";
     
-	/* (non-Javadoc)
-	 * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
-	 */
-	@Override
+    /* (non-Javadoc)
+     * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
+     */
+    @Override
     public Object start(IApplicationContext context) throws Exception {
-	    String[] pgCommands = getApgdiffArguments();
+        String[] pgCommands = getApgdiffArguments();
         if (pgCommands.length != 0) {
             callApgdiffMain(pgCommands);
             return IApplication.EXIT_OK;
         }
         
-	    Display display = PlatformUI.createDisplay();
+        Display display = PlatformUI.createDisplay();
         try {
             int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 
@@ -44,7 +44,7 @@ public class Application implements IApplication {
             display.dispose();
         }
 
-	}
+    }
 
     private void callApgdiffMain(String[] pgCommands) {
         try {
@@ -66,21 +66,21 @@ public class Application implements IApplication {
         return null;
     }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.equinox.app.IApplication#stop()
-	 */
-	@Override
+    /* (non-Javadoc)
+     * @see org.eclipse.equinox.app.IApplication#stop()
+     */
+    @Override
     public void stop() {
-		if (!PlatformUI.isWorkbenchRunning())
-			return;
-		final IWorkbench workbench = PlatformUI.getWorkbench();
-		final Display display = workbench.getDisplay();
-		display.syncExec(new Runnable() {
-			@Override
+        if (!PlatformUI.isWorkbenchRunning())
+            return;
+        final IWorkbench workbench = PlatformUI.getWorkbench();
+        final Display display = workbench.getDisplay();
+        display.syncExec(new Runnable() {
+            @Override
             public void run() {
-				if (!display.isDisposed())
-					workbench.close();
-			}
-		});
-	}
+                if (!display.isDisposed())
+                    workbench.close();
+            }
+        });
+    }
 }
