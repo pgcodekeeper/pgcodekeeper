@@ -16,6 +16,7 @@ import java.util.Set;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.traverse.DepthFirstIterator;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
@@ -232,34 +233,47 @@ public class PgDiff {
     }
     
     /**
-     * Fills in the result list with all PgStatements, that are dependent from parent
+     * Fills in the result list with all PgStatements, that are 
+     * dependent from parent
      * <br>
      * (that is, finds those vertices, that have common edge with parent where 
      * parent is the target)
      */
     public static Set<PgStatement> getDependantsSet(PgStatement parent,
             Set<PgStatement> result) {
-        return getDependants(parent, result, oldDepcyGraph);
+        return getDependants(parent, result, depcyOld);
     }
 
     /**
-     * Fills in the result list with all PgStatements, that are dependent from parent <b>based on depcyGraph</b>
+     * Fills in the result list with all PgStatements, that are 
+     * dependent from parent <b>based on DepcyGraph</b>
      * <br>
      * (that is, finds those vertices, that have common edge with parent where 
      * parent is the target)
      */
     public static Set<PgStatement> getDependantsSet(PgStatement parent,
-            Set<PgStatement> result, DirectedGraph<PgStatement, DefaultEdge> depcyGraph) {
-        return getDependants(parent, result, depcyGraph);
+            Set<PgStatement> result, DepcyGraph graph) {
+        return getDependants(parent, result, graph);
     }
     
     private static Set<PgStatement> getDependants(PgStatement parent,
-            Set<PgStatement> result, DirectedGraph<PgStatement, DefaultEdge> depcyGraph) {
+            Set<PgStatement> result, DepcyGraph graph) {
+        DirectedGraph<PgStatement, DefaultEdge> depcyGraph = graph.getGraph();
         if (depcyGraph.containsVertex(parent)){
             for (DefaultEdge edge : depcyGraph.incomingEdgesOf(parent)) {
                 PgStatement dependant = depcyGraph.getEdgeSource(edge);
-                if (result.add(dependant)) {
-                    getDependants(dependant, result, depcyGraph);
+                boolean alreadyProcessed = result.contains(dependant);
+                if (alreadyProcessed) {
+                    DepthFirstIterator<PgStatement, DefaultEdge> iter = 
+                            new DepthFirstIterator<PgStatement, DefaultEdge>(graph.getReversedGraph(), dependant);
+                    while(iter.hasNext()){
+                        PgStatement next = iter.next();
+                        result.remove(next);
+                        result.add(next);
+                    }
+                }else {
+                    result.add(dependant);
+                    getDependants(dependant, result, graph);
                 }
             }
         }
