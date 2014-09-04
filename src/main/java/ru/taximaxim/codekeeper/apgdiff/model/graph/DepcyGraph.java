@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -37,6 +38,9 @@ public class DepcyGraph {
     private final DirectedGraph<PgStatement, DefaultEdge> graph = 
             new SimpleDirectedGraph<>(DefaultEdge.class);
     
+    private final EdgeReversedGraph<PgStatement, DefaultEdge> reversedGraph =
+            new EdgeReversedGraph<>(graph);
+    
     /**
      * Направление связей в графе:<br>
      * зависящий объект → зависимость <br>
@@ -44,6 +48,10 @@ public class DepcyGraph {
      */
     public DirectedGraph<PgStatement, DefaultEdge> getGraph() {
         return graph;
+    }
+    
+    public EdgeReversedGraph<PgStatement, DefaultEdge> getReversedGraph(){
+        return reversedGraph;
     }
     
     private final PgDatabase db;
