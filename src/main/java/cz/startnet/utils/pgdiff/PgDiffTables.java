@@ -599,17 +599,6 @@ public class PgDiffTables {
                 
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeDropSql(script, null, table);
-                
-                // TODO remove, make optional or mark as a todo for DB programmer
-                // futile attempt to restore a view that depends on the dropped table
-                for (PgStatement depnt : dependantsSet){
-                    if (depnt instanceof PgView && !depnt.equals(oldSchema.getView(depnt.getName()))){
-                        PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
-                                searchPathHelper, script);
-                        PgDiff.writeCreationSql(script, "-- DEPCY: Following view depends"
-                                + " on the dropped table " + table.getName(), depnt);
-                    }
-                }
             }
         }
     }

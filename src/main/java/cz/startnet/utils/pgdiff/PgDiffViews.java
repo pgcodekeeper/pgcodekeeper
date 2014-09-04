@@ -103,20 +103,6 @@ public class PgDiffViews {
                 // output initial view drop
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeDropSql(script, null, oldView);
-    
-                // recreate dependant views in straight order if view isn't modified
-                if (isModified){
-                    continue;
-                }
-                
-                for (PgStatement depnt : dependantsSet){
-                    if (depnt instanceof PgView && !depnt.equals(oldSchema.getView(depnt.getName()))){
-                        PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
-                                searchPathHelper, script);
-                        PgDiff.writeCreationSql(script,"-- DEPCY: Following view depends"
-                                + " on the dropped view " + oldView.getName(), depnt);
-                    }
-                }
             }
         }
     }
