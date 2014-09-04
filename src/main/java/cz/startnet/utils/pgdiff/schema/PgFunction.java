@@ -23,6 +23,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     private final List<Argument> arguments = new ArrayList<Argument>();
     private String body;
     private String comment;
+    private String returns;
     
     public PgFunction(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
@@ -42,6 +43,9 @@ public class PgFunction extends PgStatementWithSearchPath {
         sbSQL.append("CREATE OR REPLACE FUNCTION ");
         appendFunctionSignature(sbSQL, true);
         sbSQL.append(' ');
+        sbSQL.append("RETURNS ");
+        sbSQL.append(returns);
+        sbSQL.append("\n    ");
         sbSQL.append(body);
         sbSQL.append(';');
         
@@ -99,6 +103,21 @@ public class PgFunction extends PgStatementWithSearchPath {
 
     public String getBody() {
         return body;
+    }
+
+    /**
+     * @return the returns
+     */
+    public String getReturns() {
+        return returns;
+    }
+
+    /**
+     * @param returns the returns to set
+     */
+    public void setReturns(String returns) {
+        this.returns = returns;
+        resetHash();
     }
 
     @Override
@@ -218,7 +237,9 @@ public class PgFunction extends PgStatementWithSearchPath {
                     thisBody = body;
                     thatBody = func.getBody();
                 }
-                equals = equals && Objects.equals(thisBody, thatBody);
+                equals = equals
+                        && Objects.equals(thisBody, thatBody)
+                        && Objects.equals(returns, func.getReturns());
             }
         }
         return equals;
@@ -242,6 +263,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         int result = 1;
         result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
         result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());
+        result = prime * result + ((returns == null) ? 0 : returns.hashCode());
         result = prime * result + ((body == null) ? 0 : body.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
@@ -345,6 +367,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     public PgFunction shallowCopy() {
         PgFunction functionDst =
                 new PgFunction(getBareName(),getRawStatement(), getSearchPath());
+        functionDst.setReturns(getReturns());
         functionDst.setBody(getBody());
         functionDst.setComment(getComment());
         for(Argument argSrc : arguments) {

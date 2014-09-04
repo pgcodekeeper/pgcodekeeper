@@ -5,7 +5,11 @@
  */
 package cz.startnet.utils.pgdiff;
 
+import java.util.Iterator;
+import java.util.Objects;
+
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 
 /**
@@ -42,9 +46,31 @@ public class PgDiffFunctions {
                 PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newFunction);
                 
                 searchPathHelper.outputSearchPath(script);
+                if (oldFunction != null &&
+                        (!Objects.equals(newFunction.getReturns(), oldFunction.getReturns())
+                                || defaultsModifiedDeleted(newFunction, oldFunction))) {
+                    PgDiff.writeDropSql(script, null, oldFunction);
+                }
                 PgDiff.writeCreationSql(script, null, newFunction);
             }
         }
+    }
+    
+    private static boolean defaultsModifiedDeleted(PgFunction newFunction, 
+            PgFunction oldFunction) {
+        Iterator<Argument> iOld = oldFunction.getArguments().iterator();
+        Iterator<Argument> iNew = newFunction.getArguments().iterator();
+        while (iOld.hasNext() && iNew.hasNext()) {
+            String oldDef = iOld.next().getDefaultExpression();
+            String newDef = iNew.next().getDefaultExpression();
+
+            // allow creation of defaults (old==null && new!=null)
+            if (oldDef != null && !oldDef.equals(newDef)) {
+                return true;
+            }
+        }
+        // we could check for equal arg count but it's not our job here
+        return false;
     }
 
     /**

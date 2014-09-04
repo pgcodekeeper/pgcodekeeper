@@ -160,6 +160,14 @@ public class PgDiffTest {
                     {"drop_function_args", false, false, false, false},
                     // Tests scenario where FUNCTION with args is modified.
                     {"modify_function_args", false, false, false, false},
+                    // Tests scenario where FUNCTION with args delete default.
+                    {"modify_function_delete_default", false, false, false, false},
+                    // Tests scenario where FUNCTION with args add default.
+                    {"modify_function_add_default", false, false, false, false},
+                    // Tests scenario where FUNCTION with args modify returns.
+                    {"modify_function_modify_returns", false, false, false, false},
+                    // Tests scenario where FUNCTION with args not modify default value.
+                    {"same_function_default", false, false, false, false},
                     // Tests scenario where new FUNCTION with args is added.
                     {"add_function_args2", false, false, false, false},
                     // Tests scenario where FUNCTION with args is dropped.
