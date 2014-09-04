@@ -1,8 +1,6 @@
 package ru.taximaxim.codekeeper.mainapp;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
@@ -13,7 +11,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.Main;
 
 /**
@@ -21,70 +19,65 @@ import cz.startnet.utils.pgdiff.Main;
  */
 public class Application implements IApplication {
 
-    boolean runMainClass = false;
-    final static String APGDIFF_TO_CONSOLE_MODE = "--apgdiff";
+    private static final String APGDIFF_TO_CONSOLE_MODE = "--apgdiff";
     
 	/* (non-Javadoc)
 	 * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
 	 */
-	public Object start(IApplicationContext context) throws Exception {
-	    Display display = null;
+	@Override
+    public Object start(IApplicationContext context) throws Exception {
+	    String[] pgCommands = getApgdiffArguments();
+        if (pgCommands.length != 0) {
+            callApgdiffMain(pgCommands);
+            return IApplication.EXIT_OK;
+        }
+        
+	    Display display = PlatformUI.createDisplay();
         try {
-            int returnCode = PlatformUI.RETURN_OK;
-            List<String> pgCommands = getApgdiffarguments();
-            
-            if (!pgCommands.isEmpty()) {
-                callApgdiffMain(pgCommands);
-            } else {
-                display = PlatformUI.createDisplay();
-                returnCode = PlatformUI.createAndRunWorkbench(display,
-                        new ApplicationWorkbenchAdvisor());
-            }
+            int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 
             if (returnCode == PlatformUI.RETURN_RESTART)
                 return IApplication.EXIT_RESTART;
             else
                 return IApplication.EXIT_OK;
         } finally {
-            if (display != null) {
-                display.dispose();
-            }
+            display.dispose();
         }
 
 	}
 
-    private void callApgdiffMain(List<String> pgCommands) {
+    private void callApgdiffMain(String[] pgCommands) {
         try {
-            Main.main(pgCommands.toArray(new String[pgCommands.size()]));
+            Main.main(pgCommands);
         } catch (Exception e) {
-            Status error = new Status(IStatus.ERROR, UIConsts.PLUGIN_ID.APGDIFF,
+            Status error = new Status(IStatus.ERROR, ApgdiffConsts.APGDIFF_PLUGIN_ID,
                     "Calling apgdiff error", e);
-            Platform.getLog(Platform.getBundle(UIConsts.PLUGIN_ID.MAINAPP)).log(
+            Platform.getLog(Platform.getBundle(Activator.PLUGIN_ID)).log(
                     error);
-            System.out.println(error);
         }
     }
 
-    private List<String> getApgdiffarguments() {
-        List<String> args = Arrays.asList(Platform.getApplicationArgs());
-        List<String> pgCommands = new ArrayList<>();
-        int i;
-        if ((i = args.indexOf(APGDIFF_TO_CONSOLE_MODE)) > -1 && i < args.size()) {
-            pgCommands = args.subList(i + 1, args.size());
+    private String[] getApgdiffArguments() {
+        String[] args = Platform.getApplicationArgs();
+        int arg = Arrays.asList(args).indexOf(APGDIFF_TO_CONSOLE_MODE);
+        if (arg != -1) {
+            return Arrays.copyOfRange(args, ++arg, args.length);
         }
-        return pgCommands;
+        return null;
     }
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.equinox.app.IApplication#stop()
 	 */
-	public void stop() {
+	@Override
+    public void stop() {
 		if (!PlatformUI.isWorkbenchRunning())
 			return;
 		final IWorkbench workbench = PlatformUI.getWorkbench();
 		final Display display = workbench.getDisplay();
 		display.syncExec(new Runnable() {
-			public void run() {
+			@Override
+            public void run() {
 				if (!display.isDisposed())
 					workbench.close();
 			}
