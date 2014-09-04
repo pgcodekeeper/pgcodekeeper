@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -68,24 +69,17 @@ public class DbSourceJdbc extends DbSource {
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
+        PgDatabase d = new PgDatabase();
         try {
             Class.forName(JDBC_DRIVER);
             connection = DriverManager.getConnection(
                    "jdbc:postgresql://" + host + ":" + port + "/" + dbName, user, pass);
             metaData = connection.getMetaData();
 
-            String schemaName = "public";
-            ResultSet res = metaData.getTables(null, schemaName, "%", new String[] {"TABLE"} );
-            
+            ResultSet res = metaData.getSchemas();
             while (res.next()) {
-                PgTable table = getTable("public", res.getString("table_name"));
-//                System.out.println(table.getCreationSQL() + "\n");
-            }
-            
-            res = metaData.getTables(null, schemaName, "%", new String[] {"VIEW"} );
-            while (res.next()) {
-                PgView view = getView("public", res.getString("table_name"));
-//                System.out.println(view.getCreationSQL() + "\n");
+                PgSchema s = getSchema(res.getString("TABLE_SCHEM"));
+                d.addSchema(s);
             }
             
             connection.close();
@@ -94,7 +88,23 @@ public class DbSourceJdbc extends DbSource {
         } catch (ClassNotFoundException e) {
             throw new IOException("JDBC driver class not found", e);
         }
-        return null;
+        return d;
+    }
+    
+    private PgSchema getSchema(String schema) throws SQLException{
+        PgSchema s = new PgSchema(schema, "");
+        
+        ResultSet res = metaData.getTables(null, schema, "%", new String[] {"TABLE"} );
+        
+        while (res.next()) {
+            PgTable table = getTable(schema, res.getString("table_name"));
+        }
+        
+        res = metaData.getTables(null, schema, "%", new String[] {"VIEW"} );
+        while (res.next()) {
+            PgView view = getView(schema, res.getString("table_name"));
+        }
+        return s;
     }
     
     private PgView getView(String schema, String view) throws SQLException {
@@ -155,6 +165,8 @@ public class DbSourceJdbc extends DbSource {
         if (res.next()){
             v.setOwner(res.getString("viewowner"));
         }
+        
+        // TODO Comment on view
         
         return v;
     }
