@@ -9,6 +9,8 @@ import org.eclipse.datatools.sqltools.sqleditor.internal.utils.SQLColorProvider;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
@@ -66,6 +68,13 @@ public class SqlSourceViewer extends SourceViewer {
                 }
                 
                 return reconciler;
+            }
+            @Override
+            protected IContentAssistant createAndInitContentAssistant() {
+                // TODO переопределить метод, расширить класс SQLPartitionScanner
+                // добавить выражения для постгресс и будет полная поддержка автоввода
+                // пока только базовая некоторых выражений
+                return super.createAndInitContentAssistant();
             }
         });
         
