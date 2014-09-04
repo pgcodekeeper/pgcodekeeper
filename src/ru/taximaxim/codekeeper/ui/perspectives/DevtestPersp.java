@@ -17,9 +17,10 @@ public class DevtestPersp implements IPerspectiveFactory {
                 IPageLayout.LEFT, 0.5f, layout.getEditorArea());
         
         stack.addView(PART.DEVTEST);
-        stack.addView(PART.CTXP);
-        
         layout.getViewLayout(PART.DEVTEST).setCloseable(false);
+        
+        stack.addView(PART.CTXP);
         layout.getViewLayout(PART.CTXP).setCloseable(false);
+        
     }
 }
