@@ -162,7 +162,7 @@ public class SqlSourceViewer extends SourceViewer
         this.getControl().setMenu(menu1);
 //        fContainer.registerContextMenu(menu, getSourceViewer());
         contributeFindAction();
-        connectGlobalActions();
+//        connectGlobalActions();
     }
     
     private void freeObjects() {
@@ -283,7 +283,7 @@ public IAction getAction(String actionId) {
     return action;
 }
 
-private void connectGlobalActions() {
+/*private void connectGlobalActions() {
     if (handlerService != null) {
         updateActions();
         clearHandlers();
@@ -300,7 +300,7 @@ private void connectGlobalActions() {
             }
         });
     }
-}
+}*/
 
 public void textChanged(TextEvent event) {
     updateContentDependantActions();
