@@ -219,7 +219,7 @@ public class PgTable extends PgStatementWithSearchPath {
     @Override
     public String getFullSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append(getCreationSQL()).append("\n\n").append(getClusterSQL());
+        sbSQL.append(getCreationSQL()).append(getClusterSQL());
         
         return sbSQL.toString();
     }
