@@ -27,7 +27,7 @@ public class Application implements IApplication {
     @Override
     public Object start(IApplicationContext context) throws Exception {
         String[] pgCommands = getApgdiffArguments();
-        if (pgCommands.length != 0) {
+        if (pgCommands != null) {
             callApgdiffMain(pgCommands);
             return IApplication.EXIT_OK;
         }
@@ -57,6 +57,10 @@ public class Application implements IApplication {
         }
     }
 
+    /**
+     * @return arrays of arguments that go after --apgdiff,
+     *          or null if --apgdiff is not found in args
+     */
     private String[] getApgdiffArguments() {
         String[] args = Platform.getApplicationArgs();
         int arg = Arrays.asList(args).indexOf(APGDIFF_TO_CONSOLE_MODE);

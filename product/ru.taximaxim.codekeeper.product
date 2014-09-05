@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="pgCodeKeeper" uid="ru.taximaxim.codekeeper.product" id="ru.taximaxim.codekeeper.mainapp.product_codekeeper" application="ru.taximaxim.codekeeper.mainapp.application" version="0.5.7.qualifier" useFeatures="false" includeLaunchers="true">
+<product name="pgCodeKeeper" uid="ru.taximaxim.codekeeper.product" id="ru.taximaxim.codekeeper.mainapp.product_codekeeper" application="ru.taximaxim.codekeeper.mainapp.application" version="0.5.8.qualifier" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/ru.taximaxim.codekeeper.mainapp/icons/product.png"/>
