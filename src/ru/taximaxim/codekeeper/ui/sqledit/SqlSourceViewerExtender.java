@@ -52,21 +52,21 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
     private static final String[] GLOBAL_ACTIONS = {
             ActionFactory.UNDO.getId(), 
             ActionFactory.REDO.getId(),
-            ActionFactory.CUT.getId(), 
-            ActionFactory.COPY.getId(),
-            ActionFactory.PASTE.getId(), 
-            ActionFactory.DELETE.getId(),
-            ActionFactory.SELECT_ALL.getId(), 
+//            ActionFactory.CUT.getId(), 
+//            ActionFactory.COPY.getId(),
+//            ActionFactory.PASTE.getId(), 
+//            ActionFactory.DELETE.getId(),
+//            ActionFactory.SELECT_ALL.getId(), 
             ActionFactory.FIND.getId(),
             ITextEditorActionDefinitionIds.LINE_GOTO };
     private static final String[] TEXT_ACTIONS = {
             SqlSourceViewerExtender.UNDO_ID, 
             SqlSourceViewerExtender.REDO_ID,
-            SqlSourceViewerExtender.CUT_ID, 
-            SqlSourceViewerExtender.COPY_ID,
-            SqlSourceViewerExtender.PASTE_ID,
-            SqlSourceViewerExtender.DELETE_ID,
-            SqlSourceViewerExtender.SELECT_ALL_ID,
+//            SqlSourceViewerExtender.CUT_ID, 
+//            SqlSourceViewerExtender.COPY_ID,
+//            SqlSourceViewerExtender.PASTE_ID,
+//            SqlSourceViewerExtender.DELETE_ID,
+//            SqlSourceViewerExtender.SELECT_ALL_ID,
             SqlSourceViewerExtender.FIND_ID,
             SqlSourceViewerExtender.GOTO_LINE_ID };
     public static final String UNDO_ID = "undo"; //$NON-NLS-1$
