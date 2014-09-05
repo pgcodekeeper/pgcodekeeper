@@ -2,8 +2,9 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
-import org.eclipse.compare.internal.MergeSourceViewer;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.IHandler;
@@ -147,6 +148,7 @@ public class SqlSourceViewer extends SourceViewer implements IMenuListener {
         this.getTextWidget().setFont(JFaceResources.getTextFont());
         
         handlerService = (IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
+        
         MenuManager menu= new MenuManager();
         menu.setRemoveAllWhenShown(true);
         menu.addMenuListener(this);
@@ -214,13 +216,13 @@ public IAction getAction(String actionId) {
         if (action == null)
             return null;
         if (action instanceof SqlMergeViewerAction) {
-            SqlMergeViewerAction mva = (SqlMergeViewerAction) action;
+//            SqlMergeViewerAction mva = (SqlMergeViewerAction) action;
 //            if (mva.isContentDependent())
 //                getSourceViewer().addTextListener(this);
 //            if (mva.isSelectionDependent())
 //                getSourceViewer().addSelectionChangedListener(this);
             
-//            Utilities.initAction(action, fResourceBundle, "action." + actionId + ".");           //$NON-NLS-1$ //$NON-NLS-2$
+            initAction(action, ResourceBundle.getBundle("org.eclipse.compare.contentmergeviewer.TextMergeViewerResources"), "action." + actionId + ".");           //$NON-NLS-1$ //$NON-NLS-2$
         }
         addAction(actionId, action);
             
@@ -358,6 +360,40 @@ public abstract class SqlMergeViewerAction extends Action implements IUpdate {
     public void update() {
         // empty default implementation
     }
+}
+
+/*
+ * Initialize the given Action from a ResourceBundle.
+ */
+public static void initAction(IAction a, ResourceBundle bundle, String prefix) {
+    
+    String labelKey= "label"; //$NON-NLS-1$
+    String tooltipKey= "tooltip"; //$NON-NLS-1$
+    String imageKey= "image"; //$NON-NLS-1$
+    String descriptionKey= "description"; //$NON-NLS-1$
+    
+    if (prefix != null && prefix.length() > 0) {
+        labelKey= prefix + labelKey;
+        tooltipKey= prefix + tooltipKey;
+        imageKey= prefix + imageKey;
+        descriptionKey= prefix + descriptionKey;
+    }
+    
+    a.setText(getString(bundle, labelKey, labelKey));
+    a.setToolTipText(getString(bundle, tooltipKey, null));
+    a.setDescription(getString(bundle, descriptionKey, null));
+    
+}
+public static String getString(ResourceBundle bundle, String key, String dfltValue) {
+    
+    if (bundle != null) {
+        try {
+            return bundle.getString(key);
+        } catch (MissingResourceException x) {
+            // fall through
+        }
+    }
+    return dfltValue;
 }
 
     @Override
