@@ -7,2538 +7,2538 @@ public class SqlPostgresSyntax implements ISQLSyntax {
     private final static String EMPTY[] = {};
     
     private final String[] comment = {
-            "--"
+            "--" //$NON-NLS-1$
     };
     
     private final String[] reserved = {
-            "all",
-            "analyse",
-            "analyze",
-            "and",
-            "any",
-            "array",
-            "as",
-            "asc",
-            "asymmetric",
-            "authorization",
-            "binary",
-            "both",
-            "case",
-            "cast",
-            "check",
-            "collate",
-            "collation",
-            "column",
-            "concurrently",
-            "constraint",
-            "create",
-            "cross",
-            "current_catalog",
-            "current_date",
-            "current_role",
-            "current_schema",
-            "current_time",
-            "current_timestamp",
-            "current_user",
-            "default",
-            "deferrable",
-            "desc",
-            "distinct",
-            "do",
-            "else",
-            "end",
-            "except",
-            "false",
-            "fetch",
-            "for",
-            "foreign",
-            "freeze",
-            "from",
-            "full",
-            "grant",
-            "group",
-            "having",
-            "ilike",
-            "in",
-            "initially",
-            "inner",
-            "intersect",
-            "into",
-            "is",
-            "isnull",
-            "join",
-            "lateral",
-            "leading",
-            "left",
-            "like",
-            "limit",
-            "localtime",
-            "localtimestamp",
-            "natural",
-            "not",
-            "notnull",
-            "null",
-            "offset",
-            "on",
-            "only",
-            "or",
-            "order",
-            "outer",
-            "over",
-            "overlaps",
-            "placing",
-            "primary",
-            "references",
-            "returning",
-            "right",
-            "select",
-            "session_user",
-            "similar",
-            "some",
-            "symmetric",
-            "table",
-            "then",
-            "to",
-            "trailing",
-            "true",
-            "union",
-            "unique",
-            "user",
-            "using",
-            "variadic",
-            "verbose",
-            "when",
-            "where",
-            "window",
-            "with"
+            "all", //$NON-NLS-1$
+            "analyse", //$NON-NLS-1$
+            "analyze", //$NON-NLS-1$
+            "and", //$NON-NLS-1$
+            "any", //$NON-NLS-1$
+            "array", //$NON-NLS-1$
+            "as", //$NON-NLS-1$
+            "asc", //$NON-NLS-1$
+            "asymmetric", //$NON-NLS-1$
+            "authorization", //$NON-NLS-1$
+            "binary", //$NON-NLS-1$
+            "both", //$NON-NLS-1$
+            "case", //$NON-NLS-1$
+            "cast", //$NON-NLS-1$
+            "check", //$NON-NLS-1$
+            "collate", //$NON-NLS-1$
+            "collation", //$NON-NLS-1$
+            "column", //$NON-NLS-1$
+            "concurrently", //$NON-NLS-1$
+            "constraint", //$NON-NLS-1$
+            "create", //$NON-NLS-1$
+            "cross", //$NON-NLS-1$
+            "current_catalog", //$NON-NLS-1$
+            "current_date", //$NON-NLS-1$
+            "current_role", //$NON-NLS-1$
+            "current_schema", //$NON-NLS-1$
+            "current_time", //$NON-NLS-1$
+            "current_timestamp", //$NON-NLS-1$
+            "current_user", //$NON-NLS-1$
+            "default", //$NON-NLS-1$
+            "deferrable", //$NON-NLS-1$
+            "desc", //$NON-NLS-1$
+            "distinct", //$NON-NLS-1$
+            "do", //$NON-NLS-1$
+            "else", //$NON-NLS-1$
+            "end", //$NON-NLS-1$
+            "except", //$NON-NLS-1$
+            "false", //$NON-NLS-1$
+            "fetch", //$NON-NLS-1$
+            "for", //$NON-NLS-1$
+            "foreign", //$NON-NLS-1$
+            "freeze", //$NON-NLS-1$
+            "from", //$NON-NLS-1$
+            "full", //$NON-NLS-1$
+            "grant", //$NON-NLS-1$
+            "group", //$NON-NLS-1$
+            "having", //$NON-NLS-1$
+            "ilike", //$NON-NLS-1$
+            "in", //$NON-NLS-1$
+            "initially", //$NON-NLS-1$
+            "inner", //$NON-NLS-1$
+            "intersect", //$NON-NLS-1$
+            "into", //$NON-NLS-1$
+            "is", //$NON-NLS-1$
+            "isnull", //$NON-NLS-1$
+            "join", //$NON-NLS-1$
+            "lateral", //$NON-NLS-1$
+            "leading", //$NON-NLS-1$
+            "left", //$NON-NLS-1$
+            "like", //$NON-NLS-1$
+            "limit", //$NON-NLS-1$
+            "localtime", //$NON-NLS-1$
+            "localtimestamp", //$NON-NLS-1$
+            "natural", //$NON-NLS-1$
+            "not", //$NON-NLS-1$
+            "notnull", //$NON-NLS-1$
+            "null", //$NON-NLS-1$
+            "offset", //$NON-NLS-1$
+            "on", //$NON-NLS-1$
+            "only", //$NON-NLS-1$
+            "or", //$NON-NLS-1$
+            "order", //$NON-NLS-1$
+            "outer", //$NON-NLS-1$
+            "over", //$NON-NLS-1$
+            "overlaps", //$NON-NLS-1$
+            "placing", //$NON-NLS-1$
+            "primary", //$NON-NLS-1$
+            "references", //$NON-NLS-1$
+            "returning", //$NON-NLS-1$
+            "right", //$NON-NLS-1$
+            "select", //$NON-NLS-1$
+            "session_user", //$NON-NLS-1$
+            "similar", //$NON-NLS-1$
+            "some", //$NON-NLS-1$
+            "symmetric", //$NON-NLS-1$
+            "table", //$NON-NLS-1$
+            "then", //$NON-NLS-1$
+            "to", //$NON-NLS-1$
+            "trailing", //$NON-NLS-1$
+            "true", //$NON-NLS-1$
+            "union", //$NON-NLS-1$
+            "unique", //$NON-NLS-1$
+            "user", //$NON-NLS-1$
+            "using", //$NON-NLS-1$
+            "variadic", //$NON-NLS-1$
+            "verbose", //$NON-NLS-1$
+            "when", //$NON-NLS-1$
+            "where", //$NON-NLS-1$
+            "window", //$NON-NLS-1$
+            "with" //$NON-NLS-1$
     };
     
     private final String[] unreserved = {
-            "abort",
-            "absolute",
-            "access",
-            "action",
-            "add",
-            "admin",
-            "after",
-            "aggregate",
-            "also",
-            "alter",
-            "always",
-            "assertion",
-            "assignment",
-            "at",
-            "attribute",
-            "backward",
-            "before",
-            "begin",
-            "between",
-            "bigint",
-            "bit",
-            "boolean",
-            "by",
-            "cache",
-            "called",
-            "cascade",
-            "cascaded",
-            "catalog",
-            "chain",
-            "char",
-            "character",
-            "characteristics",
-            "checkpoint",
-            "class",
-            "close",
-            "cluster",
-            "coalesce",
-            "comment",
-            "comments",
-            "commit",
-            "committed",
-            "configuration",
-            "connection",
-            "constraints",
-            "content",
-            "continue",
-            "conversion",
-            "copy",
-            "cost",
-            "csv",
-            "current",
-            "cursor",
-            "cycle",
-            "data",
-            "database",
-            "day",
-            "deallocate",
-            "dec",
-            "decimal",
-            "declare",
-            "defaults",
-            "deferred",
-            "definer",
-            "delete",
-            "delimiter",
-            "delimiters",
-            "dictionary",
-            "disable",
-            "discard",
-            "document",
-            "domain",
-            "double",
-            "drop",
-            "each",
-            "enable",
-            "encoding",
-            "encrypted",
-            "enum",
-            "escape",
-            "event",
-            "exclude",
-            "excluding",
-            "exclusive",
-            "execute",
-            "exists",
-            "explain",
-            "extension",
-            "external",
-            "extract",
-            "family",
-            "first",
-            "float",
-            "following",
-            "force",
-            "forward",
-            "function",
-            "functions",
-            "global",
-            "granted",
-            "greatest",
-            "handler",
-            "header",
-            "hold",
-            "hour",
-            "identity",
-            "if",
-            "immediate",
-            "immutable",
-            "implicit",
-            "including",
-            "increment",
-            "index",
-            "indexes",
-            "inherit",
-            "inherits",
-            "inline",
-            "inout",
-            "input",
-            "insensitive",
-            "insert",
-            "instead",
-            "int",
-            "integer",
-            "interval",
-            "invoker",
-            "isolation",
-            "key",
-            "label",
-            "language",
-            "large",
-            "last",
-            "lc_collate",
-            "lc_ctype",
-            "leakproof",
-            "least",
-            "level",
-            "listen",
-            "load",
-            "local",
-            "location",
-            "lock",
-            "mapping",
-            "match",
-            "materialized",
-            "maxvalue",
-            "minute",
-            "minvalue",
-            "mode",
-            "month",
-            "move",
-            "name",
-            "names",
-            "national",
-            "nchar",
-            "next",
-            "no",
-            "none",
-            "nothing",
-            "notify",
-            "nowait",
-            "nullif",
-            "nulls",
-            "numeric",
-            "object",
-            "of",
-            "off",
-            "oids",
-            "operator",
-            "option",
-            "options",
-            "out",
-            "overlay",
-            "owned",
-            "owner",
-            "parser",
-            "partial",
-            "partition",
-            "passing",
-            "password",
-            "plans",
-            "position",
-            "preceding",
-            "precision",
-            "prepare",
-            "prepared",
-            "preserve",
-            "prior",
-            "privileges",
-            "procedural",
-            "procedure",
-            "program",
-            "quote",
-            "range",
-            "read",
-            "real",
-            "reassign",
-            "recheck",
-            "recursive",
-            "ref",
-            "refresh",
-            "reindex",
-            "relative",
-            "release",
-            "rename",
-            "repeatable",
-            "replace",
-            "replica",
-            "reset",
-            "restart",
-            "restrict",
-            "returns",
-            "revoke",
-            "role",
-            "rollback",
-            "row",
-            "rows",
-            "rule",
-            "savepoint",
-            "schema",
-            "scroll",
-            "search",
-            "second",
-            "security",
-            "sequence",
-            "sequences",
-            "serializable",
-            "server",
-            "session",
-            "set",
-            "setof",
-            "share",
-            "show",
-            "simple",
-            "smallint",
-            "snapshot",
-            "stable",
-            "standalone",
-            "start",
-            "statement",
-            "statistics",
-            "stdin",
-            "stdout",
-            "storage",
-            "strict",
-            "strip",
-            "substring",
-            "sysid",
-            "system",
-            "tables",
-            "tablespace",
-            "temp",
-            "template",
-            "temporary",
-            "text",
-            "time",
-            "timestamp",
-            "transaction",
-            "treat",
-            "trigger",
-            "trim",
-            "truncate",
-            "trusted",
-            "type",
-            "types",
-            "unbounded",
-            "uncommitted",
-            "unencrypted",
-            "unknown",
-            "unlisten",
-            "unlogged",
-            "until",
-            "update",
-            "vacuum",
-            "valid",
-            "validate",
-            "validator",
-            "value",
-            "values",
-            "varchar",
-            "varying",
-            "version",
-            "view",
-            "volatile",
-            "whitespace",
-            "without",
-            "work",
-            "wrapper",
-            "write",
-            "xml",
-            "xmlattributes",
-            "xmlconcat",
-            "xmlelement",
-            "xmlexists",
-            "xmlforest",
-            "xmlparse",
-            "xmlpi",
-            "xmlroot",
-            "xmlserialize",
-            "year",
-            "yes",
-            "zone"
+            "abort", //$NON-NLS-1$
+            "absolute", //$NON-NLS-1$
+            "access", //$NON-NLS-1$
+            "action", //$NON-NLS-1$
+            "add", //$NON-NLS-1$
+            "admin", //$NON-NLS-1$
+            "after", //$NON-NLS-1$
+            "aggregate", //$NON-NLS-1$
+            "also", //$NON-NLS-1$
+            "alter", //$NON-NLS-1$
+            "always", //$NON-NLS-1$
+            "assertion", //$NON-NLS-1$
+            "assignment", //$NON-NLS-1$
+            "at", //$NON-NLS-1$
+            "attribute", //$NON-NLS-1$
+            "backward", //$NON-NLS-1$
+            "before", //$NON-NLS-1$
+            "begin", //$NON-NLS-1$
+            "between", //$NON-NLS-1$
+            "bigint", //$NON-NLS-1$
+            "bit", //$NON-NLS-1$
+            "boolean", //$NON-NLS-1$
+            "by", //$NON-NLS-1$
+            "cache", //$NON-NLS-1$
+            "called", //$NON-NLS-1$
+            "cascade", //$NON-NLS-1$
+            "cascaded", //$NON-NLS-1$
+            "catalog", //$NON-NLS-1$
+            "chain", //$NON-NLS-1$
+            "char", //$NON-NLS-1$
+            "character", //$NON-NLS-1$
+            "characteristics", //$NON-NLS-1$
+            "checkpoint", //$NON-NLS-1$
+            "class", //$NON-NLS-1$
+            "close", //$NON-NLS-1$
+            "cluster", //$NON-NLS-1$
+            "coalesce", //$NON-NLS-1$
+            "comment", //$NON-NLS-1$
+            "comments", //$NON-NLS-1$
+            "commit", //$NON-NLS-1$
+            "committed", //$NON-NLS-1$
+            "configuration", //$NON-NLS-1$
+            "connection", //$NON-NLS-1$
+            "constraints", //$NON-NLS-1$
+            "content", //$NON-NLS-1$
+            "continue", //$NON-NLS-1$
+            "conversion", //$NON-NLS-1$
+            "copy", //$NON-NLS-1$
+            "cost", //$NON-NLS-1$
+            "csv", //$NON-NLS-1$
+            "current", //$NON-NLS-1$
+            "cursor", //$NON-NLS-1$
+            "cycle", //$NON-NLS-1$
+            "data", //$NON-NLS-1$
+            "database", //$NON-NLS-1$
+            "day", //$NON-NLS-1$
+            "deallocate", //$NON-NLS-1$
+            "dec", //$NON-NLS-1$
+            "decimal", //$NON-NLS-1$
+            "declare", //$NON-NLS-1$
+            "defaults", //$NON-NLS-1$
+            "deferred", //$NON-NLS-1$
+            "definer", //$NON-NLS-1$
+            "delete", //$NON-NLS-1$
+            "delimiter", //$NON-NLS-1$
+            "delimiters", //$NON-NLS-1$
+            "dictionary", //$NON-NLS-1$
+            "disable", //$NON-NLS-1$
+            "discard", //$NON-NLS-1$
+            "document", //$NON-NLS-1$
+            "domain", //$NON-NLS-1$
+            "double", //$NON-NLS-1$
+            "drop", //$NON-NLS-1$
+            "each", //$NON-NLS-1$
+            "enable", //$NON-NLS-1$
+            "encoding", //$NON-NLS-1$
+            "encrypted", //$NON-NLS-1$
+            "enum", //$NON-NLS-1$
+            "escape", //$NON-NLS-1$
+            "event", //$NON-NLS-1$
+            "exclude", //$NON-NLS-1$
+            "excluding", //$NON-NLS-1$
+            "exclusive", //$NON-NLS-1$
+            "execute", //$NON-NLS-1$
+            "exists", //$NON-NLS-1$
+            "explain", //$NON-NLS-1$
+            "extension", //$NON-NLS-1$
+            "external", //$NON-NLS-1$
+            "extract", //$NON-NLS-1$
+            "family", //$NON-NLS-1$
+            "first", //$NON-NLS-1$
+            "float", //$NON-NLS-1$
+            "following", //$NON-NLS-1$
+            "force", //$NON-NLS-1$
+            "forward", //$NON-NLS-1$
+            "function", //$NON-NLS-1$
+            "functions", //$NON-NLS-1$
+            "global", //$NON-NLS-1$
+            "granted", //$NON-NLS-1$
+            "greatest", //$NON-NLS-1$
+            "handler", //$NON-NLS-1$
+            "header", //$NON-NLS-1$
+            "hold", //$NON-NLS-1$
+            "hour", //$NON-NLS-1$
+            "identity", //$NON-NLS-1$
+            "if", //$NON-NLS-1$
+            "immediate", //$NON-NLS-1$
+            "immutable", //$NON-NLS-1$
+            "implicit", //$NON-NLS-1$
+            "including", //$NON-NLS-1$
+            "increment", //$NON-NLS-1$
+            "index", //$NON-NLS-1$
+            "indexes", //$NON-NLS-1$
+            "inherit", //$NON-NLS-1$
+            "inherits", //$NON-NLS-1$
+            "inline", //$NON-NLS-1$
+            "inout", //$NON-NLS-1$
+            "input", //$NON-NLS-1$
+            "insensitive", //$NON-NLS-1$
+            "insert", //$NON-NLS-1$
+            "instead", //$NON-NLS-1$
+            "int", //$NON-NLS-1$
+            "integer", //$NON-NLS-1$
+            "interval", //$NON-NLS-1$
+            "invoker", //$NON-NLS-1$
+            "isolation", //$NON-NLS-1$
+            "key", //$NON-NLS-1$
+            "label", //$NON-NLS-1$
+            "language", //$NON-NLS-1$
+            "large", //$NON-NLS-1$
+            "last", //$NON-NLS-1$
+            "lc_collate", //$NON-NLS-1$
+            "lc_ctype", //$NON-NLS-1$
+            "leakproof", //$NON-NLS-1$
+            "least", //$NON-NLS-1$
+            "level", //$NON-NLS-1$
+            "listen", //$NON-NLS-1$
+            "load", //$NON-NLS-1$
+            "local", //$NON-NLS-1$
+            "location", //$NON-NLS-1$
+            "lock", //$NON-NLS-1$
+            "mapping", //$NON-NLS-1$
+            "match", //$NON-NLS-1$
+            "materialized", //$NON-NLS-1$
+            "maxvalue", //$NON-NLS-1$
+            "minute", //$NON-NLS-1$
+            "minvalue", //$NON-NLS-1$
+            "mode", //$NON-NLS-1$
+            "month", //$NON-NLS-1$
+            "move", //$NON-NLS-1$
+            "name", //$NON-NLS-1$
+            "names", //$NON-NLS-1$
+            "national", //$NON-NLS-1$
+            "nchar", //$NON-NLS-1$
+            "next", //$NON-NLS-1$
+            "no", //$NON-NLS-1$
+            "none", //$NON-NLS-1$
+            "nothing", //$NON-NLS-1$
+            "notify", //$NON-NLS-1$
+            "nowait", //$NON-NLS-1$
+            "nullif", //$NON-NLS-1$
+            "nulls", //$NON-NLS-1$
+            "numeric", //$NON-NLS-1$
+            "object", //$NON-NLS-1$
+            "of", //$NON-NLS-1$
+            "off", //$NON-NLS-1$
+            "oids", //$NON-NLS-1$
+            "operator", //$NON-NLS-1$
+            "option", //$NON-NLS-1$
+            "options", //$NON-NLS-1$
+            "out", //$NON-NLS-1$
+            "overlay", //$NON-NLS-1$
+            "owned", //$NON-NLS-1$
+            "owner", //$NON-NLS-1$
+            "parser", //$NON-NLS-1$
+            "partial", //$NON-NLS-1$
+            "partition", //$NON-NLS-1$
+            "passing", //$NON-NLS-1$
+            "password", //$NON-NLS-1$
+            "plans", //$NON-NLS-1$
+            "position", //$NON-NLS-1$
+            "preceding", //$NON-NLS-1$
+            "precision", //$NON-NLS-1$
+            "prepare", //$NON-NLS-1$
+            "prepared", //$NON-NLS-1$
+            "preserve", //$NON-NLS-1$
+            "prior", //$NON-NLS-1$
+            "privileges", //$NON-NLS-1$
+            "procedural", //$NON-NLS-1$
+            "procedure", //$NON-NLS-1$
+            "program", //$NON-NLS-1$
+            "quote", //$NON-NLS-1$
+            "range", //$NON-NLS-1$
+            "read", //$NON-NLS-1$
+            "real", //$NON-NLS-1$
+            "reassign", //$NON-NLS-1$
+            "recheck", //$NON-NLS-1$
+            "recursive", //$NON-NLS-1$
+            "ref", //$NON-NLS-1$
+            "refresh", //$NON-NLS-1$
+            "reindex", //$NON-NLS-1$
+            "relative", //$NON-NLS-1$
+            "release", //$NON-NLS-1$
+            "rename", //$NON-NLS-1$
+            "repeatable", //$NON-NLS-1$
+            "replace", //$NON-NLS-1$
+            "replica", //$NON-NLS-1$
+            "reset", //$NON-NLS-1$
+            "restart", //$NON-NLS-1$
+            "restrict", //$NON-NLS-1$
+            "returns", //$NON-NLS-1$
+            "revoke", //$NON-NLS-1$
+            "role", //$NON-NLS-1$
+            "rollback", //$NON-NLS-1$
+            "row", //$NON-NLS-1$
+            "rows", //$NON-NLS-1$
+            "rule", //$NON-NLS-1$
+            "savepoint", //$NON-NLS-1$
+            "schema", //$NON-NLS-1$
+            "scroll", //$NON-NLS-1$
+            "search", //$NON-NLS-1$
+            "second", //$NON-NLS-1$
+            "security", //$NON-NLS-1$
+            "sequence", //$NON-NLS-1$
+            "sequences", //$NON-NLS-1$
+            "serializable", //$NON-NLS-1$
+            "server", //$NON-NLS-1$
+            "session", //$NON-NLS-1$
+            "set", //$NON-NLS-1$
+            "setof", //$NON-NLS-1$
+            "share", //$NON-NLS-1$
+            "show", //$NON-NLS-1$
+            "simple", //$NON-NLS-1$
+            "smallint", //$NON-NLS-1$
+            "snapshot", //$NON-NLS-1$
+            "stable", //$NON-NLS-1$
+            "standalone", //$NON-NLS-1$
+            "start", //$NON-NLS-1$
+            "statement", //$NON-NLS-1$
+            "statistics", //$NON-NLS-1$
+            "stdin", //$NON-NLS-1$
+            "stdout", //$NON-NLS-1$
+            "storage", //$NON-NLS-1$
+            "strict", //$NON-NLS-1$
+            "strip", //$NON-NLS-1$
+            "substring", //$NON-NLS-1$
+            "sysid", //$NON-NLS-1$
+            "system", //$NON-NLS-1$
+            "tables", //$NON-NLS-1$
+            "tablespace", //$NON-NLS-1$
+            "temp", //$NON-NLS-1$
+            "template", //$NON-NLS-1$
+            "temporary", //$NON-NLS-1$
+            "text", //$NON-NLS-1$
+            "time", //$NON-NLS-1$
+            "timestamp", //$NON-NLS-1$
+            "transaction", //$NON-NLS-1$
+            "treat", //$NON-NLS-1$
+            "trigger", //$NON-NLS-1$
+            "trim", //$NON-NLS-1$
+            "truncate", //$NON-NLS-1$
+            "trusted", //$NON-NLS-1$
+            "type", //$NON-NLS-1$
+            "types", //$NON-NLS-1$
+            "unbounded", //$NON-NLS-1$
+            "uncommitted", //$NON-NLS-1$
+            "unencrypted", //$NON-NLS-1$
+            "unknown", //$NON-NLS-1$
+            "unlisten", //$NON-NLS-1$
+            "unlogged", //$NON-NLS-1$
+            "until", //$NON-NLS-1$
+            "update", //$NON-NLS-1$
+            "vacuum", //$NON-NLS-1$
+            "valid", //$NON-NLS-1$
+            "validate", //$NON-NLS-1$
+            "validator", //$NON-NLS-1$
+            "value", //$NON-NLS-1$
+            "values", //$NON-NLS-1$
+            "varchar", //$NON-NLS-1$
+            "varying", //$NON-NLS-1$
+            "version", //$NON-NLS-1$
+            "view", //$NON-NLS-1$
+            "volatile", //$NON-NLS-1$
+            "whitespace", //$NON-NLS-1$
+            "without", //$NON-NLS-1$
+            "work", //$NON-NLS-1$
+            "wrapper", //$NON-NLS-1$
+            "write", //$NON-NLS-1$
+            "xml", //$NON-NLS-1$
+            "xmlattributes", //$NON-NLS-1$
+            "xmlconcat", //$NON-NLS-1$
+            "xmlelement", //$NON-NLS-1$
+            "xmlexists", //$NON-NLS-1$
+            "xmlforest", //$NON-NLS-1$
+            "xmlparse", //$NON-NLS-1$
+            "xmlpi", //$NON-NLS-1$
+            "xmlroot", //$NON-NLS-1$
+            "xmlserialize", //$NON-NLS-1$
+            "year", //$NON-NLS-1$
+            "yes", //$NON-NLS-1$
+            "zone" //$NON-NLS-1$
     };
     
     private final String[] types = {
-            "abstime",
-            "aclitem",
-            "any",
-            "anyarray",
-            "anyelement",
-            "anyenum",
-            "anynonarray",
-            "anyrange",
-            "bigint",
-            "bit",
-            "bit varying",
-            "boolean",
-            "box",
-            "bytea",
-            "char",
-            "character",
-            "character varying",
-            "cid",
-            "cidr",
-            "circle",
-            "cstring",
-            "date",
-            "daterange",
-            "double precision",
-            "event_trigger",
-            "fdw_handler",
-            "gtsvector",
-            "inet",
-            "int2vector",
-            "int4range",
-            "int8range",
-            "integer",
-            "internal",
-            "interval",
-            "json",
-            "language_handler",
-            "line",
-            "lseg",
-            "macaddr",
-            "money",
-            "name",
-            "numeric",
-            "numrange",
-            "oid",
-            "oidvector",
-            "opaque",
-            "path",
-            "pg_node_tree",
-            "point",
-            "polygon",
-            "real",
-            "record",
-            "refcursor",
-            "regclass",
-            "regconfig",
-            "regdictionary",
-            "regoper",
-            "regoperator",
-            "regproc",
-            "regprocedure",
-            "regtype",
-            "reltime",
-            "smallint",
-            "smgr",
-            "text",
-            "tid",
-            "timestamp without time zone",
-            "timestamp with time zone",
-            "time without time zone",
-            "time with time zone",
-            "tinterval",
-            "trigger",
-            "tsquery",
-            "tsrange",
-            "tstzrange",
-            "tsvector",
-            "txid_snapshot",
-            "unknown",
-            "uuid",
-            "void",
-            "xid",
-            "xml"
+            "abstime", //$NON-NLS-1$
+            "aclitem", //$NON-NLS-1$
+            "any", //$NON-NLS-1$
+            "anyarray", //$NON-NLS-1$
+            "anyelement", //$NON-NLS-1$
+            "anyenum", //$NON-NLS-1$
+            "anynonarray", //$NON-NLS-1$
+            "anyrange", //$NON-NLS-1$
+            "bigint", //$NON-NLS-1$
+            "bit", //$NON-NLS-1$
+            "bit varying", //$NON-NLS-1$
+            "boolean", //$NON-NLS-1$
+            "box", //$NON-NLS-1$
+            "bytea", //$NON-NLS-1$
+            "char", //$NON-NLS-1$
+            "character", //$NON-NLS-1$
+            "character varying", //$NON-NLS-1$
+            "cid", //$NON-NLS-1$
+            "cidr", //$NON-NLS-1$
+            "circle", //$NON-NLS-1$
+            "cstring", //$NON-NLS-1$
+            "date", //$NON-NLS-1$
+            "daterange", //$NON-NLS-1$
+            "double precision", //$NON-NLS-1$
+            "event_trigger", //$NON-NLS-1$
+            "fdw_handler", //$NON-NLS-1$
+            "gtsvector", //$NON-NLS-1$
+            "inet", //$NON-NLS-1$
+            "int2vector", //$NON-NLS-1$
+            "int4range", //$NON-NLS-1$
+            "int8range", //$NON-NLS-1$
+            "integer", //$NON-NLS-1$
+            "internal", //$NON-NLS-1$
+            "interval", //$NON-NLS-1$
+            "json", //$NON-NLS-1$
+            "language_handler", //$NON-NLS-1$
+            "line", //$NON-NLS-1$
+            "lseg", //$NON-NLS-1$
+            "macaddr", //$NON-NLS-1$
+            "money", //$NON-NLS-1$
+            "name", //$NON-NLS-1$
+            "numeric", //$NON-NLS-1$
+            "numrange", //$NON-NLS-1$
+            "oid", //$NON-NLS-1$
+            "oidvector", //$NON-NLS-1$
+            "opaque", //$NON-NLS-1$
+            "path", //$NON-NLS-1$
+            "pg_node_tree", //$NON-NLS-1$
+            "point", //$NON-NLS-1$
+            "polygon", //$NON-NLS-1$
+            "real", //$NON-NLS-1$
+            "record", //$NON-NLS-1$
+            "refcursor", //$NON-NLS-1$
+            "regclass", //$NON-NLS-1$
+            "regconfig", //$NON-NLS-1$
+            "regdictionary", //$NON-NLS-1$
+            "regoper", //$NON-NLS-1$
+            "regoperator", //$NON-NLS-1$
+            "regproc", //$NON-NLS-1$
+            "regprocedure", //$NON-NLS-1$
+            "regtype", //$NON-NLS-1$
+            "reltime", //$NON-NLS-1$
+            "smallint", //$NON-NLS-1$
+            "smgr", //$NON-NLS-1$
+            "text", //$NON-NLS-1$
+            "tid", //$NON-NLS-1$
+            "timestamp without time zone", //$NON-NLS-1$
+            "timestamp with time zone", //$NON-NLS-1$
+            "time without time zone", //$NON-NLS-1$
+            "time with time zone", //$NON-NLS-1$
+            "tinterval", //$NON-NLS-1$
+            "trigger", //$NON-NLS-1$
+            "tsquery", //$NON-NLS-1$
+            "tsrange", //$NON-NLS-1$
+            "tstzrange", //$NON-NLS-1$
+            "tsvector", //$NON-NLS-1$
+            "txid_snapshot", //$NON-NLS-1$
+            "unknown", //$NON-NLS-1$
+            "uuid", //$NON-NLS-1$
+            "void", //$NON-NLS-1$
+            "xid", //$NON-NLS-1$
+            "xml" //$NON-NLS-1$
     };
     
     private final String[] functions = {
-            "RI_FKey_cascade_del",
-            "RI_FKey_cascade_upd",
-            "RI_FKey_check_ins",
-            "RI_FKey_check_upd",
-            "RI_FKey_noaction_del",
-            "RI_FKey_noaction_upd",
-            "RI_FKey_restrict_del",
-            "RI_FKey_restrict_upd",
-            "RI_FKey_setdefault_del",
-            "RI_FKey_setdefault_upd",
-            "RI_FKey_setnull_del",
-            "RI_FKey_setnull_upd",
-            "_pg_char_max_length",
-            "_pg_char_octet_length",
-            "_pg_datetime_precision",
-            "_pg_expandarray",
-            "_pg_index_position",
-            "_pg_interval_type",
-            "_pg_keysequal",
-            "_pg_numeric_precision",
-            "_pg_numeric_precision_radix",
-            "_pg_numeric_scale",
-            "_pg_truetypid",
-            "_pg_truetypmod",
-            "abbrev",
-            "abs",
-            "abstimeeq",
-            "abstimege",
-            "abstimegt",
-            "abstimein",
-            "abstimele",
-            "abstimelt",
-            "abstimene",
-            "abstimeout",
-            "abstimerecv",
-            "abstimesend",
-            "aclcontains",
-            "acldefault",
-            "aclexplode",
-            "aclinsert",
-            "aclitemeq",
-            "aclitemin",
-            "aclitemout",
-            "aclremove",
-            "acos",
-            "age",
-            "any_in",
-            "any_out",
-            "anyarray_in",
-            "anyarray_out",
-            "anyarray_recv",
-            "anyarray_send",
-            "anyelement_in",
-            "anyelement_out",
-            "anyenum_in",
-            "anyenum_out",
-            "anynonarray_in",
-            "anynonarray_out",
-            "anyrange_in",
-            "anyrange_out",
-            "anytextcat",
-            "area",
-            "areajoinsel",
-            "areasel",
-            "array_agg",
-            "array_agg_finalfn",
-            "array_agg_transfn",
-            "array_append",
-            "array_cat",
-            "array_dims",
-            "array_eq",
-            "array_fill",
-            "array_ge",
-            "array_gt",
-            "array_in",
-            "array_larger",
-            "array_le",
-            "array_length",
-            "array_lower",
-            "array_lt",
-            "array_ndims",
-            "array_ne",
-            "array_out",
-            "array_prepend",
-            "array_recv",
-            "array_remove",
-            "array_replace",
-            "array_send",
-            "array_smaller",
-            "array_to_json",
-            "array_to_string",
-            "array_typanalyze",
-            "array_upper",
-            "arraycontained",
-            "arraycontains",
-            "arraycontjoinsel",
-            "arraycontsel",
-            "arrayoverlap",
-            "ascii",
-            "ascii_to_mic",
-            "ascii_to_utf8",
-            "asin",
-            "atan",
-            "atan2",
-            "avg",
-            "big5_to_euc_tw",
-            "big5_to_mic",
-            "big5_to_utf8",
-            "bit_and",
-            "bit_in",
-            "bit_length",
-            "bit_or",
-            "bit_out",
-            "bit_recv",
-            "bit_send",
-            "bitand",
-            "bitcat",
-            "bitcmp",
-            "biteq",
-            "bitge",
-            "bitgt",
-            "bitle",
-            "bitlt",
-            "bitne",
-            "bitnot",
-            "bitor",
-            "bitshiftleft",
-            "bitshiftright",
-            "bittypmodin",
-            "bittypmodout",
-            "bitxor",
-            "bool",
-            "bool_and",
-            "bool_or",
-            "booland_statefunc",
-            "booleq",
-            "boolge",
-            "boolgt",
-            "boolin",
-            "boolle",
-            "boollt",
-            "boolne",
-            "boolor_statefunc",
-            "boolout",
-            "boolrecv",
-            "boolsend",
-            "box_above",
-            "box_above_eq",
-            "box_add",
-            "box_below",
-            "box_below_eq",
-            "box_center",
-            "box_contain",
-            "box_contain_pt",
-            "box_contained",
-            "box_distance",
-            "box_div",
-            "box_eq",
-            "box_ge",
-            "box_gt",
-            "box_in",
-            "box_intersect",
-            "box_le",
-            "box_left",
-            "box_lt",
-            "box_mul",
-            "box_out",
-            "box_overabove",
-            "box_overbelow",
-            "box_overlap",
-            "box_overleft",
-            "box_overright",
-            "box_recv",
-            "box_right",
-            "box_same",
-            "box_send",
-            "box_sub",
-            "bpchar",
-            "bpchar_larger",
-            "bpchar_pattern_ge",
-            "bpchar_pattern_gt",
-            "bpchar_pattern_le",
-            "bpchar_pattern_lt",
-            "bpchar_smaller",
-            "bpcharcmp",
-            "bpchareq",
-            "bpcharge",
-            "bpchargt",
-            "bpchariclike",
-            "bpcharicnlike",
-            "bpcharicregexeq",
-            "bpcharicregexne",
-            "bpcharin",
-            "bpcharle",
-            "bpcharlike",
-            "bpcharlt",
-            "bpcharne",
-            "bpcharnlike",
-            "bpcharout",
-            "bpcharrecv",
-            "bpcharregexeq",
-            "bpcharregexne",
-            "bpcharsend",
-            "bpchartypmodin",
-            "bpchartypmodout",
-            "broadcast",
-            "btabstimecmp",
-            "btarraycmp",
-            "btbeginscan",
-            "btboolcmp",
-            "btbpchar_pattern_cmp",
-            "btbuild",
-            "btbuildempty",
-            "btbulkdelete",
-            "btcanreturn",
-            "btcharcmp",
-            "btcostestimate",
-            "btendscan",
-            "btfloat48cmp",
-            "btfloat4cmp",
-            "btfloat4sortsupport",
-            "btfloat84cmp",
-            "btfloat8cmp",
-            "btfloat8sortsupport",
-            "btgetbitmap",
-            "btgettuple",
-            "btinsert",
-            "btint24cmp",
-            "btint28cmp",
-            "btint2cmp",
-            "btint2sortsupport",
-            "btint42cmp",
-            "btint48cmp",
-            "btint4cmp",
-            "btint4sortsupport",
-            "btint82cmp",
-            "btint84cmp",
-            "btint8cmp",
-            "btint8sortsupport",
-            "btmarkpos",
-            "btnamecmp",
-            "btnamesortsupport",
-            "btoidcmp",
-            "btoidsortsupport",
-            "btoidvectorcmp",
-            "btoptions",
-            "btrecordcmp",
-            "btreltimecmp",
-            "btrescan",
-            "btrestrpos",
-            "btrim",
-            "bttext_pattern_cmp",
-            "bttextcmp",
-            "bttidcmp",
-            "bttintervalcmp",
-            "btvacuumcleanup",
-            "bytea_string_agg_finalfn",
-            "bytea_string_agg_transfn",
-            "byteacat",
-            "byteacmp",
-            "byteaeq",
-            "byteage",
-            "byteagt",
-            "byteain",
-            "byteale",
-            "bytealike",
-            "bytealt",
-            "byteane",
-            "byteanlike",
-            "byteaout",
-            "bytearecv",
-            "byteasend",
-            "cash_cmp",
-            "cash_div_cash",
-            "cash_div_flt4",
-            "cash_div_flt8",
-            "cash_div_int2",
-            "cash_div_int4",
-            "cash_eq",
-            "cash_ge",
-            "cash_gt",
-            "cash_in",
-            "cash_le",
-            "cash_lt",
-            "cash_mi",
-            "cash_mul_flt4",
-            "cash_mul_flt8",
-            "cash_mul_int2",
-            "cash_mul_int4",
-            "cash_ne",
-            "cash_out",
-            "cash_pl",
-            "cash_recv",
-            "cash_send",
-            "cash_words",
-            "cashlarger",
-            "cashsmaller",
-            "cbrt",
-            "ceil",
-            "ceiling",
-            "center",
-            "char_length",
-            "character_length",
-            "chareq",
-            "charge",
-            "chargt",
-            "charin",
-            "charle",
-            "charlt",
-            "charne",
-            "charout",
-            "charrecv",
-            "charsend",
-            "chr",
-            "cideq",
-            "cidin",
-            "cidout",
-            "cidr_in",
-            "cidr_out",
-            "cidr_recv",
-            "cidr_send",
-            "cidrecv",
-            "cidsend",
-            "circle_above",
-            "circle_add_pt",
-            "circle_below",
-            "circle_center",
-            "circle_contain",
-            "circle_contain_pt",
-            "circle_contained",
-            "circle_distance",
-            "circle_div_pt",
-            "circle_eq",
-            "circle_ge",
-            "circle_gt",
-            "circle_in",
-            "circle_le",
-            "circle_left",
-            "circle_lt",
-            "circle_mul_pt",
-            "circle_ne",
-            "circle_out",
-            "circle_overabove",
-            "circle_overbelow",
-            "circle_overlap",
-            "circle_overleft",
-            "circle_overright",
-            "circle_recv",
-            "circle_right",
-            "circle_same",
-            "circle_send",
-            "circle_sub_pt",
-            "clock_timestamp",
-            "close_lb",
-            "close_ls",
-            "close_lseg",
-            "close_pb",
-            "close_pl",
-            "close_ps",
-            "close_sb",
-            "close_sl",
-            "col_description",
-            "concat",
-            "concat_ws",
-            "contjoinsel",
-            "contsel",
-            "convert",
-            "convert_from",
-            "convert_to",
-            "corr",
-            "cos",
-            "cot",
-            "count",
-            "covar_pop",
-            "covar_samp",
-            "cstring_in",
-            "cstring_out",
-            "cstring_recv",
-            "cstring_send",
-            "cume_dist",
-            "current_database",
-            "current_query",
-            "current_schema",
-            "current_schemas",
-            "current_setting",
-            "current_user",
-            "currtid",
-            "currtid2",
-            "currval",
-            "cursor_to_xml",
-            "cursor_to_xmlschema",
-            "database_to_xml",
-            "database_to_xml_and_xmlschema",
-            "database_to_xmlschema",
-            "date_cmp",
-            "date_cmp_timestamp",
-            "date_cmp_timestamptz",
-            "date_eq",
-            "date_eq_timestamp",
-            "date_eq_timestamptz",
-            "date_ge",
-            "date_ge_timestamp",
-            "date_ge_timestamptz",
-            "date_gt",
-            "date_gt_timestamp",
-            "date_gt_timestamptz",
-            "date_in",
-            "date_larger",
-            "date_le",
-            "date_le_timestamp",
-            "date_le_timestamptz",
-            "date_lt",
-            "date_lt_timestamp",
-            "date_lt_timestamptz",
-            "date_mi",
-            "date_mi_interval",
-            "date_mii",
-            "date_ne",
-            "date_ne_timestamp",
-            "date_ne_timestamptz",
-            "date_out",
-            "date_part",
-            "date_pl_interval",
-            "date_pli",
-            "date_recv",
-            "date_send",
-            "date_smaller",
-            "date_sortsupport",
-            "date_trunc",
-            "daterange_canonical",
-            "daterange_subdiff",
-            "datetime_pl",
-            "datetimetz_pl",
-            "dcbrt",
-            "decode",
-            "degrees",
-            "dense_rank",
-            "dexp",
-            "diagonal",
-            "diameter",
-            "dispell_init",
-            "dispell_lexize",
-            "dist_cpoly",
-            "dist_lb",
-            "dist_pb",
-            "dist_pc",
-            "dist_pl",
-            "dist_ppath",
-            "dist_ps",
-            "dist_sb",
-            "dist_sl",
-            "div",
-            "dlog1",
-            "dlog10",
-            "domain_in",
-            "domain_recv",
-            "dpow",
-            "dround",
-            "dsimple_init",
-            "dsimple_lexize",
-            "dsnowball_init",
-            "dsnowball_lexize",
-            "dsqrt",
-            "dsynonym_init",
-            "dsynonym_lexize",
-            "dtrunc",
-            "elem_contained_by_range",
-            "encode",
-            "enum_cmp",
-            "enum_eq",
-            "enum_first",
-            "enum_ge",
-            "enum_gt",
-            "enum_in",
-            "enum_larger",
-            "enum_last",
-            "enum_le",
-            "enum_lt",
-            "enum_ne",
-            "enum_out",
-            "enum_range",
-            "enum_recv",
-            "enum_send",
-            "enum_smaller",
-            "eqjoinsel",
-            "eqsel",
-            "euc_cn_to_mic",
-            "euc_cn_to_utf8",
-            "euc_jis_2004_to_shift_jis_2004",
-            "euc_jis_2004_to_utf8",
-            "euc_jp_to_mic",
-            "euc_jp_to_sjis",
-            "euc_jp_to_utf8",
-            "euc_kr_to_mic",
-            "euc_kr_to_utf8",
-            "euc_tw_to_big5",
-            "euc_tw_to_mic",
-            "euc_tw_to_utf8",
-            "event_trigger_in",
-            "event_trigger_out",
-            "every",
-            "exp",
-            "factorial",
-            "fdw_handler_in",
-            "fdw_handler_out",
-            "first_value",
-            "float4",
-            "float48div",
-            "float48eq",
-            "float48ge",
-            "float48gt",
-            "float48le",
-            "float48lt",
-            "float48mi",
-            "float48mul",
-            "float48ne",
-            "float48pl",
-            "float4_accum",
-            "float4abs",
-            "float4div",
-            "float4eq",
-            "float4ge",
-            "float4gt",
-            "float4in",
-            "float4larger",
-            "float4le",
-            "float4lt",
-            "float4mi",
-            "float4mul",
-            "float4ne",
-            "float4out",
-            "float4pl",
-            "float4recv",
-            "float4send",
-            "float4smaller",
-            "float4um",
-            "float4up",
-            "float8",
-            "float84div",
-            "float84eq",
-            "float84ge",
-            "float84gt",
-            "float84le",
-            "float84lt",
-            "float84mi",
-            "float84mul",
-            "float84ne",
-            "float84pl",
-            "float8_accum",
-            "float8_avg",
-            "float8_corr",
-            "float8_covar_pop",
-            "float8_covar_samp",
-            "float8_regr_accum",
-            "float8_regr_avgx",
-            "float8_regr_avgy",
-            "float8_regr_intercept",
-            "float8_regr_r2",
-            "float8_regr_slope",
-            "float8_regr_sxx",
-            "float8_regr_sxy",
-            "float8_regr_syy",
-            "float8_stddev_pop",
-            "float8_stddev_samp",
-            "float8_var_pop",
-            "float8_var_samp",
-            "float8abs",
-            "float8div",
-            "float8eq",
-            "float8ge",
-            "float8gt",
-            "float8in",
-            "float8larger",
-            "float8le",
-            "float8lt",
-            "float8mi",
-            "float8mul",
-            "float8ne",
-            "float8out",
-            "float8pl",
-            "float8recv",
-            "float8send",
-            "float8smaller",
-            "float8um",
-            "float8up",
-            "floor",
-            "flt4_mul_cash",
-            "flt8_mul_cash",
-            "fmgr_c_validator",
-            "fmgr_internal_validator",
-            "fmgr_sql_validator",
-            "format",
-            "format_type",
-            "gb18030_to_utf8",
-            "gbk_to_utf8",
-            "generate_series",
-            "generate_subscripts",
-            "get_bit",
-            "get_byte",
-            "get_current_ts_config",
-            "getdatabaseencoding",
-            "getpgusername",
-            "gin_cmp_prefix",
-            "gin_cmp_tslexeme",
-            "gin_extract_tsquery",
-            "gin_extract_tsvector",
-            "gin_tsquery_consistent",
-            "ginarrayconsistent",
-            "ginarrayextract",
-            "ginbeginscan",
-            "ginbuild",
-            "ginbuildempty",
-            "ginbulkdelete",
-            "gincostestimate",
-            "ginendscan",
-            "gingetbitmap",
-            "gininsert",
-            "ginmarkpos",
-            "ginoptions",
-            "ginqueryarrayextract",
-            "ginrescan",
-            "ginrestrpos",
-            "ginvacuumcleanup",
-            "gist_box_compress",
-            "gist_box_consistent",
-            "gist_box_decompress",
-            "gist_box_penalty",
-            "gist_box_picksplit",
-            "gist_box_same",
-            "gist_box_union",
-            "gist_circle_compress",
-            "gist_circle_consistent",
-            "gist_point_compress",
-            "gist_point_consistent",
-            "gist_point_distance",
-            "gist_poly_compress",
-            "gist_poly_consistent",
-            "gistbeginscan",
-            "gistbuild",
-            "gistbuildempty",
-            "gistbulkdelete",
-            "gistcostestimate",
-            "gistendscan",
-            "gistgetbitmap",
-            "gistgettuple",
-            "gistinsert",
-            "gistmarkpos",
-            "gistoptions",
-            "gistrescan",
-            "gistrestrpos",
-            "gistvacuumcleanup",
-            "gtsquery_compress",
-            "gtsquery_consistent",
-            "gtsquery_decompress",
-            "gtsquery_penalty",
-            "gtsquery_picksplit",
-            "gtsquery_same",
-            "gtsquery_union",
-            "gtsvector_compress",
-            "gtsvector_consistent",
-            "gtsvector_decompress",
-            "gtsvector_penalty",
-            "gtsvector_picksplit",
-            "gtsvector_same",
-            "gtsvector_union",
-            "gtsvectorin",
-            "gtsvectorout",
-            "has_any_column_privilege",
-            "has_column_privilege",
-            "has_database_privilege",
-            "has_foreign_data_wrapper_privilege",
-            "has_function_privilege",
-            "has_language_privilege",
-            "has_schema_privilege",
-            "has_sequence_privilege",
-            "has_server_privilege",
-            "has_table_privilege",
-            "has_tablespace_privilege",
-            "has_type_privilege",
-            "hash_aclitem",
-            "hash_array",
-            "hash_numeric",
-            "hash_range",
-            "hashbeginscan",
-            "hashbpchar",
-            "hashbuild",
-            "hashbuildempty",
-            "hashbulkdelete",
-            "hashchar",
-            "hashcostestimate",
-            "hashendscan",
-            "hashenum",
-            "hashfloat4",
-            "hashfloat8",
-            "hashgetbitmap",
-            "hashgettuple",
-            "hashinet",
-            "hashinsert",
-            "hashint2",
-            "hashint2vector",
-            "hashint4",
-            "hashint8",
-            "hashmacaddr",
-            "hashmarkpos",
-            "hashname",
-            "hashoid",
-            "hashoidvector",
-            "hashoptions",
-            "hashrescan",
-            "hashrestrpos",
-            "hashtext",
-            "hashvacuumcleanup",
-            "hashvarlena",
-            "height",
-            "host",
-            "hostmask",
-            "iclikejoinsel",
-            "iclikesel",
-            "icnlikejoinsel",
-            "icnlikesel",
-            "icregexeqjoinsel",
-            "icregexeqsel",
-            "icregexnejoinsel",
-            "icregexnesel",
-            "inet_client_addr",
-            "inet_client_port",
-            "inet_in",
-            "inet_out",
-            "inet_recv",
-            "inet_send",
-            "inet_server_addr",
-            "inet_server_port",
-            "inetand",
-            "inetmi",
-            "inetmi_int8",
-            "inetnot",
-            "inetor",
-            "inetpl",
-            "initcap",
-            "int2",
-            "int24div",
-            "int24eq",
-            "int24ge",
-            "int24gt",
-            "int24le",
-            "int24lt",
-            "int24mi",
-            "int24mul",
-            "int24ne",
-            "int24pl",
-            "int28div",
-            "int28eq",
-            "int28ge",
-            "int28gt",
-            "int28le",
-            "int28lt",
-            "int28mi",
-            "int28mul",
-            "int28ne",
-            "int28pl",
-            "int2_accum",
-            "int2_avg_accum",
-            "int2_mul_cash",
-            "int2_sum",
-            "int2abs",
-            "int2and",
-            "int2div",
-            "int2eq",
-            "int2ge",
-            "int2gt",
-            "int2in",
-            "int2larger",
-            "int2le",
-            "int2lt",
-            "int2mi",
-            "int2mod",
-            "int2mul",
-            "int2ne",
-            "int2not",
-            "int2or",
-            "int2out",
-            "int2pl",
-            "int2recv",
-            "int2send",
-            "int2shl",
-            "int2shr",
-            "int2smaller",
-            "int2um",
-            "int2up",
-            "int2vectoreq",
-            "int2vectorin",
-            "int2vectorout",
-            "int2vectorrecv",
-            "int2vectorsend",
-            "int2xor",
-            "int4",
-            "int42div",
-            "int42eq",
-            "int42ge",
-            "int42gt",
-            "int42le",
-            "int42lt",
-            "int42mi",
-            "int42mul",
-            "int42ne",
-            "int42pl",
-            "int48div",
-            "int48eq",
-            "int48ge",
-            "int48gt",
-            "int48le",
-            "int48lt",
-            "int48mi",
-            "int48mul",
-            "int48ne",
-            "int48pl",
-            "int4_accum",
-            "int4_avg_accum",
-            "int4_mul_cash",
-            "int4_sum",
-            "int4abs",
-            "int4and",
-            "int4div",
-            "int4eq",
-            "int4ge",
-            "int4gt",
-            "int4in",
-            "int4inc",
-            "int4larger",
-            "int4le",
-            "int4lt",
-            "int4mi",
-            "int4mod",
-            "int4mul",
-            "int4ne",
-            "int4not",
-            "int4or",
-            "int4out",
-            "int4pl",
-            "int4range_canonical",
-            "int4range_subdiff",
-            "int4recv",
-            "int4send",
-            "int4shl",
-            "int4shr",
-            "int4smaller",
-            "int4um",
-            "int4up",
-            "int4xor",
-            "int8",
-            "int82div",
-            "int82eq",
-            "int82ge",
-            "int82gt",
-            "int82le",
-            "int82lt",
-            "int82mi",
-            "int82mul",
-            "int82ne",
-            "int82pl",
-            "int84div",
-            "int84eq",
-            "int84ge",
-            "int84gt",
-            "int84le",
-            "int84lt",
-            "int84mi",
-            "int84mul",
-            "int84ne",
-            "int84pl",
-            "int8_accum",
-            "int8_avg",
-            "int8_avg_accum",
-            "int8_sum",
-            "int8abs",
-            "int8and",
-            "int8div",
-            "int8eq",
-            "int8ge",
-            "int8gt",
-            "int8in",
-            "int8inc",
-            "int8inc_any",
-            "int8inc_float8_float8",
-            "int8larger",
-            "int8le",
-            "int8lt",
-            "int8mi",
-            "int8mod",
-            "int8mul",
-            "int8ne",
-            "int8not",
-            "int8or",
-            "int8out",
-            "int8pl",
-            "int8pl_inet",
-            "int8range_canonical",
-            "int8range_subdiff",
-            "int8recv",
-            "int8send",
-            "int8shl",
-            "int8shr",
-            "int8smaller",
-            "int8um",
-            "int8up",
-            "int8xor",
-            "integer_pl_date",
-            "inter_lb",
-            "inter_sb",
-            "inter_sl",
-            "internal_in",
-            "internal_out",
-            "interval_accum",
-            "interval_avg",
-            "interval_cmp",
-            "interval_div",
-            "interval_eq",
-            "interval_ge",
-            "interval_gt",
-            "interval_hash",
-            "interval_in",
-            "interval_larger",
-            "interval_le",
-            "interval_lt",
-            "interval_mi",
-            "interval_mul",
-            "interval_ne",
-            "interval_out",
-            "interval_pl",
-            "interval_pl_date",
-            "interval_pl_time",
-            "interval_pl_timestamp",
-            "interval_pl_timestamptz",
-            "interval_pl_timetz",
-            "interval_recv",
-            "interval_send",
-            "interval_smaller",
-            "interval_transform",
-            "interval_um",
-            "intervaltypmodin",
-            "intervaltypmodout",
-            "intinterval",
-            "isclosed",
-            "isempty",
-            "isfinite",
-            "ishorizontal",
-            "iso8859_1_to_utf8",
-            "iso8859_to_utf8",
-            "iso_to_koi8r",
-            "iso_to_mic",
-            "iso_to_win1251",
-            "iso_to_win866",
-            "isopen",
-            "isparallel",
-            "isperp",
-            "isvertical",
-            "johab_to_utf8",
-            "json_agg",
-            "json_agg_finalfn",
-            "json_agg_transfn",
-            "json_array_element",
-            "json_array_element_text",
-            "json_array_elements",
-            "json_array_length",
-            "json_each",
-            "json_each_text",
-            "json_extract_path",
-            "json_extract_path_op",
-            "json_extract_path_text",
-            "json_extract_path_text_op",
-            "json_in",
-            "json_object_field",
-            "json_object_field_text",
-            "json_object_keys",
-            "json_out",
-            "json_populate_record",
-            "json_populate_recordset",
-            "json_recv",
-            "json_send",
-            "justify_days",
-            "justify_hours",
-            "justify_interval",
-            "koi8r_to_iso",
-            "koi8r_to_mic",
-            "koi8r_to_utf8",
-            "koi8r_to_win1251",
-            "koi8r_to_win866",
-            "koi8u_to_utf8",
-            "lag",
-            "language_handler_in",
-            "language_handler_out",
-            "last_value",
-            "lastval",
-            "latin1_to_mic",
-            "latin2_to_mic",
-            "latin2_to_win1250",
-            "latin3_to_mic",
-            "latin4_to_mic",
-            "lead",
-            "length",
-            "like_escape",
-            "likejoinsel",
-            "likesel",
-            "line_distance",
-            "line_eq",
-            "line_horizontal",
-            "line_in",
-            "line_interpt",
-            "line_intersect",
-            "line_out",
-            "line_parallel",
-            "line_perp",
-            "line_recv",
-            "line_send",
-            "line_vertical",
-            "ln",
-            "lo_close",
-            "lo_creat",
-            "lo_create",
-            "lo_export",
-            "lo_import",
-            "lo_lseek",
-            "lo_lseek64",
-            "lo_open",
-            "lo_tell",
-            "lo_tell64",
-            "lo_truncate",
-            "lo_truncate64",
-            "lo_unlink",
-            "log",
-            "loread",
-            "lower",
-            "lower_inc",
-            "lower_inf",
-            "lowrite",
-            "lpad",
-            "lseg_center",
-            "lseg_distance",
-            "lseg_eq",
-            "lseg_ge",
-            "lseg_gt",
-            "lseg_horizontal",
-            "lseg_in",
-            "lseg_interpt",
-            "lseg_intersect",
-            "lseg_le",
-            "lseg_length",
-            "lseg_lt",
-            "lseg_ne",
-            "lseg_out",
-            "lseg_parallel",
-            "lseg_perp",
-            "lseg_recv",
-            "lseg_send",
-            "lseg_vertical",
-            "ltrim",
-            "macaddr_and",
-            "macaddr_cmp",
-            "macaddr_eq",
-            "macaddr_ge",
-            "macaddr_gt",
-            "macaddr_in",
-            "macaddr_le",
-            "macaddr_lt",
-            "macaddr_ne",
-            "macaddr_not",
-            "macaddr_or",
-            "macaddr_out",
-            "macaddr_recv",
-            "macaddr_send",
-            "makeaclitem",
-            "masklen",
-            "max",
-            "md5",
-            "mic_to_ascii",
-            "mic_to_big5",
-            "mic_to_euc_cn",
-            "mic_to_euc_jp",
-            "mic_to_euc_kr",
-            "mic_to_euc_tw",
-            "mic_to_iso",
-            "mic_to_koi8r",
-            "mic_to_latin1",
-            "mic_to_latin2",
-            "mic_to_latin3",
-            "mic_to_latin4",
-            "mic_to_sjis",
-            "mic_to_win1250",
-            "mic_to_win1251",
-            "mic_to_win866",
-            "min",
-            "mktinterval",
-            "mod",
-            "mul_d_interval",
-            "nameeq",
-            "namege",
-            "namegt",
-            "nameiclike",
-            "nameicnlike",
-            "nameicregexeq",
-            "nameicregexne",
-            "namein",
-            "namele",
-            "namelike",
-            "namelt",
-            "namene",
-            "namenlike",
-            "nameout",
-            "namerecv",
-            "nameregexeq",
-            "nameregexne",
-            "namesend",
-            "neqjoinsel",
-            "neqsel",
-            "netmask",
-            "network",
-            "network_cmp",
-            "network_eq",
-            "network_ge",
-            "network_gt",
-            "network_le",
-            "network_lt",
-            "network_ne",
-            "network_sub",
-            "network_subeq",
-            "network_sup",
-            "network_supeq",
-            "nextval",
-            "nlikejoinsel",
-            "nlikesel",
-            "notlike",
-            "now",
-            "npoints",
-            "nth_value",
-            "ntile",
-            "numeric_abs",
-            "numeric_accum",
-            "numeric_add",
-            "numeric_avg",
-            "numeric_avg_accum",
-            "numeric_cmp",
-            "numeric_div",
-            "numeric_div_trunc",
-            "numeric_eq",
-            "numeric_exp",
-            "numeric_fac",
-            "numeric_ge",
-            "numeric_gt",
-            "numeric_in",
-            "numeric_inc",
-            "numeric_larger",
-            "numeric_le",
-            "numeric_ln",
-            "numeric_log",
-            "numeric_lt",
-            "numeric_mod",
-            "numeric_mul",
-            "numeric_ne",
-            "numeric_out",
-            "numeric_power",
-            "numeric_recv",
-            "numeric_send",
-            "numeric_smaller",
-            "numeric_sqrt",
-            "numeric_stddev_pop",
-            "numeric_stddev_samp",
-            "numeric_sub",
-            "numeric_transform",
-            "numeric_uminus",
-            "numeric_uplus",
-            "numeric_var_pop",
-            "numeric_var_samp",
-            "numerictypmodin",
-            "numerictypmodout",
-            "numnode",
-            "numrange_subdiff",
-            "obj_description",
-            "octet_length",
-            "oideq",
-            "oidge",
-            "oidgt",
-            "oidin",
-            "oidlarger",
-            "oidle",
-            "oidlt",
-            "oidne",
-            "oidout",
-            "oidrecv",
-            "oidsend",
-            "oidsmaller",
-            "oidvectoreq",
-            "oidvectorge",
-            "oidvectorgt",
-            "oidvectorin",
-            "oidvectorle",
-            "oidvectorlt",
-            "oidvectorne",
-            "oidvectorout",
-            "oidvectorrecv",
-            "oidvectorsend",
-            "oidvectortypes",
-            "on_pb",
-            "on_pl",
-            "on_ppath",
-            "on_ps",
-            "on_sb",
-            "on_sl",
-            "opaque_in",
-            "opaque_out",
-            "path_add",
-            "path_add_pt",
-            "path_center",
-            "path_contain_pt",
-            "path_distance",
-            "path_div_pt",
-            "path_in",
-            "path_inter",
-            "path_length",
-            "path_mul_pt",
-            "path_n_eq",
-            "path_n_ge",
-            "path_n_gt",
-            "path_n_le",
-            "path_n_lt",
-            "path_npoints",
-            "path_out",
-            "path_recv",
-            "path_send",
-            "path_sub_pt",
-            "pclose",
-            "percent_rank",
-            "pg_advisory_lock",
-            "pg_advisory_lock_shared",
-            "pg_advisory_unlock",
-            "pg_advisory_unlock_all",
-            "pg_advisory_unlock_shared",
-            "pg_advisory_xact_lock",
-            "pg_advisory_xact_lock_shared",
-            "pg_available_extension_versions",
-            "pg_available_extensions",
-            "pg_backend_pid",
-            "pg_backup_start_time",
-            "pg_cancel_backend",
-            "pg_char_to_encoding",
-            "pg_client_encoding",
-            "pg_collation_for",
-            "pg_collation_is_visible",
-            "pg_column_is_updatable",
-            "pg_column_size",
-            "pg_conf_load_time",
-            "pg_conversion_is_visible",
-            "pg_create_restore_point",
-            "pg_current_xlog_insert_location",
-            "pg_current_xlog_location",
-            "pg_cursor",
-            "pg_database_size",
-            "pg_describe_object",
-            "pg_encoding_max_length",
-            "pg_encoding_to_char",
-            "pg_event_trigger_dropped_objects",
-            "pg_export_snapshot",
-            "pg_extension_config_dump",
-            "pg_extension_update_paths",
-            "pg_function_is_visible",
-            "pg_get_constraintdef",
-            "pg_get_expr",
-            "pg_get_function_arguments",
-            "pg_get_function_identity_arguments",
-            "pg_get_function_result",
-            "pg_get_functiondef",
-            "pg_get_indexdef",
-            "pg_get_keywords",
-            "pg_get_multixact_members",
-            "pg_get_ruledef",
-            "pg_get_serial_sequence",
-            "pg_get_triggerdef",
-            "pg_get_userbyid",
-            "pg_get_viewdef",
-            "pg_has_role",
-            "pg_identify_object",
-            "pg_indexes_size",
-            "pg_is_in_backup",
-            "pg_is_in_recovery",
-            "pg_is_other_temp_schema",
-            "pg_is_xlog_replay_paused",
-            "pg_last_xact_replay_timestamp",
-            "pg_last_xlog_receive_location",
-            "pg_last_xlog_replay_location",
-            "pg_listening_channels",
-            "pg_lock_status",
-            "pg_ls_dir",
-            "pg_my_temp_schema",
-            "pg_node_tree_in",
-            "pg_node_tree_out",
-            "pg_node_tree_recv",
-            "pg_node_tree_send",
-            "pg_notify",
-            "pg_opclass_is_visible",
-            "pg_operator_is_visible",
-            "pg_opfamily_is_visible",
-            "pg_options_to_table",
-            "pg_postmaster_start_time",
-            "pg_prepared_statement",
-            "pg_prepared_xact",
-            "pg_read_binary_file",
-            "pg_read_file",
-            "pg_relation_filenode",
-            "pg_relation_filepath",
-            "pg_relation_is_updatable",
-            "pg_relation_size",
-            "pg_reload_conf",
-            "pg_rotate_logfile",
-            "pg_sequence_parameters",
-            "pg_show_all_settings",
-            "pg_size_pretty",
-            "pg_sleep",
-            "pg_start_backup",
-            "pg_stat_clear_snapshot",
-            "pg_stat_file",
-            "pg_stat_get_activity",
-            "pg_stat_get_analyze_count",
-            "pg_stat_get_autoanalyze_count",
-            "pg_stat_get_autovacuum_count",
-            "pg_stat_get_backend_activity",
-            "pg_stat_get_backend_activity_start",
-            "pg_stat_get_backend_client_addr",
-            "pg_stat_get_backend_client_port",
-            "pg_stat_get_backend_dbid",
-            "pg_stat_get_backend_idset",
-            "pg_stat_get_backend_pid",
-            "pg_stat_get_backend_start",
-            "pg_stat_get_backend_userid",
-            "pg_stat_get_backend_waiting",
-            "pg_stat_get_backend_xact_start",
-            "pg_stat_get_bgwriter_buf_written_checkpoints",
-            "pg_stat_get_bgwriter_buf_written_clean",
-            "pg_stat_get_bgwriter_maxwritten_clean",
-            "pg_stat_get_bgwriter_requested_checkpoints",
-            "pg_stat_get_bgwriter_stat_reset_time",
-            "pg_stat_get_bgwriter_timed_checkpoints",
-            "pg_stat_get_blocks_fetched",
-            "pg_stat_get_blocks_hit",
-            "pg_stat_get_buf_alloc",
-            "pg_stat_get_buf_fsync_backend",
-            "pg_stat_get_buf_written_backend",
-            "pg_stat_get_checkpoint_sync_time",
-            "pg_stat_get_checkpoint_write_time",
-            "pg_stat_get_db_blk_read_time",
-            "pg_stat_get_db_blk_write_time",
-            "pg_stat_get_db_blocks_fetched",
-            "pg_stat_get_db_blocks_hit",
-            "pg_stat_get_db_conflict_all",
-            "pg_stat_get_db_conflict_bufferpin",
-            "pg_stat_get_db_conflict_lock",
-            "pg_stat_get_db_conflict_snapshot",
-            "pg_stat_get_db_conflict_startup_deadlock",
-            "pg_stat_get_db_conflict_tablespace",
-            "pg_stat_get_db_deadlocks",
-            "pg_stat_get_db_numbackends",
-            "pg_stat_get_db_stat_reset_time",
-            "pg_stat_get_db_temp_bytes",
-            "pg_stat_get_db_temp_files",
-            "pg_stat_get_db_tuples_deleted",
-            "pg_stat_get_db_tuples_fetched",
-            "pg_stat_get_db_tuples_inserted",
-            "pg_stat_get_db_tuples_returned",
-            "pg_stat_get_db_tuples_updated",
-            "pg_stat_get_db_xact_commit",
-            "pg_stat_get_db_xact_rollback",
-            "pg_stat_get_dead_tuples",
-            "pg_stat_get_function_calls",
-            "pg_stat_get_function_self_time",
-            "pg_stat_get_function_total_time",
-            "pg_stat_get_last_analyze_time",
-            "pg_stat_get_last_autoanalyze_time",
-            "pg_stat_get_last_autovacuum_time",
-            "pg_stat_get_last_vacuum_time",
-            "pg_stat_get_live_tuples",
-            "pg_stat_get_numscans",
-            "pg_stat_get_tuples_deleted",
-            "pg_stat_get_tuples_fetched",
-            "pg_stat_get_tuples_hot_updated",
-            "pg_stat_get_tuples_inserted",
-            "pg_stat_get_tuples_returned",
-            "pg_stat_get_tuples_updated",
-            "pg_stat_get_vacuum_count",
-            "pg_stat_get_wal_senders",
-            "pg_stat_get_xact_blocks_fetched",
-            "pg_stat_get_xact_blocks_hit",
-            "pg_stat_get_xact_function_calls",
-            "pg_stat_get_xact_function_self_time",
-            "pg_stat_get_xact_function_total_time",
-            "pg_stat_get_xact_numscans",
-            "pg_stat_get_xact_tuples_deleted",
-            "pg_stat_get_xact_tuples_fetched",
-            "pg_stat_get_xact_tuples_hot_updated",
-            "pg_stat_get_xact_tuples_inserted",
-            "pg_stat_get_xact_tuples_returned",
-            "pg_stat_get_xact_tuples_updated",
-            "pg_stat_reset",
-            "pg_stat_reset_shared",
-            "pg_stat_reset_single_function_counters",
-            "pg_stat_reset_single_table_counters",
-            "pg_stop_backup",
-            "pg_switch_xlog",
-            "pg_table_is_visible",
-            "pg_table_size",
-            "pg_tablespace_databases",
-            "pg_tablespace_location",
-            "pg_tablespace_size",
-            "pg_terminate_backend",
-            "pg_timezone_abbrevs",
-            "pg_timezone_names",
-            "pg_total_relation_size",
-            "pg_trigger_depth",
-            "pg_try_advisory_lock",
-            "pg_try_advisory_lock_shared",
-            "pg_try_advisory_xact_lock",
-            "pg_try_advisory_xact_lock_shared",
-            "pg_ts_config_is_visible",
-            "pg_ts_dict_is_visible",
-            "pg_ts_parser_is_visible",
-            "pg_ts_template_is_visible",
-            "pg_type_is_visible",
-            "pg_typeof",
-            "pg_xlog_location_diff",
-            "pg_xlog_replay_pause",
-            "pg_xlog_replay_resume",
-            "pg_xlogfile_name",
-            "pg_xlogfile_name_offset",
-            "pi",
-            "plainto_tsquery",
-            "plpgsql_call_handler",
-            "plpgsql_inline_handler",
-            "plpgsql_validator",
-            "point_above",
-            "point_add",
-            "point_below",
-            "point_distance",
-            "point_div",
-            "point_eq",
-            "point_horiz",
-            "point_in",
-            "point_left",
-            "point_mul",
-            "point_ne",
-            "point_out",
-            "point_recv",
-            "point_right",
-            "point_send",
-            "point_sub",
-            "point_vert",
-            "poly_above",
-            "poly_below",
-            "poly_center",
-            "poly_contain",
-            "poly_contain_pt",
-            "poly_contained",
-            "poly_distance",
-            "poly_in",
-            "poly_left",
-            "poly_npoints",
-            "poly_out",
-            "poly_overabove",
-            "poly_overbelow",
-            "poly_overlap",
-            "poly_overleft",
-            "poly_overright",
-            "poly_recv",
-            "poly_right",
-            "poly_same",
-            "poly_send",
-            "popen",
-            "positionjoinsel",
-            "positionsel",
-            "postgresql_fdw_validator",
-            "pow",
-            "power",
-            "prsd_end",
-            "prsd_headline",
-            "prsd_lextype",
-            "prsd_nexttoken",
-            "prsd_start",
-            "pt_contained_circle",
-            "pt_contained_poly",
-            "query_to_xml",
-            "query_to_xml_and_xmlschema",
-            "query_to_xmlschema",
-            "querytree",
-            "quote_ident",
-            "quote_literal",
-            "quote_nullable",
-            "radians",
-            "radius",
-            "random",
-            "range_adjacent",
-            "range_after",
-            "range_before",
-            "range_cmp",
-            "range_contained_by",
-            "range_contains",
-            "range_contains_elem",
-            "range_eq",
-            "range_ge",
-            "range_gist_compress",
-            "range_gist_consistent",
-            "range_gist_decompress",
-            "range_gist_penalty",
-            "range_gist_picksplit",
-            "range_gist_same",
-            "range_gist_union",
-            "range_gt",
-            "range_in",
-            "range_intersect",
-            "range_le",
-            "range_lt",
-            "range_minus",
-            "range_ne",
-            "range_out",
-            "range_overlaps",
-            "range_overleft",
-            "range_overright",
-            "range_recv",
-            "range_send",
-            "range_typanalyze",
-            "range_union",
-            "rangesel",
-            "rank",
-            "record_eq",
-            "record_ge",
-            "record_gt",
-            "record_in",
-            "record_le",
-            "record_lt",
-            "record_ne",
-            "record_out",
-            "record_recv",
-            "record_send",
-            "regclassin",
-            "regclassout",
-            "regclassrecv",
-            "regclasssend",
-            "regconfigin",
-            "regconfigout",
-            "regconfigrecv",
-            "regconfigsend",
-            "regdictionaryin",
-            "regdictionaryout",
-            "regdictionaryrecv",
-            "regdictionarysend",
-            "regexeqjoinsel",
-            "regexeqsel",
-            "regexnejoinsel",
-            "regexnesel",
-            "regexp_matches",
-            "regexp_replace",
-            "regexp_split_to_array",
-            "regexp_split_to_table",
-            "regoperatorin",
-            "regoperatorout",
-            "regoperatorrecv",
-            "regoperatorsend",
-            "regoperin",
-            "regoperout",
-            "regoperrecv",
-            "regopersend",
-            "regprocedurein",
-            "regprocedureout",
-            "regprocedurerecv",
-            "regproceduresend",
-            "regprocin",
-            "regprocout",
-            "regprocrecv",
-            "regprocsend",
-            "regr_avgx",
-            "regr_avgy",
-            "regr_count",
-            "regr_intercept",
-            "regr_r2",
-            "regr_slope",
-            "regr_sxx",
-            "regr_sxy",
-            "regr_syy",
-            "regtypein",
-            "regtypeout",
-            "regtyperecv",
-            "regtypesend",
-            "reltimeeq",
-            "reltimege",
-            "reltimegt",
-            "reltimein",
-            "reltimele",
-            "reltimelt",
-            "reltimene",
-            "reltimeout",
-            "reltimerecv",
-            "reltimesend",
-            "repeat",
-            "reverse",
-            "round",
-            "row_number",
-            "row_to_json",
-            "rpad",
-            "rtrim",
-            "scalargtjoinsel",
-            "scalargtsel",
-            "scalarltjoinsel",
-            "scalarltsel",
-            "schema_to_xml",
-            "schema_to_xml_and_xmlschema",
-            "schema_to_xmlschema",
-            "set_bit",
-            "set_byte",
-            "set_config",
-            "set_masklen",
-            "setseed",
-            "setval",
-            "setweight",
-            "shell_in",
-            "shell_out",
-            "shift_jis_2004_to_euc_jis_2004",
-            "shift_jis_2004_to_utf8",
-            "shobj_description",
-            "sign",
-            "similar_escape",
-            "sin",
-            "sjis_to_euc_jp",
-            "sjis_to_mic",
-            "sjis_to_utf8",
-            "slope",
-            "smgreq",
-            "smgrin",
-            "smgrne",
-            "smgrout",
-            "spg_kd_choose",
-            "spg_kd_config",
-            "spg_kd_inner_consistent",
-            "spg_kd_picksplit",
-            "spg_quad_choose",
-            "spg_quad_config",
-            "spg_quad_inner_consistent",
-            "spg_quad_leaf_consistent",
-            "spg_quad_picksplit",
-            "spg_range_quad_choose",
-            "spg_range_quad_config",
-            "spg_range_quad_inner_consistent",
-            "spg_range_quad_leaf_consistent",
-            "spg_range_quad_picksplit",
-            "spg_text_choose",
-            "spg_text_config",
-            "spg_text_inner_consistent",
-            "spg_text_leaf_consistent",
-            "spg_text_picksplit",
-            "spgbeginscan",
-            "spgbuild",
-            "spgbuildempty",
-            "spgbulkdelete",
-            "spgcanreturn",
-            "spgcostestimate",
-            "spgendscan",
-            "spggetbitmap",
-            "spggettuple",
-            "spginsert",
-            "spgmarkpos",
-            "spgoptions",
-            "spgrescan",
-            "spgrestrpos",
-            "spgvacuumcleanup",
-            "split_part",
-            "sqrt",
-            "statement_timestamp",
-            "stddev",
-            "stddev_pop",
-            "stddev_samp",
-            "string_agg",
-            "string_agg_finalfn",
-            "string_agg_transfn",
-            "string_to_array",
-            "strpos",
-            "substr",
-            "sum",
-            "suppress_redundant_updates_trigger",
-            "table_to_xml",
-            "table_to_xml_and_xmlschema",
-            "table_to_xmlschema",
-            "tan",
-            "text_ge",
-            "text_gt",
-            "text_larger",
-            "text_le",
-            "text_lt",
-            "text_pattern_ge",
-            "text_pattern_gt",
-            "text_pattern_le",
-            "text_pattern_lt",
-            "text_smaller",
-            "textanycat",
-            "textcat",
-            "texteq",
-            "texticlike",
-            "texticnlike",
-            "texticregexeq",
-            "texticregexne",
-            "textin",
-            "textlen",
-            "textlike",
-            "textne",
-            "textnlike",
-            "textout",
-            "textrecv",
-            "textregexeq",
-            "textregexne",
-            "textsend",
-            "thesaurus_init",
-            "thesaurus_lexize",
-            "tideq",
-            "tidge",
-            "tidgt",
-            "tidin",
-            "tidlarger",
-            "tidle",
-            "tidlt",
-            "tidne",
-            "tidout",
-            "tidrecv",
-            "tidsend",
-            "tidsmaller",
-            "time_cmp",
-            "time_eq",
-            "time_ge",
-            "time_gt",
-            "time_hash",
-            "time_in",
-            "time_larger",
-            "time_le",
-            "time_lt",
-            "time_mi_interval",
-            "time_mi_time",
-            "time_ne",
-            "time_out",
-            "time_pl_interval",
-            "time_recv",
-            "time_send",
-            "time_smaller",
-            "time_transform",
-            "timedate_pl",
-            "timemi",
-            "timenow",
-            "timeofday",
-            "timepl",
-            "timestamp_cmp",
-            "timestamp_cmp_date",
-            "timestamp_cmp_timestamptz",
-            "timestamp_eq",
-            "timestamp_eq_date",
-            "timestamp_eq_timestamptz",
-            "timestamp_ge",
-            "timestamp_ge_date",
-            "timestamp_ge_timestamptz",
-            "timestamp_gt",
-            "timestamp_gt_date",
-            "timestamp_gt_timestamptz",
-            "timestamp_hash",
-            "timestamp_in",
-            "timestamp_larger",
-            "timestamp_le",
-            "timestamp_le_date",
-            "timestamp_le_timestamptz",
-            "timestamp_lt",
-            "timestamp_lt_date",
-            "timestamp_lt_timestamptz",
-            "timestamp_mi",
-            "timestamp_mi_interval",
-            "timestamp_ne",
-            "timestamp_ne_date",
-            "timestamp_ne_timestamptz",
-            "timestamp_out",
-            "timestamp_pl_interval",
-            "timestamp_recv",
-            "timestamp_send",
-            "timestamp_smaller",
-            "timestamp_sortsupport",
-            "timestamp_transform",
-            "timestamptypmodin",
-            "timestamptypmodout",
-            "timestamptz",
-            "timestamptz_cmp",
-            "timestamptz_cmp_date",
-            "timestamptz_cmp_timestamp",
-            "timestamptz_eq",
-            "timestamptz_eq_date",
-            "timestamptz_eq_timestamp",
-            "timestamptz_ge",
-            "timestamptz_ge_date",
-            "timestamptz_ge_timestamp",
-            "timestamptz_gt",
-            "timestamptz_gt_date",
-            "timestamptz_gt_timestamp",
-            "timestamptz_in",
-            "timestamptz_larger",
-            "timestamptz_le",
-            "timestamptz_le_date",
-            "timestamptz_le_timestamp",
-            "timestamptz_lt",
-            "timestamptz_lt_date",
-            "timestamptz_lt_timestamp",
-            "timestamptz_mi",
-            "timestamptz_mi_interval",
-            "timestamptz_ne",
-            "timestamptz_ne_date",
-            "timestamptz_ne_timestamp",
-            "timestamptz_out",
-            "timestamptz_pl_interval",
-            "timestamptz_recv",
-            "timestamptz_send",
-            "timestamptz_smaller",
-            "timestamptztypmodin",
-            "timestamptztypmodout",
-            "timetypmodin",
-            "timetypmodout",
-            "timetz",
-            "timetz_cmp",
-            "timetz_eq",
-            "timetz_ge",
-            "timetz_gt",
-            "timetz_hash",
-            "timetz_in",
-            "timetz_larger",
-            "timetz_le",
-            "timetz_lt",
-            "timetz_mi_interval",
-            "timetz_ne",
-            "timetz_out",
-            "timetz_pl_interval",
-            "timetz_recv",
-            "timetz_send",
-            "timetz_smaller",
-            "timetzdate_pl",
-            "timetztypmodin",
-            "timetztypmodout",
-            "timezone",
-            "tintervalct",
-            "tintervalend",
-            "tintervaleq",
-            "tintervalge",
-            "tintervalgt",
-            "tintervalin",
-            "tintervalle",
-            "tintervalleneq",
-            "tintervallenge",
-            "tintervallengt",
-            "tintervallenle",
-            "tintervallenlt",
-            "tintervallenne",
-            "tintervallt",
-            "tintervalne",
-            "tintervalout",
-            "tintervalov",
-            "tintervalrecv",
-            "tintervalrel",
-            "tintervalsame",
-            "tintervalsend",
-            "tintervalstart",
-            "to_ascii",
-            "to_char",
-            "to_date",
-            "to_hex",
-            "to_json",
-            "to_number",
-            "to_timestamp",
-            "to_tsquery",
-            "to_tsvector",
-            "transaction_timestamp",
-            "translate",
-            "trigger_in",
-            "trigger_out",
-            "trunc",
-            "ts_debug",
-            "ts_headline",
-            "ts_lexize",
-            "ts_match_qv",
-            "ts_match_tq",
-            "ts_match_tt",
-            "ts_match_vq",
-            "ts_parse",
-            "ts_rank",
-            "ts_rank_cd",
-            "ts_rewrite",
-            "ts_stat",
-            "ts_token_type",
-            "ts_typanalyze",
-            "tsmatchjoinsel",
-            "tsmatchsel",
-            "tsq_mcontained",
-            "tsq_mcontains",
-            "tsquery_and",
-            "tsquery_cmp",
-            "tsquery_eq",
-            "tsquery_ge",
-            "tsquery_gt",
-            "tsquery_le",
-            "tsquery_lt",
-            "tsquery_ne",
-            "tsquery_not",
-            "tsquery_or",
-            "tsqueryin",
-            "tsqueryout",
-            "tsqueryrecv",
-            "tsquerysend",
-            "tsrange_subdiff",
-            "tstzrange_subdiff",
-            "tsvector_cmp",
-            "tsvector_concat",
-            "tsvector_eq",
-            "tsvector_ge",
-            "tsvector_gt",
-            "tsvector_le",
-            "tsvector_lt",
-            "tsvector_ne",
-            "tsvector_update_trigger",
-            "tsvector_update_trigger_column",
-            "tsvectorin",
-            "tsvectorout",
-            "tsvectorrecv",
-            "tsvectorsend",
-            "txid_current",
-            "txid_current_snapshot",
-            "txid_snapshot_in",
-            "txid_snapshot_out",
-            "txid_snapshot_recv",
-            "txid_snapshot_send",
-            "txid_snapshot_xip",
-            "txid_snapshot_xmax",
-            "txid_snapshot_xmin",
-            "txid_visible_in_snapshot",
-            "uhc_to_utf8",
-            "unique_key_recheck",
-            "unknownin",
-            "unknownout",
-            "unknownrecv",
-            "unknownsend",
-            "unnest",
-            "upper",
-            "upper_inc",
-            "upper_inf",
-            "utf8_to_ascii",
-            "utf8_to_big5",
-            "utf8_to_euc_cn",
-            "utf8_to_euc_jis_2004",
-            "utf8_to_euc_jp",
-            "utf8_to_euc_kr",
-            "utf8_to_euc_tw",
-            "utf8_to_gb18030",
-            "utf8_to_gbk",
-            "utf8_to_iso8859",
-            "utf8_to_iso8859_1",
-            "utf8_to_johab",
-            "utf8_to_koi8r",
-            "utf8_to_koi8u",
-            "utf8_to_shift_jis_2004",
-            "utf8_to_sjis",
-            "utf8_to_uhc",
-            "utf8_to_win",
-            "uuid_cmp",
-            "uuid_eq",
-            "uuid_ge",
-            "uuid_gt",
-            "uuid_hash",
-            "uuid_in",
-            "uuid_le",
-            "uuid_lt",
-            "uuid_ne",
-            "uuid_out",
-            "uuid_recv",
-            "uuid_send",
-            "var_pop",
-            "var_samp",
-            "varbit",
-            "varbit_in",
-            "varbit_out",
-            "varbit_recv",
-            "varbit_send",
-            "varbit_transform",
-            "varbitcmp",
-            "varbiteq",
-            "varbitge",
-            "varbitgt",
-            "varbitle",
-            "varbitlt",
-            "varbitne",
-            "varbittypmodin",
-            "varbittypmodout",
-            "varchar_transform",
-            "varcharin",
-            "varcharout",
-            "varcharrecv",
-            "varcharsend",
-            "varchartypmodin",
-            "varchartypmodout",
-            "variance",
-            "void_in",
-            "void_out",
-            "void_recv",
-            "void_send",
-            "width",
-            "width_bucket",
-            "win1250_to_latin2",
-            "win1250_to_mic",
-            "win1251_to_iso",
-            "win1251_to_koi8r",
-            "win1251_to_mic",
-            "win1251_to_win866",
-            "win866_to_iso",
-            "win866_to_koi8r",
-            "win866_to_mic",
-            "win866_to_win1251",
-            "win_to_utf8",
-            "xideq",
-            "xideqint4",
-            "xidin",
-            "xidout",
-            "xidrecv",
-            "xidsend",
-            "xml_in",
-            "xml_is_well_formed",
-            "xml_is_well_formed_content",
-            "xml_is_well_formed_document",
-            "xml_out",
-            "xml_recv",
-            "xml_send",
-            "xmlagg",
-            "xmlcomment",
-            "xmlconcat2",
-            "xmlvalidate",
-            "xpath",
-            "xpath_exists"
+            "RI_FKey_cascade_del", //$NON-NLS-1$
+            "RI_FKey_cascade_upd", //$NON-NLS-1$
+            "RI_FKey_check_ins", //$NON-NLS-1$
+            "RI_FKey_check_upd", //$NON-NLS-1$
+            "RI_FKey_noaction_del", //$NON-NLS-1$
+            "RI_FKey_noaction_upd", //$NON-NLS-1$
+            "RI_FKey_restrict_del", //$NON-NLS-1$
+            "RI_FKey_restrict_upd", //$NON-NLS-1$
+            "RI_FKey_setdefault_del", //$NON-NLS-1$
+            "RI_FKey_setdefault_upd", //$NON-NLS-1$
+            "RI_FKey_setnull_del", //$NON-NLS-1$
+            "RI_FKey_setnull_upd", //$NON-NLS-1$
+            "_pg_char_max_length", //$NON-NLS-1$
+            "_pg_char_octet_length", //$NON-NLS-1$
+            "_pg_datetime_precision", //$NON-NLS-1$
+            "_pg_expandarray", //$NON-NLS-1$
+            "_pg_index_position", //$NON-NLS-1$
+            "_pg_interval_type", //$NON-NLS-1$
+            "_pg_keysequal", //$NON-NLS-1$
+            "_pg_numeric_precision", //$NON-NLS-1$
+            "_pg_numeric_precision_radix", //$NON-NLS-1$
+            "_pg_numeric_scale", //$NON-NLS-1$
+            "_pg_truetypid", //$NON-NLS-1$
+            "_pg_truetypmod", //$NON-NLS-1$
+            "abbrev", //$NON-NLS-1$
+            "abs", //$NON-NLS-1$
+            "abstimeeq", //$NON-NLS-1$
+            "abstimege", //$NON-NLS-1$
+            "abstimegt", //$NON-NLS-1$
+            "abstimein", //$NON-NLS-1$
+            "abstimele", //$NON-NLS-1$
+            "abstimelt", //$NON-NLS-1$
+            "abstimene", //$NON-NLS-1$
+            "abstimeout", //$NON-NLS-1$
+            "abstimerecv", //$NON-NLS-1$
+            "abstimesend", //$NON-NLS-1$
+            "aclcontains", //$NON-NLS-1$
+            "acldefault", //$NON-NLS-1$
+            "aclexplode", //$NON-NLS-1$
+            "aclinsert", //$NON-NLS-1$
+            "aclitemeq", //$NON-NLS-1$
+            "aclitemin", //$NON-NLS-1$
+            "aclitemout", //$NON-NLS-1$
+            "aclremove", //$NON-NLS-1$
+            "acos", //$NON-NLS-1$
+            "age", //$NON-NLS-1$
+            "any_in", //$NON-NLS-1$
+            "any_out", //$NON-NLS-1$
+            "anyarray_in", //$NON-NLS-1$
+            "anyarray_out", //$NON-NLS-1$
+            "anyarray_recv", //$NON-NLS-1$
+            "anyarray_send", //$NON-NLS-1$
+            "anyelement_in", //$NON-NLS-1$
+            "anyelement_out", //$NON-NLS-1$
+            "anyenum_in", //$NON-NLS-1$
+            "anyenum_out", //$NON-NLS-1$
+            "anynonarray_in", //$NON-NLS-1$
+            "anynonarray_out", //$NON-NLS-1$
+            "anyrange_in", //$NON-NLS-1$
+            "anyrange_out", //$NON-NLS-1$
+            "anytextcat", //$NON-NLS-1$
+            "area", //$NON-NLS-1$
+            "areajoinsel", //$NON-NLS-1$
+            "areasel", //$NON-NLS-1$
+            "array_agg", //$NON-NLS-1$
+            "array_agg_finalfn", //$NON-NLS-1$
+            "array_agg_transfn", //$NON-NLS-1$
+            "array_append", //$NON-NLS-1$
+            "array_cat", //$NON-NLS-1$
+            "array_dims", //$NON-NLS-1$
+            "array_eq", //$NON-NLS-1$
+            "array_fill", //$NON-NLS-1$
+            "array_ge", //$NON-NLS-1$
+            "array_gt", //$NON-NLS-1$
+            "array_in", //$NON-NLS-1$
+            "array_larger", //$NON-NLS-1$
+            "array_le", //$NON-NLS-1$
+            "array_length", //$NON-NLS-1$
+            "array_lower", //$NON-NLS-1$
+            "array_lt", //$NON-NLS-1$
+            "array_ndims", //$NON-NLS-1$
+            "array_ne", //$NON-NLS-1$
+            "array_out", //$NON-NLS-1$
+            "array_prepend", //$NON-NLS-1$
+            "array_recv", //$NON-NLS-1$
+            "array_remove", //$NON-NLS-1$
+            "array_replace", //$NON-NLS-1$
+            "array_send", //$NON-NLS-1$
+            "array_smaller", //$NON-NLS-1$
+            "array_to_json", //$NON-NLS-1$
+            "array_to_string", //$NON-NLS-1$
+            "array_typanalyze", //$NON-NLS-1$
+            "array_upper", //$NON-NLS-1$
+            "arraycontained", //$NON-NLS-1$
+            "arraycontains", //$NON-NLS-1$
+            "arraycontjoinsel", //$NON-NLS-1$
+            "arraycontsel", //$NON-NLS-1$
+            "arrayoverlap", //$NON-NLS-1$
+            "ascii", //$NON-NLS-1$
+            "ascii_to_mic", //$NON-NLS-1$
+            "ascii_to_utf8", //$NON-NLS-1$
+            "asin", //$NON-NLS-1$
+            "atan", //$NON-NLS-1$
+            "atan2", //$NON-NLS-1$
+            "avg", //$NON-NLS-1$
+            "big5_to_euc_tw", //$NON-NLS-1$
+            "big5_to_mic", //$NON-NLS-1$
+            "big5_to_utf8", //$NON-NLS-1$
+            "bit_and", //$NON-NLS-1$
+            "bit_in", //$NON-NLS-1$
+            "bit_length", //$NON-NLS-1$
+            "bit_or", //$NON-NLS-1$
+            "bit_out", //$NON-NLS-1$
+            "bit_recv", //$NON-NLS-1$
+            "bit_send", //$NON-NLS-1$
+            "bitand", //$NON-NLS-1$
+            "bitcat", //$NON-NLS-1$
+            "bitcmp", //$NON-NLS-1$
+            "biteq", //$NON-NLS-1$
+            "bitge", //$NON-NLS-1$
+            "bitgt", //$NON-NLS-1$
+            "bitle", //$NON-NLS-1$
+            "bitlt", //$NON-NLS-1$
+            "bitne", //$NON-NLS-1$
+            "bitnot", //$NON-NLS-1$
+            "bitor", //$NON-NLS-1$
+            "bitshiftleft", //$NON-NLS-1$
+            "bitshiftright", //$NON-NLS-1$
+            "bittypmodin", //$NON-NLS-1$
+            "bittypmodout", //$NON-NLS-1$
+            "bitxor", //$NON-NLS-1$
+            "bool", //$NON-NLS-1$
+            "bool_and", //$NON-NLS-1$
+            "bool_or", //$NON-NLS-1$
+            "booland_statefunc", //$NON-NLS-1$
+            "booleq", //$NON-NLS-1$
+            "boolge", //$NON-NLS-1$
+            "boolgt", //$NON-NLS-1$
+            "boolin", //$NON-NLS-1$
+            "boolle", //$NON-NLS-1$
+            "boollt", //$NON-NLS-1$
+            "boolne", //$NON-NLS-1$
+            "boolor_statefunc", //$NON-NLS-1$
+            "boolout", //$NON-NLS-1$
+            "boolrecv", //$NON-NLS-1$
+            "boolsend", //$NON-NLS-1$
+            "box_above", //$NON-NLS-1$
+            "box_above_eq", //$NON-NLS-1$
+            "box_add", //$NON-NLS-1$
+            "box_below", //$NON-NLS-1$
+            "box_below_eq", //$NON-NLS-1$
+            "box_center", //$NON-NLS-1$
+            "box_contain", //$NON-NLS-1$
+            "box_contain_pt", //$NON-NLS-1$
+            "box_contained", //$NON-NLS-1$
+            "box_distance", //$NON-NLS-1$
+            "box_div", //$NON-NLS-1$
+            "box_eq", //$NON-NLS-1$
+            "box_ge", //$NON-NLS-1$
+            "box_gt", //$NON-NLS-1$
+            "box_in", //$NON-NLS-1$
+            "box_intersect", //$NON-NLS-1$
+            "box_le", //$NON-NLS-1$
+            "box_left", //$NON-NLS-1$
+            "box_lt", //$NON-NLS-1$
+            "box_mul", //$NON-NLS-1$
+            "box_out", //$NON-NLS-1$
+            "box_overabove", //$NON-NLS-1$
+            "box_overbelow", //$NON-NLS-1$
+            "box_overlap", //$NON-NLS-1$
+            "box_overleft", //$NON-NLS-1$
+            "box_overright", //$NON-NLS-1$
+            "box_recv", //$NON-NLS-1$
+            "box_right", //$NON-NLS-1$
+            "box_same", //$NON-NLS-1$
+            "box_send", //$NON-NLS-1$
+            "box_sub", //$NON-NLS-1$
+            "bpchar", //$NON-NLS-1$
+            "bpchar_larger", //$NON-NLS-1$
+            "bpchar_pattern_ge", //$NON-NLS-1$
+            "bpchar_pattern_gt", //$NON-NLS-1$
+            "bpchar_pattern_le", //$NON-NLS-1$
+            "bpchar_pattern_lt", //$NON-NLS-1$
+            "bpchar_smaller", //$NON-NLS-1$
+            "bpcharcmp", //$NON-NLS-1$
+            "bpchareq", //$NON-NLS-1$
+            "bpcharge", //$NON-NLS-1$
+            "bpchargt", //$NON-NLS-1$
+            "bpchariclike", //$NON-NLS-1$
+            "bpcharicnlike", //$NON-NLS-1$
+            "bpcharicregexeq", //$NON-NLS-1$
+            "bpcharicregexne", //$NON-NLS-1$
+            "bpcharin", //$NON-NLS-1$
+            "bpcharle", //$NON-NLS-1$
+            "bpcharlike", //$NON-NLS-1$
+            "bpcharlt", //$NON-NLS-1$
+            "bpcharne", //$NON-NLS-1$
+            "bpcharnlike", //$NON-NLS-1$
+            "bpcharout", //$NON-NLS-1$
+            "bpcharrecv", //$NON-NLS-1$
+            "bpcharregexeq", //$NON-NLS-1$
+            "bpcharregexne", //$NON-NLS-1$
+            "bpcharsend", //$NON-NLS-1$
+            "bpchartypmodin", //$NON-NLS-1$
+            "bpchartypmodout", //$NON-NLS-1$
+            "broadcast", //$NON-NLS-1$
+            "btabstimecmp", //$NON-NLS-1$
+            "btarraycmp", //$NON-NLS-1$
+            "btbeginscan", //$NON-NLS-1$
+            "btboolcmp", //$NON-NLS-1$
+            "btbpchar_pattern_cmp", //$NON-NLS-1$
+            "btbuild", //$NON-NLS-1$
+            "btbuildempty", //$NON-NLS-1$
+            "btbulkdelete", //$NON-NLS-1$
+            "btcanreturn", //$NON-NLS-1$
+            "btcharcmp", //$NON-NLS-1$
+            "btcostestimate", //$NON-NLS-1$
+            "btendscan", //$NON-NLS-1$
+            "btfloat48cmp", //$NON-NLS-1$
+            "btfloat4cmp", //$NON-NLS-1$
+            "btfloat4sortsupport", //$NON-NLS-1$
+            "btfloat84cmp", //$NON-NLS-1$
+            "btfloat8cmp", //$NON-NLS-1$
+            "btfloat8sortsupport", //$NON-NLS-1$
+            "btgetbitmap", //$NON-NLS-1$
+            "btgettuple", //$NON-NLS-1$
+            "btinsert", //$NON-NLS-1$
+            "btint24cmp", //$NON-NLS-1$
+            "btint28cmp", //$NON-NLS-1$
+            "btint2cmp", //$NON-NLS-1$
+            "btint2sortsupport", //$NON-NLS-1$
+            "btint42cmp", //$NON-NLS-1$
+            "btint48cmp", //$NON-NLS-1$
+            "btint4cmp", //$NON-NLS-1$
+            "btint4sortsupport", //$NON-NLS-1$
+            "btint82cmp", //$NON-NLS-1$
+            "btint84cmp", //$NON-NLS-1$
+            "btint8cmp", //$NON-NLS-1$
+            "btint8sortsupport", //$NON-NLS-1$
+            "btmarkpos", //$NON-NLS-1$
+            "btnamecmp", //$NON-NLS-1$
+            "btnamesortsupport", //$NON-NLS-1$
+            "btoidcmp", //$NON-NLS-1$
+            "btoidsortsupport", //$NON-NLS-1$
+            "btoidvectorcmp", //$NON-NLS-1$
+            "btoptions", //$NON-NLS-1$
+            "btrecordcmp", //$NON-NLS-1$
+            "btreltimecmp", //$NON-NLS-1$
+            "btrescan", //$NON-NLS-1$
+            "btrestrpos", //$NON-NLS-1$
+            "btrim", //$NON-NLS-1$
+            "bttext_pattern_cmp", //$NON-NLS-1$
+            "bttextcmp", //$NON-NLS-1$
+            "bttidcmp", //$NON-NLS-1$
+            "bttintervalcmp", //$NON-NLS-1$
+            "btvacuumcleanup", //$NON-NLS-1$
+            "bytea_string_agg_finalfn", //$NON-NLS-1$
+            "bytea_string_agg_transfn", //$NON-NLS-1$
+            "byteacat", //$NON-NLS-1$
+            "byteacmp", //$NON-NLS-1$
+            "byteaeq", //$NON-NLS-1$
+            "byteage", //$NON-NLS-1$
+            "byteagt", //$NON-NLS-1$
+            "byteain", //$NON-NLS-1$
+            "byteale", //$NON-NLS-1$
+            "bytealike", //$NON-NLS-1$
+            "bytealt", //$NON-NLS-1$
+            "byteane", //$NON-NLS-1$
+            "byteanlike", //$NON-NLS-1$
+            "byteaout", //$NON-NLS-1$
+            "bytearecv", //$NON-NLS-1$
+            "byteasend", //$NON-NLS-1$
+            "cash_cmp", //$NON-NLS-1$
+            "cash_div_cash", //$NON-NLS-1$
+            "cash_div_flt4", //$NON-NLS-1$
+            "cash_div_flt8", //$NON-NLS-1$
+            "cash_div_int2", //$NON-NLS-1$
+            "cash_div_int4", //$NON-NLS-1$
+            "cash_eq", //$NON-NLS-1$
+            "cash_ge", //$NON-NLS-1$
+            "cash_gt", //$NON-NLS-1$
+            "cash_in", //$NON-NLS-1$
+            "cash_le", //$NON-NLS-1$
+            "cash_lt", //$NON-NLS-1$
+            "cash_mi", //$NON-NLS-1$
+            "cash_mul_flt4", //$NON-NLS-1$
+            "cash_mul_flt8", //$NON-NLS-1$
+            "cash_mul_int2", //$NON-NLS-1$
+            "cash_mul_int4", //$NON-NLS-1$
+            "cash_ne", //$NON-NLS-1$
+            "cash_out", //$NON-NLS-1$
+            "cash_pl", //$NON-NLS-1$
+            "cash_recv", //$NON-NLS-1$
+            "cash_send", //$NON-NLS-1$
+            "cash_words", //$NON-NLS-1$
+            "cashlarger", //$NON-NLS-1$
+            "cashsmaller", //$NON-NLS-1$
+            "cbrt", //$NON-NLS-1$
+            "ceil", //$NON-NLS-1$
+            "ceiling", //$NON-NLS-1$
+            "center", //$NON-NLS-1$
+            "char_length", //$NON-NLS-1$
+            "character_length", //$NON-NLS-1$
+            "chareq", //$NON-NLS-1$
+            "charge", //$NON-NLS-1$
+            "chargt", //$NON-NLS-1$
+            "charin", //$NON-NLS-1$
+            "charle", //$NON-NLS-1$
+            "charlt", //$NON-NLS-1$
+            "charne", //$NON-NLS-1$
+            "charout", //$NON-NLS-1$
+            "charrecv", //$NON-NLS-1$
+            "charsend", //$NON-NLS-1$
+            "chr", //$NON-NLS-1$
+            "cideq", //$NON-NLS-1$
+            "cidin", //$NON-NLS-1$
+            "cidout", //$NON-NLS-1$
+            "cidr_in", //$NON-NLS-1$
+            "cidr_out", //$NON-NLS-1$
+            "cidr_recv", //$NON-NLS-1$
+            "cidr_send", //$NON-NLS-1$
+            "cidrecv", //$NON-NLS-1$
+            "cidsend", //$NON-NLS-1$
+            "circle_above", //$NON-NLS-1$
+            "circle_add_pt", //$NON-NLS-1$
+            "circle_below", //$NON-NLS-1$
+            "circle_center", //$NON-NLS-1$
+            "circle_contain", //$NON-NLS-1$
+            "circle_contain_pt", //$NON-NLS-1$
+            "circle_contained", //$NON-NLS-1$
+            "circle_distance", //$NON-NLS-1$
+            "circle_div_pt", //$NON-NLS-1$
+            "circle_eq", //$NON-NLS-1$
+            "circle_ge", //$NON-NLS-1$
+            "circle_gt", //$NON-NLS-1$
+            "circle_in", //$NON-NLS-1$
+            "circle_le", //$NON-NLS-1$
+            "circle_left", //$NON-NLS-1$
+            "circle_lt", //$NON-NLS-1$
+            "circle_mul_pt", //$NON-NLS-1$
+            "circle_ne", //$NON-NLS-1$
+            "circle_out", //$NON-NLS-1$
+            "circle_overabove", //$NON-NLS-1$
+            "circle_overbelow", //$NON-NLS-1$
+            "circle_overlap", //$NON-NLS-1$
+            "circle_overleft", //$NON-NLS-1$
+            "circle_overright", //$NON-NLS-1$
+            "circle_recv", //$NON-NLS-1$
+            "circle_right", //$NON-NLS-1$
+            "circle_same", //$NON-NLS-1$
+            "circle_send", //$NON-NLS-1$
+            "circle_sub_pt", //$NON-NLS-1$
+            "clock_timestamp", //$NON-NLS-1$
+            "close_lb", //$NON-NLS-1$
+            "close_ls", //$NON-NLS-1$
+            "close_lseg", //$NON-NLS-1$
+            "close_pb", //$NON-NLS-1$
+            "close_pl", //$NON-NLS-1$
+            "close_ps", //$NON-NLS-1$
+            "close_sb", //$NON-NLS-1$
+            "close_sl", //$NON-NLS-1$
+            "col_description", //$NON-NLS-1$
+            "concat", //$NON-NLS-1$
+            "concat_ws", //$NON-NLS-1$
+            "contjoinsel", //$NON-NLS-1$
+            "contsel", //$NON-NLS-1$
+            "convert", //$NON-NLS-1$
+            "convert_from", //$NON-NLS-1$
+            "convert_to", //$NON-NLS-1$
+            "corr", //$NON-NLS-1$
+            "cos", //$NON-NLS-1$
+            "cot", //$NON-NLS-1$
+            "count", //$NON-NLS-1$
+            "covar_pop", //$NON-NLS-1$
+            "covar_samp", //$NON-NLS-1$
+            "cstring_in", //$NON-NLS-1$
+            "cstring_out", //$NON-NLS-1$
+            "cstring_recv", //$NON-NLS-1$
+            "cstring_send", //$NON-NLS-1$
+            "cume_dist", //$NON-NLS-1$
+            "current_database", //$NON-NLS-1$
+            "current_query", //$NON-NLS-1$
+            "current_schema", //$NON-NLS-1$
+            "current_schemas", //$NON-NLS-1$
+            "current_setting", //$NON-NLS-1$
+            "current_user", //$NON-NLS-1$
+            "currtid", //$NON-NLS-1$
+            "currtid2", //$NON-NLS-1$
+            "currval", //$NON-NLS-1$
+            "cursor_to_xml", //$NON-NLS-1$
+            "cursor_to_xmlschema", //$NON-NLS-1$
+            "database_to_xml", //$NON-NLS-1$
+            "database_to_xml_and_xmlschema", //$NON-NLS-1$
+            "database_to_xmlschema", //$NON-NLS-1$
+            "date_cmp", //$NON-NLS-1$
+            "date_cmp_timestamp", //$NON-NLS-1$
+            "date_cmp_timestamptz", //$NON-NLS-1$
+            "date_eq", //$NON-NLS-1$
+            "date_eq_timestamp", //$NON-NLS-1$
+            "date_eq_timestamptz", //$NON-NLS-1$
+            "date_ge", //$NON-NLS-1$
+            "date_ge_timestamp", //$NON-NLS-1$
+            "date_ge_timestamptz", //$NON-NLS-1$
+            "date_gt", //$NON-NLS-1$
+            "date_gt_timestamp", //$NON-NLS-1$
+            "date_gt_timestamptz", //$NON-NLS-1$
+            "date_in", //$NON-NLS-1$
+            "date_larger", //$NON-NLS-1$
+            "date_le", //$NON-NLS-1$
+            "date_le_timestamp", //$NON-NLS-1$
+            "date_le_timestamptz", //$NON-NLS-1$
+            "date_lt", //$NON-NLS-1$
+            "date_lt_timestamp", //$NON-NLS-1$
+            "date_lt_timestamptz", //$NON-NLS-1$
+            "date_mi", //$NON-NLS-1$
+            "date_mi_interval", //$NON-NLS-1$
+            "date_mii", //$NON-NLS-1$
+            "date_ne", //$NON-NLS-1$
+            "date_ne_timestamp", //$NON-NLS-1$
+            "date_ne_timestamptz", //$NON-NLS-1$
+            "date_out", //$NON-NLS-1$
+            "date_part", //$NON-NLS-1$
+            "date_pl_interval", //$NON-NLS-1$
+            "date_pli", //$NON-NLS-1$
+            "date_recv", //$NON-NLS-1$
+            "date_send", //$NON-NLS-1$
+            "date_smaller", //$NON-NLS-1$
+            "date_sortsupport", //$NON-NLS-1$
+            "date_trunc", //$NON-NLS-1$
+            "daterange_canonical", //$NON-NLS-1$
+            "daterange_subdiff", //$NON-NLS-1$
+            "datetime_pl", //$NON-NLS-1$
+            "datetimetz_pl", //$NON-NLS-1$
+            "dcbrt", //$NON-NLS-1$
+            "decode", //$NON-NLS-1$
+            "degrees", //$NON-NLS-1$
+            "dense_rank", //$NON-NLS-1$
+            "dexp", //$NON-NLS-1$
+            "diagonal", //$NON-NLS-1$
+            "diameter", //$NON-NLS-1$
+            "dispell_init", //$NON-NLS-1$
+            "dispell_lexize", //$NON-NLS-1$
+            "dist_cpoly", //$NON-NLS-1$
+            "dist_lb", //$NON-NLS-1$
+            "dist_pb", //$NON-NLS-1$
+            "dist_pc", //$NON-NLS-1$
+            "dist_pl", //$NON-NLS-1$
+            "dist_ppath", //$NON-NLS-1$
+            "dist_ps", //$NON-NLS-1$
+            "dist_sb", //$NON-NLS-1$
+            "dist_sl", //$NON-NLS-1$
+            "div", //$NON-NLS-1$
+            "dlog1", //$NON-NLS-1$
+            "dlog10", //$NON-NLS-1$
+            "domain_in", //$NON-NLS-1$
+            "domain_recv", //$NON-NLS-1$
+            "dpow", //$NON-NLS-1$
+            "dround", //$NON-NLS-1$
+            "dsimple_init", //$NON-NLS-1$
+            "dsimple_lexize", //$NON-NLS-1$
+            "dsnowball_init", //$NON-NLS-1$
+            "dsnowball_lexize", //$NON-NLS-1$
+            "dsqrt", //$NON-NLS-1$
+            "dsynonym_init", //$NON-NLS-1$
+            "dsynonym_lexize", //$NON-NLS-1$
+            "dtrunc", //$NON-NLS-1$
+            "elem_contained_by_range", //$NON-NLS-1$
+            "encode", //$NON-NLS-1$
+            "enum_cmp", //$NON-NLS-1$
+            "enum_eq", //$NON-NLS-1$
+            "enum_first", //$NON-NLS-1$
+            "enum_ge", //$NON-NLS-1$
+            "enum_gt", //$NON-NLS-1$
+            "enum_in", //$NON-NLS-1$
+            "enum_larger", //$NON-NLS-1$
+            "enum_last", //$NON-NLS-1$
+            "enum_le", //$NON-NLS-1$
+            "enum_lt", //$NON-NLS-1$
+            "enum_ne", //$NON-NLS-1$
+            "enum_out", //$NON-NLS-1$
+            "enum_range", //$NON-NLS-1$
+            "enum_recv", //$NON-NLS-1$
+            "enum_send", //$NON-NLS-1$
+            "enum_smaller", //$NON-NLS-1$
+            "eqjoinsel", //$NON-NLS-1$
+            "eqsel", //$NON-NLS-1$
+            "euc_cn_to_mic", //$NON-NLS-1$
+            "euc_cn_to_utf8", //$NON-NLS-1$
+            "euc_jis_2004_to_shift_jis_2004", //$NON-NLS-1$
+            "euc_jis_2004_to_utf8", //$NON-NLS-1$
+            "euc_jp_to_mic", //$NON-NLS-1$
+            "euc_jp_to_sjis", //$NON-NLS-1$
+            "euc_jp_to_utf8", //$NON-NLS-1$
+            "euc_kr_to_mic", //$NON-NLS-1$
+            "euc_kr_to_utf8", //$NON-NLS-1$
+            "euc_tw_to_big5", //$NON-NLS-1$
+            "euc_tw_to_mic", //$NON-NLS-1$
+            "euc_tw_to_utf8", //$NON-NLS-1$
+            "event_trigger_in", //$NON-NLS-1$
+            "event_trigger_out", //$NON-NLS-1$
+            "every", //$NON-NLS-1$
+            "exp", //$NON-NLS-1$
+            "factorial", //$NON-NLS-1$
+            "fdw_handler_in", //$NON-NLS-1$
+            "fdw_handler_out", //$NON-NLS-1$
+            "first_value", //$NON-NLS-1$
+            "float4", //$NON-NLS-1$
+            "float48div", //$NON-NLS-1$
+            "float48eq", //$NON-NLS-1$
+            "float48ge", //$NON-NLS-1$
+            "float48gt", //$NON-NLS-1$
+            "float48le", //$NON-NLS-1$
+            "float48lt", //$NON-NLS-1$
+            "float48mi", //$NON-NLS-1$
+            "float48mul", //$NON-NLS-1$
+            "float48ne", //$NON-NLS-1$
+            "float48pl", //$NON-NLS-1$
+            "float4_accum", //$NON-NLS-1$
+            "float4abs", //$NON-NLS-1$
+            "float4div", //$NON-NLS-1$
+            "float4eq", //$NON-NLS-1$
+            "float4ge", //$NON-NLS-1$
+            "float4gt", //$NON-NLS-1$
+            "float4in", //$NON-NLS-1$
+            "float4larger", //$NON-NLS-1$
+            "float4le", //$NON-NLS-1$
+            "float4lt", //$NON-NLS-1$
+            "float4mi", //$NON-NLS-1$
+            "float4mul", //$NON-NLS-1$
+            "float4ne", //$NON-NLS-1$
+            "float4out", //$NON-NLS-1$
+            "float4pl", //$NON-NLS-1$
+            "float4recv", //$NON-NLS-1$
+            "float4send", //$NON-NLS-1$
+            "float4smaller", //$NON-NLS-1$
+            "float4um", //$NON-NLS-1$
+            "float4up", //$NON-NLS-1$
+            "float8", //$NON-NLS-1$
+            "float84div", //$NON-NLS-1$
+            "float84eq", //$NON-NLS-1$
+            "float84ge", //$NON-NLS-1$
+            "float84gt", //$NON-NLS-1$
+            "float84le", //$NON-NLS-1$
+            "float84lt", //$NON-NLS-1$
+            "float84mi", //$NON-NLS-1$
+            "float84mul", //$NON-NLS-1$
+            "float84ne", //$NON-NLS-1$
+            "float84pl", //$NON-NLS-1$
+            "float8_accum", //$NON-NLS-1$
+            "float8_avg", //$NON-NLS-1$
+            "float8_corr", //$NON-NLS-1$
+            "float8_covar_pop", //$NON-NLS-1$
+            "float8_covar_samp", //$NON-NLS-1$
+            "float8_regr_accum", //$NON-NLS-1$
+            "float8_regr_avgx", //$NON-NLS-1$
+            "float8_regr_avgy", //$NON-NLS-1$
+            "float8_regr_intercept", //$NON-NLS-1$
+            "float8_regr_r2", //$NON-NLS-1$
+            "float8_regr_slope", //$NON-NLS-1$
+            "float8_regr_sxx", //$NON-NLS-1$
+            "float8_regr_sxy", //$NON-NLS-1$
+            "float8_regr_syy", //$NON-NLS-1$
+            "float8_stddev_pop", //$NON-NLS-1$
+            "float8_stddev_samp", //$NON-NLS-1$
+            "float8_var_pop", //$NON-NLS-1$
+            "float8_var_samp", //$NON-NLS-1$
+            "float8abs", //$NON-NLS-1$
+            "float8div", //$NON-NLS-1$
+            "float8eq", //$NON-NLS-1$
+            "float8ge", //$NON-NLS-1$
+            "float8gt", //$NON-NLS-1$
+            "float8in", //$NON-NLS-1$
+            "float8larger", //$NON-NLS-1$
+            "float8le", //$NON-NLS-1$
+            "float8lt", //$NON-NLS-1$
+            "float8mi", //$NON-NLS-1$
+            "float8mul", //$NON-NLS-1$
+            "float8ne", //$NON-NLS-1$
+            "float8out", //$NON-NLS-1$
+            "float8pl", //$NON-NLS-1$
+            "float8recv", //$NON-NLS-1$
+            "float8send", //$NON-NLS-1$
+            "float8smaller", //$NON-NLS-1$
+            "float8um", //$NON-NLS-1$
+            "float8up", //$NON-NLS-1$
+            "floor", //$NON-NLS-1$
+            "flt4_mul_cash", //$NON-NLS-1$
+            "flt8_mul_cash", //$NON-NLS-1$
+            "fmgr_c_validator", //$NON-NLS-1$
+            "fmgr_internal_validator", //$NON-NLS-1$
+            "fmgr_sql_validator", //$NON-NLS-1$
+            "format", //$NON-NLS-1$
+            "format_type", //$NON-NLS-1$
+            "gb18030_to_utf8", //$NON-NLS-1$
+            "gbk_to_utf8", //$NON-NLS-1$
+            "generate_series", //$NON-NLS-1$
+            "generate_subscripts", //$NON-NLS-1$
+            "get_bit", //$NON-NLS-1$
+            "get_byte", //$NON-NLS-1$
+            "get_current_ts_config", //$NON-NLS-1$
+            "getdatabaseencoding", //$NON-NLS-1$
+            "getpgusername", //$NON-NLS-1$
+            "gin_cmp_prefix", //$NON-NLS-1$
+            "gin_cmp_tslexeme", //$NON-NLS-1$
+            "gin_extract_tsquery", //$NON-NLS-1$
+            "gin_extract_tsvector", //$NON-NLS-1$
+            "gin_tsquery_consistent", //$NON-NLS-1$
+            "ginarrayconsistent", //$NON-NLS-1$
+            "ginarrayextract", //$NON-NLS-1$
+            "ginbeginscan", //$NON-NLS-1$
+            "ginbuild", //$NON-NLS-1$
+            "ginbuildempty", //$NON-NLS-1$
+            "ginbulkdelete", //$NON-NLS-1$
+            "gincostestimate", //$NON-NLS-1$
+            "ginendscan", //$NON-NLS-1$
+            "gingetbitmap", //$NON-NLS-1$
+            "gininsert", //$NON-NLS-1$
+            "ginmarkpos", //$NON-NLS-1$
+            "ginoptions", //$NON-NLS-1$
+            "ginqueryarrayextract", //$NON-NLS-1$
+            "ginrescan", //$NON-NLS-1$
+            "ginrestrpos", //$NON-NLS-1$
+            "ginvacuumcleanup", //$NON-NLS-1$
+            "gist_box_compress", //$NON-NLS-1$
+            "gist_box_consistent", //$NON-NLS-1$
+            "gist_box_decompress", //$NON-NLS-1$
+            "gist_box_penalty", //$NON-NLS-1$
+            "gist_box_picksplit", //$NON-NLS-1$
+            "gist_box_same", //$NON-NLS-1$
+            "gist_box_union", //$NON-NLS-1$
+            "gist_circle_compress", //$NON-NLS-1$
+            "gist_circle_consistent", //$NON-NLS-1$
+            "gist_point_compress", //$NON-NLS-1$
+            "gist_point_consistent", //$NON-NLS-1$
+            "gist_point_distance", //$NON-NLS-1$
+            "gist_poly_compress", //$NON-NLS-1$
+            "gist_poly_consistent", //$NON-NLS-1$
+            "gistbeginscan", //$NON-NLS-1$
+            "gistbuild", //$NON-NLS-1$
+            "gistbuildempty", //$NON-NLS-1$
+            "gistbulkdelete", //$NON-NLS-1$
+            "gistcostestimate", //$NON-NLS-1$
+            "gistendscan", //$NON-NLS-1$
+            "gistgetbitmap", //$NON-NLS-1$
+            "gistgettuple", //$NON-NLS-1$
+            "gistinsert", //$NON-NLS-1$
+            "gistmarkpos", //$NON-NLS-1$
+            "gistoptions", //$NON-NLS-1$
+            "gistrescan", //$NON-NLS-1$
+            "gistrestrpos", //$NON-NLS-1$
+            "gistvacuumcleanup", //$NON-NLS-1$
+            "gtsquery_compress", //$NON-NLS-1$
+            "gtsquery_consistent", //$NON-NLS-1$
+            "gtsquery_decompress", //$NON-NLS-1$
+            "gtsquery_penalty", //$NON-NLS-1$
+            "gtsquery_picksplit", //$NON-NLS-1$
+            "gtsquery_same", //$NON-NLS-1$
+            "gtsquery_union", //$NON-NLS-1$
+            "gtsvector_compress", //$NON-NLS-1$
+            "gtsvector_consistent", //$NON-NLS-1$
+            "gtsvector_decompress", //$NON-NLS-1$
+            "gtsvector_penalty", //$NON-NLS-1$
+            "gtsvector_picksplit", //$NON-NLS-1$
+            "gtsvector_same", //$NON-NLS-1$
+            "gtsvector_union", //$NON-NLS-1$
+            "gtsvectorin", //$NON-NLS-1$
+            "gtsvectorout", //$NON-NLS-1$
+            "has_any_column_privilege", //$NON-NLS-1$
+            "has_column_privilege", //$NON-NLS-1$
+            "has_database_privilege", //$NON-NLS-1$
+            "has_foreign_data_wrapper_privilege", //$NON-NLS-1$
+            "has_function_privilege", //$NON-NLS-1$
+            "has_language_privilege", //$NON-NLS-1$
+            "has_schema_privilege", //$NON-NLS-1$
+            "has_sequence_privilege", //$NON-NLS-1$
+            "has_server_privilege", //$NON-NLS-1$
+            "has_table_privilege", //$NON-NLS-1$
+            "has_tablespace_privilege", //$NON-NLS-1$
+            "has_type_privilege", //$NON-NLS-1$
+            "hash_aclitem", //$NON-NLS-1$
+            "hash_array", //$NON-NLS-1$
+            "hash_numeric", //$NON-NLS-1$
+            "hash_range", //$NON-NLS-1$
+            "hashbeginscan", //$NON-NLS-1$
+            "hashbpchar", //$NON-NLS-1$
+            "hashbuild", //$NON-NLS-1$
+            "hashbuildempty", //$NON-NLS-1$
+            "hashbulkdelete", //$NON-NLS-1$
+            "hashchar", //$NON-NLS-1$
+            "hashcostestimate", //$NON-NLS-1$
+            "hashendscan", //$NON-NLS-1$
+            "hashenum", //$NON-NLS-1$
+            "hashfloat4", //$NON-NLS-1$
+            "hashfloat8", //$NON-NLS-1$
+            "hashgetbitmap", //$NON-NLS-1$
+            "hashgettuple", //$NON-NLS-1$
+            "hashinet", //$NON-NLS-1$
+            "hashinsert", //$NON-NLS-1$
+            "hashint2", //$NON-NLS-1$
+            "hashint2vector", //$NON-NLS-1$
+            "hashint4", //$NON-NLS-1$
+            "hashint8", //$NON-NLS-1$
+            "hashmacaddr", //$NON-NLS-1$
+            "hashmarkpos", //$NON-NLS-1$
+            "hashname", //$NON-NLS-1$
+            "hashoid", //$NON-NLS-1$
+            "hashoidvector", //$NON-NLS-1$
+            "hashoptions", //$NON-NLS-1$
+            "hashrescan", //$NON-NLS-1$
+            "hashrestrpos", //$NON-NLS-1$
+            "hashtext", //$NON-NLS-1$
+            "hashvacuumcleanup", //$NON-NLS-1$
+            "hashvarlena", //$NON-NLS-1$
+            "height", //$NON-NLS-1$
+            "host", //$NON-NLS-1$
+            "hostmask", //$NON-NLS-1$
+            "iclikejoinsel", //$NON-NLS-1$
+            "iclikesel", //$NON-NLS-1$
+            "icnlikejoinsel", //$NON-NLS-1$
+            "icnlikesel", //$NON-NLS-1$
+            "icregexeqjoinsel", //$NON-NLS-1$
+            "icregexeqsel", //$NON-NLS-1$
+            "icregexnejoinsel", //$NON-NLS-1$
+            "icregexnesel", //$NON-NLS-1$
+            "inet_client_addr", //$NON-NLS-1$
+            "inet_client_port", //$NON-NLS-1$
+            "inet_in", //$NON-NLS-1$
+            "inet_out", //$NON-NLS-1$
+            "inet_recv", //$NON-NLS-1$
+            "inet_send", //$NON-NLS-1$
+            "inet_server_addr", //$NON-NLS-1$
+            "inet_server_port", //$NON-NLS-1$
+            "inetand", //$NON-NLS-1$
+            "inetmi", //$NON-NLS-1$
+            "inetmi_int8", //$NON-NLS-1$
+            "inetnot", //$NON-NLS-1$
+            "inetor", //$NON-NLS-1$
+            "inetpl", //$NON-NLS-1$
+            "initcap", //$NON-NLS-1$
+            "int2", //$NON-NLS-1$
+            "int24div", //$NON-NLS-1$
+            "int24eq", //$NON-NLS-1$
+            "int24ge", //$NON-NLS-1$
+            "int24gt", //$NON-NLS-1$
+            "int24le", //$NON-NLS-1$
+            "int24lt", //$NON-NLS-1$
+            "int24mi", //$NON-NLS-1$
+            "int24mul", //$NON-NLS-1$
+            "int24ne", //$NON-NLS-1$
+            "int24pl", //$NON-NLS-1$
+            "int28div", //$NON-NLS-1$
+            "int28eq", //$NON-NLS-1$
+            "int28ge", //$NON-NLS-1$
+            "int28gt", //$NON-NLS-1$
+            "int28le", //$NON-NLS-1$
+            "int28lt", //$NON-NLS-1$
+            "int28mi", //$NON-NLS-1$
+            "int28mul", //$NON-NLS-1$
+            "int28ne", //$NON-NLS-1$
+            "int28pl", //$NON-NLS-1$
+            "int2_accum", //$NON-NLS-1$
+            "int2_avg_accum", //$NON-NLS-1$
+            "int2_mul_cash", //$NON-NLS-1$
+            "int2_sum", //$NON-NLS-1$
+            "int2abs", //$NON-NLS-1$
+            "int2and", //$NON-NLS-1$
+            "int2div", //$NON-NLS-1$
+            "int2eq", //$NON-NLS-1$
+            "int2ge", //$NON-NLS-1$
+            "int2gt", //$NON-NLS-1$
+            "int2in", //$NON-NLS-1$
+            "int2larger", //$NON-NLS-1$
+            "int2le", //$NON-NLS-1$
+            "int2lt", //$NON-NLS-1$
+            "int2mi", //$NON-NLS-1$
+            "int2mod", //$NON-NLS-1$
+            "int2mul", //$NON-NLS-1$
+            "int2ne", //$NON-NLS-1$
+            "int2not", //$NON-NLS-1$
+            "int2or", //$NON-NLS-1$
+            "int2out", //$NON-NLS-1$
+            "int2pl", //$NON-NLS-1$
+            "int2recv", //$NON-NLS-1$
+            "int2send", //$NON-NLS-1$
+            "int2shl", //$NON-NLS-1$
+            "int2shr", //$NON-NLS-1$
+            "int2smaller", //$NON-NLS-1$
+            "int2um", //$NON-NLS-1$
+            "int2up", //$NON-NLS-1$
+            "int2vectoreq", //$NON-NLS-1$
+            "int2vectorin", //$NON-NLS-1$
+            "int2vectorout", //$NON-NLS-1$
+            "int2vectorrecv", //$NON-NLS-1$
+            "int2vectorsend", //$NON-NLS-1$
+            "int2xor", //$NON-NLS-1$
+            "int4", //$NON-NLS-1$
+            "int42div", //$NON-NLS-1$
+            "int42eq", //$NON-NLS-1$
+            "int42ge", //$NON-NLS-1$
+            "int42gt", //$NON-NLS-1$
+            "int42le", //$NON-NLS-1$
+            "int42lt", //$NON-NLS-1$
+            "int42mi", //$NON-NLS-1$
+            "int42mul", //$NON-NLS-1$
+            "int42ne", //$NON-NLS-1$
+            "int42pl", //$NON-NLS-1$
+            "int48div", //$NON-NLS-1$
+            "int48eq", //$NON-NLS-1$
+            "int48ge", //$NON-NLS-1$
+            "int48gt", //$NON-NLS-1$
+            "int48le", //$NON-NLS-1$
+            "int48lt", //$NON-NLS-1$
+            "int48mi", //$NON-NLS-1$
+            "int48mul", //$NON-NLS-1$
+            "int48ne", //$NON-NLS-1$
+            "int48pl", //$NON-NLS-1$
+            "int4_accum", //$NON-NLS-1$
+            "int4_avg_accum", //$NON-NLS-1$
+            "int4_mul_cash", //$NON-NLS-1$
+            "int4_sum", //$NON-NLS-1$
+            "int4abs", //$NON-NLS-1$
+            "int4and", //$NON-NLS-1$
+            "int4div", //$NON-NLS-1$
+            "int4eq", //$NON-NLS-1$
+            "int4ge", //$NON-NLS-1$
+            "int4gt", //$NON-NLS-1$
+            "int4in", //$NON-NLS-1$
+            "int4inc", //$NON-NLS-1$
+            "int4larger", //$NON-NLS-1$
+            "int4le", //$NON-NLS-1$
+            "int4lt", //$NON-NLS-1$
+            "int4mi", //$NON-NLS-1$
+            "int4mod", //$NON-NLS-1$
+            "int4mul", //$NON-NLS-1$
+            "int4ne", //$NON-NLS-1$
+            "int4not", //$NON-NLS-1$
+            "int4or", //$NON-NLS-1$
+            "int4out", //$NON-NLS-1$
+            "int4pl", //$NON-NLS-1$
+            "int4range_canonical", //$NON-NLS-1$
+            "int4range_subdiff", //$NON-NLS-1$
+            "int4recv", //$NON-NLS-1$
+            "int4send", //$NON-NLS-1$
+            "int4shl", //$NON-NLS-1$
+            "int4shr", //$NON-NLS-1$
+            "int4smaller", //$NON-NLS-1$
+            "int4um", //$NON-NLS-1$
+            "int4up", //$NON-NLS-1$
+            "int4xor", //$NON-NLS-1$
+            "int8", //$NON-NLS-1$
+            "int82div", //$NON-NLS-1$
+            "int82eq", //$NON-NLS-1$
+            "int82ge", //$NON-NLS-1$
+            "int82gt", //$NON-NLS-1$
+            "int82le", //$NON-NLS-1$
+            "int82lt", //$NON-NLS-1$
+            "int82mi", //$NON-NLS-1$
+            "int82mul", //$NON-NLS-1$
+            "int82ne", //$NON-NLS-1$
+            "int82pl", //$NON-NLS-1$
+            "int84div", //$NON-NLS-1$
+            "int84eq", //$NON-NLS-1$
+            "int84ge", //$NON-NLS-1$
+            "int84gt", //$NON-NLS-1$
+            "int84le", //$NON-NLS-1$
+            "int84lt", //$NON-NLS-1$
+            "int84mi", //$NON-NLS-1$
+            "int84mul", //$NON-NLS-1$
+            "int84ne", //$NON-NLS-1$
+            "int84pl", //$NON-NLS-1$
+            "int8_accum", //$NON-NLS-1$
+            "int8_avg", //$NON-NLS-1$
+            "int8_avg_accum", //$NON-NLS-1$
+            "int8_sum", //$NON-NLS-1$
+            "int8abs", //$NON-NLS-1$
+            "int8and", //$NON-NLS-1$
+            "int8div", //$NON-NLS-1$
+            "int8eq", //$NON-NLS-1$
+            "int8ge", //$NON-NLS-1$
+            "int8gt", //$NON-NLS-1$
+            "int8in", //$NON-NLS-1$
+            "int8inc", //$NON-NLS-1$
+            "int8inc_any", //$NON-NLS-1$
+            "int8inc_float8_float8", //$NON-NLS-1$
+            "int8larger", //$NON-NLS-1$
+            "int8le", //$NON-NLS-1$
+            "int8lt", //$NON-NLS-1$
+            "int8mi", //$NON-NLS-1$
+            "int8mod", //$NON-NLS-1$
+            "int8mul", //$NON-NLS-1$
+            "int8ne", //$NON-NLS-1$
+            "int8not", //$NON-NLS-1$
+            "int8or", //$NON-NLS-1$
+            "int8out", //$NON-NLS-1$
+            "int8pl", //$NON-NLS-1$
+            "int8pl_inet", //$NON-NLS-1$
+            "int8range_canonical", //$NON-NLS-1$
+            "int8range_subdiff", //$NON-NLS-1$
+            "int8recv", //$NON-NLS-1$
+            "int8send", //$NON-NLS-1$
+            "int8shl", //$NON-NLS-1$
+            "int8shr", //$NON-NLS-1$
+            "int8smaller", //$NON-NLS-1$
+            "int8um", //$NON-NLS-1$
+            "int8up", //$NON-NLS-1$
+            "int8xor", //$NON-NLS-1$
+            "integer_pl_date", //$NON-NLS-1$
+            "inter_lb", //$NON-NLS-1$
+            "inter_sb", //$NON-NLS-1$
+            "inter_sl", //$NON-NLS-1$
+            "internal_in", //$NON-NLS-1$
+            "internal_out", //$NON-NLS-1$
+            "interval_accum", //$NON-NLS-1$
+            "interval_avg", //$NON-NLS-1$
+            "interval_cmp", //$NON-NLS-1$
+            "interval_div", //$NON-NLS-1$
+            "interval_eq", //$NON-NLS-1$
+            "interval_ge", //$NON-NLS-1$
+            "interval_gt", //$NON-NLS-1$
+            "interval_hash", //$NON-NLS-1$
+            "interval_in", //$NON-NLS-1$
+            "interval_larger", //$NON-NLS-1$
+            "interval_le", //$NON-NLS-1$
+            "interval_lt", //$NON-NLS-1$
+            "interval_mi", //$NON-NLS-1$
+            "interval_mul", //$NON-NLS-1$
+            "interval_ne", //$NON-NLS-1$
+            "interval_out", //$NON-NLS-1$
+            "interval_pl", //$NON-NLS-1$
+            "interval_pl_date", //$NON-NLS-1$
+            "interval_pl_time", //$NON-NLS-1$
+            "interval_pl_timestamp", //$NON-NLS-1$
+            "interval_pl_timestamptz", //$NON-NLS-1$
+            "interval_pl_timetz", //$NON-NLS-1$
+            "interval_recv", //$NON-NLS-1$
+            "interval_send", //$NON-NLS-1$
+            "interval_smaller", //$NON-NLS-1$
+            "interval_transform", //$NON-NLS-1$
+            "interval_um", //$NON-NLS-1$
+            "intervaltypmodin", //$NON-NLS-1$
+            "intervaltypmodout", //$NON-NLS-1$
+            "intinterval", //$NON-NLS-1$
+            "isclosed", //$NON-NLS-1$
+            "isempty", //$NON-NLS-1$
+            "isfinite", //$NON-NLS-1$
+            "ishorizontal", //$NON-NLS-1$
+            "iso8859_1_to_utf8", //$NON-NLS-1$
+            "iso8859_to_utf8", //$NON-NLS-1$
+            "iso_to_koi8r", //$NON-NLS-1$
+            "iso_to_mic", //$NON-NLS-1$
+            "iso_to_win1251", //$NON-NLS-1$
+            "iso_to_win866", //$NON-NLS-1$
+            "isopen", //$NON-NLS-1$
+            "isparallel", //$NON-NLS-1$
+            "isperp", //$NON-NLS-1$
+            "isvertical", //$NON-NLS-1$
+            "johab_to_utf8", //$NON-NLS-1$
+            "json_agg", //$NON-NLS-1$
+            "json_agg_finalfn", //$NON-NLS-1$
+            "json_agg_transfn", //$NON-NLS-1$
+            "json_array_element", //$NON-NLS-1$
+            "json_array_element_text", //$NON-NLS-1$
+            "json_array_elements", //$NON-NLS-1$
+            "json_array_length", //$NON-NLS-1$
+            "json_each", //$NON-NLS-1$
+            "json_each_text", //$NON-NLS-1$
+            "json_extract_path", //$NON-NLS-1$
+            "json_extract_path_op", //$NON-NLS-1$
+            "json_extract_path_text", //$NON-NLS-1$
+            "json_extract_path_text_op", //$NON-NLS-1$
+            "json_in", //$NON-NLS-1$
+            "json_object_field", //$NON-NLS-1$
+            "json_object_field_text", //$NON-NLS-1$
+            "json_object_keys", //$NON-NLS-1$
+            "json_out", //$NON-NLS-1$
+            "json_populate_record", //$NON-NLS-1$
+            "json_populate_recordset", //$NON-NLS-1$
+            "json_recv", //$NON-NLS-1$
+            "json_send", //$NON-NLS-1$
+            "justify_days", //$NON-NLS-1$
+            "justify_hours", //$NON-NLS-1$
+            "justify_interval", //$NON-NLS-1$
+            "koi8r_to_iso", //$NON-NLS-1$
+            "koi8r_to_mic", //$NON-NLS-1$
+            "koi8r_to_utf8", //$NON-NLS-1$
+            "koi8r_to_win1251", //$NON-NLS-1$
+            "koi8r_to_win866", //$NON-NLS-1$
+            "koi8u_to_utf8", //$NON-NLS-1$
+            "lag", //$NON-NLS-1$
+            "language_handler_in", //$NON-NLS-1$
+            "language_handler_out", //$NON-NLS-1$
+            "last_value", //$NON-NLS-1$
+            "lastval", //$NON-NLS-1$
+            "latin1_to_mic", //$NON-NLS-1$
+            "latin2_to_mic", //$NON-NLS-1$
+            "latin2_to_win1250", //$NON-NLS-1$
+            "latin3_to_mic", //$NON-NLS-1$
+            "latin4_to_mic", //$NON-NLS-1$
+            "lead", //$NON-NLS-1$
+            "length", //$NON-NLS-1$
+            "like_escape", //$NON-NLS-1$
+            "likejoinsel", //$NON-NLS-1$
+            "likesel", //$NON-NLS-1$
+            "line_distance", //$NON-NLS-1$
+            "line_eq", //$NON-NLS-1$
+            "line_horizontal", //$NON-NLS-1$
+            "line_in", //$NON-NLS-1$
+            "line_interpt", //$NON-NLS-1$
+            "line_intersect", //$NON-NLS-1$
+            "line_out", //$NON-NLS-1$
+            "line_parallel", //$NON-NLS-1$
+            "line_perp", //$NON-NLS-1$
+            "line_recv", //$NON-NLS-1$
+            "line_send", //$NON-NLS-1$
+            "line_vertical", //$NON-NLS-1$
+            "ln", //$NON-NLS-1$
+            "lo_close", //$NON-NLS-1$
+            "lo_creat", //$NON-NLS-1$
+            "lo_create", //$NON-NLS-1$
+            "lo_export", //$NON-NLS-1$
+            "lo_import", //$NON-NLS-1$
+            "lo_lseek", //$NON-NLS-1$
+            "lo_lseek64", //$NON-NLS-1$
+            "lo_open", //$NON-NLS-1$
+            "lo_tell", //$NON-NLS-1$
+            "lo_tell64", //$NON-NLS-1$
+            "lo_truncate", //$NON-NLS-1$
+            "lo_truncate64", //$NON-NLS-1$
+            "lo_unlink", //$NON-NLS-1$
+            "log", //$NON-NLS-1$
+            "loread", //$NON-NLS-1$
+            "lower", //$NON-NLS-1$
+            "lower_inc", //$NON-NLS-1$
+            "lower_inf", //$NON-NLS-1$
+            "lowrite", //$NON-NLS-1$
+            "lpad", //$NON-NLS-1$
+            "lseg_center", //$NON-NLS-1$
+            "lseg_distance", //$NON-NLS-1$
+            "lseg_eq", //$NON-NLS-1$
+            "lseg_ge", //$NON-NLS-1$
+            "lseg_gt", //$NON-NLS-1$
+            "lseg_horizontal", //$NON-NLS-1$
+            "lseg_in", //$NON-NLS-1$
+            "lseg_interpt", //$NON-NLS-1$
+            "lseg_intersect", //$NON-NLS-1$
+            "lseg_le", //$NON-NLS-1$
+            "lseg_length", //$NON-NLS-1$
+            "lseg_lt", //$NON-NLS-1$
+            "lseg_ne", //$NON-NLS-1$
+            "lseg_out", //$NON-NLS-1$
+            "lseg_parallel", //$NON-NLS-1$
+            "lseg_perp", //$NON-NLS-1$
+            "lseg_recv", //$NON-NLS-1$
+            "lseg_send", //$NON-NLS-1$
+            "lseg_vertical", //$NON-NLS-1$
+            "ltrim", //$NON-NLS-1$
+            "macaddr_and", //$NON-NLS-1$
+            "macaddr_cmp", //$NON-NLS-1$
+            "macaddr_eq", //$NON-NLS-1$
+            "macaddr_ge", //$NON-NLS-1$
+            "macaddr_gt", //$NON-NLS-1$
+            "macaddr_in", //$NON-NLS-1$
+            "macaddr_le", //$NON-NLS-1$
+            "macaddr_lt", //$NON-NLS-1$
+            "macaddr_ne", //$NON-NLS-1$
+            "macaddr_not", //$NON-NLS-1$
+            "macaddr_or", //$NON-NLS-1$
+            "macaddr_out", //$NON-NLS-1$
+            "macaddr_recv", //$NON-NLS-1$
+            "macaddr_send", //$NON-NLS-1$
+            "makeaclitem", //$NON-NLS-1$
+            "masklen", //$NON-NLS-1$
+            "max", //$NON-NLS-1$
+            "md5", //$NON-NLS-1$
+            "mic_to_ascii", //$NON-NLS-1$
+            "mic_to_big5", //$NON-NLS-1$
+            "mic_to_euc_cn", //$NON-NLS-1$
+            "mic_to_euc_jp", //$NON-NLS-1$
+            "mic_to_euc_kr", //$NON-NLS-1$
+            "mic_to_euc_tw", //$NON-NLS-1$
+            "mic_to_iso", //$NON-NLS-1$
+            "mic_to_koi8r", //$NON-NLS-1$
+            "mic_to_latin1", //$NON-NLS-1$
+            "mic_to_latin2", //$NON-NLS-1$
+            "mic_to_latin3", //$NON-NLS-1$
+            "mic_to_latin4", //$NON-NLS-1$
+            "mic_to_sjis", //$NON-NLS-1$
+            "mic_to_win1250", //$NON-NLS-1$
+            "mic_to_win1251", //$NON-NLS-1$
+            "mic_to_win866", //$NON-NLS-1$
+            "min", //$NON-NLS-1$
+            "mktinterval", //$NON-NLS-1$
+            "mod", //$NON-NLS-1$
+            "mul_d_interval", //$NON-NLS-1$
+            "nameeq", //$NON-NLS-1$
+            "namege", //$NON-NLS-1$
+            "namegt", //$NON-NLS-1$
+            "nameiclike", //$NON-NLS-1$
+            "nameicnlike", //$NON-NLS-1$
+            "nameicregexeq", //$NON-NLS-1$
+            "nameicregexne", //$NON-NLS-1$
+            "namein", //$NON-NLS-1$
+            "namele", //$NON-NLS-1$
+            "namelike", //$NON-NLS-1$
+            "namelt", //$NON-NLS-1$
+            "namene", //$NON-NLS-1$
+            "namenlike", //$NON-NLS-1$
+            "nameout", //$NON-NLS-1$
+            "namerecv", //$NON-NLS-1$
+            "nameregexeq", //$NON-NLS-1$
+            "nameregexne", //$NON-NLS-1$
+            "namesend", //$NON-NLS-1$
+            "neqjoinsel", //$NON-NLS-1$
+            "neqsel", //$NON-NLS-1$
+            "netmask", //$NON-NLS-1$
+            "network", //$NON-NLS-1$
+            "network_cmp", //$NON-NLS-1$
+            "network_eq", //$NON-NLS-1$
+            "network_ge", //$NON-NLS-1$
+            "network_gt", //$NON-NLS-1$
+            "network_le", //$NON-NLS-1$
+            "network_lt", //$NON-NLS-1$
+            "network_ne", //$NON-NLS-1$
+            "network_sub", //$NON-NLS-1$
+            "network_subeq", //$NON-NLS-1$
+            "network_sup", //$NON-NLS-1$
+            "network_supeq", //$NON-NLS-1$
+            "nextval", //$NON-NLS-1$
+            "nlikejoinsel", //$NON-NLS-1$
+            "nlikesel", //$NON-NLS-1$
+            "notlike", //$NON-NLS-1$
+            "now", //$NON-NLS-1$
+            "npoints", //$NON-NLS-1$
+            "nth_value", //$NON-NLS-1$
+            "ntile", //$NON-NLS-1$
+            "numeric_abs", //$NON-NLS-1$
+            "numeric_accum", //$NON-NLS-1$
+            "numeric_add", //$NON-NLS-1$
+            "numeric_avg", //$NON-NLS-1$
+            "numeric_avg_accum", //$NON-NLS-1$
+            "numeric_cmp", //$NON-NLS-1$
+            "numeric_div", //$NON-NLS-1$
+            "numeric_div_trunc", //$NON-NLS-1$
+            "numeric_eq", //$NON-NLS-1$
+            "numeric_exp", //$NON-NLS-1$
+            "numeric_fac", //$NON-NLS-1$
+            "numeric_ge", //$NON-NLS-1$
+            "numeric_gt", //$NON-NLS-1$
+            "numeric_in", //$NON-NLS-1$
+            "numeric_inc", //$NON-NLS-1$
+            "numeric_larger", //$NON-NLS-1$
+            "numeric_le", //$NON-NLS-1$
+            "numeric_ln", //$NON-NLS-1$
+            "numeric_log", //$NON-NLS-1$
+            "numeric_lt", //$NON-NLS-1$
+            "numeric_mod", //$NON-NLS-1$
+            "numeric_mul", //$NON-NLS-1$
+            "numeric_ne", //$NON-NLS-1$
+            "numeric_out", //$NON-NLS-1$
+            "numeric_power", //$NON-NLS-1$
+            "numeric_recv", //$NON-NLS-1$
+            "numeric_send", //$NON-NLS-1$
+            "numeric_smaller", //$NON-NLS-1$
+            "numeric_sqrt", //$NON-NLS-1$
+            "numeric_stddev_pop", //$NON-NLS-1$
+            "numeric_stddev_samp", //$NON-NLS-1$
+            "numeric_sub", //$NON-NLS-1$
+            "numeric_transform", //$NON-NLS-1$
+            "numeric_uminus", //$NON-NLS-1$
+            "numeric_uplus", //$NON-NLS-1$
+            "numeric_var_pop", //$NON-NLS-1$
+            "numeric_var_samp", //$NON-NLS-1$
+            "numerictypmodin", //$NON-NLS-1$
+            "numerictypmodout", //$NON-NLS-1$
+            "numnode", //$NON-NLS-1$
+            "numrange_subdiff", //$NON-NLS-1$
+            "obj_description", //$NON-NLS-1$
+            "octet_length", //$NON-NLS-1$
+            "oideq", //$NON-NLS-1$
+            "oidge", //$NON-NLS-1$
+            "oidgt", //$NON-NLS-1$
+            "oidin", //$NON-NLS-1$
+            "oidlarger", //$NON-NLS-1$
+            "oidle", //$NON-NLS-1$
+            "oidlt", //$NON-NLS-1$
+            "oidne", //$NON-NLS-1$
+            "oidout", //$NON-NLS-1$
+            "oidrecv", //$NON-NLS-1$
+            "oidsend", //$NON-NLS-1$
+            "oidsmaller", //$NON-NLS-1$
+            "oidvectoreq", //$NON-NLS-1$
+            "oidvectorge", //$NON-NLS-1$
+            "oidvectorgt", //$NON-NLS-1$
+            "oidvectorin", //$NON-NLS-1$
+            "oidvectorle", //$NON-NLS-1$
+            "oidvectorlt", //$NON-NLS-1$
+            "oidvectorne", //$NON-NLS-1$
+            "oidvectorout", //$NON-NLS-1$
+            "oidvectorrecv", //$NON-NLS-1$
+            "oidvectorsend", //$NON-NLS-1$
+            "oidvectortypes", //$NON-NLS-1$
+            "on_pb", //$NON-NLS-1$
+            "on_pl", //$NON-NLS-1$
+            "on_ppath", //$NON-NLS-1$
+            "on_ps", //$NON-NLS-1$
+            "on_sb", //$NON-NLS-1$
+            "on_sl", //$NON-NLS-1$
+            "opaque_in", //$NON-NLS-1$
+            "opaque_out", //$NON-NLS-1$
+            "path_add", //$NON-NLS-1$
+            "path_add_pt", //$NON-NLS-1$
+            "path_center", //$NON-NLS-1$
+            "path_contain_pt", //$NON-NLS-1$
+            "path_distance", //$NON-NLS-1$
+            "path_div_pt", //$NON-NLS-1$
+            "path_in", //$NON-NLS-1$
+            "path_inter", //$NON-NLS-1$
+            "path_length", //$NON-NLS-1$
+            "path_mul_pt", //$NON-NLS-1$
+            "path_n_eq", //$NON-NLS-1$
+            "path_n_ge", //$NON-NLS-1$
+            "path_n_gt", //$NON-NLS-1$
+            "path_n_le", //$NON-NLS-1$
+            "path_n_lt", //$NON-NLS-1$
+            "path_npoints", //$NON-NLS-1$
+            "path_out", //$NON-NLS-1$
+            "path_recv", //$NON-NLS-1$
+            "path_send", //$NON-NLS-1$
+            "path_sub_pt", //$NON-NLS-1$
+            "pclose", //$NON-NLS-1$
+            "percent_rank", //$NON-NLS-1$
+            "pg_advisory_lock", //$NON-NLS-1$
+            "pg_advisory_lock_shared", //$NON-NLS-1$
+            "pg_advisory_unlock", //$NON-NLS-1$
+            "pg_advisory_unlock_all", //$NON-NLS-1$
+            "pg_advisory_unlock_shared", //$NON-NLS-1$
+            "pg_advisory_xact_lock", //$NON-NLS-1$
+            "pg_advisory_xact_lock_shared", //$NON-NLS-1$
+            "pg_available_extension_versions", //$NON-NLS-1$
+            "pg_available_extensions", //$NON-NLS-1$
+            "pg_backend_pid", //$NON-NLS-1$
+            "pg_backup_start_time", //$NON-NLS-1$
+            "pg_cancel_backend", //$NON-NLS-1$
+            "pg_char_to_encoding", //$NON-NLS-1$
+            "pg_client_encoding", //$NON-NLS-1$
+            "pg_collation_for", //$NON-NLS-1$
+            "pg_collation_is_visible", //$NON-NLS-1$
+            "pg_column_is_updatable", //$NON-NLS-1$
+            "pg_column_size", //$NON-NLS-1$
+            "pg_conf_load_time", //$NON-NLS-1$
+            "pg_conversion_is_visible", //$NON-NLS-1$
+            "pg_create_restore_point", //$NON-NLS-1$
+            "pg_current_xlog_insert_location", //$NON-NLS-1$
+            "pg_current_xlog_location", //$NON-NLS-1$
+            "pg_cursor", //$NON-NLS-1$
+            "pg_database_size", //$NON-NLS-1$
+            "pg_describe_object", //$NON-NLS-1$
+            "pg_encoding_max_length", //$NON-NLS-1$
+            "pg_encoding_to_char", //$NON-NLS-1$
+            "pg_event_trigger_dropped_objects", //$NON-NLS-1$
+            "pg_export_snapshot", //$NON-NLS-1$
+            "pg_extension_config_dump", //$NON-NLS-1$
+            "pg_extension_update_paths", //$NON-NLS-1$
+            "pg_function_is_visible", //$NON-NLS-1$
+            "pg_get_constraintdef", //$NON-NLS-1$
+            "pg_get_expr", //$NON-NLS-1$
+            "pg_get_function_arguments", //$NON-NLS-1$
+            "pg_get_function_identity_arguments", //$NON-NLS-1$
+            "pg_get_function_result", //$NON-NLS-1$
+            "pg_get_functiondef", //$NON-NLS-1$
+            "pg_get_indexdef", //$NON-NLS-1$
+            "pg_get_keywords", //$NON-NLS-1$
+            "pg_get_multixact_members", //$NON-NLS-1$
+            "pg_get_ruledef", //$NON-NLS-1$
+            "pg_get_serial_sequence", //$NON-NLS-1$
+            "pg_get_triggerdef", //$NON-NLS-1$
+            "pg_get_userbyid", //$NON-NLS-1$
+            "pg_get_viewdef", //$NON-NLS-1$
+            "pg_has_role", //$NON-NLS-1$
+            "pg_identify_object", //$NON-NLS-1$
+            "pg_indexes_size", //$NON-NLS-1$
+            "pg_is_in_backup", //$NON-NLS-1$
+            "pg_is_in_recovery", //$NON-NLS-1$
+            "pg_is_other_temp_schema", //$NON-NLS-1$
+            "pg_is_xlog_replay_paused", //$NON-NLS-1$
+            "pg_last_xact_replay_timestamp", //$NON-NLS-1$
+            "pg_last_xlog_receive_location", //$NON-NLS-1$
+            "pg_last_xlog_replay_location", //$NON-NLS-1$
+            "pg_listening_channels", //$NON-NLS-1$
+            "pg_lock_status", //$NON-NLS-1$
+            "pg_ls_dir", //$NON-NLS-1$
+            "pg_my_temp_schema", //$NON-NLS-1$
+            "pg_node_tree_in", //$NON-NLS-1$
+            "pg_node_tree_out", //$NON-NLS-1$
+            "pg_node_tree_recv", //$NON-NLS-1$
+            "pg_node_tree_send", //$NON-NLS-1$
+            "pg_notify", //$NON-NLS-1$
+            "pg_opclass_is_visible", //$NON-NLS-1$
+            "pg_operator_is_visible", //$NON-NLS-1$
+            "pg_opfamily_is_visible", //$NON-NLS-1$
+            "pg_options_to_table", //$NON-NLS-1$
+            "pg_postmaster_start_time", //$NON-NLS-1$
+            "pg_prepared_statement", //$NON-NLS-1$
+            "pg_prepared_xact", //$NON-NLS-1$
+            "pg_read_binary_file", //$NON-NLS-1$
+            "pg_read_file", //$NON-NLS-1$
+            "pg_relation_filenode", //$NON-NLS-1$
+            "pg_relation_filepath", //$NON-NLS-1$
+            "pg_relation_is_updatable", //$NON-NLS-1$
+            "pg_relation_size", //$NON-NLS-1$
+            "pg_reload_conf", //$NON-NLS-1$
+            "pg_rotate_logfile", //$NON-NLS-1$
+            "pg_sequence_parameters", //$NON-NLS-1$
+            "pg_show_all_settings", //$NON-NLS-1$
+            "pg_size_pretty", //$NON-NLS-1$
+            "pg_sleep", //$NON-NLS-1$
+            "pg_start_backup", //$NON-NLS-1$
+            "pg_stat_clear_snapshot", //$NON-NLS-1$
+            "pg_stat_file", //$NON-NLS-1$
+            "pg_stat_get_activity", //$NON-NLS-1$
+            "pg_stat_get_analyze_count", //$NON-NLS-1$
+            "pg_stat_get_autoanalyze_count", //$NON-NLS-1$
+            "pg_stat_get_autovacuum_count", //$NON-NLS-1$
+            "pg_stat_get_backend_activity", //$NON-NLS-1$
+            "pg_stat_get_backend_activity_start", //$NON-NLS-1$
+            "pg_stat_get_backend_client_addr", //$NON-NLS-1$
+            "pg_stat_get_backend_client_port", //$NON-NLS-1$
+            "pg_stat_get_backend_dbid", //$NON-NLS-1$
+            "pg_stat_get_backend_idset", //$NON-NLS-1$
+            "pg_stat_get_backend_pid", //$NON-NLS-1$
+            "pg_stat_get_backend_start", //$NON-NLS-1$
+            "pg_stat_get_backend_userid", //$NON-NLS-1$
+            "pg_stat_get_backend_waiting", //$NON-NLS-1$
+            "pg_stat_get_backend_xact_start", //$NON-NLS-1$
+            "pg_stat_get_bgwriter_buf_written_checkpoints", //$NON-NLS-1$
+            "pg_stat_get_bgwriter_buf_written_clean", //$NON-NLS-1$
+            "pg_stat_get_bgwriter_maxwritten_clean", //$NON-NLS-1$
+            "pg_stat_get_bgwriter_requested_checkpoints", //$NON-NLS-1$
+            "pg_stat_get_bgwriter_stat_reset_time", //$NON-NLS-1$
+            "pg_stat_get_bgwriter_timed_checkpoints", //$NON-NLS-1$
+            "pg_stat_get_blocks_fetched", //$NON-NLS-1$
+            "pg_stat_get_blocks_hit", //$NON-NLS-1$
+            "pg_stat_get_buf_alloc", //$NON-NLS-1$
+            "pg_stat_get_buf_fsync_backend", //$NON-NLS-1$
+            "pg_stat_get_buf_written_backend", //$NON-NLS-1$
+            "pg_stat_get_checkpoint_sync_time", //$NON-NLS-1$
+            "pg_stat_get_checkpoint_write_time", //$NON-NLS-1$
+            "pg_stat_get_db_blk_read_time", //$NON-NLS-1$
+            "pg_stat_get_db_blk_write_time", //$NON-NLS-1$
+            "pg_stat_get_db_blocks_fetched", //$NON-NLS-1$
+            "pg_stat_get_db_blocks_hit", //$NON-NLS-1$
+            "pg_stat_get_db_conflict_all", //$NON-NLS-1$
+            "pg_stat_get_db_conflict_bufferpin", //$NON-NLS-1$
+            "pg_stat_get_db_conflict_lock", //$NON-NLS-1$
+            "pg_stat_get_db_conflict_snapshot", //$NON-NLS-1$
+            "pg_stat_get_db_conflict_startup_deadlock", //$NON-NLS-1$
+            "pg_stat_get_db_conflict_tablespace", //$NON-NLS-1$
+            "pg_stat_get_db_deadlocks", //$NON-NLS-1$
+            "pg_stat_get_db_numbackends", //$NON-NLS-1$
+            "pg_stat_get_db_stat_reset_time", //$NON-NLS-1$
+            "pg_stat_get_db_temp_bytes", //$NON-NLS-1$
+            "pg_stat_get_db_temp_files", //$NON-NLS-1$
+            "pg_stat_get_db_tuples_deleted", //$NON-NLS-1$
+            "pg_stat_get_db_tuples_fetched", //$NON-NLS-1$
+            "pg_stat_get_db_tuples_inserted", //$NON-NLS-1$
+            "pg_stat_get_db_tuples_returned", //$NON-NLS-1$
+            "pg_stat_get_db_tuples_updated", //$NON-NLS-1$
+            "pg_stat_get_db_xact_commit", //$NON-NLS-1$
+            "pg_stat_get_db_xact_rollback", //$NON-NLS-1$
+            "pg_stat_get_dead_tuples", //$NON-NLS-1$
+            "pg_stat_get_function_calls", //$NON-NLS-1$
+            "pg_stat_get_function_self_time", //$NON-NLS-1$
+            "pg_stat_get_function_total_time", //$NON-NLS-1$
+            "pg_stat_get_last_analyze_time", //$NON-NLS-1$
+            "pg_stat_get_last_autoanalyze_time", //$NON-NLS-1$
+            "pg_stat_get_last_autovacuum_time", //$NON-NLS-1$
+            "pg_stat_get_last_vacuum_time", //$NON-NLS-1$
+            "pg_stat_get_live_tuples", //$NON-NLS-1$
+            "pg_stat_get_numscans", //$NON-NLS-1$
+            "pg_stat_get_tuples_deleted", //$NON-NLS-1$
+            "pg_stat_get_tuples_fetched", //$NON-NLS-1$
+            "pg_stat_get_tuples_hot_updated", //$NON-NLS-1$
+            "pg_stat_get_tuples_inserted", //$NON-NLS-1$
+            "pg_stat_get_tuples_returned", //$NON-NLS-1$
+            "pg_stat_get_tuples_updated", //$NON-NLS-1$
+            "pg_stat_get_vacuum_count", //$NON-NLS-1$
+            "pg_stat_get_wal_senders", //$NON-NLS-1$
+            "pg_stat_get_xact_blocks_fetched", //$NON-NLS-1$
+            "pg_stat_get_xact_blocks_hit", //$NON-NLS-1$
+            "pg_stat_get_xact_function_calls", //$NON-NLS-1$
+            "pg_stat_get_xact_function_self_time", //$NON-NLS-1$
+            "pg_stat_get_xact_function_total_time", //$NON-NLS-1$
+            "pg_stat_get_xact_numscans", //$NON-NLS-1$
+            "pg_stat_get_xact_tuples_deleted", //$NON-NLS-1$
+            "pg_stat_get_xact_tuples_fetched", //$NON-NLS-1$
+            "pg_stat_get_xact_tuples_hot_updated", //$NON-NLS-1$
+            "pg_stat_get_xact_tuples_inserted", //$NON-NLS-1$
+            "pg_stat_get_xact_tuples_returned", //$NON-NLS-1$
+            "pg_stat_get_xact_tuples_updated", //$NON-NLS-1$
+            "pg_stat_reset", //$NON-NLS-1$
+            "pg_stat_reset_shared", //$NON-NLS-1$
+            "pg_stat_reset_single_function_counters", //$NON-NLS-1$
+            "pg_stat_reset_single_table_counters", //$NON-NLS-1$
+            "pg_stop_backup", //$NON-NLS-1$
+            "pg_switch_xlog", //$NON-NLS-1$
+            "pg_table_is_visible", //$NON-NLS-1$
+            "pg_table_size", //$NON-NLS-1$
+            "pg_tablespace_databases", //$NON-NLS-1$
+            "pg_tablespace_location", //$NON-NLS-1$
+            "pg_tablespace_size", //$NON-NLS-1$
+            "pg_terminate_backend", //$NON-NLS-1$
+            "pg_timezone_abbrevs", //$NON-NLS-1$
+            "pg_timezone_names", //$NON-NLS-1$
+            "pg_total_relation_size", //$NON-NLS-1$
+            "pg_trigger_depth", //$NON-NLS-1$
+            "pg_try_advisory_lock", //$NON-NLS-1$
+            "pg_try_advisory_lock_shared", //$NON-NLS-1$
+            "pg_try_advisory_xact_lock", //$NON-NLS-1$
+            "pg_try_advisory_xact_lock_shared", //$NON-NLS-1$
+            "pg_ts_config_is_visible", //$NON-NLS-1$
+            "pg_ts_dict_is_visible", //$NON-NLS-1$
+            "pg_ts_parser_is_visible", //$NON-NLS-1$
+            "pg_ts_template_is_visible", //$NON-NLS-1$
+            "pg_type_is_visible", //$NON-NLS-1$
+            "pg_typeof", //$NON-NLS-1$
+            "pg_xlog_location_diff", //$NON-NLS-1$
+            "pg_xlog_replay_pause", //$NON-NLS-1$
+            "pg_xlog_replay_resume", //$NON-NLS-1$
+            "pg_xlogfile_name", //$NON-NLS-1$
+            "pg_xlogfile_name_offset", //$NON-NLS-1$
+            "pi", //$NON-NLS-1$
+            "plainto_tsquery", //$NON-NLS-1$
+            "plpgsql_call_handler", //$NON-NLS-1$
+            "plpgsql_inline_handler", //$NON-NLS-1$
+            "plpgsql_validator", //$NON-NLS-1$
+            "point_above", //$NON-NLS-1$
+            "point_add", //$NON-NLS-1$
+            "point_below", //$NON-NLS-1$
+            "point_distance", //$NON-NLS-1$
+            "point_div", //$NON-NLS-1$
+            "point_eq", //$NON-NLS-1$
+            "point_horiz", //$NON-NLS-1$
+            "point_in", //$NON-NLS-1$
+            "point_left", //$NON-NLS-1$
+            "point_mul", //$NON-NLS-1$
+            "point_ne", //$NON-NLS-1$
+            "point_out", //$NON-NLS-1$
+            "point_recv", //$NON-NLS-1$
+            "point_right", //$NON-NLS-1$
+            "point_send", //$NON-NLS-1$
+            "point_sub", //$NON-NLS-1$
+            "point_vert", //$NON-NLS-1$
+            "poly_above", //$NON-NLS-1$
+            "poly_below", //$NON-NLS-1$
+            "poly_center", //$NON-NLS-1$
+            "poly_contain", //$NON-NLS-1$
+            "poly_contain_pt", //$NON-NLS-1$
+            "poly_contained", //$NON-NLS-1$
+            "poly_distance", //$NON-NLS-1$
+            "poly_in", //$NON-NLS-1$
+            "poly_left", //$NON-NLS-1$
+            "poly_npoints", //$NON-NLS-1$
+            "poly_out", //$NON-NLS-1$
+            "poly_overabove", //$NON-NLS-1$
+            "poly_overbelow", //$NON-NLS-1$
+            "poly_overlap", //$NON-NLS-1$
+            "poly_overleft", //$NON-NLS-1$
+            "poly_overright", //$NON-NLS-1$
+            "poly_recv", //$NON-NLS-1$
+            "poly_right", //$NON-NLS-1$
+            "poly_same", //$NON-NLS-1$
+            "poly_send", //$NON-NLS-1$
+            "popen", //$NON-NLS-1$
+            "positionjoinsel", //$NON-NLS-1$
+            "positionsel", //$NON-NLS-1$
+            "postgresql_fdw_validator", //$NON-NLS-1$
+            "pow", //$NON-NLS-1$
+            "power", //$NON-NLS-1$
+            "prsd_end", //$NON-NLS-1$
+            "prsd_headline", //$NON-NLS-1$
+            "prsd_lextype", //$NON-NLS-1$
+            "prsd_nexttoken", //$NON-NLS-1$
+            "prsd_start", //$NON-NLS-1$
+            "pt_contained_circle", //$NON-NLS-1$
+            "pt_contained_poly", //$NON-NLS-1$
+            "query_to_xml", //$NON-NLS-1$
+            "query_to_xml_and_xmlschema", //$NON-NLS-1$
+            "query_to_xmlschema", //$NON-NLS-1$
+            "querytree", //$NON-NLS-1$
+            "quote_ident", //$NON-NLS-1$
+            "quote_literal", //$NON-NLS-1$
+            "quote_nullable", //$NON-NLS-1$
+            "radians", //$NON-NLS-1$
+            "radius", //$NON-NLS-1$
+            "random", //$NON-NLS-1$
+            "range_adjacent", //$NON-NLS-1$
+            "range_after", //$NON-NLS-1$
+            "range_before", //$NON-NLS-1$
+            "range_cmp", //$NON-NLS-1$
+            "range_contained_by", //$NON-NLS-1$
+            "range_contains", //$NON-NLS-1$
+            "range_contains_elem", //$NON-NLS-1$
+            "range_eq", //$NON-NLS-1$
+            "range_ge", //$NON-NLS-1$
+            "range_gist_compress", //$NON-NLS-1$
+            "range_gist_consistent", //$NON-NLS-1$
+            "range_gist_decompress", //$NON-NLS-1$
+            "range_gist_penalty", //$NON-NLS-1$
+            "range_gist_picksplit", //$NON-NLS-1$
+            "range_gist_same", //$NON-NLS-1$
+            "range_gist_union", //$NON-NLS-1$
+            "range_gt", //$NON-NLS-1$
+            "range_in", //$NON-NLS-1$
+            "range_intersect", //$NON-NLS-1$
+            "range_le", //$NON-NLS-1$
+            "range_lt", //$NON-NLS-1$
+            "range_minus", //$NON-NLS-1$
+            "range_ne", //$NON-NLS-1$
+            "range_out", //$NON-NLS-1$
+            "range_overlaps", //$NON-NLS-1$
+            "range_overleft", //$NON-NLS-1$
+            "range_overright", //$NON-NLS-1$
+            "range_recv", //$NON-NLS-1$
+            "range_send", //$NON-NLS-1$
+            "range_typanalyze", //$NON-NLS-1$
+            "range_union", //$NON-NLS-1$
+            "rangesel", //$NON-NLS-1$
+            "rank", //$NON-NLS-1$
+            "record_eq", //$NON-NLS-1$
+            "record_ge", //$NON-NLS-1$
+            "record_gt", //$NON-NLS-1$
+            "record_in", //$NON-NLS-1$
+            "record_le", //$NON-NLS-1$
+            "record_lt", //$NON-NLS-1$
+            "record_ne", //$NON-NLS-1$
+            "record_out", //$NON-NLS-1$
+            "record_recv", //$NON-NLS-1$
+            "record_send", //$NON-NLS-1$
+            "regclassin", //$NON-NLS-1$
+            "regclassout", //$NON-NLS-1$
+            "regclassrecv", //$NON-NLS-1$
+            "regclasssend", //$NON-NLS-1$
+            "regconfigin", //$NON-NLS-1$
+            "regconfigout", //$NON-NLS-1$
+            "regconfigrecv", //$NON-NLS-1$
+            "regconfigsend", //$NON-NLS-1$
+            "regdictionaryin", //$NON-NLS-1$
+            "regdictionaryout", //$NON-NLS-1$
+            "regdictionaryrecv", //$NON-NLS-1$
+            "regdictionarysend", //$NON-NLS-1$
+            "regexeqjoinsel", //$NON-NLS-1$
+            "regexeqsel", //$NON-NLS-1$
+            "regexnejoinsel", //$NON-NLS-1$
+            "regexnesel", //$NON-NLS-1$
+            "regexp_matches", //$NON-NLS-1$
+            "regexp_replace", //$NON-NLS-1$
+            "regexp_split_to_array", //$NON-NLS-1$
+            "regexp_split_to_table", //$NON-NLS-1$
+            "regoperatorin", //$NON-NLS-1$
+            "regoperatorout", //$NON-NLS-1$
+            "regoperatorrecv", //$NON-NLS-1$
+            "regoperatorsend", //$NON-NLS-1$
+            "regoperin", //$NON-NLS-1$
+            "regoperout", //$NON-NLS-1$
+            "regoperrecv", //$NON-NLS-1$
+            "regopersend", //$NON-NLS-1$
+            "regprocedurein", //$NON-NLS-1$
+            "regprocedureout", //$NON-NLS-1$
+            "regprocedurerecv", //$NON-NLS-1$
+            "regproceduresend", //$NON-NLS-1$
+            "regprocin", //$NON-NLS-1$
+            "regprocout", //$NON-NLS-1$
+            "regprocrecv", //$NON-NLS-1$
+            "regprocsend", //$NON-NLS-1$
+            "regr_avgx", //$NON-NLS-1$
+            "regr_avgy", //$NON-NLS-1$
+            "regr_count", //$NON-NLS-1$
+            "regr_intercept", //$NON-NLS-1$
+            "regr_r2", //$NON-NLS-1$
+            "regr_slope", //$NON-NLS-1$
+            "regr_sxx", //$NON-NLS-1$
+            "regr_sxy", //$NON-NLS-1$
+            "regr_syy", //$NON-NLS-1$
+            "regtypein", //$NON-NLS-1$
+            "regtypeout", //$NON-NLS-1$
+            "regtyperecv", //$NON-NLS-1$
+            "regtypesend", //$NON-NLS-1$
+            "reltimeeq", //$NON-NLS-1$
+            "reltimege", //$NON-NLS-1$
+            "reltimegt", //$NON-NLS-1$
+            "reltimein", //$NON-NLS-1$
+            "reltimele", //$NON-NLS-1$
+            "reltimelt", //$NON-NLS-1$
+            "reltimene", //$NON-NLS-1$
+            "reltimeout", //$NON-NLS-1$
+            "reltimerecv", //$NON-NLS-1$
+            "reltimesend", //$NON-NLS-1$
+            "repeat", //$NON-NLS-1$
+            "reverse", //$NON-NLS-1$
+            "round", //$NON-NLS-1$
+            "row_number", //$NON-NLS-1$
+            "row_to_json", //$NON-NLS-1$
+            "rpad", //$NON-NLS-1$
+            "rtrim", //$NON-NLS-1$
+            "scalargtjoinsel", //$NON-NLS-1$
+            "scalargtsel", //$NON-NLS-1$
+            "scalarltjoinsel", //$NON-NLS-1$
+            "scalarltsel", //$NON-NLS-1$
+            "schema_to_xml", //$NON-NLS-1$
+            "schema_to_xml_and_xmlschema", //$NON-NLS-1$
+            "schema_to_xmlschema", //$NON-NLS-1$
+            "set_bit", //$NON-NLS-1$
+            "set_byte", //$NON-NLS-1$
+            "set_config", //$NON-NLS-1$
+            "set_masklen", //$NON-NLS-1$
+            "setseed", //$NON-NLS-1$
+            "setval", //$NON-NLS-1$
+            "setweight", //$NON-NLS-1$
+            "shell_in", //$NON-NLS-1$
+            "shell_out", //$NON-NLS-1$
+            "shift_jis_2004_to_euc_jis_2004", //$NON-NLS-1$
+            "shift_jis_2004_to_utf8", //$NON-NLS-1$
+            "shobj_description", //$NON-NLS-1$
+            "sign", //$NON-NLS-1$
+            "similar_escape", //$NON-NLS-1$
+            "sin", //$NON-NLS-1$
+            "sjis_to_euc_jp", //$NON-NLS-1$
+            "sjis_to_mic", //$NON-NLS-1$
+            "sjis_to_utf8", //$NON-NLS-1$
+            "slope", //$NON-NLS-1$
+            "smgreq", //$NON-NLS-1$
+            "smgrin", //$NON-NLS-1$
+            "smgrne", //$NON-NLS-1$
+            "smgrout", //$NON-NLS-1$
+            "spg_kd_choose", //$NON-NLS-1$
+            "spg_kd_config", //$NON-NLS-1$
+            "spg_kd_inner_consistent", //$NON-NLS-1$
+            "spg_kd_picksplit", //$NON-NLS-1$
+            "spg_quad_choose", //$NON-NLS-1$
+            "spg_quad_config", //$NON-NLS-1$
+            "spg_quad_inner_consistent", //$NON-NLS-1$
+            "spg_quad_leaf_consistent", //$NON-NLS-1$
+            "spg_quad_picksplit", //$NON-NLS-1$
+            "spg_range_quad_choose", //$NON-NLS-1$
+            "spg_range_quad_config", //$NON-NLS-1$
+            "spg_range_quad_inner_consistent", //$NON-NLS-1$
+            "spg_range_quad_leaf_consistent", //$NON-NLS-1$
+            "spg_range_quad_picksplit", //$NON-NLS-1$
+            "spg_text_choose", //$NON-NLS-1$
+            "spg_text_config", //$NON-NLS-1$
+            "spg_text_inner_consistent", //$NON-NLS-1$
+            "spg_text_leaf_consistent", //$NON-NLS-1$
+            "spg_text_picksplit", //$NON-NLS-1$
+            "spgbeginscan", //$NON-NLS-1$
+            "spgbuild", //$NON-NLS-1$
+            "spgbuildempty", //$NON-NLS-1$
+            "spgbulkdelete", //$NON-NLS-1$
+            "spgcanreturn", //$NON-NLS-1$
+            "spgcostestimate", //$NON-NLS-1$
+            "spgendscan", //$NON-NLS-1$
+            "spggetbitmap", //$NON-NLS-1$
+            "spggettuple", //$NON-NLS-1$
+            "spginsert", //$NON-NLS-1$
+            "spgmarkpos", //$NON-NLS-1$
+            "spgoptions", //$NON-NLS-1$
+            "spgrescan", //$NON-NLS-1$
+            "spgrestrpos", //$NON-NLS-1$
+            "spgvacuumcleanup", //$NON-NLS-1$
+            "split_part", //$NON-NLS-1$
+            "sqrt", //$NON-NLS-1$
+            "statement_timestamp", //$NON-NLS-1$
+            "stddev", //$NON-NLS-1$
+            "stddev_pop", //$NON-NLS-1$
+            "stddev_samp", //$NON-NLS-1$
+            "string_agg", //$NON-NLS-1$
+            "string_agg_finalfn", //$NON-NLS-1$
+            "string_agg_transfn", //$NON-NLS-1$
+            "string_to_array", //$NON-NLS-1$
+            "strpos", //$NON-NLS-1$
+            "substr", //$NON-NLS-1$
+            "sum", //$NON-NLS-1$
+            "suppress_redundant_updates_trigger", //$NON-NLS-1$
+            "table_to_xml", //$NON-NLS-1$
+            "table_to_xml_and_xmlschema", //$NON-NLS-1$
+            "table_to_xmlschema", //$NON-NLS-1$
+            "tan", //$NON-NLS-1$
+            "text_ge", //$NON-NLS-1$
+            "text_gt", //$NON-NLS-1$
+            "text_larger", //$NON-NLS-1$
+            "text_le", //$NON-NLS-1$
+            "text_lt", //$NON-NLS-1$
+            "text_pattern_ge", //$NON-NLS-1$
+            "text_pattern_gt", //$NON-NLS-1$
+            "text_pattern_le", //$NON-NLS-1$
+            "text_pattern_lt", //$NON-NLS-1$
+            "text_smaller", //$NON-NLS-1$
+            "textanycat", //$NON-NLS-1$
+            "textcat", //$NON-NLS-1$
+            "texteq", //$NON-NLS-1$
+            "texticlike", //$NON-NLS-1$
+            "texticnlike", //$NON-NLS-1$
+            "texticregexeq", //$NON-NLS-1$
+            "texticregexne", //$NON-NLS-1$
+            "textin", //$NON-NLS-1$
+            "textlen", //$NON-NLS-1$
+            "textlike", //$NON-NLS-1$
+            "textne", //$NON-NLS-1$
+            "textnlike", //$NON-NLS-1$
+            "textout", //$NON-NLS-1$
+            "textrecv", //$NON-NLS-1$
+            "textregexeq", //$NON-NLS-1$
+            "textregexne", //$NON-NLS-1$
+            "textsend", //$NON-NLS-1$
+            "thesaurus_init", //$NON-NLS-1$
+            "thesaurus_lexize", //$NON-NLS-1$
+            "tideq", //$NON-NLS-1$
+            "tidge", //$NON-NLS-1$
+            "tidgt", //$NON-NLS-1$
+            "tidin", //$NON-NLS-1$
+            "tidlarger", //$NON-NLS-1$
+            "tidle", //$NON-NLS-1$
+            "tidlt", //$NON-NLS-1$
+            "tidne", //$NON-NLS-1$
+            "tidout", //$NON-NLS-1$
+            "tidrecv", //$NON-NLS-1$
+            "tidsend", //$NON-NLS-1$
+            "tidsmaller", //$NON-NLS-1$
+            "time_cmp", //$NON-NLS-1$
+            "time_eq", //$NON-NLS-1$
+            "time_ge", //$NON-NLS-1$
+            "time_gt", //$NON-NLS-1$
+            "time_hash", //$NON-NLS-1$
+            "time_in", //$NON-NLS-1$
+            "time_larger", //$NON-NLS-1$
+            "time_le", //$NON-NLS-1$
+            "time_lt", //$NON-NLS-1$
+            "time_mi_interval", //$NON-NLS-1$
+            "time_mi_time", //$NON-NLS-1$
+            "time_ne", //$NON-NLS-1$
+            "time_out", //$NON-NLS-1$
+            "time_pl_interval", //$NON-NLS-1$
+            "time_recv", //$NON-NLS-1$
+            "time_send", //$NON-NLS-1$
+            "time_smaller", //$NON-NLS-1$
+            "time_transform", //$NON-NLS-1$
+            "timedate_pl", //$NON-NLS-1$
+            "timemi", //$NON-NLS-1$
+            "timenow", //$NON-NLS-1$
+            "timeofday", //$NON-NLS-1$
+            "timepl", //$NON-NLS-1$
+            "timestamp_cmp", //$NON-NLS-1$
+            "timestamp_cmp_date", //$NON-NLS-1$
+            "timestamp_cmp_timestamptz", //$NON-NLS-1$
+            "timestamp_eq", //$NON-NLS-1$
+            "timestamp_eq_date", //$NON-NLS-1$
+            "timestamp_eq_timestamptz", //$NON-NLS-1$
+            "timestamp_ge", //$NON-NLS-1$
+            "timestamp_ge_date", //$NON-NLS-1$
+            "timestamp_ge_timestamptz", //$NON-NLS-1$
+            "timestamp_gt", //$NON-NLS-1$
+            "timestamp_gt_date", //$NON-NLS-1$
+            "timestamp_gt_timestamptz", //$NON-NLS-1$
+            "timestamp_hash", //$NON-NLS-1$
+            "timestamp_in", //$NON-NLS-1$
+            "timestamp_larger", //$NON-NLS-1$
+            "timestamp_le", //$NON-NLS-1$
+            "timestamp_le_date", //$NON-NLS-1$
+            "timestamp_le_timestamptz", //$NON-NLS-1$
+            "timestamp_lt", //$NON-NLS-1$
+            "timestamp_lt_date", //$NON-NLS-1$
+            "timestamp_lt_timestamptz", //$NON-NLS-1$
+            "timestamp_mi", //$NON-NLS-1$
+            "timestamp_mi_interval", //$NON-NLS-1$
+            "timestamp_ne", //$NON-NLS-1$
+            "timestamp_ne_date", //$NON-NLS-1$
+            "timestamp_ne_timestamptz", //$NON-NLS-1$
+            "timestamp_out", //$NON-NLS-1$
+            "timestamp_pl_interval", //$NON-NLS-1$
+            "timestamp_recv", //$NON-NLS-1$
+            "timestamp_send", //$NON-NLS-1$
+            "timestamp_smaller", //$NON-NLS-1$
+            "timestamp_sortsupport", //$NON-NLS-1$
+            "timestamp_transform", //$NON-NLS-1$
+            "timestamptypmodin", //$NON-NLS-1$
+            "timestamptypmodout", //$NON-NLS-1$
+            "timestamptz", //$NON-NLS-1$
+            "timestamptz_cmp", //$NON-NLS-1$
+            "timestamptz_cmp_date", //$NON-NLS-1$
+            "timestamptz_cmp_timestamp", //$NON-NLS-1$
+            "timestamptz_eq", //$NON-NLS-1$
+            "timestamptz_eq_date", //$NON-NLS-1$
+            "timestamptz_eq_timestamp", //$NON-NLS-1$
+            "timestamptz_ge", //$NON-NLS-1$
+            "timestamptz_ge_date", //$NON-NLS-1$
+            "timestamptz_ge_timestamp", //$NON-NLS-1$
+            "timestamptz_gt", //$NON-NLS-1$
+            "timestamptz_gt_date", //$NON-NLS-1$
+            "timestamptz_gt_timestamp", //$NON-NLS-1$
+            "timestamptz_in", //$NON-NLS-1$
+            "timestamptz_larger", //$NON-NLS-1$
+            "timestamptz_le", //$NON-NLS-1$
+            "timestamptz_le_date", //$NON-NLS-1$
+            "timestamptz_le_timestamp", //$NON-NLS-1$
+            "timestamptz_lt", //$NON-NLS-1$
+            "timestamptz_lt_date", //$NON-NLS-1$
+            "timestamptz_lt_timestamp", //$NON-NLS-1$
+            "timestamptz_mi", //$NON-NLS-1$
+            "timestamptz_mi_interval", //$NON-NLS-1$
+            "timestamptz_ne", //$NON-NLS-1$
+            "timestamptz_ne_date", //$NON-NLS-1$
+            "timestamptz_ne_timestamp", //$NON-NLS-1$
+            "timestamptz_out", //$NON-NLS-1$
+            "timestamptz_pl_interval", //$NON-NLS-1$
+            "timestamptz_recv", //$NON-NLS-1$
+            "timestamptz_send", //$NON-NLS-1$
+            "timestamptz_smaller", //$NON-NLS-1$
+            "timestamptztypmodin", //$NON-NLS-1$
+            "timestamptztypmodout", //$NON-NLS-1$
+            "timetypmodin", //$NON-NLS-1$
+            "timetypmodout", //$NON-NLS-1$
+            "timetz", //$NON-NLS-1$
+            "timetz_cmp", //$NON-NLS-1$
+            "timetz_eq", //$NON-NLS-1$
+            "timetz_ge", //$NON-NLS-1$
+            "timetz_gt", //$NON-NLS-1$
+            "timetz_hash", //$NON-NLS-1$
+            "timetz_in", //$NON-NLS-1$
+            "timetz_larger", //$NON-NLS-1$
+            "timetz_le", //$NON-NLS-1$
+            "timetz_lt", //$NON-NLS-1$
+            "timetz_mi_interval", //$NON-NLS-1$
+            "timetz_ne", //$NON-NLS-1$
+            "timetz_out", //$NON-NLS-1$
+            "timetz_pl_interval", //$NON-NLS-1$
+            "timetz_recv", //$NON-NLS-1$
+            "timetz_send", //$NON-NLS-1$
+            "timetz_smaller", //$NON-NLS-1$
+            "timetzdate_pl", //$NON-NLS-1$
+            "timetztypmodin", //$NON-NLS-1$
+            "timetztypmodout", //$NON-NLS-1$
+            "timezone", //$NON-NLS-1$
+            "tintervalct", //$NON-NLS-1$
+            "tintervalend", //$NON-NLS-1$
+            "tintervaleq", //$NON-NLS-1$
+            "tintervalge", //$NON-NLS-1$
+            "tintervalgt", //$NON-NLS-1$
+            "tintervalin", //$NON-NLS-1$
+            "tintervalle", //$NON-NLS-1$
+            "tintervalleneq", //$NON-NLS-1$
+            "tintervallenge", //$NON-NLS-1$
+            "tintervallengt", //$NON-NLS-1$
+            "tintervallenle", //$NON-NLS-1$
+            "tintervallenlt", //$NON-NLS-1$
+            "tintervallenne", //$NON-NLS-1$
+            "tintervallt", //$NON-NLS-1$
+            "tintervalne", //$NON-NLS-1$
+            "tintervalout", //$NON-NLS-1$
+            "tintervalov", //$NON-NLS-1$
+            "tintervalrecv", //$NON-NLS-1$
+            "tintervalrel", //$NON-NLS-1$
+            "tintervalsame", //$NON-NLS-1$
+            "tintervalsend", //$NON-NLS-1$
+            "tintervalstart", //$NON-NLS-1$
+            "to_ascii", //$NON-NLS-1$
+            "to_char", //$NON-NLS-1$
+            "to_date", //$NON-NLS-1$
+            "to_hex", //$NON-NLS-1$
+            "to_json", //$NON-NLS-1$
+            "to_number", //$NON-NLS-1$
+            "to_timestamp", //$NON-NLS-1$
+            "to_tsquery", //$NON-NLS-1$
+            "to_tsvector", //$NON-NLS-1$
+            "transaction_timestamp", //$NON-NLS-1$
+            "translate", //$NON-NLS-1$
+            "trigger_in", //$NON-NLS-1$
+            "trigger_out", //$NON-NLS-1$
+            "trunc", //$NON-NLS-1$
+            "ts_debug", //$NON-NLS-1$
+            "ts_headline", //$NON-NLS-1$
+            "ts_lexize", //$NON-NLS-1$
+            "ts_match_qv", //$NON-NLS-1$
+            "ts_match_tq", //$NON-NLS-1$
+            "ts_match_tt", //$NON-NLS-1$
+            "ts_match_vq", //$NON-NLS-1$
+            "ts_parse", //$NON-NLS-1$
+            "ts_rank", //$NON-NLS-1$
+            "ts_rank_cd", //$NON-NLS-1$
+            "ts_rewrite", //$NON-NLS-1$
+            "ts_stat", //$NON-NLS-1$
+            "ts_token_type", //$NON-NLS-1$
+            "ts_typanalyze", //$NON-NLS-1$
+            "tsmatchjoinsel", //$NON-NLS-1$
+            "tsmatchsel", //$NON-NLS-1$
+            "tsq_mcontained", //$NON-NLS-1$
+            "tsq_mcontains", //$NON-NLS-1$
+            "tsquery_and", //$NON-NLS-1$
+            "tsquery_cmp", //$NON-NLS-1$
+            "tsquery_eq", //$NON-NLS-1$
+            "tsquery_ge", //$NON-NLS-1$
+            "tsquery_gt", //$NON-NLS-1$
+            "tsquery_le", //$NON-NLS-1$
+            "tsquery_lt", //$NON-NLS-1$
+            "tsquery_ne", //$NON-NLS-1$
+            "tsquery_not", //$NON-NLS-1$
+            "tsquery_or", //$NON-NLS-1$
+            "tsqueryin", //$NON-NLS-1$
+            "tsqueryout", //$NON-NLS-1$
+            "tsqueryrecv", //$NON-NLS-1$
+            "tsquerysend", //$NON-NLS-1$
+            "tsrange_subdiff", //$NON-NLS-1$
+            "tstzrange_subdiff", //$NON-NLS-1$
+            "tsvector_cmp", //$NON-NLS-1$
+            "tsvector_concat", //$NON-NLS-1$
+            "tsvector_eq", //$NON-NLS-1$
+            "tsvector_ge", //$NON-NLS-1$
+            "tsvector_gt", //$NON-NLS-1$
+            "tsvector_le", //$NON-NLS-1$
+            "tsvector_lt", //$NON-NLS-1$
+            "tsvector_ne", //$NON-NLS-1$
+            "tsvector_update_trigger", //$NON-NLS-1$
+            "tsvector_update_trigger_column", //$NON-NLS-1$
+            "tsvectorin", //$NON-NLS-1$
+            "tsvectorout", //$NON-NLS-1$
+            "tsvectorrecv", //$NON-NLS-1$
+            "tsvectorsend", //$NON-NLS-1$
+            "txid_current", //$NON-NLS-1$
+            "txid_current_snapshot", //$NON-NLS-1$
+            "txid_snapshot_in", //$NON-NLS-1$
+            "txid_snapshot_out", //$NON-NLS-1$
+            "txid_snapshot_recv", //$NON-NLS-1$
+            "txid_snapshot_send", //$NON-NLS-1$
+            "txid_snapshot_xip", //$NON-NLS-1$
+            "txid_snapshot_xmax", //$NON-NLS-1$
+            "txid_snapshot_xmin", //$NON-NLS-1$
+            "txid_visible_in_snapshot", //$NON-NLS-1$
+            "uhc_to_utf8", //$NON-NLS-1$
+            "unique_key_recheck", //$NON-NLS-1$
+            "unknownin", //$NON-NLS-1$
+            "unknownout", //$NON-NLS-1$
+            "unknownrecv", //$NON-NLS-1$
+            "unknownsend", //$NON-NLS-1$
+            "unnest", //$NON-NLS-1$
+            "upper", //$NON-NLS-1$
+            "upper_inc", //$NON-NLS-1$
+            "upper_inf", //$NON-NLS-1$
+            "utf8_to_ascii", //$NON-NLS-1$
+            "utf8_to_big5", //$NON-NLS-1$
+            "utf8_to_euc_cn", //$NON-NLS-1$
+            "utf8_to_euc_jis_2004", //$NON-NLS-1$
+            "utf8_to_euc_jp", //$NON-NLS-1$
+            "utf8_to_euc_kr", //$NON-NLS-1$
+            "utf8_to_euc_tw", //$NON-NLS-1$
+            "utf8_to_gb18030", //$NON-NLS-1$
+            "utf8_to_gbk", //$NON-NLS-1$
+            "utf8_to_iso8859", //$NON-NLS-1$
+            "utf8_to_iso8859_1", //$NON-NLS-1$
+            "utf8_to_johab", //$NON-NLS-1$
+            "utf8_to_koi8r", //$NON-NLS-1$
+            "utf8_to_koi8u", //$NON-NLS-1$
+            "utf8_to_shift_jis_2004", //$NON-NLS-1$
+            "utf8_to_sjis", //$NON-NLS-1$
+            "utf8_to_uhc", //$NON-NLS-1$
+            "utf8_to_win", //$NON-NLS-1$
+            "uuid_cmp", //$NON-NLS-1$
+            "uuid_eq", //$NON-NLS-1$
+            "uuid_ge", //$NON-NLS-1$
+            "uuid_gt", //$NON-NLS-1$
+            "uuid_hash", //$NON-NLS-1$
+            "uuid_in", //$NON-NLS-1$
+            "uuid_le", //$NON-NLS-1$
+            "uuid_lt", //$NON-NLS-1$
+            "uuid_ne", //$NON-NLS-1$
+            "uuid_out", //$NON-NLS-1$
+            "uuid_recv", //$NON-NLS-1$
+            "uuid_send", //$NON-NLS-1$
+            "var_pop", //$NON-NLS-1$
+            "var_samp", //$NON-NLS-1$
+            "varbit", //$NON-NLS-1$
+            "varbit_in", //$NON-NLS-1$
+            "varbit_out", //$NON-NLS-1$
+            "varbit_recv", //$NON-NLS-1$
+            "varbit_send", //$NON-NLS-1$
+            "varbit_transform", //$NON-NLS-1$
+            "varbitcmp", //$NON-NLS-1$
+            "varbiteq", //$NON-NLS-1$
+            "varbitge", //$NON-NLS-1$
+            "varbitgt", //$NON-NLS-1$
+            "varbitle", //$NON-NLS-1$
+            "varbitlt", //$NON-NLS-1$
+            "varbitne", //$NON-NLS-1$
+            "varbittypmodin", //$NON-NLS-1$
+            "varbittypmodout", //$NON-NLS-1$
+            "varchar_transform", //$NON-NLS-1$
+            "varcharin", //$NON-NLS-1$
+            "varcharout", //$NON-NLS-1$
+            "varcharrecv", //$NON-NLS-1$
+            "varcharsend", //$NON-NLS-1$
+            "varchartypmodin", //$NON-NLS-1$
+            "varchartypmodout", //$NON-NLS-1$
+            "variance", //$NON-NLS-1$
+            "void_in", //$NON-NLS-1$
+            "void_out", //$NON-NLS-1$
+            "void_recv", //$NON-NLS-1$
+            "void_send", //$NON-NLS-1$
+            "width", //$NON-NLS-1$
+            "width_bucket", //$NON-NLS-1$
+            "win1250_to_latin2", //$NON-NLS-1$
+            "win1250_to_mic", //$NON-NLS-1$
+            "win1251_to_iso", //$NON-NLS-1$
+            "win1251_to_koi8r", //$NON-NLS-1$
+            "win1251_to_mic", //$NON-NLS-1$
+            "win1251_to_win866", //$NON-NLS-1$
+            "win866_to_iso", //$NON-NLS-1$
+            "win866_to_koi8r", //$NON-NLS-1$
+            "win866_to_mic", //$NON-NLS-1$
+            "win866_to_win1251", //$NON-NLS-1$
+            "win_to_utf8", //$NON-NLS-1$
+            "xideq", //$NON-NLS-1$
+            "xideqint4", //$NON-NLS-1$
+            "xidin", //$NON-NLS-1$
+            "xidout", //$NON-NLS-1$
+            "xidrecv", //$NON-NLS-1$
+            "xidsend", //$NON-NLS-1$
+            "xml_in", //$NON-NLS-1$
+            "xml_is_well_formed", //$NON-NLS-1$
+            "xml_is_well_formed_content", //$NON-NLS-1$
+            "xml_is_well_formed_document", //$NON-NLS-1$
+            "xml_out", //$NON-NLS-1$
+            "xml_recv", //$NON-NLS-1$
+            "xml_send", //$NON-NLS-1$
+            "xmlagg", //$NON-NLS-1$
+            "xmlcomment", //$NON-NLS-1$
+            "xmlconcat2", //$NON-NLS-1$
+            "xmlvalidate", //$NON-NLS-1$
+            "xpath", //$NON-NLS-1$
+            "xpath_exists" //$NON-NLS-1$
     };
 
     

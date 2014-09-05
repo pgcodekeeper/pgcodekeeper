@@ -61,6 +61,7 @@ public class Messages extends NLS {
     public static String sqlScriptDialog_error_saving_script_to_file;
     public static String sqlScriptDialog_error_saving_script_to_tmp_file;
     public static String sqlScriptDialog_exception_during_script_execution;
+    public static String sqlScriptDialog_psql_dependencies;
     public static String sqlScriptDialog_run_script;
     public static String sqlScriptDialog_save_as;
     public static String sqlScriptDialog_script_execution_interrupted;
@@ -68,6 +69,7 @@ public class Messages extends NLS {
     public static String sqlScriptDialog_script_saved_to_file;
     public static String sqlScriptDialog_stop_script;
     public static String sqlScriptDialog_stop_script_before_closing_dialog;
+    public static String sqlScriptDialog_this_dependencies_have_been_added_already_check_order;
     public static String stdStreamRedirector_completed_with_code;
     public static String manualDepciesDialog_dependant_dependency;
     public static String manualDepciesDialog_depends_on;
@@ -309,6 +311,7 @@ public class Messages extends NLS {
     public static String generalPrefPage_pg_dump_custom_parameters;
     public static String generalPrefPage_pg_dump_executable;
     public static String generalPrefPage_use_depcy_on_commit_page;
+    public static String generalPrefPage_use_psql_depcy_on_generating_script;
     public static String gitPrefPage_copy_public_keys_to_clipboard;
     public static String gitPrefPage_either_doesnt_exist_or_inaccessible;
     public static String gitPrefPage_error_while_rsa_keys_generation;
@@ -330,15 +333,12 @@ public class Messages extends NLS {
     public static String ManualDepciesDialog_set_add_depcies;
     public static String NewProjWizard_settings;
     public static String ProjProps_settings;
-
+    public static String SqlScriptDialog_add_it_to_script;
     public static String SqlScriptDialog_command_to_execute;
-
+    public static String SqlScriptDialog__results_of_script_revealed_dependent_objects;
     public static String SqlScriptDialog_will_be_replaced;
-
     public static String XmlHistory_read_error;
-
     public static String XmlHistory_write_error;
-
     public static String XmlStringList_root_name_invalid;
 
     static {

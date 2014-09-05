@@ -41,5 +41,6 @@ public class UIScopedPreferenceStore extends ScopedPreferenceStore {
         setDefault(PREF.RECENT_PROJECTS, ""); //$NON-NLS-1$
         setDefault(PREF.PGDUMP_CUSTOM_PARAMS, ""); //$NON-NLS-1$
         setDefault(PREF.IGNORE_OBJECTS, ""); //$NON-NLS-1$
+        setDefault(PREF.USE_PSQL_DEPCY, true);
     }
 }

@@ -67,6 +67,7 @@ public interface UIConsts {
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String LAST_REPO = "prefLastRepo"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
+        String USE_PSQL_DEPCY = "prefUsePSQLDepcy"; //$NON-NLS-1$
     }
     
     interface PROJ_PREF {
