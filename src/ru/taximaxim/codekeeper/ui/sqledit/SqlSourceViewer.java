@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-import org.eclipse.compare.internal.MergeSourceViewer;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.IHandler;
@@ -27,7 +26,9 @@ import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.ITextListener;
 import org.eclipse.jface.text.ITextOperationTarget;
+import org.eclipse.jface.text.TextEvent;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
@@ -37,6 +38,8 @@ import org.eclipse.jface.text.source.CompositeRuler;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.LineNumberRulerColumn;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.DisposeEvent;
@@ -44,7 +47,6 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.handlers.IHandlerActivation;
@@ -52,12 +54,11 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.texteditor.ChangeEncodingAction;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.FindReplaceAction;
-import org.eclipse.ui.texteditor.GotoLineAction;
-import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
 
-public class SqlSourceViewer extends SourceViewer implements IMenuListener {
+public class SqlSourceViewer extends SourceViewer 
+    implements IMenuListener, ITextListener, ISelectionChangedListener {
     
     private static final String[] GLOBAL_ACTIONS= {
         ActionFactory.UNDO.getId(),
@@ -161,7 +162,7 @@ public class SqlSourceViewer extends SourceViewer implements IMenuListener {
         this.getControl().setMenu(menu1);
 //        fContainer.registerContextMenu(menu, getSourceViewer());
         contributeFindAction();
-        connectGlobalActions(this);
+        connectGlobalActions();
     }
     
     private void freeObjects() {
@@ -180,7 +181,7 @@ public class SqlSourceViewer extends SourceViewer implements IMenuListener {
     
     public void activateAutocomplete() {
         final SqlSourceViewer sqlEditor = this;
-        IHandler cahandler = new AbstractHandler() {
+        IHandler caHandler = new AbstractHandler() {
 
         @Override
         public Object execute(ExecutionEvent event)
@@ -194,7 +195,7 @@ public class SqlSourceViewer extends SourceViewer implements IMenuListener {
         }
         contentAssistHandlerActivation = handlerService.activateHandler(
                 ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
-        cahandler);
+        caHandler);
     }
     
     public void addLineNumbers() {
@@ -227,7 +228,7 @@ public void menuAboutToShow(IMenuManager menu) {
 
 private void contributeFindAction() {
     IAction action;
-    action = new FindReplaceAction(getResourceBundle(), "Editor.FindReplace.", this.getSourceViewer().getControl().getShell(), getFindReplaceTarget()); //$NON-NLS-1$
+    action = new FindReplaceAction(getResourceBundle(), "Editor.FindReplace.", this.getControl().getShell(), getFindReplaceTarget()); //$NON-NLS-1$
     action.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
     this.addAction(SqlSourceViewer.FIND_ID, action);
 }
@@ -237,7 +238,7 @@ private ResourceBundle getResourceBundle() {
 }
 
 /**
- * Переход на линию, кодировка нужно реализовать интерфейс IAdaptable 
+ * TODO Переход на линию, кодировка нужно реализовать интерфейс IAdaptable 
  */
 /*private void contributeGotoLineAction(SqlSourceViewer viewer) {
     IAction action = new GotoLineAction((ITextEditor) viewer.getAdapter(ITextEditor.class));
@@ -262,38 +263,35 @@ public IAction getAction(String actionId) {
         action= createAction(actionId);
         if (action == null)
             return null;
-        if (action instanceof SqlMergeViewerAction) {
-//            SqlMergeViewerAction mva = (SqlMergeViewerAction) action;
-//            if (mva.isContentDependent())
-//                getSourceViewer().addTextListener(this);
-//            if (mva.isSelectionDependent())
-//                getSourceViewer().addSelectionChangedListener(this);
+        if (action instanceof SqlViewerAction) {
+            SqlViewerAction mva = (SqlViewerAction) action;
+            if (mva.isContentDependent())
+                getSourceViewer().addTextListener(this);
+            if (mva.isSelectionDependent())
+                getSourceViewer().addSelectionChangedListener(this);
             
             initAction(action, getResourceBundle(), "action." + actionId + ".");           //$NON-NLS-1$ //$NON-NLS-2$
         }
         addAction(actionId, action);
             
     }
-    if (action instanceof SqlMergeViewerAction) {
-        SqlMergeViewerAction mva = (SqlMergeViewerAction) action;
+    if (action instanceof SqlViewerAction) {
+        SqlViewerAction mva = (SqlViewerAction) action;
         if (mva.isEditableDependent() && !getSourceViewer().isEditable())
             return null;
     }
     return action;
 }
 
-private void connectGlobalActions(final SqlSourceViewer part) {
+private void connectGlobalActions() {
     if (handlerService != null) {
-        if (part != null)
-            part.updateActions();
+        updateActions();
         clearHandlers();
-        part.getControl().getDisplay().asyncExec(new Runnable() {
+        this.getControl().getDisplay().asyncExec(new Runnable() {
             public void run() {
                 for (int i= 0; i < GLOBAL_ACTIONS.length; i++) {
                     IAction action= null;
-                    if (part != null) {
-                        action= part.getAction(TEXT_ACTIONS[i]);
-                    }
+                    action= getAction(TEXT_ACTIONS[i]);
 //                    fHandlerService.setGlobalActionHandler(GLOBAL_ACTIONS[i], action);
                     if (action != null) {
                         fActionHandlers.add(handlerService.activateHandler(action.getActionDefinitionId(), new ActionHandler(action)));
@@ -301,6 +299,34 @@ private void connectGlobalActions(final SqlSourceViewer part) {
                 }
             }
         });
+    }
+}
+
+public void textChanged(TextEvent event) {
+    updateContentDependantActions();
+}
+
+void updateContentDependantActions() {
+    Iterator<IAction> e= fActions.values().iterator();
+    while (e.hasNext()) {
+        Object next = e.next();
+        if (next instanceof SqlViewerAction) {
+            SqlViewerAction action = (SqlViewerAction) next;
+            if (action.isContentDependent())
+                action.update();
+        }
+    }
+}
+
+public void selectionChanged(SelectionChangedEvent event) {
+    Iterator<IAction> e= fActions.values().iterator();
+    while (e.hasNext()) {
+        Object next = e.next();
+        if (next instanceof SqlViewerAction) {
+            SqlViewerAction action = (SqlViewerAction) next;
+            if (action.isSelectionDependent())
+                action.update();
+        }
     }
 }
 
@@ -312,8 +338,8 @@ public void updateActions() {
     Iterator<IAction> e= fActions.values().iterator();
     while (e.hasNext()) {
         Object next = e.next();
-        if (next instanceof SqlMergeViewerAction) {
-            SqlMergeViewerAction action = (SqlMergeViewerAction) next;
+        if (next instanceof SqlViewerAction) {
+            SqlViewerAction action = (SqlViewerAction) next;
             action.update();
         } else if (next instanceof FindReplaceAction) {
             FindReplaceAction action = (FindReplaceAction) next;
@@ -351,7 +377,7 @@ protected IAction createAction(String actionId) {
     return null;
 }
 
-class TextOperationAction extends SqlMergeViewerAction {
+class TextOperationAction extends SqlViewerAction {
     
     private int fOperationCode;
     
@@ -381,13 +407,13 @@ class TextOperationAction extends SqlMergeViewerAction {
     }
 }
 
-public abstract class SqlMergeViewerAction extends Action implements IUpdate {
+public abstract class SqlViewerAction extends Action implements IUpdate {
     
     private boolean fMutable;
     private boolean fSelection;
     private boolean fContent;
     
-    public SqlMergeViewerAction(boolean mutable, boolean selection, boolean content) {
+    public SqlViewerAction(boolean mutable, boolean selection, boolean content) {
         fMutable= mutable;
         fSelection= selection;
         fContent= content;
