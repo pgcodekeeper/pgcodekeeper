@@ -218,7 +218,7 @@ public class PgTable extends PgStatementWithSearchPath {
     
     @Override
     public String getFullSQL() {
-        final StringBuilder sbSQL = new StringBuilder(10);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append(getCreationSQL()).append("\n\n").append(getClusterSQL());
         
         return sbSQL.toString();
@@ -230,9 +230,9 @@ public class PgTable extends PgStatementWithSearchPath {
     }
     
     private String getClusterSQL() {
-        final StringBuilder sbSQL = new StringBuilder(10);
+        final StringBuilder sbSQL = new StringBuilder();
         if (clusterIndexName != null && !clusterIndexName.isEmpty()) {
-            sbSQL.append("ALTER TABLE ");
+            sbSQL.append("\n\nALTER TABLE ");
             sbSQL.append(PgDiffUtils.getQuotedName(name));
             sbSQL.append(" CLUSTER ON ");
             sbSQL.append(getClusterIndexName());
