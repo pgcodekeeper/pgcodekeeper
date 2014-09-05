@@ -34,7 +34,6 @@ import org.eclipse.ui.statushandlers.StatusManager;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.XmlHistory.Builder;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -275,8 +274,10 @@ public class SqlScriptDialog extends MessageDialog {
                                     
                                     @Override
                                     public void run() {
+                                        if (!runScriptBtn.isDisposed()) {
+                                            runScriptBtn.setText(runScriptText);
+                                        }
                                         isRunning = false;
-                                        runScriptBtn.setText(runScriptText);
                                     }
                                 });
                     }
