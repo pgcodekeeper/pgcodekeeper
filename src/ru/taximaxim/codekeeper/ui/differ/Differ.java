@@ -53,7 +53,7 @@ public class Differ implements IRunnableWithProgress {
         }
     }
     
-    public List<Entry<PgStatement, PgStatement>> getAdditionalDependencies() {
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDepcies() {
         return additionalDepcies;
     } 
     

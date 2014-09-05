@@ -45,6 +45,11 @@ import ru.taximaxim.codekeeper.ui.parts.Console;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class SqlScriptDialog extends MessageDialog {
+
+    private static final Pattern PATTERN_ERROR = Pattern.compile(
+            "^.+(ERROR|ОШИБКА):.+$"); //$NON-NLS-1$
+    private static final Pattern PATTERN_DROP_CASCADE = Pattern.compile(
+            "^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$"); //$NON-NLS-1$
     
     private static final String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
     private static final String DB_HOST_PLACEHOLDER = "%host"; //$NON-NLS-1$
@@ -56,18 +61,17 @@ public class SqlScriptDialog extends MessageDialog {
     public static final String runScriptText =  Messages.sqlScriptDialog_run_script;
     public static final String stopScriptText = Messages.sqlScriptDialog_stop_script;
     
-    private final static String SCRIPTS_HIST_ROOT = "scripts"; //$NON-NLS-1$
-    private final static String SCRIPTS_HIST_EL = "s"; //$NON-NLS-1$
-    private final static String SCRIPTS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
-    private final static int SCRIPTS_HIST_MAX_STORED = 20;
+    private static final String SCRIPTS_HIST_ROOT = "scripts"; //$NON-NLS-1$
+    private static final String SCRIPTS_HIST_EL = "s"; //$NON-NLS-1$
+    private static final String SCRIPTS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
+    private static final int SCRIPTS_HIST_MAX_STORED = 20;
 
     private final XmlHistory history;
     private final Differ differ;
-    private final String text;
     private List<Entry<String, String>> addDepcy;
-    private List<Entry<PgStatement, PgStatement>> oldDepcy;
+    private final List<Entry<PgStatement, PgStatement>> oldDepcy;
     private List<PgStatement> objList;
-    private boolean usePSQLDepcy;
+    private final boolean usePsqlDepcy;
     
     private String dbHost;
     private String dbPort;
@@ -113,21 +117,25 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     public SqlScriptDialog(Shell parentShell, int type, String title, String message,
-            Differ differ, List<PgStatement> objList, boolean usePSQLDepcy) {
+            Differ differ, List<PgStatement> objList, boolean usePsqlDepcy) {
         super(parentShell, title, null, message, type, new String[] {
                 runScriptText, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }, 2);
         
-        setShellStyle(getShellStyle() | SWT.RESIZE);
-        
-        this.text = differ.getDiffDirect();
         this.differ = differ;
-        safeOldDepcy();
+        this.oldDepcy = differ.getAdditionalDepcies();
+        differ.setAdditionalDepcies(new ArrayList<>(oldDepcy));
         this.objList = objList;
-        this.usePSQLDepcy = usePSQLDepcy;
+        this.usePsqlDepcy = usePsqlDepcy;
         this.history = new XmlHistory.Builder(SCRIPTS_HIST_MAX_STORED, 
                 SCRIPTS_HIST_FILENAME, 
                 SCRIPTS_HIST_ROOT, 
                 SCRIPTS_HIST_EL).build();
+    }
+    
+    @Override
+    protected void configureShell(Shell shell) {
+        super.configureShell(shell);
+        setShellStyle(getShellStyle() | SWT.RESIZE);
     }
     
     @Override
@@ -186,11 +194,10 @@ public class SqlScriptDialog extends MessageDialog {
     }
 
     private void createSQLViewer(Composite parent) {
-        
         sqlEditor = new SqlSourceViewer(parent, SWT.NONE);
         sqlEditor.addLineNumbers();
         sqlEditor.setEditable(true);
-        sqlEditor.setDocument(new Document(text));
+        sqlEditor.setDocument(new Document(differ.getDiffDirect()));
         
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
@@ -279,10 +286,9 @@ public class SqlScriptDialog extends MessageDialog {
                         Integer returnedCode = new Integer(0);
                         String scriptOutputRes = StdStreamRedirector.launchAndRedirect(
                                 pb, returnedCode);
-                        if (usePSQLDepcy) {
-                            setAddDepcy(
-                                    getDependenciesFromOutput(returnedCode, 
-                                            scriptOutputRes));
+                        if (usePsqlDepcy) {
+                            addDepcy = getDependenciesFromOutput(returnedCode, 
+                                            scriptOutputRes);
                         }
                     } catch (IOException ex) {
                         throw new IllegalStateException(ex);
@@ -297,7 +303,7 @@ public class SqlScriptDialog extends MessageDialog {
                                     public void run() {
                                         isRunning = false;
                                         runScriptBtn.setText(runScriptText);
-                                        ShowDialog();
+                                        showAddDepcyDialog();
                                     }
                                 });
                     }
@@ -354,22 +360,22 @@ public class SqlScriptDialog extends MessageDialog {
         }
     }
     
-    private void ShowDialog() {
-        if (usePSQLDepcy && getAddDepcy() != null && !getAddDepcy().isEmpty()) {
+    private void showAddDepcyDialog() {
+        if (usePsqlDepcy && addDepcy != null && !addDepcy.isEmpty()) {
             MessageBox mb = new MessageBox(SqlScriptDialog.this.getShell(), 
                     SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
             mb.setText(Messages.sqlScriptDialog_psql_dependencies);
             mb.setMessage(Messages.SqlScriptDialog__results_of_script_revealed_dependent_objects +
-                    DepcyToString() + "\n"); //$NON-NLS-1$
+                    depcyToString() + System.lineSeparator());
             List<Entry<PgStatement, PgStatement>> depcyToAdd = 
-                    getAdditionalDepcyFromNames(getAddDepcy());
-            StringBuilder sb = getRepeatedDepcy(depcyToAdd);
-            if (sb.length() > 0) {
+                    getAdditionalDepcyFromNames(addDepcy);
+            String repeats = getRepeatedDepcy(depcyToAdd);
+            if (repeats.length() > 0) {
                 mb.setMessage(mb.getMessage() + 
-                        Messages.sqlScriptDialog_this_dependencies_have_been_added_already_check_order + sb.toString());  
+                        Messages.sqlScriptDialog_this_dependencies_have_been_added_already_check_order + repeats);  
             }
-            mb.setMessage(mb.getMessage() + "\n" +  //$NON-NLS-1$
-                    Messages.SqlScriptDialog_add_it_to_script); //$NON-NLS-1$)
+            mb.setMessage(mb.getMessage() + System.lineSeparator() +
+                    Messages.SqlScriptDialog_add_it_to_script);
             if (mb.open() == SWT.OK) {
                 differ.addAdditionDepcies(depcyToAdd);
                 differ.runProgressMonitorDiffer(getParentShell());
@@ -379,30 +385,27 @@ public class SqlScriptDialog extends MessageDialog {
         }
     }
 
-    private StringBuilder getRepeatedDepcy(
-            List<Entry<PgStatement, PgStatement>> depcyToAdd) {
-        List<Entry<PgStatement, PgStatement>> existingDepcy = 
-                differ.getAdditionalDependencies();
-        StringBuilder sb = new StringBuilder(10);
+    private String getRepeatedDepcy(List<Entry<PgStatement, PgStatement>> depcyToAdd) {
+        List<Entry<PgStatement, PgStatement>> existingDepcy = differ.getAdditionalDepcies();
+        StringBuilder sb = new StringBuilder();
         for (Entry<PgStatement, PgStatement> entry : depcyToAdd) {
             if (existingDepcy.contains(entry)) {
-                sb.append(entry.getKey().getName() + " -> " +  //$NON-NLS-1$
-                        entry.getValue().getName() + "\n"); //$NON-NLS-1$
+                sb.append(entry.getKey().getName() + " -> " + //$NON-NLS-1$
+                        entry.getValue().getName() + System.lineSeparator());
             }
         }
-        return sb;
+        return sb.toString();
     }
     
     private List<Entry<PgStatement, PgStatement>> getAdditionalDepcyFromNames(
             List<Entry<String, String>> addDepcy) {
         List<Entry<PgStatement, PgStatement>> result = new ArrayList<>();
-        for (Entry <String, String> entry : addDepcy) {
+        for (Entry<String, String> entry : addDepcy) {
             PgStatement depcy1 = getPgObjByName(entry.getKey());
             PgStatement depcy2 = getPgObjByName(entry.getValue());
             if (depcy1 != null && depcy2 != null) {
-                result.add(new AbstractMap.SimpleEntry<PgStatement, PgStatement>(
-                    depcy1,
-                    depcy2));
+                result.add(new AbstractMap.SimpleEntry<>(
+                    depcy1, depcy2));
             }
         }
         return result; 
@@ -417,86 +420,58 @@ public class SqlScriptDialog extends MessageDialog {
         return null;
     }
     
-    /**
-     * @return the addDepcy
-     */
-    public List<Entry<String, String>> getAddDepcy() {
-        return addDepcy;
-    }
-    /**
-     * Set addDepcy
-     * @param dependenciesFromResult
-     */
-    private void setAddDepcy(List<Entry<String, String>> dependenciesFromResult) {
-        addDepcy = dependenciesFromResult;
-    }
-    
-    private void safeOldDepcy() {
-        oldDepcy = differ.getAdditionalDependencies();
-        List<Entry<PgStatement, PgStatement>> additionalDependencies = 
-                new ArrayList<>();
-        for (Entry<PgStatement, PgStatement> depcy : oldDepcy) {
-            additionalDependencies.add(depcy);
-        }
-        differ.setAdditionalDepcies(additionalDependencies);
-    }
-    
-    private List<Entry<PgStatement, PgStatement>> getOldDepcy() {
-        return oldDepcy;
-    }
-    
-    private String DepcyToString() {
-        StringBuilder sb = new StringBuilder(10);
+    private String depcyToString() {
+        StringBuilder sb = new StringBuilder();
         for (Entry<String, String> entry : addDepcy) {
-            sb.append(' '); //$NON-NLS-1$
+            sb.append(' '); 
             sb.append(entry.getKey());
             sb.append(" -> "); //$NON-NLS-1$
             sb.append(entry.getValue());
-            sb.append("\n"); //$NON-NLS-1$
+            sb.append(System.lineSeparator()); 
         }
         return sb.toString();
     }
     
-    private List<Entry<String, String>> getDependenciesFromOutput(Integer returnedCode, String output) {
+    private List<Entry<String, String>> getDependenciesFromOutput(
+            Integer returnedCode, String output) {
         List<Entry<String, String>> depciesList = new ArrayList<>();
         if (output == null || output.isEmpty()) {
             return depciesList;
         }
-        Pattern errorPattern = Pattern.compile("^.+(ERROR|ОШИБКА):.+$"); //$NON-NLS-1$
-        Pattern advicePattern = Pattern.compile("^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$"); //$NON-NLS-1$
         
         int begin, end;
         begin = end = -1;
         String[] lines = output.replaceAll("\\s{2,}", " ").split( //$NON-NLS-1$ //$NON-NLS-2$
-                System.lineSeparator());
+                Pattern.quote(System.lineSeparator()));
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
-            if (errorPattern.matcher(line).matches()) {
+            if (PATTERN_ERROR.matcher(line).matches()) {
                 begin = i;
             } 
-            if (advicePattern.matcher(line).matches()) {
+            if (PATTERN_DROP_CASCADE.matcher(line).matches()) {
                 end = i;
                 break;
             }
         }
+        
         if (begin != -1 && end != -1 && (end - begin) >= 2) {
-
-            String words[] = lines[begin + 1].split(" "); //$NON-NLS-1$
-            depciesList.add(new AbstractMap.SimpleEntry<String, String>(
+            String words[] = lines[begin + 1].split(Pattern.quote(" ")); //$NON-NLS-1$
+            depciesList.add(new AbstractMap.SimpleEntry<>(
                     words[2], words[words.length - 1]));
-            depciesList.addAll(parseDependencies(lines, begin + 2, end));
+            parseDependencies(lines, begin + 2, end, depciesList);
         }
+        
         return depciesList;
     }
 
-    private List<Entry<String, String>> parseDependencies(String[] lines, int begin, int end) {
-        List<Entry<String, String>> depciesList = new ArrayList<>();
+    private void parseDependencies(String[] lines, int begin, int end,
+            List<Entry<String, String>> listToFill) {
+        String space = Pattern.quote(" ");
         for (int i = begin; i < end; i++) {
-            String words[] = lines[i].split(" "); //$NON-NLS-1$
-            depciesList.add(new AbstractMap.SimpleEntry<String, String>(
+            String words[] = lines[i].split(space); 
+            listToFill.add(new AbstractMap.SimpleEntry<>(
                     words[1], words[words.length - 1]));
         }
-        return depciesList;
     }
 
     @Override
@@ -507,7 +482,7 @@ public class SqlScriptDialog extends MessageDialog {
             errorDialog.open();
             return false;
         } else {
-            differ.setAdditionalDepcies(getOldDepcy());
+            differ.setAdditionalDepcies(oldDepcy);
             history.addHistoryEntry(cmbScript.getText());
             return super.close();
         }
