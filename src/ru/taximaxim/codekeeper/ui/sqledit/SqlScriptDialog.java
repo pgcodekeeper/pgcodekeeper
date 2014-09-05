@@ -16,10 +16,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
@@ -79,7 +76,7 @@ public class SqlScriptDialog extends MessageDialog {
     private String dbUser;
     private String dbPass;
     
-    private SqlSourceViewer sqlEditor;
+    private SqlSourceViewerExtender sqlEditor;
     private Text txtCommand;
     private Combo cmbScript;
     private Button runScriptBtn;
@@ -194,7 +191,7 @@ public class SqlScriptDialog extends MessageDialog {
     }
 
     private void createSQLViewer(Composite parent) {
-        sqlEditor = new SqlSourceViewer(parent, SWT.NONE);
+        sqlEditor = new SqlSourceViewerExtender(parent, SWT.NONE);
         sqlEditor.addLineNumbers();
         sqlEditor.setEditable(true);
         sqlEditor.setDocument(new Document(differ.getDiffDirect()));
@@ -204,29 +201,6 @@ public class SqlScriptDialog extends MessageDialog {
         gd.widthHint = 600;
         gd.heightHint = 400;
         sqlEditor.getControl().setLayoutData(gd);
-        
-        sqlEditor.getTextWidget().addKeyListener(new KeyListener() {
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                // Listen to CTRL+Z for Undo, to CTRL+Y or CTRL+SHIFT+Z for Redo
-                boolean isCtrl = (e.stateMask & SWT.CTRL) > 0;
-                boolean isAlt = (e.stateMask & SWT.ALT) > 0;
-                if (isCtrl && !isAlt) {
-                    boolean isShift = (e.stateMask & SWT.SHIFT) > 0;
-                    if (!isShift && e.keyCode == 'z') {
-                        sqlEditor.doOperation(ITextOperationTarget.UNDO);
-                    } else if (!isShift && e.keyCode == 'y' || isShift
-                            && e.keyCode == 'z') {
-                        sqlEditor.doOperation(ITextOperationTarget.REDO);
-                    }
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-            }
-        });
     }
     
     @Override
