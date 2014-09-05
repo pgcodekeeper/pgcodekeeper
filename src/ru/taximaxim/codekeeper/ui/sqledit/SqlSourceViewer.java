@@ -1,10 +1,13 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+import org.eclipse.compare.internal.MergeSourceViewer;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.IHandler;
@@ -41,6 +44,7 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.handlers.IHandlerActivation;
@@ -48,6 +52,8 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.texteditor.ChangeEncodingAction;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.FindReplaceAction;
+import org.eclipse.ui.texteditor.GotoLineAction;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
 
@@ -92,6 +98,7 @@ public class SqlSourceViewer extends SourceViewer implements IMenuListener {
     private IHandlerActivation contentAssistHandlerActivation;
     private IHandlerService handlerService;
     private HashMap<String, IAction> fActions= new HashMap<>();
+    private List<IHandlerActivation> fActionHandlers = new ArrayList<>();
     
     public SqlSourceViewer(Composite parent, int style) {
         super(parent, new CompositeRuler(), 
@@ -102,11 +109,7 @@ public class SqlSourceViewer extends SourceViewer implements IMenuListener {
             
             @Override
             public void widgetDisposed(DisposeEvent e) {
-                SQLSourceEditingEnvironment.disconnect();
-                if (handlerService != null
-                        && contentAssistHandlerActivation != null) {
-                    handlerService.deactivateHandler(contentAssistHandlerActivation);
-                }
+                freeObjects();
             }
         });
         
@@ -157,7 +160,22 @@ public class SqlSourceViewer extends SourceViewer implements IMenuListener {
         Menu menu1 = menu.createContextMenu(this.getControl());
         this.getControl().setMenu(menu1);
 //        fContainer.registerContextMenu(menu, getSourceViewer());
+        contributeFindAction();
         connectGlobalActions(this);
+    }
+    
+    private void freeObjects() {
+        SQLSourceEditingEnvironment.disconnect();
+        if (handlerService != null
+                && contentAssistHandlerActivation != null) {
+            handlerService.deactivateHandler(contentAssistHandlerActivation);
+            clearHandlers();
+        }
+    }
+
+    private void clearHandlers() {
+        handlerService.deactivateHandlers(fActionHandlers);
+        fActionHandlers.clear();
     }
     
     public void activateAutocomplete() {
@@ -197,12 +215,41 @@ public void menuAboutToShow(IMenuManager menu) {
         addMenu(menu, PASTE_ID);
         addMenu(menu, DELETE_ID);
         addMenu(menu, SELECT_ALL_ID);
+//        menu.add(new Separator("edit")); //$NON-NLS-1$
+//        addMenu(menu, CHANGE_ENCODING_ID);
+        menu.add(new Separator("find")); //$NON-NLS-1$
+        addMenu(menu, FIND_ID);
         
         // update all actions
         // to get undo redo right
         updateActions();
 }
 
+private void contributeFindAction() {
+    IAction action;
+    action = new FindReplaceAction(getResourceBundle(), "Editor.FindReplace.", this.getSourceViewer().getControl().getShell(), getFindReplaceTarget()); //$NON-NLS-1$
+    action.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
+    this.addAction(SqlSourceViewer.FIND_ID, action);
+}
+
+private ResourceBundle getResourceBundle() {
+    return ResourceBundle.getBundle("org.eclipse.compare.contentmergeviewer.TextMergeViewerResources");
+}
+
+/**
+ * Переход на линию, кодировка нужно реализовать интерфейс IAdaptable 
+ */
+/*private void contributeGotoLineAction(SqlSourceViewer viewer) {
+    IAction action = new GotoLineAction((ITextEditor) viewer.getAdapter(ITextEditor.class));
+    action.setActionDefinitionId(ITextEditorActionDefinitionIds.LINE_GOTO);
+    viewer.addAction(SqlSourceViewer.GOTO_LINE_ID, action);
+}
+
+private void contributeChangeEncodingAction(SqlSourceViewer viewer) {
+    IAction action = new ChangeEncodingAction(getTextEditorAdapter());
+    viewer.addAction(SqlSourceViewer.CHANGE_ENCODING_ID, action);
+}
+*/
 private void addMenu(IMenuManager menu, String actionId) {
     IAction action= getAction(actionId);
     if (action != null)
@@ -222,7 +269,7 @@ public IAction getAction(String actionId) {
 //            if (mva.isSelectionDependent())
 //                getSourceViewer().addSelectionChangedListener(this);
             
-            initAction(action, ResourceBundle.getBundle("org.eclipse.compare.contentmergeviewer.TextMergeViewerResources"), "action." + actionId + ".");           //$NON-NLS-1$ //$NON-NLS-2$
+            initAction(action, getResourceBundle(), "action." + actionId + ".");           //$NON-NLS-1$ //$NON-NLS-2$
         }
         addAction(actionId, action);
             
@@ -239,6 +286,7 @@ private void connectGlobalActions(final SqlSourceViewer part) {
     if (handlerService != null) {
         if (part != null)
             part.updateActions();
+        clearHandlers();
         part.getControl().getDisplay().asyncExec(new Runnable() {
             public void run() {
                 for (int i= 0; i < GLOBAL_ACTIONS.length; i++) {
@@ -248,7 +296,7 @@ private void connectGlobalActions(final SqlSourceViewer part) {
                     }
 //                    fHandlerService.setGlobalActionHandler(GLOBAL_ACTIONS[i], action);
                     if (action != null) {
-                        handlerService.activateHandler(action.getActionDefinitionId(), new ActionHandler(action));
+                        fActionHandlers.add(handlerService.activateHandler(action.getActionDefinitionId(), new ActionHandler(action)));
                     }
                 }
             }
