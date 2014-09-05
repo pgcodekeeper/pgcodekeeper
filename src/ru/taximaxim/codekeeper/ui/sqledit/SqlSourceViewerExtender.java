@@ -39,6 +39,13 @@ import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
 
+/**
+ * Используется для создания самостоятельного объекта SqlSourceViewerExtender
+ * имеет менюшку и поддержку клавиш ctrl+z
+ * Для предоставления вьювера например как просмотрщик для TextMergeViewer 
+ * используйте класс SQLSourceViewer!
+ *
+ */
 public class SqlSourceViewerExtender extends SqlSourceViewer implements
         IMenuListener, ITextListener, ISelectionChangedListener {
 
@@ -106,6 +113,8 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         if (handlerService != null && contentAssistHandlerActivation != null) {
             handlerService.deactivateHandler(contentAssistHandlerActivation);
             clearHandlers();
+            this.removeTextListener(this);
+            this.removeSelectionChangedListener(this);
         }
     }
 
