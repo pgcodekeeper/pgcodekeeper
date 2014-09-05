@@ -153,7 +153,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         addMenu(menu, PASTE_ID);
         addMenu(menu, DELETE_ID);
         addMenu(menu, SELECT_ALL_ID);
-        //        menu.add(new Separator("edit")); //$NON-NLS-1$
+        // menu.add(new Separator("edit")); //$NON-NLS-1$
         // addMenu(menu, CHANGE_ENCODING_ID);
         menu.add(new Separator("find")); //$NON-NLS-1$
         addMenu(menu, FIND_ID);
@@ -198,7 +198,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
             menu.add(action);
     }
 
-    public IAction getAction(String actionId) {
+    private IAction getAction(String actionId) {
         IAction action = (IAction) fActions.get(actionId);
         if (action == null) {
             action = createAction(actionId);
@@ -248,10 +248,6 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
     }
 
     public void textChanged(TextEvent event) {
-        updateContentDependantActions();
-    }
-
-    void updateContentDependantActions() {
         Iterator<IAction> e = fActions.values().iterator();
         while (e.hasNext()) {
             Object next = e.next();
@@ -279,7 +275,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
      * update all actions independent of their type
      *
      */
-    public void updateActions() {
+    private void updateActions() {
         Iterator<IAction> e = fActions.values().iterator();
         while (e.hasNext()) {
             Object next = e.next();
@@ -300,7 +296,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         return this;
     }
 
-    public void addAction(String id, IAction action) {
+    private void addAction(String id, IAction action) {
         fActions.put(id, action);
     }
 
@@ -364,7 +360,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         }
     }
 
-    public abstract class SqlViewerAction extends Action implements IUpdate {
+    private abstract class SqlViewerAction extends Action implements IUpdate {
 
         private boolean fMutable;
         private boolean fSelection;
@@ -397,7 +393,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
     /*
      * Initialize the given Action from a ResourceBundle.
      */
-    public static void initAction(IAction a, ResourceBundle bundle,
+    private static void initAction(IAction a, ResourceBundle bundle,
             String prefix) {
 
         String labelKey = "label"; //$NON-NLS-1$
@@ -417,7 +413,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         a.setDescription(getString(bundle, descriptionKey, null));
     }
 
-    public static String getString(ResourceBundle bundle, String key,
+    private static String getString(ResourceBundle bundle, String key,
             String dfltValue) {
 
         if (bundle != null) {
