@@ -390,13 +390,11 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
 
         String labelKey = "label"; //$NON-NLS-1$
         String tooltipKey = "tooltip"; //$NON-NLS-1$
-        String imageKey = "image"; //$NON-NLS-1$
         String descriptionKey = "description"; //$NON-NLS-1$
 
         if (prefix != null && prefix.length() > 0) {
             labelKey = prefix + labelKey;
             tooltipKey = prefix + tooltipKey;
-            imageKey = prefix + imageKey;
             descriptionKey = prefix + descriptionKey;
         }
 
