@@ -113,8 +113,6 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         if (handlerService != null && contentAssistHandlerActivation != null) {
             handlerService.deactivateHandler(contentAssistHandlerActivation);
             clearHandlers();
-            this.removeTextListener(this);
-            this.removeSelectionChangedListener(this);
         }
     }
 
@@ -205,12 +203,6 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
             if (action == null)
                 return null;
             if (action instanceof SqlViewerAction) {
-                SqlViewerAction mva = (SqlViewerAction) action;
-                if (mva.isContentDependent())
-                    getSourceViewer().addTextListener(this);
-                if (mva.isSelectionDependent())
-                    getSourceViewer().addSelectionChangedListener(this);
-
                 initAction(action, getResourceBundle(),
                         "action." + actionId + "."); //$NON-NLS-1$ //$NON-NLS-2$
             }
