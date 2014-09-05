@@ -23,7 +23,7 @@ public class StdStreamRedirector implements Runnable {
 
     private BufferedReader in;
     
-    private StringBuilder storage = new StringBuilder(2000);
+    private StringBuilder storage = new StringBuilder(20000);
     
     private AtomicBoolean isDestroyed = new AtomicBoolean(false);
     
@@ -52,15 +52,23 @@ public class StdStreamRedirector implements Runnable {
         }
     }
     
+    /** 
+     * @see #launchAndRedirect(ProcessBuilder, Integer)
+     */
+    public static String launchAndRedirect(ProcessBuilder pb) throws IOException {
+        return launchAndRedirect(pb, null);
+    }
+    
     /**
      * Launches a process combining stdout & stderr and redirecting them
      * onto {@link Console}. Blocks until process exits and all output is consumed.
      * 
-     * @param pb process to start 
+     * @param pb process to start
+     * @param returnedValue reference to Integer to store returned value, may be null 
      * @return captured stdout & stderr output
      * @throws IOException
      */
-    public static String launchAndRedirect(ProcessBuilder pb)
+    public static String launchAndRedirect(ProcessBuilder pb, Integer returnedValue)
             throws IOException {
         StringBuilder sb = new StringBuilder(1000 * pb.command().size());
         for(String param : pb.command()) {
@@ -117,6 +125,9 @@ public class StdStreamRedirector implements Runnable {
             if (lastException.get() != null){
                 throw new IOException("Exception thrown while reading external command output ",  //$NON-NLS-1$
                         lastException.get());
+            }
+            if (returnedValue != null) {
+                returnedValue = p.exitValue();
             }
             return redirector.storage.toString();
         } finally {

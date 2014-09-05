@@ -145,23 +145,13 @@ public class DiffPartDescr {
                         false);
                 differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
                 differ.setAdditionalDepcies(manualDepcies);
-                
-                try {
-                    new ProgressMonitorDialog(shell).run(true, false, differ);
-                } catch (InvocationTargetException ex) {
-                    throw new IllegalStateException(
-                            Messages.error_in_the_project_modifier_thread, ex);
-                } catch (InterruptedException ex) {
-                    // assume run() was called as non cancelable
-                    throw new IllegalStateException(
-                            Messages.project_modifier_thread_cancelled_shouldnt_happen,
-                            ex);
-                }
+                differ.runProgressMonitorDiffer(shell);
 
                 SqlScriptDialog dialog = new SqlScriptDialog(shell,
                         SqlScriptDialog.INFORMATION, Messages.diffPartDescr_diff_script,
                         Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
-                        differ.getDiffDirect());
+                        differ, dbSource.getDbObject().flatten(), 
+                        mainPrefs.getBoolean(PREF.USE_PSQL_DEPCY));
                 
                 if (btnDb.getSelection()) {
                     dialog.setDbParams(dbSrc.txtDbHost.getText(),
