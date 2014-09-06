@@ -1,12 +1,14 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,7 +18,9 @@ import java.util.Map;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
@@ -78,8 +82,8 @@ public class DbSourceJdbc extends DbSource {
 
             ResultSet res = metaData.getSchemas();
             while (res.next()) {
-                PgSchema s = getSchema(res.getString("TABLE_SCHEM"));
-                d.addSchema(s);
+                PgSchema schema = getSchema(res.getString("TABLE_SCHEM"));
+                d.addSchema(schema);
             }
             
             connection.close();
@@ -98,13 +102,181 @@ public class DbSourceJdbc extends DbSource {
         
         while (res.next()) {
             PgTable table = getTable(schema, res.getString("table_name"));
+            s.addTable(table);
         }
         
         res = metaData.getTables(null, schema, "%", new String[] {"VIEW"} );
         while (res.next()) {
             PgView view = getView(schema, res.getString("table_name"));
+            s.addView(view);
         }
         return s;
+    }
+    
+    private PgConstraint getConstraint(String schema, String constraint) throws SQLException {
+        String query = "SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = '" + schema + "'";
+        Statement stmt = connection.createStatement();
+        ResultSet res = stmt.executeQuery(query);
+        int schemaOid;
+        if(res.next()){
+            schemaOid = res.getInt("oid");
+        }else{
+            // TODO throw exception, log, output to console?
+            System.err.println("Cannot create constraint " + constraint + ": no oid found for schema " + schema + ".");
+            return null;
+        }
+        
+        query = "SELECT contype, conrelid, consrc, conkey, confrelid, confkey FROM pg_catalog.pg_constraint WHERE connamespace = " + schemaOid + "" + " AND conname = '" + constraint + "'";
+        res = stmt.executeQuery(query);
+        if (!res.next()){
+            // TODO throw exception, log, output to console?
+            System.err.println("Cannot create constraint " + constraint + ": no constraint found.");
+            return null; 
+        }
+                
+        /**
+         * Constraint types:
+         * 
+         *   c = check constraint
+         *   f = foreign key constraint
+         *   p = primary key constraint
+         *   
+         *   u = unique constraint
+         *   t = constraint trigger
+         *   x = exclusion constraint
+         */
+        String definition = "";
+        PgConstraint c = null;
+        String conType = res.getString("contype");
+        c = new PgConstraint(constraint, "", getSearchPath(schema));
+        
+        String[] columnNames = getColumnNames(res.getArray("conkey"), res.getString("conrelid"));
+        switch (conType){
+            case "f":
+                c = new PgForeignKey(constraint, "", getSearchPath(schema));
+                String[] referencedColumnNames = getColumnNames(res.getArray("confkey"), res.getString("confrelid"));
+                definition = "FOREIGN KEY (";
+                // TODO code reuse
+                for(int i = 0; i < columnNames.length; i++){
+                    String columnName = columnNames[i];
+                    definition = definition.concat(columnName);
+                    if(i < columnNames.length - 1){
+                        definition = definition.concat(", ");
+                    }
+                }
+                SimpleEntry<String, String> referencedTableName = getTableNameByOid(res.getString("confrelid"));
+                String schemaPrefix = "";
+                if (!referencedTableName.getKey().equals(schema)){
+                    schemaPrefix = referencedTableName.getKey() + ".";
+                }
+                definition = definition.concat(") REFERENCES " + schemaPrefix + referencedTableName.getValue() + "(");
+                
+                for(int i = 0; i < referencedColumnNames.length; i++){
+                    String columnName = referencedColumnNames[i];
+                    definition = definition.concat(columnName);
+                    if(i < referencedColumnNames.length - 1){
+                        definition = definition.concat(", ");
+                    }
+                }
+                definition = definition.concat(")");
+                break;
+            case "p":
+                definition = "PRIMARY KEY (";
+                for(int i = 0; i < columnNames.length; i++){
+                    String columnName = columnNames[i];
+                    definition = definition.concat(columnName);
+                    if(i < columnNames.length - 1){
+                        definition = definition.concat(", ");
+                    }
+                }
+                definition = definition.concat(")");
+                break;
+            case "c":
+                definition = res.getString("consrc");
+                break;
+        }
+        c.setDefinition(definition);
+        
+        // set table name
+        String tableOid = res.getString("conrelid");
+        if (!tableOid.equals("0")){
+            query = "SELECT relname FROM pg_catalog.pg_class WHERE oid = '" + tableOid + "'";
+            res = stmt.executeQuery(query);
+            if(res.next()){
+                c.setTableName(res.getString("relname"));
+            }
+        }
+        
+        // TODO c.setComment() ???
+        return c;
+    }
+    
+    /**
+     * Returns an array of column names, resolved from conCols Array object 
+     * by pg_attribute.attnum and tableOid
+     * 
+     * @param conCols   Array containing column numbers (references pg_attribute.attnum)
+     * @param tableOid  Oid of table - owner of these columns
+     * @return
+     */
+    private String [] getColumnNames(Array conCols, String tableOid) throws SQLException{
+        Integer[] cols = (Integer[]) conCols.getArray();
+        
+        String query = "SELECT attname FROM pg_catalog.pg_attribute WHERE attrelid = " + tableOid + " AND attnum IN (";
+        for(int i = 0; i < cols.length; i++){
+            Integer colNum = cols[i];
+            query = query.concat(colNum.toString());
+            if (i < cols.length - 1){
+                query = query.concat(", ");
+            }
+        }
+        query = query.concat(")");
+        List<String> columnNames = new ArrayList<String>(3);
+        ResultSet res = connection.createStatement().executeQuery(query);
+        while(res.next()){
+            columnNames.add(res.getString("attname"));
+        }
+        return columnNames.toArray(new String[columnNames.size()]);
+    }
+    
+    private String getTableOidByName(String tableName, String schemaOid) throws SQLException{
+        String query = "SELECT oid FROM pg_catalog.pg_class WHERE relname = '" + tableName + "' AND relnamespace = " + schemaOid + " AND relkind = 'r'";
+        Statement stmt = connection.createStatement();
+        ResultSet res = stmt.executeQuery(query);
+        String tableOid = null;
+        if(res.next()){
+            tableOid = res.getString("oid");
+        }
+        if (res.next()){
+            // WHAT?
+            throw new IllegalArgumentException("There should be only one row for table " + tableName + 
+                    " in schema oid " + schemaOid + ". Modify select query to limit result to single row."); 
+        }
+        return tableOid;
+    }
+    
+    private SimpleEntry<String, String> getTableNameByOid(String tableOid) throws SQLException{
+        String query = "SELECT relname, relnamespace FROM pg_catalog.pg_class WHERE oid = '" + tableOid + "'";
+        Statement stmt = connection.createStatement();
+        ResultSet res = stmt.executeQuery(query);
+        String tableName = null;
+        String schemaOid = null;
+        if(res.next()){
+            schemaOid = res.getString("relnamespace");
+            tableName = res.getString("relname");
+        }else{
+            return null;
+        }
+        query = "SELECT nspname FROM pg_catalog.pg_namespace WHERE oid = '" + schemaOid + "'";
+        res = stmt.executeQuery(query);
+        String schemaName = null;
+        if(res.next()){
+            schemaName = res.getString("nspname");
+        }else{
+            return null;
+        }
+        stmt.close();
+        return new SimpleEntry<String, String>(schemaName, tableName);
     }
     
     private PgView getView(String schema, String view) throws SQLException {
@@ -258,13 +430,24 @@ public class DbSourceJdbc extends DbSource {
         // end privileges
         
         // Query owner
-        String query = "select tableowner from pg_catalog.pg_tables WHERE schemaname = '" + schema + "'" + " AND tablename = '" + table + "'";
+        String query = "SELECT tableowner FROM pg_catalog.pg_tables WHERE schemaname = '" + schema + "'" + " AND tablename = '" + table + "'";
         Statement stmt = connection.createStatement();
         res = stmt.executeQuery(query);
         if (res.next()){
             t.setOwner(res.getString("tableowner"));
         }
         
+        // Query CONSTRAINTS
+        query = "SELECT constraint_name, constraint_schema FROM information_schema.constraint_column_usage WHERE table_schema = '" + schema + "'" + " AND table_name = '" + table + "'";
+        res = stmt.executeQuery(query);
+        while (res.next()){
+            String constraintName = res.getString("constraint_name");
+            String constraintSchema = res.getString("constraint_schema");
+            PgConstraint constraint = getConstraint(constraintSchema, constraintName);
+            if (constraint != null){
+                t.addConstraint(constraint);
+            }
+        }
         return t;
     }
 }
