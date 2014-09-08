@@ -24,10 +24,12 @@ import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
+import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
@@ -640,10 +642,10 @@ public class PgDiff {
                     tempSwitchSearchPath(newSchemaName, searchPathHelper, script);
                     writeCreationSql(script, "-- DEPCY: this view is in dependency tree of " + 
                     fullStatement.getBareName(), viewNew);
-                }else if (viewOld != null && !viewOld.equals(viewNew)){
+                }else if (!viewOld.equals(viewNew)){
                     tempSwitchSearchPath(newSchemaName, searchPathHelper, script);
                     writeDropSql(script, "-- DEPCY: recreating view that is in dependency "
-                            + "tree of " + fullStatement.getBareName(), viewNew);
+                            + "tree of " + fullStatement.getBareName(), viewOld);
                     writeCreationSql(script, "-- DEPCY: recreating view that is in "
                             + "dependency tree of " + fullStatement.getBareName(),  viewNew);
                 }
@@ -709,6 +711,31 @@ public class PgDiff {
                 if (dbOld.getSchema(schemaNew.getName()) == null){
                     writeCreationSql(script, "-- DEPCY: this schema is in dependency tree of " + 
                             fullStatement.getBareName(), schemaNew);
+                }
+            } else if (dep instanceof PgFunction) {
+                if (fullStatement instanceof PgTrigger) {
+                    PgFunction funcNew = (PgFunction) dep;
+                    
+                    String newSchemaName = funcNew.getParent().getName();
+                    PgSchema schemaOld = dbOld.getSchema(newSchemaName);
+                    PgFunction funcOld = (schemaOld == null) ? null : schemaOld
+                            .getFunction(funcNew.getName());
+                    if (funcOld == null) {
+                        tempSwitchSearchPath(funcNew.getParent().getName(),
+                                searchPathHelper, script);
+                        writeCreationSql(script,
+                                "-- DEPCY: this Function is in dependency tree of "
+                                        + fullStatement.getBareName(), funcNew);
+                    }else if (!funcOld.equals(funcNew)){
+                        tempSwitchSearchPath(newSchemaName, searchPathHelper,
+                                script);
+                        writeDropSql(script,
+                                "-- DEPCY: recreating Function that is in dependency tree of "
+                                        + fullStatement.getBareName(), funcOld);
+                        writeCreationSql(script,
+                                "-- DEPCY: recreating Function that is in dependency tree of "
+                                        + fullStatement.getBareName(), funcNew);
+                    }
                 }
             }
         }

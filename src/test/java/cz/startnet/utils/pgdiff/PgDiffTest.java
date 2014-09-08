@@ -187,8 +187,14 @@ public class PgDiffTest {
                     {"function_equal_whitespace", false, false, true, false},
                     // Tests scenario where TRIGGER is added.
                     {"add_trigger", false, false, false, false},
+                    // Tests scenario where TRIGGER is added in reverse add.
+                    {"add_trigger_another_schema", false, false, false, false},
                     // Tests scenario where TRIGGER is dropped.
                     {"drop_trigger", false, false, false, false},
+                    // Tests scenario where TRIGGER is dropped and func in another schema.
+                    {"drop_trigger_another_schema", false, false, false, false},
+                    // Tests scenario where TRIGGER is change function.
+                    {"change_trigger_function", false, false, false, false},
                     // Tests scenario where TRIGGER is modified.
                     {"modify_trigger", false, false, false, false},
                     // Tests scenario where VIEW is added.

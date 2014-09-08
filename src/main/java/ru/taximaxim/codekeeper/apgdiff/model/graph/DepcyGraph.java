@@ -129,18 +129,8 @@ public class DepcyGraph {
                 }
                 
                 for (String seqDefinition : table.getSequences()) {
-                    String seqName = ParserUtils.getObjectName(seqDefinition);
-                    String schemaName = ParserUtils.getSecondObjectName(seqDefinition);
-                    
-                    PgSchema schemaToSearch = null;
-                    if (schemaName != null) {
-                        schemaToSearch = db.getSchema(schemaName);
-                    }
-                    if (schemaToSearch == null) {
-                        schemaToSearch = schema;
-                    }
-                    
-                    PgSequence seq = schemaToSearch.getSequence(seqName);
+                    PgSequence seq = getRightSchema(schema, seqDefinition).getSequence(
+                            ParserUtils.getObjectName(seqDefinition));
                     if (seq != null) {
                         graph.addVertex(seq);
                         graph.addEdge(table, seq);
@@ -150,6 +140,16 @@ public class DepcyGraph {
                         if (table.getName().equals(ownedByTable)) {
                             graph.addEdge(seq, table);
                         }
+                    }
+                }
+                
+                for (PgTrigger trigger : table.getTriggers()) {
+                    String funcDef = trigger.getFunction();
+                    PgFunction func = getRightSchema(schema, funcDef).getFunction(
+                            ParserUtils.getObjectName(funcDef));
+                    if (func != null) {
+                        graph.addVertex(func);
+                        graph.addEdge(trigger, func);
                     }
                 }
             }
@@ -208,6 +208,24 @@ public class DepcyGraph {
             graph.addVertex(ext);
             graph.addEdge(ext, db);
         }
+    }
+    /**
+     * Возвращает схему, на которую указывает строковое определение объекта,
+     * либо текущую схему
+     * @param currSchema текущая схема
+     * @param objDefinition определение объекта (имя_объекта, либо имя_схемы.имя_объекта)
+     * @return схема, содержащая объект, либо текущая схема
+     */
+    private PgSchema getRightSchema(PgSchema currSchema, String objDefinition) {
+        String schemaName = ParserUtils.getSecondObjectName(objDefinition);
+        PgSchema schemaToSearch = null;
+        if (schemaName != null) {
+            schemaToSearch = db.getSchema(schemaName);
+        }
+        if (schemaToSearch == null) {
+            schemaToSearch = currSchema;
+        }        
+        return schemaToSearch;
     }
     
     public void addCustomDepcies(List<Entry<PgStatement, PgStatement>> depcies) {
