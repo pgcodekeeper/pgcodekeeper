@@ -285,29 +285,32 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
     }
 
     protected IAction createAction(String actionId) {
-        if (UNDO_ID.equals(actionId))
+        switch (actionId) {
+        case UNDO_ID:
             return new TextOperationAction(ITextOperationTarget.UNDO,
                     IWorkbenchCommandConstants.EDIT_UNDO, true, false, true);
-        if (REDO_ID.equals(actionId))
+        case REDO_ID:
             return new TextOperationAction(ITextOperationTarget.REDO,
                     IWorkbenchCommandConstants.EDIT_REDO, true, false, true);
-        if (CUT_ID.equals(actionId))
+        case CUT_ID:
             return new TextOperationAction(ITextOperationTarget.CUT,
                     IWorkbenchCommandConstants.EDIT_CUT, true, true, false);
-        if (COPY_ID.equals(actionId))
+        case COPY_ID:
             return new TextOperationAction(ITextOperationTarget.COPY,
                     IWorkbenchCommandConstants.EDIT_COPY, false, true, false);
-        if (PASTE_ID.equals(actionId))
+        case PASTE_ID:
             return new TextOperationAction(ITextOperationTarget.PASTE,
                     IWorkbenchCommandConstants.EDIT_PASTE, true, false, false);
-        if (DELETE_ID.equals(actionId))
+        case DELETE_ID:
             return new TextOperationAction(ITextOperationTarget.DELETE,
                     IWorkbenchCommandConstants.EDIT_DELETE, true, false, false);
-        if (SELECT_ALL_ID.equals(actionId))
+        case SELECT_ALL_ID:
             return new TextOperationAction(ITextOperationTarget.SELECT_ALL,
                     IWorkbenchCommandConstants.EDIT_SELECT_ALL, false, false,
                     false);
-        return null;
+        default:
+            return null;
+        }
     }
 
     class TextOperationAction extends SqlViewerAction {
