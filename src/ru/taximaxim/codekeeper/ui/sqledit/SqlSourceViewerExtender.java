@@ -99,8 +99,10 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
     }
 
     private void freeObjects() {
-        if (handlerService != null && contentAssistHandlerActivation != null) {
-            handlerService.deactivateHandler(contentAssistHandlerActivation);
+        if (handlerService != null) {
+            if (contentAssistHandlerActivation != null) {
+                handlerService.deactivateHandler(contentAssistHandlerActivation);
+            }
             clearHandlers();
         }
     }
