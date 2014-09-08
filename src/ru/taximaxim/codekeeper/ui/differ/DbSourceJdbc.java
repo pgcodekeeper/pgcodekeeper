@@ -21,6 +21,7 @@ import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
+import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
@@ -448,6 +449,21 @@ public class DbSourceJdbc extends DbSource {
                 t.addConstraint(constraint);
             }
         }
+        
+        // Query INDECIES
+        query = "SELECT indexrelid FROM pg_catalog.pg_index WHERE indrelid = '" + getTableOidByName(table, schema) + "'";
+        res = stmt.executeQuery(query);
+        while (res.next()){
+            PgIndex index = getIndex(res.getString("indexrelid"));
+            if (index != null){
+                t.addIndex(index);
+            }
+        }
         return t;
+    }
+
+    private PgIndex getIndex(String string) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
