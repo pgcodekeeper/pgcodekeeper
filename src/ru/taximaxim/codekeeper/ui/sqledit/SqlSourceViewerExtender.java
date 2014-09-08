@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -31,13 +30,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.texteditor.ChangeEncodingAction;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
+import org.eclipse.ui.texteditor.ResourceAction;
 
 /**
  * Используется для создания самостоятельного объекта SqlSourceViewerExtender
@@ -49,16 +48,6 @@ import org.eclipse.ui.texteditor.IUpdate;
 public class SqlSourceViewerExtender extends SqlSourceViewer implements
         IMenuListener, ITextListener, ISelectionChangedListener {
 
-    private static final String[] GLOBAL_ACTIONS = {
-            ActionFactory.UNDO.getId(), 
-            ActionFactory.REDO.getId(),
-//            ActionFactory.CUT.getId(), 
-//            ActionFactory.COPY.getId(),
-//            ActionFactory.PASTE.getId(), 
-//            ActionFactory.DELETE.getId(),
-//            ActionFactory.SELECT_ALL.getId(), 
-            ActionFactory.FIND.getId(),
-            ITextEditorActionDefinitionIds.LINE_GOTO };
     private static final String[] TEXT_ACTIONS = {
             SqlSourceViewerExtender.UNDO_ID, 
             SqlSourceViewerExtender.REDO_ID,
@@ -101,7 +90,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         MenuManager menu = new MenuManager();
         menu.setRemoveAllWhenShown(true);
         menu.addMenuListener(this);
-        StyledText te = getSourceViewer().getTextWidget();
+        StyledText te = this.getTextWidget();
         te.setMenu(menu.createContextMenu(te));
         Menu menu1 = menu.createContextMenu(this.getControl());
         this.getControl().setMenu(menu1);
@@ -162,14 +151,17 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
     }
 
     private void contributeFindAction() {
-        IAction action;
-        action = new FindReplaceAction(
+        IAction action = new FindReplaceAction(
                 getResourceBundle(),
                 "Editor.FindReplace.", this.getControl().getShell(), getFindReplaceTarget()); //$NON-NLS-1$
         action.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
         this.addAction(SqlSourceViewerExtender.FIND_ID, action);
     }
 
+    /**
+     * Используется для перевода пунктов меню
+     * @return Бандл с переводом пунктов меню
+     */
     private ResourceBundle getResourceBundle() {
         return ResourceBundle
                 .getBundle("org.eclipse.compare.contentmergeviewer.TextMergeViewerResources");
@@ -211,7 +203,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         }
         if (action instanceof SqlViewerAction) {
             SqlViewerAction mva = (SqlViewerAction) action;
-            if (mva.isEditableDependent() && !getSourceViewer().isEditable())
+            if (mva.isEditableDependent() && !this.isEditable())
                 return null;
         }
         return action;
@@ -223,11 +215,9 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
             clearHandlers();
             this.getControl().getDisplay().asyncExec(new Runnable() {
                 public void run() {
-                    for (int i = 0; i < GLOBAL_ACTIONS.length; i++) {
+                    for (String actionName : TEXT_ACTIONS) {
                         IAction action = null;
-                        action = getAction(TEXT_ACTIONS[i]);
-                        // fHandlerService.setGlobalActionHandler(GLOBAL_ACTIONS[i],
-                        // action);
+                        action = getAction(actionName);
                         if (action != null) {
                             fActionHandlers.add(handlerService.activateHandler(
                                     action.getActionDefinitionId(),
@@ -387,33 +377,10 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
      */
     private static void initAction(IAction a, ResourceBundle bundle,
             String prefix) {
-
-        String labelKey = "label"; //$NON-NLS-1$
-        String tooltipKey = "tooltip"; //$NON-NLS-1$
-        String descriptionKey = "description"; //$NON-NLS-1$
-
-        if (prefix != null && prefix.length() > 0) {
-            labelKey = prefix + labelKey;
-            tooltipKey = prefix + tooltipKey;
-            descriptionKey = prefix + descriptionKey;
-        }
-
-        a.setText(getString(bundle, labelKey, labelKey));
-        a.setToolTipText(getString(bundle, tooltipKey, null));
-        a.setDescription(getString(bundle, descriptionKey, null));
+        ResourceAction ra = new ResourceAction(bundle, prefix){};
+        a.setText(ra.getText());
+        a.setToolTipText(ra.getToolTipText());
+        a.setDescription(ra.getDescription());
+        a.setImageDescriptor(ra.getImageDescriptor());
     }
-
-    private static String getString(ResourceBundle bundle, String key,
-            String dfltValue) {
-
-        if (bundle != null) {
-            try {
-                return bundle.getString(key);
-            } catch (MissingResourceException x) {
-                // fall through
-            }
-        }
-        return dfltValue;
-    }
-
 }
