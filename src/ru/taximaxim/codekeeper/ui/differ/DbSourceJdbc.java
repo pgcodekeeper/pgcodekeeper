@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -14,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -30,6 +30,9 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class DbSourceJdbc extends DbSource {
 
+    private final String DB_TABLE_OF_TABLES = "pg_catalog.pg_class";
+    private final String DB_TABLE_OF_CONSTRAINTS = "pg_catalog.pg_constraint";
+    
     final private static Map<String, String> DATA_TYPE_ALIASES = new HashMap<String, String>(){
         {
             put("int8","bigint");
@@ -115,20 +118,9 @@ public class DbSourceJdbc extends DbSource {
     }
     
     private PgConstraint getConstraint(String schema, String constraint) throws SQLException {
-        String query = "SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = '" + schema + "'";
-        Statement stmt = connection.createStatement();
-        ResultSet res = stmt.executeQuery(query);
-        int schemaOid;
-        if(res.next()){
-            schemaOid = res.getInt("oid");
-        }else{
-            // TODO throw exception, log, output to console?
-            System.err.println("Cannot create constraint " + constraint + ": no oid found for schema " + schema + ".");
-            return null;
-        }
-        
-        query = "SELECT contype, conrelid, consrc, conkey, confrelid, confkey FROM pg_catalog.pg_constraint WHERE connamespace = " + schemaOid + "" + " AND conname = '" + constraint + "'";
-        res = stmt.executeQuery(query);
+        String schemaOid = getSchemaOidByName(schema);
+        String query = "SELECT contype, conrelid, consrc, conkey, confrelid, confkey FROM " + DB_TABLE_OF_CONSTRAINTS + " WHERE connamespace = " + schemaOid + "" + " AND conname = '" + constraint + "'";
+        ResultSet res = connection.createStatement().executeQuery(query);
         if (!res.next()){
             // TODO throw exception, log, output to console?
             System.err.println("Cannot create constraint " + constraint + ": no constraint found.");
@@ -151,11 +143,11 @@ public class DbSourceJdbc extends DbSource {
         String conType = res.getString("contype");
         c = new PgConstraint(constraint, "", getSearchPath(schema));
         
-        String[] columnNames = getColumnNames(res.getArray("conkey"), res.getString("conrelid"));
+        String[] columnNames = getColumnNames((Integer[])res.getArray("conkey").getArray(), res.getString("conrelid"));
         switch (conType){
             case "f":
                 c = new PgForeignKey(constraint, "", getSearchPath(schema));
-                String[] referencedColumnNames = getColumnNames(res.getArray("confkey"), res.getString("confrelid"));
+                String[] referencedColumnNames = getColumnNames((Integer[])res.getArray("confkey").getArray(), res.getString("confrelid"));
                 definition = "FOREIGN KEY (";
                 // TODO code reuse
                 for(int i = 0; i < columnNames.length; i++){
@@ -201,8 +193,8 @@ public class DbSourceJdbc extends DbSource {
         // set table name
         String tableOid = res.getString("conrelid");
         if (!tableOid.equals("0")){
-            query = "SELECT relname FROM pg_catalog.pg_class WHERE oid = '" + tableOid + "'";
-            res = stmt.executeQuery(query);
+            query = "SELECT relname FROM " + DB_TABLE_OF_TABLES + " WHERE oid = '" + tableOid + "'";
+            res = connection.createStatement().executeQuery(query);
             if(res.next()){
                 c.setTableName(res.getString("relname"));
             }
@@ -216,13 +208,11 @@ public class DbSourceJdbc extends DbSource {
      * Returns an array of column names, resolved from conCols Array object 
      * by pg_attribute.attnum and tableOid
      * 
-     * @param conCols   Array containing column numbers (references pg_attribute.attnum)
+     * @param conCols   Array of ints containing column numbers (references pg_attribute.attnum)
      * @param tableOid  Oid of table - owner of these columns
      * @return
      */
-    private String [] getColumnNames(Array conCols, String tableOid) throws SQLException{
-        Integer[] cols = (Integer[]) conCols.getArray();
-        
+    private String [] getColumnNames(Integer[] cols, String tableOid) throws SQLException{
         String query = "SELECT attname FROM pg_catalog.pg_attribute WHERE attrelid = " + tableOid + " AND attnum IN (";
         for(int i = 0; i < cols.length; i++){
             Integer colNum = cols[i];
@@ -241,7 +231,7 @@ public class DbSourceJdbc extends DbSource {
     }
     
     private String getTableOidByName(String tableName, String schemaOid) throws SQLException{
-        String query = "SELECT oid FROM pg_catalog.pg_class WHERE relname = '" + tableName + "' AND relnamespace = " + schemaOid + " AND relkind = 'r'";
+        String query = "SELECT oid FROM " + DB_TABLE_OF_TABLES + " WHERE relname = '" + tableName + "' AND relnamespace = " + schemaOid + " AND relkind = 'r'";
         Statement stmt = connection.createStatement();
         ResultSet res = stmt.executeQuery(query);
         String tableOid = null;
@@ -256,6 +246,12 @@ public class DbSourceJdbc extends DbSource {
         return tableOid;
     }
     
+    /**
+     * Returns schemaName.objectName pair for the table (and similar, such as 
+     * Index or View) by seeking its oid in pg_catalog.pg_class  
+     * @param tableOid
+     * @return
+     */
     private SimpleEntry<String, String> getTableNameByOid(String tableOid) throws SQLException{
         String query = "SELECT relname, relnamespace FROM pg_catalog.pg_class WHERE oid = '" + tableOid + "'";
         Statement stmt = connection.createStatement();
@@ -430,7 +426,7 @@ public class DbSourceJdbc extends DbSource {
         }
         // end privileges
         
-        // Query owner
+        // Query OWNER
         String query = "SELECT tableowner FROM pg_catalog.pg_tables WHERE schemaname = '" + schema + "'" + " AND tablename = '" + table + "'";
         Statement stmt = connection.createStatement();
         res = stmt.executeQuery(query);
@@ -451,10 +447,19 @@ public class DbSourceJdbc extends DbSource {
         }
         
         // Query INDECIES
-        query = "SELECT indexrelid FROM pg_catalog.pg_index WHERE indrelid = '" + getTableOidByName(table, schema) + "'";
+        // TODO get oids earlier (or cache), as they are not changed in time (minimize db queries)
+        String tableOid = getTableOidByName(table, getSchemaOidByName(schema));
+        query = "SELECT indexrelid, indkey FROM pg_catalog.pg_index WHERE indrelid = '" + tableOid + "'";
         res = stmt.executeQuery(query);
         while (res.next()){
-            PgIndex index = getIndex(res.getString("indexrelid"));
+            String columnsString = res.getString("indkey");
+            Scanner sc = new Scanner(columnsString);
+            List<Integer> columnsNumbers = new ArrayList<Integer>(2);
+            while(sc.hasNext()){
+                columnsNumbers.add(Integer.valueOf(sc.next()));
+            }
+            
+            PgIndex index = getIndex(res.getString("indexrelid"), tableOid, columnsNumbers.toArray(new Integer[columnsNumbers.size()]));
             if (index != null){
                 t.addIndex(index);
             }
@@ -462,8 +467,53 @@ public class DbSourceJdbc extends DbSource {
         return t;
     }
 
-    private PgIndex getIndex(String string) {
-        // TODO Auto-generated method stub
-        return null;
+    private PgIndex getIndex(String indexOid, String tableOid, Integer[] columnsNumbers) throws SQLException {
+        SimpleEntry<String, String> indexName = getTableNameByOid(indexOid);
+        PgIndex i = new PgIndex(indexName.getValue(), "", getSearchPath(indexName.getKey()));
+        i.setTableName(getTableNameByOid(tableOid).getValue());
+        
+        String definition = "USING ";
+        
+        String query = "SELECT pg_catalog.pg_am.amname "
+                     + "FROM pg_catalog.pg_class JOIN pg_catalog.pg_am ON pg_class.relam = pg_am.oid "
+                     + "WHERE pg_catalog.pg_class.oid = '" + indexOid + "'";
+        ResultSet res = connection.createStatement().executeQuery(query);
+        if(res.next()){
+            definition = definition.concat(res.getString("amname"));
+        }
+        
+        String [] columnNames = getColumnNames(columnsNumbers, tableOid);
+        if (columnNames.length > 0){
+            definition = definition.concat(" (");
+        }
+        for(int j = 0; j < columnNames.length; j++){
+            definition = definition.concat(columnNames[j]);
+            if (j < columnNames.length - 1){
+                definition = definition.concat(", ");
+            }
+        }
+        if (columnNames.length > 0){
+            definition = definition.concat(")");
+        }
+        i.setDefinition(definition);
+        
+        return i;
+    }
+    
+    private String getSchemaOidByName(String schema) throws SQLException{
+        String query = "SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = '" + schema + "'";
+        Statement stmt = connection.createStatement();
+        ResultSet res = stmt.executeQuery(query);
+        String schemaOid;
+        if(res.next()){
+            schemaOid = res.getString("oid");
+        }else{
+            throw new IllegalStateException("Could not resolve schema oid by its name " + schema + " in pg_catalog.pg_namespace");
+        }
+        
+        if (res.next()){
+            throw new IllegalStateException("More than one schema oid found by its name " + schema + " in pg_catalog.pg_namespace");
+        }
+        return schemaOid;
     }
 }
