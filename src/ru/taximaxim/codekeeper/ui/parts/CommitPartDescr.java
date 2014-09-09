@@ -596,7 +596,7 @@ public class CommitPartDescr {
             
             @Override
             public String getRightLabel(Object input) {
-                return Messages.commitPartDescr_to + repoName;
+                return Messages.to + repoName;
             }
             
             @Override

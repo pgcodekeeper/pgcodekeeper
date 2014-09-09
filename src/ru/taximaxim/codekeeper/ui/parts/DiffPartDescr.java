@@ -107,7 +107,8 @@ public class DiffPartDescr {
      * A collection of manually added object dependencies.
      * Keys are dependants, values are lists of dependencies.
      */
-    private List<Entry<PgStatement, PgStatement>> manualDepcies = new LinkedList<>();
+    private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new LinkedList<>();
+    private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new LinkedList<>();
 
     @PostConstruct
     private void postConstruct(Composite parent, final PgDbProject proj,
@@ -144,7 +145,8 @@ public class DiffPartDescr {
                         DbSource.fromFilter(dbTarget,filtered, DiffSide.RIGHT),
                         false);
                 differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
-                differ.setAdditionalDepcies(manualDepcies);
+                differ.setAdditionalDepciesSource(manualDepciesSource);
+                differ.setAdditionalDepciesTarget(manualDepciesTarget);
                 differ.runProgressMonitorDiffer(shell);
 
                 SqlScriptDialog dialog = new SqlScriptDialog(shell,
@@ -170,9 +172,13 @@ public class DiffPartDescr {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 ManualDepciesDialog dialog = new ManualDepciesDialog(shell,
-                        manualDepcies, dbSource.getDbObject().flatten());
+                        manualDepciesSource, manualDepciesTarget, dbSource.getDbObject().flatten(),
+                        dbTarget.getDbObject().flatten());
+                dialog.setNamesToDepciesGroups(Messages.database, 
+                        proj.getString(PROJ_PREF.REPO_TYPE));
                 if (dialog.open() == Dialog.OK) {
-                    manualDepcies = dialog.getDepciesList();
+                    manualDepciesSource = dialog.getDepciesSourceList();
+                    manualDepciesTarget = dialog.getDepciesTargetList();
                 }
             }
         });
@@ -332,7 +338,8 @@ public class DiffPartDescr {
                 diffPane.setInput(null);
                 btnGetLatest.setEnabled(true);
                 btnAddDepcy.setEnabled(true);
-                manualDepcies.clear();
+                manualDepciesSource.clear();
+                manualDepciesTarget.clear();
             }
         });
 
@@ -439,7 +446,7 @@ public class DiffPartDescr {
             
             @Override
             public String getLeftLabel(Object input) {
-                return Messages.diffPartDescr_to_database;
+                return Messages.to + Messages.database;
             }
             
             @Override
@@ -508,7 +515,8 @@ public class DiffPartDescr {
                     diffPane.setInput(null);
                     btnGetLatest.setEnabled(false);
                     btnAddDepcy.setEnabled(false);
-                    manualDepcies.clear();
+                    manualDepciesSource.clear();
+                    manualDepciesTarget.clear();
                 }
             });
         }

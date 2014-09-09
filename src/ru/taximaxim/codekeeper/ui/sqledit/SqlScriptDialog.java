@@ -123,7 +123,7 @@ public class SqlScriptDialog extends MessageDialog {
         
         this.differ = differ;
         this.oldDepcy = differ.getAdditionalDepcies();
-        differ.setAdditionalDepcies(new ArrayList<>(oldDepcy));
+        differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
         this.objList = objList;
         this.usePsqlDepcy = usePsqlDepcy;
         this.history = new XmlHistory.Builder(SCRIPTS_HIST_MAX_STORED, 
@@ -379,7 +379,7 @@ public class SqlScriptDialog extends MessageDialog {
             mb.setMessage(mb.getMessage() + System.lineSeparator() +
                     Messages.SqlScriptDialog_add_it_to_script);
             if (mb.open() == SWT.OK) {
-                differ.addAdditionDepcies(depcyToAdd);
+                differ.addAdditionDepciesSource(depcyToAdd);
                 differ.runProgressMonitorDiffer(getParentShell());
                 sqlEditor.setDocument(new Document(differ.getDiffDirect()));
                 sqlEditor.refresh();
@@ -484,7 +484,7 @@ public class SqlScriptDialog extends MessageDialog {
             errorDialog.open();
             return false;
         } else {
-            differ.setAdditionalDepcies(oldDepcy);
+            differ.setAdditionalDepciesSource(oldDepcy);
             history.addHistoryEntry(cmbScript.getText());
             return super.close();
         }

@@ -32,29 +32,35 @@ public class Differ implements IRunnableWithProgress {
     private PgDatabase sourceDbFull;
     private PgDatabase targetDbFull;
     
-    private List<Entry<PgStatement, PgStatement>> additionalDepcies;
+    private List<Entry<PgStatement, PgStatement>> additionalDepciesSource;
+    private List<Entry<PgStatement, PgStatement>> additionalDepciesTarget;
 
     public void setFullDbs(PgDatabase sourceDbFull, PgDatabase targetDbFull) {
        this.sourceDbFull = sourceDbFull;
        this.targetDbFull = targetDbFull;
     }
     
-    public void setAdditionalDepcies(
+    public void setAdditionalDepciesSource(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
-        this.additionalDepcies = additionalDepcies;
+        this.additionalDepciesSource = additionalDepcies;
     }
     
-    public void addAdditionDepcies(
+    public void setAdditionalDepciesTarget(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
-        if (this.additionalDepcies == null) {
-            setAdditionalDepcies(additionalDepcies);
+        this.additionalDepciesTarget = additionalDepcies;
+    }
+    
+    public void addAdditionDepciesSource(
+            List<Entry<PgStatement, PgStatement>> additionalDepcies) {
+        if (this.additionalDepciesSource == null) {
+            setAdditionalDepciesSource(additionalDepcies);
         } else {
-            this.additionalDepcies.addAll(additionalDepcies);
+            this.additionalDepciesSource.addAll(additionalDepcies);
         }
     }
     
     public List<Entry<PgStatement, PgStatement>> getAdditionalDepcies() {
-        return additionalDepcies;
+        return additionalDepciesSource;
     } 
     
     public void runProgressMonitorDiffer(final Shell shell) {
@@ -115,7 +121,8 @@ public class Differ implements IRunnableWithProgress {
         PrintWriter writer = new UnixPrintWriter(diffOut, true);
         
         PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
-                dbSource, dbTarget, sourceDbFull, targetDbFull, additionalDepcies);
+                dbSource, dbTarget, sourceDbFull, targetDbFull, 
+                additionalDepciesSource, additionalDepciesTarget);
         writer.flush();
         diffDirect = diffOut.toString().trim();
 
