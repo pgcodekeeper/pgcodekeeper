@@ -131,13 +131,14 @@ public class PgDiff {
             PgDiffArguments arguments, PgDatabase oldDatabase, PgDatabase newDatabase,
             PgDatabase oldDbFull, PgDatabase newDbFull) {
         diffDatabaseSchemasAdditionalDepcies(writer, arguments,
-                oldDatabase, newDatabase, oldDbFull, newDbFull, null);
+                oldDatabase, newDatabase, oldDbFull, newDbFull, null, null);
     }
     
     public static void diffDatabaseSchemasAdditionalDepcies(PrintWriter writer,
             PgDiffArguments arguments, PgDatabase oldDatabase, PgDatabase newDatabase,
             PgDatabase oldDbFull, PgDatabase newDbFull,
-            List<Entry<PgStatement, PgStatement>> additionalDepcies) {
+            List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
         // since we cannot into OOP here - null the global vars at least
         oldDepcyGraph = newDepcyGraph = null;
         depcyOld = depcyNew = null;
@@ -153,8 +154,11 @@ public class PgDiff {
             dbOld = oldDbFull;
             dbNew = newDbFull;
             
-            if (additionalDepcies != null) {
-                depcyOld.addCustomDepcies(additionalDepcies);
+            if (additionalDepciesSource != null) {
+                depcyOld.addCustomDepcies(additionalDepciesSource);
+            }
+            if (additionalDepciesTarget != null) {
+                depcyNew.addCustomDepcies(additionalDepciesTarget);
             }
         }else{
             depcyOld = new DepcyGraph(new PgDatabase());
