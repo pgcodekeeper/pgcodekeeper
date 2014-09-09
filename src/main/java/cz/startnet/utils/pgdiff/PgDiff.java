@@ -637,18 +637,9 @@ public class PgDiff {
                 String newSchemaName = viewNew.getParent().getName();
                 PgSchema schemaOld = dbOld.getSchema(newSchemaName);
                 
-                PgView viewOld = (schemaOld == null) ? null : schemaOld.getView(viewNew.getName()); 
-                if (viewOld == null){
-                    tempSwitchSearchPath(newSchemaName, searchPathHelper, script);
-                    writeCreationSql(script, "-- DEPCY: this view is in dependency tree of " + 
-                    fullStatement.getBareName(), viewNew);
-                }else if (!viewOld.equals(viewNew)){
-                    tempSwitchSearchPath(newSchemaName, searchPathHelper, script);
-                    writeDropSql(script, "-- DEPCY: recreating view that is in dependency "
-                            + "tree of " + fullStatement.getBareName(), viewOld);
-                    writeCreationSql(script, "-- DEPCY: recreating view that is in "
-                            + "dependency tree of " + fullStatement.getBareName(),  viewNew);
-                }
+                PgView viewOld = (schemaOld == null) ? null : schemaOld.getView(viewNew.getName());
+                writeDepcyObjToScript(script, searchPathHelper, fullStatement, viewNew, 
+                        "View", newSchemaName, viewOld);                
             }else if (dep instanceof PgSequence){
                 if (    fullStatement instanceof PgSequence && 
                         dep.getName().equals(fullStatement.getName()) && 
@@ -718,29 +709,47 @@ public class PgDiff {
                     
                     String newSchemaName = funcNew.getParent().getName();
                     PgSchema schemaOld = dbOld.getSchema(newSchemaName);
-                    PgFunction funcOld = (schemaOld == null) ? null : schemaOld
+                    PgStatement funcOld = (schemaOld == null) ? null : schemaOld
                             .getFunction(funcNew.getName());
-                    if (funcOld == null) {
-                        tempSwitchSearchPath(funcNew.getParent().getName(),
-                                searchPathHelper, script);
-                        writeCreationSql(script,
-                                "-- DEPCY: this Function is in dependency tree of "
-                                        + fullStatement.getBareName(), funcNew);
-                    }else if (!funcOld.equals(funcNew)){
-                        tempSwitchSearchPath(newSchemaName, searchPathHelper,
-                                script);
-                        writeDropSql(script,
-                                "-- DEPCY: recreating Function that is in dependency tree of "
-                                        + fullStatement.getBareName(), funcOld);
-                        writeCreationSql(script,
-                                "-- DEPCY: recreating Function that is in dependency tree of "
-                                        + fullStatement.getBareName(), funcNew);
-                    }
+                    writeDepcyObjToScript(script, searchPathHelper,
+                            fullStatement, funcNew, "Function", newSchemaName, funcOld);
                 }
             }
         }
 
         return specialDependencies;
+    }
+
+    /**
+     * Пересоздает(DROP - CREATE) зависимость, если она существует и отличается в двух схемах,
+     * иначе просто создает зависимость
+     * @param script скрипт для комманд SQL
+     * @param searchPathHelper 
+     * @param fullStatement зависимый объект
+     * @param objNew зависимость в новой базе
+     * @param objName имя типа объекта зависимости
+     * @param newSchemaName имя схемы в новой базе
+     * @param objOld зависимость в исходной базе
+     */
+    private static void writeDepcyObjToScript(PgDiffScript script,
+            SearchPathHelper searchPathHelper, PgStatement fullStatement,
+            PgStatement objNew, String objName, String newSchemaName, PgStatement objOld) {
+        if (objOld == null) {
+            tempSwitchSearchPath(objNew.getParent().getName(),
+                    searchPathHelper, script);
+            writeCreationSql(script,
+                    "-- DEPCY: this " + objName + " is in dependency tree of "
+                            + fullStatement.getBareName(), objNew);
+        }else if (!objOld.equals(objNew)){
+            tempSwitchSearchPath(newSchemaName, searchPathHelper,
+                    script);
+            writeDropSql(script,
+                    "-- DEPCY: recreating " + objName + " that is in dependency tree of "
+                            + fullStatement.getBareName(), objOld);
+            writeCreationSql(script,
+                    "-- DEPCY: recreating " + objName + " that is in dependency tree of "
+                            + fullStatement.getBareName(), objNew);
+        }
     }
     
     public static PgDatabase getFullDbNew() {
