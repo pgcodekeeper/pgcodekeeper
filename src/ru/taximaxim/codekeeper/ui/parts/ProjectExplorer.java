@@ -19,10 +19,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.ui.di.UISynchronize;
-import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
-import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -41,6 +38,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.menus.IMenuService;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -59,36 +57,28 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 public class ProjectExplorer {
     
     @Inject
+    private Composite parent;
+    @Inject
     private PgDbProject proj;
-    
     @Inject
     private MPart part;
-    
     @Inject
-    UISynchronize sync;
-    
+    private UISynchronize sync;
     @Inject
-    IMenuService menuService;
+    private IMenuService menuService;
     @Inject
-    private EModelService model;
-    @Inject
-    private EPartService partService;
-    @Inject
-    private MApplication app;
-    
-    private TreeViewer treeDb;
+    private IWorkbenchPage page;
     
     private LocalResourceManager lrm;
     // key-value pairs to store hash vs db object name
     private Map<String, String> fileNamesHash = new HashMap<>();
-    
-    private Composite parent;
+
+    private TreeViewer treeDb;
     
     @PostConstruct
-    private void postConstruct(Composite parent)
+    private void postConstruct()
             throws IOException, InterruptedException, InvocationTargetException {
         parent.setLayout(new FillLayout());
-        this.parent = parent;
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
 
         treeDb = new TreeViewer(parent, SWT.BORDER);
@@ -191,7 +181,7 @@ public class ProjectExplorer {
                     viewer.setExpandedState(path, !viewer.getExpandedState(path));
                     viewer.refresh();
                 } else {
-                    SqlEditorDescr.openNew(f, model, partService, app, getObjNameFromHash(f));
+                    SqlEditorDescr.openNew(f, getObjNameFromHash(f), page);
                 }
             }
         });
@@ -203,7 +193,7 @@ public class ProjectExplorer {
         changeProject(proj, proj);
     }
     
-    private String getObjNameFromHash(File f){
+    private String getObjNameFromHash(File f) {
         String filename = f.getName();
         final String extension = ".sql"; //$NON-NLS-1$
         int indexOfExt = filename.lastIndexOf(extension);

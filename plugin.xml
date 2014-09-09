@@ -65,12 +65,6 @@
    </extension>
    <extension
          point="org.eclipse.ui.commands">
-      <command
-            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.TestPopup3xHandler"
-            description="testpopupcommand"
-            id="ru.taximaxim.codekeeper.ui.testpopupcommand"
-            name="testpopupcommand">
-      </command>
       <category
             id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             name="pgCodeKeeper">
@@ -354,24 +348,6 @@
                commandId="ru.taximaxim.codekeeper.ui.command.ProjProps"
                label="%handledmenuitem.label.18"
                mnemonic="P"
-               style="push">
-         </command>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
-            locationURI="popup:ru.taximaxim.codekeeper.popupmenu.welcometest">
-         <command
-               commandId="ru.taximaxim.codekeeper.ui.testpopupcommand"
-               label="testpopupcommand"
-               style="push">
-         </command>
-         <separator
-               name="separator"
-               visible="true">
-         </separator>
-         <command
-               commandId="ru.taximaxim.codekeeper.ui.testpopupcommand"
-               label="2"
                style="push">
          </command>
       </menuContribution>

@@ -14,6 +14,7 @@ import javax.inject.Named;
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.core.di.annotations.Optional;
@@ -21,12 +22,7 @@ import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.di.extensions.Preference;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.di.UISynchronize;
-import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
-import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
-import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
@@ -56,6 +52,9 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
@@ -68,7 +67,6 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
-import ru.taximaxim.codekeeper.ui.UIConsts.PART_STACK;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
@@ -83,36 +81,36 @@ import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
-public class CommitPartDescr {
+public class CommitPartDescr extends DynamicE4View {
     
     private final static String COMMENTS_HIST_ROOT = "comments"; //$NON-NLS-1$
     private final static String COMMENTS_HIST_EL = "c"; //$NON-NLS-1$
     private final static String COMMENTS_HIST_FILENAME = "commit_comments.xml"; //$NON-NLS-1$
-    
     private final static int COMMENT_HIST_MAX_STORED = 40;
+    
+    // initializer
+    private static String s_ProjectPath;
 
-    @Inject
-    private MPart part;
-    
-    @Inject
-    UISynchronize sync;
-    
-    @Inject
-    private EPartService partService;
-    
     @Inject
     @Preference(PREF.PGDUMP_EXE_PATH)
     private String exePgdump;
-
     @Inject
     @Preference(PREF.PGDUMP_CUSTOM_PARAMS)
     private String pgdumpCustom;
-    
+    @Inject
+    private MPart part;
+    @Inject
+    private UISynchronize sync;
     @Inject
     private IEventBroker events;
+    @Inject
+    private IWorkbenchPage page;
+    @Inject
+    private IViewPart viewPart;
     
     private Text txtCommitComment;
     private Button btnCommit;
@@ -137,10 +135,17 @@ public class CommitPartDescr {
      */
     private TreeDiffer treeDiffer;
     
+    public CommitPartDescr(MPart part, IWorkbenchPage page) {
+        super(part, page);
+        
+        Assert.isNotNull(s_ProjectPath);
+        
+        part.getPersistedState().put(PART.SYNC_ID, s_ProjectPath);
+    }
+    
     @PostConstruct
     private void postConstruct(Composite parent, final PgDbProject proj,
-            @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs,
-            final EModelService model, final MApplication app) {
+            @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs) {
         repoName = proj.getString(PROJ_PREF.REPO_TYPE);
         history = new XmlHistory.Builder(COMMENT_HIST_MAX_STORED, 
                 COMMENTS_HIST_FILENAME, 
@@ -675,7 +680,7 @@ public class CommitPartDescr {
                 
                 @Override
                 public void run() {
-                    partService.hidePart(part);
+                    page.hideView(viewPart);
                 }
             });
         } else if (proj2 != null) {
@@ -692,21 +697,18 @@ public class CommitPartDescr {
         }
     }
 
-    public static void openNew(String projectPath, EPartService partService,
-            EModelService model, MApplication app) {
-        for (MPart existingPart : model.findElements(app, PART.SYNC,
-                MPart.class, null)) {
-            if (projectPath.equals(existingPart.getPersistedState().get(
-                    PART.SYNC_ID))) {
-                partService.hidePart(existingPart);
-                break;
-            }
+    public static void openNew(String projectPath, IWorkbenchPage page) {
+        Assert.isTrue(s_ProjectPath == null);
+        
+        try {
+            s_ProjectPath = projectPath;
+            
+            page.showView(PART.SYNC, PgDiffUtils.md5(projectPath),
+                    IWorkbenchPage.VIEW_CREATE);
+        } catch (PartInitException ex) {
+            throw new IllegalStateException(ex);
+        } finally {
+            s_ProjectPath = null;
         }
-
-        MPart syncPart = partService.createPart(PART.SYNC);
-        syncPart.getPersistedState().put(PART.SYNC_ID, projectPath);
-        ((MPartStack) model.find(PART_STACK.EDITORS, app))
-                .getChildren().add(syncPart);
-        partService.showPart(syncPart, PartState.CREATE);
     }
 }

@@ -13,6 +13,8 @@ public class MainPersp implements IPerspectiveFactory {
     public void createInitialLayout(IPageLayout layout) {
         layout.setEditorAreaVisible(false);
         
+        // TODO perspectiveExtensions is the declarative method for this 
+        
         IFolderLayout left = layout.createFolder(PART_STACK.PROJXP,
                 IPageLayout.LEFT, 0.2f, layout.getEditorArea());
         

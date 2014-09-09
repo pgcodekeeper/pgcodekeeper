@@ -12,16 +12,12 @@ import javax.inject.Named;
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.di.extensions.Preference;
 import org.eclipse.e4.ui.di.UISynchronize;
-import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
-import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
-import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -45,6 +41,9 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -53,7 +52,6 @@ import ru.taximaxim.codekeeper.ui.ManualDepciesDialog;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
-import ru.taximaxim.codekeeper.ui.UIConsts.PART_STACK;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
@@ -66,26 +64,28 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
-public class DiffPartDescr {
-
-    @Inject
-    private MPart part;
-
-    @Inject
-    UISynchronize sync;
+public class DiffPartDescr extends DynamicE4View {
     
-    @Inject
-    private EPartService partService;
-    
+    // initializer
+    private static String s_ProjectPath;
+
     @Inject
     @Preference(PREF.PGDUMP_EXE_PATH)
     private String exePgdump;
-    
     @Inject
     @Preference(PREF.PGDUMP_CUSTOM_PARAMS)
     private String pgdumpCustom;
+    @Inject
+    private MPart part;
+    @Inject
+    private UISynchronize sync;
+    @Inject
+    private IWorkbenchPage page;
+    @Inject
+    private IViewPart viewPart;
 
     private Button btnGetLatest, btnAddDepcy;
     private DiffTableViewer diffTable;
@@ -102,17 +102,24 @@ public class DiffPartDescr {
      * Local repo cache.
      */
     private DbSource dbTarget;
-    
     /**
      * A collection of manually added object dependencies.
      * Keys are dependants, values are lists of dependencies.
      */
     private List<Entry<PgStatement, PgStatement>> manualDepcies = new LinkedList<>();
 
+    @Inject
+    public DiffPartDescr(MPart part, IWorkbenchPage page) {
+        super(part, page);
+        
+        Assert.isNotNull(s_ProjectPath);
+        
+        part.getPersistedState().put(PART.DIFF_ID, s_ProjectPath);
+    }
+    
     @PostConstruct
     private void postConstruct(Composite parent, final PgDbProject proj,
-            @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs,
-            final EModelService model, final MApplication app) {
+            @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs) {
         final Shell shell = parent.getShell();
         
         parent.setLayout(new GridLayout());
@@ -496,7 +503,7 @@ public class DiffPartDescr {
                 
                 @Override
                 public void run() {
-                    partService.hidePart(part);
+                    page.hideView(viewPart);
                 }
             });
         } else if (proj2 != null) {
@@ -514,21 +521,18 @@ public class DiffPartDescr {
         }
     }
 
-    public static void openNew(String projectPath, EPartService partService,
-            EModelService model, MApplication app) {
-        for (MPart existingPart : model.findElements(app, PART.DIFF,
-                MPart.class, null)) {
-            if (projectPath.equals(existingPart.getPersistedState().get(
-                    PART.DIFF_ID))) {
-                partService.hidePart(existingPart);
-                break;
-            }
+    public static void openNew(String projectPath, IWorkbenchPage page) {
+        Assert.isTrue(s_ProjectPath == null);
+        
+        try {
+            s_ProjectPath = projectPath;
+            
+            page.showView(PART.DIFF, PgDiffUtils.md5(projectPath),
+                    IWorkbenchPage.VIEW_CREATE);
+        } catch (PartInitException ex) {
+            throw new IllegalStateException(ex);
+        } finally {
+            s_ProjectPath = null;
         }
-
-        MPart diffPart = partService.createPart(PART.DIFF);
-        diffPart.getPersistedState().put(PART.DIFF_ID, projectPath);
-        ((MPartStack) model.find(PART_STACK.EDITORS, app))
-                .getChildren().add(diffPart);
-        partService.showPart(diffPart, PartState.CREATE);
     }
 }
