@@ -22,7 +22,6 @@
 
    <windowImages i128="/ru.taximaxim.codekeeper.mainapp/icons/product.png"/>
 
-
    <launcher name="pgcodekeeper">
       <linux icon="icons/product.xpm"/>
       <solaris/>
@@ -32,10 +31,8 @@
       </win>
    </launcher>
 
-
    <vm>
    </vm>
-
 
    <plugins>
       <plugin id="apgdiff"/>
