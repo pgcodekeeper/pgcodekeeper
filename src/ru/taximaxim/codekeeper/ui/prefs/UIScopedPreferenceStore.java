@@ -5,6 +5,7 @@ import java.io.File;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 
@@ -41,6 +42,6 @@ public class UIScopedPreferenceStore extends ScopedPreferenceStore {
         setDefault(PREF.RECENT_PROJECTS, ""); //$NON-NLS-1$
         setDefault(PREF.PGDUMP_CUSTOM_PARAMS, ""); //$NON-NLS-1$
         setDefault(PREF.IGNORE_OBJECTS, ""); //$NON-NLS-1$
-        setDefault(PREF.USE_PSQL_DEPCY, true);
+        setDefault(DB_UPDATE_PREF.USE_PSQL_DEPCY, true);
     }
 }

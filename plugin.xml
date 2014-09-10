@@ -48,6 +48,18 @@
             id="ru.taximaxim.codekeeper.ui.ignoredobjects"
             name="%page.name.ignored_objects">
       </page>
+      <page
+            category="ru.taximaxim.codekeeper.ui.general"
+            class="ru.taximaxim.codekeeper.ui.prefs.CommitPrefPage"
+            id="ru.taximaxim.codekeeper.ui.commitprefpage"
+            name="%page.name.commit_pref_page">
+      </page>
+      <page
+            category="ru.taximaxim.codekeeper.ui.general"
+            class="ru.taximaxim.codekeeper.ui.prefs.DBUpdatePrefPage"
+            id="ru.taximaxim.codekeeper.ui.dbupdateprefpage"
+            name="%page.name.db_update_pref_page">
+      </page>
    </extension>
 
 </plugin>

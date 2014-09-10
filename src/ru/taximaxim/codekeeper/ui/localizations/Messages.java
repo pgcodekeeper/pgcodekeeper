@@ -303,7 +303,10 @@ public class Messages extends NLS {
     // ui.prefs
     public static String dbStorePrefPage_clear_db_store;
     public static String dbStorePrefPage_edit_db_store;
-
+    public static String dBUpdatePrefPage_alter_column_statement;
+    public static String dBUpdatePrefPage_drop_column_statement;
+    public static String dBUpdatePrefPage_drop_table;
+    public static String dBUpdatePrefPage_set_warning_when_next_statements_present;
     public static String DiffTableViewer_selected;
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
     public static String generalPrefPage_open_last_project_on_startup;
