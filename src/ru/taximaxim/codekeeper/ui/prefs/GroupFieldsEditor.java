@@ -20,7 +20,7 @@ class GroupFieldsEditor extends FieldEditor {
     private Map<String, Button> buttons = new HashMap<>();
     private String groupName;
     
-    Button btnManage;
+    private Button btnManage;
 
     public GroupFieldsEditor(Map<String, String> prefWithLables, String groupName, Composite parent) {
         for (String name : prefWithLables.keySet()) {
@@ -118,5 +118,12 @@ class GroupFieldsEditor extends FieldEditor {
     @Override
     public int getNumberOfControls() {
         return prefNames.size() + 1;
+    }
+    @Override
+    public void dispose() {
+        prefNames.clear();
+        buttons.clear();
+        btnManage = null;
+        super.dispose();
     }
 }
