@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.Document;
@@ -32,10 +30,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.statushandlers.StatusManager;
 
+import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
@@ -316,9 +313,8 @@ public class SqlScriptDialog extends MessageDialog {
             scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler(){
                 @Override
                 public void uncaughtException(Thread t, Throwable e) {
-                    Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS, 
+                    ExceptionNotifier.notify(
                             Messages.sqlScriptDialog_exception_during_script_execution, e);
-                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
                 }
             });
             scriptThread.start();
@@ -347,9 +343,8 @@ public class SqlScriptDialog extends MessageDialog {
                 try (PrintWriter writer = new PrintWriter(script, "UTF-8")) { //$NON-NLS-1$
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
-                    Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS, 
+                    ExceptionNotifier.notify(
                             Messages.sqlScriptDialog_error_saving_script_to_file, ex);
-                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
                     return;
                 }
                 

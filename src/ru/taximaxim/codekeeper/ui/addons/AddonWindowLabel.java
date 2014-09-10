@@ -7,9 +7,7 @@ import javax.inject.Inject;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.ui.di.UISynchronize;
-import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
-import org.eclipse.e4.ui.workbench.modeling.EModelService;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
@@ -19,12 +17,6 @@ public class AddonWindowLabel {
     
     @Inject
     UISynchronize sync;
-    
-    @Inject
-    private EModelService service;
-    
-    @Inject
-    private MApplication app;
     
     @Inject
     private void updateLabel(
