@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -26,12 +27,30 @@ import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class DbSourceJdbc extends DbSource {
 
+    /*
+     * Trigger firing conditions
+     */
+    private final int TRIGGER_TYPE_ROW = 1 << 0;
+    private final int TRIGGER_TYPE_BEFORE = 1 << 1;
+    private final int TRIGGER_TYPE_INSERT = 1 << 2;
+    private final int TRIGGER_TYPE_DELETE = 1 << 3;
+    private final int TRIGGER_TYPE_UPDATE = 1 << 4;
+    private final int TRIGGER_TYPE_TRUNCATE = 1 << 5;
+    private final int TRIGGER_TYPE_INSTEAD = 1 << 6;
+    
+    
     private final String DB_TABLE_OF_TABLES = "pg_catalog.pg_class";
     private final String DB_TABLE_OF_CONSTRAINTS = "pg_catalog.pg_constraint";
+
+    private PreparedStatement PREP_STAT_TRIGGERS;
+    private PreparedStatement PREP_STAT_FUNC_NAME;
+    
+    // TODO HashMap caching of namespace names/oids?
     
     final private static Map<String, String> DATA_TYPE_ALIASES = new HashMap<String, String>(){
         {
@@ -84,17 +103,21 @@ public class DbSourceJdbc extends DbSource {
                    "jdbc:postgresql://" + host + ":" + port + "/" + dbName, user, pass);
             metaData = connection.getMetaData();
 
+            PREP_STAT_TRIGGERS = connection.prepareStatement("SELECT tgfoid, tgname, tgfoid, tgtype FROM pg_catalog.pg_trigger WHERE tgrelid = ?");
+            PREP_STAT_FUNC_NAME = connection.prepareStatement("SELECT proname FROM pg_catalog.pg_proc WHERE oid = ?");
             ResultSet res = metaData.getSchemas();
             while (res.next()) {
                 PgSchema schema = getSchema(res.getString("TABLE_SCHEM"));
                 d.addSchema(schema);
             }
-            
-            connection.close();
         } catch (SQLException e) {
-            throw new IOException("database JDBC access error occured", e);
+            throw new IOException("Database JDBC access error occured", e);
         } catch (ClassNotFoundException e) {
             throw new IOException("JDBC driver class not found", e);
+        }finally{
+            try {connection.close();} catch (Exception e) {}
+            try {PREP_STAT_TRIGGERS.close();} catch (Exception e) {}
+            try {PREP_STAT_FUNC_NAME.close();} catch (Exception e) {}
         }
         return d;
     }
@@ -202,78 +225,6 @@ public class DbSourceJdbc extends DbSource {
         
         // TODO c.setComment() ???
         return c;
-    }
-    
-    /**
-     * Returns an array of column names, resolved from conCols Array object 
-     * by pg_attribute.attnum and tableOid
-     * 
-     * @param conCols   Array of ints containing column numbers (references pg_attribute.attnum)
-     * @param tableOid  Oid of table - owner of these columns
-     * @return
-     */
-    private String [] getColumnNames(Integer[] cols, String tableOid) throws SQLException{
-        String query = "SELECT attname FROM pg_catalog.pg_attribute WHERE attrelid = " + tableOid + " AND attnum IN (";
-        for(int i = 0; i < cols.length; i++){
-            Integer colNum = cols[i];
-            query = query.concat(colNum.toString());
-            if (i < cols.length - 1){
-                query = query.concat(", ");
-            }
-        }
-        query = query.concat(")");
-        List<String> columnNames = new ArrayList<String>(3);
-        ResultSet res = connection.createStatement().executeQuery(query);
-        while(res.next()){
-            columnNames.add(res.getString("attname"));
-        }
-        return columnNames.toArray(new String[columnNames.size()]);
-    }
-    
-    private String getTableOidByName(String tableName, String schemaOid) throws SQLException{
-        String query = "SELECT oid FROM " + DB_TABLE_OF_TABLES + " WHERE relname = '" + tableName + "' AND relnamespace = " + schemaOid + " AND relkind = 'r'";
-        Statement stmt = connection.createStatement();
-        ResultSet res = stmt.executeQuery(query);
-        String tableOid = null;
-        if(res.next()){
-            tableOid = res.getString("oid");
-        }
-        if (res.next()){
-            // WHAT?
-            throw new IllegalArgumentException("There should be only one row for table " + tableName + 
-                    " in schema oid " + schemaOid + ". Modify select query to limit result to single row."); 
-        }
-        return tableOid;
-    }
-    
-    /**
-     * Returns schemaName.objectName pair for the table (and similar, such as 
-     * Index or View) by seeking its oid in pg_catalog.pg_class  
-     * @param tableOid
-     * @return
-     */
-    private SimpleEntry<String, String> getTableNameByOid(String tableOid) throws SQLException{
-        String query = "SELECT relname, relnamespace FROM pg_catalog.pg_class WHERE oid = '" + tableOid + "'";
-        Statement stmt = connection.createStatement();
-        ResultSet res = stmt.executeQuery(query);
-        String tableName = null;
-        String schemaOid = null;
-        if(res.next()){
-            schemaOid = res.getString("relnamespace");
-            tableName = res.getString("relname");
-        }else{
-            return null;
-        }
-        query = "SELECT nspname FROM pg_catalog.pg_namespace WHERE oid = '" + schemaOid + "'";
-        res = stmt.executeQuery(query);
-        String schemaName = null;
-        if(res.next()){
-            schemaName = res.getString("nspname");
-        }else{
-            return null;
-        }
-        stmt.close();
-        return new SimpleEntry<String, String>(schemaName, tableName);
     }
     
     private PgView getView(String schema, String view) throws SQLException {
@@ -464,9 +415,66 @@ public class DbSourceJdbc extends DbSource {
                 t.addIndex(index);
             }
         }
+        
+        // Query TRIGGERS
+        PREP_STAT_TRIGGERS.setString(1, tableOid);
+        res = PREP_STAT_TRIGGERS.executeQuery();
+        while(res.next()){
+            PgTrigger trigger = getTrigger(res);
+            if (trigger != null){
+                t.addTrigger(trigger);
+            }
+        }
+        
+        res.close();
         return t;
     }
 
+    /**
+     * Returns trigger object.
+     * <br>
+     * Available trigger firing conditions:
+     *      boolean onDelete;
+     *      boolean onInsert;
+     *      boolean onUpdate;
+     *      boolean onTruncate;
+     *     
+     *      boolean forEachRow;
+     *      boolean before;
+     */
+    private PgTrigger getTrigger(ResultSet res) throws SQLException{
+        
+        String triggerName = res.getString("tgname");
+        PgTrigger t = new PgTrigger(triggerName, "", "");
+        
+        int firingConditions = res.getInt("tgtype");
+        if ((firingConditions & TRIGGER_TYPE_DELETE) != 0){
+            t.setOnDelete(true);
+        }
+        if ((firingConditions & TRIGGER_TYPE_INSERT) != 0){
+            t.setOnInsert(true);
+        }
+        if ((firingConditions & TRIGGER_TYPE_UPDATE) != 0){
+            t.setOnUpdate(true);
+        }
+        if ((firingConditions & TRIGGER_TYPE_TRUNCATE) != 0){
+            t.setOnTruncate(true);
+        }
+        if ((firingConditions & TRIGGER_TYPE_ROW) != 0){
+            t.setForEachRow(true);
+        }
+        if ((firingConditions & TRIGGER_TYPE_BEFORE) != 0){
+            t.setBefore(true);
+        }
+        
+        String tableName = getTableNameByOid(res.getString("tgrelid")).getValue();
+        t.setTableName(tableName);
+        
+        String functionName = getFunctionNameByOid(res.getString("tgfoid"));
+        t.setFunction(functionName);
+        return t;
+    }
+    
     private PgIndex getIndex(String indexOid, String tableOid, Integer[] columnsNumbers) throws SQLException {
         SimpleEntry<String, String> indexName = getTableNameByOid(indexOid);
         PgIndex i = new PgIndex(indexName.getValue(), "", getSearchPath(indexName.getKey()));
@@ -500,6 +508,87 @@ public class DbSourceJdbc extends DbSource {
         return i;
     }
     
+    /**
+     * Returns an array of column names, resolved from conCols Array object 
+     * by pg_attribute.attnum and tableOid
+     * 
+     * @param conCols   Array of ints containing column numbers (references pg_attribute.attnum)
+     * @param tableOid  Oid of table - owner of these columns
+     * @return
+     */
+    private String [] getColumnNames(Integer[] cols, String tableOid) throws SQLException{
+        String query = "SELECT attname FROM pg_catalog.pg_attribute WHERE attrelid = " + tableOid + " AND attnum IN (";
+        for(int i = 0; i < cols.length; i++){
+            Integer colNum = cols[i];
+            query = query.concat(colNum.toString());
+            if (i < cols.length - 1){
+                query = query.concat(", ");
+            }
+        }
+        query = query.concat(")");
+        List<String> columnNames = new ArrayList<String>(3);
+        ResultSet res = connection.createStatement().executeQuery(query);
+        while(res.next()){
+            columnNames.add(res.getString("attname"));
+        }
+        return columnNames.toArray(new String[columnNames.size()]);
+    }
+
+    private String getFunctionNameByOid(String functionOid) throws SQLException{
+        PREP_STAT_FUNC_NAME.setString(1, functionOid);
+        ResultSet res = PREP_STAT_FUNC_NAME.executeQuery();
+        if (res.next()){
+            return res.getString("proname");
+        }
+        return null;
+    }
+
+    /**
+     * Returns schemaName.objectName pair for the table (and similar, such as 
+     * Index or View) by seeking its oid in pg_catalog.pg_class  
+     * @param tableOid
+     * @return
+     */
+    private SimpleEntry<String, String> getTableNameByOid(String tableOid) throws SQLException{
+        String query = "SELECT relname, relnamespace FROM pg_catalog.pg_class WHERE oid = '" + tableOid + "'";
+        Statement stmt = connection.createStatement();
+        ResultSet res = stmt.executeQuery(query);
+        String tableName = null;
+        String schemaOid = null;
+        if(res.next()){
+            schemaOid = res.getString("relnamespace");
+            tableName = res.getString("relname");
+        }else{
+            return null;
+        }
+        query = "SELECT nspname FROM pg_catalog.pg_namespace WHERE oid = '" + schemaOid + "'";
+        res = stmt.executeQuery(query);
+        String schemaName = null;
+        if(res.next()){
+            schemaName = res.getString("nspname");
+        }else{
+            return null;
+        }
+        stmt.close();
+        return new SimpleEntry<String, String>(schemaName, tableName);
+    }
+
+    private String getTableOidByName(String tableName, String schemaOid) throws SQLException{
+        String query = "SELECT oid FROM " + DB_TABLE_OF_TABLES + " WHERE relname = '" + tableName + "' AND relnamespace = " + schemaOid + " AND relkind = 'r'";
+        Statement stmt = connection.createStatement();
+        ResultSet res = stmt.executeQuery(query);
+        String tableOid = null;
+        if(res.next()){
+            tableOid = res.getString("oid");
+        }
+        if (res.next()){
+            // WHAT?
+            throw new IllegalArgumentException("There should be only one row for table " + tableName + 
+                    " in schema oid " + schemaOid + ". Modify select query to limit result to single row."); 
+        }
+        return tableOid;
+    }
+
     private String getSchemaOidByName(String schema) throws SQLException{
         String query = "SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = '" + schema + "'";
         Statement stmt = connection.createStatement();
