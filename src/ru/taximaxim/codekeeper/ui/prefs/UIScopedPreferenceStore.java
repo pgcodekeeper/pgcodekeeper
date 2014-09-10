@@ -43,5 +43,8 @@ public class UIScopedPreferenceStore extends ScopedPreferenceStore {
         setDefault(PREF.PGDUMP_CUSTOM_PARAMS, ""); //$NON-NLS-1$
         setDefault(PREF.IGNORE_OBJECTS, ""); //$NON-NLS-1$
         setDefault(DB_UPDATE_PREF.USE_PSQL_DEPCY, true);
+        setDefault(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT, true);
+        setDefault(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT, true);
+        setDefault(DB_UPDATE_PREF.DROP_TABLE_STATEMENT, true);
     }
 }
