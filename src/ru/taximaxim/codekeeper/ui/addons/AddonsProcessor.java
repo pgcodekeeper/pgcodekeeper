@@ -11,7 +11,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class AddonsProcessor {
 
-    private static String ADDONS[] = {
+    private static final String ADDONS[] = {
         PLUGIN_ID.THIS + ".addons.AddonExternalTools",
         PLUGIN_ID.THIS + ".addons.AddonOpenLast",
         PLUGIN_ID.THIS + ".addons.AddonPerspListener",

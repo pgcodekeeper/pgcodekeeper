@@ -8,7 +8,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
@@ -39,8 +38,6 @@ public class DynamicMenuRecent extends CompoundContributionItem {
                 @Override
                 public void run() {
                     PgDbProject proj = new PgDbProject(path);
-                    Shell shell = PlatformUI.getWorkbench()
-                            .getActiveWorkbenchWindow().getShell();
                     
                     if (proj.getProjectFile().isFile()) {
                     // TODO pending project loader rewrite (open 3.x views)
@@ -50,7 +47,8 @@ public class DynamicMenuRecent extends CompoundContributionItem {
                                 + proj.getProjectFile()
                                 + ". Project pref store either doesn't exist or not a file."); //$NON-NLS-1$
                         
-                        MessageBox mb = new MessageBox(shell);
+                        MessageBox mb = new MessageBox(PlatformUI.getWorkbench()
+                                .getActiveWorkbenchWindow().getShell());
                         mb.setText(Messages.load_failed);
                         // TODO wrong message
                         mb.setMessage(Messages.directory_isnt_valid_project);

@@ -10,11 +10,13 @@ import org.eclipse.ui.internal.WorkbenchPage;
 @SuppressWarnings("restriction")
 abstract class DynamicE4View {
 
+    private static final String METHOD = "getWorkbenchPart";
+    
     protected DynamicE4View(MPart part, IWorkbenchPage page) {
-        // FIXME workaround bug 443585 (TBD) (E4PartWrapper created only on ACTIVATE)
+        // FIXME workaround bug 443585 (E4PartWrapper created only on ACTIVATE)
         // this forces E4PartWrapper creation and puts it into context and TransientData
         try {
-            Method m = WorkbenchPage.class.getDeclaredMethod("getWorkbenchPart", MPart.class);
+            Method m = WorkbenchPage.class.getDeclaredMethod(METHOD, MPart.class);
             boolean wasAccessible = m.isAccessible();
             try {
                 m.setAccessible(true);
@@ -27,7 +29,7 @@ abstract class DynamicE4View {
             }
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
             throw new IllegalStateException(
-                    "Reflection workaround call to getWorkbenchPart() failed!", ex);
+                    "Reflection workaround call to getWorkbenchPart() failed!", ex); //$NON-NLS-1$
         }
         
         // TODO is removeOnHide still needed?

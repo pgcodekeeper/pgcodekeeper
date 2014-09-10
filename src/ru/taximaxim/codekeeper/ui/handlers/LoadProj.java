@@ -10,22 +10,18 @@ import javax.inject.Named;
 
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Execute;
-import org.eclipse.e4.ui.model.application.MApplication;
-import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.services.IServiceConstants;
-import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchPage;
 import org.osgi.framework.Version;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.PART;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -41,8 +37,7 @@ public class LoadProj extends E4HandlerWrapper {
     private void execute(
             @Named(IServiceConstants.ACTIVE_SHELL)
             Shell shell,
-            IEclipseContext ctx, EPartService partService, EModelService model,
-            MApplication app,
+            IEclipseContext ctx, IWorkbenchPage page,
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs) {
         FileDialog dialog = new FileDialog(shell);
         dialog.setText(Messages.loadProj_open_project);
@@ -54,7 +49,7 @@ public class LoadProj extends E4HandlerWrapper {
         if(path != null) {
             PgDbProject proj = new PgDbProject(path);
             if(proj.getProjectFile().isFile()) {
-                if (load(proj, ctx, partService, model, app, mainPrefs, shell)){
+                if (load(proj, ctx, page, mainPrefs, shell)){
                     AddonPrefLoader.savePreference(mainPrefs, 
                             PREF.LAST_OPENED_LOCATION, new File (path).getParent());
                 }
@@ -68,8 +63,8 @@ public class LoadProj extends E4HandlerWrapper {
         }
     }
     
-    public static boolean load(PgDbProject proj, IEclipseContext ctx, EPartService partService,
-            EModelService model, MApplication app, IPreferenceStore mainPrefs, Shell shell) {
+    public static boolean load(PgDbProject proj, IEclipseContext ctx, IWorkbenchPage page,
+            IPreferenceStore mainPrefs, Shell shell) {
         Log.log(Log.LOG_INFO, "Opening project at " + proj.getProjectFile()); //$NON-NLS-1$
         
         proj.load();
@@ -114,17 +109,18 @@ public class LoadProj extends E4HandlerWrapper {
         // по причине невозврата фокуса/селекшена/чего-то главному окну
         // модальным прогресс диалогом, показывающемся при парсинге дерева файлов
         // при реинжекте PgDbProject в ProjectExplorer парте
-        ((MPart) model.find(PART.WELCOME, app)).getContext().activateBranch();
+        // TODO test
+        // ((MPart) model.find(PART.WELCOME, app)).getContext().activateBranch();
         
-        CommitPartDescr.openNew(proj.getProjectFile().toString(),
-                partService, model, app);
-        DiffPartDescr.openNew(proj.getProjectFile().toString(),
-                partService, model, app);
-        RecentProjects.addRecent(proj.getProjectFile().toString(), mainPrefs);
+        String projectFile = proj.getProjectFile().toString();
+        CommitPartDescr.openNew(projectFile, page);
+        DiffPartDescr.openNew(projectFile, page);
+        
+        RecentProjects.addRecent(projectFile, mainPrefs);
         return true;
     }
     
-    public static boolean getProjVersion(File file, StringBuilder message) {
+    private static boolean getProjVersion(File file, StringBuilder message) {
         try (FileInputStream fStream = new FileInputStream(file)) {
             Properties prop = new Properties();
             prop.load(fStream);
