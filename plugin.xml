@@ -71,6 +71,7 @@
       </category>
       <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.About"
             id="ru.taximaxim.codekeeper.ui.command.About"
             name="%command.commandname.1">
       </command>
@@ -156,7 +157,7 @@
                   style="push">
             </command>
             <separator
-                  name="separator"
+                  name="separator1"
                   visible="true">
             </separator>
             <command
@@ -171,7 +172,7 @@
                   style="push">
             </command>
             <separator
-                  name="separator"
+                  name="separator2"
                   visible="true">
             </separator>
             <menu
@@ -188,7 +189,7 @@
                   style="push">
             </command>
             <separator
-                  name="separator"
+                  name="separator3"
                   visible="true">
             </separator>
             <command
@@ -218,7 +219,7 @@
                   style="push">
             </command>
             <separator
-                  name="separator"
+                  name="separator1"
                   visible="true">
             </separator>
             <command
@@ -252,7 +253,7 @@
                   style="push">
             </command>
             <separator
-                  name="separator"
+                  name="separator1"
                   visible="true">
             </separator>
             <command
@@ -285,7 +286,7 @@
                   tooltip="%handledtoolitem.tooltip.2">
             </command>
             <separator
-                  name="separator"
+                  name="separator1"
                   visible="true">
             </separator>
             <command
@@ -313,7 +314,7 @@
                   tooltip="%handledtoolitem.tooltip.5">
             </command>
             <separator
-                  name="separator"
+                  name="separator2"
                   visible="true">
             </separator>
             <command
@@ -346,7 +347,7 @@
                style="push">
          </command>
          <separator
-               name="separator"
+               name="separator1"
                visible="true">
          </separator>
          <command

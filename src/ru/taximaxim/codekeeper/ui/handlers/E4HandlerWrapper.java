@@ -65,8 +65,9 @@ public abstract class E4HandlerWrapper extends AbstractHandler {
     @Override
     public final boolean isEnabled() {
         Boolean result = (Boolean) ContextInjectionFactory.invoke(
-                getDIHandler(), CanExecute.class, getExecutionContext(null));
-        boolean enabled = result == null ? false : result;
+                getDIHandler(), CanExecute.class, getExecutionContext(null), null);
+        // enabled by default
+        boolean enabled = result == null ? true : result;
         
         setBaseEnabled(enabled);
         return enabled;

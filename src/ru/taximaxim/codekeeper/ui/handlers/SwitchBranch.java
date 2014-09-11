@@ -18,7 +18,6 @@ import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.egit.ui.JobFamilies;
 import org.eclipse.egit.ui.internal.branch.BranchOperationUI;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
@@ -31,16 +30,16 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 public class SwitchBranch extends E4HandlerWrapper {
     
     @Inject
-    IEventBroker events;
+    private IEventBroker events;
     
     @Inject
-    IJobManager jobs;
+    private IJobManager jobs;
     
     @Inject
-    UISynchronize sync;
+    private UISynchronize sync;
     
     @Execute
-    public void execute(final PgDbProject proj,
+    private void execute(final PgDbProject proj,
             @Named(IServiceConstants.ACTIVE_SHELL)
             final Shell shell) {
         final AtomicReference<Git> git = new AtomicReference<>();
@@ -92,7 +91,7 @@ public class SwitchBranch extends E4HandlerWrapper {
     }
 
     @CanExecute
-    public boolean canExecute(PgDbProject proj) {
+    private boolean canExecute(PgDbProject proj) {
         return proj != null;
     }
 }
