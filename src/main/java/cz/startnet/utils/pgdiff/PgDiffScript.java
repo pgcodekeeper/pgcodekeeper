@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatements;
 import cz.startnet.utils.pgdiff.PgDiffStatement.DiffStatementType;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -25,6 +26,14 @@ public class PgDiffScript {
     // also String caches hashcodes, so that's a minor performance plus 
     private final Set<PgDiffStatement> unique = new HashSet<>();
     
+    public boolean containsDangerStatements(DangerStatements dst) {
+        for (PgDiffStatement statement : statements) {
+            if (statement.isStatementDanger(dst)) {
+                return true;
+            }
+        }
+        return false;
+    }
     /**
      * Add a statement to the script.
      */

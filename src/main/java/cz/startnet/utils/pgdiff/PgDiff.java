@@ -134,7 +134,7 @@ public class PgDiff {
                 oldDatabase, newDatabase, oldDbFull, newDbFull, null);
     }
     
-    public static void diffDatabaseSchemasAdditionalDepcies(PrintWriter writer,
+    public static PgDiffScript diffDatabaseSchemasAdditionalDepcies(PrintWriter writer,
             PgDiffArguments arguments, PgDatabase oldDatabase, PgDatabase newDatabase,
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
@@ -142,8 +142,10 @@ public class PgDiff {
         oldDepcyGraph = newDepcyGraph = null;
         depcyOld = depcyNew = null;
         
+        PgDiffScript script = new PgDiffScript();
+        
         if (arguments.isAddTransaction()) {
-            writer.println("START TRANSACTION;");
+            script.addStatement("START TRANSACTION;");
         }
 
         // temp solution
@@ -168,19 +170,14 @@ public class PgDiff {
                 || oldDatabase.getComment() != null
                 && newDatabase.getComment() != null
                 && !oldDatabase.getComment().equals(newDatabase.getComment())) {
-            writer.println();
-            writer.print("COMMENT ON DATABASE current_database() IS ");
-            writer.print(newDatabase.getComment());
-            writer.println(';');
-            writer.println();
+            script.addStatement("\nCOMMENT ON DATABASE current_database() IS " +
+                    newDatabase.getComment() + ";");
         } else if (oldDatabase.getComment() != null
                 && newDatabase.getComment() == null) {
-            writer.println();
-            writer.println("COMMENT ON DATABASE current_database() IS NULL;");
-            writer.println();
+            script.addStatement("\nCOMMENT ON DATABASE current_database() IS NULL;");
         }
 
-        PgDiffScript script = new PgDiffScript();
+        
         
         dropOldSchemas(script, arguments, oldDatabase, newDatabase);
         createNewSchemas(script, oldDatabase, newDatabase);
@@ -191,43 +188,36 @@ public class PgDiff {
         
         updateSchemas(script, arguments, oldDatabase, newDatabase);
 
-        script.printStatements(writer);
+        
         
         if (arguments.isAddTransaction()) {
-            writer.println();
-            writer.println("COMMIT TRANSACTION;");
+            script.addStatement("\nCOMMIT TRANSACTION;");
         }
 
         if (arguments.isOutputIgnoredStatements()) {
-            if (!oldDatabase.getIgnoredStatements().isEmpty()) {
-                writer.println();
-                writer.print("/* ");
-                writer.println(Resources.getString(
-                        "OriginalDatabaseIgnoredStatements"));
+            addIgnoredStatements(oldDatabase, "OriginalDatabaseIgnoredStatements", script);
+            addIgnoredStatements(newDatabase, "NewDatabaseIgnoredStatements", script);
+        }
+        script.printStatements(writer);
+        return script;
+    }
 
-                for (final String statement :
-                        oldDatabase.getIgnoredStatements()) {
-                    writer.println();
-                    writer.println(statement);
-                }
+    /**
+     * Adds ignored Statements to script
+     * @param database database with ignored statements
+     * @param resourceName resource for localization message
+     * @param script script to output statements
+     */
+    private static void addIgnoredStatements(PgDatabase database,
+            String resourceName, PgDiffScript script) {
+        if (!database.getIgnoredStatements().isEmpty()) {
+            script.addStatement("\n/* " + Resources.getString(resourceName));
 
-                writer.println("*/");
+            for (final String statement :
+                    database.getIgnoredStatements()) {
+                script.addStatement("\n" + statement);
             }
-
-            if (!newDatabase.getIgnoredStatements().isEmpty()) {
-                writer.println();
-                writer.print("/* ");
-                writer.println(
-                        Resources.getString("NewDatabaseIgnoredStatements"));
-
-                for (final String statement :
-                        newDatabase.getIgnoredStatements()) {
-                    writer.println();
-                    writer.println(statement);
-                }
-
-                writer.println("*/");
-            }
+            script.addStatement("*/");
         }
     }
     
