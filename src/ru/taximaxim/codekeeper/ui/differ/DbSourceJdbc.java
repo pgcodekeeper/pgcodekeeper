@@ -18,10 +18,12 @@ import java.util.Scanner;
 
 import org.eclipse.core.runtime.SubMonitor;
 
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
+import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -47,9 +49,9 @@ public class DbSourceJdbc extends DbSource {
     private final String DB_TABLE_OF_TABLES = "pg_catalog.pg_class";
     private final String DB_TABLE_OF_CONSTRAINTS = "pg_catalog.pg_constraint";
 
-    private PreparedStatement PREP_STAT_TRIGGERS;
-    private PreparedStatement PREP_STAT_FUNC_NAME;
-    
+    private PreparedStatement prepStatTriggers;
+    private PreparedStatement prepStatFuncName;
+    private PreparedStatement prepStatFunctions;
     // TODO HashMap caching of namespace names/oids?
     
     final private static Map<String, String> DATA_TYPE_ALIASES = new HashMap<String, String>(){
@@ -103,8 +105,9 @@ public class DbSourceJdbc extends DbSource {
                    "jdbc:postgresql://" + host + ":" + port + "/" + dbName, user, pass);
             metaData = connection.getMetaData();
 
-            PREP_STAT_TRIGGERS = connection.prepareStatement("SELECT tgfoid, tgname, tgfoid, tgtype FROM pg_catalog.pg_trigger WHERE tgrelid = ?");
-            PREP_STAT_FUNC_NAME = connection.prepareStatement("SELECT proname FROM pg_catalog.pg_proc WHERE oid = ?");
+            prepStatTriggers = connection.prepareStatement("SELECT tgfoid, tgname, tgfoid, tgtype FROM pg_catalog.pg_trigger WHERE tgrelid = ?");
+            prepStatFuncName = connection.prepareStatement("SELECT proname FROM pg_catalog.pg_proc WHERE oid = ?");
+            prepStatFunctions = connection.prepareStatement("SELECT * FROM pg_catalog.pg_proc WHERE pronamespace = ?");
             ResultSet res = metaData.getSchemas();
             while (res.next()) {
                 PgSchema schema = getSchema(res.getString("TABLE_SCHEM"));
@@ -115,9 +118,26 @@ public class DbSourceJdbc extends DbSource {
         } catch (ClassNotFoundException e) {
             throw new IOException("JDBC driver class not found", e);
         }finally{
-            try {connection.close();} catch (Exception e) {}
-            try {PREP_STAT_TRIGGERS.close();} catch (Exception e) {}
-            try {PREP_STAT_FUNC_NAME.close();} catch (Exception e) {}
+            try {
+                connection.close();
+            } catch (Exception e) {
+                Log.log(Log.LOG_INFO, "Could not close JDBC connection", e);
+            }
+            try {
+                prepStatTriggers.close();
+            } catch (Exception e) {
+                Log.log(Log.LOG_INFO, "Could not close prepared statement for triggers", e);
+            }
+            try {
+                prepStatFuncName.close();
+            } catch (Exception e) {
+                Log.log(Log.LOG_INFO, "Could not close prepared statement for function names", e);
+            }
+            try {
+                prepStatFunctions.close();
+            } catch (Exception e) {
+                Log.log(Log.LOG_INFO, "Could not close prepared statement for functions", e);
+            }
         }
         return d;
     }
@@ -137,6 +157,13 @@ public class DbSourceJdbc extends DbSource {
             PgView view = getView(schema, res.getString("table_name"));
             s.addView(view);
         }
+        
+        prepStatFunctions.setString(1, getSchemaOidByName(schema));
+        res = prepStatFunctions.executeQuery();
+        while (res.next()){
+            s.addFunction(getFunction(res));
+        }
+        
         return s;
     }
     
@@ -409,7 +436,7 @@ public class DbSourceJdbc extends DbSource {
             while(sc.hasNext()){
                 columnsNumbers.add(Integer.valueOf(sc.next()));
             }
-            
+            sc.close();
             PgIndex index = getIndex(res.getString("indexrelid"), tableOid, columnsNumbers.toArray(new Integer[columnsNumbers.size()]));
             if (index != null){
                 t.addIndex(index);
@@ -417,8 +444,8 @@ public class DbSourceJdbc extends DbSource {
         }
         
         // Query TRIGGERS
-        PREP_STAT_TRIGGERS.setString(1, tableOid);
-        res = PREP_STAT_TRIGGERS.executeQuery();
+        prepStatTriggers.setString(1, tableOid);
+        res = prepStatTriggers.executeQuery();
         while(res.next()){
             PgTrigger trigger = getTrigger(res);
             if (trigger != null){
@@ -508,6 +535,10 @@ public class DbSourceJdbc extends DbSource {
         return i;
     }
     
+    private PgFunction getFunction(ResultSet res){
+        return null;
+    }
+    
     /**
      * Returns an array of column names, resolved from conCols Array object 
      * by pg_attribute.attnum and tableOid
@@ -535,8 +566,8 @@ public class DbSourceJdbc extends DbSource {
     }
 
     private String getFunctionNameByOid(String functionOid) throws SQLException{
-        PREP_STAT_FUNC_NAME.setString(1, functionOid);
-        ResultSet res = PREP_STAT_FUNC_NAME.executeQuery();
+        prepStatFuncName.setString(1, functionOid);
+        ResultSet res = prepStatFuncName.executeQuery();
         if (res.next()){
             return res.getString("proname");
         }
