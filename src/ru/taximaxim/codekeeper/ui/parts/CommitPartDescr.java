@@ -135,6 +135,7 @@ public class CommitPartDescr extends DynamicE4View {
      */
     private TreeDiffer treeDiffer;
     
+    @Inject
     public CommitPartDescr(MPart part, IWorkbenchPage page) {
         super(part, page);
         
