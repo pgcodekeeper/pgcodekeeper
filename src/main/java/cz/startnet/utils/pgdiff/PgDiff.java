@@ -51,13 +51,13 @@ public class PgDiff {
      * @param writer    writer the output should be written to
      * @param arguments object containing arguments settings
      */
-    public static void createDiff(final PrintWriter writer,
+    public static PgDiffScript createDiff(final PrintWriter writer,
             final PgDiffArguments arguments) {
         PgDatabase dbOld = loadDatabaseSchema(
                 arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
         PgDatabase dbNew = loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments); 
-        diffDatabaseSchemas(writer, arguments, dbOld, dbNew, dbOld, dbNew);
+        return diffDatabaseSchemas(writer, arguments, dbOld, dbNew, dbOld, dbNew);
     }
 
     /**
@@ -127,10 +127,10 @@ public class PgDiff {
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
-    public static void diffDatabaseSchemas(PrintWriter writer,
+    public static PgDiffScript diffDatabaseSchemas(PrintWriter writer,
             PgDiffArguments arguments, PgDatabase oldDatabase, PgDatabase newDatabase,
             PgDatabase oldDbFull, PgDatabase newDbFull) {
-        diffDatabaseSchemasAdditionalDepcies(writer, arguments,
+        return diffDatabaseSchemasAdditionalDepcies(writer, arguments,
                 oldDatabase, newDatabase, oldDbFull, newDbFull, null);
     }
     

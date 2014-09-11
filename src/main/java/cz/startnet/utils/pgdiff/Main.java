@@ -12,6 +12,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
+import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatements;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 
@@ -39,11 +40,22 @@ public class Main {
 
         if (arguments.parse(writer, args)) {
             if(arguments.isModeDiff()) {
+                PgDiffScript script;
                 try(final PrintWriter encodedWriter = new UnixPrintWriter(
                         new OutputStreamWriter(
                             new FileOutputStream(arguments.getDiffOutfile()),
                                                 arguments.getOutCharsetName()))) {
-                    PgDiff.createDiff(encodedWriter, arguments);
+                    script = PgDiff.createDiff(encodedWriter, arguments);
+                }
+                if (script != null && checkOnDanger(script, arguments)) {
+                    try(final PrintWriter encodedWriter = new UnixPrintWriter(
+                            new OutputStreamWriter(
+                                new FileOutputStream(arguments.getDiffOutfile()),
+                                                    arguments.getOutCharsetName()))) {
+                        encodedWriter.write("");
+                        throw new IllegalStateException(
+                                "Script contains danger statements use --allow-danger-ddl to avoid");
+                    }
                 }
             } else if(arguments.isModeParse()) {
                 new ModelExporter(arguments.getParserOutdir(),
@@ -55,6 +67,22 @@ public class Main {
         }
 
         writer.close();
+    }
+
+    private static boolean checkOnDanger(PgDiffScript script,
+            PgDiffArguments arguments) throws UnsupportedEncodingException,
+            FileNotFoundException, IOException {
+        boolean cleanWriter = false;
+        if (!arguments.isIgnoreAlterColumn()) {
+            cleanWriter |= script.containsDangerStatements(DangerStatements.ALTER_COLUMN);
+        }
+        if (!arguments.isIgnoreDropColumn()) {
+            cleanWriter |= script.containsDangerStatements(DangerStatements.DROP_COLUMN);
+        }
+        if (!arguments.isIgnoreDropTable()) {
+            cleanWriter |= script.containsDangerStatements(DangerStatements.DROP_TABLE);
+        }
+        return cleanWriter;
     }
 
     /**

@@ -7,7 +7,12 @@ package cz.startnet.utils.pgdiff;
 
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.SortedMap;
+
+import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatements;
 
 /**
  * Contains parsed command line arguments.
@@ -81,6 +86,18 @@ public class PgDiffArguments {
      * Whether to ignore START WITH on SEQUENCEs.
      */
     private boolean ignoreStartWith;
+    /**
+     * Whether to ignore DROP TABLE on script.
+     */
+    private boolean ignoreDropTable;
+    /**
+     * Whether to ignore DROP COLUMN on script.
+     */
+    private boolean ignoreDropColumn;
+    /**
+     * Whether to ignore ALTER COLUMN on script.
+     */
+    private boolean ignoreAlterColumn;
     /**
      * Whether to display apgdiff version.
      */
@@ -357,6 +374,51 @@ public class PgDiffArguments {
     }
 
     /**
+     * Setter for {@link #ignoreDropTable}.
+     * @param ignoreDropTable {@link #ignoreDropTable}.
+     */
+    public void setIgnoreDropTable(boolean ignoreDropTable) {
+        this.ignoreDropTable = ignoreDropTable;
+    }
+    /**
+     * Getter for {@link #ignoreDropTable}.
+     * @return {@link #ignoreDropTable}.
+     */
+    public boolean isIgnoreDropTable() {
+        return ignoreDropTable;
+    }
+
+    /**
+     * Setter for {@link #ignoreDropColumn}.
+     * @param ignoreDropTable {@link #ignoreDropColumn}.
+     */
+    public void setIgnoreDropColumn(boolean ignoreDropColumn) {
+        this.ignoreDropColumn = ignoreDropColumn;
+    }
+    /**
+     * Getter for {@link #ignoreDropColumn}.
+     * @return {@link #ignoreDropColumn}.
+     */
+    public boolean isIgnoreDropColumn() {
+        return ignoreDropColumn;
+    }
+
+    /**
+     * Setter for {@link #ignoreAlterColumn}.
+     * @param ignoreDropTable {@link #ignoreAlterColumn}.
+     */
+    public void setIgnoreAlterColumn(boolean ignoreAlterColumn) {
+        this.ignoreAlterColumn = ignoreAlterColumn;
+    }
+    /**
+      * Getter for {@link #ignoreAlterColumn}.
+     * @return {@link #ignoreAlterColumn}.
+     */
+    public boolean isIgnoreAlterColumn() {
+        return ignoreAlterColumn;
+    }
+
+    /**
      * Getter for {@link #outputIgnoredStatements}.
      *
      * @return {@link #outputIgnoredStatements}
@@ -446,6 +508,36 @@ public class PgDiffArguments {
                 } else {
                     writer.println("Unsupported DB format!");
                     success = false;
+                }
+            } else if ("--allow-danger-ddl".equals(args[i])) {
+                List<String> ignoredDangers = new ArrayList<>();
+                do {
+                    String ignoredDanger = args[++i];
+                    boolean endsWith = ignoredDanger.endsWith(",");
+                    ignoredDanger = ignoredDanger.substring(
+                            0, ignoredDanger.length() - (endsWith ? 1 : 0));
+                    if (ignoredDanger.contains(",")) {
+                        ignoredDangers.addAll(Arrays.asList(ignoredDanger.split(",")));
+                    } else {
+                        ignoredDangers.add(ignoredDanger);
+                    }
+                    
+                    if (!endsWith) {
+                        break;
+                    }
+                } while (true); 
+                for (String ignored : ignoredDangers) {
+                    switch (DangerStatements.valueOf(ignored.toUpperCase())) {
+                    case ALTER_COLUMN:
+                        setIgnoreAlterColumn(true);
+                        break;
+                    case DROP_COLUMN:
+                        setIgnoreDropColumn(true);
+                        break;
+                    case DROP_TABLE:
+                        setIgnoreDropTable(true);
+                        break;
+                    }
                 }
             } else if("--db-format".equals(args[i])) {
                 String format = args[++i];
