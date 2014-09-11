@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.Document;
@@ -22,6 +23,7 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -42,6 +44,8 @@ import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.parts.Console;
+import cz.startnet.utils.pgdiff.PgDiffScript;
+import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatements;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class SqlScriptDialog extends MessageDialog {
@@ -72,6 +76,11 @@ public class SqlScriptDialog extends MessageDialog {
     private final List<Entry<PgStatement, PgStatement>> oldDepcy;
     private List<PgStatement> objList;
     private final boolean usePsqlDepcy;
+    private boolean searchForDropTable = false;
+    private boolean searchForAlterColumn = false;
+    private boolean searchForDropColumn = false;
+    private Shell parentShell;
+    private Color background;
     
     private String dbHost;
     private String dbPort;
@@ -94,6 +103,14 @@ public class SqlScriptDialog extends MessageDialog {
         this.dbUser = dbUser;
         this.dbPass = dbPass;
         this.dbPort = dbPort;
+    }
+    
+    public void setDangerStatements(boolean searchForDropTable, 
+            boolean searchForAlterColumn,
+            boolean searchForDropColumn) {
+        this.searchForDropTable = searchForDropTable;
+        this.searchForAlterColumn = searchForAlterColumn;
+        this.searchForDropColumn = searchForDropColumn;
     }
     
     private String getReplacedString() {
@@ -121,6 +138,7 @@ public class SqlScriptDialog extends MessageDialog {
         super(parentShell, title, null, message, type, new String[] {
                 runScriptText, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }, 2);
         
+        this.parentShell = parentShell;
         this.differ = differ;
         this.oldDepcy = differ.getAdditionalDepcies();
         differ.setAdditionalDepcies(new ArrayList<>(oldDepcy));
@@ -198,6 +216,9 @@ public class SqlScriptDialog extends MessageDialog {
         sqlEditor.addLineNumbers();
         sqlEditor.setEditable(true);
         sqlEditor.setDocument(new Document(differ.getDiffDirect()));
+        if (background != null) {
+            sqlEditor.getTextWidget().setBackground(background);
+        }
         
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
@@ -252,6 +273,45 @@ public class SqlScriptDialog extends MessageDialog {
 */
     }
     
+    private String checkOnDangerous() {
+        PgDiffScript script = differ.getScript();
+        StringBuilder message = new StringBuilder(); 
+        if (searchForDropTable && script.containsDangerStatements(DangerStatements.DROP_TABLE)) {
+            message.append("\n  DROP TABLE"); //$NON-NLS-1$
+        }
+        if (searchForAlterColumn && script.containsDangerStatements(DangerStatements.ALTER_COLUMN)) {
+            message.append("\n  ALTER COLUMN"); //$NON-NLS-1$
+        }
+        if (searchForDropColumn && script.containsDangerStatements(DangerStatements.DROP_COLUMN)) {
+            message.append("\n  DROP COLUMN"); //$NON-NLS-1$
+        }
+        return message.toString();
+    }
+    
+    @Override
+    public int open() {
+        String messageDanger;
+        if (!(messageDanger = checkOnDangerous()).isEmpty()) {
+            if (showDangerWarning(messageDanger).open() == SWT.OK) {
+                background = parentShell.getDisplay().getSystemColor(
+                        SWT.COLOR_CYAN);
+                return super.open();
+            } else {
+                return Dialog.OK;
+            }
+        }
+        return super.open();
+    }
+
+    private MessageBox showDangerWarning(String messageDanger) {
+        MessageBox mb = new MessageBox(parentShell, SWT.ICON_QUESTION
+                | SWT.OK | SWT.CANCEL);
+        mb.setText(Messages.sqlScriptDialog_warning);
+        mb.setMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data + 
+                messageDanger + Messages.sqlScriptDialog_continue);
+        return mb;
+    }
+
     @Override
     protected void buttonPressed(int buttonId) {
         final String textRetrieved = sqlEditor.getDocument().get();
@@ -379,8 +439,20 @@ public class SqlScriptDialog extends MessageDialog {
             mb.setMessage(mb.getMessage() + System.lineSeparator() +
                     Messages.SqlScriptDialog_add_it_to_script);
             if (mb.open() == SWT.OK) {
+                List<Entry<PgStatement, PgStatement>> saveToRestore 
+                    = new ArrayList<>(differ.getAdditionalDepcies()); 
                 differ.addAdditionDepcies(depcyToAdd);
                 differ.runProgressMonitorDiffer(getParentShell());
+                String messageDanger;
+                if (!(messageDanger = checkOnDangerous()).isEmpty()) {
+                    if (showDangerWarning(messageDanger).open() != SWT.OK) {
+                        differ.setAdditionalDepcies(saveToRestore);
+                        return;
+                    } else {
+                        sqlEditor.getTextWidget().setBackground(background = parentShell
+                                .getDisplay().getSystemColor(SWT.COLOR_CYAN));
+                    }
+                }
                 sqlEditor.setDocument(new Document(differ.getDiffDirect()));
                 sqlEditor.refresh();
             }
