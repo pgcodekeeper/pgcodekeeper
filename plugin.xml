@@ -188,7 +188,8 @@
                   style="push">
             </command>
             <separator
-                  name="separator">
+                  name="separator"
+                  visible="true">
             </separator>
             <command
                   commandId="org.eclipse.ui.file.exit"
@@ -217,7 +218,8 @@
                   style="push">
             </command>
             <separator
-                  name="separator">
+                  name="separator"
+                  visible="true">
             </separator>
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.ProjProps"
@@ -250,7 +252,8 @@
                   style="push">
             </command>
             <separator
-                  name="separator">
+                  name="separator"
+                  visible="true">
             </separator>
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.About"
@@ -282,7 +285,8 @@
                   tooltip="%handledtoolitem.tooltip.2">
             </command>
             <separator
-                  name="separator">
+                  name="separator"
+                  visible="true">
             </separator>
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.Diff"
@@ -309,7 +313,8 @@
                   tooltip="%handledtoolitem.tooltip.5">
             </command>
             <separator
-                  name="separator">
+                  name="separator"
+                  visible="true">
             </separator>
             <command
                   commandId="org.eclipse.ui.window.preferences"

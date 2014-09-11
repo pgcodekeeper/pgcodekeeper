@@ -23,9 +23,7 @@ public class Console {
     }
     
     @PostConstruct
-    private void postConstruct(Composite parent,
-            Display display,
-            UISynchronize sync) {
+    private void postConstruct(Composite parent, Display display, UISynchronize sync) {
         log = new LogSync(sync);
         
         parent.setLayout(new FillLayout());
@@ -45,8 +43,8 @@ public class Console {
 }
 
 class LogSync {
-    private final UISynchronize sync;
     
+    private final UISynchronize sync;
     private Text consoleLog;
     
     LogSync(UISynchronize sync) {
