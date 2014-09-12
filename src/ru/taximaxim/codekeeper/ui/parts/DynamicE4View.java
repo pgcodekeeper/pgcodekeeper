@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.internal.WorkbenchPage;
 
@@ -32,7 +33,6 @@ abstract class DynamicE4View {
                     "Reflection workaround call to getWorkbenchPart() failed!", ex); //$NON-NLS-1$
         }
         
-        // TODO is removeOnHide still needed?
-        // part.getTags().add(EPartService.REMOVE_ON_HIDE_TAG);
+        part.getTags().add(EPartService.REMOVE_ON_HIDE_TAG);
     }
 }
