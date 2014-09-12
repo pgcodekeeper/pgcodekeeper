@@ -18,4 +18,5 @@ public interface ApgdiffConsts {
         EXTENSION,
         SCHEMA
     }
+    String suffixSafeCopy = "Temp";
 }
