@@ -313,18 +313,18 @@ public class CommitPartDescr {
                             IRepoWorker repo = new JGitExec(proj,
                                     mainPrefs.getString(PREF.GIT_KEY_PRIVATE_FILE));
 
-                            for (ApgdiffConsts.WORK_DIR_NAMES subdirName : ApgdiffConsts.WORK_DIR_NAMES.values()) {
-                                File subdir = new File(workingDir, subdirName.toString());
-                                if (subdir.exists()) {
-                                    Dir.deleteRecursive(subdir);
-                                }
+                            try {
+                                Dir.safeCleanApgdiffDir(workingDir);
+                                new ModelExporter(workingDir.getAbsolutePath(),
+                                        dbNew, proj
+                                                .getString(PROJ_PREF.ENCODING))
+                                        .export();
+                            } catch (IOException e) {
+                                Dir.restoreApgdiffDir(workingDir);
+                                throw e;
                             }
+                            Dir.cleanApgdiffTempDir(workingDir);
                             
-                            new ModelExporter(workingDir.getAbsolutePath(),
-                                    dbNew,
-                                    proj.getString(PROJ_PREF.ENCODING))
-                                    .export();
-
                             pm.newChild(1).subTask(repoName + " committing..."); // 3 //$NON-NLS-1$
                             repo.repoRemoveMissingAddNew(workingDir);
                             repo.repoCommit(workingDir, commitComment);
@@ -332,7 +332,7 @@ public class CommitPartDescr {
                             throw new InvocationTargetException(ex,
                                     Messages.commitPartDescr_ioexception_while_modifying_project);
                         }
-
+                        
                         pm.done();
                     }
                 };

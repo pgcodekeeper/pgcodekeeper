@@ -10,7 +10,6 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -90,15 +89,16 @@ public class InitProjectFromSource implements IRunnableWithProgress {
 
         pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model); // 75
 
-        for (ApgdiffConsts.WORK_DIR_NAMES subdirName : ApgdiffConsts.WORK_DIR_NAMES.values()) {
-            File subdir = new File(dirRepo, subdirName.toString());
-            if (subdir.exists()) {
-                Dir.deleteRecursive(subdir);
-            }
+        try {
+            Dir.safeCleanApgdiffDir(dirRepo);
+            new ModelExporter(dirRepo.getAbsolutePath(), db,
+                    props.getString(PROJ_PREF.ENCODING)).export();
+        } catch (IOException e) {
+            Log.log(Log.LOG_ERROR, "Error occurs! Trying to restore data from backup", e);
+            Dir.restoreApgdiffDir(dirRepo);
+            throw e;
         }
-        
-        new ModelExporter(dirRepo.getAbsolutePath(), db,
-                props.getString(PROJ_PREF.ENCODING)).export();
+        Dir.cleanApgdiffTempDir(dirRepo);
 
         pm.newChild(25).subTask(PROJ_PREF.REPO_TYPE_GIT_NAME + " committing..."); // 100 //$NON-NLS-1$
         repo.repoRemoveMissingAddNew(dirRepo);
