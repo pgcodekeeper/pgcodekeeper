@@ -30,7 +30,7 @@ public class CloseEditor extends E4HandlerWrapper {
     
     @CanExecute
     private boolean canExecute() {
-        String id = part.getElementId();
-        return id.equals(PART.SQL_EDITOR);
+        return part == null ? false : 
+            part.getElementId().indexOf(PART.SQL_EDITOR) == 0;
     }
 }
