@@ -27,4 +27,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
         configurer.setShowStatusLine(true);
         configurer.setTitle("pgCodeKeeper"); //$NON-NLS-1$
     }
+    
+    @Override
+    public void postWindowCreate() {
+        getWindowConfigurer().getWindow().getShell().setMaximized(true);
+    }
 }
