@@ -82,7 +82,7 @@ public class CreateFunctionParser {
         }
     }
 
-    static void parseArguments(Parser parser, PgFunction function) {
+    public static void parseArguments(Parser parser, PgFunction function) {
         parser.expect("(");
 
         while (!parser.expectOptional(")")) {

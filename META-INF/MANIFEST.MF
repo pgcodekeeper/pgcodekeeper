@@ -5,6 +5,7 @@ Bundle-SymbolicName: apgdiff;singleton:=true
 Bundle-Version: 0.2.13.qualifier
 Export-Package: cz.startnet.utils.pgdiff,
  cz.startnet.utils.pgdiff.loader,
+ cz.startnet.utils.pgdiff.parsers,
  cz.startnet.utils.pgdiff.schema,
  ru.taximaxim.codekeeper.apgdiff,
  ru.taximaxim.codekeeper.apgdiff.model.difftree,
