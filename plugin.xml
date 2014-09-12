@@ -370,14 +370,14 @@
             class="ru.taximaxim.codekeeper.ui.parts.TestPart"
             id="ru.taximaxim.codekeeper.ui.part.TestPart"
             name="%part.label.4"
-            restorable="true">
+            restorable="false">
       </e4view>
       <e4view
             category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
             class="com.opcoach.e4.contextExplorer.parts.ContextExplorerPart"
             id="ru.taximaxim.codekeeper.ui.part.CtXp"
             name="%part.label.5"
-            restorable="true">
+            restorable="false">
       </e4view>
       <category
             id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
@@ -389,7 +389,7 @@
             icon="icons/tree_explorer.gif"
             id="ru.taximaxim.codekeeper.ui.part.ProjectExplorer"
             name="%part.label.1"
-            restorable="true">
+            restorable="false">
       </e4view>
       <e4view
             category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
@@ -397,7 +397,7 @@
             icon="icons/welcome16.gif"
             id="ru.taximaxim.codekeeper.ui.part.Welcome"
             name="%part.label.2"
-            restorable="true">
+            restorable="false">
       </e4view>
       <e4view
             category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
@@ -405,7 +405,7 @@
             icon="icons/console_view.gif"
             id="ru.taximaxim.codekeeper.ui.part.Console"
             name="%part.label.3"
-            restorable="true">
+            restorable="false">
       </e4view>
       <e4view
             allowMultiple="true"

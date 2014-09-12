@@ -11,7 +11,7 @@ import org.eclipse.e4.core.di.extensions.Preference;
 import org.eclipse.e4.ui.di.UISynchronize;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.UIEvents;
-import org.osgi.service.application.ApplicationHandle;
+import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -72,12 +72,10 @@ public class AddonExternalTools {
      * in its parameters change.
      */
     @Inject
-    @Optional
     private void prefsReinject(
-            ApplicationHandle appHandle, // IApplicationContext actually
             @Preference(PREF.PGDUMP_EXE_PATH)
             String pgdumpExec) {
-        if(appHandle.getState() == ApplicationHandle.RUNNING) {
+        if(PlatformUI.isWorkbenchRunning()) {
             getVersionsOnStartup(null, pgdumpExec);
         }
     }

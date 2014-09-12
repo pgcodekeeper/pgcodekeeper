@@ -12,11 +12,12 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 public class AddonsProcessor {
 
     private static final String ADDONS[] = {
-        PLUGIN_ID.THIS + ".addons.AddonExternalTools",
-        PLUGIN_ID.THIS + ".addons.AddonOpenLast",
-        PLUGIN_ID.THIS + ".addons.AddonPerspListener",
-        PLUGIN_ID.THIS + ".addons.AddonPrefLoader",
-        PLUGIN_ID.THIS + ".addons.AddonWindowLabel"
+        PLUGIN_ID.THIS + ".addons.AddonExternalTools", //$NON-NLS-1$
+        PLUGIN_ID.THIS + ".addons.AddonOpenLast", //$NON-NLS-1$
+        PLUGIN_ID.THIS + ".addons.AddonPerspListener", //$NON-NLS-1$
+        PLUGIN_ID.THIS + ".addons.AddonPrefLoader", //$NON-NLS-1$
+        PLUGIN_ID.THIS + ".addons.AddonWindowLabel", //$NON-NLS-1$
+        PLUGIN_ID.THIS + ".addons.AddonWindowMax" //$NON-NLS-1$
     };
     
     @Execute
@@ -25,7 +26,7 @@ public class AddonsProcessor {
         
         for (String addonClass : ADDONS) {
             MAddon a = MApplicationFactory.INSTANCE.createAddon();
-            a.setContributionURI("bundleclass://" + PLUGIN_ID.THIS + '/' + addonClass);
+            a.setContributionURI("bundleclass://" + PLUGIN_ID.THIS + '/' + addonClass); //$NON-NLS-1$
             app.getAddons().add(a);
         }
     }
