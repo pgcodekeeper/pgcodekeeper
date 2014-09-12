@@ -4,15 +4,20 @@ package ru.taximaxim.codekeeper.ui.recentprojs;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.handlers.LoadProj;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.UIScopedPreferenceStore;
@@ -33,22 +38,25 @@ public class DynamicMenuRecent extends CompoundContributionItem {
         IContributionItem items[] = new IContributionItem[recent.length];
         for(int i = 0; i < recent.length; ++i) {
             final String path = recent[i];
-            Action a = new Action(shortenPath(path, 40)) {
+            Action a = new Action(shortenPath(path, 60)) {
                 
                 @Override
                 public void run() {
-                    PgDbProject proj = new PgDbProject(path);
+                    IWorkbench wb = PlatformUI.getWorkbench();
+                    IWorkbenchWindow wbw = wb.getActiveWorkbenchWindow();
+                    Shell shell = wbw.getShell();
                     
+                    PgDbProject proj = new PgDbProject(path);
                     if (proj.getProjectFile().isFile()) {
-                    // TODO pending project loader rewrite (open 3.x views)
-                    //    LoadProj.load(proj, app.getContext(), partService, model, app, mainPrefs, shell);
+                        LoadProj.load(
+                                proj, (IEclipseContext) wb.getService(IEclipseContext.class),
+                                wbw.getActivePage(), UIScopedPreferenceStore.get(), shell);
                     } else {
                         Log.log(Log.LOG_WARNING, "Couldn't open project at " //$NON-NLS-1$
                                 + proj.getProjectFile()
                                 + ". Project pref store either doesn't exist or not a file."); //$NON-NLS-1$
                         
-                        MessageBox mb = new MessageBox(PlatformUI.getWorkbench()
-                                .getActiveWorkbenchWindow().getShell());
+                        MessageBox mb = new MessageBox(shell);
                         mb.setText(Messages.load_failed);
                         // TODO wrong message
                         mb.setMessage(Messages.directory_isnt_valid_project);
