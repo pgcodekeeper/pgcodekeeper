@@ -19,6 +19,8 @@ import java.util.Scanner;
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
+import cz.startnet.utils.pgdiff.parsers.Parser;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -49,10 +51,17 @@ public class DbSourceJdbc extends DbSource {
     private final String DB_TABLE_OF_TABLES = "pg_catalog.pg_class";
     private final String DB_TABLE_OF_CONSTRAINTS = "pg_catalog.pg_constraint";
 
+    /**
+     * Prepared statements to be executed
+     */
     private PreparedStatement prepStatTriggers;
     private PreparedStatement prepStatFuncName;
     private PreparedStatement prepStatFunctions;
-    // TODO HashMap caching of namespace names/oids?
+    private PreparedStatement prepStatLanguages;
+    private PreparedStatement prepStatTypes;
+    private PreparedStatement prepStatRoles;
+    
+    // TODO HashMap caching of namespace, type, language, owner names/oids?
     
     final private static Map<String, String> DATA_TYPE_ALIASES = new HashMap<String, String>(){
         {
@@ -103,13 +112,15 @@ public class DbSourceJdbc extends DbSource {
             Class.forName(JDBC_DRIVER);
             connection = DriverManager.getConnection(
                    "jdbc:postgresql://" + host + ":" + port + "/" + dbName, user, pass);
+            prepareStatements();
             metaData = connection.getMetaData();
 
-            prepStatTriggers = connection.prepareStatement("SELECT tgfoid, tgname, tgfoid, tgtype FROM pg_catalog.pg_trigger WHERE tgrelid = ?");
-            prepStatFuncName = connection.prepareStatement("SELECT proname FROM pg_catalog.pg_proc WHERE oid = ?");
-            prepStatFunctions = connection.prepareStatement("SELECT * FROM pg_catalog.pg_proc WHERE pronamespace = ?");
             ResultSet res = metaData.getSchemas();
             while (res.next()) {
+                String schemaName = res.getString("TABLE_SCHEM");
+                if (schemaName.equals("pg_catalog") || schemaName.equals("information_schema")){
+                    continue;
+                }
                 PgSchema schema = getSchema(res.getString("TABLE_SCHEM"));
                 d.addSchema(schema);
             }
@@ -142,6 +153,15 @@ public class DbSourceJdbc extends DbSource {
         return d;
     }
     
+    private void prepareStatements() throws SQLException{
+        prepStatTriggers = connection.prepareStatement("SELECT tgfoid, tgname, tgfoid, tgtype, tgrelid FROM pg_catalog.pg_trigger WHERE tgrelid = ?");
+        prepStatFuncName = connection.prepareStatement("SELECT proname FROM pg_catalog.pg_proc WHERE oid = ?");
+        prepStatFunctions = connection.prepareStatement("SELECT proname, prolang, prosrc, pg_get_functiondef(oid) AS probody, prorettype, proowner, proallargtypes, proargmodes, proargnames, pg_get_function_arguments(oid) AS proarguments, proargdefaults FROM pg_catalog.pg_proc WHERE pronamespace = ? AND proisagg = FALSE");
+        prepStatLanguages = connection.prepareStatement("SELECT lanname FROM pg_catalog.pg_language WHERE oid = ?");
+        prepStatTypes = connection.prepareStatement("SELECT typname FROM pg_catalog.pg_type WHERE oid = ?");
+        prepStatRoles = connection.prepareStatement("SELECT pg_get_userbyid(?) AS rolname");
+    }
+    
     private PgSchema getSchema(String schema) throws SQLException{
         PgSchema s = new PgSchema(schema, "");
         
@@ -157,18 +177,21 @@ public class DbSourceJdbc extends DbSource {
             PgView view = getView(schema, res.getString("table_name"));
             s.addView(view);
         }
-        
-        prepStatFunctions.setString(1, getSchemaOidByName(schema));
+         
+        prepStatFunctions.setInt(1, getSchemaOidByName(schema));
         res = prepStatFunctions.executeQuery();
         while (res.next()){
-            s.addFunction(getFunction(res));
+            PgFunction function = getFunction(res, schema);
+            if (function != null){
+                s.addFunction(function);
+            }
         }
         
         return s;
     }
     
     private PgConstraint getConstraint(String schema, String constraint) throws SQLException {
-        String schemaOid = getSchemaOidByName(schema);
+        int schemaOid = getSchemaOidByName(schema);
         String query = "SELECT contype, conrelid, consrc, conkey, confrelid, confkey FROM " + DB_TABLE_OF_CONSTRAINTS + " WHERE connamespace = " + schemaOid + "" + " AND conname = '" + constraint + "'";
         ResultSet res = connection.createStatement().executeQuery(query);
         if (!res.next()){
@@ -193,11 +216,11 @@ public class DbSourceJdbc extends DbSource {
         String conType = res.getString("contype");
         c = new PgConstraint(constraint, "", getSearchPath(schema));
         
-        String[] columnNames = getColumnNames((Integer[])res.getArray("conkey").getArray(), res.getString("conrelid"));
+        String[] columnNames = getColumnNames((Integer[])res.getArray("conkey").getArray(), res.getInt("conrelid"));
         switch (conType){
             case "f":
                 c = new PgForeignKey(constraint, "", getSearchPath(schema));
-                String[] referencedColumnNames = getColumnNames((Integer[])res.getArray("confkey").getArray(), res.getString("confrelid"));
+                String[] referencedColumnNames = getColumnNames((Integer[])res.getArray("confkey").getArray(), res.getInt("confrelid"));
                 definition = "FOREIGN KEY (";
                 // TODO code reuse
                 for(int i = 0; i < columnNames.length; i++){
@@ -207,7 +230,7 @@ public class DbSourceJdbc extends DbSource {
                         definition = definition.concat(", ");
                     }
                 }
-                SimpleEntry<String, String> referencedTableName = getTableNameByOid(res.getString("confrelid"));
+                SimpleEntry<String, String> referencedTableName = getTableNameByOid(res.getInt("confrelid"));
                 String schemaPrefix = "";
                 if (!referencedTableName.getKey().equals(schema)){
                     schemaPrefix = referencedTableName.getKey() + ".";
@@ -318,10 +341,6 @@ public class DbSourceJdbc extends DbSource {
         return v;
     }
 
-    private String getSearchPath(String schema){
-        return "SET search_path = " + schema + ", pg_catalog";
-    }
-    
     private PgTable getTable(String schema, String table) throws SQLException{
         StringBuilder tableDef = new StringBuilder(); 
 
@@ -426,7 +445,7 @@ public class DbSourceJdbc extends DbSource {
         
         // Query INDECIES
         // TODO get oids earlier (or cache), as they are not changed in time (minimize db queries)
-        String tableOid = getTableOidByName(table, getSchemaOidByName(schema));
+        int tableOid = getTableOidByName(table, getSchemaOidByName(schema));
         query = "SELECT indexrelid, indkey FROM pg_catalog.pg_index WHERE indrelid = '" + tableOid + "'";
         res = stmt.executeQuery(query);
         while (res.next()){
@@ -437,14 +456,14 @@ public class DbSourceJdbc extends DbSource {
                 columnsNumbers.add(Integer.valueOf(sc.next()));
             }
             sc.close();
-            PgIndex index = getIndex(res.getString("indexrelid"), tableOid, columnsNumbers.toArray(new Integer[columnsNumbers.size()]));
+            PgIndex index = getIndex(res.getInt("indexrelid"), tableOid, columnsNumbers.toArray(new Integer[columnsNumbers.size()]));
             if (index != null){
                 t.addIndex(index);
             }
         }
         
         // Query TRIGGERS
-        prepStatTriggers.setString(1, tableOid);
+        prepStatTriggers.setInt(1, tableOid);
         res = prepStatTriggers.executeQuery();
         while(res.next()){
             PgTrigger trigger = getTrigger(res);
@@ -494,15 +513,15 @@ public class DbSourceJdbc extends DbSource {
             t.setBefore(true);
         }
         
-        String tableName = getTableNameByOid(res.getString("tgrelid")).getValue();
+        String tableName = getTableNameByOid(res.getInt("tgrelid")).getValue();
         t.setTableName(tableName);
         
-        String functionName = getFunctionNameByOid(res.getString("tgfoid"));
+        String functionName = getFunctionNameByOid(res.getInt("tgfoid"));
         t.setFunction(functionName);
         return t;
     }
     
-    private PgIndex getIndex(String indexOid, String tableOid, Integer[] columnsNumbers) throws SQLException {
+    private PgIndex getIndex(int indexOid, int tableOid, Integer[] columnsNumbers) throws SQLException {
         SimpleEntry<String, String> indexName = getTableNameByOid(indexOid);
         PgIndex i = new PgIndex(indexName.getValue(), "", getSearchPath(indexName.getKey()));
         i.setTableName(getTableNameByOid(tableOid).getValue());
@@ -535,10 +554,40 @@ public class DbSourceJdbc extends DbSource {
         return i;
     }
     
-    private PgFunction getFunction(ResultSet res){
-        return null;
+    /**
+     * Returns function object accordingly to data stored in current res row
+     * (except for aggregate functions). 
+     * Defines function body from Postgres pg_get_functiondef() output.
+     * <br><br>
+     * 
+     * Use this select query to define function manually (not completed):
+     * "SELECT proname, prolang, prosrc, proisagg AS isaggregate, proiswindow AS iswindow, 
+     *         prosecdef AS issecuritydefiner, proleakproof AS isleakproof, 
+     *         proisstrict AS isnullonnull FROM pg_catalog.pg_proc WHERE pronamespace = ?"
+     */
+    private PgFunction getFunction(ResultSet res, String schemaName) throws SQLException{
+        String definition = res.getString("probody");
+        String languageName = getLangNameByOid(res.getInt("prolang"));
+        int langFirstOccurenceIndex = definition.indexOf("LANGUAGE " + languageName); 
+        String body = definition.substring(langFirstOccurenceIndex);
+        
+        PgFunction f = new PgFunction(res.getString("proname"), "", getSearchPath(schemaName));
+        f.setBody(body);
+        f.setReturns(getTypeNameByOid(res.getInt("prorettype")));
+        f.setOwner(getRoleNameByOid(res.getInt("proowner")));
+
+        String arguments = res.getString("proarguments");
+        if (!arguments.isEmpty()){
+            CreateFunctionParser.parseArguments(new Parser("(" + arguments + ")"), f);
+        }
+
+        return f;
     }
     
+    private String getSearchPath(String schema){
+        return "SET search_path = " + schema + ", pg_catalog";
+    }
+
     /**
      * Returns an array of column names, resolved from conCols Array object 
      * by pg_attribute.attnum and tableOid
@@ -547,7 +596,7 @@ public class DbSourceJdbc extends DbSource {
      * @param tableOid  Oid of table - owner of these columns
      * @return
      */
-    private String [] getColumnNames(Integer[] cols, String tableOid) throws SQLException{
+    private String [] getColumnNames(Integer[] cols, int tableOid) throws SQLException{
         String query = "SELECT attname FROM pg_catalog.pg_attribute WHERE attrelid = " + tableOid + " AND attnum IN (";
         for(int i = 0; i < cols.length; i++){
             Integer colNum = cols[i];
@@ -565,8 +614,8 @@ public class DbSourceJdbc extends DbSource {
         return columnNames.toArray(new String[columnNames.size()]);
     }
 
-    private String getFunctionNameByOid(String functionOid) throws SQLException{
-        prepStatFuncName.setString(1, functionOid);
+    private String getFunctionNameByOid(int functionOid) throws SQLException{
+        prepStatFuncName.setInt(1, functionOid);
         ResultSet res = prepStatFuncName.executeQuery();
         if (res.next()){
             return res.getString("proname");
@@ -580,7 +629,7 @@ public class DbSourceJdbc extends DbSource {
      * @param tableOid
      * @return
      */
-    private SimpleEntry<String, String> getTableNameByOid(String tableOid) throws SQLException{
+    private SimpleEntry<String, String> getTableNameByOid(int tableOid) throws SQLException{
         String query = "SELECT relname, relnamespace FROM pg_catalog.pg_class WHERE oid = '" + tableOid + "'";
         Statement stmt = connection.createStatement();
         ResultSet res = stmt.executeQuery(query);
@@ -604,13 +653,13 @@ public class DbSourceJdbc extends DbSource {
         return new SimpleEntry<String, String>(schemaName, tableName);
     }
 
-    private String getTableOidByName(String tableName, String schemaOid) throws SQLException{
+    private int getTableOidByName(String tableName, int schemaOid) throws SQLException{
         String query = "SELECT oid FROM " + DB_TABLE_OF_TABLES + " WHERE relname = '" + tableName + "' AND relnamespace = " + schemaOid + " AND relkind = 'r'";
         Statement stmt = connection.createStatement();
         ResultSet res = stmt.executeQuery(query);
-        String tableOid = null;
+        int tableOid = 0;
         if(res.next()){
-            tableOid = res.getString("oid");
+            tableOid = res.getInt("oid");
         }
         if (res.next()){
             // WHAT?
@@ -620,13 +669,13 @@ public class DbSourceJdbc extends DbSource {
         return tableOid;
     }
 
-    private String getSchemaOidByName(String schema) throws SQLException{
+    private int getSchemaOidByName(String schema) throws SQLException{
         String query = "SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = '" + schema + "'";
         Statement stmt = connection.createStatement();
         ResultSet res = stmt.executeQuery(query);
-        String schemaOid;
+        int schemaOid;
         if(res.next()){
-            schemaOid = res.getString("oid");
+            schemaOid = res.getInt("oid");
         }else{
             throw new IllegalStateException("Could not resolve schema oid by its name " + schema + " in pg_catalog.pg_namespace");
         }
@@ -635,5 +684,33 @@ public class DbSourceJdbc extends DbSource {
             throw new IllegalStateException("More than one schema oid found by its name " + schema + " in pg_catalog.pg_namespace");
         }
         return schemaOid;
+    }
+    
+    private String getLangNameByOid (int langOid) throws SQLException{
+        prepStatLanguages.setInt(1, langOid);
+        try(ResultSet res = prepStatLanguages.executeQuery()){
+            if (res.next()){
+                return res.getString("lanname");
+            }
+        }
+        return null;
+    }
+    
+    private String getTypeNameByOid(int typeOid) throws SQLException {
+        prepStatTypes.setInt(1, typeOid);
+        ResultSet res = prepStatTypes.executeQuery();
+        if (res.next()){
+            return res.getString("typname");
+        }
+        return "";
+    }
+    
+    private String getRoleNameByOid(int ownerOid) throws SQLException {
+        prepStatRoles.setInt(1, ownerOid);
+        ResultSet res = prepStatRoles.executeQuery();
+        if (res.next()){
+            return res.getString("rolname");
+        }
+        return "";
     }
 }
