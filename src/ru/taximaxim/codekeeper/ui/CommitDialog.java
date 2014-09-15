@@ -81,12 +81,12 @@ public class CommitDialog extends TrayDialog {
         gTop.setLayoutData(gd);
         gTop.setText(Messages.commitDialog_user_selected_elements);
         
-        dtvTop = new DiffTableViewer(gTop, SWT.NONE, prefs, true);
+        dtvTop = new DiffTableViewer(gTop, SWT.NONE, prefs, true, false);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.widthHint = 1000;
         dtvTop.setLayoutData(gd);
-        dtvTop.setFilteredInput(filtered, treeDiffer);
+        dtvTop.setFilteredInput(filtered, treeDiffer, false);
         
         if (depcyElementsSet != null){
             Group gBottom = new Group(container, SWT.NONE);
@@ -96,12 +96,12 @@ public class CommitDialog extends TrayDialog {
             gBottom.setLayoutData(gd);
             gBottom.setText(Messages.commitDialog_depcy_elements);
             
-            dtvBottom = new DiffTableViewer(gBottom, SWT.NONE, prefs, false);
+            dtvBottom = new DiffTableViewer(gBottom, SWT.NONE, prefs, false, false);
             gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 1000;
             dtvBottom.setLayoutData(gd);
-            dtvBottom.setInputCollection(depcyElementsSet, treeDiffer);
+            dtvBottom.setInputCollection(depcyElementsSet, treeDiffer, false);
             dtvBottom.setCheckedElements(conflictingElementsSet, false);
             dtvBottom.redraw();
         }

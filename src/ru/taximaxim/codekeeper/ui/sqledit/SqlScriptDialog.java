@@ -468,7 +468,7 @@ public class SqlScriptDialog extends MessageDialog {
 
     private void parseDependencies(String[] lines, int begin, int end,
             List<Entry<String, String>> listToFill) {
-        String space = Pattern.quote(" ");
+        String space = Pattern.quote(" "); //$NON-NLS-1$
         for (int i = begin; i < end; i++) {
             String words[] = lines[i].split(space); 
             listToFill.add(new AbstractMap.SimpleEntry<>(

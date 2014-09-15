@@ -9,9 +9,6 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.eclipse.compare.CompareConfiguration;
-import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
-import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.core.di.extensions.Preference;
@@ -25,18 +22,13 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.TextViewer;
-import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -65,7 +57,6 @@ import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
-import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class DiffPartDescr {
@@ -93,16 +84,36 @@ public class DiffPartDescr {
     private Button btnGetChanges;
     private Composite containerSrc;
     private DbPicker dbSrc;
-    private TextMergeViewer diffPane;
+    private DiffPaneViewer diffPane;
     /**
      * Remote DB.
      */
     private DbSource dbSource;
+
     /**
      * Local repo cache.
      */
     private DbSource dbTarget;
     
+    /**
+     * @param dbSource the dbSource to set
+     */
+    public void setDbSource(DbSource dbSource) {
+        this.dbSource = dbSource;
+        if (diffPane != null) {
+            diffPane.setDbTarget(dbSource);
+        }
+    }
+    /**
+     * @param dbTarget the dbTarget to set
+     */
+    public void setDbTarget(DbSource dbTarget) {
+        this.dbTarget = dbTarget;
+        if (diffPane != null) {
+            diffPane.setDbSource(dbTarget);
+        }
+    }
+
     /**
      * A collection of manually added object dependencies.
      * Keys are dependants, values are lists of dependencies.
@@ -188,7 +199,7 @@ public class DiffPartDescr {
         gl.horizontalSpacing = gl.verticalSpacing = 2;
         containerDb.setLayout(gl);
         
-        diffTable = new DiffTableViewer(containerDb, SWT.FILL, mainPrefs, false);
+        diffTable = new DiffTableViewer(containerDb, SWT.FILL, mainPrefs, false, true);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
@@ -281,14 +292,14 @@ public class DiffPartDescr {
                     return;
                 }
                 
-                dbTarget = DbSource.fromProject(proj);
+                setDbTarget(DbSource.fromProject(proj));
                 if (btnDump.getSelection()) {
                     FileDialog dialog = new FileDialog(shell);
                     dialog.setText(Messages.choose_dump_file_with_changes);
                     String dumpfile = dialog.open();
                     if (dumpfile != null) {
-                        dbSource = DbSource.fromFile(dumpfile,
-                                proj.getString(PROJ_PREF.ENCODING));
+                        setDbSource(DbSource.fromFile(dumpfile,
+                                proj.getString(PROJ_PREF.ENCODING)));
                     } else {
                         return;
                     }
@@ -305,12 +316,12 @@ public class DiffPartDescr {
                         return;
                     }
 
-                    dbSource = DbSource.fromDb(exePgdump, pgdumpCustom,
+                    setDbSource(DbSource.fromDb(exePgdump, pgdumpCustom,
                             dbSrc.txtDbHost.getText(), port,
                             dbSrc.txtDbUser.getText(),
                             dbSrc.txtDbPass.getText(),
                             dbSrc.txtDbName.getText(),
-                            proj.getString(PROJ_PREF.ENCODING));
+                            proj.getString(PROJ_PREF.ENCODING)));
                 } else {
                     throw new IllegalStateException(
                             Messages.undefined_source_for_db_changes);
@@ -328,7 +339,7 @@ public class DiffPartDescr {
                             Messages.differ_thread_cancelled_shouldnt_happen, ex);
                 }
 
-                diffTable.setInput(treediffer);
+                diffTable.setInput(treediffer, true);
                 diffPane.setInput(null);
                 btnGetLatest.setEnabled(true);
                 btnAddDepcy.setEnabled(true);
@@ -364,116 +375,9 @@ public class DiffPartDescr {
         }
         // end middle right container
         // end middle container
-
-        CompareConfiguration conf = new CompareConfiguration();
-        conf.setLeftEditable(false);
-        conf.setRightEditable(false);
         
-        diffPane = new TextMergeViewer(sashOuter, SWT.BORDER, conf) {
-
-            @Override
-            protected void configureTextViewer(TextViewer textViewer) {
-                // viewer configures itself
-            }
-            
-            @Override
-            protected SourceViewer createSourceViewer(Composite parent,
-                    int textOrientation) {
-                return new SqlSourceViewer(parent, textOrientation);
-            }
-        };
-        diffPane.setContentProvider(new IMergeViewerContentProvider() {
-            
-            @Override
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            }
-            
-            @Override
-            public void dispose() {
-            }
-            
-            @Override
-            public boolean showAncestor(Object input) {
-                return false;
-            }
-            
-            @Override
-            public void saveRightContent(Object input, byte[] bytes) {
-            }
-            
-            @Override
-            public void saveLeftContent(Object input, byte[] bytes) {
-            }
-            
-            @Override
-            public boolean isRightEditable(Object input) {
-                return false;
-            }
-            
-            @Override
-            public boolean isLeftEditable(Object input) {
-                return false;
-            }
-            
-            @Override
-            public String getRightLabel(Object input) {
-                return Messages.diffPartDescr_from + proj.getString(PROJ_PREF.REPO_TYPE);
-            }
-            
-            @Override
-            public Image getRightImage(Object input) {
-                return null;
-            }
-            
-            @Override
-            public Object getRightContent(Object input) {
-                TreeElement el = (TreeElement) input;
-                if (el != null && (el.getSide() == DiffSide.RIGHT
-                        || el.getSide() == DiffSide.BOTH)) {
-                    return new Document(
-                            el.getPgStatement(dbTarget.getDbObject()).getFullSQL());
-                } else {
-                    return new Document();
-                }
-            }
-            
-            @Override
-            public String getLeftLabel(Object input) {
-                return Messages.diffPartDescr_to_database;
-            }
-            
-            @Override
-            public Image getLeftImage(Object input) {
-                return null;
-            }
-            
-            @Override
-            public Object getLeftContent(Object input) {
-                TreeElement el = (TreeElement) input;
-                if (el != null && (el.getSide() == DiffSide.LEFT
-                        || el.getSide() == DiffSide.BOTH)) {
-                    return new Document(
-                            el.getPgStatement(dbSource.getDbObject()).getFullSQL());
-                } else {
-                    return new Document();
-                }
-            }
-            
-            @Override
-            public String getAncestorLabel(Object input) {
-                return null;
-            }
-            
-            @Override
-            public Image getAncestorImage(Object input) {
-                return null;
-            }
-            
-            @Override
-            public Object getAncestorContent(Object input) {
-                return null;
-            }
-        });
+        diffPane = new DiffPaneViewer(sashOuter, SWT.NONE, 
+                dbTarget, dbSource, true);
     }
 
     private void showDbPicker(boolean show) {
@@ -504,7 +408,7 @@ public class DiffPartDescr {
                 
                 @Override
                 public void run() {
-                    diffTable.setInput(null);
+                    diffTable.setInput(null, true);
                     diffPane.setInput(null);
                     btnGetLatest.setEnabled(false);
                     btnAddDepcy.setEnabled(false);
