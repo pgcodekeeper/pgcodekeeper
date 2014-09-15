@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.parts;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -53,6 +54,12 @@ public class DiffPaneDialog extends Dialog {
         diffPane.setInput(input);
 
         return parent;
+    }
+    
+    @Override
+    protected void createButtonsForButtonBar(Composite parent) {
+        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL,
+                true);
     }
 
     public void setInput(Object input) {
