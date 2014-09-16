@@ -19,6 +19,7 @@ import java.util.Scanner;
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.Parser;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -30,6 +31,7 @@ import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
+import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -60,6 +62,7 @@ public class DbSourceJdbc extends DbSource {
     private PreparedStatement prepStatLanguages;
     private PreparedStatement prepStatTypes;
     private PreparedStatement prepStatRoles;
+    private PreparedStatement prepStatSequences;
     
     // TODO HashMap caching of namespace, type, language, owner names/oids?
     
@@ -129,26 +132,7 @@ public class DbSourceJdbc extends DbSource {
         } catch (ClassNotFoundException e) {
             throw new IOException("JDBC driver class not found", e);
         }finally{
-            try {
-                connection.close();
-            } catch (Exception e) {
-                Log.log(Log.LOG_INFO, "Could not close JDBC connection", e);
-            }
-            try {
-                prepStatTriggers.close();
-            } catch (Exception e) {
-                Log.log(Log.LOG_INFO, "Could not close prepared statement for triggers", e);
-            }
-            try {
-                prepStatFuncName.close();
-            } catch (Exception e) {
-                Log.log(Log.LOG_INFO, "Could not close prepared statement for function names", e);
-            }
-            try {
-                prepStatFunctions.close();
-            } catch (Exception e) {
-                Log.log(Log.LOG_INFO, "Could not close prepared statement for functions", e);
-            }
+            closeResources();
         }
         return d;
     }
@@ -160,6 +144,83 @@ public class DbSourceJdbc extends DbSource {
         prepStatLanguages = connection.prepareStatement("SELECT lanname FROM pg_catalog.pg_language WHERE oid = ?");
         prepStatTypes = connection.prepareStatement("SELECT typname FROM pg_catalog.pg_type WHERE oid = ?");
         prepStatRoles = connection.prepareStatement("SELECT pg_get_userbyid(?) AS rolname");
+        
+        /**
+         * Old seq query:
+         * 
+         * "SELECT s.sequence_name, s.start_value, s.minimum_value, s.maximum_value, s.increment, s.cycle_option, d. "
+                + "FROM information_schema.sequences s JOIN pg_catalog.pg_depend d ON (s.oid = d.objid) "
+                + "WHERE sequence_schema = ?"
+         */
+        
+        String querySequenceInfo = 
+                "SELECT "
+                + "     c.oid AS sequence_oid,"
+                + "     s.sequence_name,"
+                + "     s.start_value,"
+                + "     s.minimum_value,"
+                + "     s.maximum_value,"
+                + "     s.increment,"
+                + "     s.cycle_option,"
+                + "     (SELECT relnamespace FROM pg_catalog.pg_class WHERE oid = d.refobjid AND relkind = 'r') referenced_schema_oid,"
+                + "     (SELECT relname FROM pg_catalog.pg_class WHERE oid = d.refobjid AND relkind = 'r') referenced_table_name "
+                + "FROM "
+                + "     information_schema.sequences s,"
+                + "     pg_catalog.pg_class c,"
+                + "     pg_catalog.pg_namespace n, "
+                + "     pg_catalog.pg_depend d"
+                + " WHERE "
+                + "     s.sequence_schema = ? AND "
+                + "     c.relname = s.sequence_name AND "
+                + "     n.oid = c.relnamespace AND "
+                + "     d.objid = c.oid AND "
+                + "     n.nspname = s.sequence_schema "
+                + " ORDER BY sequence_oid";
+
+        prepStatSequences = connection.prepareStatement(querySequenceInfo);
+    }
+
+    private void closeResources() {
+        try {
+            connection.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_INFO, "Could not close JDBC connection", e);
+        }
+        try {
+            prepStatTriggers.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_INFO, "Could not close prepared statement for triggers", e);
+        }
+        try {
+            prepStatFuncName.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_INFO, "Could not close prepared statement for function names", e);
+        }
+        try {
+            prepStatFunctions.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_INFO, "Could not close prepared statement for functions", e);
+        }
+        try {
+            prepStatLanguages.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_INFO, "Could not close prepared statement for languages", e);
+        }
+        try {
+            prepStatTypes.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_INFO, "Could not close prepared statement for types", e);
+        }
+        try {
+            prepStatRoles.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_INFO, "Could not close prepared statement for roles", e);
+        }
+        try {
+            prepStatSequences.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_INFO, "Could not close prepared statement for sequences", e);
+        }
     }
     
     private PgSchema getSchema(String schema) throws SQLException{
@@ -185,6 +246,23 @@ public class DbSourceJdbc extends DbSource {
             if (function != null){
                 s.addFunction(function);
             }
+        }
+        
+        prepStatSequences.setString(1, schema);
+        res = prepStatSequences.executeQuery();
+        PgSequence sequence = null;
+        int previousSeqOid = 0;
+        while(res.next()){
+            if (previousSeqOid != res.getInt("sequence_oid")){
+                sequence = getSequence(res, schema);
+                if (sequence != null){
+                    s.addSequence(sequence);
+                }
+            }else if (sequence != null && res.getString("referenced_table_name") != null){
+                String tableName = res.getString("referenced_table_name");
+                sequence.setOwnedBy(getScheNameByOid(res.getInt("referenced_schema_oid")) + "." + tableName);
+            }
+            previousSeqOid = res.getInt("sequence_oid");
         }
         
         return s;
@@ -584,6 +662,26 @@ public class DbSourceJdbc extends DbSource {
         return f;
     }
     
+    private PgSequence getSequence(ResultSet res, String schemaName) throws SQLException {
+        String sequenceName = res.getString("sequence_name");
+        PgSequence s = new PgSequence(sequenceName, "", getSearchPath(schemaName));
+        s.setCycle(res.getBoolean("cycle_option"));
+        s.setIncrement(res.getString("increment"));
+        s.setMaxValue(res.getString("maximum_value"));
+        s.setMinValue(res.getString("minimum_value"));
+        s.setStartWith(res.getString("start_value"));
+        s.setCache(String.valueOf(1));
+        // TODO SELECT cache_value FROM tableName;
+        
+        int ownedSchemaOid = res.getInt("referenced_schema_oid");
+        String ownedTableName = res.getString("referenced_table_name");
+        if (ownedSchemaOid != 0 && ownedTableName != null){
+            String ownedSchemaName = PgDiffUtils.getQuotedName(getScheNameByOid(ownedSchemaOid));
+            s.setOwnedBy(ownedSchemaName + "." + PgDiffUtils.getQuotedName(ownedTableName));
+        }
+        return s;
+    }
+    
     private String getSearchPath(String schema){
         return "SET search_path = " + schema + ", pg_catalog";
     }
@@ -712,5 +810,15 @@ public class DbSourceJdbc extends DbSource {
             return res.getString("rolname");
         }
         return "";
+    }
+    
+    private String getScheNameByOid(int schemaOid) throws SQLException {
+        String query = "SELECT nspname FROM pg_catalog.pg_namespace WHERE oid = '" + schemaOid + "'";
+        Statement stmt = connection.createStatement();
+        ResultSet res = stmt.executeQuery(query);
+        if(res.next()){
+            return res.getString("nspname");
+        }
+        return null;
     }
 }
