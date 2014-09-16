@@ -139,11 +139,9 @@ public class Messages extends NLS {
     public static String jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date;
     public static String jGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new;
     public static String jGitExec_exception_thrown_at_jgit_repo_update;
-    public static String jGitExec_failed;
     public static String jGitExec_get_conflicts;
     public static String jGitExec_git_failed_cause;
     public static String jGitExec_git_result;
-    public static String jGitExec_git_setting_creditials;
     public static String jGitExec_git_start;
     public static String jGitExec_git_start_url;
     public static String jGitExec_git_status;
@@ -155,7 +153,6 @@ public class Messages extends NLS {
     public static String jGitExec_skip_pull_branch_does_not_exist;
     public static String jGitExec_skip_pull_branch_does_not_exist_skipped;
     public static String jGitExec_status;
-    public static String jGitExec_success;
     public static String jGitExec_successfull;
     public static String jGitExec_un;
     public static String pgDumper_bad_pg_dump_version_output;
@@ -307,7 +304,6 @@ public class Messages extends NLS {
     public static String DiffTableViewer_selected;
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
     public static String generalPrefPage_open_last_project_on_startup;
-    public static String generalPrefPage_consider_depcy_on_commit;
     public static String generalPrefPage_pg_dump_custom_parameters;
     public static String generalPrefPage_pg_dump_executable;
     public static String generalPrefPage_use_depcy_on_commit_page;
@@ -332,11 +328,29 @@ public class Messages extends NLS {
 
     public static String ManualDepciesDialog_set_add_depcies;
     public static String NewProjWizard_settings;
+    public static String ProjectUpdater_error_backup_restore;
+
+    public static String ProjectUpdater_error_no_tempdir;
+
+    public static String ProjectUpdater_error_update;
+
     public static String ProjProps_settings;
     public static String SqlScriptDialog_add_it_to_script;
     public static String SqlScriptDialog_command_to_execute;
     public static String SqlScriptDialog__results_of_script_revealed_dependent_objects;
     public static String SqlScriptDialog_will_be_replaced;
+
+    public static String StdStreamRedirector_error_reading_std;
+
+    public static String StdStreamRedirector_error_reading_std_external;
+
+    public static String StdStreamRedirector_process_returned_with_error;
+
+    public static String StdStreamRedirector_wait_destroy_interrupted_unexpectedly;
+
+    public static String StdStreamRedirector_wait_thread_interrupted_unexpectedly;
+
+    public static String SwitchBranch_error_checkout_wait;
     public static String XmlHistory_read_error;
     public static String XmlHistory_write_error;
     public static String XmlStringList_root_name_invalid;

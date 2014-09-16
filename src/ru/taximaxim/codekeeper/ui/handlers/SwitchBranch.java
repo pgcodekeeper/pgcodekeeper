@@ -18,7 +18,6 @@ import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.egit.ui.JobFamilies;
 import org.eclipse.egit.ui.internal.branch.BranchOperationUI;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
@@ -68,7 +67,7 @@ public class SwitchBranch {
                             });
                         }
                     } catch (IOException | InterruptedException ex) {
-                        throw new IllegalStateException("Exception waiting for checkout job ", ex); //$NON-NLS-1$
+                        throw new IllegalStateException(Messages.SwitchBranch_error_checkout_wait, ex);
                     } finally {
                         git.get().close();
                     }

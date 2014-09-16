@@ -283,12 +283,10 @@ public class SqlScriptDialog extends MessageDialog {
                 @Override
                 public void run() {
                     try {
-                        Integer returnedCode = new Integer(0);
-                        String scriptOutputRes = StdStreamRedirector.launchAndRedirect(
-                                pb, returnedCode);
+                        String scriptOutputRes =
+                                StdStreamRedirector.launchAndRedirect(pb);
                         if (usePsqlDepcy) {
-                            addDepcy = getDependenciesFromOutput(returnedCode, 
-                                            scriptOutputRes);
+                            addDepcy = getDependenciesFromOutput(scriptOutputRes);
                         }
                     } catch (IOException ex) {
                         throw new IllegalStateException(ex);
@@ -434,8 +432,7 @@ public class SqlScriptDialog extends MessageDialog {
         return sb.toString();
     }
     
-    private List<Entry<String, String>> getDependenciesFromOutput(
-            Integer returnedCode, String output) {
+    private List<Entry<String, String>> getDependenciesFromOutput(String output) {
         List<Entry<String, String>> depciesList = new ArrayList<>();
         if (output == null || output.isEmpty()) {
             return depciesList;
@@ -468,7 +465,7 @@ public class SqlScriptDialog extends MessageDialog {
 
     private void parseDependencies(String[] lines, int begin, int end,
             List<Entry<String, String>> listToFill) {
-        String space = Pattern.quote(" ");
+        String space = Pattern.quote(" "); //$NON-NLS-1$
         for (int i = begin; i < end; i++) {
             String words[] = lines[i].split(space); 
             listToFill.add(new AbstractMap.SimpleEntry<>(

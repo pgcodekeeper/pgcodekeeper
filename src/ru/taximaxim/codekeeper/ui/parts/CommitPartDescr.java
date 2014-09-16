@@ -57,11 +57,9 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.CommitDialog;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -78,7 +76,7 @@ import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
-import ru.taximaxim.codekeeper.ui.fileutils.Dir;
+import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -310,21 +308,10 @@ public class CommitPartDescr {
                         pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
                         File workingDir = proj.getProjectWorkingDir();
                         try {
+                            new ProjectUpdater(dbNew, proj).update();
+                            
                             IRepoWorker repo = new JGitExec(proj,
                                     mainPrefs.getString(PREF.GIT_KEY_PRIVATE_FILE));
-
-                            try {
-                                Dir.safeCleanApgdiffDir(workingDir);
-                                new ModelExporter(workingDir.getAbsolutePath(),
-                                        dbNew, proj
-                                                .getString(PROJ_PREF.ENCODING))
-                                        .export();
-                            } catch (IOException e) {
-                                Dir.restoreApgdiffDir(workingDir);
-                                throw e;
-                            }
-                            Dir.cleanApgdiffTempDir(workingDir);
-                            
                             pm.newChild(1).subTask(repoName + " committing..."); // 3 //$NON-NLS-1$
                             repo.repoRemoveMissingAddNew(workingDir);
                             repo.repoCommit(workingDir, commitComment);
