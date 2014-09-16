@@ -8,6 +8,7 @@ import java.util.ResourceBundle;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -23,11 +24,9 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerActivation;
@@ -38,26 +37,30 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.ResourceAction;
 
+// FIXME избавиться от костылей по возможности
+// типа getResourceBundle()
 /**
  * Используется для создания самостоятельного объекта SqlSourceViewerExtender
  * имеет менюшку и поддержку клавиш ctrl+z
  * Для предоставления вьювера например как просмотрщик для TextMergeViewer 
  * используйте класс SQLSourceViewer!
- *
  */
 public class SqlSourceViewerExtender extends SqlSourceViewer implements
         IMenuListener, ITextListener, ISelectionChangedListener {
 
     private static final String[] TEXT_ACTIONS = {
-            SqlSourceViewerExtender.UNDO_ID, 
+            SqlSourceViewerExtender.UNDO_ID,
             SqlSourceViewerExtender.REDO_ID,
-//            SqlSourceViewerExtender.CUT_ID, 
-//            SqlSourceViewerExtender.COPY_ID,
-//            SqlSourceViewerExtender.PASTE_ID,
-//            SqlSourceViewerExtender.DELETE_ID,
-//            SqlSourceViewerExtender.SELECT_ALL_ID,
+            /*
+            SqlSourceViewerExtender.CUT_ID,
+            SqlSourceViewerExtender.COPY_ID,
+            SqlSourceViewerExtender.PASTE_ID,
+            SqlSourceViewerExtender.DELETE_ID,
+            SqlSourceViewerExtender.SELECT_ALL_ID,
+            */
             SqlSourceViewerExtender.FIND_ID,
-            SqlSourceViewerExtender.GOTO_LINE_ID };
+            SqlSourceViewerExtender.GOTO_LINE_ID
+            };
     public static final String UNDO_ID = "undo"; //$NON-NLS-1$
     public static final String REDO_ID = "redo"; //$NON-NLS-1$
     public static final String CUT_ID = "cut"; //$NON-NLS-1$
@@ -90,10 +93,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         MenuManager menu = new MenuManager();
         menu.setRemoveAllWhenShown(true);
         menu.addMenuListener(this);
-        StyledText te = this.getTextWidget();
-        te.setMenu(menu.createContextMenu(te));
-        Menu menu1 = menu.createContextMenu(this.getControl());
-        this.getControl().setMenu(menu1);
+        this.getTextWidget().setMenu(menu.createContextMenu(this.getTextWidget()));
         contributeFindAction();
         connectGlobalActions();
     }
@@ -113,13 +113,11 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
     }
 
     public void activateAutocomplete() {
-        final SqlSourceViewerExtender sqlEditor = this;
         IHandler caHandler = new AbstractHandler() {
 
             @Override
-            public Object execute(ExecutionEvent event)
-                    throws org.eclipse.core.commands.ExecutionException {
-                sqlEditor.doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
+            public Object execute(ExecutionEvent event) throws ExecutionException {
+                SqlSourceViewerExtender.this.doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
                 return null;
             }
         };
@@ -131,6 +129,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
                 caHandler);
     }
 
+    @Override
     public void menuAboutToShow(IMenuManager menu) {
 
         menu.add(new Separator("undo")); //$NON-NLS-1$
@@ -191,7 +190,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
     }
 
     private IAction getAction(String actionId) {
-        IAction action = (IAction) fActions.get(actionId);
+        IAction action = fActions.get(actionId);
         if (action == null) {
             action = createAction(actionId);
             if (action == null)
@@ -216,6 +215,8 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
             updateActions();
             clearHandlers();
             this.getControl().getDisplay().asyncExec(new Runnable() {
+                
+                @Override
                 public void run() {
                     for (String actionName : TEXT_ACTIONS) {
                         IAction action = null;
@@ -231,6 +232,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         }
     }
 
+    @Override
     public void textChanged(TextEvent event) {
         Iterator<IAction> e = fActions.values().iterator();
         while (e.hasNext()) {
@@ -243,6 +245,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         }
     }
 
+    @Override
     public void selectionChanged(SelectionChangedEvent event) {
         Iterator<IAction> e = fActions.values().iterator();
         while (e.hasNext()) {
@@ -332,16 +335,19 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
             update();
         }
 
+        @Override
         public void run() {
             if (isEnabled())
                 getSourceViewer().doOperation(fOperationCode);
         }
 
+        @Override
         public boolean isEnabled() {
             return fOperationCode != -1
                     && getSourceViewer().canDoOperation(fOperationCode);
         }
 
+        @Override
         public void update() {
             setEnabled(isEnabled());
         }
@@ -372,12 +378,12 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
             return fMutable;
         }
 
+        @Override
         public void update() {
-            // empty default implementation
         }
     }
 
-    /*
+    /**
      * Initialize the given Action from a ResourceBundle.
      */
     private static void initAction(IAction a, ResourceBundle bundle,

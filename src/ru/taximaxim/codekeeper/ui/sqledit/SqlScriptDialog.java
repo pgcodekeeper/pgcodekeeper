@@ -130,9 +130,8 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     @Override
-    protected void configureShell(Shell shell) {
-        super.configureShell(shell);
-        setShellStyle(getShellStyle() | SWT.RESIZE);
+    protected boolean isResizable() {
+        return true;
     }
     
     @Override
