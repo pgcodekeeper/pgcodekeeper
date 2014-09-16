@@ -5,6 +5,7 @@
  */
 package cz.startnet.utils.pgdiff;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -46,11 +47,11 @@ public class Main {
                     PgDiff.createDiff(encodedWriter, arguments);
                 }
             } else if(arguments.isModeParse()) {
-                new ModelExporter(arguments.getParserOutdir(),
+                new ModelExporter(new File(arguments.getParserOutdir()),
                         PgDiff.loadDatabaseSchema(arguments.getParseSrcFormat(),
                                 arguments.getParseSrc(), arguments),
-                            arguments.getOutCharsetName())
-                    .export();
+                        arguments.getOutCharsetName())
+                .export();
             }
         }
 
