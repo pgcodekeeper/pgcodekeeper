@@ -165,7 +165,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
      */
     private ResourceBundle getResourceBundle() {
         return ResourceBundle
-                .getBundle("org.eclipse.compare.contentmergeviewer.TextMergeViewerResources");
+                .getBundle("org.eclipse.compare.contentmergeviewer.TextMergeViewerResources"); //$NON-NLS-1$
     }
 
     /**

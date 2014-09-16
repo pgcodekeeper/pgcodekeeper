@@ -112,7 +112,7 @@ public class StdStreamRedirector implements Runnable {
 
             if (!redirector.isDestroyed.get() && p.exitValue() != 0) {
                 throw new IOException(Messages.StdStreamRedirector_process_returned_with_error
-                            + p.exitValue());
+                            + p.exitValue() + Messages.StdStreamRedirector_error_returncode_see_for_details);
             }
             
             if (lastException.get() != null){

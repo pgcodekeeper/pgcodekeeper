@@ -344,6 +344,8 @@ public class Messages extends NLS {
 
     public static String StdStreamRedirector_error_reading_std_external;
 
+    public static String StdStreamRedirector_error_returncode_see_for_details;
+
     public static String StdStreamRedirector_process_returned_with_error;
 
     public static String StdStreamRedirector_wait_destroy_interrupted_unexpectedly;
