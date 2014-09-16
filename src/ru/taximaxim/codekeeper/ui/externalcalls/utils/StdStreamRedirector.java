@@ -48,15 +48,8 @@ public class StdStreamRedirector implements Runnable {
                 // the process was destroyed by us, exit silently
                 return;
             }
-            throw new IllegalStateException("Error while reading from stdout/stderr ", ex); //$NON-NLS-1$
+            throw new IllegalStateException(Messages.StdStreamRedirector_error_reading_std, ex);
         }
-    }
-    
-    /** 
-     * @see #launchAndRedirect(ProcessBuilder, Integer)
-     */
-    public static String launchAndRedirect(ProcessBuilder pb) throws IOException {
-        return launchAndRedirect(pb, null);
     }
     
     /**
@@ -68,7 +61,7 @@ public class StdStreamRedirector implements Runnable {
      * @return captured stdout & stderr output
      * @throws IOException
      */
-    public static String launchAndRedirect(ProcessBuilder pb, Integer returnedValue)
+    public static String launchAndRedirect(ProcessBuilder pb)
             throws IOException {
         StringBuilder sb = new StringBuilder(1000 * pb.command().size());
         for(String param : pb.command()) {
@@ -105,29 +98,26 @@ public class StdStreamRedirector implements Runnable {
                     // wait for destroy to get the exitValue()
                     p.waitFor();
                 } catch (InterruptedException ex2) {
-                    throw new IllegalStateException("Wait for destroy was interrupted", ex2); //$NON-NLS-1$
+                    throw new IllegalStateException(Messages.StdStreamRedirector_wait_destroy_interrupted_unexpectedly, ex2);
                 }
             }
             
             try {
                 redirectorThread.join();
             } catch (InterruptedException ex) {
-                throw new IllegalStateException("Interrupted wait on redirectorThread ", ex); //$NON-NLS-1$
+                throw new IllegalStateException(Messages.StdStreamRedirector_wait_thread_interrupted_unexpectedly, ex);
             }
             Console.addMessage(pb.command().get(0) + 
                     Messages.stdStreamRedirector_completed_with_code + p.exitValue());
 
             if (!redirector.isDestroyed.get() && p.exitValue() != 0) {
-                throw new IOException("Process returned with error: " //$NON-NLS-1$
+                throw new IOException(Messages.StdStreamRedirector_process_returned_with_error
                             + p.exitValue());
             }
             
             if (lastException.get() != null){
-                throw new IOException("Exception thrown while reading external command output ",  //$NON-NLS-1$
+                throw new IOException(Messages.StdStreamRedirector_error_reading_std_external,
                         lastException.get());
-            }
-            if (returnedValue != null) {
-                returnedValue = p.exitValue();
             }
             return redirector.storage.toString();
         } finally {
