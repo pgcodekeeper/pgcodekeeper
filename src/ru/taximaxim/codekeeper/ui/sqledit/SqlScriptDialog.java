@@ -55,8 +55,8 @@ public class SqlScriptDialog extends MessageDialog {
     private static final String DB_USER_PLACEHOLDER = "%user"; //$NON-NLS-1$
     private static final String DB_PASS_PLACEHOLDER = "%pass"; //$NON-NLS-1$
     
-    public static final String runScriptText =  Messages.sqlScriptDialog_run_script;
-    public static final String stopScriptText = Messages.sqlScriptDialog_stop_script;
+    private static final String RUN_SCRIPT_LABEL =  Messages.sqlScriptDialog_run_script;
+    private static final String STOP_SCRIPT_LABEL = Messages.sqlScriptDialog_stop_script;
     
     private static final String SCRIPTS_HIST_ROOT = "scripts"; //$NON-NLS-1$
     private static final String SCRIPTS_HIST_EL = "s"; //$NON-NLS-1$
@@ -116,7 +116,7 @@ public class SqlScriptDialog extends MessageDialog {
     public SqlScriptDialog(Shell parentShell, int type, String title, String message,
             Differ differ, List<PgStatement> objList, boolean usePsqlDepcy) {
         super(parentShell, title, null, message, type, new String[] {
-                runScriptText, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }, 2);
+                RUN_SCRIPT_LABEL, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }, 2);
         
         this.differ = differ;
         this.oldDepcy = differ.getAdditionalDepcies();
@@ -250,7 +250,7 @@ public class SqlScriptDialog extends MessageDialog {
                                     @Override
                                     public void run() {
                                         if (!runScriptBtn.isDisposed()) {
-                                            runScriptBtn.setText(runScriptText);
+                                            runScriptBtn.setText(RUN_SCRIPT_LABEL);
                                             showAddDepcyDialog();
                                         }
                                         isRunning = false;
@@ -270,7 +270,7 @@ public class SqlScriptDialog extends MessageDialog {
                 }
             });
             scriptThread.start();
-            getButton(0).setText(stopScriptText);
+            getButton(0).setText(STOP_SCRIPT_LABEL);
             isRunning = true;
         }
         // case Stop script
@@ -279,7 +279,7 @@ public class SqlScriptDialog extends MessageDialog {
             Log.log(Log.LOG_INFO, Messages.sqlScriptDialog_script_interrupted_by_user);
             
             scriptThread.interrupt();
-            getButton(0).setText(runScriptText);
+            getButton(0).setText(RUN_SCRIPT_LABEL);
             isRunning = false;
         }
         // case Save to a file

@@ -1,9 +1,7 @@
 package ru.taximaxim.codekeeper.ui;
 
-import org.eclipse.e4.core.contexts.IEclipseContext;
-
 /**
- * Stores string ids for model objects, objects in {@link IEclipseContext}, etc,
+ * Stores string ids for model objects, objects in IEclipseContext, etc,
  * that sort of string constants.
  * 
  * @author Alexander Levsha

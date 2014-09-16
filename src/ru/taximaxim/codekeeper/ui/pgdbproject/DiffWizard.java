@@ -93,7 +93,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         ((WizardDialog) getContainer()).addPageChangingListener(this);
     };
 
-    DbSource dbSource, dbTarget;
+    private DbSource dbSource, dbTarget;
 
     @Override
     public void handlePageChanging(PageChangingEvent e) {

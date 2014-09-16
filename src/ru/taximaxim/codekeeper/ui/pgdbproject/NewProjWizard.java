@@ -62,7 +62,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
     private PageDb pageDb;
     private PageMisc pageMisc;
 
-    final IPreferenceStore mainPrefStore;
+    private final IPreferenceStore mainPrefStore;
 
     private PgDbProject props;
 
