@@ -52,7 +52,6 @@ public class CommitDialog extends TrayDialog {
         } catch (IOException ex) {
             throw new IllegalStateException(Messages.commitPartDescr_cannot_get_branch_name, ex);
         }
-        setShellStyle(getShellStyle() | SWT.RESIZE);
     }
     
     @Override
@@ -86,7 +85,7 @@ public class CommitDialog extends TrayDialog {
         gd.heightHint = 300;
         gd.widthHint = 1000;
         dtvTop.setLayoutData(gd);
-        dtvTop.setFilteredInput(filtered, treeDiffer);
+        dtvTop.setFilteredInput(filtered, treeDiffer, false);
         
         if (depcyElementsSet != null){
             Group gBottom = new Group(container, SWT.NONE);
@@ -101,9 +100,8 @@ public class CommitDialog extends TrayDialog {
             gd.heightHint = 300;
             gd.widthHint = 1000;
             dtvBottom.setLayoutData(gd);
-            dtvBottom.setInputCollection(depcyElementsSet, treeDiffer);
+            dtvBottom.setInputCollection(depcyElementsSet, treeDiffer, false);
             dtvBottom.setCheckedElements(conflictingElementsSet, false);
-            dtvBottom.redraw();
         }
         return parent;
     }
@@ -112,6 +110,11 @@ public class CommitDialog extends TrayDialog {
     protected void okPressed() {
         this.filteredDiffTree = dtvTop.filterDiffTree();
         super.okPressed();
+    }
+    
+    @Override
+    protected boolean isResizable() {
+        return true;
     }
     
     public DiffTableViewer getBottomTableViewer(){

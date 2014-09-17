@@ -117,6 +117,7 @@ public class Messages extends NLS {
     public static String diffTableViewer_object_name;
     public static String diffTableViewer_object_type;
     public static String diffTableViewer_objects;
+    public static String diffTableViewer_open_diff_in_new_window;
     public static String diffTableViewer_save_checked;
     public static String diffTableViewer_select_child_elements;
     public static String diffTableViewer_stored_selections;
@@ -201,7 +202,6 @@ public class Messages extends NLS {
     public static String commitPartDescr_commit_confirmation;
     public static String commitPartDescr_commiting;
     public static String commitPartDescr_exporting_db_model;
-    public static String commitPartDescr_from_database;
     public static String commitPartDescr_get_changes_from;
     public static String commitPartDescr_ioexception_while_modifying_project;
     public static String commitPartDescr_modifying_db_model;
@@ -210,13 +210,13 @@ public class Messages extends NLS {
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
     public static String commitPartDescr_to;
+    public static String diffPaneDialog_diff_to_selected_object;
     public static String diffPartDescr_add_dependencies;
     public static String diffPartDescr_diff_script;
     public static String diffPartDescr_from;
     public static String diffPartDescr_get_changes_for;
     public static String diffPartDescr_get_latest;
     public static String diffPartDescr_this_will_apply_selected_changes_to_your_database;
-    public static String diffPartDescr_to_database;
     public static String projectExplorer_generating_object_hashes;
     public static String projectExplorer_loading_project;
     public static String projectExplorer_project_explorer;
