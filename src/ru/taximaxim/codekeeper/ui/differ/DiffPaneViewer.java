@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.parts;
+package ru.taximaxim.codekeeper.ui.differ;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
@@ -15,7 +15,6 @@ import org.eclipse.swt.widgets.Composite;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
 
