@@ -21,23 +21,15 @@ import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
 
 public class DiffPaneViewer extends Composite {
 
-    private TextMergeViewer diffPane;
+    private final TextMergeViewer diffPane;
     private DbSource dbSource;
     private DbSource dbTarget;
-    private boolean reverseSide;
+    private final boolean reverseSide;
 
-    /**
-     * @param dbSource
-     *            the dbSource to set
-     */
     public void setDbSource(DbSource dbSource) {
         this.dbSource = dbSource;
     }
 
-    /**
-     * @param dbTarget
-     *            the dbTarget to set
-     */
     public void setDbTarget(DbSource dbTarget) {
         this.dbTarget = dbTarget;
     }
@@ -74,8 +66,7 @@ public class DiffPaneViewer extends Composite {
         diffPane.setContentProvider(new IMergeViewerContentProvider() {
 
             @Override
-            public void inputChanged(Viewer viewer, Object oldInput,
-                    Object newInput) {
+            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
             }
 
             @Override
@@ -107,9 +98,8 @@ public class DiffPaneViewer extends Composite {
 
             @Override
             public String getRightLabel(Object input) {
-                return (DiffPaneViewer.this.reverseSide ? 
-                        Messages.diffPartDescr_from : 
-                            Messages.commitPartDescr_to) + "GIT";
+                return (DiffPaneViewer.this.reverseSide ? Messages.diffPartDescr_from
+                        : Messages.commitPartDescr_to) + "GIT"; //$NON-NLS-1$
             }
 
             @Override
@@ -134,8 +124,7 @@ public class DiffPaneViewer extends Composite {
             @Override
             public String getLeftLabel(Object input) {
                 return (DiffPaneViewer.this.reverseSide ? Messages.commitPartDescr_to
-                        : Messages.diffPartDescr_from)
-                                + Messages.projProps_database;
+                        : Messages.diffPartDescr_from) + Messages.projProps_database;
             }
 
             @Override
@@ -173,10 +162,6 @@ public class DiffPaneViewer extends Composite {
             }
         });
         diffPane.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
-    }
-
-    public void setReverseSide(boolean reverseSide) {
-        this.reverseSide = reverseSide;
     }
 
     public void setInput(Object value) {

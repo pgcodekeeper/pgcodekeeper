@@ -129,18 +129,13 @@ public class CommitPartDescr {
      */
     private TreeDiffer treeDiffer;
     
-    /**
-     * @param dbTarget the dbTarget to set
-     */
     private void setDbTarget(DbSource dbTarget) {
         this.dbTarget = dbTarget;
         if (diffPane != null) {
             diffPane.setDbTarget(dbTarget);
         }
     }
-    /**
-     * @param dbSource the dbSource to set
-     */
+    
     private void setDbSource(DbSource dbSource) {
         this.dbSource = dbSource;
         if (diffPane != null) {
@@ -290,7 +285,7 @@ public class CommitPartDescr {
                     // Убрать из списка всех элементов в filteredWithNewAndDelete те
                     // элементы, с которых пользователь снял отметку в нижней таблице
                     // FIXME убрать шелл, отделить логику от UI
-                    DiffTableViewer diffTable = new DiffTableViewer(new Shell(), SWT.NONE, mainPrefs, true, false);
+                    DiffTableViewer diffTable = new DiffTableViewer(new Shell(), SWT.NONE, mainPrefs, true);
                     diffTable.setFilteredInput(filteredWithNewAndDelete, treeDiffer, false);
                     Set<TreeElement> allElements = diffTable.getCheckedElements(false);
                     allElements.removeAll(cd.getBottomTableViewer().getCheckedElements(false));
@@ -380,7 +375,7 @@ public class CommitPartDescr {
         gl.horizontalSpacing = gl.verticalSpacing = 2;
         containerDb.setLayout(gl);
         
-        diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs, false, false);
+        diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs, false);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
                     

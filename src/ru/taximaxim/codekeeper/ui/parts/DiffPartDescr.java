@@ -95,18 +95,13 @@ public class DiffPartDescr {
      */
     private DbSource dbTarget;
     
-    /**
-     * @param dbSource the dbSource to set
-     */
     public void setDbSource(DbSource dbSource) {
         this.dbSource = dbSource;
         if (diffPane != null) {
             diffPane.setDbTarget(dbSource);
         }
     }
-    /**
-     * @param dbTarget the dbTarget to set
-     */
+
     public void setDbTarget(DbSource dbTarget) {
         this.dbTarget = dbTarget;
         if (diffPane != null) {
@@ -199,7 +194,7 @@ public class DiffPartDescr {
         gl.horizontalSpacing = gl.verticalSpacing = 2;
         containerDb.setLayout(gl);
         
-        diffTable = new DiffTableViewer(containerDb, SWT.FILL, mainPrefs, false, true);
+        diffTable = new DiffTableViewer(containerDb, SWT.FILL, mainPrefs, false);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 

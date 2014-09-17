@@ -15,7 +15,12 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -85,7 +90,7 @@ public class DiffTableViewer extends Composite {
     private final static int PREVCHECKED_HIST_MAX_STORED = 20;
     
     private final boolean viewOnly;
-    private boolean reverseSide;
+    private boolean reverseDiffSide;
     
     private TreeElement treeRoot;
     // values are checked states of the elements
@@ -124,11 +129,9 @@ public class DiffTableViewer extends Composite {
     }
     
     public DiffTableViewer(Composite parent, int style, final IPreferenceStore mainPrefs, 
-            boolean viewOnly, boolean reverseSide) {
+            boolean viewOnly) {
         super(parent, style);
-
         this.viewOnly = viewOnly;
-        this.reverseSide = reverseSide;
         
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         GridLayout gl = new GridLayout();
@@ -376,8 +379,7 @@ public class DiffTableViewer extends Composite {
                         prevCheckedList.add(elementKey);
                     }
                 }
-                checkListener.setElementsChecked(prevCheckedList.toArray(),
-                        true);
+                checkListener.setElementsChecked(prevCheckedList.toArray(), true);
                 viewerRefresh();
             }
         }
@@ -584,19 +586,19 @@ public class DiffTableViewer extends Composite {
     }
     
     public void setFilteredInput(TreeElement filteredElement, 
-            TreeDiffer rootDiffer, boolean reverseSide) {
-        setDiffer(rootDiffer, reverseSide);
+            TreeDiffer rootDiffer, boolean reverseDiffSide) {
+        setDiffer(rootDiffer, reverseDiffSide);
         
         setInputTreeElement(filteredElement);
     }
 
-    private void setDiffer(TreeDiffer differ, boolean reverseSide) {
-        this.reverseSide = reverseSide;
+    private void setDiffer(TreeDiffer differ, boolean reverseDiffSide) {
+        this.reverseDiffSide = reverseDiffSide;
         this.treeRoot = (differ == null) ? null : differ.getDiffTree();
         this.dbSource = (differ == null) ? null : 
-            reverseSide ? differ.getDbTarget() : differ.getDbSource();
+            reverseDiffSide ? differ.getDbTarget() : differ.getDbSource();
         this.dbTarget = (differ == null) ? null : 
-            reverseSide ? differ.getDbSource() : differ.getDbTarget();
+            reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
     }
     
     private void setInputTreeElement(TreeElement treeElement) {
@@ -754,6 +756,7 @@ public class DiffTableViewer extends Composite {
                     }
                 }
             });
+            menuMgr.add(new Separator());
         }
         menuMgr.add(new Action(Messages.diffTableViewer_open_diff_in_new_window) {
 
@@ -761,10 +764,23 @@ public class DiffTableViewer extends Composite {
             public void run() {
                 TreeElement el = (TreeElement) ((IStructuredSelection) viewer
                         .getSelection()).getFirstElement();
-                DiffPaneDialog dpd = new DiffPaneDialog(DiffTableViewer.this
-                        .getShell(), dbSource, dbTarget, reverseSide);
+                DiffPaneDialog dpd = new DiffPaneDialog(
+                        DiffTableViewer.this.getShell(), dbSource, dbTarget, reverseDiffSide);
                 dpd.setInput(el);
                 dpd.open();
+            }
+        });
+        
+        menuMgr.addMenuListener(new IMenuListener() {
+            
+            @Override
+            public void menuAboutToShow(IMenuManager manager) {
+                boolean enable = !viewer.getSelection().isEmpty();
+                for (IContributionItem it : manager.getItems()) {
+                    if (it instanceof ActionContributionItem) {
+                        ((ActionContributionItem) it).getAction().setEnabled(enable);
+                    }
+                }
             }
         });
         return menuMgr;
@@ -934,8 +950,8 @@ public class DiffTableViewer extends Composite {
     }
     
     public void setInputCollection(HashSet<TreeElement> shouldBeDeleted, 
-            TreeDiffer rootDiffer, boolean reverseSide) {
-        setDiffer(rootDiffer, reverseSide);
+            TreeDiffer rootDiffer, boolean reverseDiffSide) {
+        setDiffer(rootDiffer, reverseDiffSide);
         elements = new HashMap<>();
         for (TreeElement e : shouldBeDeleted){
             elements.put(e, true);
