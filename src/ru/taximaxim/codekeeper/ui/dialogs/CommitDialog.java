@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.io.IOException;
 import java.util.HashSet;

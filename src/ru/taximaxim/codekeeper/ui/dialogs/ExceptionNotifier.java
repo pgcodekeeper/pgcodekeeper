@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.statushandlers.StatusManager;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.handlers.OpenLog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;

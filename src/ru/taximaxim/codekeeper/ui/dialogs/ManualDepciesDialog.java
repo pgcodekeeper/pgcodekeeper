@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.util.List;
 import java.util.Map.Entry;

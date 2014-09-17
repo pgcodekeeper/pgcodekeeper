@@ -21,8 +21,8 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
-import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 

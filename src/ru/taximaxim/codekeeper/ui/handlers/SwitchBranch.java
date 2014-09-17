@@ -21,9 +21,9 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.swt.widgets.Shell;
 
-import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 

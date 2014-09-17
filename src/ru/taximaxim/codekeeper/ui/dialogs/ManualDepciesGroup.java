@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -85,7 +85,7 @@ public class ManualDepciesGroup extends Group{
         cmbDependants.getCombo().addListener(SWT.Traverse, new ComboReturnKeyListener());
         cmbDependants.getCombo().addModifyListener(new ComboModifyListener());
         
-        new MyAutoCompleteField(cmbDependants.getCombo(), new ComboContentAdapter(), objects);
+        new PgStatementAutoCompleteField(cmbDependants.getCombo(), new ComboContentAdapter(), objects);
         
         new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_depends_on);
         
@@ -97,7 +97,7 @@ public class ManualDepciesGroup extends Group{
         cmbDependencies.getCombo().addListener(SWT.Traverse, new ComboReturnKeyListener());
         cmbDependencies.getCombo().addModifyListener(new ComboModifyListener());
         
-        new MyAutoCompleteField(cmbDependencies.getCombo(), new ComboContentAdapter(), objects);
+        new PgStatementAutoCompleteField(cmbDependencies.getCombo(), new ComboContentAdapter(), objects);
         
         btnAdd = new Button(grpSelectors, SWT.PUSH);
         btnAdd.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false, 2, 1));

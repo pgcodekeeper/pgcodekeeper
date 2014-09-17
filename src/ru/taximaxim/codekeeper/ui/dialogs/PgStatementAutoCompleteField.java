@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.Control;
 
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
-class MyAutoCompleteField {
+class PgStatementAutoCompleteField {
 
     private MyContentProposalProvider proposalProvider;
     private ContentProposalAdapter adapter;
@@ -33,7 +33,7 @@ class MyAutoCompleteField {
      *            the array of Strings representing valid content proposals for
      *            the field.
      */
-    public MyAutoCompleteField(Control control,
+    public PgStatementAutoCompleteField(Control control,
             IControlContentAdapter controlContentAdapter, List<PgStatement> proposals) {
         proposalProvider = new MyContentProposalProvider(proposals);
         proposalProvider.setFiltering(true);
