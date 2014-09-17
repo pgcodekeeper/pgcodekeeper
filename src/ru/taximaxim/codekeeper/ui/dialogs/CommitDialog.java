@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -52,6 +52,7 @@ public class CommitDialog extends TrayDialog {
         } catch (IOException ex) {
             throw new IllegalStateException(Messages.commitPartDescr_cannot_get_branch_name, ex);
         }
+        setShellStyle(getShellStyle() | SWT.RESIZE);
     }
     
     @Override
@@ -102,6 +103,7 @@ public class CommitDialog extends TrayDialog {
             dtvBottom.setLayoutData(gd);
             dtvBottom.setInputCollection(depcyElementsSet, treeDiffer, false);
             dtvBottom.setCheckedElements(conflictingElementsSet, false);
+            dtvBottom.redraw();
         }
         return parent;
     }
@@ -110,11 +112,6 @@ public class CommitDialog extends TrayDialog {
     protected void okPressed() {
         this.filteredDiffTree = dtvTop.filterDiffTree();
         super.okPressed();
-    }
-    
-    @Override
-    protected boolean isResizable() {
-        return true;
     }
     
     public DiffTableViewer getBottomTableViewer(){

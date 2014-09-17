@@ -98,7 +98,7 @@ public class DiffPaneViewer extends Composite {
             @Override
             public String getRightLabel(Object input) {
                 return (DiffPaneViewer.this.reverseSide ? Messages.diffPartDescr_from
-                        : Messages.commitPartDescr_to) + "GIT"; //$NON-NLS-1$
+                        : Messages.to) + "GIT"; //$NON-NLS-1$
             }
 
             @Override
@@ -122,8 +122,8 @@ public class DiffPaneViewer extends Composite {
 
             @Override
             public String getLeftLabel(Object input) {
-                return (DiffPaneViewer.this.reverseSide ? Messages.commitPartDescr_to
-                        : Messages.diffPartDescr_from) + Messages.projProps_database;
+                return (DiffPaneViewer.this.reverseSide ? Messages.to
+                        : Messages.diffPartDescr_from) + Messages.database;
             }
 
             @Override

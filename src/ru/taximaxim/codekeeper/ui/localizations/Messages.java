@@ -180,7 +180,7 @@ public class Messages extends NLS {
     public static String projProps_password;
     public static String projProps_project_encoding;
     public static String projProps_settings_for_database_schema_source;
-    public static String projProps_database;
+    public static String database;
     public static String projProps_source_of_the_db_schema;
     public static String projSyncSrc_checking_conflicts;
     public static String projSyncSrc_couldnt_synchronize_repository_with_remote;
@@ -209,7 +209,7 @@ public class Messages extends NLS {
     public static String commitPartDescr_please_enter_a_comment_for_the_commit;
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
-    public static String commitPartDescr_to;
+    public static String to;
     public static String diffPaneDialog_diff_to_selected_object;
     public static String diffPartDescr_add_dependencies;
     public static String diffPartDescr_diff_script;

@@ -41,7 +41,6 @@ import org.eclipse.swt.widgets.Shell;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.ManualDepciesDialog;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
@@ -49,6 +48,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PART_STACK;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
+import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -90,7 +90,6 @@ public class DiffPartDescr {
      * Remote DB.
      */
     private DbSource dbSource;
-
     /**
      * Local repo cache.
      */
@@ -114,7 +113,8 @@ public class DiffPartDescr {
      * A collection of manually added object dependencies.
      * Keys are dependants, values are lists of dependencies.
      */
-    private List<Entry<PgStatement, PgStatement>> manualDepcies = new LinkedList<>();
+    private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new LinkedList<>();
+    private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new LinkedList<>();
 
     @PostConstruct
     private void postConstruct(Composite parent, final PgDbProject proj,
@@ -151,7 +151,8 @@ public class DiffPartDescr {
                         DbSource.fromFilter(dbTarget,filtered, DiffSide.RIGHT),
                         false);
                 differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
-                differ.setAdditionalDepcies(manualDepcies);
+                differ.setAdditionalDepciesSource(manualDepciesSource);
+                differ.setAdditionalDepciesTarget(manualDepciesTarget);
                 differ.runProgressMonitorDiffer(shell);
 
                 SqlScriptDialog dialog = new SqlScriptDialog(shell,
@@ -177,9 +178,13 @@ public class DiffPartDescr {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 ManualDepciesDialog dialog = new ManualDepciesDialog(shell,
-                        manualDepcies, dbSource.getDbObject().flatten());
+                        manualDepciesSource, manualDepciesTarget,
+                        dbSource.getDbObject().flatten(),
+                        dbTarget.getDbObject().flatten(),
+                        Messages.database, proj.getString(PROJ_PREF.REPO_TYPE));
                 if (dialog.open() == Dialog.OK) {
-                    manualDepcies = dialog.getDepciesList();
+                    manualDepciesSource = dialog.getDepciesSourceList();
+                    manualDepciesTarget = dialog.getDepciesTargetList();
                 }
             }
         });
@@ -339,7 +344,8 @@ public class DiffPartDescr {
                 diffPane.setInput(null);
                 btnGetLatest.setEnabled(true);
                 btnAddDepcy.setEnabled(true);
-                manualDepcies.clear();
+                manualDepciesSource.clear();
+                manualDepciesTarget.clear();
             }
         });
 
@@ -408,7 +414,8 @@ public class DiffPartDescr {
                     diffPane.setInput(null);
                     btnGetLatest.setEnabled(false);
                     btnAddDepcy.setEnabled(false);
-                    manualDepcies.clear();
+                    manualDepciesSource.clear();
+                    manualDepciesTarget.clear();
                 }
             });
         }
