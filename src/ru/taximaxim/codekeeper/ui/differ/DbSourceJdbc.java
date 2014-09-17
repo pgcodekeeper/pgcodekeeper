@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -12,6 +13,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -25,6 +27,7 @@ import cz.startnet.utils.pgdiff.parsers.Parser;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -51,7 +54,6 @@ public class DbSourceJdbc extends DbSource {
     
     
     private final String DB_TABLE_OF_TABLES = "pg_catalog.pg_class";
-    private final String DB_TABLE_OF_CONSTRAINTS = "pg_catalog.pg_constraint";
 
     /**
      * Prepared statements to be executed
@@ -63,6 +65,9 @@ public class DbSourceJdbc extends DbSource {
     private PreparedStatement prepStatTypes;
     private PreparedStatement prepStatRoles;
     private PreparedStatement prepStatSequences;
+    private PreparedStatement prepStatExtensions;
+    private PreparedStatement prepStatConstraints;
+    private PreparedStatement prepStatIndecies;
     
     // TODO HashMap caching of namespace, type, language, owner names/oids?
     
@@ -86,6 +91,8 @@ public class DbSourceJdbc extends DbSource {
         }
     };
     
+    private Map<String, Integer> nspByName = new HashMap<String, Integer>();
+    private Map<Integer, String> indexAccesMethodsByOid = new HashMap<Integer, String>();
     private String host;
     private int port;
     private String user;
@@ -116,6 +123,7 @@ public class DbSourceJdbc extends DbSource {
             connection = DriverManager.getConnection(
                    "jdbc:postgresql://" + host + ":" + port + "/" + dbName, user, pass);
             prepareStatements();
+            prepareData();
             metaData = connection.getMetaData();
 
             ResultSet res = metaData.getSchemas();
@@ -127,6 +135,14 @@ public class DbSourceJdbc extends DbSource {
                 PgSchema schema = getSchema(res.getString("TABLE_SCHEM"));
                 d.addSchema(schema);
             }
+            Log.log(Log.LOG_INFO, "Creating extensions from JDBC");
+            res = prepStatExtensions.executeQuery();
+            while(res.next()){
+                PgExtension extension = getExtension(res);
+                if (extension != null){
+                    d.addExtension(extension);
+                }
+            }
         } catch (SQLException e) {
             throw new IOException("Database JDBC access error occured", e);
         } catch (ClassNotFoundException e) {
@@ -137,6 +153,29 @@ public class DbSourceJdbc extends DbSource {
         return d;
     }
     
+    private void prepareData() throws SQLException {
+        ResultSet res = null;
+        try(Statement stmnt = connection.createStatement()){
+            // fill in namespace map
+            res = stmnt.executeQuery("SELECT nspname, oid FROM pg_catalog.pg_namespace");
+            while(res.next()){
+                nspByName.put(res.getString("nspname"), res.getInt("oid"));
+            }
+            
+            // fill in index access method map
+            res = stmnt.executeQuery("SELECT oid, amname FROM pg_catalog.pg_am");
+            while(res.next()){
+                indexAccesMethodsByOid.put(res.getInt("oid"), res.getString("amname"));
+            }            
+        }finally{
+            try{
+                res.close();
+            }catch(Exception e){
+                Log.log(Log.LOG_INFO, "Could not close result set after filling in maps", e);
+            }
+        }
+    }
+
     private void prepareStatements() throws SQLException{
         prepStatTriggers = connection.prepareStatement("SELECT tgfoid, tgname, tgfoid, tgtype, tgrelid FROM pg_catalog.pg_trigger WHERE tgrelid = ?");
         prepStatFuncName = connection.prepareStatement("SELECT proname FROM pg_catalog.pg_proc WHERE oid = ?");
@@ -178,6 +217,9 @@ public class DbSourceJdbc extends DbSource {
                 + " ORDER BY sequence_oid";
 
         prepStatSequences = connection.prepareStatement(querySequenceInfo);
+        prepStatExtensions = connection.prepareStatement("SELECT * FROM pg_catalog.pg_extension");
+        prepStatConstraints = connection.prepareStatement("SELECT conname, contype, conrelid, consrc, conkey, confrelid, confkey FROM pg_catalog.pg_constraint WHERE conrelid = ?");
+        prepStatIndecies = connection.prepareStatement("SELECT i.indexrelid, i.indkey, c.relam, c.relname, c.relnamespace FROM pg_catalog.pg_index i, pg_catalog.pg_class c WHERE i.indrelid = ? AND c.oid = i.indexrelid;");
     }
 
     private void closeResources() {
@@ -221,24 +263,38 @@ public class DbSourceJdbc extends DbSource {
         } catch (Exception e) {
             Log.log(Log.LOG_INFO, "Could not close prepared statement for sequences", e);
         }
+        try {
+            prepStatExtensions.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_INFO, "Could not close prepared statement for extensions", e);
+        }
+        try {
+            prepStatConstraints.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_INFO, "Could not close prepared statement for constraints", e);
+        }
+        try {
+            prepStatIndecies.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_INFO, "Could not close prepared statement for indecies", e);
+        }
     }
     
     private PgSchema getSchema(String schema) throws SQLException{
         PgSchema s = new PgSchema(schema, "");
-        
+//        Log.log(Log.LOG_INFO, "Creating tables from JDBC");
         ResultSet res = metaData.getTables(null, schema, "%", new String[] {"TABLE"} );
-        
         while (res.next()) {
             PgTable table = getTable(schema, res.getString("table_name"));
             s.addTable(table);
         }
-        
+//        Log.log(Log.LOG_INFO, "Creating views from JDBC");
         res = metaData.getTables(null, schema, "%", new String[] {"VIEW"} );
         while (res.next()) {
             PgView view = getView(schema, res.getString("table_name"));
             s.addView(view);
         }
-         
+//        Log.log(Log.LOG_INFO, "Creating functions from JDBC");
         prepStatFunctions.setInt(1, getSchemaOidByName(schema));
         res = prepStatFunctions.executeQuery();
         while (res.next()){
@@ -247,7 +303,7 @@ public class DbSourceJdbc extends DbSource {
                 s.addFunction(function);
             }
         }
-        
+//        Log.log(Log.LOG_INFO, "Creating sequences from JDBC");
         prepStatSequences.setString(1, schema);
         res = prepStatSequences.executeQuery();
         PgSequence sequence = null;
@@ -264,41 +320,31 @@ public class DbSourceJdbc extends DbSource {
             }
             previousSeqOid = res.getInt("sequence_oid");
         }
-        
         return s;
     }
     
-    private PgConstraint getConstraint(String schema, String constraint) throws SQLException {
-        int schemaOid = getSchemaOidByName(schema);
-        String query = "SELECT contype, conrelid, consrc, conkey, confrelid, confkey FROM " + DB_TABLE_OF_CONSTRAINTS + " WHERE connamespace = " + schemaOid + "" + " AND conname = '" + constraint + "'";
-        ResultSet res = connection.createStatement().executeQuery(query);
-        if (!res.next()){
-            // TODO throw exception, log, output to console?
-            System.err.println("Cannot create constraint " + constraint + ": no constraint found.");
-            return null; 
-        }
-                
-        /**
-         * Constraint types:
-         * 
-         *   c = check constraint
-         *   f = foreign key constraint
-         *   p = primary key constraint
-         *   
-         *   u = unique constraint
-         *   t = constraint trigger
-         *   x = exclusion constraint
-         */
+    private PgExtension getExtension(ResultSet res) throws SQLException {
+        PgExtension e = new PgExtension(res.getString("extname"), "");
+        e.setVersion(res.getString("extversion"));
+        e.setOwner(getRoleNameByOid(res.getInt("extowner")));
+        e.setSchema(getScheNameByOid(res.getInt("extnamespace")));
+        
+        return e;
+    }
+
+    private PgConstraint getConstraint(ResultSet res, String schemaName, String tableName) throws SQLException {
+        String constraintName = res.getString("conname");
         String definition = "";
         PgConstraint c = null;
         String conType = res.getString("contype");
-        c = new PgConstraint(constraint, "", getSearchPath(schema));
+        c = new PgConstraint(constraintName, "", getSearchPath(schemaName));
+        Array arr = res.getArray("conkey");
         
-        String[] columnNames = getColumnNames((Integer[])res.getArray("conkey").getArray(), res.getInt("conrelid"));
+        String[] columnNames = getColumnNames((Number[])arr.getArray(), res.getInt("conrelid"));
         switch (conType){
             case "f":
-                c = new PgForeignKey(constraint, "", getSearchPath(schema));
-                String[] referencedColumnNames = getColumnNames((Integer[])res.getArray("confkey").getArray(), res.getInt("confrelid"));
+                c = new PgForeignKey(constraintName, "", getSearchPath(schemaName));
+                String[] referencedColumnNames = getColumnNames((Number[])res.getArray("confkey").getArray(), res.getInt("confrelid"));
                 definition = "FOREIGN KEY (";
                 // TODO code reuse
                 for(int i = 0; i < columnNames.length; i++){
@@ -310,7 +356,7 @@ public class DbSourceJdbc extends DbSource {
                 }
                 SimpleEntry<String, String> referencedTableName = getTableNameByOid(res.getInt("confrelid"));
                 String schemaPrefix = "";
-                if (!referencedTableName.getKey().equals(schema)){
+                if (!referencedTableName.getKey().equals(schemaName)){
                     schemaPrefix = referencedTableName.getKey() + ".";
                 }
                 definition = definition.concat(") REFERENCES " + schemaPrefix + referencedTableName.getValue() + "(");
@@ -340,19 +386,21 @@ public class DbSourceJdbc extends DbSource {
                 break;
         }
         c.setDefinition(definition);
-        
         // set table name
-        String tableOid = res.getString("conrelid");
-        if (!tableOid.equals("0")){
-            query = "SELECT relname FROM " + DB_TABLE_OF_TABLES + " WHERE oid = '" + tableOid + "'";
-            res = connection.createStatement().executeQuery(query);
-            if(res.next()){
-                c.setTableName(res.getString("relname"));
-            }
-        }
-        
+        c.setTableName(tableName);
         // TODO c.setComment() ???
         return c;
+    }
+    
+    private long timeNanosec = 0L;
+    
+    /**
+     * Output to stderr time of some operation (required to be called twice)  
+     */
+    private void t(String mes){
+        if (!mes.isEmpty())
+            System.err.println(mes + " " + (System.nanoTime() - timeNanosec)/1000000 + " msec");
+        timeNanosec = System.nanoTime();
     }
     
     private PgView getView(String schema, String view) throws SQLException {
@@ -419,12 +467,14 @@ public class DbSourceJdbc extends DbSource {
         return v;
     }
 
-    private PgTable getTable(String schema, String table) throws SQLException{
+    private PgTable getTable(String schema, String tableName) throws SQLException{
+        // TODO get oids earlier (or cache), as they are not changed in time (minimize db queries)
+        int tableOid = getTableOidByName(tableName, getSchemaOidByName(schema));
         StringBuilder tableDef = new StringBuilder(); 
 
-        tableDef.append("CREATE TABLE " + table + " (\n");
+        tableDef.append("CREATE TABLE " + tableName + " (\n");
         
-        ResultSet res = metaData.getColumns(null, schema, table, "%");
+        ResultSet res = metaData.getColumns(null, schema, tableName, "%");
         List<PgColumn> columns = new ArrayList<PgColumn>(5);
         while (res.next()) {
             String columnName = res.getString("COLUMN_NAME");
@@ -464,22 +514,20 @@ public class DbSourceJdbc extends DbSource {
         }
         tableDef.append(");");
         
-        
-        PgTable t = new PgTable(table, tableDef.toString(), getSearchPath(schema));
+        PgTable t = new PgTable(tableName, tableDef.toString(), getSearchPath(schema));
         
         for(PgColumn column : columns){
             t.addColumn(column);
         }
-        
-        // privileges
-        String revokeMaindb = "ALL ON TABLE " + table + " TO maindb";
-        String revokePublic = "ALL ON TABLE " + table + " TO PUBLIC";
+
+        // Query PRIVILEGES
+        String revokeMaindb = "ALL ON TABLE " + tableName + " TO maindb";
+        String revokePublic = "ALL ON TABLE " + tableName + " TO PUBLIC";
         PgPrivilege p = new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb);
         t.addPrivilege(p);
         p = new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic);
         t.addPrivilege(p);
-        
-        res = metaData.getTablePrivileges(null, schema, table);
+        res = metaData.getTablePrivileges(null, schema, tableName);
         Map<String, List<String>> privileges = new HashMap<String, List<String>>(10);
         while (res.next()) {
             String grantee = res.getString("GRANTEE");
@@ -494,15 +542,14 @@ public class DbSourceJdbc extends DbSource {
         }
         for(String grantee : privileges.keySet()){
             for(String priv : privileges.get(grantee)){
-                String privDef = priv + " ON TABLE " + table + " TO " + grantee;
+                String privDef = priv + " ON TABLE " + tableName + " TO " + grantee;
                 p = new PgPrivilege(false, privDef, "GRANT " + privDef);
                 t.addPrivilege(p);            
             }
         }
-        // end privileges
-        
+
         // Query OWNER
-        String query = "SELECT tableowner FROM pg_catalog.pg_tables WHERE schemaname = '" + schema + "'" + " AND tablename = '" + table + "'";
+        String query = "SELECT tableowner FROM pg_catalog.pg_tables WHERE schemaname = '" + schema + "'" + " AND tablename = '" + tableName + "'";
         Statement stmt = connection.createStatement();
         res = stmt.executeQuery(query);
         if (res.next()){
@@ -510,31 +557,20 @@ public class DbSourceJdbc extends DbSource {
         }
         
         // Query CONSTRAINTS
-        query = "SELECT constraint_name, constraint_schema FROM information_schema.constraint_column_usage WHERE table_schema = '" + schema + "'" + " AND table_name = '" + table + "'";
-        res = stmt.executeQuery(query);
+        prepStatConstraints.setInt(1, tableOid);
+        res = prepStatConstraints.executeQuery();
         while (res.next()){
-            String constraintName = res.getString("constraint_name");
-            String constraintSchema = res.getString("constraint_schema");
-            PgConstraint constraint = getConstraint(constraintSchema, constraintName);
+            PgConstraint constraint = getConstraint(res, schema, tableName);
             if (constraint != null){
                 t.addConstraint(constraint);
             }
         }
         
         // Query INDECIES
-        // TODO get oids earlier (or cache), as they are not changed in time (minimize db queries)
-        int tableOid = getTableOidByName(table, getSchemaOidByName(schema));
-        query = "SELECT indexrelid, indkey FROM pg_catalog.pg_index WHERE indrelid = '" + tableOid + "'";
-        res = stmt.executeQuery(query);
+        prepStatIndecies.setInt(1, tableOid);
+        res = prepStatIndecies.executeQuery();
         while (res.next()){
-            String columnsString = res.getString("indkey");
-            Scanner sc = new Scanner(columnsString);
-            List<Integer> columnsNumbers = new ArrayList<Integer>(2);
-            while(sc.hasNext()){
-                columnsNumbers.add(Integer.valueOf(sc.next()));
-            }
-            sc.close();
-            PgIndex index = getIndex(res.getInt("indexrelid"), tableOid, columnsNumbers.toArray(new Integer[columnsNumbers.size()]));
+            PgIndex index = getIndex(res, tableName, tableOid);
             if (index != null){
                 t.addIndex(index);
             }
@@ -599,22 +635,26 @@ public class DbSourceJdbc extends DbSource {
         return t;
     }
     
-    private PgIndex getIndex(int indexOid, int tableOid, Integer[] columnsNumbers) throws SQLException {
-        SimpleEntry<String, String> indexName = getTableNameByOid(indexOid);
-        PgIndex i = new PgIndex(indexName.getValue(), "", getSearchPath(indexName.getKey()));
-        i.setTableName(getTableNameByOid(tableOid).getValue());
+    private PgIndex getIndex(ResultSet res, String tableName, int tableOid) throws SQLException {
+        String schemaName = getScheNameByOid(res.getInt("relnamespace"));
+        
+        PgIndex i = new PgIndex(res.getString("relname"), "", getSearchPath(schemaName));
+        i.setTableName(tableName);
         
         String definition = "USING ";
         
-        String query = "SELECT pg_catalog.pg_am.amname "
-                     + "FROM pg_catalog.pg_class JOIN pg_catalog.pg_am ON pg_class.relam = pg_am.oid "
-                     + "WHERE pg_catalog.pg_class.oid = '" + indexOid + "'";
-        ResultSet res = connection.createStatement().executeQuery(query);
-        if(res.next()){
-            definition = definition.concat(res.getString("amname"));
-        }
+        definition = definition.concat(getAccessMethodNameByOid(res.getInt("relam")));
         
-        String [] columnNames = getColumnNames(columnsNumbers, tableOid);
+        // get columns numbers
+        String columnsString = res.getString("indkey");
+        Scanner sc = new Scanner(columnsString);
+        List<Integer> columnsNumbers = new ArrayList<Integer>(2);
+        while(sc.hasNext()){
+            columnsNumbers.add(Integer.valueOf(sc.next()));
+        }
+        sc.close();
+        
+        String [] columnNames = getColumnNames(columnsNumbers.toArray(new Number[columnsNumbers.size()]), tableOid);
         if (columnNames.length > 0){
             definition = definition.concat(" (");
         }
@@ -632,6 +672,10 @@ public class DbSourceJdbc extends DbSource {
         return i;
     }
     
+    private String getAccessMethodNameByOid(int accessMethodOid) {
+        return indexAccesMethodsByOid.get(accessMethodOid);
+    }
+
     /**
      * Returns function object accordingly to data stored in current res row
      * (except for aggregate functions). 
@@ -694,10 +738,10 @@ public class DbSourceJdbc extends DbSource {
      * @param tableOid  Oid of table - owner of these columns
      * @return
      */
-    private String [] getColumnNames(Integer[] cols, int tableOid) throws SQLException{
+    private String [] getColumnNames(Number[] cols, int tableOid) throws SQLException{
         String query = "SELECT attname FROM pg_catalog.pg_attribute WHERE attrelid = " + tableOid + " AND attnum IN (";
         for(int i = 0; i < cols.length; i++){
-            Integer colNum = cols[i];
+            Number colNum = cols[i];
             query = query.concat(colNum.toString());
             if (i < cols.length - 1){
                 query = query.concat(", ");
@@ -768,20 +812,7 @@ public class DbSourceJdbc extends DbSource {
     }
 
     private int getSchemaOidByName(String schema) throws SQLException{
-        String query = "SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = '" + schema + "'";
-        Statement stmt = connection.createStatement();
-        ResultSet res = stmt.executeQuery(query);
-        int schemaOid;
-        if(res.next()){
-            schemaOid = res.getInt("oid");
-        }else{
-            throw new IllegalStateException("Could not resolve schema oid by its name " + schema + " in pg_catalog.pg_namespace");
-        }
-        
-        if (res.next()){
-            throw new IllegalStateException("More than one schema oid found by its name " + schema + " in pg_catalog.pg_namespace");
-        }
-        return schemaOid;
+        return nspByName.get(schema);
     }
     
     private String getLangNameByOid (int langOid) throws SQLException{
@@ -813,11 +844,14 @@ public class DbSourceJdbc extends DbSource {
     }
     
     private String getScheNameByOid(int schemaOid) throws SQLException {
-        String query = "SELECT nspname FROM pg_catalog.pg_namespace WHERE oid = '" + schemaOid + "'";
-        Statement stmt = connection.createStatement();
-        ResultSet res = stmt.executeQuery(query);
-        if(res.next()){
-            return res.getString("nspname");
+        Iterator<Integer> iterOid = nspByName.values().iterator();
+        Iterator<String> iterNames = nspByName.keySet().iterator();
+
+        while(iterOid.hasNext() && iterNames.hasNext()){
+            if (iterOid.next() == schemaOid){
+                return iterNames.next();
+            }
+            iterNames.next();
         }
         return null;
     }
