@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui;
 
 import java.util.AbstractMap;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,42 +40,40 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 public class ManualDepciesGroup extends Group{
     
     private final List<Entry<PgStatement, PgStatement>> depcies;
-    private final String[] names;
-    private final PgStatement[] objects;
+    private final List<PgStatement> objects;
     
-    private ComboViewer cmbDependants, cmbDependencies;
-    private Button btnAdd;
-    private ListViewer listDepcies;
-    private Button btnRemove;
+    private final ComboViewer cmbDependants, cmbDependencies;
+    private final Button btnAdd;
+    private final ListViewer listDepcies;
+    private final Button btnRemove;
+
+    public List<Entry<PgStatement, PgStatement>> getDepciesList() {
+        return depcies;
+    }
 
     public ManualDepciesGroup(Composite parent, int style,
             List<Entry<PgStatement, PgStatement>> dependencies, 
-            List<PgStatement> objectsSource, String groupName) {
+            List<PgStatement> objects, String groupName) {
         super(parent, style);
         
         this.depcies = new LinkedList<>(dependencies);
-        this.objects = objectsSource.toArray(new PgStatement[objectsSource.size()]);
+        this.objects = objects;
         
-        Arrays.sort(this.objects, new Comparator<PgStatement>() {
-
-            @Override
-            public int compare(PgStatement o1, PgStatement o2) {
-                return o1.getQualifiedName().compareTo(o2.getQualifiedName());
-            }
-        });
-
-        this.names = new String[this.objects.length];
-        for (int i = 0; i < this.objects.length; ++i) {
-            names[i] = this.objects[i].getQualifiedName();
-        }
-        
-        setLayout(new GridLayout(2, true));
-        setLayoutData(new GridData(GridData.FILL_BOTH));
+        setLayout(new GridLayout(3, false));
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 600;
+        setLayoutData(gd);
         this.setText(groupName);
         
-        Group grpSelectors = new Group(this, SWT.NONE);
-        grpSelectors.setLayout(new GridLayout(2, false));
+        Composite grpSelectors = new Composite(this, SWT.NONE);
+        GridLayout gl = new GridLayout(2, false);
+        gl.marginWidth = gl.marginHeight = 0;
+        grpSelectors.setLayout(gl);
         grpSelectors.setLayoutData(new GridData(GridData.FILL_BOTH));
+        
+        // spacer
+        new Label(grpSelectors, SWT.NONE).setLayoutData(
+                new GridData(SWT.LEFT, SWT.DEFAULT, true, false, 2, 1));
         
         new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_object);
         
@@ -88,7 +85,7 @@ public class ManualDepciesGroup extends Group{
         cmbDependants.getCombo().addListener(SWT.Traverse, new ComboReturnKeyListener());
         cmbDependants.getCombo().addModifyListener(new ComboModifyListener());
         
-        new MyAutoCompleteField(cmbDependants.getCombo(), new ComboContentAdapter(), names);
+        new MyAutoCompleteField(cmbDependants.getCombo(), new ComboContentAdapter(), objects);
         
         new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_depends_on);
         
@@ -100,7 +97,7 @@ public class ManualDepciesGroup extends Group{
         cmbDependencies.getCombo().addListener(SWT.Traverse, new ComboReturnKeyListener());
         cmbDependencies.getCombo().addModifyListener(new ComboModifyListener());
         
-        new MyAutoCompleteField(cmbDependencies.getCombo(), new ComboContentAdapter(), names);
+        new MyAutoCompleteField(cmbDependencies.getCombo(), new ComboContentAdapter(), objects);
         
         btnAdd = new Button(grpSelectors, SWT.PUSH);
         btnAdd.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false, 2, 1));
@@ -115,16 +112,20 @@ public class ManualDepciesGroup extends Group{
             }
         });
         
-        Group grpList = new Group(this, SWT.NONE);
-        grpList.setLayout(new GridLayout());
+        new Label(this, SWT.SEPARATOR | SWT.VERTICAL)
+                .setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        
+        Composite grpList = new Composite(this, SWT.NONE);
+        gl = new GridLayout();
+        gl.marginWidth = gl.marginHeight = 0;
+        grpList.setLayout(gl);
         grpList.setLayoutData(new GridData(GridData.FILL_BOTH));
         
         new Label(grpList, SWT.NONE).setText(Messages.manualDepciesDialog_dependant_dependency);
         
         listDepcies = new ListViewer(grpList);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 200;
-        gd.heightHint = 200;
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 100;
         listDepcies.getList().setLayoutData(gd);
         
         listDepcies.setContentProvider(new IStructuredContentProvider() {
@@ -212,13 +213,9 @@ public class ManualDepciesGroup extends Group{
             }
         });
         
-        cmbDependants.setInput(objectsSource);
-        cmbDependencies.setInput(objectsSource);
+        cmbDependants.setInput(objects);
+        cmbDependencies.setInput(objects);
         setInput();
-    }
-
-    public List<Entry<PgStatement, PgStatement>> getDepciesList() {
-        return depcies;
     }
     
     private void setInput() {
@@ -269,7 +266,8 @@ public class ManualDepciesGroup extends Group{
             }
         }
     }
-    class PgStatementLabelProvider implements ILabelProvider {
+    
+    private static class PgStatementLabelProvider implements ILabelProvider {
         
         @Override
         public void addListener(ILabelProviderListener listener) {
@@ -299,4 +297,3 @@ public class ManualDepciesGroup extends Group{
         }
     }
 }
-

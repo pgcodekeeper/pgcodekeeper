@@ -172,10 +172,10 @@ public class DiffPartDescr {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 ManualDepciesDialog dialog = new ManualDepciesDialog(shell,
-                        manualDepciesSource, manualDepciesTarget, dbSource.getDbObject().flatten(),
-                        dbTarget.getDbObject().flatten());
-                dialog.setNamesToDepciesGroups(Messages.database, 
-                        proj.getString(PROJ_PREF.REPO_TYPE));
+                        manualDepciesSource, manualDepciesTarget,
+                        dbSource.getDbObject().flatten(),
+                        dbTarget.getDbObject().flatten(),
+                        Messages.database, proj.getString(PROJ_PREF.REPO_TYPE));
                 if (dialog.open() == Dialog.OK) {
                     manualDepciesSource = dialog.getDepciesSourceList();
                     manualDepciesTarget = dialog.getDepciesTargetList();

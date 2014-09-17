@@ -122,7 +122,7 @@ public class SqlScriptDialog extends MessageDialog {
                 runScriptText, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }, 2);
         
         this.differ = differ;
-        this.oldDepcy = differ.getAdditionalDepcies();
+        this.oldDepcy = differ.getAdditionalDepciesSource();
         differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
         this.objList = objList;
         this.usePsqlDepcy = usePsqlDepcy;
@@ -379,7 +379,7 @@ public class SqlScriptDialog extends MessageDialog {
             mb.setMessage(mb.getMessage() + System.lineSeparator() +
                     Messages.SqlScriptDialog_add_it_to_script);
             if (mb.open() == SWT.OK) {
-                differ.addAdditionDepciesSource(depcyToAdd);
+                differ.addAdditionalDepciesSource(depcyToAdd);
                 differ.runProgressMonitorDiffer(getParentShell());
                 sqlEditor.setDocument(new Document(differ.getDiffDirect()));
                 sqlEditor.refresh();
@@ -388,7 +388,7 @@ public class SqlScriptDialog extends MessageDialog {
     }
 
     private String getRepeatedDepcy(List<Entry<PgStatement, PgStatement>> depcyToAdd) {
-        List<Entry<PgStatement, PgStatement>> existingDepcy = differ.getAdditionalDepcies();
+        List<Entry<PgStatement, PgStatement>> existingDepcy = differ.getAdditionalDepciesSource();
         StringBuilder sb = new StringBuilder();
         for (Entry<PgStatement, PgStatement> entry : depcyToAdd) {
             if (existingDepcy.contains(entry)) {

@@ -1,6 +1,9 @@
 package ru.taximaxim.codekeeper.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
@@ -8,6 +11,8 @@ import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.IControlContentAdapter;
 import org.eclipse.swt.widgets.Control;
+
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 class MyAutoCompleteField {
 
@@ -29,14 +34,13 @@ class MyAutoCompleteField {
      *            the field.
      */
     public MyAutoCompleteField(Control control,
-            IControlContentAdapter controlContentAdapter, String[] proposals) {
+            IControlContentAdapter controlContentAdapter, List<PgStatement> proposals) {
         proposalProvider = new MyContentProposalProvider(proposals);
         proposalProvider.setFiltering(true);
         adapter = new ContentProposalAdapter(control, controlContentAdapter,
                 proposalProvider, null, null);
         adapter.setPropagateKeys(true);
-        adapter
-                .setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
+        adapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
     }
 }
 
@@ -54,12 +58,14 @@ class MyContentProposalProvider implements IContentProposalProvider {
      */
     private boolean filterProposals = false;
     
-    public MyContentProposalProvider(String[] proposals) {
-        this.proposals = new String[proposals.length];
-        
-        for (int i = 0; i < proposals.length; ++i) {
-            this.proposals[i] = proposals[i].toLowerCase();
+    public MyContentProposalProvider(List<PgStatement> proposals) {
+        this.proposals = new String[proposals.size()];
+        int i = 0;
+        Iterator<PgStatement> it = proposals.iterator();
+        while (it.hasNext()) {
+            this.proposals[i++] = it.next().getQualifiedName().toLowerCase();
         }
+        Arrays.sort(this.proposals);
     }
     
     @Override

@@ -13,13 +13,13 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
-import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class Differ implements IRunnableWithProgress {
     
@@ -50,7 +50,7 @@ public class Differ implements IRunnableWithProgress {
         this.additionalDepciesTarget = additionalDepcies;
     }
     
-    public void addAdditionDepciesSource(
+    public void addAdditionalDepciesSource(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
         if (this.additionalDepciesSource == null) {
             setAdditionalDepciesSource(additionalDepcies);
@@ -59,9 +59,15 @@ public class Differ implements IRunnableWithProgress {
         }
     }
     
-    public List<Entry<PgStatement, PgStatement>> getAdditionalDepcies() {
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource() {
         return additionalDepciesSource;
     } 
+
+    public Differ(DbSource dbSource, DbSource dbTarget, boolean needTwoWay) {
+        this.dbSource = dbSource;
+        this.dbTarget = dbTarget;
+        this.needTwoWay = needTwoWay;
+    }
     
     public void runProgressMonitorDiffer(final Shell shell) {
         try {
@@ -75,12 +81,6 @@ public class Differ implements IRunnableWithProgress {
                     Messages.project_modifier_thread_cancelled_shouldnt_happen,
                     ex);
         }
-    }
-    
-    public Differ(DbSource dbSource, DbSource dbTarget, boolean needTwoWay) {
-        this.dbSource = dbSource;
-        this.dbTarget = dbTarget;
-        this.needTwoWay = needTwoWay;
     }
     
     public String getDiffDirect() {

@@ -16,10 +16,10 @@ public class ManualDepciesDialog extends TrayDialog {
 
     private final List<Entry<PgStatement, PgStatement>> depciesSource;
     private final List<Entry<PgStatement, PgStatement>> depciesTarget;
-    private List<PgStatement> objectsSource;
-    private List<PgStatement> objectsTarget;
-    private String groupSourceName;
-    private String groupTargetName;
+    private final List<PgStatement> objectsSource;
+    private final List<PgStatement> objectsTarget;
+    private final String groupSourceName;
+    private final String groupTargetName;
     
     private ManualDepciesGroup depcyGroupSource;
     private ManualDepciesGroup depcyGroupTarget;
@@ -35,17 +35,14 @@ public class ManualDepciesDialog extends TrayDialog {
     public ManualDepciesDialog(Shell shell,
             List<Entry<PgStatement, PgStatement>> depciesSource,
             List<Entry<PgStatement, PgStatement>> depciesTarget,
-            List<PgStatement> objectsSource, List<PgStatement> objectsTarget) {
+            List<PgStatement> objectsSource, List<PgStatement> objectsTarget,
+            String groupSourceName, String groupTargetName) {
         super(shell);
 
         this.depciesSource = depciesSource;
         this.depciesTarget = depciesTarget;
         this.objectsSource = objectsSource;
         this.objectsTarget = objectsTarget;
-        setShellStyle(getShellStyle() | SWT.RESIZE);
-    }
-
-    public void setNamesToDepciesGroups(String groupSourceName, String groupTargetName) {
         this.groupSourceName = groupSourceName;
         this.groupTargetName = groupTargetName;
     }
@@ -54,6 +51,7 @@ public class ManualDepciesDialog extends TrayDialog {
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(Messages.ManualDepciesDialog_set_add_depcies);
+        setShellStyle(getShellStyle() | SWT.RESIZE);
     }
     
     @Override
@@ -68,5 +66,8 @@ public class ManualDepciesDialog extends TrayDialog {
         return parent;
     }
     
-    
+    @Override
+    protected boolean isResizable() {
+        return true;
+    }
 }
