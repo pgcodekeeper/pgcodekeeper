@@ -73,6 +73,33 @@
                                     <url>scp://codekeeper@storage/home/codekeeper/webroot/${unqualifiedVersion}.${buildQualifier}</url>
                                 </configuration>
                             </execution>
+                            <execution>
+                              <id>execute-test-commands</id>
+                              <phase>deploy</phase>
+                              <goals>
+                                <goal>sshexec</goal>
+                              </goals>
+                              <configuration>
+                                <serverId>palceholder3</serverId>
+                                <url>scp://codekeeper@storage/home/codekeeper/webroot/p2/codekeeper</url>
+                                <commands>
+                                  <command>rm -rf /home/codekeeper/webroot/p2/codekeeper/*</command>
+                                </commands>
+                              </configuration>
+                            </execution>
+                            <execution>
+                                <id>upload-p2-repo</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>upload</goal>
+                                </goals>
+                                <configuration>
+                                    <serverId>placeholder2</serverId>
+                                    <fromDir>${project.build.directory}/repository</fromDir>
+                                    <includes>*/**</includes>
+                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/p2/codekeeper</url>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
 

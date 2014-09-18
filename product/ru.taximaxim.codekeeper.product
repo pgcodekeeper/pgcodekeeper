@@ -156,6 +156,12 @@
       <plugin id="org.eclipse.e4.ui.workbench.swt.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.e4.ui.workbench3"/>
       <plugin id="org.eclipse.e4.ui.workbench3.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.ecf"/>
+      <plugin id="org.eclipse.ecf.filetransfer"/>
+      <plugin id="org.eclipse.ecf.identity"/>
+      <plugin id="org.eclipse.ecf.provider.filetransfer"/>
+      <plugin id="org.eclipse.ecf.provider.filetransfer.ssl" fragment="true"/>
+      <plugin id="org.eclipse.ecf.ssl" fragment="true"/>
       <plugin id="org.eclipse.egit"/>
       <plugin id="org.eclipse.egit.core"/>
       <plugin id="org.eclipse.egit.ui"/>
@@ -209,6 +215,8 @@
       <plugin id="org.eclipse.equinox.p2.touchpoint.eclipse.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.p2.touchpoint.natives"/>
       <plugin id="org.eclipse.equinox.p2.touchpoint.natives.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.transport.ecf"/>
+      <plugin id="org.eclipse.equinox.p2.transport.ecf.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.p2.ui"/>
       <plugin id="org.eclipse.equinox.p2.ui.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.p2.ui.sdk"/>
@@ -312,5 +320,9 @@
       <property name="eclipse.log.level" value="INFO" />
       <property name="osgi.instance.area" value="@user.home/.pgcodekeeper" />
    </configurations>
+
+   <repositories>
+      <repository location="http://storage.chelny.taximaxim.ru/codekeeper/p2/codekeeper/" enabled="true" />
+   </repositories>
 
 </product>
