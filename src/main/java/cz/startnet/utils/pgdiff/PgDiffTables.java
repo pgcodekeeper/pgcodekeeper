@@ -570,10 +570,11 @@ public class PgDiffTables {
                 Set<PgStatement> dependantsSet = new LinkedHashSet<>(10);
                 PgDiff.getDependantsSet(table, dependantsSet);
                 // wrap Set into array for reverse iteration
-                Object[] dependants = dependantsSet.toArray();
+                PgStatement[] dependants = dependantsSet.toArray(
+                        new PgStatement[dependantsSet.size()]);
                 
                 for (int i = dependants.length - 1; i >= 0; i--){
-                    PgStatement depnt = (PgStatement) dependants[i];
+                    PgStatement depnt = dependants[i];
                     
                     if (depnt instanceof PgView) {
                         PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),

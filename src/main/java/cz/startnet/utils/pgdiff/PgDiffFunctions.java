@@ -6,11 +6,15 @@
 package cz.startnet.utils.pgdiff;
 
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgTrigger;
 
 /**
  * Diffs functions.
@@ -91,6 +95,26 @@ public class PgDiffFunctions {
         // Drop functions that exist no more
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
             if (!newSchema.containsFunction(oldFunction.getSignature())) {
+                Set<PgStatement> dependantsSet = new LinkedHashSet<PgStatement>(10);
+                PgDiff.getDependantsSet(oldFunction, dependantsSet);
+                PgStatement[] dependants = dependantsSet.toArray(
+                        new PgStatement[dependantsSet.size()]);
+
+                // drop dependants in reverse first
+                for (int i = dependants.length - 1; i >= 0; --i) {
+                    PgStatement depnt = dependants[i];
+                    
+                    if (depnt instanceof PgTrigger) {
+                        PgDiff.tempSwitchSearchPath(
+                                depnt.getParent().getParent().getName(),
+                                searchPathHelper, script);
+                        PgDiff.writeDropSql(script,
+                                "-- DEPCY: This trigger depends on the function"
+                                + " we are about to drop: " + oldFunction.getName(),
+                                depnt);
+                    }
+                }
+                
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeDropSql(script, null, oldFunction);
             }
