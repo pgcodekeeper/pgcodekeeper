@@ -10,41 +10,17 @@ SET client_min_messages = warning;
 -- Name: another_triggers; Type: SCHEMA; Schema: -; Owner: postgres
 --
 
-CREATE SCHEMA another_triggers;
-
-
-ALTER SCHEMA another_triggers OWNER TO postgres;
-
 --
 -- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
 --
 
 CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 
-
 --
 -- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
 --
 
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
-
-
-SET search_path = another_triggers, pg_catalog;
-
---
--- Name: test_table_trigger_another(); Type: FUNCTION; Schema: another_triggers; Owner: postgres
---
-
-CREATE FUNCTION test_table_trigger_another() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-begin
-	return NEW;
-end;
-$$;
-
-
-ALTER FUNCTION another_triggers.test_table_trigger_another() OWNER TO postgres;
 
 SET search_path = public, pg_catalog;
 
@@ -84,7 +60,7 @@ ALTER TABLE public.test_table OWNER TO postgres;
 -- Name: test_table_trigger; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER test_table_trigger BEFORE INSERT OR UPDATE ON test_table FOR EACH ROW EXECUTE PROCEDURE another_triggers.test_table_trigger_another();
+CREATE TRIGGER test_table_trigger BEFORE INSERT OR UPDATE ON test_table FOR EACH ROW EXECUTE PROCEDURE test_table_trigger();
 
 
 --

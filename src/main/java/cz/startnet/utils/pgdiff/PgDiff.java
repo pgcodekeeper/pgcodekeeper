@@ -633,12 +633,11 @@ public class PgDiff {
             addUniqueDependencies(specialDependencies, script, arguments, searchPathHelper,
                     dep, fullStatement);
             if (dep instanceof PgView){
-                PgView viewNew = (PgView)dep;
-                String newSchemaName = viewNew.getParent().getName();
+                String newSchemaName = dep.getParent().getName();
                 PgSchema schemaOld = dbOld.getSchema(newSchemaName);
                 
-                PgView viewOld = (schemaOld == null) ? null : schemaOld.getView(viewNew.getName());
-                writeDepcyObjToScript(script, searchPathHelper, fullStatement, viewNew, 
+                PgView viewOld = (schemaOld == null) ? null : schemaOld.getView(dep.getName());
+                writeDepcyObjToScript(script, searchPathHelper, fullStatement, dep, 
                         "View", newSchemaName, viewOld);                
             }else if (dep instanceof PgSequence){
                 if (    fullStatement instanceof PgSequence && 
@@ -650,15 +649,14 @@ public class PgDiff {
                 if(specialDependencies.contains(dep)){
                     continue;
                 }
-                PgSequence sequenceNew = (PgSequence)dep;
-                String newSchemaName = sequenceNew.getParent().getName();
+                String newSchemaName = dep.getParent().getName();
                 
                 PgSchema schemaOld = dbOld.getSchema(newSchemaName);
-                if (schemaOld == null || schemaOld.getSequence(sequenceNew.getName()) == null){
+                if (schemaOld == null || schemaOld.getSequence(dep.getName()) == null){
                     tempSwitchSearchPath(newSchemaName, searchPathHelper, script);
                     writeCreationSql(script, "-- DEPCY: this sequence is in dependency tree of " + 
-                            fullStatement.getBareName(), sequenceNew);
-                    specialDependencies.add(sequenceNew);
+                            fullStatement.getBareName(), dep);
+                    specialDependencies.add(dep);
                 }
             }else if (dep instanceof PgTable){
                 if (    fullStatement instanceof PgTable && 
@@ -666,16 +664,15 @@ public class PgDiff {
                         dep.getParent().getName().equals(fullStatement.getParent().getName())){
                     continue;
                 }
-                PgTable tableNew = (PgTable)dep;
-                String newSchemaName = tableNew.getParent().getName();
+                String newSchemaName = dep.getParent().getName();
                 PgSchema schemaOld = dbOld.getSchema(newSchemaName);
 
-                PgTable tableOld = (schemaOld == null) ? null : schemaOld.getTable(tableNew.getName());
+                PgTable tableOld = (schemaOld == null) ? null : schemaOld.getTable(dep.getName());
                 if (tableOld == null){
                     tempSwitchSearchPath(newSchemaName, searchPathHelper, script);
                     writeCreationSql(script, "-- DEPCY: this table is in dependency tree of " + 
-                            fullStatement.getBareName(), tableNew);
-                }else if (fullStatement instanceof PgView && !tableNew.equals(tableOld)){
+                            fullStatement.getBareName(), dep);
+                }else if (fullStatement instanceof PgView && !dep.equals(tableOld)){
                     // special case: modified table is required for view creation/edit
                     // ensure that dependant view is in NEW/EDIT state
                     PgView viewNew = (PgView) fullStatement;
@@ -688,31 +685,27 @@ public class PgDiff {
                                 script.addStatement("-- DEPCY: this table is in dependency tree of " + 
                                     fullStatement.getBareName());
                                 PgDiffTables.alterTable(script, arguments,
-                                        tableOld, tableNew, searchPathHelper);
+                                        tableOld, (PgTable) dep, searchPathHelper);
                                 break;
                             }
                         }
                     }
                 }// end special case
             }else if (dep instanceof PgSchema){
-                PgSchema schemaNew = (PgSchema) dep;
-                
                 // NB public schema always exists in dbOld, thus it will 
                 // never be created here
-                if (dbOld.getSchema(schemaNew.getName()) == null){
+                if (dbOld.getSchema(dep.getName()) == null){
                     writeCreationSql(script, "-- DEPCY: this schema is in dependency tree of " + 
-                            fullStatement.getBareName(), schemaNew);
+                            fullStatement.getBareName(), dep);
                 }
             } else if (dep instanceof PgFunction) {
                 if (fullStatement instanceof PgTrigger) {
-                    PgFunction funcNew = (PgFunction) dep;
-                    
-                    String newSchemaName = funcNew.getParent().getName();
+                    String newSchemaName = dep.getParent().getName();
                     PgSchema schemaOld = dbOld.getSchema(newSchemaName);
                     PgStatement funcOld = (schemaOld == null) ? null : schemaOld
-                            .getFunction(funcNew.getName());
+                            .getFunction(dep.getName());
                     writeDepcyObjToScript(script, searchPathHelper,
-                            fullStatement, funcNew, "Function", newSchemaName, funcOld);
+                            fullStatement, dep, "Function", newSchemaName, funcOld);
                 }
             }
         }
@@ -743,9 +736,11 @@ public class PgDiff {
         }else if (!objOld.equals(objNew)){
             tempSwitchSearchPath(newSchemaName, searchPathHelper,
                     script);
+            // TODO dependants of objOld??? 
             writeDropSql(script,
                     "-- DEPCY: recreating " + objName + " that is in dependency tree of "
                             + fullStatement.getBareName(), objOld);
+            // TODO instant recreation
             writeCreationSql(script,
                     "-- DEPCY: recreating " + objName + " that is in dependency tree of "
                             + fullStatement.getBareName(), objNew);
