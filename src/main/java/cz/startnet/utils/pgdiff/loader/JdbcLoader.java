@@ -89,7 +89,7 @@ public class JdbcLoader {
     
     private Map<String, Number> cachedSchemaByName = new HashMap<String, Number>();
     private Map<Number, String> cachedIndexAccesMethodsByOid = new HashMap<Number, String>();
-    private Map<Number, String> cachedRolesNamesByOid = new HashMap<Number, String>();
+    private Map<Integer, String> cachedRolesNamesByOid = new HashMap<Integer, String>();
     
     private String host;
     private int port;
@@ -174,7 +174,7 @@ public class JdbcLoader {
             // fill in rolenames
             res = stmnt.executeQuery("SELECT oid, rolname FROM pg_catalog.pg_roles");
             while (res.next()){
-                 cachedRolesNamesByOid.put(res.getLong("oid"), res.getString("rolname"));
+                 cachedRolesNamesByOid.put(res.getInt("oid"), res.getString("rolname"));
             }
         }finally{
             try{
@@ -192,6 +192,7 @@ public class JdbcLoader {
         String queryFunctions = 
                 "SELECT "
                 + "     proname, "
+                + "     proowner, "
                 + "     prolang, "
                 + "     prosrc, "
                 + "     pg_get_functiondef(oid) AS probody, "
@@ -216,6 +217,7 @@ public class JdbcLoader {
                 + "GROUP BY "
                 + "     oid, "
                 + "     proname, "
+                + "     proowner, "
                 + "     prolang, "
                 + "     prosrc, "
                 + "     probody, "
@@ -794,8 +796,8 @@ public class JdbcLoader {
         String signatureWithoutDefaults = functionName + "(" + res.getString("proarguments_without_default") + ")";
         String revokeMaindb = "ALL ON FUNCTION " + signatureWithoutDefaults + " FROM maindb";
         String revokePublic = "ALL ON FUNCTION " + signatureWithoutDefaults + " FROM PUBLIC";
-        f.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
         f.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
+        f.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
         
         Number [] granteeOids = (Number[])res.getArray("priv_grantees").getArray();
         String [] privTypes = (String[])res.getArray("priv_types").getArray();
@@ -803,6 +805,9 @@ public class JdbcLoader {
             String privDefinition = privTypes[i] + " ON FUNCTION " + signatureWithoutDefaults + " TO " + getRoleNameByOid(granteeOids[i]);
             f.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + definition));
         }
+        
+        // OWNER
+        f.setOwner(getRoleNameByOid(res.getInt("proowner")));
         
         return f;
     }
@@ -936,7 +941,7 @@ public class JdbcLoader {
     }
     
     private String getRoleNameByOid(Number ownerOid){
-        return cachedRolesNamesByOid.get(ownerOid);
+        return cachedRolesNamesByOid.get(ownerOid.intValue());
     }
     
     private String getScheNameByOid(Number schemaOid){
