@@ -29,23 +29,6 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
-SET search_path = another_triggers, pg_catalog;
-
---
--- Name: test_table_trigger_another(); Type: FUNCTION; Schema: another_triggers; Owner: postgres
---
-
-CREATE FUNCTION test_table_trigger_another() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-begin
-	return NEW;
-end;
-$$;
-
-
-ALTER FUNCTION another_triggers.test_table_trigger_another() OWNER TO postgres;
-
 SET search_path = public, pg_catalog;
 
 SET default_tablespace = '';
@@ -53,22 +36,39 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: test_table; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: test_table_trigger_another(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
-CREATE TABLE test_table (
+CREATE FUNCTION test_table_trigger_public() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+    return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION test_table_trigger_public() OWNER TO postgres;
+
+SET search_path = another_triggers, pg_catalog;
+
+--
+-- Name: test_table; Type: TABLE; Schema: another_triggers; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE test_table_a (
     id integer NOT NULL
 );
 
 
-ALTER TABLE public.test_table OWNER TO postgres;
+ALTER TABLE another_triggers.test_table_a OWNER TO postgres;
 
 
 --
--- Name: test_table_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: test_table_trigger; Type: TRIGGER; Schema: another_triggers; Owner: postgres
 --
 
-CREATE TRIGGER test_table_trigger BEFORE INSERT OR UPDATE ON test_table FOR EACH ROW EXECUTE PROCEDURE another_triggers.test_table_trigger_another();
+CREATE TRIGGER test_table_a_trigger BEFORE INSERT OR UPDATE ON test_table_a FOR EACH ROW EXECUTE PROCEDURE public.test_table_trigger_public();
 
 
 --
