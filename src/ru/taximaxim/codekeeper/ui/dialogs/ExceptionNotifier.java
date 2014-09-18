@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.statushandlers.StatusManager;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.handlers.OpenLog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -41,19 +42,10 @@ public class ExceptionNotifier {
      * 
      * @param shell dialog parent. Can be null if showInDialog is false
      */
-    public static void notify(Throwable source, final String message, final Shell shell, 
+    public static void notify(final Throwable source, final String message, final Shell shell, 
             boolean outputToConsole, boolean showInDialog) {
-        if (source == null) {
-            source = new Throwable("Throwable was null at this point!"); //$NON-NLS-1$
-        }
         Log.log(Log.LOG_ERROR, source.getMessage(), source);
         
-        executeNotify(source, message, shell, outputToConsole, showInDialog);
-    }
-
-    private static void executeNotify(final Throwable source,
-            final String message, final Shell shell, boolean outputToConsole,
-            boolean showInDialog) {
         String initialReason = ""; //$NON-NLS-1$
         Throwable t = source.getCause();
         while (t != null){

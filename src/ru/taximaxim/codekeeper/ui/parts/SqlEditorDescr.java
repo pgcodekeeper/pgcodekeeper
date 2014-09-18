@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PART;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART_STACK;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
+import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewerExtender;
 
 public class SqlEditorDescr {
     
@@ -51,7 +51,7 @@ public class SqlEditorDescr {
                 Files.readAllBytes(fileText.toPath()), 
                 proj.getString(PROJ_PREF.ENCODING)));
         
-        SqlSourceViewer v = new SqlSourceViewer(parent, SWT.NONE);
+        SqlSourceViewerExtender v = new SqlSourceViewerExtender(parent, SWT.NONE);
         v.addLineNumbers();
         v.setDocument(doc);
         v.setEditable(false);

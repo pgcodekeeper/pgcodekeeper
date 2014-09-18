@@ -16,10 +16,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
@@ -58,8 +55,8 @@ public class SqlScriptDialog extends MessageDialog {
     private static final String DB_USER_PLACEHOLDER = "%user"; //$NON-NLS-1$
     private static final String DB_PASS_PLACEHOLDER = "%pass"; //$NON-NLS-1$
     
-    public static final String runScriptText =  Messages.sqlScriptDialog_run_script;
-    public static final String stopScriptText = Messages.sqlScriptDialog_stop_script;
+    private static final String RUN_SCRIPT_LABEL =  Messages.sqlScriptDialog_run_script;
+    private static final String STOP_SCRIPT_LABEL = Messages.sqlScriptDialog_stop_script;
     
     private static final String SCRIPTS_HIST_ROOT = "scripts"; //$NON-NLS-1$
     private static final String SCRIPTS_HIST_EL = "s"; //$NON-NLS-1$
@@ -79,7 +76,7 @@ public class SqlScriptDialog extends MessageDialog {
     private String dbUser;
     private String dbPass;
     
-    private SqlSourceViewer sqlEditor;
+    private SqlSourceViewerExtender sqlEditor;
     private Text txtCommand;
     private Combo cmbScript;
     private Button runScriptBtn;
@@ -119,11 +116,11 @@ public class SqlScriptDialog extends MessageDialog {
     public SqlScriptDialog(Shell parentShell, int type, String title, String message,
             Differ differ, List<PgStatement> objList, boolean usePsqlDepcy) {
         super(parentShell, title, null, message, type, new String[] {
-                runScriptText, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }, 2);
+                RUN_SCRIPT_LABEL, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }, 2);
         
         this.differ = differ;
-        this.oldDepcy = differ.getAdditionalDepcies();
-        differ.setAdditionalDepcies(new ArrayList<>(oldDepcy));
+        this.oldDepcy = differ.getAdditionalDepciesSource();
+        differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
         this.objList = objList;
         this.usePsqlDepcy = usePsqlDepcy;
         this.history = new XmlHistory.Builder(SCRIPTS_HIST_MAX_STORED, 
@@ -133,9 +130,8 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     @Override
-    protected void configureShell(Shell shell) {
-        super.configureShell(shell);
-        setShellStyle(getShellStyle() | SWT.RESIZE);
+    protected boolean isResizable() {
+        return true;
     }
     
     @Override
@@ -194,62 +190,16 @@ public class SqlScriptDialog extends MessageDialog {
     }
 
     private void createSQLViewer(Composite parent) {
-        sqlEditor = new SqlSourceViewer(parent, SWT.NONE);
+        sqlEditor = new SqlSourceViewerExtender(parent, SWT.NONE);
         sqlEditor.addLineNumbers();
         sqlEditor.setEditable(true);
         sqlEditor.setDocument(new Document(differ.getDiffDirect()));
+        sqlEditor.activateAutocomplete();
         
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
         gd.heightHint = 400;
         sqlEditor.getControl().setLayoutData(gd);
-        
-        sqlEditor.getTextWidget().addKeyListener(new KeyListener() {
-            
-            @Override
-            public void keyPressed(KeyEvent e) {
-                // Listen to CTRL+Z for Undo, to CTRL+Y or CTRL+SHIFT+Z for Redo
-                boolean isCtrl = (e.stateMask & SWT.CTRL) > 0;
-                boolean isAlt = (e.stateMask & SWT.ALT) > 0;
-                if (isCtrl && !isAlt) {
-                    boolean isShift = (e.stateMask & SWT.SHIFT) > 0;
-                    if (!isShift && e.keyCode == 'z') {
-                        sqlEditor.doOperation(
-                                ITextOperationTarget.UNDO);
-                    } else if (!isShift && e.keyCode == 'y' || isShift
-                            && e.keyCode == 'z') {
-                        sqlEditor.doOperation(
-                                ITextOperationTarget.REDO);
-                    }
-                }
-            }
-            
-            @Override
-            public void keyReleased(KeyEvent e) {                
-            }
-        });
-        // TODO sql code completion
-        /** Этот кусочек скопипастен с сайта для поддержки автозавершения ввода
-         *  Не получилось прикрутить за незнанием некоторых классов
-         *  оставляю на будущее*/
-/*
-        IHandlerService handlerService = (IHandlerService) editor.getSite().getService(IHandlerService.class);
-        IHandler cahandler = new AbstractHandler() {
-
-        @Override
-        public Object execute(ExecutionEvent event)
-                throws org.eclipse.core.commands.ExecutionException {
-            sta.getViewer().doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
-            return null;
-        }
-        };
-        if(contentAssistHandlerActivation != null){
-        handlerService.deactivateHandler(contentAssistHandlerActivation);
-        }
-        contentAssistHandlerActivation = handlerService.activateHandler(
-                ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
-        cahandler);
-*/
     }
     
     @Override
@@ -283,12 +233,10 @@ public class SqlScriptDialog extends MessageDialog {
                 @Override
                 public void run() {
                     try {
-                        Integer returnedCode = new Integer(0);
-                        String scriptOutputRes = StdStreamRedirector.launchAndRedirect(
-                                pb, returnedCode);
+                        String scriptOutputRes =
+                                StdStreamRedirector.launchAndRedirect(pb);
                         if (usePsqlDepcy) {
-                            addDepcy = getDependenciesFromOutput(returnedCode, 
-                                            scriptOutputRes);
+                            addDepcy = getDependenciesFromOutput(scriptOutputRes);
                         }
                     } catch (IOException ex) {
                         throw new IllegalStateException(ex);
@@ -302,7 +250,7 @@ public class SqlScriptDialog extends MessageDialog {
                                     @Override
                                     public void run() {
                                         if (!runScriptBtn.isDisposed()) {
-                                            runScriptBtn.setText(runScriptText);
+                                            runScriptBtn.setText(RUN_SCRIPT_LABEL);
                                             showAddDepcyDialog();
                                         }
                                         isRunning = false;
@@ -322,7 +270,7 @@ public class SqlScriptDialog extends MessageDialog {
                 }
             });
             scriptThread.start();
-            getButton(0).setText(stopScriptText);
+            getButton(0).setText(STOP_SCRIPT_LABEL);
             isRunning = true;
         }
         // case Stop script
@@ -331,7 +279,7 @@ public class SqlScriptDialog extends MessageDialog {
             Log.log(Log.LOG_INFO, Messages.sqlScriptDialog_script_interrupted_by_user);
             
             scriptThread.interrupt();
-            getButton(0).setText(runScriptText);
+            getButton(0).setText(RUN_SCRIPT_LABEL);
             isRunning = false;
         }
         // case Save to a file
@@ -379,7 +327,7 @@ public class SqlScriptDialog extends MessageDialog {
             mb.setMessage(mb.getMessage() + System.lineSeparator() +
                     Messages.SqlScriptDialog_add_it_to_script);
             if (mb.open() == SWT.OK) {
-                differ.addAdditionDepcies(depcyToAdd);
+                differ.addAdditionalDepciesSource(depcyToAdd);
                 differ.runProgressMonitorDiffer(getParentShell());
                 sqlEditor.setDocument(new Document(differ.getDiffDirect()));
                 sqlEditor.refresh();
@@ -388,7 +336,7 @@ public class SqlScriptDialog extends MessageDialog {
     }
 
     private String getRepeatedDepcy(List<Entry<PgStatement, PgStatement>> depcyToAdd) {
-        List<Entry<PgStatement, PgStatement>> existingDepcy = differ.getAdditionalDepcies();
+        List<Entry<PgStatement, PgStatement>> existingDepcy = differ.getAdditionalDepciesSource();
         StringBuilder sb = new StringBuilder();
         for (Entry<PgStatement, PgStatement> entry : depcyToAdd) {
             if (existingDepcy.contains(entry)) {
@@ -434,8 +382,7 @@ public class SqlScriptDialog extends MessageDialog {
         return sb.toString();
     }
     
-    private List<Entry<String, String>> getDependenciesFromOutput(
-            Integer returnedCode, String output) {
+    private List<Entry<String, String>> getDependenciesFromOutput(String output) {
         List<Entry<String, String>> depciesList = new ArrayList<>();
         if (output == null || output.isEmpty()) {
             return depciesList;
@@ -468,7 +415,7 @@ public class SqlScriptDialog extends MessageDialog {
 
     private void parseDependencies(String[] lines, int begin, int end,
             List<Entry<String, String>> listToFill) {
-        String space = Pattern.quote(" ");
+        String space = Pattern.quote(" "); //$NON-NLS-1$
         for (int i = begin; i < end; i++) {
             String words[] = lines[i].split(space); 
             listToFill.add(new AbstractMap.SimpleEntry<>(
@@ -484,7 +431,7 @@ public class SqlScriptDialog extends MessageDialog {
             errorDialog.open();
             return false;
         } else {
-            differ.setAdditionalDepcies(oldDepcy);
+            differ.setAdditionalDepciesSource(oldDepcy);
             history.addHistoryEntry(cmbScript.getText());
             return super.close();
         }

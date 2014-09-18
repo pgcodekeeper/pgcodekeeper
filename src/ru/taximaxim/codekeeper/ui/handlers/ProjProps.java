@@ -106,7 +106,7 @@ class DbSrcPage extends FieldEditorPreferencePage {
                 PROJ_PREF.SOURCE, Messages.projProps_source_of_the_db_schema, 1, 
                 new String[][] { { Messages.none, PROJ_PREF.SOURCE_TYPE_NONE }, 
                         { Messages.dump_file, PROJ_PREF.SOURCE_TYPE_DUMP }, 
-                        { Messages.projProps_database, PROJ_PREF.SOURCE_TYPE_DB } }, 
+                        { Messages.database, PROJ_PREF.SOURCE_TYPE_DB } }, 
                 getFieldEditorParent(), true);
         addField(radio);
 
