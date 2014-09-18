@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,7 +17,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.AbstractMap.SimpleEntry;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -60,13 +60,12 @@ public class JdbcLoader {
     private PreparedStatement prepStatFunctions;
     private PreparedStatement prepStatLanguages;
     private PreparedStatement prepStatTypes;
-    private PreparedStatement prepStatRoles;
     private PreparedStatement prepStatSequences;
     private PreparedStatement prepStatExtensions;
     private PreparedStatement prepStatConstraints;
     private PreparedStatement prepStatIndecies;
     
-    // TODO HashMap caching of namespace, type, language, owner names/oids?
+    // TODO HashMap caching of type, language
     
     final private static Map<String, String> DATA_TYPE_ALIASES = new HashMap<String, String>(){
         {
@@ -88,8 +87,10 @@ public class JdbcLoader {
         }
     };
     
-    private Map<String, Integer> nspByName = new HashMap<String, Integer>();
-    private Map<Integer, String> indexAccesMethodsByOid = new HashMap<Integer, String>();
+    private Map<String, Number> cachedSchemaByName = new HashMap<String, Number>();
+    private Map<Number, String> cachedIndexAccesMethodsByOid = new HashMap<Number, String>();
+    private Map<Number, String> cachedRolesNamesByOid = new HashMap<Number, String>();
+    
     private String host;
     private int port;
     private String user;
@@ -128,7 +129,12 @@ public class JdbcLoader {
                     continue;
                 }
                 PgSchema schema = getSchema(res.getString("TABLE_SCHEM"));
-                d.addSchema(schema);
+                
+                if (schemaName.equals("public")){
+                    d.replaceSchema(d.getSchema("public"), schema);                    
+                }else{
+                    d.addSchema(schema);
+                }
             }
             Log.log(Log.LOG_INFO, "Creating extensions from JDBC");
             res = prepStatExtensions.executeQuery();
@@ -154,14 +160,22 @@ public class JdbcLoader {
             // fill in namespace map
             res = stmnt.executeQuery("SELECT nspname, oid FROM pg_catalog.pg_namespace");
             while(res.next()){
-                nspByName.put(res.getString("nspname"), res.getInt("oid"));
+                cachedSchemaByName.put(res.getString("nspname"), res.getInt("oid"));
             }
+            res.close();
             
             // fill in index access method map
             res = stmnt.executeQuery("SELECT oid, amname FROM pg_catalog.pg_am");
             while(res.next()){
-                indexAccesMethodsByOid.put(res.getInt("oid"), res.getString("amname"));
-            }            
+                cachedIndexAccesMethodsByOid.put(res.getInt("oid"), res.getString("amname"));
+            }
+            res.close();
+            
+            // fill in rolenames
+            res = stmnt.executeQuery("SELECT oid, rolname FROM pg_catalog.pg_roles");
+            while (res.next()){
+                 cachedRolesNamesByOid.put(res.getLong("oid"), res.getString("rolname"));
+            }
         }finally{
             try{
                 res.close();
@@ -174,18 +188,48 @@ public class JdbcLoader {
     private void prepareStatements() throws SQLException{
         prepStatTriggers = connection.prepareStatement("SELECT tgfoid, tgname, tgfoid, tgtype, tgrelid FROM pg_catalog.pg_trigger WHERE tgrelid = ?");
         prepStatFuncName = connection.prepareStatement("SELECT proname FROM pg_catalog.pg_proc WHERE oid = ?");
-        prepStatFunctions = connection.prepareStatement("SELECT proname, prolang, prosrc, pg_get_functiondef(oid) AS probody, prorettype, proowner, proallargtypes, proargmodes, proargnames, pg_get_function_arguments(oid) AS proarguments, proargdefaults FROM pg_catalog.pg_proc WHERE pronamespace = ? AND proisagg = FALSE");
+        
+        String queryFunctions = 
+                "SELECT "
+                + "     proname, "
+                + "     prolang, "
+                + "     prosrc, "
+                + "     pg_get_functiondef(oid) AS probody, "
+                + "     prorettype, "
+                + "     proowner, "
+                + "     proallargtypes, "
+                + "     proargmodes, "
+                + "     proargnames, "
+                + "     pg_get_function_arguments(oid) AS proarguments, "
+                + "     pg_get_function_identity_arguments(oid) AS proarguments_without_default, "
+                + "     proargdefaults, "
+                + "     array_agg(acl.grantor) AS priv_grantors, "
+                + "     array_agg(acl.grantee) AS priv_grantees, "
+                + "     array_agg(acl.privilege_type) AS priv_types, "
+                + "     array_agg(acl.is_grantable) AS priv_grantable "
+                + "FROM "
+                + "     pg_catalog.pg_proc,"
+                + "     aclexplode(proacl) acl "
+                + "WHERE "
+                + "     pronamespace = ? AND "
+                + "     proisagg = FALSE "
+                + "GROUP BY "
+                + "     oid, "
+                + "     proname, "
+                + "     prolang, "
+                + "     prosrc, "
+                + "     probody, "
+                + "     prorettype, "
+                + "     proowner, "
+                + "     proallargtypes, "
+                + "     proargmodes, "
+                + "     proargnames, "
+                + "     proarguments, "
+                + "     proargdefaults;";
+        
+        prepStatFunctions = connection.prepareStatement(queryFunctions);
         prepStatLanguages = connection.prepareStatement("SELECT lanname FROM pg_catalog.pg_language WHERE oid = ?");
         prepStatTypes = connection.prepareStatement("SELECT typname FROM pg_catalog.pg_type WHERE oid = ?");
-        prepStatRoles = connection.prepareStatement("SELECT pg_get_userbyid(?) AS rolname");
-        
-        /**
-         * Old seq query:
-         * 
-         * "SELECT s.sequence_name, s.start_value, s.minimum_value, s.maximum_value, s.increment, s.cycle_option, d. "
-                + "FROM information_schema.sequences s JOIN pg_catalog.pg_depend d ON (s.oid = d.objid) "
-                + "WHERE sequence_schema = ?"
-         */
         
         String querySequenceInfo = 
                 "SELECT "
@@ -213,7 +257,7 @@ public class JdbcLoader {
 
         prepStatSequences = connection.prepareStatement(querySequenceInfo);
         prepStatExtensions = connection.prepareStatement("SELECT * FROM pg_catalog.pg_extension");
-        prepStatConstraints = connection.prepareStatement("SELECT conname, contype, conrelid, consrc, conkey, confrelid, confkey FROM pg_catalog.pg_constraint WHERE conrelid = ?");
+        prepStatConstraints = connection.prepareStatement("SELECT conname, contype, conrelid, consrc, conkey, confrelid, confkey, confupdtype, confdeltype, confmatchtype FROM pg_catalog.pg_constraint WHERE conrelid = ?");
         prepStatIndecies = connection.prepareStatement("SELECT i.indexrelid, i.indkey, c.relam, c.relname, c.relnamespace FROM pg_catalog.pg_index i, pg_catalog.pg_class c WHERE i.indrelid = ? AND c.oid = i.indexrelid;");
     }
 
@@ -247,11 +291,6 @@ public class JdbcLoader {
             prepStatTypes.close();
         } catch (Exception e) {
             Log.log(Log.LOG_INFO, "Could not close prepared statement for types", e);
-        }
-        try {
-            prepStatRoles.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for roles", e);
         }
         try {
             prepStatSequences.close();
@@ -290,7 +329,7 @@ public class JdbcLoader {
             s.addView(view);
         }
 //        Log.log(Log.LOG_INFO, "Creating functions from JDBC");
-        prepStatFunctions.setInt(1, getSchemaOidByName(schema));
+        prepStatFunctions.setInt(1, (Integer)getSchemaOidByName(schema));
         res = prepStatFunctions.executeQuery();
         while (res.next()){
             PgFunction function = getFunction(res, schema);
@@ -377,9 +416,64 @@ public class JdbcLoader {
                 definition = definition.concat(")");
                 break;
             case "c":
-                definition = res.getString("consrc");
+                definition = "CHECK (" + res.getString("consrc") + ")";
+                break;
+            case "u":
+                definition = "UNIQUE (";
+                for(int i = 0; i < columnNames.length; i++){
+                    String columnName = columnNames[i];
+                    definition = definition.concat(columnName);
+                    if(i < columnNames.length - 1){
+                        definition = definition.concat(", ");
+                    }
+                }
+                definition = definition.concat(")");
                 break;
         }
+        
+        String matchType = res.getString("confmatchtype");
+        switch (matchType){
+        case "f":
+            definition = definition.concat(" MATCH FULL");
+            break;
+        case "p":
+            definition = definition.concat(" MATCH PARTIAL");
+            break;
+        }
+        
+        String onUpdateAction = res.getString("confupdtype");
+        String onDeleteAction = res.getString("confdeltype");
+        
+        switch(onDeleteAction){
+        case "r":
+            definition = definition.concat(" ON DELETE RESTRICT");
+            break;
+        case "c":
+            definition = definition.concat(" ON DELETE CASCADE");
+            break;
+        case "n":
+            definition = definition.concat(" ON DELETE SET NULL");
+            break;
+        case "d":
+            definition = definition.concat(" ON DELETE SET DEFAULT");
+            break;
+        }
+        
+        switch(onUpdateAction){
+            case "r":
+                definition = definition.concat(" ON UPDATE RESTRICT");
+                break;
+            case "c":
+                definition = definition.concat(" ON UPDATE CASCADE");
+                break;
+            case "n":
+                definition = definition.concat(" ON UPDATE SET NULL");
+                break;
+            case "d":
+                definition = definition.concat(" ON UPDATE SET DEFAULT");
+                break;
+        }
+
         c.setDefinition(definition);
         // set table name
         c.setTableName(tableName);
@@ -518,11 +612,10 @@ public class JdbcLoader {
         // Query PRIVILEGES
         String revokeMaindb = "ALL ON TABLE " + tableName + " TO maindb";
         String revokePublic = "ALL ON TABLE " + tableName + " TO PUBLIC";
-        PgPrivilege p = new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb);
-        t.addPrivilege(p);
-        p = new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic);
-        t.addPrivilege(p);
+        t.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
+        t.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
         res = metaData.getTablePrivileges(null, schema, tableName);
+        
         Map<String, List<String>> privileges = new HashMap<String, List<String>>(10);
         while (res.next()) {
             String grantee = res.getString("GRANTEE");
@@ -538,8 +631,7 @@ public class JdbcLoader {
         for(String grantee : privileges.keySet()){
             for(String priv : privileges.get(grantee)){
                 String privDef = priv + " ON TABLE " + tableName + " TO " + grantee;
-                p = new PgPrivilege(false, privDef, "GRANT " + privDef);
-                t.addPrivilege(p);            
+                t.addPrivilege(new PgPrivilege(false, privDef, "GRANT " + privDef));            
             }
         }
 
@@ -668,7 +760,7 @@ public class JdbcLoader {
     }
     
     private String getAccessMethodNameByOid(int accessMethodOid) {
-        return indexAccesMethodsByOid.get(accessMethodOid);
+        return cachedIndexAccesMethodsByOid.get(accessMethodOid);
     }
 
     /**
@@ -687,8 +779,8 @@ public class JdbcLoader {
         String languageName = getLangNameByOid(res.getInt("prolang"));
         int langFirstOccurenceIndex = definition.indexOf("LANGUAGE " + languageName); 
         String body = definition.substring(langFirstOccurenceIndex);
-        
-        PgFunction f = new PgFunction(res.getString("proname"), "", getSearchPath(schemaName));
+        String functionName = res.getString("proname");
+        PgFunction f = new PgFunction(functionName, "", getSearchPath(schemaName));
         f.setBody(body);
         f.setReturns(getTypeNameByOid(res.getInt("prorettype")));
         f.setOwner(getRoleNameByOid(res.getInt("proowner")));
@@ -697,7 +789,21 @@ public class JdbcLoader {
         if (!arguments.isEmpty()){
             CreateFunctionParser.parseArguments(new Parser("(" + arguments + ")"), f);
         }
-
+        
+        // PRIVILEGES
+        String signatureWithoutDefaults = functionName + "(" + res.getString("proarguments_without_default") + ")";
+        String revokeMaindb = "ALL ON FUNCTION " + signatureWithoutDefaults + " FROM maindb";
+        String revokePublic = "ALL ON FUNCTION " + signatureWithoutDefaults + " FROM PUBLIC";
+        f.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
+        f.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
+        
+        Number [] granteeOids = (Number[])res.getArray("priv_grantees").getArray();
+        String [] privTypes = (String[])res.getArray("priv_types").getArray();
+        for(int i = 0; i < granteeOids.length; i++){
+            String privDefinition = privTypes[i] + " ON FUNCTION " + signatureWithoutDefaults + " TO " + getRoleNameByOid(granteeOids[i]);
+            f.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + definition));
+        }
+        
         return f;
     }
     
@@ -722,7 +828,7 @@ public class JdbcLoader {
     }
     
     private String getSearchPath(String schema){
-        return "SET search_path = " + schema + ", pg_catalog";
+        return "SET search_path = " + schema + ", pg_catalog;";
     }
 
     /**
@@ -790,7 +896,7 @@ public class JdbcLoader {
         return new SimpleEntry<String, String>(schemaName, tableName);
     }
 
-    private int getTableOidByName(String tableName, int schemaOid) throws SQLException{
+    private int getTableOidByName(String tableName, Number schemaOid) throws SQLException{
         String query = "SELECT oid FROM " + DB_TABLE_OF_TABLES + " WHERE relname = '" + tableName + "' AND relnamespace = " + schemaOid + " AND relkind = 'r'";
         Statement stmt = connection.createStatement();
         ResultSet res = stmt.executeQuery(query);
@@ -806,8 +912,8 @@ public class JdbcLoader {
         return tableOid;
     }
 
-    private int getSchemaOidByName(String schema) throws SQLException{
-        return nspByName.get(schema);
+    private Number getSchemaOidByName(String schema){
+        return cachedSchemaByName.get(schema);
     }
     
     private String getLangNameByOid (int langOid) throws SQLException{
@@ -829,21 +935,17 @@ public class JdbcLoader {
         return "";
     }
     
-    private String getRoleNameByOid(int ownerOid) throws SQLException {
-        prepStatRoles.setInt(1, ownerOid);
-        ResultSet res = prepStatRoles.executeQuery();
-        if (res.next()){
-            return res.getString("rolname");
-        }
-        return "";
+    private String getRoleNameByOid(Number ownerOid){
+        return cachedRolesNamesByOid.get(ownerOid);
     }
     
-    private String getScheNameByOid(int schemaOid) throws SQLException {
-        Iterator<Integer> iterOid = nspByName.values().iterator();
-        Iterator<String> iterNames = nspByName.keySet().iterator();
+    private String getScheNameByOid(Number schemaOid){
+        Iterator<Number> iterOid = cachedSchemaByName.values().iterator();
+        Iterator<String> iterNames = cachedSchemaByName.keySet().iterator();
 
         while(iterOid.hasNext() && iterNames.hasNext()){
-            if (iterOid.next() == schemaOid){
+            Number next = iterOid.next();
+            if (next.equals(schemaOid)){
                 return iterNames.next();
             }
             iterNames.next();
