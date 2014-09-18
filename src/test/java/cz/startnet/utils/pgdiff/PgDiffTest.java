@@ -348,7 +348,7 @@ public class PgDiffTest {
      * @throws IOException           Thrown if problem occurred while reading
      *                               expected diff.
      */
-    @Test/*(timeout = 5000)*/
+    @Test(timeout = 5000)
     public void runDiff() throws FileNotFoundException, IOException {
         
         Assume.assumeThat(runDiffIgnoredFiles, not(hasItem(fileNameTemplate)));

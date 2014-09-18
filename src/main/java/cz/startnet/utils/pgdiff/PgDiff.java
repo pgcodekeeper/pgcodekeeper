@@ -736,11 +736,9 @@ public class PgDiff {
         }else if (!objOld.equals(objNew)){
             tempSwitchSearchPath(newSchemaName, searchPathHelper,
                     script);
-            // TODO dependants of objOld??? 
             writeDropSql(script,
                     "-- DEPCY: recreating " + objName + " that is in dependency tree of "
                             + fullStatement.getBareName(), objOld);
-            // TODO instant recreation
             writeCreationSql(script,
                     "-- DEPCY: recreating " + objName + " that is in dependency tree of "
                             + fullStatement.getBareName(), objNew);
