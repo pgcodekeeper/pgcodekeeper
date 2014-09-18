@@ -41,10 +41,19 @@ public class ExceptionNotifier {
      * 
      * @param shell dialog parent. Can be null if showInDialog is false
      */
-    public static void notify(final Throwable source, final String message, final Shell shell, 
+    public static void notify(Throwable source, final String message, final Shell shell, 
             boolean outputToConsole, boolean showInDialog) {
+        if (source == null) {
+            source = new Throwable("Throwable was null at this point!"); //$NON-NLS-1$
+        }
         Log.log(Log.LOG_ERROR, source.getMessage(), source);
         
+        executeNotify(source, message, shell, outputToConsole, showInDialog);
+    }
+
+    private static void executeNotify(final Throwable source,
+            final String message, final Shell shell, boolean outputToConsole,
+            boolean showInDialog) {
         String initialReason = ""; //$NON-NLS-1$
         Throwable t = source.getCause();
         while (t != null){

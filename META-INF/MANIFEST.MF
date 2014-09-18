@@ -36,7 +36,11 @@ Require-Bundle: apgdiff,
  org.eclipse.debug.ui,
  org.eclipse.datatools.sqltools.common.ui,
  org.eclipse.datatools.sqltools.sqlbuilder,
- org.eclipse.datatools.sqltools.sql
+ org.eclipse.datatools.sqltools.sql,
+ org.eclipse.equinox.p2.ui,
+ org.eclipse.equinox.p2.ui.sdk,
+ org.eclipse.equinox.p2.ui.sdk.scheduler,
+ org.eclipse.equinox.p2.touchpoint.natives
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: javax.annotation;version="1.1.0",
  javax.inject;version="1.0.0",
