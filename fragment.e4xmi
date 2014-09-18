@@ -52,8 +52,8 @@
         <children xsi:type="menu:MenuSeparator" xmi:id="_C2xVEObyEeObMIWu8TvBOg" elementId="ru.taximaxim.codekeeper.ui.menuseparator.5"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_u8KYkCnHEeOhQtIacC9DUw" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.0" label="%handledmenuitem.label.13" command="_s6NdACnJEeObfOm2RjyZmw"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_abjvQMx-EeOZIMdXYGGhLA" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.14" label="%handledmenuitem.label.14" command="_iGyVkMx-EeOZIMdXYGGhLA"/>
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_1Cwd8D5ZEeS2be7XLy_KsA" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.19" label="Update" command="_mFz9gD5ZEeS2be7XLy_KsA"/>
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_oKJXUD5aEeS2be7XLy_KsA" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.20" label="Install new" command="_jVJ-UD5aEeS2be7XLy_KsA"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_1Cwd8D5ZEeS2be7XLy_KsA" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.19" label="%handledmenuitem.label.update" command="_mFz9gD5ZEeS2be7XLy_KsA"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_oKJXUD5aEeS2be7XLy_KsA" elementId="ru.taximaxim.codekeeper.ui.handledmenuitem.20" label="%handledmenuitem.label.install" command="_jVJ-UD5aEeS2be7XLy_KsA"/>
       </children>
     </elements>
   </fragments>
