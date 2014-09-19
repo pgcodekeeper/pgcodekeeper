@@ -3,7 +3,10 @@ package ru.taximaxim.codekeeper.ui.perspectives;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.contexts.IContextService;
 
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART_STACK;
 
@@ -36,5 +39,11 @@ public class MainPersp implements IPerspectiveFactory {
         
         bottom.addView(PART.CONSOLE);
         layout.getViewLayout(PART.CONSOLE).setCloseable(false);
+        
+        IContextService contextService = (IContextService) PlatformUI
+                .getWorkbench().getService(IContextService.class);
+        if (contextService != null) {
+            contextService.activateContext(UIConsts.MAIN_CONTEXT);
+        }
     }
 }

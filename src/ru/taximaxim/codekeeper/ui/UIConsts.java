@@ -11,6 +11,7 @@ import org.eclipse.e4.core.contexts.IEclipseContext;
 public interface UIConsts {
 
     String PREF_STORE = PLUGIN_ID.THIS + ".preferenceStore"; //$NON-NLS-1$
+    String MAIN_CONTEXT = "ru.taximaxim.codekeeper.ui.pgCodeKeeper"; //$NON-NLS-1$
     
     interface PLUGIN_ID {
         String JGIT = "org.eclipse.jgit"; //$NON-NLS-1$
