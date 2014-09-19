@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="pgCodeKeeper" uid="ru.taximaxim.codekeeper.product" id="ru.taximaxim.codekeeper.mainapp.product_codekeeper" application="ru.taximaxim.codekeeper.mainapp.application" version="0.5.8.qualifier" useFeatures="false" includeLaunchers="true">
+<product name="pgCodeKeeper" uid="ru.taximaxim.codekeeper.product" id="ru.taximaxim.codekeeper.mainapp.product_codekeeper" application="ru.taximaxim.codekeeper.mainapp.application" version="0.6.0.qualifier" useFeatures="false" includeLaunchers="true">
+
 
    <configIni use="default">
    </configIni>
@@ -15,6 +16,7 @@
 
    <windowImages/>
 
+
    <launcher name="pgcodekeeper">
       <linux icon="icons/product.xpm"/>
       <solaris/>
@@ -24,8 +26,10 @@
       </win>
    </launcher>
 
+
    <vm>
    </vm>
+
 
    <plugins>
       <plugin id="apgdiff"/>
@@ -180,6 +184,10 @@
       <plugin id="org.eclipse.equinox.common"/>
       <plugin id="org.eclipse.equinox.ds"/>
       <plugin id="org.eclipse.equinox.event"/>
+      <plugin id="org.eclipse.equinox.frameworkadmin"/>
+      <plugin id="org.eclipse.equinox.frameworkadmin.equinox"/>
+      <plugin id="org.eclipse.equinox.frameworkadmin.equinox.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.frameworkadmin.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.launcher"/>
       <plugin id="org.eclipse.equinox.launcher.gtk.linux.x86" fragment="true"/>
       <plugin id="org.eclipse.equinox.launcher.gtk.linux.x86.nl_ru" fragment="true"/>
@@ -187,10 +195,6 @@
       <plugin id="org.eclipse.equinox.launcher.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.launcher.win32.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.equinox.launcher.win32.win32.x86_64" fragment="true"/>
-      <plugin id="org.eclipse.equinox.frameworkadmin"/>
-      <plugin id="org.eclipse.equinox.frameworkadmin.equinox"/>
-      <plugin id="org.eclipse.equinox.frameworkadmin.equinox.nl_ru" fragment="true"/>
-      <plugin id="org.eclipse.equinox.frameworkadmin.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.p2.artifact.repository"/>
       <plugin id="org.eclipse.equinox.p2.artifact.repository.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.p2.core"/>
