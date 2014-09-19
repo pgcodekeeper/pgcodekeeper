@@ -33,6 +33,7 @@ import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -260,7 +261,7 @@ public class JdbcLoader {
         prepStatSequences = connection.prepareStatement(querySequenceInfo);
         prepStatExtensions = connection.prepareStatement("SELECT * FROM pg_catalog.pg_extension");
         prepStatConstraints = connection.prepareStatement("SELECT conname, contype, conrelid, consrc, conkey, confrelid, confkey, confupdtype, confdeltype, confmatchtype FROM pg_catalog.pg_constraint WHERE conrelid = ?");
-        prepStatIndecies = connection.prepareStatement("SELECT i.indexrelid, i.indkey, c.relam, c.relname, c.relnamespace FROM pg_catalog.pg_index i, pg_catalog.pg_class c WHERE i.indrelid = ? AND c.oid = i.indexrelid;");
+        prepStatIndecies = connection.prepareStatement("SELECT i.indexrelid, i.indkey, i.indisunique, i.indexprs, c.relam, c.relname, c.relnamespace, c.relowner FROM pg_catalog.pg_index i, pg_catalog.pg_class c WHERE i.indrelid = ? AND c.oid = i.indexrelid;");
     }
 
     private void closeResources() {
@@ -755,10 +756,22 @@ public class JdbcLoader {
         }
         if (columnNames.length > 0){
             definition = definition.concat(")");
+        }else{
+            definition = definition.concat(res.getString("indexprs"));
         }
         i.setDefinition(definition);
+        i.setUnique(res.getBoolean("indisunique"));
+        setOwner(i, res.getInt("relowner"));
         
         return i;
+    }
+    
+    private void setOwner(PgStatement statement, int ownerOid){
+        setOwner(statement, getRoleNameByOid(ownerOid));
+    }
+    
+    private void setOwner(PgStatement statement, String ownerName){
+        statement.setOwner(ownerName);
     }
     
     private String getAccessMethodNameByOid(int accessMethodOid) {
@@ -807,7 +820,7 @@ public class JdbcLoader {
         }
         
         // OWNER
-        f.setOwner(getRoleNameByOid(res.getInt("proowner")));
+        setOwner(f, res.getInt("proowner"));
         
         return f;
     }
