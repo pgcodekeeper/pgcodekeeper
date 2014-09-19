@@ -43,6 +43,7 @@ class GroupFieldsEditor extends FieldEditor {
         gd.horizontalSpan = numColumns;
         btnManage.setLayoutData(gd);
         btnManage.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
                 boolean state = ((Button)e.widget).getSelection();
@@ -59,6 +60,7 @@ class GroupFieldsEditor extends FieldEditor {
             gd.horizontalSpan = numColumns;
             btn.setLayoutData(gd);
             btn.addSelectionListener(new SelectionAdapter() {
+                
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     setManageButtonSelection(((Button)e.widget).getSelection());
@@ -87,7 +89,6 @@ class GroupFieldsEditor extends FieldEditor {
     }
     /**
      * Устанавливает статус управляющего чекбокса в зависимости от выбора элементов
-     * @param state
      */
     private void setManageButtonSelection(boolean state) {
         boolean existChecked = false;
@@ -118,12 +119,5 @@ class GroupFieldsEditor extends FieldEditor {
     @Override
     public int getNumberOfControls() {
         return prefNames.size() + 1;
-    }
-    @Override
-    public void dispose() {
-        prefNames.clear();
-        buttons.clear();
-        btnManage = null;
-        super.dispose();
     }
 }

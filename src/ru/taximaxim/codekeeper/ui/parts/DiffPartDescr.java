@@ -153,7 +153,8 @@ public class DiffPartDescr {
                         Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
                         differ, dbSource.getDbObject().flatten(), 
                         mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY));
-                dialog.setDangerStatements(mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
+                dialog.setDangerStatements(
+                        mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
                         mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
                         mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT));
                 if (btnDb.getSelection()) {

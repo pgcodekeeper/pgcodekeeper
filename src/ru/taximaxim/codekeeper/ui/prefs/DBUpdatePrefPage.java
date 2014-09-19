@@ -35,10 +35,9 @@ public class DBUpdatePrefPage extends FieldEditorPreferencePage implements
         pref.put(DB_UPDATE_PREF.DROP_TABLE_STATEMENT, Messages.dBUpdatePrefPage_drop_table);
         pref.put(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT, Messages.dBUpdatePrefPage_alter_column_statement);
         pref.put(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT, Messages.dBUpdatePrefPage_drop_column_statement);
-        GroupFieldsEditor gfe = new GroupFieldsEditor(pref, Messages.dBUpdatePrefPage_set_warning_when_next_statements_present,getFieldEditorParent());
+        GroupFieldsEditor gfe = new GroupFieldsEditor(pref,
+                Messages.dBUpdatePrefPage_set_warning_when_next_statements_present,
+                getFieldEditorParent());
         addField(gfe);
     }
-
 }
-
-

@@ -27,7 +27,5 @@ public class CommitPrefPage extends FieldEditorPreferencePage implements
                 COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT, Messages.generalPrefPage_use_depcy_on_commit_page,
                 FileFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());
         addField(useDepcyCommit);
-
     }
-
 }
