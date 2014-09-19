@@ -18,6 +18,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -28,6 +29,7 @@ public class Differ implements IRunnableWithProgress {
     private boolean finished;
     private final boolean needTwoWay;
     private String diffDirect, diffReverse;
+    private PgDiffScript script;
 
     private PgDatabase sourceDbFull;
     private PgDatabase targetDbFull;
@@ -92,6 +94,14 @@ public class Differ implements IRunnableWithProgress {
         checkFinished();
         return diffReverse;
     }
+
+    /**
+     * @return the script
+     */
+    public PgDiffScript getScript() {
+        checkFinished();
+        return script;
+    }
     
     private void checkFinished() {
         if(!finished) {
@@ -120,7 +130,7 @@ public class Differ implements IRunnableWithProgress {
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
         PrintWriter writer = new UnixPrintWriter(diffOut, true);
         
-        PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
+        script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
                 dbSource, dbTarget, sourceDbFull, targetDbFull, 
                 additionalDepciesSource, additionalDepciesTarget);
         writer.flush();

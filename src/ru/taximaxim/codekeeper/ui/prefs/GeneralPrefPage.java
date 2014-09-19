@@ -39,14 +39,5 @@ public class GeneralPrefPage extends FieldEditorPreferencePage
                 PREF.OPEN_LAST_ON_START, Messages.generalPrefPage_open_last_project_on_startup,
                 FileFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());
         addField(openLast);
-        
-        BooleanFieldEditor useDepcyCommit = new BooleanFieldEditor(
-                PREF.CONSIDER_DEPCY_IN_COMMIT, Messages.generalPrefPage_use_depcy_on_commit_page,
-                FileFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());
-        addField(useDepcyCommit);
-        
-        BooleanFieldEditor usePsqlDepcy = new BooleanFieldEditor(PREF.USE_PSQL_DEPCY,
-                Messages.generalPrefPage_use_psql_depcy_on_generating_script, getFieldEditorParent());
-        addField(usePsqlDepcy);
     }
 }

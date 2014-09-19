@@ -19,13 +19,16 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -69,6 +72,10 @@ public class SqlScriptDialog extends MessageDialog {
     private final List<Entry<PgStatement, PgStatement>> oldDepcy;
     private List<PgStatement> objList;
     private final boolean usePsqlDepcy;
+    private boolean searchForDropTable;
+    private boolean searchForAlterColumn;
+    private boolean searchForDropColumn;
+    private Color background;
     
     private String dbHost;
     private String dbPort;
@@ -91,6 +98,14 @@ public class SqlScriptDialog extends MessageDialog {
         this.dbUser = dbUser;
         this.dbPass = dbPass;
         this.dbPort = dbPort;
+    }
+    
+    public void setDangerStatements(boolean searchForDropTable, 
+            boolean searchForAlterColumn,
+            boolean searchForDropColumn) {
+        this.searchForDropTable = searchForDropTable;
+        this.searchForAlterColumn = searchForAlterColumn;
+        this.searchForDropColumn = searchForDropColumn;
     }
     
     private String getReplacedString() {
@@ -186,6 +201,24 @@ public class SqlScriptDialog extends MessageDialog {
                 .getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         txtCommand.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
+        getShell().addListener(SWT.Activate, new Listener() {
+            
+            @Override
+            public void handleEvent(Event event) {
+                getShell().removeListener(SWT.Activate, this);
+                
+                if (differ.getScript().isDangerDdl(!searchForDropColumn,
+                        !searchForAlterColumn, !searchForDropTable)) {
+                    if (showDangerWarning() == SWT.OK) {
+                        background = getShell().getDisplay().getSystemColor(SWT.COLOR_CYAN);
+                        sqlEditor.getTextWidget().setBackground(background);
+                    } else {
+                        close();
+                    }
+                }
+            }
+        });
+        
         return parent;
     }
 
@@ -195,6 +228,9 @@ public class SqlScriptDialog extends MessageDialog {
         sqlEditor.setEditable(true);
         sqlEditor.setDocument(new Document(differ.getDiffDirect()));
         sqlEditor.activateAutocomplete();
+        if (background != null) {
+            sqlEditor.getTextWidget().setBackground(background);
+        }
         
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
@@ -202,6 +238,14 @@ public class SqlScriptDialog extends MessageDialog {
         sqlEditor.getControl().setLayoutData(gd);
     }
     
+    private int showDangerWarning() {
+        MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING
+                | SWT.OK | SWT.CANCEL);
+        mb.setText(Messages.sqlScriptDialog_warning);
+        mb.setMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data);
+        return mb.open();
+    }
+
     @Override
     protected void buttonPressed(int buttonId) {
         final String textRetrieved = sqlEditor.getDocument().get();
@@ -327,8 +371,21 @@ public class SqlScriptDialog extends MessageDialog {
             mb.setMessage(mb.getMessage() + System.lineSeparator() +
                     Messages.SqlScriptDialog_add_it_to_script);
             if (mb.open() == SWT.OK) {
+                List<Entry<PgStatement, PgStatement>> saveToRestore 
+                    = new ArrayList<>(differ.getAdditionalDepciesSource()); 
                 differ.addAdditionalDepciesSource(depcyToAdd);
-                differ.runProgressMonitorDiffer(getParentShell());
+                differ.runProgressMonitorDiffer(getShell());
+
+                if (differ.getScript().isDangerDdl(!searchForDropColumn, !searchForAlterColumn, !searchForDropTable)) {
+                    if (showDangerWarning() != SWT.OK) {
+                        differ.setAdditionalDepciesSource(saveToRestore);
+                        return;
+                    } else {
+                        background = getShell().getDisplay().getSystemColor(
+                                SWT.COLOR_CYAN);
+                        sqlEditor.getTextWidget().setBackground(background);
+                    }
+                }
                 sqlEditor.setDocument(new Document(differ.getDiffDirect()));
                 sqlEditor.refresh();
             }

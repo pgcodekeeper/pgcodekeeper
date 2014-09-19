@@ -57,6 +57,7 @@ public class Messages extends NLS {
     public static String exceptionNotifier_unhandled_exception;
     public static String partContextInjector_empty_values_map;
     public static String partContextInjector_only_class_and_string_are_allowed;
+    public static String sqlScriptDialog_continue;
     public static String sqlScriptDialog_Enter_cmd_to_roll_on_sql_script;
     public static String sqlScriptDialog_error_saving_script_to_file;
     public static String sqlScriptDialog_error_saving_script_to_tmp_file;
@@ -64,12 +65,14 @@ public class Messages extends NLS {
     public static String sqlScriptDialog_psql_dependencies;
     public static String sqlScriptDialog_run_script;
     public static String sqlScriptDialog_save_as;
+    public static String sqlScriptDialog_script_contains_statements_that_may_modify_data;
     public static String sqlScriptDialog_script_execution_interrupted;
     public static String sqlScriptDialog_script_interrupted_by_user;
     public static String sqlScriptDialog_script_saved_to_file;
     public static String sqlScriptDialog_stop_script;
     public static String sqlScriptDialog_stop_script_before_closing_dialog;
     public static String sqlScriptDialog_this_dependencies_have_been_added_already_check_order;
+    public static String sqlScriptDialog_warning;
     public static String stdStreamRedirector_completed_with_code;
     public static String manualDepciesDialog_dependant_dependency;
     public static String manualDepciesDialog_depends_on;
@@ -300,7 +303,10 @@ public class Messages extends NLS {
     // ui.prefs
     public static String dbStorePrefPage_clear_db_store;
     public static String dbStorePrefPage_edit_db_store;
-
+    public static String dBUpdatePrefPage_alter_column_statement;
+    public static String dBUpdatePrefPage_drop_column_statement;
+    public static String dBUpdatePrefPage_drop_table;
+    public static String dBUpdatePrefPage_set_warning_when_next_statements_present;
     public static String DiffTableViewer_selected;
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
     public static String generalPrefPage_open_last_project_on_startup;

@@ -42,6 +42,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART_STACK;
@@ -159,8 +160,11 @@ public class DiffPartDescr {
                         SqlScriptDialog.INFORMATION, Messages.diffPartDescr_diff_script,
                         Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
                         differ, dbSource.getDbObject().flatten(), 
-                        mainPrefs.getBoolean(PREF.USE_PSQL_DEPCY));
-                
+                        mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY));
+                dialog.setDangerStatements(
+                        mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
+                        mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
+                        mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT));
                 if (btnDb.getSelection()) {
                     dialog.setDbParams(dbSrc.txtDbHost.getText(),
                             dbSrc.txtDbPort.getText(), dbSrc.txtDbName.getText(),
