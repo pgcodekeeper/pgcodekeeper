@@ -51,8 +51,6 @@ public class JdbcLoader {
     private final int TRIGGER_TYPE_INSTEAD = 1 << 6;
     
     
-    private final String DB_TABLE_OF_TABLES = "pg_catalog.pg_class";
-
     /**
      * Prepared statements to be executed
      */
@@ -65,6 +63,8 @@ public class JdbcLoader {
     private PreparedStatement prepStatExtensions;
     private PreparedStatement prepStatConstraints;
     private PreparedStatement prepStatIndecies;
+    private PreparedStatement prepStatColumnsOfSchema;
+    private PreparedStatement prepStatIndexColumnDefault;
     
     // TODO HashMap caching of type, language
     
@@ -91,6 +91,7 @@ public class JdbcLoader {
     private Map<String, Number> cachedSchemaByName = new HashMap<String, Number>();
     private Map<Number, String> cachedIndexAccesMethodsByOid = new HashMap<Number, String>();
     private Map<Integer, String> cachedRolesNamesByOid = new HashMap<Integer, String>();
+    private Map<Integer, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<Integer, Map<Integer,String>>();
     
     private String host;
     private int port;
@@ -129,6 +130,7 @@ public class JdbcLoader {
                 if (schemaName.equals("pg_catalog") || schemaName.equals("information_schema")){
                     continue;
                 }
+                prepareDataForSchema(getSchemaOidByName(schemaName));
                 PgSchema schema = getSchema(res.getString("TABLE_SCHEM"));
                 
                 if (schemaName.equals("public")){
@@ -198,7 +200,6 @@ public class JdbcLoader {
                 + "     prosrc, "
                 + "     pg_get_functiondef(oid) AS probody, "
                 + "     prorettype, "
-                + "     proowner, "
                 + "     proallargtypes, "
                 + "     proargmodes, "
                 + "     proargnames, "
@@ -262,6 +263,8 @@ public class JdbcLoader {
         prepStatExtensions = connection.prepareStatement("SELECT * FROM pg_catalog.pg_extension");
         prepStatConstraints = connection.prepareStatement("SELECT conname, contype, conrelid, consrc, conkey, confrelid, confkey, confupdtype, confdeltype, confmatchtype FROM pg_catalog.pg_constraint WHERE conrelid = ?");
         prepStatIndecies = connection.prepareStatement("SELECT i.indexrelid, i.indkey, i.indisunique, i.indexprs, c.relam, c.relname, c.relnamespace, c.relowner FROM pg_catalog.pg_index i, pg_catalog.pg_class c WHERE i.indrelid = ? AND c.oid = i.indexrelid;");
+        prepStatColumnsOfSchema = connection.prepareStatement("SELECT a.attname, a.attnum, a.attrelid FROM pg_catalog.pg_attribute a JOIN pg_catalog.pg_class c ON c.oid = a.attrelid WHERE c.relnamespace = ? AND c.relkind IN ('i', 'r') ORDER BY a.attrelid;");
+        prepStatIndexColumnDefault = connection.prepareStatement("SELECT pg_get_indexdef(?, ?, true) AS indexColumnDefault;");
     }
 
     private void closeResources() {
@@ -377,17 +380,17 @@ public class JdbcLoader {
         c = new PgConstraint(constraintName, "", getSearchPath(schemaName));
         Array arr = res.getArray("conkey");
         
-        String[] columnNames = getColumnNames((Number[])arr.getArray(), res.getInt("conrelid"));
+        List<String> columnNames = getColumnNames((Number[])arr.getArray(), res.getInt("conrelid"));
         switch (conType){
             case "f":
                 c = new PgForeignKey(constraintName, "", getSearchPath(schemaName));
-                String[] referencedColumnNames = getColumnNames((Number[])res.getArray("confkey").getArray(), res.getInt("confrelid"));
+                List<String> referencedColumnNames = getColumnNames((Number[])res.getArray("confkey").getArray(), res.getInt("confrelid"));
                 definition = "FOREIGN KEY (";
                 // TODO code reuse
-                for(int i = 0; i < columnNames.length; i++){
-                    String columnName = columnNames[i];
+                for(int i = 0; i < columnNames.size(); i++){
+                    String columnName = columnNames.get(i);
                     definition = definition.concat(columnName);
-                    if(i < columnNames.length - 1){
+                    if(i < columnNames.size() - 1){
                         definition = definition.concat(", ");
                     }
                 }
@@ -398,10 +401,10 @@ public class JdbcLoader {
                 }
                 definition = definition.concat(") REFERENCES " + schemaPrefix + referencedTableName.getValue() + "(");
                 
-                for(int i = 0; i < referencedColumnNames.length; i++){
-                    String columnName = referencedColumnNames[i];
+                for(int i = 0; i < referencedColumnNames.size(); i++){
+                    String columnName = referencedColumnNames.get(i);
                     definition = definition.concat(columnName);
-                    if(i < referencedColumnNames.length - 1){
+                    if(i < referencedColumnNames.size() - 1){
                         definition = definition.concat(", ");
                     }
                 }
@@ -409,10 +412,10 @@ public class JdbcLoader {
                 break;
             case "p":
                 definition = "PRIMARY KEY (";
-                for(int i = 0; i < columnNames.length; i++){
-                    String columnName = columnNames[i];
+                for(int i = 0; i < columnNames.size(); i++){
+                    String columnName = columnNames.get(i);
                     definition = definition.concat(columnName);
-                    if(i < columnNames.length - 1){
+                    if(i < columnNames.size() - 1){
                         definition = definition.concat(", ");
                     }
                 }
@@ -423,10 +426,10 @@ public class JdbcLoader {
                 break;
             case "u":
                 definition = "UNIQUE (";
-                for(int i = 0; i < columnNames.length; i++){
-                    String columnName = columnNames[i];
+                for(int i = 0; i < columnNames.size(); i++){
+                    String columnName = columnNames.get(i);
                     definition = definition.concat(columnName);
-                    if(i < columnNames.length - 1){
+                    if(i < columnNames.size() - 1){
                         definition = definition.concat(", ");
                     }
                 }
@@ -728,7 +731,8 @@ public class JdbcLoader {
     private PgIndex getIndex(ResultSet res, String tableName, int tableOid) throws SQLException {
         String schemaName = getScheNameByOid(res.getInt("relnamespace"));
         
-        PgIndex i = new PgIndex(res.getString("relname"), "", getSearchPath(schemaName));
+        String indexName = res.getString("relname");
+        PgIndex i = new PgIndex(indexName, "", getSearchPath(schemaName));
         i.setTableName(tableName);
         
         String definition = "USING ";
@@ -736,29 +740,40 @@ public class JdbcLoader {
         definition = definition.concat(getAccessMethodNameByOid(res.getInt("relam")));
         
         // get columns numbers
-        String columnsString = res.getString("indkey");
-        Scanner sc = new Scanner(columnsString);
+        Scanner sc = new Scanner(res.getString("indkey"));
         List<Integer> columnsNumbers = new ArrayList<Integer>(2);
         while(sc.hasNext()){
             columnsNumbers.add(Integer.valueOf(sc.next()));
         }
         sc.close();
         
-        String [] columnNames = getColumnNames(columnsNumbers.toArray(new Number[columnsNumbers.size()]), tableOid);
-        if (columnNames.length > 0){
-            definition = definition.concat(" (");
-        }
-        for(int j = 0; j < columnNames.length; j++){
-            definition = definition.concat(columnNames[j]);
-            if (j < columnNames.length - 1){
-                definition = definition.concat(", ");
+        List<String> columnNames = getColumnNames(columnsNumbers.toArray(new Number[columnsNumbers.size()]), tableOid);
+        definition = definition.concat(" (");
+        for(int j = 0; j < columnsNumbers.size(); j++){
+            int colNum = columnsNumbers.get(j);
+            String columnDefinition = "";
+            if (colNum == 0){
+                prepStatIndexColumnDefault.setInt(1, getTableOidByName(indexName, getSchemaOidByName(schemaName)));
+                prepStatIndexColumnDefault.setInt(2, j + 1);
+                try(ResultSet res2 = prepStatIndexColumnDefault.executeQuery()){
+                    if (res2.next()){
+                        definition = definition.concat(res2.getString("indexColumnDefault"));
+                    }
+                }
+                if (j < columnNames.size() - 1){
+                    definition = definition.concat(", ");
+                }
+            }else if (colNum > 0) {
+                definition = definition.concat(columnNames.get(j));
+                if (j < columnNames.size() - 1){
+                    definition = definition.concat(", ");
+                }
+            }else{
+                continue;
             }
         }
-        if (columnNames.length > 0){
-            definition = definition.concat(")");
-        }else{
-            definition = definition.concat(res.getString("indexprs"));
-        }
+        definition = definition.concat(")");
+        
         i.setDefinition(definition);
         i.setUnique(res.getBoolean("indisunique"));
         setOwner(i, res.getInt("relowner"));
@@ -798,7 +813,6 @@ public class JdbcLoader {
         PgFunction f = new PgFunction(functionName, "", getSearchPath(schemaName));
         f.setBody(body);
         f.setReturns(getTypeNameByOid(res.getInt("prorettype")));
-        f.setOwner(getRoleNameByOid(res.getInt("proowner")));
 
         String arguments = res.getString("proarguments");
         if (!arguments.isEmpty()){
@@ -849,6 +863,32 @@ public class JdbcLoader {
         return "SET search_path = " + schema + ", pg_catalog;";
     }
 
+    private void prepareDataForSchema(Number schemaOid) throws SQLException{
+        // fill in map with columns of tables and indecies of schema
+        prepStatColumnsOfSchema.setInt(1, (Integer)schemaOid);
+        try(ResultSet res = prepStatColumnsOfSchema.executeQuery();){
+            cachedColumnNamesByTableOid.clear();
+            Integer previousTableOid = 0;
+            Map<Integer, String> previousMap = null;
+            while (res.next()){
+                Integer columnNumber = res.getInt("attnum");
+                if (columnNumber < 1){
+                    continue;
+                }
+                Integer tableOid = res.getInt("attrelid");
+                String columnName = res.getString("attname");
+                if (!previousTableOid.equals(tableOid)){
+                    previousTableOid = tableOid;
+                    previousMap = new HashMap<Integer, String>();
+                    previousMap.put(columnNumber, columnName);
+                    cachedColumnNamesByTableOid.put(tableOid, previousMap);
+                }else{
+                    previousMap.put(columnNumber, columnName);                
+                }
+            }
+        }
+    }
+    
     /**
      * Returns an array of column names, resolved from conCols Array object 
      * by pg_attribute.attnum and tableOid
@@ -857,8 +897,8 @@ public class JdbcLoader {
      * @param tableOid  Oid of table - owner of these columns
      * @return
      */
-    private String [] getColumnNames(Number[] cols, int tableOid) throws SQLException{
-        String query = "SELECT attname FROM pg_catalog.pg_attribute WHERE attrelid = " + tableOid + " AND attnum IN (";
+    private List<String> getColumnNames(Number[] cols, int tableOid) throws SQLException{
+        /*String query = "SELECT attname FROM pg_catalog.pg_attribute WHERE attrelid = " + tableOid + " AND attnum IN (";
         for(int i = 0; i < cols.length; i++){
             Number colNum = cols[i];
             query = query.concat(colNum.toString());
@@ -872,7 +912,13 @@ public class JdbcLoader {
         while(res.next()){
             columnNames.add(res.getString("attname"));
         }
-        return columnNames.toArray(new String[columnNames.size()]);
+        return columnNames.toArray(new String[columnNames.size()]);*/
+        Map <Integer, String> tableColumns = cachedColumnNamesByTableOid.get(tableOid);
+        List<String> result = new ArrayList<String>(5);
+        for(Number n : cols){
+            result.add(tableColumns.get(n.intValue()));
+        }
+        return result;
     }
 
     private String getFunctionNameByOid(int functionOid) throws SQLException{
@@ -914,8 +960,9 @@ public class JdbcLoader {
         return new SimpleEntry<String, String>(schemaName, tableName);
     }
 
+    // TODO cache it too?
     private int getTableOidByName(String tableName, Number schemaOid) throws SQLException{
-        String query = "SELECT oid FROM " + DB_TABLE_OF_TABLES + " WHERE relname = '" + tableName + "' AND relnamespace = " + schemaOid + " AND relkind = 'r'";
+        String query = "SELECT oid FROM pg_catalog.pg_class WHERE relname = '" + tableName + "' AND relnamespace = " + schemaOid + " AND relkind IN ('r', 'i')";
         Statement stmt = connection.createStatement();
         ResultSet res = stmt.executeQuery(query);
         int tableOid = 0;
