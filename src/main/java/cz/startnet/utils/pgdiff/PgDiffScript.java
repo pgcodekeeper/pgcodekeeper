@@ -29,7 +29,7 @@ public class PgDiffScript {
     public boolean isDangerDdl(boolean ignoreDropCol, boolean ignoreAlterCol,
             boolean ignoreDropTable) {
         // no need to traverse the list if all ignores are set
-        if (!ignoreDropCol && !ignoreAlterCol && !ignoreDropTable) {
+        if (ignoreDropCol && ignoreAlterCol && ignoreDropTable) {
             return false;
         }
         
