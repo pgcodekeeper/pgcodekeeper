@@ -194,11 +194,12 @@ public class PgDiff {
             script.addStatement("\nCOMMIT TRANSACTION;");
         }
 
-        if (arguments.isOutputIgnoredStatements()) {
-            addIgnoredStatements(oldDatabase, "OriginalDatabaseIgnoredStatements", script);
-            addIgnoredStatements(newDatabase, "NewDatabaseIgnoredStatements", script);
-        }
         script.printStatements(writer);
+        
+        if (arguments.isOutputIgnoredStatements()) {
+            addIgnoredStatements(oldDatabase, "OriginalDatabaseIgnoredStatements", writer);
+            addIgnoredStatements(newDatabase, "NewDatabaseIgnoredStatements", writer);
+        }
         return script;
     }
 
@@ -209,15 +210,17 @@ public class PgDiff {
      * @param script script to output statements
      */
     private static void addIgnoredStatements(PgDatabase database,
-            String resourceName, PgDiffScript script) {
+            String resourceName, PrintWriter writer) {
         if (!database.getIgnoredStatements().isEmpty()) {
-            script.addStatement("\n/* " + Resources.getString(resourceName));
+            writer.println();
+            writer.print("/* ");
+            writer.println(Resources.getString(resourceName));
 
-            for (final String statement :
-                    database.getIgnoredStatements()) {
-                script.addStatement("\n" + statement);
+            for (final String statement : database.getIgnoredStatements()) {
+                writer.println();
+                writer.println(statement);
             }
-            script.addStatement("*/");
+            writer.println("*/");
         }
     }
     

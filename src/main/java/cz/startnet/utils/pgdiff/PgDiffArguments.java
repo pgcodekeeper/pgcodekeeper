@@ -7,12 +7,10 @@ package cz.startnet.utils.pgdiff;
 
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.SortedMap;
+import java.util.regex.Pattern;
 
-import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatements;
+import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
 
 /**
  * Contains parsed command line arguments.
@@ -510,24 +508,18 @@ public class PgDiffArguments {
                     success = false;
                 }
             } else if ("--allow-danger-ddl".equals(args[i])) {
-                List<String> ignoredDangers = new ArrayList<>();
-                do {
-                    String ignoredDanger = args[++i];
-                    boolean endsWith = ignoredDanger.endsWith(",");
-                    ignoredDanger = ignoredDanger.substring(
-                            0, ignoredDanger.length() - (endsWith ? 1 : 0));
-                    if (ignoredDanger.contains(",")) {
-                        ignoredDangers.addAll(Arrays.asList(ignoredDanger.split(",")));
-                    } else {
-                        ignoredDangers.add(ignoredDanger);
-                    }
-                    
-                    if (!endsWith) {
+                String[] ignores = args[++i].split(Pattern.quote(","));
+                for (String ignoredDanger : ignores) {
+                    DangerStatement dst;
+                    try {
+                        dst = DangerStatement.valueOf(ignoredDanger);
+                    } catch (IllegalArgumentException ex) {
+                        // illegal ignore type
+                        writer.println("Incorrect --allow-danger-ddl option!");
+                        success = false;
                         break;
                     }
-                } while (true); 
-                for (String ignored : ignoredDangers) {
-                    switch (DangerStatements.valueOf(ignored.toUpperCase())) {
+                    switch (dst) {
                     case ALTER_COLUMN:
                         setIgnoreAlterColumn(true);
                         break;

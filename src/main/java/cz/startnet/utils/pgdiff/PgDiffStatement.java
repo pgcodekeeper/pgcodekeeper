@@ -16,18 +16,20 @@ public class PgDiffStatement {
     public enum DiffStatementType {
         DROP, CREATE, OTHER
     }
-    public enum DangerStatements {
-        DROP_TABLE("DROP TABLE"),
-        ALTER_COLUMN("ALTER COLUMN"),
-        DROP_COLUMN("DROP COLUMN");
+    
+    public enum DangerStatement {
+        DROP_TABLE("DROP[\\s]+TABLE"),
+        ALTER_COLUMN("ALTER[\\s]+COLUMN"),
+        DROP_COLUMN("DROP[\\s]+COLUMN");
         
-        private String statementPart;
-        private DangerStatements(String value) {
-            statementPart = value;
+        private final String regex;
+        
+        private DangerStatement(String regex) {
+            this.regex = regex;
         }
-        @Override
-        public String toString() {
-            return statementPart;
+        
+        public String getRegex() {
+            return regex;
         }
     }
     
@@ -44,9 +46,9 @@ public class PgDiffStatement {
         this.statement = statement;
     }
     
-    public boolean isStatementDanger(DangerStatements dst) {
-        Pattern ptrn = Pattern.compile("^(.*" + dst + ".+)+$", Pattern.CASE_INSENSITIVE 
-                | Pattern.DOTALL);
+    public boolean isDangerStatement(DangerStatement dst) {
+        Pattern ptrn = Pattern.compile("^(.*" + dst.getRegex() + ".+)+$",
+                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
         return ptrn.matcher(statement).matches();
     }
     
