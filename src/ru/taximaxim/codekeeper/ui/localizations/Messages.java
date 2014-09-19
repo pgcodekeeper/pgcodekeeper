@@ -57,7 +57,6 @@ public class Messages extends NLS {
     public static String exceptionNotifier_unhandled_exception;
     public static String partContextInjector_empty_values_map;
     public static String partContextInjector_only_class_and_string_are_allowed;
-    public static String sqlScriptDialog_continue;
     public static String sqlScriptDialog_Enter_cmd_to_roll_on_sql_script;
     public static String sqlScriptDialog_error_saving_script_to_file;
     public static String sqlScriptDialog_error_saving_script_to_tmp_file;

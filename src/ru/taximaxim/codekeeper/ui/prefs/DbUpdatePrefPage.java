@@ -11,10 +11,10 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class DBUpdatePrefPage extends FieldEditorPreferencePage implements
+public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         IWorkbenchPreferencePage {
 
-    public DBUpdatePrefPage() {
+    public DbUpdatePrefPage() {
         super(GRID);
     }
 

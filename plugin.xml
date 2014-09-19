@@ -56,7 +56,7 @@
       </page>
       <page
             category="ru.taximaxim.codekeeper.ui.general"
-            class="ru.taximaxim.codekeeper.ui.prefs.DBUpdatePrefPage"
+            class="ru.taximaxim.codekeeper.ui.prefs.DbUpdatePrefPage"
             id="ru.taximaxim.codekeeper.ui.dbupdateprefpage"
             name="%page.name.db_update_pref_page">
       </page>
