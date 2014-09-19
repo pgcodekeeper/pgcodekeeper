@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff;
 
+import java.util.regex.Pattern;
+
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 /**
@@ -15,6 +17,22 @@ public class PgDiffStatement {
         DROP, CREATE, OTHER
     }
     
+    public enum DangerStatement {
+        DROP_TABLE("DROP[\\s]+TABLE"),
+        ALTER_COLUMN("ALTER[\\s]+COLUMN"),
+        DROP_COLUMN("DROP[\\s]+COLUMN");
+        
+        private final String regex;
+        
+        private DangerStatement(String regex) {
+            this.regex = regex;
+        }
+        
+        public String getRegex() {
+            return regex;
+        }
+    }
+    
     public final DiffStatementType type;
     public final String objname;
     public final String statement;
@@ -26,6 +44,12 @@ public class PgDiffStatement {
         this.type = type;
         this.objname = (obj == null) ? null : obj.getQualifiedName();
         this.statement = statement;
+    }
+    
+    public boolean isDangerStatement(DangerStatement dst) {
+        Pattern ptrn = Pattern.compile("^(.*" + dst.getRegex() + ".+)+$",
+                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        return ptrn.matcher(statement).matches();
     }
     
     @Override

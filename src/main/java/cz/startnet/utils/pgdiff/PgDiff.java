@@ -53,13 +53,13 @@ public class PgDiff {
      * @param writer    writer the output should be written to
      * @param arguments object containing arguments settings
      */
-    public static void createDiff(final PrintWriter writer,
+    public static PgDiffScript createDiff(final PrintWriter writer,
             final PgDiffArguments arguments) {
         PgDatabase dbOld = loadDatabaseSchema(
                 arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
         PgDatabase dbNew = loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments); 
-        diffDatabaseSchemas(writer, arguments, dbOld, dbNew, dbOld, dbNew);
+        return diffDatabaseSchemas(writer, arguments, dbOld, dbNew, dbOld, dbNew);
     }
 
     /**
@@ -129,14 +129,14 @@ public class PgDiff {
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
-    public static void diffDatabaseSchemas(PrintWriter writer,
+    public static PgDiffScript diffDatabaseSchemas(PrintWriter writer,
             PgDiffArguments arguments, PgDatabase oldDatabase, PgDatabase newDatabase,
             PgDatabase oldDbFull, PgDatabase newDbFull) {
-        diffDatabaseSchemasAdditionalDepcies(writer, arguments,
+        return diffDatabaseSchemasAdditionalDepcies(writer, arguments,
                 oldDatabase, newDatabase, oldDbFull, newDbFull, null, null);
     }
     
-    public static void diffDatabaseSchemasAdditionalDepcies(PrintWriter writer,
+    public static PgDiffScript diffDatabaseSchemasAdditionalDepcies(PrintWriter writer,
             PgDiffArguments arguments, PgDatabase oldDatabase, PgDatabase newDatabase,
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
@@ -145,8 +145,10 @@ public class PgDiff {
         oldDepcyGraph = newDepcyGraph = null;
         depcyOld = depcyNew = null;
         
+        PgDiffScript script = new PgDiffScript();
+        
         if (arguments.isAddTransaction()) {
-            writer.println("START TRANSACTION;");
+            script.addStatement("START TRANSACTION;");
         }
 
         // temp solution
@@ -174,19 +176,14 @@ public class PgDiff {
                 || oldDatabase.getComment() != null
                 && newDatabase.getComment() != null
                 && !oldDatabase.getComment().equals(newDatabase.getComment())) {
-            writer.println();
-            writer.print("COMMENT ON DATABASE current_database() IS ");
-            writer.print(newDatabase.getComment());
-            writer.println(';');
-            writer.println();
+            script.addStatement("\nCOMMENT ON DATABASE current_database() IS " +
+                    newDatabase.getComment() + ";");
         } else if (oldDatabase.getComment() != null
                 && newDatabase.getComment() == null) {
-            writer.println();
-            writer.println("COMMENT ON DATABASE current_database() IS NULL;");
-            writer.println();
+            script.addStatement("\nCOMMENT ON DATABASE current_database() IS NULL;");
         }
 
-        PgDiffScript script = new PgDiffScript();
+        
         
         dropOldSchemas(script, arguments, oldDatabase, newDatabase);
         createNewSchemas(script, oldDatabase, newDatabase);
@@ -197,43 +194,39 @@ public class PgDiff {
         
         updateSchemas(script, arguments, oldDatabase, newDatabase);
 
-        script.printStatements(writer);
+        
         
         if (arguments.isAddTransaction()) {
-            writer.println();
-            writer.println("COMMIT TRANSACTION;");
+            script.addStatement("\nCOMMIT TRANSACTION;");
         }
 
+        script.printStatements(writer);
+        
         if (arguments.isOutputIgnoredStatements()) {
-            if (!oldDatabase.getIgnoredStatements().isEmpty()) {
+            addIgnoredStatements(oldDatabase, "OriginalDatabaseIgnoredStatements", writer);
+            addIgnoredStatements(newDatabase, "NewDatabaseIgnoredStatements", writer);
+        }
+        return script;
+    }
+
+    /**
+     * Adds ignored Statements to script
+     * @param database database with ignored statements
+     * @param resourceName resource for localization message
+     * @param script script to output statements
+     */
+    private static void addIgnoredStatements(PgDatabase database,
+            String resourceName, PrintWriter writer) {
+        if (!database.getIgnoredStatements().isEmpty()) {
+            writer.println();
+            writer.print("/* ");
+            writer.println(Resources.getString(resourceName));
+
+            for (final String statement : database.getIgnoredStatements()) {
                 writer.println();
-                writer.print("/* ");
-                writer.println(Resources.getString(
-                        "OriginalDatabaseIgnoredStatements"));
-
-                for (final String statement :
-                        oldDatabase.getIgnoredStatements()) {
-                    writer.println();
-                    writer.println(statement);
-                }
-
-                writer.println("*/");
+                writer.println(statement);
             }
-
-            if (!newDatabase.getIgnoredStatements().isEmpty()) {
-                writer.println();
-                writer.print("/* ");
-                writer.println(
-                        Resources.getString("NewDatabaseIgnoredStatements"));
-
-                for (final String statement :
-                        newDatabase.getIgnoredStatements()) {
-                    writer.println();
-                    writer.println(statement);
-                }
-
-                writer.println("*/");
-            }
+            writer.println("*/");
         }
     }
     
