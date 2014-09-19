@@ -46,13 +46,13 @@ public class ExecutableFileFieldEditor extends FileFieldEditor {
             
             String pathext = System.getenv("PATHEXT"); //$NON-NLS-1$
             if(pathext != null) {
-                for(String ext : pathext.split(pathSep)) {
+                for(String ext : pathext.split(Pattern.quote(pathSep))) {
                     pathExts.add(ext);
                 }
             }
             
             String envVarPath = System.getenv("PATH"); //$NON-NLS-1$
-            for(String subVarPath : envVarPath.split(pathSep)) {
+            for(String subVarPath : envVarPath.split(Pattern.quote(pathSep))) {
                 for(String ext : pathExts) {
                     File fTry = new File(subVarPath, getStringValue() + ext);
                     if(fTry.isFile()) {
