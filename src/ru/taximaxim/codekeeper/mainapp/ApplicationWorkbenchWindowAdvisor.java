@@ -30,6 +30,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
     
     @Override
     public void postWindowCreate() {
+        getWindowConfigurer().getWindow().getShell().setMinimumSize(new Point(800, 600));
         getWindowConfigurer().getWindow().getShell().setMaximized(true);
     }
 }
