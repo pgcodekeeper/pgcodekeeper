@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -87,7 +88,7 @@ public class JdbcLoader {
         }
     };
     
-    private Map<String, Number> cachedSchemaByName = new HashMap<String, Number>();
+    private Map<String, Long> cachedSchemaByName = new HashMap<String, Long>();
     private Map<Number, String> cachedIndexAccesMethodsByOid = new HashMap<Number, String>();
     private Map<Integer, String> cachedRolesNamesByOid = new HashMap<Integer, String>();
     private Map<Integer, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<Integer, Map<Integer,String>>();
@@ -162,7 +163,7 @@ public class JdbcLoader {
             // fill in namespace map
             res = stmnt.executeQuery("SELECT nspname, oid FROM pg_catalog.pg_namespace");
             while(res.next()){
-                cachedSchemaByName.put(res.getString("nspname"), res.getInt("oid"));
+                cachedSchemaByName.put(res.getString("nspname"), res.getLong("oid"));
             }
             res.close();
             
@@ -206,7 +207,7 @@ public class JdbcLoader {
                 + "     pg_get_function_identity_arguments(oid) AS proarguments_without_default, "
                 + "     proargdefaults, "
                 + "     array_agg(acl.grantor) AS priv_grantors, "
-                + "     array_agg(acl.grantee) AS priv_grantees, "
+                + "     array_agg(acl.grantee)::bigint[] AS priv_grantees, "
                 + "     array_agg(acl.privilege_type) AS priv_types, "
                 + "     array_agg(acl.is_grantable) AS priv_grantable "
                 + "FROM "
@@ -237,6 +238,7 @@ public class JdbcLoader {
         String querySequenceInfo = 
                 "SELECT "
                 + "     c.oid AS sequence_oid,"
+                + "     c.relowner,"
                 + "     s.sequence_name,"
                 + "     s.start_value,"
                 + "     s.minimum_value,"
@@ -244,19 +246,36 @@ public class JdbcLoader {
                 + "     s.increment,"
                 + "     s.cycle_option,"
                 + "     (SELECT relnamespace FROM pg_catalog.pg_class WHERE oid = d.refobjid AND relkind = 'r') referenced_schema_oid,"
-                + "     (SELECT relname FROM pg_catalog.pg_class WHERE oid = d.refobjid AND relkind = 'r') referenced_table_name "
+                + "     (SELECT relname FROM pg_catalog.pg_class WHERE oid = d.refobjid AND relkind = 'r') referenced_table_name,"
+                + "     array_agg(acl.grantor) AS priv_grantors,"
+                + "     array_agg(acl.grantee)::bigint[] AS priv_grantees,"
+                + "     array_agg(acl.privilege_type) AS priv_types,"
+                + "     array_agg(acl.is_grantable) AS priv_grantable "
                 + "FROM "
                 + "     information_schema.sequences s,"
                 + "     pg_catalog.pg_class c,"
-                + "     pg_catalog.pg_namespace n, "
-                + "     pg_catalog.pg_depend d"
-                + " WHERE "
+                + "     pg_catalog.pg_namespace n,"
+                + "     pg_catalog.pg_depend d,"
+                + "     aclexplode(relacl) acl "
+                + "WHERE "
                 + "     s.sequence_schema = ? AND "
                 + "     c.relname = s.sequence_name AND "
                 + "     n.oid = c.relnamespace AND "
                 + "     d.objid = c.oid AND "
                 + "     n.nspname = s.sequence_schema "
-                + " ORDER BY sequence_oid";
+                + "GROUP BY "
+                + "     sequence_oid,"
+                + "     relowner,"
+                + "     sequence_name,"
+                + "     start_value,"
+                + "     minimum_value,"
+                + "     maximum_value,"
+                + "     increment,"
+                + "     cycle_option,"
+                + "     referenced_schema_oid,"
+                + "     referenced_table_name "
+                + "ORDER BY "
+                + "     sequence_oid;";
 
         prepStatSequences = connection.prepareStatement(querySequenceInfo);
         prepStatExtensions = connection.prepareStatement("SELECT * FROM pg_catalog.pg_extension");
@@ -334,7 +353,7 @@ public class JdbcLoader {
             s.addView(view);
         }
 //        Log.log(Log.LOG_INFO, "Creating functions from JDBC");
-        prepStatFunctions.setInt(1, (Integer)getSchemaOidByName(schema));
+        prepStatFunctions.setLong(1, getSchemaOidByName(schema));
         res = prepStatFunctions.executeQuery();
         while (res.next()){
             PgFunction function = getFunction(res, schema);
@@ -355,7 +374,7 @@ public class JdbcLoader {
                 }
             }else if (sequence != null && res.getString("referenced_table_name") != null){
                 String tableName = res.getString("referenced_table_name");
-                sequence.setOwnedBy(getScheNameByOid(res.getInt("referenced_schema_oid")) + "." + tableName);
+                sequence.setOwnedBy(getScheNameByOid(res.getLong("referenced_schema_oid")) + "." + tableName);
             }
             previousSeqOid = res.getInt("sequence_oid");
         }
@@ -365,8 +384,8 @@ public class JdbcLoader {
     private PgExtension getExtension(ResultSet res) throws SQLException {
         PgExtension e = new PgExtension(res.getString("extname"), "");
         e.setVersion(res.getString("extversion"));
-        e.setOwner(getRoleNameByOid(res.getInt("extowner")));
-        e.setSchema(getScheNameByOid(res.getInt("extnamespace")));
+        e.setOwner(getRoleNameByOid(res.getLong("extowner")));
+        e.setSchema(getScheNameByOid(res.getLong("extnamespace")));
         
         return e;
     }
@@ -728,7 +747,7 @@ public class JdbcLoader {
     }
     
     private PgIndex getIndex(ResultSet res, String tableName, int tableOid) throws SQLException {
-        String schemaName = getScheNameByOid(res.getInt("relnamespace"));
+        String schemaName = getScheNameByOid(res.getLong("relnamespace"));
         
         String indexName = res.getString("relname");
         PgIndex i = new PgIndex(indexName, "", getSearchPath(schemaName));
@@ -738,12 +757,12 @@ public class JdbcLoader {
         i.setDefinition(definition.substring(definition.indexOf("USING ")));
         
         i.setUnique(res.getBoolean("indisunique"));
-        setOwner(i, res.getInt("relowner"));
+        setOwner(i, res.getLong("relowner"));
         
         return i;
     }
     
-    private void setOwner(PgStatement statement, int ownerOid){
+    private void setOwner(PgStatement statement, Long ownerOid){
         setOwner(statement, getRoleNameByOid(ownerOid));
     }
     
@@ -783,20 +802,19 @@ public class JdbcLoader {
         
         // PRIVILEGES
         String signatureWithoutDefaults = functionName + "(" + res.getString("proarguments_without_default") + ")";
-        String revokeMaindb = "ALL ON FUNCTION " + signatureWithoutDefaults + " FROM maindb";
-        String revokePublic = "ALL ON FUNCTION " + signatureWithoutDefaults + " FROM PUBLIC";
-        f.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
-        f.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
-        
-        Number [] granteeOids = (Number[])res.getArray("priv_grantees").getArray();
+        Long [] granteeOids = (Long[])res.getArray("priv_grantees").getArray();
         String [] privTypes = (String[])res.getArray("priv_types").getArray();
-        for(int i = 0; i < granteeOids.length; i++){
-            String privDefinition = privTypes[i] + " ON FUNCTION " + signatureWithoutDefaults + " TO " + getRoleNameByOid(granteeOids[i]);
-            f.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + definition));
+        
+        List<PrivilegePair> se = new ArrayList<PrivilegePair>(10);
+        for (int i = 0; i < granteeOids.length; i++){
+            se.add(new PrivilegePair(granteeOids[i], privTypes[i]));
         }
+//        Collections.sort(se);
+        
+        setPrivileges(f, signatureWithoutDefaults, se);
         
         // OWNER
-        setOwner(f, res.getInt("proowner"));
+        setOwner(f, res.getLong("proowner"));
         
         return f;
     }
@@ -812,22 +830,88 @@ public class JdbcLoader {
         s.setCache(String.valueOf(1));
         // TODO SELECT cache_value FROM tableName;
         
-        int ownedSchemaOid = res.getInt("referenced_schema_oid");
+        Long ownedSchemaOid = res.getLong("referenced_schema_oid");
         String ownedTableName = res.getString("referenced_table_name");
         if (ownedSchemaOid != 0 && ownedTableName != null){
             String ownedSchemaName = PgDiffUtils.getQuotedName(getScheNameByOid(ownedSchemaOid));
             s.setOwnedBy(ownedSchemaName + "." + PgDiffUtils.getQuotedName(ownedTableName));
         }
+        
+        setOwner(s, res.getLong("relowner"));
+        
+        // PRIVILEGES
+        Long [] granteeOids = (Long[])res.getArray("priv_grantees").getArray();
+        String [] privTypes = (String[])res.getArray("priv_types").getArray();
+        
+        List<PrivilegePair> se = new ArrayList<PrivilegePair>(10);
+        for (int i = 0; i < granteeOids.length; i++){
+            se.add(new PrivilegePair(granteeOids[i], privTypes[i]));
+        }
+        //Collections.sort(se);
+        
+        setPrivileges(s, sequenceName, se);
+        
         return s;
+    }
+    
+    private void setPrivileges(PgStatement st, String stSignature, List<PrivilegePair> privileges){
+        String stType = "";
+        int possiblePrivilegeCount = 13;
+        if (st instanceof PgSequence){
+            stType = "SEQUENCE";
+            possiblePrivilegeCount = 3;
+        }else if (st instanceof PgFunction){
+            stType = "FUNCTION";
+            possiblePrivilegeCount = 1;
+        }else{
+            throw new IllegalStateException("Not supported PgStatement class");
+        }
+        
+        String revokeMaindb = "ALL ON " + stType + " " + stSignature + " FROM maindb";
+        String revokePublic = "ALL ON " + stType + " " + stSignature + " FROM PUBLIC";
+        st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
+        st.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
+        
+        Long previousGranteeOid = 0L;
+        Integer privilegeCounter = 0;
+        String privilegesList = "";
+        for(int i = 0; i < privileges.size(); i++){
+            PrivilegePair p = privileges.get(i);
+            if (p.granteeOid.equals(previousGranteeOid)){
+                privilegeCounter++;
+                if (!privilegesList.isEmpty()){
+                    privilegesList = privilegesList.concat(",");
+                }
+                privilegesList = privilegesList.concat(p.privilegeType);
+            }else{
+                if (privilegeCounter != 0 && privilegeCounter < possiblePrivilegeCount){
+                    String privDefinition = privilegesList + " ON " + stType + " " + stSignature + " TO " + getRoleNameByOid(previousGranteeOid);
+                    st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
+                }
+                privilegeCounter = 1;
+                privilegesList = p.privilegeType;
+            }
+            
+            if (privilegeCounter == possiblePrivilegeCount){
+                privilegesList = "ALL";
+                String privDefinition = "ALL ON " + stType + " " + stSignature + " TO " + getRoleNameByOid(p.granteeOid);
+                st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
+            }
+            previousGranteeOid = p.granteeOid;
+            if (i == privileges.size() - 1 && privilegeCounter != possiblePrivilegeCount){
+                String privDefinition = privilegesList + " ON " + stType + " " + stSignature + " TO " + getRoleNameByOid(previousGranteeOid);
+                st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
+            }
+        }
     }
     
     private String getSearchPath(String schema){
         return "SET search_path = " + schema + ", pg_catalog;";
     }
 
-    private void prepareDataForSchema(Number schemaOid) throws SQLException{
+    private void prepareDataForSchema(Long schemaOid) throws SQLException{
         // fill in map with columns of tables and indecies of schema
-        prepStatColumnsOfSchema.setInt(1, (Integer)schemaOid);
+        prepStatColumnsOfSchema.setLong(1, schemaOid);
         try(ResultSet res = prepStatColumnsOfSchema.executeQuery();){
             cachedColumnNamesByTableOid.clear();
             Integer previousTableOid = 0;
@@ -936,7 +1020,7 @@ public class JdbcLoader {
         return tableOid;
     }
 
-    private Number getSchemaOidByName(String schema){
+    private Long getSchemaOidByName(String schema){
         return cachedSchemaByName.get(schema);
     }
     
@@ -959,21 +1043,36 @@ public class JdbcLoader {
         return "";
     }
     
-    private String getRoleNameByOid(Number ownerOid){
-        return cachedRolesNamesByOid.get(ownerOid.intValue());
+    private String getRoleNameByOid(Long ownerOid){
+        return ownerOid == 0 ? "PUBLIC" : cachedRolesNamesByOid.get(ownerOid.intValue());
     }
     
-    private String getScheNameByOid(Number schemaOid){
-        Iterator<Number> iterOid = cachedSchemaByName.values().iterator();
+    private String getScheNameByOid(Long schemaOid){
+        Iterator<Long> iterOid = cachedSchemaByName.values().iterator();
         Iterator<String> iterNames = cachedSchemaByName.keySet().iterator();
 
         while(iterOid.hasNext() && iterNames.hasNext()){
-            Number next = iterOid.next();
+            Long next = iterOid.next();
             if (next.equals(schemaOid)){
                 return iterNames.next();
             }
             iterNames.next();
         }
         return null;
+    }
+}
+
+class PrivilegePair implements Comparable<PrivilegePair>{
+    Long granteeOid;
+    String privilegeType;
+    
+    public PrivilegePair(Long granteeOids, String privilegeType) {
+        this.granteeOid = granteeOids;
+        this.privilegeType = privilegeType;
+    }
+
+    @Override
+    public int compareTo(PrivilegePair pair) {
+        return granteeOid.compareTo(pair.granteeOid);
     }
 }
