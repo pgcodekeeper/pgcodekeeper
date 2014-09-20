@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -12,13 +11,13 @@ import java.sql.Statement;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.Parser;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -803,9 +802,9 @@ public class JdbcLoader {
         
         List<PrivilegePair> se = new ArrayList<PrivilegePair>(10);
         for (int i = 0; i < granteeOids.length; i++){
-            se.add(new PrivilegePair(granteeOids[i], privTypes[i]));
+            se.add(new PrivilegePair(getRoleNameByOid(granteeOids[i]), privTypes[i]));
         }
-//        Collections.sort(se);
+        Collections.sort(se);
         
         setPrivileges(f, signatureWithoutDefaults, se);
         
@@ -847,9 +846,9 @@ public class JdbcLoader {
         
         List<PrivilegePair> se = new ArrayList<PrivilegePair>(10);
         for (int i = 0; i < granteeOids.length; i++){
-            se.add(new PrivilegePair(granteeOids[i], privTypes[i]));
+            se.add(new PrivilegePair(getRoleNameByOid(granteeOids[i]), privTypes[i]));
         }
-        //Collections.sort(se);
+        Collections.sort(se);
         
         setPrivileges(s, sequenceName, se);
         
@@ -875,12 +874,12 @@ public class JdbcLoader {
         st.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
         // TODO REVOKE ALL ON FUNCTION startdblink(text, text) FROM postgres; (public schema)
         // TODO why postgres and maindb only?s 
-        Long previousGranteeOid = 0L;
+        String previousGranteeName = null;
         Integer privilegeCounter = 0;
         String privilegesList = "";
         for(int i = 0; i < privileges.size(); i++){
             PrivilegePair p = privileges.get(i);
-            if (p.granteeOid.equals(previousGranteeOid)){
+            if (p.granteeName.equals(previousGranteeName)){
                 privilegeCounter++;
                 if (!privilegesList.isEmpty()){
                     privilegesList = privilegesList.concat(",");
@@ -888,7 +887,7 @@ public class JdbcLoader {
                 privilegesList = privilegesList.concat(p.privilegeType);
             }else{
                 if (privilegeCounter != 0 && privilegeCounter < possiblePrivilegeCount){
-                    String privDefinition = privilegesList + " ON " + stType + " " + stSignature + " TO " + getRoleNameByOid(previousGranteeOid);
+                    String privDefinition = privilegesList + " ON " + stType + " " + stSignature + " TO " + previousGranteeName;
                     st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
                 }
                 privilegeCounter = 1;
@@ -897,12 +896,12 @@ public class JdbcLoader {
             
             if (privilegeCounter == possiblePrivilegeCount){
                 privilegesList = "ALL";
-                String privDefinition = "ALL ON " + stType + " " + stSignature + " TO " + getRoleNameByOid(p.granteeOid);
+                String privDefinition = "ALL ON " + stType + " " + stSignature + " TO " + p.granteeName;
                 st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
             }
-            previousGranteeOid = p.granteeOid;
+            previousGranteeName = p.granteeName;
             if (i == privileges.size() - 1 && privilegeCounter != possiblePrivilegeCount){
-                String privDefinition = privilegesList + " ON " + stType + " " + stSignature + " TO " + getRoleNameByOid(previousGranteeOid);
+                String privDefinition = privilegesList + " ON " + stType + " " + stSignature + " TO " + previousGranteeName;
                 st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
             }
         }
@@ -1066,16 +1065,24 @@ public class JdbcLoader {
 }
 
 class PrivilegePair implements Comparable<PrivilegePair>{
-    Long granteeOid;
+    String granteeName;
     String privilegeType;
     
-    public PrivilegePair(Long granteeOids, String privilegeType) {
-        this.granteeOid = granteeOids;
+    public PrivilegePair(String granteeName, String privilegeType) {
+        this.granteeName = granteeName;
         this.privilegeType = privilegeType;
     }
 
     @Override
     public int compareTo(PrivilegePair pair) {
-        return granteeOid.compareTo(pair.granteeOid);
+        if (this == pair){
+            return 0;
+        }
+        int compareGrantee = granteeName.compareTo(pair.granteeName);
+        if (compareGrantee == 0){
+            return privilegeType.compareTo(pair.privilegeType);
+        }else{
+            return compareGrantee;
+        }
     }
 }
