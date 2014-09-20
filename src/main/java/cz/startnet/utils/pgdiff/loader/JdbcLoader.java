@@ -12,7 +12,6 @@ import java.sql.Statement;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -89,7 +88,7 @@ public class JdbcLoader {
     };
     
     private Map<String, Long> cachedSchemaByName = new HashMap<String, Long>();
-    private Map<Number, String> cachedIndexAccesMethodsByOid = new HashMap<Number, String>();
+    private Map<Long, String> cachedIndexAccesMethodsByOid = new HashMap<Long, String>();
     private Map<Integer, String> cachedRolesNamesByOid = new HashMap<Integer, String>();
     private Map<Integer, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<Integer, Map<Integer,String>>();
     
@@ -170,7 +169,7 @@ public class JdbcLoader {
             // fill in index access method map
             res = stmnt.executeQuery("SELECT oid, amname FROM pg_catalog.pg_am");
             while(res.next()){
-                cachedIndexAccesMethodsByOid.put(res.getInt("oid"), res.getString("amname"));
+                cachedIndexAccesMethodsByOid.put(res.getLong("oid"), res.getString("amname"));
             }
             res.close();
             
@@ -398,11 +397,11 @@ public class JdbcLoader {
         c = new PgConstraint(constraintName, "", getSearchPath(schemaName));
         Array arr = res.getArray("conkey");
         
-        List<String> columnNames = getColumnNames((Number[])arr.getArray(), res.getInt("conrelid"));
+        List<String> columnNames = getColumnNames((Integer[])arr.getArray(), res.getInt("conrelid"));
         switch (conType){
             case "f":
                 c = new PgForeignKey(constraintName, "", getSearchPath(schemaName));
-                List<String> referencedColumnNames = getColumnNames((Number[])res.getArray("confkey").getArray(), res.getInt("confrelid"));
+                List<String> referencedColumnNames = getColumnNames((Integer[])res.getArray("confkey").getArray(), res.getInt("confrelid"));
                 definition = "FOREIGN KEY (";
                 // TODO code reuse
                 for(int i = 0; i < columnNames.size(); i++){
@@ -412,7 +411,7 @@ public class JdbcLoader {
                         definition = definition.concat(", ");
                     }
                 }
-                SimpleEntry<String, String> referencedTableName = getTableNameByOid(res.getInt("confrelid"));
+                SimpleEntry<String, String> referencedTableName = getTableNameByOid(res.getLong("confrelid"));
                 String schemaPrefix = "";
                 if (!referencedTableName.getKey().equals(schemaName)){
                     schemaPrefix = referencedTableName.getKey() + ".";
@@ -582,7 +581,7 @@ public class JdbcLoader {
 
     private PgTable getTable(String schema, String tableName) throws SQLException{
         // TODO get oids earlier (or cache), as they are not changed in time (minimize db queries)
-        int tableOid = getTableOidByName(tableName, getSchemaOidByName(schema));
+        Long tableOid = getTableOidByName(tableName, getSchemaOidByName(schema));
         StringBuilder tableDef = new StringBuilder(); 
 
         tableDef.append("CREATE TABLE " + tableName + " (\n");
@@ -668,7 +667,7 @@ public class JdbcLoader {
         }
         
         // Query CONSTRAINTS
-        prepStatConstraints.setInt(1, tableOid);
+        prepStatConstraints.setLong(1, tableOid);
         res = prepStatConstraints.executeQuery();
         while (res.next()){
             PgConstraint constraint = getConstraint(res, schema, tableName);
@@ -678,7 +677,7 @@ public class JdbcLoader {
         }
         
         // Query INDECIES
-        prepStatIndecies.setInt(1, tableOid);
+        prepStatIndecies.setLong(1, tableOid);
         res = prepStatIndecies.executeQuery();
         while (res.next()){
             PgIndex index = getIndex(res, tableName, tableOid);
@@ -688,7 +687,7 @@ public class JdbcLoader {
         }
         
         // Query TRIGGERS
-        prepStatTriggers.setInt(1, tableOid);
+        prepStatTriggers.setLong(1, tableOid);
         res = prepStatTriggers.executeQuery();
         while(res.next()){
             PgTrigger trigger = getTrigger(res);
@@ -738,15 +737,15 @@ public class JdbcLoader {
             t.setBefore(true);
         }
         
-        String tableName = getTableNameByOid(res.getInt("tgrelid")).getValue();
+        String tableName = getTableNameByOid(res.getLong("tgrelid")).getValue();
         t.setTableName(tableName);
         
-        String functionName = getFunctionNameByOid(res.getInt("tgfoid"));
+        String functionName = getFunctionNameByOid(res.getLong("tgfoid"));
         t.setFunction(functionName);
         return t;
     }
     
-    private PgIndex getIndex(ResultSet res, String tableName, int tableOid) throws SQLException {
+    private PgIndex getIndex(ResultSet res, String tableName, Long tableOid) throws SQLException {
         String schemaName = getScheNameByOid(res.getLong("relnamespace"));
         
         String indexName = res.getString("relname");
@@ -787,13 +786,13 @@ public class JdbcLoader {
      */
     private PgFunction getFunction(ResultSet res, String schemaName) throws SQLException{
         String definition = res.getString("probody");
-        String languageName = getLangNameByOid(res.getInt("prolang"));
+        String languageName = getLangNameByOid(res.getLong("prolang"));
         int langFirstOccurenceIndex = definition.indexOf("LANGUAGE " + languageName); 
         String body = definition.substring(langFirstOccurenceIndex);
         String functionName = res.getString("proname");
         PgFunction f = new PgFunction(functionName, "", getSearchPath(schemaName));
         f.setBody(body);
-        f.setReturns(getTypeNameByOid(res.getInt("prorettype")));
+        f.setReturns(getTypeNameByOid(res.getLong("prorettype")));
 
         String arguments = res.getString("proarguments");
         if (!arguments.isEmpty()){
@@ -943,7 +942,7 @@ public class JdbcLoader {
      * @param tableOid  Oid of table - owner of these columns
      * @return
      */
-    private List<String> getColumnNames(Number[] cols, int tableOid) throws SQLException{
+    private List<String> getColumnNames(Integer[] cols, int tableOid) throws SQLException{
         Map <Integer, String> tableColumns = cachedColumnNamesByTableOid.get(tableOid);
         // if requested table is in different schema
         if (tableColumns == null){
@@ -958,14 +957,14 @@ public class JdbcLoader {
             }
         }
         List<String> result = new ArrayList<String>(5);
-        for(Number n : cols){
+        for(Integer n : cols){
             result.add(tableColumns.get(n.intValue()));
         }
         return result;
     }
 
-    private String getFunctionNameByOid(int functionOid) throws SQLException{
-        prepStatFuncName.setInt(1, functionOid);
+    private String getFunctionNameByOid(Long functionOid) throws SQLException{
+        prepStatFuncName.setLong(1, functionOid);
         ResultSet res = prepStatFuncName.executeQuery();
         if (res.next()){
             return res.getString("proname");
@@ -979,7 +978,7 @@ public class JdbcLoader {
      * @param tableOid
      * @return
      */
-    private SimpleEntry<String, String> getTableNameByOid(int tableOid) throws SQLException{
+    private SimpleEntry<String, String> getTableNameByOid(Long tableOid) throws SQLException{
         String query = "SELECT relname, relnamespace FROM pg_catalog.pg_class WHERE oid = '" + tableOid + "'";
         Statement stmt = connection.createStatement();
         ResultSet res = stmt.executeQuery(query);
@@ -1004,13 +1003,13 @@ public class JdbcLoader {
     }
 
     // TODO cache it too?
-    private int getTableOidByName(String tableName, Number schemaOid) throws SQLException{
+    private Long getTableOidByName(String tableName, Long schemaOid) throws SQLException{
         String query = "SELECT oid FROM pg_catalog.pg_class WHERE relname = '" + tableName + "' AND relnamespace = " + schemaOid + " AND relkind IN ('r', 'i')";
         Statement stmt = connection.createStatement();
         ResultSet res = stmt.executeQuery(query);
-        int tableOid = 0;
+        Long tableOid = 0L;
         if(res.next()){
-            tableOid = res.getInt("oid");
+            tableOid = res.getLong("oid");
         }
         if (res.next()){
             // WHAT?
@@ -1024,8 +1023,8 @@ public class JdbcLoader {
         return cachedSchemaByName.get(schema);
     }
     
-    private String getLangNameByOid (int langOid) throws SQLException{
-        prepStatLanguages.setInt(1, langOid);
+    private String getLangNameByOid (Long langOid) throws SQLException{
+        prepStatLanguages.setLong(1, langOid);
         try(ResultSet res = prepStatLanguages.executeQuery()){
             if (res.next()){
                 return res.getString("lanname");
@@ -1034,8 +1033,8 @@ public class JdbcLoader {
         return null;
     }
     
-    private String getTypeNameByOid(int typeOid) throws SQLException {
-        prepStatTypes.setInt(1, typeOid);
+    private String getTypeNameByOid(Long typeOid) throws SQLException {
+        prepStatTypes.setLong(1, typeOid);
         ResultSet res = prepStatTypes.executeQuery();
         if (res.next()){
             return res.getString("typname");
