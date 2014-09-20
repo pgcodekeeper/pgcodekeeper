@@ -89,8 +89,8 @@ public class JdbcLoader {
     
     private Map<String, Long> cachedSchemaByName = new HashMap<String, Long>();
     private Map<Long, String> cachedIndexAccesMethodsByOid = new HashMap<Long, String>();
-    private Map<Integer, String> cachedRolesNamesByOid = new HashMap<Integer, String>();
-    private Map<Integer, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<Integer, Map<Integer,String>>();
+    private Map<Long, String> cachedRolesNamesByOid = new HashMap<Long, String>();
+    private Map<Long, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<Long, Map<Integer,String>>();
     
     private String host;
     private int port;
@@ -176,7 +176,7 @@ public class JdbcLoader {
             // fill in rolenames
             res = stmnt.executeQuery("SELECT oid, rolname FROM pg_catalog.pg_roles");
             while (res.next()){
-                 cachedRolesNamesByOid.put(res.getInt("oid"), res.getString("rolname"));
+                 cachedRolesNamesByOid.put(res.getLong("oid"), res.getString("rolname"));
             }
         }finally{
             try{
@@ -197,26 +197,27 @@ public class JdbcLoader {
                 + "     proowner, "
                 + "     prolang, "
                 + "     prosrc, "
-                + "     pg_get_functiondef(oid) AS probody, "
+                + "     pg_get_functiondef(p.oid) AS probody, "
                 + "     prorettype, "
                 + "     proallargtypes, "
                 + "     proargmodes, "
                 + "     proargnames, "
-                + "     pg_get_function_arguments(oid) AS proarguments, "
-                + "     pg_get_function_identity_arguments(oid) AS proarguments_without_default, "
+                + "     pg_get_function_arguments(p.oid) AS proarguments, "
+                + "     pg_get_function_identity_arguments(p.oid) AS proarguments_without_default, "
                 + "     proargdefaults, "
                 + "     array_agg(acl.grantor) AS priv_grantors, "
                 + "     array_agg(acl.grantee)::bigint[] AS priv_grantees, "
                 + "     array_agg(acl.privilege_type) AS priv_types, "
-                + "     array_agg(acl.is_grantable) AS priv_grantable "
+                + "     array_agg(acl.is_grantable) AS priv_grantable, "
+                + "     d.description AS comment "
                 + "FROM "
-                + "     pg_catalog.pg_proc,"
+                + "     pg_catalog.pg_proc p LEFT JOIN pg_catalog.pg_description d ON d.objoid = p.oid,"
                 + "     aclexplode(proacl) acl "
                 + "WHERE "
                 + "     pronamespace = ? AND "
                 + "     proisagg = FALSE "
                 + "GROUP BY "
-                + "     oid, "
+                + "     p.oid, "
                 + "     proname, "
                 + "     proowner, "
                 + "     prolang, "
@@ -228,7 +229,8 @@ public class JdbcLoader {
                 + "     proargmodes, "
                 + "     proargnames, "
                 + "     proarguments, "
-                + "     proargdefaults;";
+                + "     proargdefaults,"
+                + "     comment;";
         
         prepStatFunctions = connection.prepareStatement(queryFunctions);
         prepStatLanguages = connection.prepareStatement("SELECT lanname FROM pg_catalog.pg_language WHERE oid = ?");
@@ -244,7 +246,8 @@ public class JdbcLoader {
                 + "     s.maximum_value,"
                 + "     s.increment,"
                 + "     s.cycle_option,"
-                + "     (SELECT relnamespace FROM pg_catalog.pg_class WHERE oid = d.refobjid AND relkind = 'r') referenced_schema_oid,"
+                + "     d.refobjsubid AS referenced_column,"
+                + "     d.refobjid AS referenced_table_oid,"
                 + "     (SELECT relname FROM pg_catalog.pg_class WHERE oid = d.refobjid AND relkind = 'r') referenced_table_name,"
                 + "     array_agg(acl.grantor) AS priv_grantors,"
                 + "     array_agg(acl.grantee)::bigint[] AS priv_grantees,"
@@ -271,14 +274,15 @@ public class JdbcLoader {
                 + "     maximum_value,"
                 + "     increment,"
                 + "     cycle_option,"
-                + "     referenced_schema_oid,"
+                + "     referenced_column,"
+                + "     referenced_table_oid,"
                 + "     referenced_table_name "
                 + "ORDER BY "
                 + "     sequence_oid;";
 
         prepStatSequences = connection.prepareStatement(querySequenceInfo);
         prepStatExtensions = connection.prepareStatement("SELECT * FROM pg_catalog.pg_extension");
-        prepStatConstraints = connection.prepareStatement("SELECT conname, contype, conrelid, consrc, conkey, confrelid, confkey, confupdtype, confdeltype, confmatchtype FROM pg_catalog.pg_constraint WHERE conrelid = ?");
+        prepStatConstraints = connection.prepareStatement("SELECT conname, contype, conrelid, consrc, CAST(conkey as integer[]), confrelid, CAST(confkey as integer[]), confupdtype, confdeltype, confmatchtype FROM pg_catalog.pg_constraint WHERE conrelid = ?");
         prepStatIndecies = connection.prepareStatement("SELECT i.indisunique, c.relname, c.relnamespace, c.relowner, definition FROM pg_catalog.pg_index i, pg_catalog.pg_class c, pg_get_indexdef(c.oid) definition WHERE i.indrelid = ? AND c.oid = i.indexrelid;");
         prepStatColumnsOfSchema = connection.prepareStatement("SELECT a.attname, a.attnum, a.attrelid FROM pg_catalog.pg_attribute a JOIN pg_catalog.pg_class c ON c.oid = a.attrelid WHERE c.relnamespace = ? AND c.relkind IN ('i', 'r') ORDER BY a.attrelid;");
         prepStatIndexColumnDefault = connection.prepareStatement("SELECT pg_get_indexdef(?, ?, true) AS indexColumnDefault;");
@@ -371,9 +375,9 @@ public class JdbcLoader {
                 if (sequence != null){
                     s.addSequence(sequence);
                 }
-            }else if (sequence != null && res.getString("referenced_table_name") != null){
-                String tableName = res.getString("referenced_table_name");
-                sequence.setOwnedBy(getScheNameByOid(res.getLong("referenced_schema_oid")) + "." + tableName);
+            }else if (sequence != null && res.getInt("referenced_column") != 0){
+                Integer[] ownedColumnNumbers = {res.getInt("referenced_column")};
+                sequence.setOwnedBy(res.getString("referenced_table_name") + "." + getColumnNames(ownedColumnNumbers, res.getLong("referenced_table_oid")).get(0));
             }
             previousSeqOid = res.getInt("sequence_oid");
         }
@@ -392,16 +396,13 @@ public class JdbcLoader {
     private PgConstraint getConstraint(ResultSet res, String schemaName, String tableName) throws SQLException {
         String constraintName = res.getString("conname");
         String definition = "";
-        PgConstraint c = null;
-        String conType = res.getString("contype");
-        c = new PgConstraint(constraintName, "", getSearchPath(schemaName));
-        Array arr = res.getArray("conkey");
+        PgConstraint c = new PgConstraint(constraintName, "", getSearchPath(schemaName));
         
-        List<String> columnNames = getColumnNames((Integer[])arr.getArray(), res.getInt("conrelid"));
-        switch (conType){
+        List<String> columnNames = getColumnNames((Integer[])res.getArray("conkey").getArray(), res.getLong("conrelid"));
+        switch (res.getString("contype")){
             case "f":
                 c = new PgForeignKey(constraintName, "", getSearchPath(schemaName));
-                List<String> referencedColumnNames = getColumnNames((Integer[])res.getArray("confkey").getArray(), res.getInt("confrelid"));
+                List<String> referencedColumnNames = getColumnNames((Integer[])res.getArray("confkey").getArray(), res.getLong("confrelid"));
                 definition = "FOREIGN KEY (";
                 // TODO code reuse
                 for(int i = 0; i < columnNames.size(); i++){
@@ -454,35 +455,31 @@ public class JdbcLoader {
                 break;
         }
         
-        String matchType = res.getString("confmatchtype");
-        switch (matchType){
-        case "f":
-            definition = definition.concat(" MATCH FULL");
-            break;
-        case "p":
-            definition = definition.concat(" MATCH PARTIAL");
-            break;
+        switch (res.getString("confmatchtype")){
+            case "f":
+                definition = definition.concat(" MATCH FULL");
+                break;
+            case "p":
+                definition = definition.concat(" MATCH PARTIAL");
+                break;
         }
         
-        String onUpdateAction = res.getString("confupdtype");
-        String onDeleteAction = res.getString("confdeltype");
-        
-        switch(onDeleteAction){
-        case "r":
-            definition = definition.concat(" ON DELETE RESTRICT");
-            break;
-        case "c":
-            definition = definition.concat(" ON DELETE CASCADE");
-            break;
-        case "n":
-            definition = definition.concat(" ON DELETE SET NULL");
-            break;
-        case "d":
-            definition = definition.concat(" ON DELETE SET DEFAULT");
-            break;
+        switch(res.getString("confdeltype")){
+            case "r":
+                definition = definition.concat(" ON DELETE RESTRICT");
+                break;
+            case "c":
+                definition = definition.concat(" ON DELETE CASCADE");
+                break;
+            case "n":
+                definition = definition.concat(" ON DELETE SET NULL");
+                break;
+            case "d":
+                definition = definition.concat(" ON DELETE SET DEFAULT");
+                break;
         }
         
-        switch(onUpdateAction){
+        switch(res.getString("confupdtype")){
             case "r":
                 definition = definition.concat(" ON UPDATE RESTRICT");
                 break;
@@ -788,7 +785,7 @@ public class JdbcLoader {
         String definition = res.getString("probody");
         String languageName = getLangNameByOid(res.getLong("prolang"));
         int langFirstOccurenceIndex = definition.indexOf("LANGUAGE " + languageName); 
-        String body = definition.substring(langFirstOccurenceIndex);
+        String body = definition.substring(langFirstOccurenceIndex).replaceAll("\\$function\\$", "\\$\\$");
         String functionName = res.getString("proname");
         PgFunction f = new PgFunction(functionName, "", getSearchPath(schemaName));
         f.setBody(body);
@@ -815,6 +812,9 @@ public class JdbcLoader {
         // OWNER
         setOwner(f, res.getLong("proowner"));
         
+        // COMMENT
+        String comment = res.getString("comment");
+        f.setComment(comment != null && !comment.isEmpty() ? "'" + comment + "'" : null);
         return f;
     }
     
@@ -823,17 +823,20 @@ public class JdbcLoader {
         PgSequence s = new PgSequence(sequenceName, "", getSearchPath(schemaName));
         s.setCycle(res.getBoolean("cycle_option"));
         s.setIncrement(res.getString("increment"));
-        s.setMaxValue(res.getString("maximum_value"));
-        s.setMinValue(res.getString("minimum_value"));
+        
+        // The data type of the sequence: In PostgreSQL, this is currently always bigint
+        String maxValue = res.getString("maximum_value");
+        s.setMaxValue(maxValue.equals(String.valueOf(Long.MAX_VALUE)) ? null : maxValue);
+        String minValue = res.getString("minimum_value"); 
+        s.setMinValue(minValue.equals("1") ? null : minValue);
+        
         s.setStartWith(res.getString("start_value"));
         s.setCache(String.valueOf(1));
         // TODO SELECT cache_value FROM tableName;
         
-        Long ownedSchemaOid = res.getLong("referenced_schema_oid");
-        String ownedTableName = res.getString("referenced_table_name");
-        if (ownedSchemaOid != 0 && ownedTableName != null){
-            String ownedSchemaName = PgDiffUtils.getQuotedName(getScheNameByOid(ownedSchemaOid));
-            s.setOwnedBy(ownedSchemaName + "." + PgDiffUtils.getQuotedName(ownedTableName));
+        Integer[] ownedColumnNumbers = {res.getInt("referenced_column")};
+        if (!ownedColumnNumbers[0].equals(Integer.valueOf(0))){
+            s.setOwnedBy(res.getString("referenced_table_name") + "." + getColumnNames(ownedColumnNumbers, res.getLong("referenced_table_oid")));
         }
         
         setOwner(s, res.getLong("relowner"));
@@ -870,7 +873,8 @@ public class JdbcLoader {
         String revokePublic = "ALL ON " + stType + " " + stSignature + " FROM PUBLIC";
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
         st.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
-        
+        // TODO REVOKE ALL ON FUNCTION startdblink(text, text) FROM postgres; (public schema)
+        // TODO why postgres and maindb only?s 
         Long previousGranteeOid = 0L;
         Integer privilegeCounter = 0;
         String privilegesList = "";
@@ -913,14 +917,14 @@ public class JdbcLoader {
         prepStatColumnsOfSchema.setLong(1, schemaOid);
         try(ResultSet res = prepStatColumnsOfSchema.executeQuery();){
             cachedColumnNamesByTableOid.clear();
-            Integer previousTableOid = 0;
+            Long previousTableOid = 0L;
             Map<Integer, String> previousMap = null;
             while (res.next()){
                 Integer columnNumber = res.getInt("attnum");
                 if (columnNumber < 1){
                     continue;
                 }
-                Integer tableOid = res.getInt("attrelid");
+                Long tableOid = res.getLong("attrelid");
                 String columnName = res.getString("attname");
                 if (!previousTableOid.equals(tableOid)){
                     previousTableOid = tableOid;
@@ -942,7 +946,7 @@ public class JdbcLoader {
      * @param tableOid  Oid of table - owner of these columns
      * @return
      */
-    private List<String> getColumnNames(Integer[] cols, int tableOid) throws SQLException{
+    private List<String> getColumnNames(Integer[] cols, Long tableOid) throws SQLException{
         Map <Integer, String> tableColumns = cachedColumnNamesByTableOid.get(tableOid);
         // if requested table is in different schema
         if (tableColumns == null){
@@ -958,7 +962,7 @@ public class JdbcLoader {
         }
         List<String> result = new ArrayList<String>(5);
         for(Integer n : cols){
-            result.add(tableColumns.get(n.intValue()));
+            result.add(tableColumns.get(n));
         }
         return result;
     }
@@ -1043,7 +1047,7 @@ public class JdbcLoader {
     }
     
     private String getRoleNameByOid(Long ownerOid){
-        return ownerOid == 0 ? "PUBLIC" : cachedRolesNamesByOid.get(ownerOid.intValue());
+        return ownerOid == 0 ? "PUBLIC" : cachedRolesNamesByOid.get(ownerOid);
     }
     
     private String getScheNameByOid(Long schemaOid){
