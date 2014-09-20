@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -262,7 +261,7 @@ public class JdbcLoader {
         prepStatSequences = connection.prepareStatement(querySequenceInfo);
         prepStatExtensions = connection.prepareStatement("SELECT * FROM pg_catalog.pg_extension");
         prepStatConstraints = connection.prepareStatement("SELECT conname, contype, conrelid, consrc, conkey, confrelid, confkey, confupdtype, confdeltype, confmatchtype FROM pg_catalog.pg_constraint WHERE conrelid = ?");
-        prepStatIndecies = connection.prepareStatement("SELECT i.indexrelid, i.indkey, i.indisunique, i.indexprs, c.relam, c.relname, c.relnamespace, c.relowner FROM pg_catalog.pg_index i, pg_catalog.pg_class c WHERE i.indrelid = ? AND c.oid = i.indexrelid;");
+        prepStatIndecies = connection.prepareStatement("SELECT i.indisunique, c.relname, c.relnamespace, c.relowner, definition FROM pg_catalog.pg_index i, pg_catalog.pg_class c, pg_get_indexdef(c.oid) definition WHERE i.indrelid = ? AND c.oid = i.indexrelid;");
         prepStatColumnsOfSchema = connection.prepareStatement("SELECT a.attname, a.attnum, a.attrelid FROM pg_catalog.pg_attribute a JOIN pg_catalog.pg_class c ON c.oid = a.attrelid WHERE c.relnamespace = ? AND c.relkind IN ('i', 'r') ORDER BY a.attrelid;");
         prepStatIndexColumnDefault = connection.prepareStatement("SELECT pg_get_indexdef(?, ?, true) AS indexColumnDefault;");
     }
@@ -734,47 +733,10 @@ public class JdbcLoader {
         String indexName = res.getString("relname");
         PgIndex i = new PgIndex(indexName, "", getSearchPath(schemaName));
         i.setTableName(tableName);
+
+        String definition = res.getString("definition"); 
+        i.setDefinition(definition.substring(definition.indexOf("USING ")));
         
-        String definition = "USING ";
-        
-        definition = definition.concat(getAccessMethodNameByOid(res.getInt("relam")));
-        
-        // get columns numbers
-        Scanner sc = new Scanner(res.getString("indkey"));
-        List<Integer> columnsNumbers = new ArrayList<Integer>(2);
-        while(sc.hasNext()){
-            columnsNumbers.add(Integer.valueOf(sc.next()));
-        }
-        sc.close();
-        
-        List<String> columnNames = getColumnNames(columnsNumbers.toArray(new Number[columnsNumbers.size()]), tableOid);
-        definition = definition.concat(" (");
-        for(int j = 0; j < columnsNumbers.size(); j++){
-            int colNum = columnsNumbers.get(j);
-            String columnDefinition = "";
-            if (colNum == 0){
-                prepStatIndexColumnDefault.setInt(1, getTableOidByName(indexName, getSchemaOidByName(schemaName)));
-                prepStatIndexColumnDefault.setInt(2, j + 1);
-                try(ResultSet res2 = prepStatIndexColumnDefault.executeQuery()){
-                    if (res2.next()){
-                        definition = definition.concat(res2.getString("indexColumnDefault"));
-                    }
-                }
-                if (j < columnNames.size() - 1){
-                    definition = definition.concat(", ");
-                }
-            }else if (colNum > 0) {
-                definition = definition.concat(columnNames.get(j));
-                if (j < columnNames.size() - 1){
-                    definition = definition.concat(", ");
-                }
-            }else{
-                continue;
-            }
-        }
-        definition = definition.concat(")");
-        
-        i.setDefinition(definition);
         i.setUnique(res.getBoolean("indisunique"));
         setOwner(i, res.getInt("relowner"));
         
@@ -898,22 +860,19 @@ public class JdbcLoader {
      * @return
      */
     private List<String> getColumnNames(Number[] cols, int tableOid) throws SQLException{
-        /*String query = "SELECT attname FROM pg_catalog.pg_attribute WHERE attrelid = " + tableOid + " AND attnum IN (";
-        for(int i = 0; i < cols.length; i++){
-            Number colNum = cols[i];
-            query = query.concat(colNum.toString());
-            if (i < cols.length - 1){
-                query = query.concat(", ");
+        Map <Integer, String> tableColumns = cachedColumnNamesByTableOid.get(tableOid);
+        // if requested table is in different schema
+        if (tableColumns == null){
+            try(    Statement st = connection.createStatement();
+                    ResultSet res = st.executeQuery("SELECT attname, attnum FROM "
+                            + "pg_catalog.pg_attribute WHERE attrelid = " + tableOid);){
+                tableColumns = new HashMap<Integer, String>();
+                while(res.next()){
+                    tableColumns.put(res.getInt("attnum"), res.getString("attname"));
+                }
+                cachedColumnNamesByTableOid.put(tableOid, tableColumns);
             }
         }
-        query = query.concat(")");
-        List<String> columnNames = new ArrayList<String>(3);
-        ResultSet res = connection.createStatement().executeQuery(query);
-        while(res.next()){
-            columnNames.add(res.getString("attname"));
-        }
-        return columnNames.toArray(new String[columnNames.size()]);*/
-        Map <Integer, String> tableColumns = cachedColumnNamesByTableOid.get(tableOid);
         List<String> result = new ArrayList<String>(5);
         for(Number n : cols){
             result.add(tableColumns.get(n.intValue()));
