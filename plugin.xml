@@ -257,6 +257,20 @@
                   visible="true">
             </separator>
             <command
+                  commandId="org.eclipse.equinox.p2.ui.sdk.update"
+                  label="%handledmenuitem.label.update"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.equinox.p2.ui.sdk.install"
+                  label="%handledmenuitem.label.install"
+                  style="push">
+            </command>
+            <separator
+                  name="separator2"
+                  visible="true">
+            </separator>
+            <command
                   commandId="ru.taximaxim.codekeeper.ui.command.About"
                   label="%handledmenuitem.label.13"
                   style="push">
