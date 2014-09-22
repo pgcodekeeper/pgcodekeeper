@@ -2,7 +2,9 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map.Entry;
@@ -128,23 +130,29 @@ public class Differ implements IRunnableWithProgress {
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
         PgDiffArguments args = new PgDiffArguments();
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
-        PrintWriter writer = new UnixPrintWriter(diffOut, true);
+        try {
+            PrintWriter writer = new UnixPrintWriter(
+                    new OutputStreamWriter(diffOut, "UTF-8"), true);
         
-        script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
-                dbSource, dbTarget, sourceDbFull, targetDbFull, 
-                additionalDepciesSource, additionalDepciesTarget);
-        writer.flush();
-        diffDirect = diffOut.toString().trim();
-
-        if (needTwoWay) {
-            Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin() //$NON-NLS-1$
-                    + " to: " + this.dbSource.getOrigin()); //$NON-NLS-1$
-            
-            pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
-            diffOut.reset();
-            PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource, targetDbFull, sourceDbFull);
+            script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
+                    dbSource, dbTarget, sourceDbFull, targetDbFull, 
+                    additionalDepciesSource, additionalDepciesTarget);
             writer.flush();
-            diffReverse = diffOut.toString().trim();
+            diffDirect = diffOut.toString("UTF-8").trim();
+    
+            if (needTwoWay) {
+                Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin() //$NON-NLS-1$
+                        + " to: " + this.dbSource.getOrigin()); //$NON-NLS-1$
+                
+                pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
+                diffOut.reset();
+                PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource,
+                        targetDbFull, sourceDbFull);
+                writer.flush();
+                diffReverse = diffOut.toString("UTF-8").trim();
+            }
+        } catch (UnsupportedEncodingException ex) {
+            throw new IllegalStateException(ex);
         }
         pm.done();
         finished = true;
