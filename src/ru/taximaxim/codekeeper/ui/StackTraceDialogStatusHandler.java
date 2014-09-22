@@ -9,6 +9,8 @@ import org.eclipse.ui.statushandlers.StatusAdapter;
 import org.eclipse.ui.statushandlers.StatusManager;
 import org.eclipse.ui.statushandlers.WorkbenchStatusDialogManager;
 
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+
 /**
  * pgCodekeeper default error handler.<br>
  * Partly copied from org.eclipse.ui.statushandlers.WorkbenchErrorHandler

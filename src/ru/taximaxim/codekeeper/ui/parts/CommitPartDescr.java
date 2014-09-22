@@ -11,9 +11,6 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.eclipse.compare.CompareConfiguration;
-import org.eclipse.compare.contentmergeviewer.IMergeViewerContentProvider;
-import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -28,18 +25,13 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.TextViewer;
-import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -62,25 +54,26 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
-import ru.taximaxim.codekeeper.ui.CommitDialog;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
+import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
-import ru.taximaxim.codekeeper.ui.fileutils.Dir;
+import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -119,7 +112,7 @@ public class CommitPartDescr extends DynamicE4View {
     private Button btnGetChanges;
     private Composite containerSrc;
     private DbPicker dbSrc;
-    private TextMergeViewer diffPane;
+    private DiffPaneViewer diffPane;
     private String repoName;
     private XmlHistory history;
     /**
@@ -135,6 +128,20 @@ public class CommitPartDescr extends DynamicE4View {
      */
     private TreeDiffer treeDiffer;
     
+    private void setDbTarget(DbSource dbTarget) {
+        this.dbTarget = dbTarget;
+        if (diffPane != null) {
+            diffPane.setDbTarget(dbTarget);
+        }
+    }
+    
+    private void setDbSource(DbSource dbSource) {
+        this.dbSource = dbSource;
+        if (diffPane != null) {
+            diffPane.setDbSource(dbSource);
+        }
+    }
+
     @Inject
     public CommitPartDescr(MPart part, IWorkbenchPage page) {
         super(part, page);
@@ -237,7 +244,7 @@ public class CommitPartDescr extends DynamicE4View {
                     mb.open();
                     return;
                 }
-                boolean considerDepcy = mainPrefs.getBoolean(PREF.CONSIDER_DEPCY_IN_COMMIT);
+                boolean considerDepcy = mainPrefs.getBoolean(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT);
                 
                 final TreeElement filtered = diffTable.filterDiffTree();
                 
@@ -286,7 +293,7 @@ public class CommitPartDescr extends DynamicE4View {
                     // элементы, с которых пользователь снял отметку в нижней таблице
                     // FIXME убрать шелл, отделить логику от UI
                     DiffTableViewer diffTable = new DiffTableViewer(new Shell(), SWT.NONE, mainPrefs, true);
-                    diffTable.setFilteredInput(filteredWithNewAndDelete, treeDiffer);
+                    diffTable.setFilteredInput(filteredWithNewAndDelete, treeDiffer, false);
                     Set<TreeElement> allElements = diffTable.getCheckedElements(false);
                     allElements.removeAll(cd.getBottomTableViewer().getCheckedElements(false));
                     filteredTwiceWithAllDepcy = 
@@ -316,21 +323,10 @@ public class CommitPartDescr extends DynamicE4View {
                         pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
                         File workingDir = proj.getProjectWorkingDir();
                         try {
+                            new ProjectUpdater(dbNew, proj).update();
+                            
                             IRepoWorker repo = new JGitExec(proj,
                                     mainPrefs.getString(PREF.GIT_KEY_PRIVATE_FILE));
-
-                            for (ApgdiffConsts.WORK_DIR_NAMES subdirName : ApgdiffConsts.WORK_DIR_NAMES.values()) {
-                                File subdir = new File(workingDir, subdirName.toString());
-                                if (subdir.exists()) {
-                                    Dir.deleteRecursive(subdir);
-                                }
-                            }
-                            
-                            new ModelExporter(workingDir.getAbsolutePath(),
-                                    dbNew,
-                                    proj.getString(PROJ_PREF.ENCODING))
-                                    .export();
-
                             pm.newChild(1).subTask(repoName + " committing..."); // 3 //$NON-NLS-1$
                             repo.repoRemoveMissingAddNew(workingDir);
                             repo.repoCommit(workingDir, commitComment);
@@ -469,14 +465,14 @@ public class CommitPartDescr extends DynamicE4View {
                     return;
                 }
                 
-                dbSource = DbSource.fromProject(proj);
+                setDbSource(DbSource.fromProject(proj));
                 if (btnDump.getSelection()) {
                     FileDialog dialog = new FileDialog(shell);
                     dialog.setText(Messages.choose_dump_file_with_changes);
                     String dumpfile = dialog.open();
                     if (dumpfile != null) {
-                        dbTarget = DbSource.fromFile(dumpfile,
-                                proj.getString(PROJ_PREF.ENCODING));
+                        setDbTarget(DbSource.fromFile(dumpfile,
+                                proj.getString(PROJ_PREF.ENCODING)));
                     } else {
                         return;
                     }
@@ -492,12 +488,12 @@ public class CommitPartDescr extends DynamicE4View {
                         mb.open();
                         return;
                     }
-                    dbTarget = DbSource.fromDb(exePgdump, pgdumpCustom,
+                    setDbTarget(DbSource.fromDb(exePgdump, pgdumpCustom,
                             dbSrc.txtDbHost.getText(), port,
                             dbSrc.txtDbUser.getText(),
                             dbSrc.txtDbPass.getText(),
                             dbSrc.txtDbName.getText(),
-                            proj.getString(PROJ_PREF.ENCODING));
+                            proj.getString(PROJ_PREF.ENCODING)));
                 } else {
                     throw new IllegalStateException(
                             Messages.undefined_source_for_db_changes);
@@ -515,7 +511,7 @@ public class CommitPartDescr extends DynamicE4View {
                             Messages.differ_thread_cancelled_shouldnt_happen, ex);
                 }
 
-                diffTable.setInput(treeDiffer);
+                diffTable.setInput(treeDiffer, false);
                 diffPane.setInput(null);
                 btnCommit.setEnabled(true);
             }
@@ -549,116 +545,9 @@ public class CommitPartDescr extends DynamicE4View {
         }
         // end middle right container
         // end middle container
-
-        CompareConfiguration conf = new CompareConfiguration();
-        conf.setLeftEditable(false);
-        conf.setRightEditable(false);
         
-        diffPane = new TextMergeViewer(sashOuter, SWT.BORDER, conf) {
-            
-            @Override
-            protected void configureTextViewer(TextViewer textViewer) {
-                // viewer configures itself
-            }
-            
-            @Override
-            protected SourceViewer createSourceViewer(Composite parent,
-                    int textOrientation) {
-                return new SqlSourceViewer(parent, textOrientation);
-            }
-        };
-        diffPane.setContentProvider(new IMergeViewerContentProvider() {
-            
-            @Override
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            }
-            
-            @Override
-            public void dispose() {
-            }
-            
-            @Override
-            public boolean showAncestor(Object input) {
-                return false;
-            }
-            
-            @Override
-            public void saveRightContent(Object input, byte[] bytes) {
-            }
-            
-            @Override
-            public void saveLeftContent(Object input, byte[] bytes) {
-            }
-            
-            @Override
-            public boolean isRightEditable(Object input) {
-                return false;
-            }
-            
-            @Override
-            public boolean isLeftEditable(Object input) {
-                return false;
-            }
-            
-            @Override
-            public String getRightLabel(Object input) {
-                return Messages.commitPartDescr_to + repoName;
-            }
-            
-            @Override
-            public Image getRightImage(Object input) {
-                return null;
-            }
-            
-            @Override
-            public Object getRightContent(Object input) {
-                TreeElement el = (TreeElement) input;
-                if (el != null && (el.getSide() == DiffSide.LEFT
-                        || el.getSide() == DiffSide.BOTH)) {
-                    return new Document(
-                            el.getPgStatement(dbSource.getDbObject()).getFullSQL());
-                } else {
-                    return new Document();
-                }
-            }
-            
-            @Override
-            public String getLeftLabel(Object input) {
-                return Messages.commitPartDescr_from_database;
-            }
-            
-            @Override
-            public Image getLeftImage(Object input) {
-                return null;
-            }
-            
-            @Override
-            public Object getLeftContent(Object input) {
-                TreeElement el = (TreeElement) input;
-                if (el != null && (el.getSide() == DiffSide.RIGHT
-                        || el.getSide() == DiffSide.BOTH)) {
-                    return new Document(
-                            el.getPgStatement(dbTarget.getDbObject()).getFullSQL());
-                } else {
-                    return new Document();
-                }
-            }
-            
-            @Override
-            public String getAncestorLabel(Object input) {
-                return null;
-            }
-            
-            @Override
-            public Image getAncestorImage(Object input) {
-                return null;
-            }
-            
-            @Override
-            public Object getAncestorContent(Object input) {
-                return null;
-            }
-        });
+        diffPane = new DiffPaneViewer(sashOuter, SWT.NONE, 
+                dbSource, dbTarget, false);
     }
 
     private void showDbPicker(boolean show) {
@@ -689,7 +578,7 @@ public class CommitPartDescr extends DynamicE4View {
                 
                 @Override
                 public void run() {
-                    diffTable.setInput(null);
+                    diffTable.setInput(null, false);
                     diffPane.setInput(null);
                     txtCommitComment.setText(""); //$NON-NLS-1$
                     btnCommit.setEnabled(false);

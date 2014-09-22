@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: UI
 Bundle-SymbolicName: ru.taximaxim.codekeeper.ui;singleton:=true
-Bundle-Version: 0.4.2.qualifier
+Bundle-Version: 0.4.3.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.ui.Activator
 Export-Package: ru.taximaxim.codekeeper.ui,
  ru.taximaxim.codekeeper.ui.externalcalls,
@@ -24,6 +24,11 @@ Require-Bundle: com.jcraft.jsch,
  org.eclipse.e4.ui.workbench,
  org.eclipse.egit,
  org.eclipse.egit.ui,
+ org.eclipse.equinox.p2.touchpoint.natives,
+ org.eclipse.equinox.p2.transport.ecf,
+ org.eclipse.equinox.p2.ui,
+ org.eclipse.equinox.p2.ui.sdk,
+ org.eclipse.equinox.p2.ui.sdk.scheduler,
  org.eclipse.jgit,
  org.eclipse.ui,
  apgdiff,

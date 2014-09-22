@@ -13,13 +13,14 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
 
-import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffArguments;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.PgDiffScript;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class Differ implements IRunnableWithProgress {
     
@@ -28,34 +29,47 @@ public class Differ implements IRunnableWithProgress {
     private boolean finished;
     private final boolean needTwoWay;
     private String diffDirect, diffReverse;
+    private PgDiffScript script;
 
     private PgDatabase sourceDbFull;
     private PgDatabase targetDbFull;
     
-    private List<Entry<PgStatement, PgStatement>> additionalDepcies;
+    private List<Entry<PgStatement, PgStatement>> additionalDepciesSource;
+    private List<Entry<PgStatement, PgStatement>> additionalDepciesTarget;
 
     public void setFullDbs(PgDatabase sourceDbFull, PgDatabase targetDbFull) {
        this.sourceDbFull = sourceDbFull;
        this.targetDbFull = targetDbFull;
     }
     
-    public void setAdditionalDepcies(
+    public void setAdditionalDepciesSource(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
-        this.additionalDepcies = additionalDepcies;
+        this.additionalDepciesSource = additionalDepcies;
     }
     
-    public void addAdditionDepcies(
+    public void setAdditionalDepciesTarget(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
-        if (this.additionalDepcies == null) {
-            setAdditionalDepcies(additionalDepcies);
+        this.additionalDepciesTarget = additionalDepcies;
+    }
+    
+    public void addAdditionalDepciesSource(
+            List<Entry<PgStatement, PgStatement>> additionalDepcies) {
+        if (this.additionalDepciesSource == null) {
+            setAdditionalDepciesSource(additionalDepcies);
         } else {
-            this.additionalDepcies.addAll(additionalDepcies);
+            this.additionalDepciesSource.addAll(additionalDepcies);
         }
     }
     
-    public List<Entry<PgStatement, PgStatement>> getAdditionalDepcies() {
-        return additionalDepcies;
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource() {
+        return additionalDepciesSource;
     } 
+
+    public Differ(DbSource dbSource, DbSource dbTarget, boolean needTwoWay) {
+        this.dbSource = dbSource;
+        this.dbTarget = dbTarget;
+        this.needTwoWay = needTwoWay;
+    }
     
     public void runProgressMonitorDiffer(final Shell shell) {
         try {
@@ -71,12 +85,6 @@ public class Differ implements IRunnableWithProgress {
         }
     }
     
-    public Differ(DbSource dbSource, DbSource dbTarget, boolean needTwoWay) {
-        this.dbSource = dbSource;
-        this.dbTarget = dbTarget;
-        this.needTwoWay = needTwoWay;
-    }
-    
     public String getDiffDirect() {
         checkFinished();
         return diffDirect;
@@ -85,6 +93,14 @@ public class Differ implements IRunnableWithProgress {
     public String getDiffReverse() {
         checkFinished();
         return diffReverse;
+    }
+
+    /**
+     * @return the script
+     */
+    public PgDiffScript getScript() {
+        checkFinished();
+        return script;
     }
     
     private void checkFinished() {
@@ -114,8 +130,9 @@ public class Differ implements IRunnableWithProgress {
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
         PrintWriter writer = new UnixPrintWriter(diffOut, true);
         
-        PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
-                dbSource, dbTarget, sourceDbFull, targetDbFull, additionalDepcies);
+        script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
+                dbSource, dbTarget, sourceDbFull, targetDbFull, 
+                additionalDepciesSource, additionalDepciesTarget);
         writer.flush();
         diffDirect = diffOut.toString().trim();
 
