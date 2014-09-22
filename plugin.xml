@@ -476,5 +476,18 @@
             name="%page.name.ignored_objects">
       </page>
    </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <wizard
+            category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+            class="ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard"
+            id="ru.taximaxim.codekeeper.ui.newprojwizard"
+            name="New Project">
+      </wizard>
+      <category
+            id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+            name="PgCodekeeper">
+      </category>
+   </extension>
 
 </plugin>

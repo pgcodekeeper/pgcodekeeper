@@ -18,6 +18,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -40,6 +41,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.INewWizard;
+import org.eclipse.ui.IWorkbench;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -55,21 +58,21 @@ import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class NewProjWizard extends Wizard implements IPageChangingListener {
+public class NewProjWizard extends Wizard implements IPageChangingListener, INewWizard {
 
     private PageRepo pageRepo;
     private PageSubdir pageSubdir;
     private PageDb pageDb;
     private PageMisc pageMisc;
 
-    final IPreferenceStore mainPrefStore;
+    private IPreferenceStore mainPrefStore;
 
     private PgDbProject props;
-
-    public NewProjWizard(IPreferenceStore mainPrefStore) {
+    
+    public NewProjWizard() {
         setWindowTitle(Messages.newProjWizard_new_pg_db_project);
         setNeedsProgressMonitor(true);
-        this.mainPrefStore = mainPrefStore;
+        this.mainPrefStore = Activator.getDefault().getPreferenceStore();
     }
     
     public PgDbProject getProject() {
@@ -277,6 +280,10 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
         }
         
         return true;
+    }
+
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
     }
 }
 

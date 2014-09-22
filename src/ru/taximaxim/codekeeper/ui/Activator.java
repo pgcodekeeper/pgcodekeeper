@@ -16,6 +16,8 @@ public class Activator extends AbstractUIPlugin {
     private static ServiceTracker<ExtendedLogService, ExtendedLogService> logTracker;
     
     private static BundleContext context;
+    
+    private static Activator plugin;
 
     public static BundleContext getContext() {
         return context;
@@ -32,6 +34,7 @@ public class Activator extends AbstractUIPlugin {
     @Override
     public void start(BundleContext bundleContext) throws Exception {
         Activator.context = bundleContext;
+        plugin = this;
         logTracker = new ServiceTracker<>(context, ExtendedLogService.class, null);
         logTracker.open();
     }
@@ -43,9 +46,14 @@ public class Activator extends AbstractUIPlugin {
     @Override
     public void stop(BundleContext bundleContext) throws Exception {
         Activator.context = null;
+        plugin = null;
         if (logTracker != null){
             logTracker.close();
         }
+    }
+    
+    public static Activator getDefault() {
+        return plugin;
     }
     
     /**
