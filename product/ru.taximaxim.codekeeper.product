@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="pgCodeKeeper" uid="ru.taximaxim.codekeeper.product" id="ru.taximaxim.codekeeper.mainapp.product_codekeeper" application="ru.taximaxim.codekeeper.mainapp.application" version="0.5.8.qualifier" useFeatures="false" includeLaunchers="true">
+<product name="pgCodeKeeper" uid="ru.taximaxim.codekeeper.product" id="ru.taximaxim.codekeeper.mainapp.product_codekeeper" application="ru.taximaxim.codekeeper.mainapp.application" version="0.6.0.qualifier" useFeatures="false" includeLaunchers="true">
+
 
    <aboutInfo>
       <image path="/ru.taximaxim.codekeeper.mainapp/icons/product.png"/>
@@ -22,6 +23,7 @@
 
    <windowImages i128="/ru.taximaxim.codekeeper.mainapp/icons/product.png"/>
 
+
    <launcher name="pgcodekeeper">
       <linux icon="icons/product.xpm"/>
       <solaris/>
@@ -31,8 +33,10 @@
       </win>
    </launcher>
 
+
    <vm>
    </vm>
+
 
    <plugins>
       <plugin id="apgdiff"/>
@@ -163,6 +167,12 @@
       <plugin id="org.eclipse.e4.ui.workbench.swt.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.e4.ui.workbench3"/>
       <plugin id="org.eclipse.e4.ui.workbench3.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.ecf"/>
+      <plugin id="org.eclipse.ecf.filetransfer"/>
+      <plugin id="org.eclipse.ecf.identity"/>
+      <plugin id="org.eclipse.ecf.provider.filetransfer"/>
+      <plugin id="org.eclipse.ecf.provider.filetransfer.ssl" fragment="true"/>
+      <plugin id="org.eclipse.ecf.ssl" fragment="true"/>
       <plugin id="org.eclipse.egit"/>
       <plugin id="org.eclipse.egit.core"/>
       <plugin id="org.eclipse.egit.ui"/>
@@ -181,6 +191,10 @@
       <plugin id="org.eclipse.equinox.common"/>
       <plugin id="org.eclipse.equinox.ds"/>
       <plugin id="org.eclipse.equinox.event"/>
+      <plugin id="org.eclipse.equinox.frameworkadmin"/>
+      <plugin id="org.eclipse.equinox.frameworkadmin.equinox"/>
+      <plugin id="org.eclipse.equinox.frameworkadmin.equinox.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.frameworkadmin.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.launcher"/>
       <plugin id="org.eclipse.equinox.launcher.gtk.linux.x86" fragment="true"/>
       <plugin id="org.eclipse.equinox.launcher.gtk.linux.x86.nl_ru" fragment="true"/>
@@ -188,20 +202,49 @@
       <plugin id="org.eclipse.equinox.launcher.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.launcher.win32.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.equinox.launcher.win32.win32.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.artifact.repository"/>
+      <plugin id="org.eclipse.equinox.p2.artifact.repository.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.p2.core"/>
       <plugin id="org.eclipse.equinox.p2.core.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.director"/>
+      <plugin id="org.eclipse.equinox.p2.director.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.p2.engine"/>
       <plugin id="org.eclipse.equinox.p2.engine.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.garbagecollector"/>
+      <plugin id="org.eclipse.equinox.p2.garbagecollector.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.jarprocessor"/>
+      <plugin id="org.eclipse.equinox.p2.jarprocessor.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.p2.metadata"/>
       <plugin id="org.eclipse.equinox.p2.metadata.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.p2.metadata.repository"/>
       <plugin id="org.eclipse.equinox.p2.metadata.repository.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.operations"/>
+      <plugin id="org.eclipse.equinox.p2.operations.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.p2.repository"/>
       <plugin id="org.eclipse.equinox.p2.repository.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.touchpoint.eclipse"/>
+      <plugin id="org.eclipse.equinox.p2.touchpoint.eclipse.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.touchpoint.natives"/>
+      <plugin id="org.eclipse.equinox.p2.touchpoint.natives.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.transport.ecf"/>
+      <plugin id="org.eclipse.equinox.p2.transport.ecf.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.ui"/>
+      <plugin id="org.eclipse.equinox.p2.ui.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.ui.sdk"/>
+      <plugin id="org.eclipse.equinox.p2.ui.sdk.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.ui.sdk.scheduler"/>
+      <plugin id="org.eclipse.equinox.p2.ui.sdk.scheduler.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.p2.updatechecker"/>
+      <plugin id="org.eclipse.equinox.p2.updatechecker.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.preferences"/>
       <plugin id="org.eclipse.equinox.region" fragment="true"/>
       <plugin id="org.eclipse.equinox.registry"/>
       <plugin id="org.eclipse.equinox.security"/>
+      <plugin id="org.eclipse.equinox.security.ui"/>
+      <plugin id="org.eclipse.equinox.simpleconfigurator"/>
+      <plugin id="org.eclipse.equinox.simpleconfigurator.manipulator"/>
+      <plugin id="org.eclipse.equinox.simpleconfigurator.manipulator.nl_ru" fragment="true"/>
+      <plugin id="org.eclipse.equinox.simpleconfigurator.nl_ru" fragment="true"/>
       <plugin id="org.eclipse.equinox.transforms.hook" fragment="true"/>
       <plugin id="org.eclipse.equinox.util"/>
       <plugin id="org.eclipse.equinox.weaving.hook" fragment="true"/>
@@ -271,6 +314,8 @@
       <plugin id="org.eclipse.ui.workbench.texteditor.nl_ru" fragment="true"/>
       <plugin id="org.hamcrest.core"/>
       <plugin id="org.junit"/>
+      <plugin id="org.sat4j.core"/>
+      <plugin id="org.sat4j.pb"/>
       <plugin id="org.w3c.css.sac"/>
       <plugin id="org.w3c.dom.events"/>
       <plugin id="org.w3c.dom.smil"/>
@@ -286,5 +331,9 @@
       <property name="eclipse.log.level" value="INFO" />
       <property name="osgi.instance.area" value="@user.home/.pgcodekeeper" />
    </configurations>
+
+   <repositories>
+      <repository location="http://storage.chelny.taximaxim.ru/codekeeper/p2/codekeeper/" enabled="true" />
+   </repositories>
 
 </product>
