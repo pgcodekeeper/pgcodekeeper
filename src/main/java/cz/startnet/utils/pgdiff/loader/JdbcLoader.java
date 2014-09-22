@@ -11,11 +11,11 @@ import java.sql.Statement;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
@@ -629,31 +629,19 @@ public class JdbcLoader {
         }
 
         // Query PRIVILEGES
-        String revokeMaindb = "ALL ON TABLE " + tableName + " TO maindb";
-        String revokePublic = "ALL ON TABLE " + tableName + " TO PUBLIC";
-        t.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
-        t.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
         res = metaData.getTablePrivileges(null, schema, tableName);
+        TreeMap<String, List<String>> privilegesMap = new TreeMap<String, List<String>>();
         
-        Map<String, List<String>> privileges = new HashMap<String, List<String>>(10);
         while (res.next()) {
-            String grantee = res.getString("GRANTEE");
-            
-            if (privileges.get(grantee) == null){
-                privileges.put(grantee, new ArrayList<String>(Arrays.asList(res.getString("PRIVILEGE"))));
-            }else if (privileges.get(grantee).size() < 6){
-                privileges.get(grantee).add(res.getString("PRIVILEGE"));
-            }else {
-                privileges.put(grantee, new ArrayList<String>(Arrays.asList("ALL")));
+            String granteeName = res.getString("GRANTEE");
+            if (privilegesMap.containsKey(granteeName)){
+                privilegesMap.get(granteeName).add(res.getString("PRIVILEGE"));
+            }else{
+                privilegesMap.put(granteeName, new ArrayList<String>(Arrays.asList(res.getString("PRIVILEGE"))));
             }
         }
-        for(String grantee : privileges.keySet()){
-            for(String priv : privileges.get(grantee)){
-                String privDef = priv + " ON TABLE " + tableName + " TO " + grantee;
-                t.addPrivilege(new PgPrivilege(false, privDef, "GRANT " + privDef));            
-            }
-        }
-
+        setPrivileges(t, tableName, privilegesMap);
+        
         // Query OWNER
         String query = "SELECT tableowner FROM pg_catalog.pg_tables WHERE schemaname = '" + schema + "'" + " AND tablename = '" + tableName + "'";
         Statement stmt = connection.createStatement();
@@ -800,13 +788,18 @@ public class JdbcLoader {
         Long [] granteeOids = (Long[])res.getArray("priv_grantees").getArray();
         String [] privTypes = (String[])res.getArray("priv_types").getArray();
         
-        List<PrivilegePair> se = new ArrayList<PrivilegePair>(10);
-        for (int i = 0; i < granteeOids.length; i++){
-            se.add(new PrivilegePair(getRoleNameByOid(granteeOids[i]), privTypes[i]));
-        }
-        Collections.sort(se);
+        TreeMap<String, List<String>> privilegesMap = new TreeMap<String, List<String>>();
         
-        setPrivileges(f, signatureWithoutDefaults, se);
+        for (int i = 0; i < granteeOids.length; i++){
+            String granteeName = getRoleNameByOid(granteeOids[i]);
+            if (privilegesMap.containsKey(granteeName)){
+                privilegesMap.get(granteeName).add(privTypes[i]);
+            }else{
+                privilegesMap.put(granteeName, new ArrayList<String>(Arrays.asList(privTypes[i])));
+            }
+        }
+        
+        setPrivileges(f, signatureWithoutDefaults, privilegesMap);
         
         // OWNER
         setOwner(f, res.getLong("proowner"));
@@ -844,18 +837,22 @@ public class JdbcLoader {
         Long [] granteeOids = (Long[])res.getArray("priv_grantees").getArray();
         String [] privTypes = (String[])res.getArray("priv_types").getArray();
         
-        List<PrivilegePair> se = new ArrayList<PrivilegePair>(10);
-        for (int i = 0; i < granteeOids.length; i++){
-            se.add(new PrivilegePair(getRoleNameByOid(granteeOids[i]), privTypes[i]));
-        }
-        Collections.sort(se);
+        Map<String, List<String>> privilegesMap = new TreeMap<String, List<String>>();
         
-        setPrivileges(s, sequenceName, se);
+        for (int i = 0; i < granteeOids.length; i++){
+            String granteeName = getRoleNameByOid(granteeOids[i]);
+            if (privilegesMap.containsKey(granteeName)){
+                privilegesMap.get(granteeName).add(privTypes[i]);
+            }else{
+                privilegesMap.put(granteeName, new ArrayList<String>(Arrays.asList(privTypes[i])));
+            }
+        }
+        setPrivileges(s, sequenceName, privilegesMap);
         
         return s;
     }
     
-    private void setPrivileges(PgStatement st, String stSignature, List<PrivilegePair> privileges){
+    private void setPrivileges(PgStatement st, String stSignature, Map<String, List<String>> privilegesMap){
         String stType = "";
         int possiblePrivilegeCount = 13;
         if (st instanceof PgSequence){
@@ -864,6 +861,9 @@ public class JdbcLoader {
         }else if (st instanceof PgFunction){
             stType = "FUNCTION";
             possiblePrivilegeCount = 1;
+        }else if (st instanceof PgTable){
+            stType = "TABLE";
+            possiblePrivilegeCount = 6;
         }else{
             throw new IllegalStateException("Not supported PgStatement class");
         }
@@ -873,37 +873,18 @@ public class JdbcLoader {
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
         st.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
         // TODO REVOKE ALL ON FUNCTION startdblink(text, text) FROM postgres; (public schema)
-        // TODO why postgres and maindb only?s 
-        String previousGranteeName = null;
-        Integer privilegeCounter = 0;
-        String privilegesList = "";
-        for(int i = 0; i < privileges.size(); i++){
-            PrivilegePair p = privileges.get(i);
-            if (p.granteeName.equals(previousGranteeName)){
-                privilegeCounter++;
-                if (!privilegesList.isEmpty()){
-                    privilegesList = privilegesList.concat(",");
-                }
-                privilegesList = privilegesList.concat(p.privilegeType);
+        // TODO why postgres and maindb only?
+        
+        String privDefinition = "";
+        
+        for(String granteeName : privilegesMap.keySet()){
+            List<String> grants = privilegesMap.get(granteeName);
+            if (grants.size() < possiblePrivilegeCount){
+                privDefinition = grants.toString().replace("[", "").replace("]", "").replace(" ", "") + " ON " + stType + " " + stSignature + " TO " + granteeName;
             }else{
-                if (privilegeCounter != 0 && privilegeCounter < possiblePrivilegeCount){
-                    String privDefinition = privilegesList + " ON " + stType + " " + stSignature + " TO " + previousGranteeName;
-                    st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
-                }
-                privilegeCounter = 1;
-                privilegesList = p.privilegeType;
+                privDefinition = "ALL ON " + stType + " " + stSignature + " TO " + granteeName;
             }
-            
-            if (privilegeCounter == possiblePrivilegeCount){
-                privilegesList = "ALL";
-                String privDefinition = "ALL ON " + stType + " " + stSignature + " TO " + p.granteeName;
-                st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
-            }
-            previousGranteeName = p.granteeName;
-            if (i == privileges.size() - 1 && privilegeCounter != possiblePrivilegeCount){
-                String privDefinition = privilegesList + " ON " + stType + " " + stSignature + " TO " + previousGranteeName;
-                st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
-            }
+            st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
         }
     }
     
@@ -1045,8 +1026,12 @@ public class JdbcLoader {
         return "";
     }
     
-    private String getRoleNameByOid(Long ownerOid){
-        return ownerOid == 0 ? "PUBLIC" : cachedRolesNamesByOid.get(ownerOid);
+    /**
+     * Returns the role name by its oid. If role oid is 0, returns "PUBLIC". 
+     * If no role with such oid exists, returns null.
+     */
+    private String getRoleNameByOid(Long roleOid){
+        return roleOid == 0 ? "PUBLIC" : cachedRolesNamesByOid.get(roleOid);
     }
     
     private String getScheNameByOid(Long schemaOid){
@@ -1061,28 +1046,5 @@ public class JdbcLoader {
             iterNames.next();
         }
         return null;
-    }
-}
-
-class PrivilegePair implements Comparable<PrivilegePair>{
-    String granteeName;
-    String privilegeType;
-    
-    public PrivilegePair(String granteeName, String privilegeType) {
-        this.granteeName = granteeName;
-        this.privilegeType = privilegeType;
-    }
-
-    @Override
-    public int compareTo(PrivilegePair pair) {
-        if (this == pair){
-            return 0;
-        }
-        int compareGrantee = granteeName.compareTo(pair.granteeName);
-        if (compareGrantee == 0){
-            return privilegeType.compareTo(pair.privilegeType);
-        }else{
-            return compareGrantee;
-        }
     }
 }
