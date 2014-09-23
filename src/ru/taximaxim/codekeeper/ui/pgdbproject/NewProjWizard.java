@@ -44,7 +44,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
+
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -57,6 +57,7 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class NewProjWizard extends Wizard implements IPageChangingListener, INewWizard {
 
@@ -65,7 +66,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener, INew
     private PageDb pageDb;
     private PageMisc pageMisc;
 
-    private IPreferenceStore mainPrefStore;
+    private final IPreferenceStore mainPrefStore;
 
     private PgDbProject props;
     
@@ -259,8 +260,9 @@ public class NewProjWizard extends Wizard implements IPageChangingListener, INew
         } else if (!pageSubdir.isDoInit() && new File(pageSubdir.getRepoSubdir()).list().length == 0 ){
             try {
                 // init empty db for further commits
-                new ModelExporter(pageSubdir.getRepoSubdir(), new PgDatabase(),
-                        props.getString(PROJ_PREF.ENCODING)).export();
+                new ModelExporter(new File(pageSubdir.getRepoSubdir()),
+                        new PgDatabase(),props.getString(PROJ_PREF.ENCODING))
+                .export();
                 IRepoWorker repo = new JGitExec(props, 
                         mainPrefStore.getString(PREF.GIT_KEY_PRIVATE_FILE));
                 repo.repoRemoveMissingAddNew(new File(pageSubdir.getRepoSubdir()));

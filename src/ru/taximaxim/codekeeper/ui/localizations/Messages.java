@@ -64,12 +64,14 @@ public class Messages extends NLS {
     public static String sqlScriptDialog_psql_dependencies;
     public static String sqlScriptDialog_run_script;
     public static String sqlScriptDialog_save_as;
+    public static String sqlScriptDialog_script_contains_statements_that_may_modify_data;
     public static String sqlScriptDialog_script_execution_interrupted;
     public static String sqlScriptDialog_script_interrupted_by_user;
     public static String sqlScriptDialog_script_saved_to_file;
     public static String sqlScriptDialog_stop_script;
     public static String sqlScriptDialog_stop_script_before_closing_dialog;
     public static String sqlScriptDialog_this_dependencies_have_been_added_already_check_order;
+    public static String sqlScriptDialog_warning;
     public static String stdStreamRedirector_completed_with_code;
     public static String manualDepciesDialog_dependant_dependency;
     public static String manualDepciesDialog_depends_on;
@@ -117,6 +119,7 @@ public class Messages extends NLS {
     public static String diffTableViewer_object_name;
     public static String diffTableViewer_object_type;
     public static String diffTableViewer_objects;
+    public static String diffTableViewer_open_diff_in_new_window;
     public static String diffTableViewer_save_checked;
     public static String diffTableViewer_select_child_elements;
     public static String diffTableViewer_stored_selections;
@@ -139,11 +142,9 @@ public class Messages extends NLS {
     public static String jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date;
     public static String jGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new;
     public static String jGitExec_exception_thrown_at_jgit_repo_update;
-    public static String jGitExec_failed;
     public static String jGitExec_get_conflicts;
     public static String jGitExec_git_failed_cause;
     public static String jGitExec_git_result;
-    public static String jGitExec_git_setting_creditials;
     public static String jGitExec_git_start;
     public static String jGitExec_git_start_url;
     public static String jGitExec_git_status;
@@ -155,7 +156,6 @@ public class Messages extends NLS {
     public static String jGitExec_skip_pull_branch_does_not_exist;
     public static String jGitExec_skip_pull_branch_does_not_exist_skipped;
     public static String jGitExec_status;
-    public static String jGitExec_success;
     public static String jGitExec_successfull;
     public static String jGitExec_un;
     public static String pgDumper_bad_pg_dump_version_output;
@@ -182,7 +182,7 @@ public class Messages extends NLS {
     public static String projProps_password;
     public static String projProps_project_encoding;
     public static String projProps_settings_for_database_schema_source;
-    public static String projProps_database;
+    public static String database;
     public static String projProps_source_of_the_db_schema;
     public static String projSyncSrc_checking_conflicts;
     public static String projSyncSrc_couldnt_synchronize_repository_with_remote;
@@ -204,7 +204,6 @@ public class Messages extends NLS {
     public static String commitPartDescr_commit_confirmation;
     public static String commitPartDescr_commiting;
     public static String commitPartDescr_exporting_db_model;
-    public static String commitPartDescr_from_database;
     public static String commitPartDescr_get_changes_from;
     public static String commitPartDescr_ioexception_while_modifying_project;
     public static String commitPartDescr_modifying_db_model;
@@ -212,14 +211,14 @@ public class Messages extends NLS {
     public static String commitPartDescr_please_enter_a_comment_for_the_commit;
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
-    public static String commitPartDescr_to;
+    public static String to;
+    public static String diffPaneDialog_diff_to_selected_object;
     public static String diffPartDescr_add_dependencies;
     public static String diffPartDescr_diff_script;
     public static String diffPartDescr_from;
     public static String diffPartDescr_get_changes_for;
     public static String diffPartDescr_get_latest;
     public static String diffPartDescr_this_will_apply_selected_changes_to_your_database;
-    public static String diffPartDescr_to_database;
     public static String projectExplorer_generating_object_hashes;
     public static String projectExplorer_loading_project;
     public static String projectExplorer_project_explorer;
@@ -303,11 +302,13 @@ public class Messages extends NLS {
     // ui.prefs
     public static String dbStorePrefPage_clear_db_store;
     public static String dbStorePrefPage_edit_db_store;
-
+    public static String dBUpdatePrefPage_alter_column_statement;
+    public static String dBUpdatePrefPage_drop_column_statement;
+    public static String dBUpdatePrefPage_drop_table;
+    public static String dBUpdatePrefPage_set_warning_when_next_statements_present;
     public static String DiffTableViewer_selected;
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
     public static String generalPrefPage_open_last_project_on_startup;
-    public static String generalPrefPage_consider_depcy_on_commit;
     public static String generalPrefPage_pg_dump_custom_parameters;
     public static String generalPrefPage_pg_dump_executable;
     public static String generalPrefPage_use_depcy_on_commit_page;
@@ -332,11 +333,31 @@ public class Messages extends NLS {
 
     public static String ManualDepciesDialog_set_add_depcies;
     public static String NewProjWizard_settings;
+    public static String ProjectUpdater_error_backup_restore;
+
+    public static String ProjectUpdater_error_no_tempdir;
+
+    public static String ProjectUpdater_error_update;
+
     public static String ProjProps_settings;
     public static String SqlScriptDialog_add_it_to_script;
     public static String SqlScriptDialog_command_to_execute;
     public static String SqlScriptDialog__results_of_script_revealed_dependent_objects;
     public static String SqlScriptDialog_will_be_replaced;
+
+    public static String StdStreamRedirector_error_reading_std;
+
+    public static String StdStreamRedirector_error_reading_std_external;
+
+    public static String StdStreamRedirector_error_returncode_see_for_details;
+
+    public static String StdStreamRedirector_process_returned_with_error;
+
+    public static String StdStreamRedirector_wait_destroy_interrupted_unexpectedly;
+
+    public static String StdStreamRedirector_wait_thread_interrupted_unexpectedly;
+
+    public static String SwitchBranch_error_checkout_wait;
     public static String XmlHistory_read_error;
     public static String XmlHistory_write_error;
     public static String XmlStringList_root_name_invalid;

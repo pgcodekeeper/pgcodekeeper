@@ -20,9 +20,9 @@ import org.eclipse.egit.ui.internal.branch.BranchOperationUI;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.swt.widgets.Shell;
 
-import ru.taximaxim.codekeeper.ui.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -67,7 +67,7 @@ public class SwitchBranch extends E4HandlerWrapper {
                             });
                         }
                     } catch (IOException | InterruptedException ex) {
-                        throw new IllegalStateException("Exception waiting for checkout job ", ex); //$NON-NLS-1$
+                        throw new IllegalStateException(Messages.SwitchBranch_error_checkout_wait, ex);
                     } finally {
                         git.get().close();
                     }

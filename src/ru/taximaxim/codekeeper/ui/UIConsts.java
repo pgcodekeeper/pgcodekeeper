@@ -1,9 +1,7 @@
 package ru.taximaxim.codekeeper.ui;
 
-import org.eclipse.e4.core.contexts.IEclipseContext;
-
 /**
- * Stores string ids for model objects, objects in {@link IEclipseContext}, etc,
+ * Stores string ids for model objects, objects in IEclipseContext, etc,
  * that sort of string constants.
  * 
  * @author Alexander Levsha
@@ -11,6 +9,7 @@ import org.eclipse.e4.core.contexts.IEclipseContext;
 public interface UIConsts {
 
     String PREF_STORE = PLUGIN_ID.THIS + ".preferenceStore"; //$NON-NLS-1$
+    String MAIN_CONTEXT = "ru.taximaxim.codekeeper.ui.pgCodeKeeper"; //$NON-NLS-1$
     
     interface PLUGIN_ID {
         String JGIT = "org.eclipse.jgit"; //$NON-NLS-1$
@@ -63,11 +62,20 @@ public interface UIConsts {
         String GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile"; //$NON-NLS-1$
         String RECENT_PROJECTS = "prefRecentProject"; //$NON-NLS-1$
         String OPEN_LAST_ON_START = "prefOpenLastOnStart"; //$NON-NLS-1$
-        String CONSIDER_DEPCY_IN_COMMIT = "considerDepcyInCommit"; //$NON-NLS-1$
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String LAST_REPO = "prefLastRepo"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
+    }
+    
+    interface COMMIT_PREF {
+        String CONSIDER_DEPCY_IN_COMMIT = "considerDepcyInCommit"; //$NON-NLS-1$
+    }
+    
+    interface DB_UPDATE_PREF {
         String USE_PSQL_DEPCY = "prefUsePSQLDepcy"; //$NON-NLS-1$
+        String DROP_TABLE_STATEMENT = "prefDropTableStatement"; //$NON-NLS-1$
+        String ALTER_COLUMN_STATEMENT = "prefAlterColumnStatement"; //$NON-NLS-1$
+        String DROP_COLUMN_STATEMENT = "prefDropColumnStatement"; //$NON-NLS-1$
     }
     
     interface PROJ_PREF {

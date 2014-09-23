@@ -38,8 +38,7 @@ public class PgDumper {
         this.dumpFile = dumpFile;
         
         List<String> listCustom = new ArrayList<>(
-                Arrays.asList(customParams.split(Pattern.quote(" "))) //$NON-NLS-1$
-                );
+                Arrays.asList(customParams.split(Pattern.quote(" ")))); //$NON-NLS-1$
         listCustom.removeAll(Arrays.asList(new String[] { "" })); //$NON-NLS-1$
         this.customParams = Collections.unmodifiableList(listCustom);
     }

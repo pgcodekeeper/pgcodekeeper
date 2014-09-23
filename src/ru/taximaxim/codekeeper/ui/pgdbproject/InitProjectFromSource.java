@@ -9,17 +9,15 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
-import ru.taximaxim.codekeeper.ui.fileutils.Dir;
+import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class InitProjectFromSource implements IRunnableWithProgress {
 
@@ -60,13 +58,7 @@ public class InitProjectFromSource implements IRunnableWithProgress {
     /**
      * clean repository, generate new file structure, preserve and fix repo
      * metadata, repo rm/add, commit new revision
-     * 
-     * @param pm
-     * @param repo
-     * @throws IOException
-     * @throws InvocationTargetException
      */
-
     private void initRepoFromSource(SubMonitor pm, IRepoWorker repo)
             throws IOException, InvocationTargetException {
         File dirRepo = props.getProjectWorkingDir();
@@ -89,16 +81,7 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         }
 
         pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model); // 75
-
-        for (ApgdiffConsts.WORK_DIR_NAMES subdirName : ApgdiffConsts.WORK_DIR_NAMES.values()) {
-            File subdir = new File(dirRepo, subdirName.toString());
-            if (subdir.exists()) {
-                Dir.deleteRecursive(subdir);
-            }
-        }
-        
-        new ModelExporter(dirRepo.getAbsolutePath(), db,
-                props.getString(PROJ_PREF.ENCODING)).export();
+        new ProjectUpdater(db, props).update();
 
         pm.newChild(25).subTask(PROJ_PREF.REPO_TYPE_GIT_NAME + " committing..."); // 100 //$NON-NLS-1$
         repo.repoRemoveMissingAddNew(dirRepo);

@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewer;
+import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewerExtender;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 public class SqlEditorDescr extends DynamicE4View {
@@ -65,13 +65,13 @@ public class SqlEditorDescr extends DynamicE4View {
     private void postConstruct(Composite parent, PgDbProject proj)
             throws UnsupportedEncodingException, IOException {
         parent.setLayout(new FillLayout());
-        
+
         File fileText = new File(part.getPersistedState().get(PART.SQL_EDITOR_FILENAME));
         IDocument doc = new Document(new String(
                 Files.readAllBytes(fileText.toPath()), 
                 proj.getString(PROJ_PREF.ENCODING)));
         
-        SqlSourceViewer v = new SqlSourceViewer(parent, SWT.NONE);
+        SqlSourceViewerExtender v = new SqlSourceViewerExtender(parent, SWT.NONE);
         v.addLineNumbers();
         v.setDocument(doc);
         v.setEditable(false);

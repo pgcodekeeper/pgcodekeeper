@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -86,7 +86,7 @@ public class CommitDialog extends TrayDialog {
         gd.heightHint = 300;
         gd.widthHint = 1000;
         dtvTop.setLayoutData(gd);
-        dtvTop.setFilteredInput(filtered, treeDiffer);
+        dtvTop.setFilteredInput(filtered, treeDiffer, false);
         
         if (depcyElementsSet != null){
             Group gBottom = new Group(container, SWT.NONE);
@@ -101,7 +101,7 @@ public class CommitDialog extends TrayDialog {
             gd.heightHint = 300;
             gd.widthHint = 1000;
             dtvBottom.setLayoutData(gd);
-            dtvBottom.setInputCollection(depcyElementsSet, treeDiffer);
+            dtvBottom.setInputCollection(depcyElementsSet, treeDiffer, false);
             dtvBottom.setCheckedElements(conflictingElementsSet, false);
             dtvBottom.redraw();
         }
