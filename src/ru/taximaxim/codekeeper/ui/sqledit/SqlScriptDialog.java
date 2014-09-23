@@ -17,9 +17,12 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.Document;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -75,7 +78,7 @@ public class SqlScriptDialog extends MessageDialog {
     private boolean searchForDropTable;
     private boolean searchForAlterColumn;
     private boolean searchForDropColumn;
-    private Color background;
+    private Color colorPink;
     
     private String dbHost;
     private String dbPort;
@@ -210,12 +213,20 @@ public class SqlScriptDialog extends MessageDialog {
                 if (differ.getScript().isDangerDdl(!searchForDropColumn,
                         !searchForAlterColumn, !searchForDropTable)) {
                     if (showDangerWarning() == SWT.OK) {
-                        background = getShell().getDisplay().getSystemColor(SWT.COLOR_CYAN);
-                        sqlEditor.getTextWidget().setBackground(background);
+                        sqlEditor.getTextWidget().setBackground(colorPink);
                     } else {
                         close();
                     }
                 }
+            }
+        });
+        
+        colorPink = new Color(getShell().getDisplay(), new RGB(0xff, 0xe1, 0xff));
+        parent.addDisposeListener(new DisposeListener() {
+            
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                colorPink.dispose();
             }
         });
         
@@ -228,9 +239,6 @@ public class SqlScriptDialog extends MessageDialog {
         sqlEditor.setEditable(true);
         sqlEditor.setDocument(new Document(differ.getDiffDirect()));
         sqlEditor.activateAutocomplete();
-        if (background != null) {
-            sqlEditor.getTextWidget().setBackground(background);
-        }
         
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
@@ -381,9 +389,7 @@ public class SqlScriptDialog extends MessageDialog {
                         differ.setAdditionalDepciesSource(saveToRestore);
                         return;
                     } else {
-                        background = getShell().getDisplay().getSystemColor(
-                                SWT.COLOR_CYAN);
-                        sqlEditor.getTextWidget().setBackground(background);
+                        sqlEditor.getTextWidget().setBackground(colorPink);
                     }
                 }
                 sqlEditor.setDocument(new Document(differ.getDiffDirect()));
