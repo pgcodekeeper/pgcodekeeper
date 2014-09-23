@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -13,9 +14,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
@@ -48,23 +49,20 @@ public class JdbcLoader {
     private final int TRIGGER_TYPE_TRUNCATE = 1 << 5;
     private final int TRIGGER_TYPE_INSTEAD = 1 << 6;
     
-    
     /**
      * Prepared statements to be executed
      */
+    private PreparedStatement prepStatTablePrivileges;
     private PreparedStatement prepStatTriggers;
     private PreparedStatement prepStatFuncName;
     private PreparedStatement prepStatFunctions;
     private PreparedStatement prepStatLanguages;
-    private PreparedStatement prepStatTypes;
     private PreparedStatement prepStatSequences;
     private PreparedStatement prepStatExtensions;
     private PreparedStatement prepStatConstraints;
     private PreparedStatement prepStatIndecies;
     private PreparedStatement prepStatColumnsOfSchema;
     private PreparedStatement prepStatIndexColumnDefault;
-    
-    // TODO HashMap caching of type, language
     
     final private static Map<String, String> DATA_TYPE_ALIASES = new HashMap<String, String>(){
         {
@@ -89,6 +87,7 @@ public class JdbcLoader {
     private Map<String, Long> cachedSchemaByName = new HashMap<String, Long>();
     private Map<Long, String> cachedIndexAccesMethodsByOid = new HashMap<Long, String>();
     private Map<Long, String> cachedRolesNamesByOid = new HashMap<Long, String>();
+    private Map<Long, String> cachedTypeNamesByOid = new HashMap<Long, String>();
     private Map<Long, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<Long, Map<Integer,String>>();
     
     private String host;
@@ -122,27 +121,29 @@ public class JdbcLoader {
             prepareData();
             metaData = connection.getMetaData();
 
-            ResultSet res = metaData.getSchemas();
-            while (res.next()) {
-                String schemaName = res.getString("TABLE_SCHEM");
-                if (schemaName.equals("pg_catalog") || schemaName.equals("information_schema")){
-                    continue;
-                }
-                prepareDataForSchema(getSchemaOidByName(schemaName));
-                PgSchema schema = getSchema(res.getString("TABLE_SCHEM"));
-                
-                if (schemaName.equals("public")){
-                    d.replaceSchema(d.getSchema("public"), schema);                    
-                }else{
-                    d.addSchema(schema);
-                }
+            try(ResultSet res = metaData.getSchemas()){
+                while (res.next()) {
+                    String schemaName = res.getString("TABLE_SCHEM");
+                    if (schemaName.equals("pg_catalog") || schemaName.equals("information_schema")){
+                        continue;
+                    }
+                    prepareDataForSchema(getSchemaOidByName(schemaName));
+                    PgSchema schema = getSchema(res.getString("TABLE_SCHEM"));
+                    
+                    if (schemaName.equals("public")){
+                        d.replaceSchema(d.getSchema("public"), schema);                    
+                    }else{
+                        d.addSchema(schema);
+                    }
+                }   
             }
-            Log.log(Log.LOG_INFO, "Creating extensions from JDBC");
-            res = prepStatExtensions.executeQuery();
-            while(res.next()){
-                PgExtension extension = getExtension(res);
-                if (extension != null){
-                    d.addExtension(extension);
+            
+            try(ResultSet res = prepStatExtensions.executeQuery()){
+                while(res.next()){
+                    PgExtension extension = getExtension(res);
+                    if (extension != null){
+                        d.addExtension(extension);
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -156,37 +157,49 @@ public class JdbcLoader {
     }
     
     private void prepareData() throws SQLException {
-        ResultSet res = null;
         try(Statement stmnt = connection.createStatement()){
             // fill in namespace map
-            res = stmnt.executeQuery("SELECT nspname, oid FROM pg_catalog.pg_namespace");
-            while(res.next()){
-                cachedSchemaByName.put(res.getString("nspname"), res.getLong("oid"));
+            try(ResultSet res = stmnt.executeQuery("SELECT oid::bigint, nspname FROM pg_catalog.pg_namespace")){
+                while(res.next()){
+                    cachedSchemaByName.put(res.getString("nspname"), res.getLong("oid"));
+                }                
             }
-            res.close();
             
             // fill in index access method map
-            res = stmnt.executeQuery("SELECT oid, amname FROM pg_catalog.pg_am");
-            while(res.next()){
-                cachedIndexAccesMethodsByOid.put(res.getLong("oid"), res.getString("amname"));
+            try(ResultSet res = stmnt.executeQuery("SELECT oid::bigint, amname FROM pg_catalog.pg_am")){
+                while(res.next()){
+                    cachedIndexAccesMethodsByOid.put(res.getLong("oid"), res.getString("amname"));
+                }                
             }
-            res.close();
             
             // fill in rolenames
-            res = stmnt.executeQuery("SELECT oid, rolname FROM pg_catalog.pg_roles");
-            while (res.next()){
-                 cachedRolesNamesByOid.put(res.getLong("oid"), res.getString("rolname"));
+            try(ResultSet res = stmnt.executeQuery("SELECT oid::bigint, rolname FROM pg_catalog.pg_roles")){
+                while (res.next()){
+                    cachedRolesNamesByOid.put(res.getLong("oid"), res.getString("rolname"));
+                }
             }
-        }finally{
-            try{
-                res.close();
-            }catch(Exception e){
-                Log.log(Log.LOG_INFO, "Could not close result set after filling in maps", e);
+            
+            // fill in data types
+            try(ResultSet res = stmnt.executeQuery("SELECT oid::bigint, typname FROM pg_catalog.pg_type")){
+                while (res.next()){
+                    String typeName = res.getString("typname");
+                    cachedTypeNamesByOid.put(res.getLong("oid"), 
+                            DATA_TYPE_ALIASES.containsKey(typeName) ? DATA_TYPE_ALIASES.get(typeName) : typeName);
+                }                
             }
         }
     }
 
     private void prepareStatements() throws SQLException{
+        String queryTables = 
+                "SELECT "
+                + "     c.relowner::bigint, "
+                + "     c.relacl AS aclArray "
+                + "FROM "
+                + "     pg_catalog.pg_class c "
+                + "WHERE "
+                + "     c.oid = ?";
+        prepStatTablePrivileges = connection.prepareStatement(queryTables);
         prepStatTriggers = connection.prepareStatement("SELECT tgfoid, tgname, tgfoid, tgtype, tgrelid FROM pg_catalog.pg_trigger WHERE tgrelid = ?");
         prepStatFuncName = connection.prepareStatement("SELECT proname FROM pg_catalog.pg_proc WHERE oid = ?");
         
@@ -198,20 +211,16 @@ public class JdbcLoader {
                 + "     prosrc, "
                 + "     pg_get_functiondef(p.oid) AS probody, "
                 + "     prorettype, "
-                + "     proallargtypes, "
+                + "     proallargtypes::bigint[], "
                 + "     proargmodes, "
                 + "     proargnames, "
                 + "     pg_get_function_arguments(p.oid) AS proarguments, "
                 + "     pg_get_function_identity_arguments(p.oid) AS proarguments_without_default, "
                 + "     proargdefaults, "
-                + "     array_agg(acl.grantor) AS priv_grantors, "
-                + "     array_agg(acl.grantee)::bigint[] AS priv_grantees, "
-                + "     array_agg(acl.privilege_type) AS priv_types, "
-                + "     array_agg(acl.is_grantable) AS priv_grantable, "
+                + "     proacl AS aclArray,"
                 + "     d.description AS comment "
                 + "FROM "
-                + "     pg_catalog.pg_proc p LEFT JOIN pg_catalog.pg_description d ON d.objoid = p.oid,"
-                + "     aclexplode(proacl) acl "
+                + "     pg_catalog.pg_proc p LEFT JOIN pg_catalog.pg_description d ON d.objoid = p.oid "
                 + "WHERE "
                 + "     pronamespace = ? AND "
                 + "     proisagg = FALSE "
@@ -229,11 +238,11 @@ public class JdbcLoader {
                 + "     proargnames, "
                 + "     proarguments, "
                 + "     proargdefaults,"
-                + "     comment;";
+                + "     comment,"
+                + "     aclArray";
         
         prepStatFunctions = connection.prepareStatement(queryFunctions);
         prepStatLanguages = connection.prepareStatement("SELECT lanname FROM pg_catalog.pg_language WHERE oid = ?");
-        prepStatTypes = connection.prepareStatement("SELECT typname FROM pg_catalog.pg_type WHERE oid = ?");
         
         String querySequenceInfo = 
                 "SELECT "
@@ -248,16 +257,12 @@ public class JdbcLoader {
                 + "     d.refobjsubid AS referenced_column,"
                 + "     d.refobjid AS referenced_table_oid,"
                 + "     (SELECT relname FROM pg_catalog.pg_class WHERE oid = d.refobjid AND relkind = 'r') referenced_table_name,"
-                + "     array_agg(acl.grantor) AS priv_grantors,"
-                + "     array_agg(acl.grantee)::bigint[] AS priv_grantees,"
-                + "     array_agg(acl.privilege_type) AS priv_types,"
-                + "     array_agg(acl.is_grantable) AS priv_grantable "
+                + "     c.relacl AS aclArray "
                 + "FROM "
                 + "     information_schema.sequences s,"
                 + "     pg_catalog.pg_class c,"
                 + "     pg_catalog.pg_namespace n,"
-                + "     pg_catalog.pg_depend d,"
-                + "     aclexplode(relacl) acl "
+                + "     pg_catalog.pg_depend d "
                 + "WHERE "
                 + "     s.sequence_schema = ? AND "
                 + "     c.relname = s.sequence_name AND "
@@ -275,7 +280,8 @@ public class JdbcLoader {
                 + "     cycle_option,"
                 + "     referenced_column,"
                 + "     referenced_table_oid,"
-                + "     referenced_table_name "
+                + "     referenced_table_name,"
+                + "     aclArray "
                 + "ORDER BY "
                 + "     sequence_oid;";
 
@@ -292,6 +298,11 @@ public class JdbcLoader {
             connection.close();
         } catch (Exception e) {
             Log.log(Log.LOG_INFO, "Could not close JDBC connection", e);
+        }
+        try {
+            prepStatTablePrivileges.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_INFO, "Could not close prepared statement for tables", e);
         }
         try {
             prepStatTriggers.close();
@@ -314,11 +325,6 @@ public class JdbcLoader {
             Log.log(Log.LOG_INFO, "Could not close prepared statement for languages", e);
         }
         try {
-            prepStatTypes.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for types", e);
-        }
-        try {
             prepStatSequences.close();
         } catch (Exception e) {
             Log.log(Log.LOG_INFO, "Could not close prepared statement for sequences", e);
@@ -338,23 +344,36 @@ public class JdbcLoader {
         } catch (Exception e) {
             Log.log(Log.LOG_INFO, "Could not close prepared statement for indecies", e);
         }
+        try {
+            prepStatColumnsOfSchema.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_INFO, "Could not close prepared statement for schema columns", e);
+        }
     }
     
     private PgSchema getSchema(String schema) throws SQLException{
         PgSchema s = new PgSchema(schema, "");
-//        Log.log(Log.LOG_INFO, "Creating tables from JDBC");
+//        Log.log(Log.LOG_INFO, "Creating tables from JDBC for schema " + schema);
         ResultSet res = metaData.getTables(null, schema, "%", new String[] {"TABLE"} );
         while (res.next()) {
             PgTable table = getTable(schema, res.getString("table_name"));
+            String comment = res.getString("REMARKS");
+            if (comment != null && !comment.isEmpty()){
+                table.setComment("'" + comment + "'");                
+            }
             s.addTable(table);
         }
-//        Log.log(Log.LOG_INFO, "Creating views from JDBC");
+//        Log.log(Log.LOG_INFO, "Creating views from JDBC for schema " + schema);
         res = metaData.getTables(null, schema, "%", new String[] {"VIEW"} );
         while (res.next()) {
             PgView view = getView(schema, res.getString("table_name"));
+            String comment = res.getString("REMARKS");
+            if (comment != null && !comment.isEmpty()){
+                view.setComment("'" + comment + "'");                
+            }
             s.addView(view);
         }
-//        Log.log(Log.LOG_INFO, "Creating functions from JDBC");
+//        Log.log(Log.LOG_INFO, "Creating functions from JDBC for schema " + schema);
         prepStatFunctions.setLong(1, getSchemaOidByName(schema));
         res = prepStatFunctions.executeQuery();
         while (res.next()){
@@ -363,7 +382,7 @@ public class JdbcLoader {
                 s.addFunction(function);
             }
         }
-//        Log.log(Log.LOG_INFO, "Creating sequences from JDBC");
+//        Log.log(Log.LOG_INFO, "Creating sequences from JDBC for schema " + schema);
         prepStatSequences.setString(1, schema);
         res = prepStatSequences.executeQuery();
         PgSequence sequence = null;
@@ -577,6 +596,7 @@ public class JdbcLoader {
 
     private PgTable getTable(String schema, String tableName) throws SQLException{
         // TODO get oids earlier (or cache), as they are not changed in time (minimize db queries)
+//        System.err.println("begin " + schema + "." + tableName);
         Long tableOid = getTableOidByName(tableName, getSchemaOidByName(schema));
         StringBuilder tableDef = new StringBuilder(); 
 
@@ -618,6 +638,10 @@ public class JdbcLoader {
             }
             
             tableDef.append(",\n");
+            String comment = res.getString("REMARKS");
+            if (comment != null && !comment.isEmpty()){
+                column.setComment("'" + comment + "'");                
+            }
             columns.add(column);
         }
         tableDef.append(");");
@@ -628,26 +652,12 @@ public class JdbcLoader {
             t.addColumn(column);
         }
 
-        // Query PRIVILEGES
-        res = metaData.getTablePrivileges(null, schema, tableName);
-        TreeMap<String, List<String>> privilegesMap = new TreeMap<String, List<String>>();
-        
-        while (res.next()) {
-            String granteeName = res.getString("GRANTEE");
-            if (privilegesMap.containsKey(granteeName)){
-                privilegesMap.get(granteeName).add(res.getString("PRIVILEGE"));
-            }else{
-                privilegesMap.put(granteeName, new ArrayList<String>(Arrays.asList(res.getString("PRIVILEGE"))));
-            }
-        }
-        setPrivileges(t, tableName, privilegesMap);
-        
-        // Query OWNER
-        String query = "SELECT tableowner FROM pg_catalog.pg_tables WHERE schemaname = '" + schema + "'" + " AND tablename = '" + tableName + "'";
-        Statement stmt = connection.createStatement();
-        res = stmt.executeQuery(query);
-        if (res.next()){
-            t.setOwner(res.getString("tableowner"));
+        // Query PRIVILEGES, OWNER
+        prepStatTablePrivileges.setLong(1, tableOid);
+        res = prepStatTablePrivileges.executeQuery();
+        if (res.next()) {
+            t.setOwner(getRoleNameByOid(res.getLong("relowner")));
+            setPrivileges(t, tableName, res.getString("aclArray"));
         }
         
         // Query CONSTRAINTS
@@ -769,40 +779,65 @@ public class JdbcLoader {
      *         proisstrict AS isnullonnull FROM pg_catalog.pg_proc WHERE pronamespace = ?"
      */
     private PgFunction getFunction(ResultSet res, String schemaName) throws SQLException{
-        String definition = res.getString("probody");
-        String languageName = getLangNameByOid(res.getLong("prolang"));
-        int langFirstOccurenceIndex = definition.indexOf("LANGUAGE " + languageName); 
-        String body = definition.substring(langFirstOccurenceIndex).replaceAll("\\$function\\$", "\\$\\$");
         String functionName = res.getString("proname");
         PgFunction f = new PgFunction(functionName, "", getSearchPath(schemaName));
+        
+        String definition = res.getString("probody");
+        String languageName = getLangNameByOid(res.getLong("prolang"));
+        int langFirstOccurenceIndex = definition.indexOf("LANGUAGE " + languageName);
+        String body = definition.substring(langFirstOccurenceIndex);
+        
+        // TODO Some debug modifications are done to function body
+        // BEGIN debug modifications
+        if (body.charAt(body.length() - 1) == '\n'){
+            body = body.substring(0, body.length() - 1);
+        }
+        body = body.replaceAll("\\$function\\$", "\\$\\$");
+        body = body.replace("LANGUAGE " + languageName + "\n SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " SECURITY DEFINER\n    AS ");
+        body = body.replace("LANGUAGE " + languageName + "\n IMMUTABLE STRICT SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " IMMUTABLE STRICT SECURITY DEFINER\n    AS ");
+        body = body.replace("LANGUAGE " + languageName + "\n STABLE SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " STABLE SECURITY DEFINER\n    AS ");
+        // END debug modifications
+        
         f.setBody(body);
-        f.setReturns(getTypeNameByOid(res.getLong("prorettype")));
-
+        
+        // RETURN TYPE
+        Array proargmodes = res.getArray("proargmodes");
+        boolean returnsTable = false;
+        StringBuilder returnedTableArguments = new StringBuilder();
+        if (proargmodes != null && Arrays.asList((String[])proargmodes.getArray()).contains("t")){
+            String [] argModes = (String[])proargmodes.getArray();
+            String [] argNames = (String[])res.getArray("proargnames").getArray();
+            Long [] argTypeOids = (Long[])res.getArray("proallargtypes").getArray();
+            for(int i = 0; i < argModes.length; i++){
+                String type = argModes[i];
+                if (type.equals("t")){
+                    returnsTable = true;
+                    if(returnedTableArguments.length() > 0){
+                        returnedTableArguments.append(", ");
+                    }
+                    returnedTableArguments.append(argNames[i] + " " + getTypeNameByOid(argTypeOids[i]));
+                }
+            }            
+        }
+        
+        if (returnsTable){
+            f.setReturns("TABLE(" + returnedTableArguments + ")");
+        }else{
+            f.setReturns(getTypeNameByOid(res.getLong("prorettype")));
+        }
+        
+        // ARGUMENTS
         String arguments = res.getString("proarguments");
         if (!arguments.isEmpty()){
             CreateFunctionParser.parseArguments(new Parser("(" + arguments + ")"), f);
         }
         
-        // PRIVILEGES
-        String signatureWithoutDefaults = functionName + "(" + res.getString("proarguments_without_default") + ")";
-        Long [] granteeOids = (Long[])res.getArray("priv_grantees").getArray();
-        String [] privTypes = (String[])res.getArray("priv_types").getArray();
-        
-        TreeMap<String, List<String>> privilegesMap = new TreeMap<String, List<String>>();
-        
-        for (int i = 0; i < granteeOids.length; i++){
-            String granteeName = getRoleNameByOid(granteeOids[i]);
-            if (privilegesMap.containsKey(granteeName)){
-                privilegesMap.get(granteeName).add(privTypes[i]);
-            }else{
-                privilegesMap.put(granteeName, new ArrayList<String>(Arrays.asList(privTypes[i])));
-            }
-        }
-        
-        setPrivileges(f, signatureWithoutDefaults, privilegesMap);
-        
         // OWNER
         setOwner(f, res.getLong("proowner"));
+        
+        // PRIVILEGES
+        String signatureWithoutDefaults = functionName + "(" + res.getString("proarguments_without_default") + ")";
+        setPrivileges(f, signatureWithoutDefaults, res.getString("aclArray"));
         
         // COMMENT
         String comment = res.getString("comment");
@@ -834,27 +869,17 @@ public class JdbcLoader {
         setOwner(s, res.getLong("relowner"));
         
         // PRIVILEGES
-        Long [] granteeOids = (Long[])res.getArray("priv_grantees").getArray();
-        String [] privTypes = (String[])res.getArray("priv_types").getArray();
-        
-        Map<String, List<String>> privilegesMap = new TreeMap<String, List<String>>();
-        
-        for (int i = 0; i < granteeOids.length; i++){
-            String granteeName = getRoleNameByOid(granteeOids[i]);
-            if (privilegesMap.containsKey(granteeName)){
-                privilegesMap.get(granteeName).add(privTypes[i]);
-            }else{
-                privilegesMap.put(granteeName, new ArrayList<String>(Arrays.asList(privTypes[i])));
-            }
-        }
-        setPrivileges(s, sequenceName, privilegesMap);
+        setPrivileges(s, sequenceName, res.getString("aclArray"));
         
         return s;
     }
     
-    private void setPrivileges(PgStatement st, String stSignature, Map<String, List<String>> privilegesMap){
+    private void setPrivileges(PgStatement st, String stSignature, String aclItemsArrayAsString){
+        if (aclItemsArrayAsString == null){
+            return;
+        }
         String stType = "";
-        int possiblePrivilegeCount = 13;
+        int possiblePrivilegeCount = 12;
         if (st instanceof PgSequence){
             stType = "SEQUENCE";
             possiblePrivilegeCount = 3;
@@ -863,27 +888,20 @@ public class JdbcLoader {
             possiblePrivilegeCount = 1;
         }else if (st instanceof PgTable){
             stType = "TABLE";
-            possiblePrivilegeCount = 6;
+            possiblePrivilegeCount = 7;
         }else{
             throw new IllegalStateException("Not supported PgStatement class");
         }
         
-        String revokeMaindb = "ALL ON " + stType + " " + stSignature + " FROM maindb";
+        String revokeMaindb = "ALL ON " + stType + " " + stSignature + " FROM " + st.getOwner();
         String revokePublic = "ALL ON " + stType + " " + stSignature + " FROM PUBLIC";
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
         st.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
-        // TODO REVOKE ALL ON FUNCTION startdblink(text, text) FROM postgres; (public schema)
-        // TODO why postgres and maindb only?
         
-        String privDefinition = "";
+        LinkedHashMap<String, String> grants = new JdbcAclParser().parse(aclItemsArrayAsString, possiblePrivilegeCount);
         
-        for(String granteeName : privilegesMap.keySet()){
-            List<String> grants = privilegesMap.get(granteeName);
-            if (grants.size() < possiblePrivilegeCount){
-                privDefinition = grants.toString().replace("[", "").replace("]", "").replace(" ", "") + " ON " + stType + " " + stSignature + " TO " + granteeName;
-            }else{
-                privDefinition = "ALL ON " + stType + " " + stSignature + " TO " + granteeName;
-            }
+        for(String granteeName : grants.keySet()){
+            String privDefinition = grants.get(granteeName) + " ON " + stType + " " + stSignature + " TO " + granteeName;
             st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
         }
     }
@@ -1018,12 +1036,7 @@ public class JdbcLoader {
     }
     
     private String getTypeNameByOid(Long typeOid) throws SQLException {
-        prepStatTypes.setLong(1, typeOid);
-        ResultSet res = prepStatTypes.executeQuery();
-        if (res.next()){
-            return res.getString("typname");
-        }
-        return "";
+        return cachedTypeNamesByOid.get(typeOid);
     }
     
     /**
