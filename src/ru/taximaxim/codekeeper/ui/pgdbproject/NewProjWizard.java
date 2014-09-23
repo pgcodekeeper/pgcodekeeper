@@ -3,12 +3,17 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.Set;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PageChangingEvent;
@@ -43,12 +48,13 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-
+import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -201,6 +207,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener, INew
 
     @Override
     public boolean performFinish() {
+        finish();
         props = new PgDbProject(pageRepo.getProjectFile());
 
         Log.log(Log.LOG_INFO, "Creating new project properties at " //$NON-NLS-1$
@@ -282,6 +289,39 @@ public class NewProjWizard extends Wizard implements IPageChangingListener, INew
         }
         
         return true;
+    }
+    private void finish() {
+        IEclipsePreferences prefs = PgDbProject2
+                .getProgFromFile(pageRepo.getProjectFile()).getPrefs();
+        
+        String src;
+        if (pageDb.isSourceDb()) {
+            src = PROJ_PREF.SOURCE_TYPE_DB;
+        } else if (pageDb.isSourceDump()) {
+            src = PROJ_PREF.SOURCE_TYPE_DUMP;
+        } else if (pageDb.isSourceNone()) {
+            src = PROJ_PREF.SOURCE_TYPE_NONE;
+        } else {
+            throw new IllegalStateException(Messages.newProjWizard_no_schema_source_selected);
+        }
+        prefs.put(PROJ_PREF.SOURCE, src);
+
+        prefs.put(PROJ_PREF.DB_NAME, pageDb.getDbName());
+        prefs.put(PROJ_PREF.DB_USER, pageDb.getDbUser());
+        prefs.put(PROJ_PREF.DB_PASS, pageDb.getDbPass());
+        prefs.put(PROJ_PREF.DB_HOST, pageDb.getDbHost());
+        prefs.putInt(PROJ_PREF.DB_PORT, pageDb.getDbPort());
+        
+        prefs.put(PROJ_PREF.REPO_TYPE, pageRepo.getRepoType());
+        prefs.put(PROJ_PREF.REPO_URL, pageRepo.getRepoUrl());
+        prefs.put(PROJ_PREF.REPO_USER, pageRepo.getRepoUser());
+        prefs.put(PROJ_PREF.REPO_PASS, pageRepo.getRepoPass());
+        try {
+            prefs.flush();
+        } catch (BackingStoreException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     @Override
