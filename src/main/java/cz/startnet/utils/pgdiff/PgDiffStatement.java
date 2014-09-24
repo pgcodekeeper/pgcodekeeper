@@ -13,29 +13,45 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
  */
 public class PgDiffStatement {
 
+    public final DiffStatementType type;
+    public final String objname;
+    public final String statement;
+    
     public enum DiffStatementType {
         DROP, CREATE, OTHER
     }
     
+    private static final String ALTER_TABLE_PATTERN =
+            "^ALTER[\\s]+TABLE[\\s]+"
+            + "(IF[\\s]+EXISTS[\\s]+)?"
+            + "(ONLY[\\s]+)?"
+            + "([\\w]+[\\s]+)"
+            + "(\\*[\\s]+)?";
+    
     public enum DangerStatement {
-        DROP_TABLE("DROP[\\s]+TABLE"),
-        ALTER_COLUMN("ALTER[\\s]+COLUMN"),
-        DROP_COLUMN("DROP[\\s]+COLUMN");
         
-        private final String regex;
+        DROP_TABLE("^DROP[\\s]+TABLE.+"),
+        
+        ALTER_COLUMN(ALTER_TABLE_PATTERN
+                // match 'ALTER COLUMN' or 'ALTER column_name'
+                + "ALTER[\\s]+([\\w]+).+"),
+                
+        DROP_COLUMN(ALTER_TABLE_PATTERN
+                // match 'DROP COLUMN' or 'DROP column_name'
+                // but *not* 'DROP CONSTRAINT constraint_name'
+                + "DROP[\\s]+(?!CONSTRAINT[\\s]+)([\\w]+).*");
+        
+        private final Pattern regex;
         
         private DangerStatement(String regex) {
-            this.regex = regex;
+            this.regex = Pattern.compile(regex,
+                    Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
         }
         
-        public String getRegex() {
+        public Pattern getRegex() {
             return regex;
         }
     }
-    
-    public final DiffStatementType type;
-    public final String objname;
-    public final String statement;
     
     public PgDiffStatement(DiffStatementType type, PgStatement obj, String statement) {
         if (obj == null && type != DiffStatementType.OTHER){
@@ -47,9 +63,7 @@ public class PgDiffStatement {
     }
     
     public boolean isDangerStatement(DangerStatement dst) {
-        Pattern ptrn = Pattern.compile("^(.*" + dst.getRegex() + ".+)+$",
-                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        return ptrn.matcher(statement).matches();
+        return dst.getRegex().matcher(statement).matches();
     }
     
     @Override
@@ -84,3 +98,4 @@ public class PgDiffStatement {
         return result;
     }
 }
+ 
