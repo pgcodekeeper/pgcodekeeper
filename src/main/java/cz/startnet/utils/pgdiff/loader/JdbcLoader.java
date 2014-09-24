@@ -117,6 +117,7 @@ public class JdbcLoader {
             Class.forName(JDBC_DRIVER);
             connection = DriverManager.getConnection(
                    "jdbc:postgresql://" + host + ":" + port + "/" + dbName, user, pass);
+            setTimeZone();
             prepareStatements();
             prepareData();
             metaData = connection.getMetaData();
@@ -156,6 +157,12 @@ public class JdbcLoader {
         return d;
     }
     
+    private void setTimeZone() throws SQLException {
+        try(Statement stmnt = connection.createStatement();){
+            stmnt.execute("SET timezone = 'UTC'");
+        }
+    }
+
     private void prepareData() throws SQLException {
         try(Statement stmnt = connection.createStatement()){
             // fill in namespace map
