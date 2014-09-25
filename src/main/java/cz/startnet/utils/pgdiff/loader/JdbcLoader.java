@@ -193,8 +193,9 @@ public class JdbcLoader {
              * There are also vector types - their typarray column values are not 0, 
              * we do not convert those to simple arrays
              * */
-            try(ResultSet res = stmnt.executeQuery("SELECT oid::bigint, typname, typlen, "
-                    + "typelem::regtype AS castedType, typarray FROM pg_catalog.pg_type")){
+            try(ResultSet res = stmnt.executeQuery("SELECT t.oid::bigint, t.typname, t.typlen, "
+                    + "t.typelem::regtype AS castedType, t.typarray, n.nspname "
+                    + "FROM pg_catalog.pg_type t LEFT JOIN pg_catalog.pg_namespace n ON t.typnamespace = n.oid")){
                 while (res.next()){
                     String typeName = res.getString("typname");
                     String castedType = res.getString("castedType");
@@ -885,7 +886,8 @@ public class JdbcLoader {
         
         Integer[] ownedColumnNumbers = {res.getInt("referenced_column")};
         if (!ownedColumnNumbers[0].equals(Integer.valueOf(0))){
-            s.setOwnedBy(res.getString("referenced_table_name") + "." + getColumnNames(ownedColumnNumbers, res.getLong("referenced_table_oid")));
+            // TODO can getColumnNames return an empty map, so that IndexOutOfBoundsException is thrown?
+            s.setOwnedBy(res.getString("referenced_table_name") + "." + getColumnNames(ownedColumnNumbers, res.getLong("referenced_table_oid")).get(0));
         }
         
         setOwner(s, res.getLong("relowner"));
