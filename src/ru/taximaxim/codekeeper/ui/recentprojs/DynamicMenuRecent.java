@@ -8,14 +8,12 @@ import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.handlers.LoadProj;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -46,24 +44,10 @@ public class DynamicMenuRecent extends CompoundContributionItem {
                     IWorkbenchWindow wbw = wb.getActiveWorkbenchWindow();
                     Shell shell = wbw.getShell();
                     
-                    PgDbProject proj = new PgDbProject(path);
-                    if (proj.getProjectFile().isFile()) {
-                        LoadProj.load(
-                                proj, (IEclipseContext) wb.getService(IEclipseContext.class),
-                                wbw.getActivePage(), UIScopedPreferenceStore.get(), shell);
-                    } else {
-                        Log.log(Log.LOG_WARNING, "Couldn't open project at " //$NON-NLS-1$
-                                + proj.getProjectFile()
-                                + ". Project pref store either doesn't exist or not a file."); //$NON-NLS-1$
-                        
-                        MessageBox mb = new MessageBox(shell);
-                        mb.setText(Messages.load_failed);
-                        // TODO wrong message
-                        mb.setMessage(Messages.directory_isnt_valid_project);
-                        mb.open();
-                        
-                        RecentProjects.deleteRecent(path, UIScopedPreferenceStore.get());
-                    }
+                    PgDbProject proj = PgDbProject.getProgFromFile(path);
+                    LoadProj.load(proj, (IEclipseContext) wb
+                            .getService(IEclipseContext.class), wbw
+                            .getActivePage(), UIScopedPreferenceStore.get(), shell);
                 }
             };
             items[i] = new ActionContributionItem(a);

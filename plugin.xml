@@ -508,7 +508,8 @@
             category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
             class="ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard"
             id="ru.taximaxim.codekeeper.ui.newprojwizard"
-            name="New Project">
+            name="New Project"
+            project="true">
       </wizard>
       <category
             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"

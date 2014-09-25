@@ -193,7 +193,7 @@ public class DiffPartDescr extends DynamicE4View {
                         manualDepciesSource, manualDepciesTarget,
                         dbSource.getDbObject().flatten(),
                         dbTarget.getDbObject().flatten(),
-                        Messages.database, proj.getString(PROJ_PREF.REPO_TYPE));
+                        Messages.database, proj.getPrefs().get(PROJ_PREF.REPO_TYPE, ""));
                 if (dialog.open() == Dialog.OK) {
                     manualDepciesSource = dialog.getDepciesSourceList();
                     manualDepciesTarget = dialog.getDepciesTargetList();
@@ -312,7 +312,7 @@ public class DiffPartDescr extends DynamicE4View {
                     String dumpfile = dialog.open();
                     if (dumpfile != null) {
                         setDbSource(DbSource.fromFile(dumpfile,
-                                proj.getString(PROJ_PREF.ENCODING)));
+                                proj.getPrefs().get(PROJ_PREF.ENCODING, "")));
                     } else {
                         return;
                     }
@@ -334,7 +334,7 @@ public class DiffPartDescr extends DynamicE4View {
                             dbSrc.txtDbUser.getText(),
                             dbSrc.txtDbPass.getText(),
                             dbSrc.txtDbName.getText(),
-                            proj.getString(PROJ_PREF.ENCODING)));
+                            proj.getPrefs().get(PROJ_PREF.ENCODING, "")));
                 } else {
                     throw new IllegalStateException(
                             Messages.undefined_source_for_db_changes);
@@ -367,7 +367,7 @@ public class DiffPartDescr extends DynamicE4View {
                 1));
 
         boolean useDbPicker = false;
-        String src = proj.getString(PROJ_PREF.SOURCE);
+        String src = proj.getPrefs().get(PROJ_PREF.SOURCE, "");
         if (src.equals(PROJ_PREF.SOURCE_TYPE_NONE)) {
             btnNone.setSelection(true);
             btnGetChanges.setEnabled(false);
@@ -380,12 +380,12 @@ public class DiffPartDescr extends DynamicE4View {
         showDbPicker(useDbPicker);
 
         if (useDbPicker) {
-            dbSrc.txtDbName.setText(proj.getString(PROJ_PREF.DB_NAME));
-            dbSrc.txtDbUser.setText(proj.getString(PROJ_PREF.DB_USER));
-            dbSrc.txtDbPass.setText(proj.getString(PROJ_PREF.DB_PASS));
-            dbSrc.txtDbHost.setText(proj.getString(PROJ_PREF.DB_HOST));
+            dbSrc.txtDbName.setText(proj.getPrefs().get(PROJ_PREF.DB_NAME, ""));
+            dbSrc.txtDbUser.setText(proj.getPrefs().get(PROJ_PREF.DB_USER, ""));
+            dbSrc.txtDbPass.setText(proj.getPrefs().get(PROJ_PREF.DB_PASS, ""));
+            dbSrc.txtDbHost.setText(proj.getPrefs().get(PROJ_PREF.DB_HOST, ""));
             dbSrc.txtDbPort.setText(String.valueOf(proj
-                    .getInt(PROJ_PREF.DB_PORT)));
+                    .getPrefs().getInt(PROJ_PREF.DB_PORT, 0)));
         }
         // end middle right container
         // end middle container
@@ -408,7 +408,7 @@ public class DiffPartDescr extends DynamicE4View {
             @EventTopic(EVENT.REOPEN_PROJECT)
             PgDbProject proj2) {
         if (proj == null
-                || !proj.getProjectFile().toString().equals(
+                || !proj.getPathToProject().toString().equals(
                         part.getPersistedState().get(PART.DIFF_ID))) {
             sync.asyncExec(new Runnable() {
                 

@@ -44,9 +44,9 @@ public class SvnExec implements IRepoWorker {
     }
 
     public SvnExec(String svnExec, PgDbProject proj) {
-        this(svnExec, proj.getString(PROJ_PREF.REPO_URL), proj
-                .getString(PROJ_PREF.REPO_USER), proj
-                .getString(PROJ_PREF.REPO_PASS));
+        this(svnExec, proj.getPrefs().get(PROJ_PREF.REPO_URL, ""), proj
+                .getPrefs().get(PROJ_PREF.REPO_USER, ""), proj
+                .getPrefs().get(PROJ_PREF.REPO_PASS, ""));
     }
 
     /**

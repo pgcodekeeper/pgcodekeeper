@@ -20,8 +20,8 @@ public class ProjectUpdater {
     public ProjectUpdater(PgDatabase db, PgDbProject proj) {
         this.db = db;
 
-        this.encoding = proj.getString(PROJ_PREF.ENCODING);
-        this.dirExport = proj.getProjectWorkingDir();
+        this.encoding = proj.getPrefs().get(PROJ_PREF.ENCODING, "");
+        this.dirExport = proj.getPathToProject().toFile();
     }
 
     public void update() {

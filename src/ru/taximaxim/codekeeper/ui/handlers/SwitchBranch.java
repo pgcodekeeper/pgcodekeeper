@@ -45,7 +45,7 @@ public class SwitchBranch extends E4HandlerWrapper {
         final AtomicReference<Git> git = new AtomicReference<>();
         try {
             git.set(Git.open(
-                    new File(proj.getString(PROJ_PREF.REPO_ROOT_PATH))));
+                    new File(proj.getPrefs().get(PROJ_PREF.REPO_ROOT_PATH, ""))));
             final String branchFullNameOld = git.get().getRepository().getFullBranch();
             BranchOperationUI.checkout(git.get().getRepository()).start();
             

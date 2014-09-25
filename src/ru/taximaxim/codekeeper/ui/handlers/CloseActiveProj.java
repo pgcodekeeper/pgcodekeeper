@@ -22,7 +22,7 @@ public class CloseActiveProj extends E4HandlerWrapper {
     
     public static void close(IEclipseContext ctx) {
         PgDbProject projClosed = ctx.get(PgDbProject.class);
-        Log.log(Log.LOG_INFO, "Project about to close: " + projClosed.getProjectFile()); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, "Project about to close: " + projClosed.getProjectName()); //$NON-NLS-1$
         
         ctx.modify(PgDbProject.class, null);
     }

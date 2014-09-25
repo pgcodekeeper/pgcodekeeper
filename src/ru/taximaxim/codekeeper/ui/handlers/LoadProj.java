@@ -13,7 +13,7 @@ import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
@@ -39,49 +39,40 @@ public class LoadProj extends E4HandlerWrapper {
             Shell shell,
             IEclipseContext ctx, IWorkbenchPage page,
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs) {
-        FileDialog dialog = new FileDialog(shell);
+        DirectoryDialog dialog = new DirectoryDialog(shell);
         dialog.setText(Messages.loadProj_open_project);
-        dialog.setOverwrite(false);
+//        dialog.setOverwrite(false);
         dialog.setFilterPath(mainPrefs.getString(PREF.LAST_OPENED_LOCATION));
-        dialog.setFilterExtensions(new String[] { "*.project", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
+//        dialog.setFilterExtensions(new String[] { "*.project", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
         
         String path = dialog.open();
         if(path != null) {
-            PgDbProject proj = new PgDbProject(path);
-            if(proj.getProjectFile().isFile()) {
-                if (load(proj, ctx, page, mainPrefs, shell)){
-                    AddonPrefLoader.savePreference(mainPrefs, 
-                            PREF.LAST_OPENED_LOCATION, new File (path).getParent());
-                }
-            } else {
-                MessageBox mb = new MessageBox(shell);
-                mb.setText(Messages.load_failed);
-                // TODO wrong message
-                mb.setMessage(Messages.directory_isnt_valid_project);
-                mb.open();
+            PgDbProject proj = PgDbProject.getProgFromFile(path);
+            if (load(proj, ctx, page, mainPrefs, shell)) {
+                AddonPrefLoader.savePreference(mainPrefs,
+                        PREF.LAST_OPENED_LOCATION, new File(path).getParent());
             }
         }
     }
     
     public static boolean load(PgDbProject proj, IEclipseContext ctx, IWorkbenchPage page,
             IPreferenceStore mainPrefs, Shell shell) {
-        Log.log(Log.LOG_INFO, "Opening project at " + proj.getProjectFile()); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, "Opening project at " + proj.getPathToProject()); //$NON-NLS-1$
         
-        proj.load();
         // check for not existing working dir
-        if (!proj.getProjectWorkingDir().exists() || !proj.getProjectWorkingDir().isDirectory()){
-            String message = Messages.loadProj_couldnt_open_project + proj.getProjectFile() + 
-                    Messages.loadProj_because_working_directory + proj.getProjectWorkingDir() + 
+        if (!proj.getPathToProject().toFile().exists() || !proj.getPathToProject().toFile().isDirectory()){
+            String message = Messages.loadProj_couldnt_open_project + proj.getPathToProject() + 
+                    Messages.loadProj_because_working_directory + proj.getPathToProject() + 
                     Messages.loadProj_either_doesnt_exist_or_not_a_directory;
             Console.addMessage(message);
             Log.log(Log.LOG_WARNING, message);
             return false;
         }
-        if (!new File(proj.getProjectWorkingDir(), 
+        if (!new File(proj.getPathToProject().toString(), 
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
             MessageDialog dialog = new MessageDialog(shell,
                     Messages.loadProj_bad_project, null, 
-                    Messages.missing_marker_file_in_working_directory + proj.getProjectWorkingDir() +
+                    Messages.missing_marker_file_in_working_directory + proj.getPathToProject() +
                     Messages.create_marker_file_named + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
                     Messages.manually_and_try_again, MessageDialog.WARNING, 
                     new String []{Messages.loadProj_ok}, 0);
@@ -89,7 +80,7 @@ public class LoadProj extends E4HandlerWrapper {
             return false;
         }
         StringBuilder message = new StringBuilder();
-        boolean allowContinue = getProjVersion(new File(proj.getProjectWorkingDir(), 
+        boolean allowContinue = getProjVersion(new File(proj.getPathToProject().toString(), 
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER), message);
             
         if (message.length() != 0) {
@@ -112,7 +103,7 @@ public class LoadProj extends E4HandlerWrapper {
         // TODO test
         // ((MPart) model.find(PART.WELCOME, app)).getContext().activateBranch();
         
-        String projectFile = proj.getProjectFile().toString();
+        String projectFile = proj.getPathToProject().toString();
         CommitPartDescr.openNew(projectFile, page);
         DiffPartDescr.openNew(projectFile, page);
         

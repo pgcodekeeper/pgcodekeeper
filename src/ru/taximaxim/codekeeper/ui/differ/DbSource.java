@@ -133,10 +133,10 @@ class DbSourceRepo extends DbSource {
 
     public DbSourceRepo(String repoExec, PgDbProject proj, String rev, String privateKeyFile) {
         this(repoExec, 
-                 proj.getString(PROJ_PREF.REPO_URL), proj
-                        .getString(PROJ_PREF.REPO_USER), proj
-                        .getString(PROJ_PREF.REPO_PASS), rev, proj
-                        .getString(PROJ_PREF.ENCODING), privateKeyFile);
+                 proj.getPrefs().get(PROJ_PREF.REPO_URL, ""), proj
+                        .getPrefs().get(PROJ_PREF.REPO_USER, ""), proj
+                        .getPrefs().get(PROJ_PREF.REPO_PASS, ""), rev, proj
+                        .getPrefs().get(PROJ_PREF.ENCODING, ""), privateKeyFile);
     }
 
     DbSourceRepo(String repoExec, String url, String user,
@@ -170,7 +170,7 @@ class DbSourceProject extends DbSource {
     final private PgDbProject proj;
 
     DbSourceProject(PgDbProject proj) {
-        super(proj.getProjectFile().getAbsolutePath());
+        super(proj.getPathToProject().toString());
 
         this.proj = proj;
     }
@@ -180,8 +180,8 @@ class DbSourceProject extends DbSource {
         SubMonitor.convert(monitor, 1).newChild(1).subTask(Messages.dbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(proj
-                .getProjectWorkingDir().getAbsolutePath(), proj
-                .getString(PROJ_PREF.ENCODING), false, false);
+                .getPathToProject().toString(), proj.getPrefs()
+                .get(PROJ_PREF.ENCODING, ""), false, false);
     }
 }
 
@@ -217,12 +217,12 @@ class DbSourceDb extends DbSource {
 
     DbSourceDb(String exePgdump, String customParams, PgDbProject props) {
         this(exePgdump, customParams,
-                props.getString(PROJ_PREF.DB_HOST),
-                props.getInt(PROJ_PREF.DB_PORT),
-                props.getString(PROJ_PREF.DB_USER),
-                props.getString(PROJ_PREF.DB_PASS),
-                props.getString(PROJ_PREF.DB_NAME),
-                props.getString(PROJ_PREF.ENCODING));
+                props.getPrefs().get(PROJ_PREF.DB_HOST, ""),
+                props.getPrefs().getInt(PROJ_PREF.DB_PORT, 0),
+                props.getPrefs().get(PROJ_PREF.DB_USER, ""),
+                props.getPrefs().get(PROJ_PREF.DB_PASS, ""),
+                props.getPrefs().get(PROJ_PREF.DB_NAME, ""),
+                props.getPrefs().get(PROJ_PREF.ENCODING, ""));
     }
 
     DbSourceDb(String exePgdump, String customParams,

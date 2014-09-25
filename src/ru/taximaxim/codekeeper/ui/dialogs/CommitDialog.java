@@ -46,9 +46,9 @@ public class CommitDialog extends TrayDialog {
         
         try {
             message = Messages.commitPartDescr_the_following_changes_be_included_in_commit
-                    + proj.getString(PROJ_PREF.REPO_URL)
+                    + proj.getPrefs().get(PROJ_PREF.REPO_URL, "")
                     + Messages.commitPartDescr_branch 
-                    + new JGitExec().getCurrentBranch(proj.getRepoRoot());
+                    + new JGitExec().getCurrentBranch(proj.getPathToProject().toFile());
         } catch (IOException ex) {
             throw new IllegalStateException(Messages.commitPartDescr_cannot_get_branch_name, ex);
         }

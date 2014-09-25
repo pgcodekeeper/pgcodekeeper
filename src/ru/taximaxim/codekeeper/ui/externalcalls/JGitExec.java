@@ -56,9 +56,9 @@ public class JGitExec implements IRepoWorker{
     }
 
     public JGitExec(PgDbProject proj, String privateKeyFile) {
-        this(proj.getString(PROJ_PREF.REPO_URL),
-                proj.getString(PROJ_PREF.REPO_USER),
-                proj.getString(PROJ_PREF.REPO_PASS), privateKeyFile);
+        this(proj.getPrefs().get(PROJ_PREF.REPO_URL, ""),
+                proj.getPrefs().get(PROJ_PREF.REPO_USER, ""),
+                proj.getPrefs().get(PROJ_PREF.REPO_PASS, ""), privateKeyFile);
     }
 
     public JGitExec(String url, String user, String pass, String privateKeyFile) {

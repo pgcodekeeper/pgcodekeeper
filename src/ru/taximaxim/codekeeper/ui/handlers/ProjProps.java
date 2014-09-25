@@ -54,7 +54,7 @@ public class ProjProps extends E4HandlerWrapper {
             @Named(IServiceConstants.ACTIVE_SHELL) Shell shell, PgDbProject proj) {
         FakePrefPageExtension[] propPages = {
                 new FakePrefPageExtension("projprefs.0.pagerepo",  //$NON-NLS-1$
-                        proj.getString(PROJ_PREF.REPO_TYPE)
+                        proj.getPrefs().get(PROJ_PREF.REPO_TYPE, "")
                         + Messages.ProjProps_settings, new RepoSettingsPage(), null), 
 
                 new FakePrefPageExtension("projprefs.1.pagedbsouce", //$NON-NLS-1$
@@ -65,7 +65,7 @@ public class ProjProps extends E4HandlerWrapper {
 
         Log.log(Log.LOG_DEBUG, "About to show proj props dialog"); //$NON-NLS-1$
         
-        PrefDialogFactory.show(shell, proj, propPages);
+//        PrefDialogFactory.show(shell, proj, propPages);
     }
 
     @CanExecute
