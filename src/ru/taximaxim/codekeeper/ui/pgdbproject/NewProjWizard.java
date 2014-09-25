@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
@@ -177,6 +178,11 @@ IExecutableExtension {
         selectAndReveal(props.getProject());
         
         props.openProject();
+        try {
+            props.getPrefs().flush();
+        } catch (BackingStoreException e) {
+            Log.log(Log.LOG_ERROR, "Failed to save project preferences", e);
+        }
         return true;
     }
 
@@ -187,18 +193,24 @@ IExecutableExtension {
         } else {
             getDefaultProps(props.getPrefs());
         }
-        
-        try {
-            props.getPrefs().flush();
-        } catch (BackingStoreException e) {
-            Log.log(Log.LOG_ERROR, "Failed to save project preferences", e);
-        }
     }
 
     private void copyPref(PreferenceStore oldPrefs,
             IEclipsePreferences newPrefs) {
+        try {
+            oldPrefs.load();
+        } catch (IOException e) {
+            Log.log(Log.LOG_ERROR, "Cannot load old properties. Using defaults", e);
+            getDefaultProps(newPrefs);
+            return;
+        }
         newPrefs.put(PROJ_PREF.ENCODING, oldPrefs.getString(PROJ_PREF.ENCODING));
-        newPrefs.put(PROJ_PREF.SOURCE, oldPrefs.getString(PROJ_PREF.SOURCE));
+        String src;
+        if ((src = oldPrefs.getString(PROJ_PREF.SOURCE)).isEmpty() ||
+                src.equals(PROJ_PREF.SOURCE_TYPE_NONE)) {
+            src = getDbSource();
+        }
+        newPrefs.put(PROJ_PREF.SOURCE, src);
         
         newPrefs.put(PROJ_PREF.DB_NAME, oldPrefs.getString(PROJ_PREF.DB_NAME));
         newPrefs.put(PROJ_PREF.DB_USER, oldPrefs.getString(PROJ_PREF.DB_USER));
@@ -216,6 +228,16 @@ IExecutableExtension {
     private void getDefaultProps(IEclipsePreferences prefs) {
         props.getPrefs().put(PROJ_PREF.ENCODING, pageMisc.getEncoding());
                 
+        prefs.put(PROJ_PREF.SOURCE, getDbSource());
+        
+        prefs.put(PROJ_PREF.DB_NAME, pageDb.getDbName());
+        prefs.put(PROJ_PREF.DB_USER, pageDb.getDbUser());
+        prefs.put(PROJ_PREF.DB_PASS, pageDb.getDbPass());
+        prefs.put(PROJ_PREF.DB_HOST, pageDb.getDbHost());
+        prefs.putInt(PROJ_PREF.DB_PORT, pageDb.getDbPort());
+    }
+
+    private String getDbSource() {
         String src;
         if (pageDb.isSourceDb()) {
             src = PROJ_PREF.SOURCE_TYPE_DB;
@@ -226,13 +248,7 @@ IExecutableExtension {
         } else {
             throw new IllegalStateException(Messages.newProjWizard_no_schema_source_selected);
         }
-        prefs.put(PROJ_PREF.SOURCE, src);
-
-        prefs.put(PROJ_PREF.DB_NAME, pageDb.getDbName());
-        prefs.put(PROJ_PREF.DB_USER, pageDb.getDbUser());
-        prefs.put(PROJ_PREF.DB_PASS, pageDb.getDbPass());
-        prefs.put(PROJ_PREF.DB_HOST, pageDb.getDbHost());
-        prefs.putInt(PROJ_PREF.DB_PORT, pageDb.getDbPort());
+        return src;
     }
 
     @Override
