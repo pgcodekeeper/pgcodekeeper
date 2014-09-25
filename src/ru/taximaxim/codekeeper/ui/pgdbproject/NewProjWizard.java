@@ -13,6 +13,7 @@ import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
@@ -144,36 +145,10 @@ IExecutableExtension {
                 .getProgFromFile(pageRepo.getProjectName(), 
                         pageRepo.getProjectRootPath());
         
-        IEclipsePreferences prefs = props.getPrefs();
-        
         Log.log(Log.LOG_INFO, "Creating new project properties at " //$NON-NLS-1$
-                                 + props.getPathToProject());
-                 
-        props.getPrefs().put(PROJ_PREF.ENCODING, pageMisc.getEncoding());
-                
-        String src;
-        if (pageDb.isSourceDb()) {
-            src = PROJ_PREF.SOURCE_TYPE_DB;
-        } else if (pageDb.isSourceDump()) {
-            src = PROJ_PREF.SOURCE_TYPE_DUMP;
-        } else if (pageDb.isSourceNone()) {
-            src = PROJ_PREF.SOURCE_TYPE_NONE;
-        } else {
-            throw new IllegalStateException(Messages.newProjWizard_no_schema_source_selected);
-        }
-        prefs.put(PROJ_PREF.SOURCE, src);
-
-        prefs.put(PROJ_PREF.DB_NAME, pageDb.getDbName());
-        prefs.put(PROJ_PREF.DB_USER, pageDb.getDbUser());
-        prefs.put(PROJ_PREF.DB_PASS, pageDb.getDbPass());
-        prefs.put(PROJ_PREF.DB_HOST, pageDb.getDbHost());
-        prefs.putInt(PROJ_PREF.DB_PORT, pageDb.getDbPort());
+                + props.getPathToProject());
         
-        try {
-            prefs.flush();
-        } catch (BackingStoreException e) {
-            Log.log(Log.LOG_ERROR, "Failed to save project preferences", e);
-        }
+        fillProjProps();
 
         if (pageSubdir.isDoInit()){
             try {
@@ -205,6 +180,61 @@ IExecutableExtension {
         return true;
     }
 
+    private void fillProjProps() {
+        if (!pageRepo.getOldProjFilePath().isEmpty()) {
+            copyPref(new PreferenceStore(pageRepo.getOldProjFilePath()), 
+                    props.getPrefs());
+        } else {
+            getDefaultProps(props.getPrefs());
+        }
+        
+        try {
+            props.getPrefs().flush();
+        } catch (BackingStoreException e) {
+            Log.log(Log.LOG_ERROR, "Failed to save project preferences", e);
+        }
+    }
+
+    private void copyPref(PreferenceStore oldPrefs,
+            IEclipsePreferences newPrefs) {
+        newPrefs.put(PROJ_PREF.ENCODING, oldPrefs.getString(PROJ_PREF.ENCODING));
+        newPrefs.put(PROJ_PREF.SOURCE, oldPrefs.getString(PROJ_PREF.SOURCE));
+        
+        newPrefs.put(PROJ_PREF.DB_NAME, oldPrefs.getString(PROJ_PREF.DB_NAME));
+        newPrefs.put(PROJ_PREF.DB_USER, oldPrefs.getString(PROJ_PREF.DB_USER));
+        newPrefs.put(PROJ_PREF.DB_PASS, oldPrefs.getString(PROJ_PREF.DB_PASS));
+        newPrefs.put(PROJ_PREF.DB_HOST, oldPrefs.getString(PROJ_PREF.DB_HOST));
+        newPrefs.putInt(PROJ_PREF.DB_PORT, oldPrefs.getInt(PROJ_PREF.DB_PORT));
+
+       /* newPrefs.put(PROJ_PREF.REPO_TYPE, oldPrefs.getString(PROJ_PREF.REPO_TYPE));
+        newPrefs.put(PROJ_PREF.REPO_TYPE, oldPrefs.getString(PROJ_PREF.REPO_TYPE));
+        newPrefs.put(PROJ_PREF.REPO_URL, oldPrefs.getString(PROJ_PREF.REPO_URL));
+        newPrefs.put(PROJ_PREF.REPO_USER, oldPrefs.getString(PROJ_PREF.REPO_USER));
+        newPrefs.put(PROJ_PREF.REPO_PASS, oldPrefs.getString(PROJ_PREF.REPO_PASS));*/
+    }
+
+    private void getDefaultProps(IEclipsePreferences prefs) {
+        props.getPrefs().put(PROJ_PREF.ENCODING, pageMisc.getEncoding());
+                
+        String src;
+        if (pageDb.isSourceDb()) {
+            src = PROJ_PREF.SOURCE_TYPE_DB;
+        } else if (pageDb.isSourceDump()) {
+            src = PROJ_PREF.SOURCE_TYPE_DUMP;
+        } else if (pageDb.isSourceNone()) {
+            src = PROJ_PREF.SOURCE_TYPE_NONE;
+        } else {
+            throw new IllegalStateException(Messages.newProjWizard_no_schema_source_selected);
+        }
+        prefs.put(PROJ_PREF.SOURCE, src);
+
+        prefs.put(PROJ_PREF.DB_NAME, pageDb.getDbName());
+        prefs.put(PROJ_PREF.DB_USER, pageDb.getDbUser());
+        prefs.put(PROJ_PREF.DB_PASS, pageDb.getDbPass());
+        prefs.put(PROJ_PREF.DB_HOST, pageDb.getDbHost());
+        prefs.putInt(PROJ_PREF.DB_PORT, pageDb.getDbPort());
+    }
+
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         super.init(workbench, selection);
@@ -221,11 +251,16 @@ IExecutableExtension {
 class PageRepo extends WizardPage implements Listener {
 
     private Composite container;
-    private Text txtProjectRoot, txtProjectName;
-    private Label lblRepoRoot, lblProjectFile;
+    private Text txtProjectRoot, txtProjectName, txtOldProgFile;
+    private Label lblProjRoot, lblProjectFile;
+    private Button btnBrowseOldFile;
     
     private final IPreferenceStore mainPrefStore;
 
+    public String getOldProjFilePath() {
+        return txtOldProgFile.getText();
+    }
+    
     public String getProjectRootPath() {
         return txtProjectRoot.getText();
     }
@@ -256,12 +291,12 @@ class PageRepo extends WizardPage implements Listener {
         txtProjectName.setLayoutData(gd);
         txtProjectName.addListener(SWT.Modify, this);
 
-        lblRepoRoot = new Label(container, SWT.NONE);
-        lblRepoRoot.setText(Messages.newProjWizard_select_git_repository_root_directory);
+        lblProjRoot = new Label(container, SWT.NONE);
+        lblProjRoot.setText(Messages.newProjWizard_select_git_repository_root_directory);
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
-        lblRepoRoot.setLayoutData(gd);
+        lblProjRoot.setLayoutData(gd);
 
         txtProjectRoot = new Text(container, SWT.BORDER);
         txtProjectRoot.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -278,6 +313,54 @@ class PageRepo extends WizardPage implements Listener {
                 String path = dialog.open();
                 if (path != null) {
                     txtProjectRoot.setText(path);
+                    AddonPrefLoader.savePreference(mainPrefStore, PREF.LAST_OPENED_LOCATION, path);
+                }
+            }
+        });
+        
+        Button btnImportOldProjPrefs = new Button(container, SWT.CHECK);
+        btnImportOldProjPrefs.setText("Import settings form old project file");
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.verticalIndent = 12;
+        btnImportOldProjPrefs.setLayoutData(gd);
+        btnImportOldProjPrefs.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean importOldProjPrefs = ((Button)e.widget).getSelection();
+                btnBrowseOldFile.setEnabled(importOldProjPrefs);
+                txtOldProgFile.setEnabled(importOldProjPrefs);
+                txtOldProgFile.setText("");
+            }
+        });
+        
+        Label lblOldProjFile = new Label(container, SWT.NONE);
+        lblOldProjFile.setText("Select old project file: ");
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.verticalIndent = 12;
+        lblOldProjFile.setLayoutData(gd);
+        
+        txtOldProgFile = new Text(container, SWT.BORDER);
+        txtOldProgFile.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtOldProgFile.addListener(SWT.Modify, this);
+        txtOldProgFile.setEnabled(false);
+        
+        btnBrowseOldFile = new Button(container, SWT.PUSH);
+        btnBrowseOldFile.setText(Messages.browse);
+        btnBrowseOldFile.setEnabled(false);
+        btnBrowseOldFile.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                FileDialog dialog = new FileDialog(container
+                        .getShell());
+                dialog.setText(Messages.loadProj_open_project);
+                dialog.setOverwrite(false);
+                dialog.setFilterExtensions(new String[] { "*.project", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
+                dialog.setFilterPath(mainPrefStore.getString(PREF.LAST_OPENED_LOCATION));
+                String path = dialog.open();
+                if (path != null) {
+                    txtOldProgFile.setText(path);
                     AddonPrefLoader.savePreference(mainPrefStore, PREF.LAST_OPENED_LOCATION, path);
                 }
             }
