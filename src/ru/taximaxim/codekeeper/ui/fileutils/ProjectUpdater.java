@@ -59,9 +59,10 @@ public class ProjectUpdater {
     private void safeCleanProjectDir(File dirTmp) throws IOException {
         for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
             String sSubdirName = subdirName.toString();
-            Dir.moveDirAtomic(
-                    new File(dirExport, sSubdirName),
-                    new File(dirTmp, sSubdirName));
+            File dirOld = new File(dirExport, sSubdirName);
+            if (dirOld.exists()) {
+                Dir.moveDirAtomic(dirOld, new File(dirTmp, sSubdirName));
+            }
         }
     }
     
