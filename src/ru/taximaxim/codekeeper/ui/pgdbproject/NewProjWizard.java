@@ -204,25 +204,33 @@ IExecutableExtension {
             getDefaultProps(newPrefs);
             return;
         }
-        newPrefs.put(PROJ_PREF.ENCODING, oldPrefs.getString(PROJ_PREF.ENCODING));
+        setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.ENCODING, "UTF-8");
+        
         String src;
         if ((src = oldPrefs.getString(PROJ_PREF.SOURCE)).isEmpty() ||
                 src.equals(PROJ_PREF.SOURCE_TYPE_NONE)) {
             src = getDbSource();
         }
         newPrefs.put(PROJ_PREF.SOURCE, src);
+        setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.REPO_ROOT_PATH, 
+                pageSubdir.getRepoSubdir());
         
-        newPrefs.put(PROJ_PREF.DB_NAME, oldPrefs.getString(PROJ_PREF.DB_NAME));
-        newPrefs.put(PROJ_PREF.DB_USER, oldPrefs.getString(PROJ_PREF.DB_USER));
-        newPrefs.put(PROJ_PREF.DB_PASS, oldPrefs.getString(PROJ_PREF.DB_PASS));
-        newPrefs.put(PROJ_PREF.DB_HOST, oldPrefs.getString(PROJ_PREF.DB_HOST));
+        setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.DB_NAME, pageDb.getDbName());
+        setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.DB_USER, pageDb.getDbUser());
+        setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.DB_PASS, pageDb.getDbPass());
+        setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.DB_HOST, pageDb.getDbHost());
+        setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.DB_HOST, pageDb.getDbHost());
         newPrefs.putInt(PROJ_PREF.DB_PORT, oldPrefs.getInt(PROJ_PREF.DB_PORT));
-
-       /* newPrefs.put(PROJ_PREF.REPO_TYPE, oldPrefs.getString(PROJ_PREF.REPO_TYPE));
-        newPrefs.put(PROJ_PREF.REPO_TYPE, oldPrefs.getString(PROJ_PREF.REPO_TYPE));
-        newPrefs.put(PROJ_PREF.REPO_URL, oldPrefs.getString(PROJ_PREF.REPO_URL));
-        newPrefs.put(PROJ_PREF.REPO_USER, oldPrefs.getString(PROJ_PREF.REPO_USER));
-        newPrefs.put(PROJ_PREF.REPO_PASS, oldPrefs.getString(PROJ_PREF.REPO_PASS));*/
+    }
+    
+    private void setNotEmptyString(IEclipsePreferences newPrefs, PreferenceStore oldPrefs, String prefName, String defValue) {
+        String value;
+        if (!oldPrefs.getString(prefName).isEmpty()) {
+            value = oldPrefs.getString(prefName);
+        } else {
+            value = defValue;
+        }
+        newPrefs.put(prefName, value);
     }
 
     private void getDefaultProps(IEclipsePreferences prefs) {
@@ -235,6 +243,7 @@ IExecutableExtension {
         prefs.put(PROJ_PREF.DB_PASS, pageDb.getDbPass());
         prefs.put(PROJ_PREF.DB_HOST, pageDb.getDbHost());
         prefs.putInt(PROJ_PREF.DB_PORT, pageDb.getDbPort());
+        prefs.put(PROJ_PREF.REPO_ROOT_PATH, pageSubdir.getRepoSubdir());
     }
 
     private String getDbSource() {
