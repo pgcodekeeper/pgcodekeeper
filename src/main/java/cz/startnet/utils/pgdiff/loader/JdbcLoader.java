@@ -187,9 +187,20 @@ public class JdbcLoader {
             }
             
             // fill in data types
-            try(ResultSet res = stmnt.executeQuery("SELECT oid::bigint, typname FROM pg_catalog.pg_type")){
+            /* There are types, whose names begin from underscore: they are simple 
+             * arrays and have 0 in typarray column. 
+             * 
+             * There are also vector types - their typarray column values are not 0, 
+             * we do not convert those to simple arrays
+             * */
+            try(ResultSet res = stmnt.executeQuery("SELECT oid::bigint, typname, typlen, "
+                    + "typelem::regtype AS castedType, typarray FROM pg_catalog.pg_type")){
                 while (res.next()){
                     String typeName = res.getString("typname");
+                    String castedType = res.getString("castedType");
+                    if (res.getInt("typlen") == -1 && res.getLong("typarray") == 0L && !castedType.equals("-")){
+                        typeName = castedType + "[]";
+                    }
                     cachedTypeNamesByOid.put(res.getLong("oid"), 
                             DATA_TYPE_ALIASES.containsKey(typeName) ? DATA_TYPE_ALIASES.get(typeName) : typeName);
                 }                
@@ -225,7 +236,8 @@ public class JdbcLoader {
                 + "     pg_get_function_identity_arguments(p.oid) AS proarguments_without_default, "
                 + "     proargdefaults, "
                 + "     proacl AS aclArray,"
-                + "     d.description AS comment "
+                + "     d.description AS comment,"
+                + "     proretset "
                 + "FROM "
                 + "     pg_catalog.pg_proc p LEFT JOIN pg_catalog.pg_description d ON d.objoid = p.oid "
                 + "WHERE "
@@ -246,7 +258,8 @@ public class JdbcLoader {
                 + "     proarguments, "
                 + "     proargdefaults,"
                 + "     comment,"
-                + "     aclArray";
+                + "     aclArray,"
+                + "     proretset";
         
         prepStatFunctions = connection.prepareStatement(queryFunctions);
         prepStatLanguages = connection.prepareStatement("SELECT lanname FROM pg_catalog.pg_language WHERE oid = ?");
@@ -829,6 +842,8 @@ public class JdbcLoader {
         
         if (returnsTable){
             f.setReturns("TABLE(" + returnedTableArguments + ")");
+        }else if (res.getBoolean("proretset")){
+            f.setReturns("SETOF " + getTypeNameByOid(res.getLong("prorettype")));
         }else{
             f.setReturns(getTypeNameByOid(res.getLong("prorettype")));
         }
@@ -899,14 +914,12 @@ public class JdbcLoader {
         }else{
             throw new IllegalStateException("Not supported PgStatement class");
         }
-        
-        String revokeMaindb = "ALL ON " + stType + " " + stSignature + " FROM " + st.getOwner();
         String revokePublic = "ALL ON " + stType + " " + stSignature + " FROM PUBLIC";
+        String revokeMaindb = "ALL ON " + stType + " " + stSignature + " FROM " + st.getOwner();
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
         st.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
         
-        LinkedHashMap<String, String> grants = new JdbcAclParser().parse(aclItemsArrayAsString, possiblePrivilegeCount);
-        
+        LinkedHashMap<String, String> grants = new JdbcAclParser().parse(aclItemsArrayAsString, possiblePrivilegeCount, st.getOwner());
         for(String granteeName : grants.keySet()){
             String privDefinition = grants.get(granteeName) + " ON " + stType + " " + stSignature + " TO " + granteeName;
             st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));

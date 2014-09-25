@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff.loader;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 /**
@@ -38,11 +40,19 @@ public class JdbcAclParser {
      * 
      * @param aclArrayAsString  String representation of AclItem array
      * @param maxTypes  Maximum available privilege bits for target DB object
+     * @param owner     Owner name (owner's privileges go first)
      * @return
      */
-    public LinkedHashMap <String, String> parse(String aclArrayAsString, int maxTypes){
+    public LinkedHashMap <String, String> parse(String aclArrayAsString, int maxTypes, String owner){
         LinkedHashMap<String, String> privileges = new LinkedHashMap<String, String>();
-        String [] acls = aclArrayAsString.replace("{", "").replace("}", "").split(",");
+        ArrayList<String>  acls = new ArrayList<String>(Arrays.asList(aclArrayAsString.replace("{", "").replace("}", "").split(",")));
+        for (String s : acls){
+            if (s.startsWith(owner)){
+                acls.remove(s);
+                acls.add(0, s);
+                break;
+            }
+        }
         for(String s : acls){
             String aclExpression = s.substring(0, s.indexOf("/"));
             int indexOfEqualsSign = aclExpression.indexOf("=");
