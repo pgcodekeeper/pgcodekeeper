@@ -52,7 +52,7 @@ public class JdbcLoader {
     /**
      * Prepared statements to be executed
      */
-    private PreparedStatement prepStatTablePrivileges;
+    private PreparedStatement prepStatTables;
     private PreparedStatement prepStatTriggers;
     private PreparedStatement prepStatFuncName;
     private PreparedStatement prepStatFunctions;
@@ -64,30 +64,10 @@ public class JdbcLoader {
     private PreparedStatement prepStatColumnsOfSchema;
     private PreparedStatement prepStatIndexColumnDefault;
     
-    final private static Map<String, String> DATA_TYPE_ALIASES = new HashMap<String, String>(){
-        {
-            put("int8","bigint");
-            put("serial8","bigserial");
-            put("varbit","bit varying");
-            put("bool","boolean");
-            put("char","character");
-            put("varchar","character varying");
-            put("float8","double precision");
-            put("int","integer");
-            put("int4","integer");
-            put("float4","real");
-            put("int2","smallint");
-            put("serial2","smallserial");
-            put("serial4","serial");
-            put("timetz","time with time zone");
-            put("timestamptz","timestamp with time zone");
-        }
-    };
-    
     private Map<String, Long> cachedSchemaByName = new HashMap<String, Long>();
     private Map<Long, String> cachedIndexAccesMethodsByOid = new HashMap<Long, String>();
     private Map<Long, String> cachedRolesNamesByOid = new HashMap<Long, String>();
-    private Map<Long, String> cachedTypeNamesByOid = new HashMap<Long, String>();
+    private Map<Long, PgType> cachedTypeNamesByOid = new HashMap<Long, PgType>();
     private Map<Long, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<Long, Map<Integer,String>>();
     
     private String host;
@@ -187,23 +167,14 @@ public class JdbcLoader {
             }
             
             // fill in data types
-            /* There are types, whose names begin from underscore: they are simple 
-             * arrays and have 0 in typarray column. 
-             * 
-             * There are also vector types - their typarray column values are not 0, 
-             * we do not convert those to simple arrays
-             * */
             try(ResultSet res = stmnt.executeQuery("SELECT t.oid::bigint, t.typname, t.typlen, "
-                    + "t.typelem::regtype AS castedType, t.typarray, n.nspname "
-                    + "FROM pg_catalog.pg_type t LEFT JOIN pg_catalog.pg_namespace n ON t.typnamespace = n.oid")){
+                    + "t.typelem::regtype AS castedType, t.typarray, n.nspname, proc.proname, nsp.nspname  "
+                    + "FROM pg_catalog.pg_type t LEFT JOIN pg_catalog.pg_namespace n ON t.typnamespace = n.oid "
+                    + "LEFT JOIN pg_catalog.pg_proc proc ON proc.oid = t.typmodout "
+                    + "LEFT JOIN pg_catalog.pg_namespace nsp ON t.typnamespace = nsp.oid")){
                 while (res.next()){
-                    String typeName = res.getString("typname");
-                    String castedType = res.getString("castedType");
-                    if (res.getInt("typlen") == -1 && res.getLong("typarray") == 0L && !castedType.equals("-")){
-                        typeName = castedType + "[]";
-                    }
-                    cachedTypeNamesByOid.put(res.getLong("oid"), 
-                            DATA_TYPE_ALIASES.containsKey(typeName) ? DATA_TYPE_ALIASES.get(typeName) : typeName);
+                    PgType type = new PgType(res.getString("typname"), res.getString("castedType"), res.getLong("typarray"), res.getInt("typlen"), res.getString("proname"), res.getString("nspname"));
+                    cachedTypeNamesByOid.put(res.getLong("oid"), type);
                 }                
             }
         }
@@ -212,13 +183,49 @@ public class JdbcLoader {
     private void prepareStatements() throws SQLException{
         String queryTables = 
                 "SELECT "
+                + "     c.oid, "
+                + "     c.relname, "
                 + "     c.relowner::bigint, "
-                + "     c.relacl AS aclArray "
+                + "     c.relacl AS aclArray, "
+                + "     array_agg(attributes.attnum)::integer[] AS col_numbers, "
+                + "     array_agg(attributes.attname) AS col_names, "
+                + "     array_agg(attributes.atttypid)::bigint[] AS col_types, "
+                + "     array_agg(attributes.adsrc) AS col_defaults, "
+                + "     array_agg(attributes.description) AS col_comments, "
+                + "     array_agg(attributes.atttypmod) AS col_typemod, "
+                + "     array_agg(attributes.attnotnull) AS col_notnull, "
+                + "     comments.description AS table_comment "
                 + "FROM "
                 + "     pg_catalog.pg_class c "
+                + "     RIGHT JOIN"
+                + "         (pg_catalog.pg_attribute attr "
+                + "             LEFT JOIN "
+                + "         pg_catalog.pg_attrdef attrdef "
+                + "             ON "
+                + "         attrdef.adnum = attr.attnum AND "
+                + "         attr.attrelid = attrdef.adrelid "
+                + "             LEFT JOIN "
+                + "         pg_catalog.pg_description comments "
+                + "             ON "
+                + "         comments.objoid = attr.attrelid AND "
+                + "         comments.objsubid = attr.attnum) attributes "
+                + "     ON "
+                + "     c.oid = attributes.attrelid "
+                + "     LEFT JOIN "
+                + "         pg_catalog.pg_description comments "
+                + "     ON "
+                + "     comments.objoid = c.oid AND "
+                + "     comments.objsubid = 0 "
                 + "WHERE "
-                + "     c.oid = ?";
-        prepStatTablePrivileges = connection.prepareStatement(queryTables);
+                + "     relnamespace = ? AND "
+                + "     relkind = 'r' "
+                + "GROUP BY "
+                + "     c.oid, "
+                + "     c.relname, "
+                + "     c.relowner, "
+                + "     aclArray, "
+                + "     table_comment";
+        prepStatTables = connection.prepareStatement(queryTables);
         prepStatTriggers = connection.prepareStatement("SELECT tgfoid, tgname, tgfoid, tgtype, tgrelid FROM pg_catalog.pg_trigger WHERE tgrelid = ?");
         prepStatFuncName = connection.prepareStatement("SELECT proname FROM pg_catalog.pg_proc WHERE oid = ?");
         
@@ -321,7 +328,7 @@ public class JdbcLoader {
             Log.log(Log.LOG_INFO, "Could not close JDBC connection", e);
         }
         try {
-            prepStatTablePrivileges.close();
+            prepStatTables.close();
         } catch (Exception e) {
             Log.log(Log.LOG_INFO, "Could not close prepared statement for tables", e);
         }
@@ -374,51 +381,56 @@ public class JdbcLoader {
     
     private PgSchema getSchema(String schema) throws SQLException{
         PgSchema s = new PgSchema(schema, "");
-//        Log.log(Log.LOG_INFO, "Creating tables from JDBC for schema " + schema);
-        ResultSet res = metaData.getTables(null, schema, "%", new String[] {"TABLE"} );
-        while (res.next()) {
-            PgTable table = getTable(schema, res.getString("table_name"));
-            String comment = res.getString("REMARKS");
-            if (comment != null && !comment.isEmpty()){
-                table.setComment("'" + comment + "'");                
-            }
-            s.addTable(table);
-        }
-//        Log.log(Log.LOG_INFO, "Creating views from JDBC for schema " + schema);
-        res = metaData.getTables(null, schema, "%", new String[] {"VIEW"} );
-        while (res.next()) {
-            PgView view = getView(schema, res.getString("table_name"));
-            String comment = res.getString("REMARKS");
-            if (comment != null && !comment.isEmpty()){
-                view.setComment("'" + comment + "'");                
-            }
-            s.addView(view);
-        }
-//        Log.log(Log.LOG_INFO, "Creating functions from JDBC for schema " + schema);
-        prepStatFunctions.setLong(1, getSchemaOidByName(schema));
-        res = prepStatFunctions.executeQuery();
-        while (res.next()){
-            PgFunction function = getFunction(res, schema);
-            if (function != null){
-                s.addFunction(function);
+        
+        // TABLES
+        prepStatTables.setLong(1, getSchemaOidByName(schema));
+        try(ResultSet res = prepStatTables.executeQuery()){
+            while (res.next()) {
+                PgTable table = getTable(res, schema);
+                s.addTable(table);
             }
         }
-//        Log.log(Log.LOG_INFO, "Creating sequences from JDBC for schema " + schema);
-        prepStatSequences.setString(1, schema);
-        res = prepStatSequences.executeQuery();
-        PgSequence sequence = null;
-        int previousSeqOid = 0;
-        while(res.next()){
-            if (previousSeqOid != res.getInt("sequence_oid")){
-                sequence = getSequence(res, schema);
-                if (sequence != null){
-                    s.addSequence(sequence);
+        
+        // VIEWS
+        try(ResultSet res = metaData.getTables(null, schema, "%", new String[] {"VIEW"} )){
+            while (res.next()) {
+                PgView view = getView(schema, res.getString("table_name"));
+                String comment = res.getString("REMARKS");
+                if (comment != null && !comment.isEmpty()){
+                    view.setComment("'" + comment + "'");
                 }
-            }else if (sequence != null && res.getInt("referenced_column") != 0){
-                Integer[] ownedColumnNumbers = {res.getInt("referenced_column")};
-                sequence.setOwnedBy(res.getString("referenced_table_name") + "." + getColumnNames(ownedColumnNumbers, res.getLong("referenced_table_oid")).get(0));
+                s.addView(view);
             }
-            previousSeqOid = res.getInt("sequence_oid");
+        }
+        
+        // FUNCTIONS
+        prepStatFunctions.setLong(1, getSchemaOidByName(schema));
+        try(ResultSet res = prepStatFunctions.executeQuery()){
+            while (res.next()){
+                PgFunction function = getFunction(res, schema);
+                if (function != null){
+                    s.addFunction(function);
+                }
+            }
+        }
+
+        // SEQUENCES
+        prepStatSequences.setString(1, schema);
+        try(ResultSet res = prepStatSequences.executeQuery()){
+            PgSequence sequence = null;
+            int previousSeqOid = 0;
+            while(res.next()){
+                if (previousSeqOid != res.getInt("sequence_oid")){
+                    sequence = getSequence(res, schema);
+                    if (sequence != null){
+                        s.addSequence(sequence);
+                    }
+                }else if (sequence != null && res.getInt("referenced_column") != 0){
+                    Integer[] ownedColumnNumbers = {res.getInt("referenced_column")};
+                    sequence.setOwnedBy(res.getString("referenced_table_name") + "." + getColumnNames(ownedColumnNumbers, res.getLong("referenced_table_oid")).get(0));
+                }
+                previousSeqOid = res.getInt("sequence_oid");
+            }
         }
         return s;
     }
@@ -615,51 +627,59 @@ public class JdbcLoader {
         return v;
     }
 
-    private PgTable getTable(String schema, String tableName) throws SQLException{
-        // TODO get oids earlier (or cache), as they are not changed in time (minimize db queries)
-//        System.err.println("begin " + schema + "." + tableName);
-        Long tableOid = getTableOidByName(tableName, getSchemaOidByName(schema));
+    private PgTable getTable(ResultSet res, String schemaName) throws SQLException{
+        Long tableOid = res.getLong("oid");
+        String tableName = res.getString("relname");
         StringBuilder tableDef = new StringBuilder(); 
-
-        tableDef.append("CREATE TABLE " + tableName + " (\n");
+        tableDef.append("CREATE TABLE ".concat(tableName).concat(" (\n"));
         
-        ResultSet res = metaData.getColumns(null, schema, tableName, "%");
         List<PgColumn> columns = new ArrayList<PgColumn>(5);
-        while (res.next()) {
-            String columnName = res.getString("COLUMN_NAME");
+        
+        Integer[] colNumbers = (Integer[])res.getArray("col_numbers").getArray();
+        for (int i = 0; i < colNumbers.length; i++) {
+            if (colNumbers[i] < 1){
+                continue;
+            }
+            String[] colNames = (String[])res.getArray("col_names").getArray();
+            Long[] colTypes = (Long[])res.getArray("col_types").getArray();
+            String[] colDefaults = (String[])res.getArray("col_defaults").getArray();
+            String[] colComments = (String[])res.getArray("col_comments").getArray();
+            Integer[] colTypeMod = (Integer[])res.getArray("col_typemod").getArray();
+            Boolean[] colNotNull = (Boolean[])res.getArray("col_notnull").getArray();
+            
+            String columnName = colNames[i];
             PgColumn column = new PgColumn(columnName);
             
-            String columnType = res.getString("TYPE_NAME");
-            // TODO надо ли проверку на наличие DEFULT, если serial?
-            if (DATA_TYPE_ALIASES.get(columnType) != null){
-                columnType = DATA_TYPE_ALIASES.get(columnType);
-            }else if (columnType.equals("bigserial")){
-                columnType = "bigint";
-            }else if (columnType.equals("serial")){
-                columnType = "integer";
-            }
-            column.setType(columnType);
+            PgType columnType = cachedTypeNamesByOid.get(colTypes[i]);
+            String columnTypeName = getTypeNameByOid(colTypes[i], schemaName);
             
-            tableDef.append("   " + columnName + " " + columnType);
-            if (columnType.equals("character") || columnType.equals("character varying")){
-                String numOfChars = "(" + res.getInt("CHAR_OCTET_LENGTH") + ")";
-                tableDef.append(numOfChars);
-                column.setType(column.getType() + numOfChars);
+            if (colTypeMod[i] != -1 && columnType.getTypmodout() != null && !columnType.getTypmodout().isEmpty()){
+                StringBuilder query = new StringBuilder();
+                query.append("SELECT ").append(columnType.getTypmodout()).append("(").append(String.valueOf(colTypeMod[i])).append(")");
+                try(Statement stmnt = connection.createStatement();
+                        ResultSet res2 = stmnt.executeQuery(query.toString())){
+                    if (res2.next()){
+                        columnTypeName = columnTypeName.concat(res2.getString(1));
+                    }
+                }
             }
+            column.setType(columnTypeName);
             
-            String columnDefault = res.getString("COLUMN_DEF");
-            if (columnDefault != null){
+            tableDef.append("   " + columnName + " " + columnTypeName);
+            
+            String columnDefault = colDefaults[i];
+            if (columnDefault != null && !columnDefault.isEmpty()){
                 tableDef.append(" DEFAULT " + columnDefault);
                 column.setDefaultValue(columnDefault);
             }
             
-            if (res.getInt("NULLABLE") == DatabaseMetaData.columnNoNulls){
+            if (colNotNull[i]){
                 tableDef.append(" NOT NULL");
                 column.setNullValue(false);
             }
             
             tableDef.append(",\n");
-            String comment = res.getString("REMARKS");
+            String comment = colComments[i];
             if (comment != null && !comment.isEmpty()){
                 column.setComment("'" + comment + "'");                
             }
@@ -667,25 +687,27 @@ public class JdbcLoader {
         }
         tableDef.append(");");
         
-        PgTable t = new PgTable(tableName, tableDef.toString(), getSearchPath(schema));
+        PgTable t = new PgTable(tableName, tableDef.toString(), getSearchPath(schemaName));
         
         for(PgColumn column : columns){
             t.addColumn(column);
         }
 
-        // Query PRIVILEGES, OWNER
-        prepStatTablePrivileges.setLong(1, tableOid);
-        res = prepStatTablePrivileges.executeQuery();
-        if (res.next()) {
-            t.setOwner(getRoleNameByOid(res.getLong("relowner")));
-            setPrivileges(t, tableName, res.getString("aclArray"));
+        // Table COMMENTS
+        String comment = res.getString("table_comment");
+        if (comment != null && !comment.isEmpty()){
+            t.setComment("'" + comment + "'");                
         }
+        
+        // PRIVILEGES, OWNER
+        t.setOwner(getRoleNameByOid(res.getLong("relowner")));
+        setPrivileges(t, t.getName(), res.getString("aclarray"));
         
         // Query CONSTRAINTS
         prepStatConstraints.setLong(1, tableOid);
-        res = prepStatConstraints.executeQuery();
-        while (res.next()){
-            PgConstraint constraint = getConstraint(res, schema, tableName);
+        ResultSet resSubObjects = prepStatConstraints.executeQuery();
+        while (resSubObjects.next()){
+            PgConstraint constraint = getConstraint(resSubObjects, schemaName, t.getName());
             if (constraint != null){
                 t.addConstraint(constraint);
             }
@@ -693,9 +715,9 @@ public class JdbcLoader {
         
         // Query INDECIES
         prepStatIndecies.setLong(1, tableOid);
-        res = prepStatIndecies.executeQuery();
-        while (res.next()){
-            PgIndex index = getIndex(res, tableName, tableOid);
+        resSubObjects = prepStatIndecies.executeQuery();
+        while (resSubObjects.next()){
+            PgIndex index = getIndex(resSubObjects, t.getName(), tableOid);
             if (index != null){
                 t.addIndex(index);
             }
@@ -703,15 +725,15 @@ public class JdbcLoader {
         
         // Query TRIGGERS
         prepStatTriggers.setLong(1, tableOid);
-        res = prepStatTriggers.executeQuery();
-        while(res.next()){
-            PgTrigger trigger = getTrigger(res);
+        resSubObjects = prepStatTriggers.executeQuery();
+        while(resSubObjects.next()){
+            PgTrigger trigger = getTrigger(resSubObjects);
             if (trigger != null){
                 t.addTrigger(trigger);
             }
         }
         
-        res.close();
+        resSubObjects.close();
         return t;
     }
 
@@ -836,7 +858,7 @@ public class JdbcLoader {
                     if(returnedTableArguments.length() > 0){
                         returnedTableArguments.append(", ");
                     }
-                    returnedTableArguments.append(argNames[i] + " " + getTypeNameByOid(argTypeOids[i]));
+                    returnedTableArguments.append(argNames[i] + " " + getTypeNameByOid(argTypeOids[i], schemaName));
                 }
             }            
         }
@@ -844,9 +866,9 @@ public class JdbcLoader {
         if (returnsTable){
             f.setReturns("TABLE(" + returnedTableArguments + ")");
         }else if (res.getBoolean("proretset")){
-            f.setReturns("SETOF " + getTypeNameByOid(res.getLong("prorettype")));
+            f.setReturns("SETOF " + getTypeNameByOid(res.getLong("prorettype"), schemaName));
         }else{
-            f.setReturns(getTypeNameByOid(res.getLong("prorettype")));
+            f.setReturns(getTypeNameByOid(res.getLong("prorettype"), schemaName));
         }
         
         // ARGUMENTS
@@ -1057,8 +1079,14 @@ public class JdbcLoader {
         return null;
     }
     
-    private String getTypeNameByOid(Long typeOid) throws SQLException {
-        return cachedTypeNamesByOid.get(typeOid);
+    /**
+     * Returns the name of a type, whose <code>oid = typeOid</code>. If the type's schema name 
+     * differs from targetSchemaName, the returned type name is schema-qualified.
+     */
+    private String getTypeNameByOid(Long typeOid, String targetSchemaName) throws SQLException {
+        PgType type = cachedTypeNamesByOid.get(typeOid);
+        return type.getParentSchema().equals("pg_catalog") || (type.getParentSchema().equals(targetSchemaName)) ? 
+                type.getTypeName() : type.getParentSchema().concat(".").concat(type.getTypeName());
     }
     
     /**
