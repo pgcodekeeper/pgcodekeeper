@@ -56,6 +56,7 @@ public class ProjectEditor extends EditorPart {
                     break;
                 case IResourceChangeEvent.POST_CHANGE:
                     handleChangeProject(event);
+                    break;
                 default:
                     break;
             }
