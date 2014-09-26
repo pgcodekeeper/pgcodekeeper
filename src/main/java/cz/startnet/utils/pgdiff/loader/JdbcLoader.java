@@ -727,7 +727,7 @@ public class JdbcLoader {
         prepStatTriggers.setLong(1, tableOid);
         resSubObjects = prepStatTriggers.executeQuery();
         while(resSubObjects.next()){
-            PgTrigger trigger = getTrigger(resSubObjects);
+            PgTrigger trigger = getTrigger(resSubObjects, schemaName);
             if (trigger != null){
                 t.addTrigger(trigger);
             }
@@ -748,11 +748,12 @@ public class JdbcLoader {
      *     
      *      boolean forEachRow;
      *      boolean before;
+     * @param schemaName 
      */
-    private PgTrigger getTrigger(ResultSet res) throws SQLException{
+    private PgTrigger getTrigger(ResultSet res, String schemaName) throws SQLException{
         
         String triggerName = res.getString("tgname");
-        PgTrigger t = new PgTrigger(triggerName, "", "");
+        PgTrigger t = new PgTrigger(triggerName, "", getSearchPath(schemaName));
         
         int firingConditions = res.getInt("tgtype");
         if ((firingConditions & TRIGGER_TYPE_DELETE) != 0){
@@ -772,12 +773,14 @@ public class JdbcLoader {
         }
         if ((firingConditions & TRIGGER_TYPE_BEFORE) != 0){
             t.setBefore(true);
+        }else{
+            t.setBefore(false);
         }
         
         String tableName = getTableNameByOid(res.getLong("tgrelid")).getValue();
         t.setTableName(tableName);
         
-        String functionName = getFunctionNameByOid(res.getLong("tgfoid"));
+        String functionName = getFunctionNameByOid(res.getLong("tgfoid")).concat("()");
         t.setFunction(functionName);
         return t;
     }

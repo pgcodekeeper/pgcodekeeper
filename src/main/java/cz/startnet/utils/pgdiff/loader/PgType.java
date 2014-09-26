@@ -20,6 +20,8 @@ public class PgType{
             put("int2","smallint");
             put("serial2","smallserial");
             put("serial4","serial");
+            put("bigserial","bigint");
+            put("serial","integer");
             put("timetz","time with time zone");
             put("timestamptz","timestamp with time zone");
         }
@@ -37,17 +39,9 @@ public class PgType{
      * we do not convert those to simple arrays
      */
     public PgType(String typeName, String typelem, Long typarray, int typlen, String typmodout, String parentSchema) {
-        this.typeName = typeName;
+        this.typeName = DATA_TYPE_ALIASES.containsKey(typeName) ? DATA_TYPE_ALIASES.get(typeName) : typeName;
         this.typmodout = typmodout;
         this.parentSchema = parentSchema;
-        
-        if (DATA_TYPE_ALIASES.containsKey(typeName)){
-            this.typeName = DATA_TYPE_ALIASES.get(typeName);   
-        }else if (this.typeName.equals("bigserial")){
-            this.typeName = "bigint";
-        }else if (this.typeName.equals("serial")){
-            this.typeName = "integer";
-        }
         
         if (typlen == -1 && typarray == 0L && !typelem.equals("-")){
             // TODO should we check whether typelem is in DATA_TYPE_ALIASES?
