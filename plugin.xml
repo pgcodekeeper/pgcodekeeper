@@ -390,9 +390,10 @@
                   <iterate
                         ifEmpty="false"
                         operator="or">
-                     <adapt
-                           type="org.eclipse.core.resources.IProject">
-                     </adapt>
+                     <test
+                           property="org.eclipse.core.resources.projectNature"
+                           value="ru.taximaxim.codekeeper.ui.nature">
+                     </test>
                   </iterate>
                </with>
             </visibleWhen>
@@ -551,6 +552,15 @@
             id="ru.taximaxim.codekeeper.ui.projecteditor"
             name="Project Editor">
       </editor>
+   </extension>
+   <extension
+         id="ru.taximaxim.codekeeper.ui.nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="ru.taximaxim.codekeeper.ui.natures.ProjectNature">
+         </run>
+      </runtime>
    </extension>
 
 </plugin>

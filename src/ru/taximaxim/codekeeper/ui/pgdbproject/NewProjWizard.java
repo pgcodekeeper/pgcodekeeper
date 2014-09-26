@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.Set;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -179,9 +180,12 @@ IExecutableExtension {
         
         props.openProject();
         try {
+            PgDbProject.addNatureToProject(props.getProject());
             props.getPrefs().flush();
         } catch (BackingStoreException e) {
             Log.log(Log.LOG_ERROR, "Failed to save project preferences", e);
+        } catch (CoreException e) {
+            Log.log(Log.LOG_ERROR, "Failed to add nature to project", e);
         }
         return true;
     }

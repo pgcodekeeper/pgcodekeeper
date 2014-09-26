@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.natures.ProjectNature;
 
 /**
  * Проект
@@ -88,6 +89,18 @@ public class PgDbProject {
         this.project = newProject;
         ProjectScope ps = new ProjectScope(newProject);
         prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
+    }
+    
+    public static void addNatureToProject(IProject project) throws CoreException {
+        if (!project.hasNature(ProjectNature.ID)) {
+            IProjectDescription description = project.getDescription();
+            String[] prevNatures = description.getNatureIds();
+            String[] newNatures = new String[prevNatures.length + 1];
+            System.arraycopy(prevNatures, 0, newNatures, 0, prevNatures.length);
+            newNatures[prevNatures.length] = ProjectNature.ID;
+            description.setNatureIds(newNatures);
+            project.setDescription(description, null);
+        }
     }
     /**
      * Извлекает имя проекта из названия папки проекта
