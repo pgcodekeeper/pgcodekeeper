@@ -4,6 +4,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
@@ -35,8 +36,7 @@ public class ProjectEditor extends EditorPart {
         this.project = ResourcesPlugin.getWorkspace().getRoot()
                 .getProject(this.input.getProjectName());
         setPartName("Project: " + project.getName());
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(editorCloser,
-                IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE);
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(editorUpdater);
     }
     
     @Override
@@ -47,27 +47,48 @@ public class ProjectEditor extends EditorPart {
         new Label(parent, SWT.NONE).setText(project.getName());
     }
     
-    private IResourceChangeListener editorCloser = new IResourceChangeListener() {
+    private IResourceChangeListener editorUpdater = new IResourceChangeListener() {
         public void resourceChanged(IResourceChangeEvent event) {
-            final IResource closingProject = event.getResource();
-            Display.getDefault().asyncExec(new Runnable(){
-                public void run() {
-                    for (IWorkbenchPage page : getSite().getWorkbenchWindow().getPages()) {
-                        ProjectEditorInput editorInput = (ProjectEditorInput) ProjectEditor.this.getEditorInput();
-                        if (editorInput.getName().equals(closingProject.getName()))
-                            page.closeEditor(page.findEditor(editorInput), true);
-                    }
-                }
-            });
-        }   
+            switch (event.getType()) {
+                case IResourceChangeEvent.PRE_CLOSE:
+                case IResourceChangeEvent.PRE_DELETE:
+                    handlerCloseProject(event);
+                    break;
+                case IResourceChangeEvent.POST_CHANGE:
+                    handleChangeProject(event);
+                default:
+                    break;
+            }
+        }
     };
+    
+    private void handlerCloseProject(IResourceChangeEvent event) {
+        final IResource closingProject = event.getResource();
+        Display.getDefault().asyncExec(new Runnable(){
+            public void run() {
+                for (IWorkbenchPage page : getSite().getWorkbenchWindow().getPages()) {
+                    ProjectEditorInput editorInput = 
+                            (ProjectEditorInput) ProjectEditor.this.getEditorInput();
+                    if (editorInput.getName().equals(closingProject.getName()))
+                        page.closeEditor(page.findEditor(editorInput), true);
+                }
+            }
+        });
+    }
+    
+    private void handleChangeProject(IResourceChangeEvent event) {
+        IResourceDelta rootDelta = event.getDelta();
+        IResourceDelta thisproj = rootDelta.findMember(project.getFullPath());
+        if (thisproj != null) {
+            // update editor somehow
+        }
+    }   
     
     @Override
     public void dispose() {
         super.dispose();
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(editorCloser);
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(editorUpdater);
     }
-    
     
     @Override
     public void doSave(IProgressMonitor monitor) {
@@ -98,5 +119,4 @@ public class ProjectEditor extends EditorPart {
         // TODO Auto-generated method stub
 
     }
-
 }
