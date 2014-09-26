@@ -208,7 +208,6 @@ IExecutableExtension {
             getDefaultProps(newPrefs);
             return;
         }
-        setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.ENCODING, "UTF-8");
         
         String src;
         if ((src = oldPrefs.getString(PROJ_PREF.SOURCE)).isEmpty() ||
@@ -216,6 +215,8 @@ IExecutableExtension {
             src = getDbSource();
         }
         newPrefs.put(PROJ_PREF.SOURCE, src);
+        
+        setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.ENCODING, pageMisc.getEncoding());
         setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.REPO_ROOT_PATH, 
                 pageSubdir.getRepoSubdir());
         
@@ -227,7 +228,8 @@ IExecutableExtension {
         newPrefs.putInt(PROJ_PREF.DB_PORT, oldPrefs.getInt(PROJ_PREF.DB_PORT));
     }
     
-    private void setNotEmptyString(IEclipsePreferences newPrefs, PreferenceStore oldPrefs, String prefName, String defValue) {
+    private void setNotEmptyString(IEclipsePreferences newPrefs,
+            PreferenceStore oldPrefs, String prefName, String defValue) {
         String value;
         if (!oldPrefs.getString(prefName).isEmpty()) {
             value = oldPrefs.getString(prefName);
