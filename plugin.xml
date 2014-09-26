@@ -135,6 +135,11 @@
             id="ru.taximaxim.codekeeper.ui.command.OpenLog"
             name="%command.commandname.15">
       </command>
+      <command
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenEditor"
+            id="ru.taximaxim.codekeeper.ui.openeditor"
+            name="Open in Project Editor">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -371,6 +376,28 @@
                style="push">
          </command>
       </menuContribution>
+      <menuContribution
+            allPopups="true"
+            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+         <command
+               commandId="ru.taximaxim.codekeeper.ui.openeditor"
+               label="Open in Project Editor"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="activeMenuSelection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="or">
+                     <adapt
+                           type="org.eclipse.core.resources.IProject">
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
    </extension>
    <extension
          point="org.eclipse.ui.views">
@@ -515,6 +542,15 @@
             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
             name="PgCodekeeper">
       </category>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="ru.taximaxim.codekeeper.ui.editors.ProjectEditor"
+            default="false"
+            id="ru.taximaxim.codekeeper.ui.projecteditor"
+            name="Project Editor">
+      </editor>
    </extension>
 
 </plugin>
