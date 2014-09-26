@@ -1,14 +1,19 @@
 package ru.taximaxim.codekeeper.ui.editors;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 
@@ -30,6 +35,8 @@ public class ProjectEditor extends EditorPart {
         this.project = ResourcesPlugin.getWorkspace().getRoot()
                 .getProject(this.input.getProjectName());
         setPartName("Project: " + project.getName());
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(editorCloser,
+                IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE);
     }
     
     @Override
@@ -39,6 +46,28 @@ public class ProjectEditor extends EditorPart {
         parent.setLayout(layout);
         new Label(parent, SWT.NONE).setText(project.getName());
     }
+    
+    private IResourceChangeListener editorCloser = new IResourceChangeListener() {
+        public void resourceChanged(IResourceChangeEvent event) {
+            final IResource closingProject = event.getResource();
+            Display.getDefault().asyncExec(new Runnable(){
+                public void run() {
+                    for (IWorkbenchPage page : getSite().getWorkbenchWindow().getPages()) {
+                        ProjectEditorInput editorInput = (ProjectEditorInput) ProjectEditor.this.getEditorInput();
+                        if (editorInput.getName().equals(closingProject.getName()))
+                            page.closeEditor(page.findEditor(editorInput), true);
+                    }
+                }
+            });
+        }   
+    };
+    
+    @Override
+    public void dispose() {
+        super.dispose();
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(editorCloser);
+    }
+    
     
     @Override
     public void doSave(IProgressMonitor monitor) {
