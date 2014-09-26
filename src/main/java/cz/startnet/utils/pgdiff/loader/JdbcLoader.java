@@ -227,7 +227,7 @@ public class JdbcLoader {
                 + "     table_comment";
         prepStatTables = connection.prepareStatement(queryTables);
         prepStatTriggers = connection.prepareStatement("SELECT tgfoid, tgname, tgfoid, tgtype, tgrelid FROM pg_catalog.pg_trigger WHERE tgrelid = ?");
-        prepStatFuncName = connection.prepareStatement("SELECT proname FROM pg_catalog.pg_proc WHERE oid = ?");
+        prepStatFuncName = connection.prepareStatement("SELECT proname, nsp.nspname FROM pg_catalog.pg_proc proc LEFT JOIN pg_catalog.pg_namespace nsp ON proc.pronamespace = nsp.oid WHERE proc.oid = ?");
         
         String queryFunctions = 
                 "SELECT "
@@ -583,7 +583,7 @@ public class JdbcLoader {
             }
         }
         
-        String viewDef = res.getString(definitionColumnName);
+        String viewDef = res.getString(definitionColumnName).trim();
         if (viewDef == null){
             // TODO throw exception, log, output to console?
             System.err.println("View without definition (locked): " + view);
@@ -622,8 +622,13 @@ public class JdbcLoader {
             v.setOwner(res.getString("viewowner"));
         }
         
-        // TODO Comment on view
-        
+        // Query view privileges
+        // UGLY way
+        try(Statement stmnt = connection.createStatement(); ResultSet res3 = stmnt.executeQuery("SELECT relacl FROM pg_catalog.pg_class WHERE relname = '" + view + "' AND relnamespace = " + getSchemaOidByName(schema));){
+            if (res3.next()){
+                setPrivileges(v, view, res3.getString("relacl"));
+            }
+        }
         return v;
     }
 
@@ -780,7 +785,7 @@ public class JdbcLoader {
         String tableName = getTableNameByOid(res.getLong("tgrelid")).getValue();
         t.setTableName(tableName);
         
-        String functionName = getFunctionNameByOid(res.getLong("tgfoid")).concat("()");
+        String functionName = getFunctionNameByOid(res.getLong("tgfoid"), schemaName).concat("()");
         t.setFunction(functionName);
         return t;
     }
@@ -935,7 +940,7 @@ public class JdbcLoader {
         }else if (st instanceof PgFunction){
             stType = "FUNCTION";
             possiblePrivilegeCount = 1;
-        }else if (st instanceof PgTable){
+        }else if (st instanceof PgTable || st instanceof PgView){
             stType = "TABLE";
             possiblePrivilegeCount = 7;
         }else{
@@ -1012,11 +1017,13 @@ public class JdbcLoader {
         return result;
     }
 
-    private String getFunctionNameByOid(Long functionOid) throws SQLException{
+    private String getFunctionNameByOid(Long functionOid, String targetSchemaName) throws SQLException{
         prepStatFuncName.setLong(1, functionOid);
         ResultSet res = prepStatFuncName.executeQuery();
         if (res.next()){
-            return res.getString("proname");
+            String funcSchemaName = res.getString("nspname");
+            return funcSchemaName.equals(targetSchemaName) ? 
+                    res.getString("proname") : funcSchemaName.concat(".").concat(res.getString("proname"));
         }
         return null;
     }
