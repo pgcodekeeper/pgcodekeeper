@@ -11,6 +11,8 @@ import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.osgi.framework.Version;
 
@@ -222,7 +224,11 @@ public class ModelExporter {
      * @return a statement's exported file name
      */
     public static String getExportedFilename(PgStatement statement) {
-        return statement.getBareName().replaceAll("[\\s\\/:,.;*?\"<>|]", "")
+        String win_disallow = "^CON$|^PRN$|^AUX$|^NUL$|^COM[0-9]$|^LPT[0-9]$";
+        Pattern pt = Pattern.compile(win_disallow, 
+                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Matcher mt = pt.matcher(statement.getBareName());
+        return mt.replaceAll("_").replaceAll("[\\s\\/:,.;*?\"<>|]", "")
                 + "_" + PgDiffUtils.md5(statement.getName());
     }
     
