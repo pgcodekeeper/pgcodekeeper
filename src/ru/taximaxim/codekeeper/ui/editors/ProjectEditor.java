@@ -5,8 +5,10 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -18,6 +20,8 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
+
+import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class ProjectEditor extends EditorPart {
 
@@ -47,6 +51,10 @@ public class ProjectEditor extends EditorPart {
         layout.numColumns = 1;
         parent.setLayout(layout);
         new Label(parent, SWT.NONE).setText(project.getName());
+        IEclipsePreferences prefs = new ProjectScope(project)
+                .getNode(UIConsts.PLUGIN_ID.THIS);
+        new Label(parent, SWT.NONE).setText("Path to REPO: "
+                + prefs.get(UIConsts.PROJ_PREF.REPO_ROOT_PATH, ""));
     }
     
     private IResourceChangeListener editorUpdater = new IResourceChangeListener() {
