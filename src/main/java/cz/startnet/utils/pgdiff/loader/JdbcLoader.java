@@ -181,143 +181,16 @@ public class JdbcLoader {
     }
 
     private void prepareStatements() throws SQLException{
-        String queryTables = 
-                "SELECT "
-                + "     c.oid, "
-                + "     c.relname, "
-                + "     c.relowner::bigint, "
-                + "     c.relacl AS aclArray, "
-                + "     array_agg(attributes.attnum)::integer[] AS col_numbers, "
-                + "     array_agg(attributes.attname) AS col_names, "
-                + "     array_agg(attributes.atttypid)::bigint[] AS col_types, "
-                + "     array_agg(attributes.adsrc) AS col_defaults, "
-                + "     array_agg(attributes.description) AS col_comments, "
-                + "     array_agg(attributes.atttypmod) AS col_typemod, "
-                + "     array_agg(attributes.attnotnull) AS col_notnull, "
-                + "     comments.description AS table_comment "
-                + "FROM "
-                + "     pg_catalog.pg_class c "
-                + "     RIGHT JOIN"
-                + "         (pg_catalog.pg_attribute attr "
-                + "             LEFT JOIN "
-                + "         pg_catalog.pg_attrdef attrdef "
-                + "             ON "
-                + "         attrdef.adnum = attr.attnum AND "
-                + "         attr.attrelid = attrdef.adrelid "
-                + "             LEFT JOIN "
-                + "         pg_catalog.pg_description comments "
-                + "             ON "
-                + "         comments.objoid = attr.attrelid AND "
-                + "         comments.objsubid = attr.attnum) attributes "
-                + "     ON "
-                + "     c.oid = attributes.attrelid "
-                + "     LEFT JOIN "
-                + "         pg_catalog.pg_description comments "
-                + "     ON "
-                + "     comments.objoid = c.oid AND "
-                + "     comments.objsubid = 0 "
-                + "WHERE "
-                + "     relnamespace = ? AND "
-                + "     relkind = 'r' "
-                + "GROUP BY "
-                + "     c.oid, "
-                + "     c.relname, "
-                + "     c.relowner, "
-                + "     aclArray, "
-                + "     table_comment";
-        prepStatTables = connection.prepareStatement(queryTables);
+        prepStatTables = connection.prepareStatement(JdbcQueries.QUERY_TABLES_PER_SCHEMA);
         prepStatTriggers = connection.prepareStatement("SELECT tgfoid, tgname, tgfoid, tgtype, tgrelid FROM pg_catalog.pg_trigger WHERE tgrelid = ?");
         prepStatFuncName = connection.prepareStatement("SELECT proname, nsp.nspname FROM pg_catalog.pg_proc proc LEFT JOIN pg_catalog.pg_namespace nsp ON proc.pronamespace = nsp.oid WHERE proc.oid = ?");
-        
-        String queryFunctions = 
-                "SELECT "
-                + "     proname, "
-                + "     proowner, "
-                + "     prolang, "
-                + "     prosrc, "
-                + "     pg_get_functiondef(p.oid) AS probody, "
-                + "     prorettype, "
-                + "     proallargtypes::bigint[], "
-                + "     proargmodes, "
-                + "     proargnames, "
-                + "     pg_get_function_arguments(p.oid) AS proarguments, "
-                + "     pg_get_function_identity_arguments(p.oid) AS proarguments_without_default, "
-                + "     proargdefaults, "
-                + "     proacl AS aclArray,"
-                + "     d.description AS comment,"
-                + "     proretset "
-                + "FROM "
-                + "     pg_catalog.pg_proc p LEFT JOIN pg_catalog.pg_description d ON d.objoid = p.oid "
-                + "WHERE "
-                + "     pronamespace = ? AND "
-                + "     proisagg = FALSE "
-                + "GROUP BY "
-                + "     p.oid, "
-                + "     proname, "
-                + "     proowner, "
-                + "     prolang, "
-                + "     prosrc, "
-                + "     probody, "
-                + "     prorettype, "
-                + "     proowner, "
-                + "     proallargtypes, "
-                + "     proargmodes, "
-                + "     proargnames, "
-                + "     proarguments, "
-                + "     proargdefaults,"
-                + "     comment,"
-                + "     aclArray,"
-                + "     proretset";
-        
-        prepStatFunctions = connection.prepareStatement(queryFunctions);
+        prepStatFunctions = connection.prepareStatement(JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA);
         prepStatLanguages = connection.prepareStatement("SELECT lanname FROM pg_catalog.pg_language WHERE oid = ?");
-        
-        String querySequenceInfo = 
-                "SELECT "
-                + "     c.oid AS sequence_oid,"
-                + "     c.relowner,"
-                + "     s.sequence_name,"
-                + "     s.start_value,"
-                + "     s.minimum_value,"
-                + "     s.maximum_value,"
-                + "     s.increment,"
-                + "     s.cycle_option,"
-                + "     d.refobjsubid AS referenced_column,"
-                + "     d.refobjid AS referenced_table_oid,"
-                + "     (SELECT relname FROM pg_catalog.pg_class WHERE oid = d.refobjid AND relkind = 'r') referenced_table_name,"
-                + "     c.relacl AS aclArray "
-                + "FROM "
-                + "     information_schema.sequences s,"
-                + "     pg_catalog.pg_class c,"
-                + "     pg_catalog.pg_namespace n,"
-                + "     pg_catalog.pg_depend d "
-                + "WHERE "
-                + "     s.sequence_schema = ? AND "
-                + "     c.relname = s.sequence_name AND "
-                + "     n.oid = c.relnamespace AND "
-                + "     d.objid = c.oid AND "
-                + "     n.nspname = s.sequence_schema "
-                + "GROUP BY "
-                + "     sequence_oid,"
-                + "     relowner,"
-                + "     sequence_name,"
-                + "     start_value,"
-                + "     minimum_value,"
-                + "     maximum_value,"
-                + "     increment,"
-                + "     cycle_option,"
-                + "     referenced_column,"
-                + "     referenced_table_oid,"
-                + "     referenced_table_name,"
-                + "     aclArray "
-                + "ORDER BY "
-                + "     sequence_oid;";
-
-        prepStatSequences = connection.prepareStatement(querySequenceInfo);
+        prepStatSequences = connection.prepareStatement(JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA);
         prepStatExtensions = connection.prepareStatement("SELECT * FROM pg_catalog.pg_extension");
-        prepStatConstraints = connection.prepareStatement("SELECT conname, contype, conrelid, consrc, CAST(conkey as integer[]), confrelid, CAST(confkey as integer[]), confupdtype, confdeltype, confmatchtype FROM pg_catalog.pg_constraint WHERE conrelid = ?");
-        prepStatIndecies = connection.prepareStatement("SELECT i.indisunique, c.relname, c.relnamespace, c.relowner, definition FROM pg_catalog.pg_index i, pg_catalog.pg_class c, pg_get_indexdef(c.oid) definition WHERE i.indrelid = ? AND c.oid = i.indexrelid;");
-        prepStatColumnsOfSchema = connection.prepareStatement("SELECT a.attname, a.attnum, a.attrelid FROM pg_catalog.pg_attribute a JOIN pg_catalog.pg_class c ON c.oid = a.attrelid WHERE c.relnamespace = ? AND c.relkind IN ('i', 'r') ORDER BY a.attrelid;");
+        prepStatConstraints = connection.prepareStatement(JdbcQueries.QUERY_TABLE_CONSTRAINTS);
+        prepStatIndecies = connection.prepareStatement(JdbcQueries.QUERY_INDEX);
+        prepStatColumnsOfSchema = connection.prepareStatement(JdbcQueries.QUERY_COLUMNS_PER_SCHEMA);
         prepStatIndexColumnDefault = connection.prepareStatement("SELECT pg_get_indexdef(?, ?, true) AS indexColumnDefault;");
     }
 
@@ -385,9 +258,23 @@ public class JdbcLoader {
         // TABLES
         prepStatTables.setLong(1, getSchemaOidByName(schema));
         try(ResultSet res = prepStatTables.executeQuery()){
+            Long previousTableOid = 0L;
+            PgTable previousTable = null;
             while (res.next()) {
-                PgTable table = getTable(res, schema);
-                s.addTable(table);
+                /**
+                 * Костыль: на данный момент не получается собрать имена нескольких 
+                 * наследуемых таблиц в массив строк, поэтому, при наличии нескольких 
+                 * таблиц в разделе INHERITS таблицы X, выводится соответствующее 
+                 * количество строк в ResultSet'e с relname = X
+                 */
+                if (previousTableOid.equals(res.getLong("oid")) && previousTable != null){
+                    previousTable.addInherits(res.getString("inherited"));
+                }else{
+                    PgTable table = getTable(res, schema);
+                    s.addTable(table);
+                    previousTableOid = res.getLong("oid");
+                    previousTable = table;
+                }
             }
         }
         
@@ -694,8 +581,14 @@ public class JdbcLoader {
         
         PgTable t = new PgTable(tableName, tableDef.toString(), getSearchPath(schemaName));
         
-        for(PgColumn column : columns){
-            t.addColumn(column);
+        // INHERITS
+        String inherits = res.getString("inherited");
+        if(inherits != null && !inherits.isEmpty()){
+            t.addInherits(inherits);
+        }else{
+            for(PgColumn column : columns){
+                t.addColumn(column);
+            }
         }
 
         // Table COMMENTS
