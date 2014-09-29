@@ -99,8 +99,8 @@ public class ProjectEditor extends EditorPart {
     
     @Override
     public void dispose() {
-        super.dispose();
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(editorUpdater);
+        super.dispose();
     }
     
     @Override
