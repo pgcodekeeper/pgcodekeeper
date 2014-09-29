@@ -191,31 +191,24 @@ IExecutableExtension {
     }
 
     private void fillProjProps() {
-        if (!pageRepo.getOldProjFilePath().isEmpty()) {
+        if (pageRepo.getOldProjFilePath().isEmpty()) {
+            copyPref(null, props.getPrefs());
+        } else {
             copyPref(new PreferenceStore(pageRepo.getOldProjFilePath()), 
                     props.getPrefs());
-        } else {
-            getDefaultProps(props.getPrefs());
         }
     }
 
     private void copyPref(PreferenceStore oldPrefs,
             IEclipsePreferences newPrefs) {
         try {
-            oldPrefs.load();
+            if (oldPrefs != null) {
+                oldPrefs.load();
+            }
         } catch (IOException e) {
             Log.log(Log.LOG_ERROR, "Cannot load old properties. Using defaults", e);
-            getDefaultProps(newPrefs);
-            return;
         }
-        
-        String src;
-        if ((src = oldPrefs.getString(PROJ_PREF.SOURCE)).isEmpty() ||
-                src.equals(PROJ_PREF.SOURCE_TYPE_NONE)) {
-            src = getDbSource();
-        }
-        newPrefs.put(PROJ_PREF.SOURCE, src);
-        
+        setDbSource(newPrefs, oldPrefs, PROJ_PREF.SOURCE);
         setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.ENCODING, pageMisc.getEncoding());
         setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.REPO_ROOT_PATH, 
                 pageSubdir.getRepoSubdir());
@@ -225,13 +218,14 @@ IExecutableExtension {
         setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.DB_PASS, pageDb.getDbPass());
         setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.DB_HOST, pageDb.getDbHost());
         setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.DB_HOST, pageDb.getDbHost());
-        newPrefs.putInt(PROJ_PREF.DB_PORT, oldPrefs.getInt(PROJ_PREF.DB_PORT));
+        newPrefs.putInt(PROJ_PREF.DB_PORT, oldPrefs == null ? pageDb.getDbPort() : 
+            oldPrefs.getInt(PROJ_PREF.DB_PORT));
     }
     
     private void setNotEmptyString(IEclipsePreferences newPrefs,
             PreferenceStore oldPrefs, String prefName, String defValue) {
         String value;
-        if (!oldPrefs.getString(prefName).isEmpty()) {
+        if (oldPrefs != null && !oldPrefs.getString(prefName).isEmpty()) {
             value = oldPrefs.getString(prefName);
         } else {
             value = defValue;
@@ -239,31 +233,22 @@ IExecutableExtension {
         newPrefs.put(prefName, value);
     }
 
-    private void getDefaultProps(IEclipsePreferences prefs) {
-        props.getPrefs().put(PROJ_PREF.ENCODING, pageMisc.getEncoding());
-                
-        prefs.put(PROJ_PREF.SOURCE, getDbSource());
-        
-        prefs.put(PROJ_PREF.DB_NAME, pageDb.getDbName());
-        prefs.put(PROJ_PREF.DB_USER, pageDb.getDbUser());
-        prefs.put(PROJ_PREF.DB_PASS, pageDb.getDbPass());
-        prefs.put(PROJ_PREF.DB_HOST, pageDb.getDbHost());
-        prefs.putInt(PROJ_PREF.DB_PORT, pageDb.getDbPort());
-        prefs.put(PROJ_PREF.REPO_ROOT_PATH, pageSubdir.getRepoSubdir());
-    }
-
-    private String getDbSource() {
+    private void setDbSource(IEclipsePreferences newPrefs,
+            PreferenceStore oldPrefs, String prefName) {
         String src;
-        if (pageDb.isSourceDb()) {
-            src = PROJ_PREF.SOURCE_TYPE_DB;
-        } else if (pageDb.isSourceDump()) {
-            src = PROJ_PREF.SOURCE_TYPE_DUMP;
-        } else if (pageDb.isSourceNone()) {
-            src = PROJ_PREF.SOURCE_TYPE_NONE;
-        } else {
-            throw new IllegalStateException(Messages.newProjWizard_no_schema_source_selected);
+        if (oldPrefs == null || (src = oldPrefs.getString(prefName)).isEmpty() ||
+                src.equals(PROJ_PREF.SOURCE_TYPE_NONE)) {
+            if (pageDb.isSourceDb()) {
+                src = PROJ_PREF.SOURCE_TYPE_DB;
+            } else if (pageDb.isSourceDump()) {
+                src = PROJ_PREF.SOURCE_TYPE_DUMP;
+            } else if (pageDb.isSourceNone()) {
+                src = PROJ_PREF.SOURCE_TYPE_NONE;
+            } else {
+                throw new IllegalStateException(Messages.newProjWizard_no_schema_source_selected);
+            }
         }
-        return src;
+        newPrefs.put(prefName, src);
     }
 
     @Override
