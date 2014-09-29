@@ -1,12 +1,14 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.List;
@@ -246,8 +248,15 @@ public class ModelExporter {
         }
         prop = new Properties();
         prop.setProperty(ApgdiffConsts.VERSION_PROP_NAME, progVersion.toString());
-        try(FileOutputStream fOutputStream = new FileOutputStream(f)){
-            prop.store(fOutputStream , null);
+        writeToFile(prop, f);
+    }
+
+    private void writeToFile(Properties prop, File f) throws IOException {
+        try (OutputStream fout = new BufferedOutputStream(
+                Files.newOutputStream(f.toPath()))) {
+            String version = ApgdiffConsts.VERSION_PROP_NAME + " = "
+                    + prop.getProperty(ApgdiffConsts.VERSION_PROP_NAME);
+            fout.write(version.getBytes());
         }
     }
 }
