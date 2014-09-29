@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -23,6 +24,7 @@ public class ProjectEditor extends EditorPart {
     public static final String ID = "ru.taximaxim.codekeeper.ui.projecteditor";
     private ProjectEditorInput input;
     private IProject project;
+    private boolean isPageModified;
     
     @Override
     public void init(IEditorSite site, IEditorInput input)
@@ -82,6 +84,8 @@ public class ProjectEditor extends EditorPart {
         IResourceDelta thisproj = rootDelta.findMember(project.getFullPath());
         if (thisproj != null) {
             // update editor somehow
+            isPageModified = true;
+            firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }   
     
@@ -93,31 +97,27 @@ public class ProjectEditor extends EditorPart {
     
     @Override
     public void doSave(IProgressMonitor monitor) {
-        // TODO Auto-generated method stub
-
+        isPageModified = false;
+        firePropertyChange(IEditorPart.PROP_DIRTY);
     }
 
     @Override
     public void doSaveAs() {
-        // TODO Auto-generated method stub
-
+        // not available
     }
 
     @Override
     public boolean isDirty() {
-        // TODO Auto-generated method stub
-        return false;
+        return isPageModified;
     }
 
     @Override
     public boolean isSaveAsAllowed() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public void setFocus() {
         // TODO Auto-generated method stub
-
     }
 }
