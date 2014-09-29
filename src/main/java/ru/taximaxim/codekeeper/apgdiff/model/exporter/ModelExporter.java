@@ -222,7 +222,7 @@ public class ModelExporter {
      * @return a statement's exported file name
      */
     public static String getExportedFilename(PgStatement statement) {
-        return statement.getBareName()
+        return statement.getBareName().replaceAll("[\\s\\/:,.;*?\"<>|]", "")
                 + "_" + PgDiffUtils.md5(statement.getName());
     }
     
