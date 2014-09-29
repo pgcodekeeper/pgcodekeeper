@@ -292,18 +292,17 @@ class PageDiff extends WizardPage implements Listener {
             break;
 
         case PROJ:
-            PgDbProject fromProj = new PgDbProject(getProjPath());
-            fromProj.load();
+            PgDbProject proj = PgDbProject.getProgFromFile(getProjPath());
 
             if (getProjRev().isEmpty()) {
-                dbs = DbSource.fromProject(fromProj);
+                dbs = DbSource.fromProject(proj);
             } else {
                 dbs = DbSource.fromGit(
-                                fromProj.getString(PROJ_PREF.REPO_URL),
-                                fromProj.getString(PROJ_PREF.REPO_USER),
-                                fromProj.getString(PROJ_PREF.REPO_PASS),
+                                proj.getPrefs().get(PROJ_PREF.REPO_URL, ""),
+                                proj.getPrefs().get(PROJ_PREF.REPO_USER, ""),
+                                proj.getPrefs().get(PROJ_PREF.REPO_PASS, ""),
                                 getProjRev(),
-                                fromProj.getString(PROJ_PREF.ENCODING),
+                                proj.getPrefs().get(PROJ_PREF.ENCODING, ""),
                                 mainPrefs.getString(PREF.GIT_KEY_PRIVATE_FILE));
             }
             break;
@@ -530,7 +529,7 @@ class PageDiff extends WizardPage implements Listener {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (btnThis.getSelection()) {
-                    txtProjPath.setText(proj.getProjectWorkingDir().toString());
+                    txtProjPath.setText(proj.getPathToProject().toString());
                     txtProjPath.setEnabled(false);
                 } else {
                     txtProjPath.setEnabled(true);
@@ -557,10 +556,9 @@ class PageDiff extends WizardPage implements Listener {
 
                 if (!dir.isEmpty() && new File(dir).isFile() &&
                         dir.endsWith(FILE.PROJ_PREF_STORE)) {
-                    PgDbProject tmpProj = new PgDbProject(dir);
-                    tmpProj.load();
-                    cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getString(
-                            PROJ_PREF.ENCODING)));
+                    PgDbProject tmpProj = PgDbProject.getProgFromFile(dir);
+                    cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getPrefs().get(
+                            PROJ_PREF.ENCODING, "")));
                 }
             }
         });
@@ -841,14 +839,14 @@ class PageResult extends WizardPage {
                         + Messages.diffWizard_diff);
                 saveDialog.setOverwrite(true);
                 saveDialog.setFilterExtensions(new String[] { "*.sql", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
-                saveDialog.setFilterPath(proj.getProjectFile().getParent());
+                saveDialog.setFilterPath(proj.getPathToProject().toString());
 
                 String saveTo = saveDialog.open();
                 if (saveTo != null) {
                     try (final PrintWriter encodedWriter = new UnixPrintWriter(
                             new OutputStreamWriter(
                                     new FileOutputStream(saveTo),
-                                    proj.getString(PROJ_PREF.ENCODING)))) {
+                                    proj.getPrefs().get(PROJ_PREF.ENCODING, "")))) {
                         Text txtDiff = (Text) tabs.getSelection()[0]
                                 .getControl();
                         encodedWriter.println(txtDiff.getText());

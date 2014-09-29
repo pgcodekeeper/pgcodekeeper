@@ -1,56 +1,128 @@
+/**
+ * 
+ */
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
-import java.io.File;
-import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.eclipse.jface.preference.PreferenceStore;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.ProjectScope;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.natures.ProjectNature;
 
-public class PgDbProject extends PreferenceStore {
-
-    private final String projectName;
-    private final File projectFile;
+/**
+ * Проект
+ *
+ */
+public class PgDbProject {
     
-    public PgDbProject(String projectFile) {
-        super(projectFile);
-        this.projectFile = new File(projectFile);
-        
-        String fileName = Paths.get(projectFile).getFileName().toString();
-        if (fileName.endsWith(FILE.PROJ_PREF_STORE)){
-            this.projectName = fileName.substring(0, fileName.length() - 
-                    FILE.PROJ_PREF_STORE.length());
-        } else {
-            this.projectName = fileName;
-        }
-    }
+    private final IProject project;
+    private final IEclipsePreferences prefs;
     
-    @Override
-    public void load(){
-        try {
-            super.load();
-        } catch (IOException ex) {
-            throw new IllegalStateException(Messages.pgDbProject_error_loading_project_file, ex);
-        }
+    public IEclipsePreferences getPrefs() {
+        return prefs;
     }
     
     public String getProjectName() {
-        return projectName;
+        return project.getName();
     }
     
-    public File getProjectFile() {
-        return projectFile;
+    public Path getPathToProject() {
+        return Paths.get(prefs.get(UIConsts.PROJ_PREF.REPO_ROOT_PATH, project.getLocation().toString()));
     }
     
-    public File getRepoRoot(){
-        return new File(getString(PROJ_PREF.REPO_ROOT_PATH));
+    /**
+     * Удалить проект из workspace, не удаляя содержимое
+     */
+    public void deleteFromWorkspace() {
+        try {
+            project.delete(false, true, null);
+        } catch (CoreException e) {
+            Log.log(Log.LOG_ERROR, "Cannot remove proj from workspace", e);
+        }
     }
     
-    public File getProjectWorkingDir() {
-        return new File(getString(PROJ_PREF.REPO_ROOT_PATH), 
-                getString(PROJ_PREF.REPO_SUBDIR_PATH));
+    public void openProject() {
+        try {
+            project.open(null);
+        } catch (CoreException e) {
+            Log.log(Log.LOG_ERROR, "Cannot open proj", e);
+        }
+    }
+    
+    /**
+     * Just do the basics: create a basic project.
+     *
+     * @param location
+     * @param projectName
+     */
+    public PgDbProject(String projectName, URI location) {        
+        // it is acceptable to use the ResourcesPlugin class
+        IProject newProject = ResourcesPlugin.getWorkspace().getRoot()
+                .getProject(projectName);
+ 
+        if (!newProject.exists()) {
+            URI projectLocation = location;
+            IProjectDescription desc = newProject.getWorkspace()
+                    .newProjectDescription(newProject.getName());
+            if (location != null && ResourcesPlugin.getWorkspace().getRoot()
+                    .getLocationURI().equals(location)) {
+                projectLocation = null;
+            }
+ 
+            desc.setLocationURI(projectLocation);
+            try {
+                newProject.create(desc, null);
+            } catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
+        this.project = newProject;
+        ProjectScope ps = new ProjectScope(newProject);
+        prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
+    }
+    
+    public static void addNatureToProject(IProject project) throws CoreException {
+        if (!project.hasNature(ProjectNature.ID)) {
+            IProjectDescription description = project.getDescription();
+            String[] prevNatures = description.getNatureIds();
+            String[] newNatures = new String[prevNatures.length + 1];
+            System.arraycopy(prevNatures, 0, newNatures, 0, prevNatures.length);
+            newNatures[prevNatures.length] = ProjectNature.ID;
+            description.setNatureIds(newNatures);
+            project.setDescription(description, null);
+        }
+    }
+    /**
+     * Извлекает имя проекта из названия папки проекта
+     * @param pathToProject
+     * @return
+     */
+    public static PgDbProject getProgFromFile(String pathToProject) {
+        return getProgFromFile(Paths.get(pathToProject).getFileName().toString(),
+                pathToProject);
+    }
+    
+    public static PgDbProject getProgFromFile(String projectName, 
+            String pathToProject) {
+        try {
+            return new PgDbProject(projectName, new URI("file:/" + pathToProject));
+        } catch (URISyntaxException e1) {
+            Log.log(Log.LOG_ERROR, "Error while trying to load project", e1);
+            return null;
+        }
+    }
+
+    public IProject getProject() {
+        return project;
     }
 }

@@ -27,7 +27,7 @@ public class NewProj extends E4HandlerWrapper {
             IEclipseContext ctx, IWorkbenchPage page){
         Log.log(Log.LOG_DEBUG, "New Project Wizard about to show"); //$NON-NLS-1$
         
-        NewProjWizard newProj = new NewProjWizard(prefStore);
+        NewProjWizard newProj = new NewProjWizard();
         WizardDialog dialog = new WizardDialog(shell, newProj);
         if(dialog.open() == Dialog.OK) {
             LoadProj.load(newProj.getProject(), ctx, page, prefStore, shell);

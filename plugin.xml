@@ -135,6 +135,11 @@
             id="ru.taximaxim.codekeeper.ui.command.OpenLog"
             name="%command.commandname.15">
       </command>
+      <command
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenEditor"
+            id="ru.taximaxim.codekeeper.ui.openeditor"
+            name="Open in Project Editor">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -371,6 +376,41 @@
                style="push">
          </command>
       </menuContribution>
+      <menuContribution
+            locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
+         <command
+               commandId="ru.taximaxim.codekeeper.ui.openeditor"
+               label="Open in Project Editor"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="activeMenuSelection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="or">
+                     <test
+                           property="org.eclipse.core.resources.projectNature"
+                           value="ru.taximaxim.codekeeper.ui.nature">
+                     </test>
+                     <or>
+                        <adapt
+                              type="org.eclipse.core.resources.IProject">
+                        </adapt>
+                     </or>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+         <command
+               commandId="ru.taximaxim.codekeeper.ui.openeditor"
+               style="push">
+         </command>
+      </menuContribution>
    </extension>
    <extension
          point="org.eclipse.ui.editors">
@@ -510,6 +550,38 @@
             id="ru.taximaxim.codekeeper.ui.dbupdateprefpage"
             name="%page.name.db_update_pref_page">
       </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <wizard
+            category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+            class="ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard"
+            id="ru.taximaxim.codekeeper.ui.newprojwizard"
+            name="New Project"
+            project="true">
+      </wizard>
+      <category
+            id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+            name="PgCodekeeper">
+      </category>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="ru.taximaxim.codekeeper.ui.editors.ProjectEditor"
+            default="false"
+            id="ru.taximaxim.codekeeper.ui.projecteditor"
+            name="Project Editor">
+      </editor>
+   </extension>
+   <extension
+         id="ru.taximaxim.codekeeper.ui.nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="ru.taximaxim.codekeeper.ui.natures.ProjectNature">
+         </run>
+      </runtime>
    </extension>
 
 </plugin>

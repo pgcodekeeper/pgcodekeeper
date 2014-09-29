@@ -69,7 +69,7 @@ public class SqlEditorDescr extends DynamicE4View {
         File fileText = new File(part.getPersistedState().get(PART.SQL_EDITOR_FILENAME));
         IDocument doc = new Document(new String(
                 Files.readAllBytes(fileText.toPath()), 
-                proj.getString(PROJ_PREF.ENCODING)));
+                proj.getPrefs().get(PROJ_PREF.ENCODING, "")));
         
         SqlSourceViewerExtender v = new SqlSourceViewerExtender(parent, SWT.NONE);
         v.addLineNumbers();
@@ -89,7 +89,7 @@ public class SqlEditorDescr extends DynamicE4View {
         File myFile = new File(
                 part.getPersistedState().get(PART.SQL_EDITOR_FILENAME));
         if(proj == null
-                || !myFile.toPath().startsWith(proj.getProjectWorkingDir().toPath())
+                || !myFile.toPath().startsWith(proj.getPathToProject().toString())
                 || !myFile.exists()) {
             sync.asyncExec(new Runnable() {
                 

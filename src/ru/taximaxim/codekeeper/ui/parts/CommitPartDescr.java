@@ -48,11 +48,8 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -154,7 +151,7 @@ public class CommitPartDescr extends DynamicE4View {
     @PostConstruct
     private void postConstruct(Composite parent, final PgDbProject proj,
             @Named(UIConsts.PREF_STORE) final IPreferenceStore mainPrefs) {
-        repoName = proj.getString(PROJ_PREF.REPO_TYPE);
+        repoName = proj.getPrefs().get(PROJ_PREF.REPO_TYPE, "");
         history = new XmlHistory.Builder(COMMENT_HIST_MAX_STORED, 
                 COMMENTS_HIST_FILENAME, 
                 COMMENTS_HIST_ROOT, 
@@ -321,7 +318,7 @@ public class CommitPartDescr extends DynamicE4View {
                         PgDatabase dbNew = applier.apply();
 
                         pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
-                        File workingDir = proj.getProjectWorkingDir();
+                        File workingDir = proj.getPathToProject().toFile();
                         try {
                             new ProjectUpdater(dbNew, proj).update();
                             
@@ -341,7 +338,7 @@ public class CommitPartDescr extends DynamicE4View {
 
                 try {
                     Log.log(Log.LOG_INFO, "Commit pressed. Commiting to " + //$NON-NLS-1$
-                            proj.getString(PROJ_PREF.REPO_URL));
+                            proj.getPrefs().get(PROJ_PREF.REPO_URL, ""));
                     new ProgressMonitorDialog(shell).run(true, false,
                             commitRunnable);
                 } catch (InvocationTargetException ex) {
@@ -472,7 +469,7 @@ public class CommitPartDescr extends DynamicE4View {
                     String dumpfile = dialog.open();
                     if (dumpfile != null) {
                         setDbTarget(DbSource.fromFile(dumpfile,
-                                proj.getString(PROJ_PREF.ENCODING)));
+                                proj.getPrefs().get(PROJ_PREF.ENCODING, "")));
                     } else {
                         return;
                     }
@@ -493,7 +490,7 @@ public class CommitPartDescr extends DynamicE4View {
                             dbSrc.txtDbUser.getText(),
                             dbSrc.txtDbPass.getText(),
                             dbSrc.txtDbName.getText(),
-                            proj.getString(PROJ_PREF.ENCODING)));
+                            proj.getPrefs().get(PROJ_PREF.ENCODING, "")));
                 } else {
                     throw new IllegalStateException(
                             Messages.undefined_source_for_db_changes);
@@ -523,7 +520,7 @@ public class CommitPartDescr extends DynamicE4View {
                 1));
 
         boolean useDbPicker = false;
-        String src = proj.getString(PROJ_PREF.SOURCE);
+        String src = proj.getPrefs().get(PROJ_PREF.SOURCE, "");
         if (src.equals(PROJ_PREF.SOURCE_TYPE_NONE)) {
             btnNone.setSelection(true);
             btnGetChanges.setEnabled(false);
@@ -536,12 +533,12 @@ public class CommitPartDescr extends DynamicE4View {
         showDbPicker(useDbPicker);
 
         if (useDbPicker) {
-            dbSrc.txtDbName.setText(proj.getString(PROJ_PREF.DB_NAME));
-            dbSrc.txtDbUser.setText(proj.getString(PROJ_PREF.DB_USER));
-            dbSrc.txtDbPass.setText(proj.getString(PROJ_PREF.DB_PASS));
-            dbSrc.txtDbHost.setText(proj.getString(PROJ_PREF.DB_HOST));
+            dbSrc.txtDbName.setText(proj.getPrefs().get(PROJ_PREF.DB_NAME, ""));
+            dbSrc.txtDbUser.setText(proj.getPrefs().get(PROJ_PREF.DB_USER, ""));
+            dbSrc.txtDbPass.setText(proj.getPrefs().get(PROJ_PREF.DB_PASS, ""));
+            dbSrc.txtDbHost.setText(proj.getPrefs().get(PROJ_PREF.DB_HOST, ""));
             dbSrc.txtDbPort.setText(String.valueOf(proj
-                    .getInt(PROJ_PREF.DB_PORT)));
+                    .getPrefs().getInt(PROJ_PREF.DB_PORT, 0)));
         }
         // end middle right container
         // end middle container
@@ -564,7 +561,7 @@ public class CommitPartDescr extends DynamicE4View {
             @EventTopic(EVENT.REOPEN_PROJECT)
             PgDbProject proj2) {
         if (proj == null
-                || !proj.getProjectFile().toString().equals(
+                || !proj.getPathToProject().toString().equals(
                         part.getPersistedState().get(PART.SYNC_ID))) {
             sync.asyncExec(new Runnable() {
                 

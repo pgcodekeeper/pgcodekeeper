@@ -41,23 +41,17 @@ public class AddonOpenLast {
             }
             
             String last = recent[0];
-            final PgDbProject proj = new PgDbProject(last);
-            
-            if (proj.getProjectFile().isFile()) {
-                sync.syncExec(new Runnable() {
-                    
-                    @Override
-                    public void run() {
-                        LoadProj.load(proj, app.getContext(), 
-                                PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                                        .getActivePage(), mainPrefs, shell);
-                    }
-                });
-            } else {
-                Log.log(Log.LOG_WARNING, "Couldn't open last project at " //$NON-NLS-1$
-                        + proj.getProjectFile()
-                        + ". Project pref store either doesn't exist or not a file."); //$NON-NLS-1$
-            }
+            final PgDbProject proj = PgDbProject.getProgFromFile(last);
+
+            sync.syncExec(new Runnable() {
+
+                @Override
+                public void run() {
+                    LoadProj.load(proj, app.getContext(), PlatformUI
+                            .getWorkbench().getActiveWorkbenchWindow()
+                            .getActivePage(), mainPrefs, shell);
+                }
+            });
         }
     }
 }

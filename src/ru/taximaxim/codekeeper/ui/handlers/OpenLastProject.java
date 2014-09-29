@@ -35,22 +35,14 @@ public class OpenLastProject extends E4HandlerWrapper {
         }
         
         String last = recent[0];
-        final PgDbProject proj = new PgDbProject(last);
+        final PgDbProject proj = PgDbProject.getProgFromFile(last);
+        sync.syncExec(new Runnable() {
 
-        if (proj.getProjectFile().isFile()) {
-            sync.syncExec(new Runnable() {
-
-                @Override
-                public void run() {
-                    LoadProj.load(proj, app.getContext(), page, mainPrefs, shell);
-                }
-            });
-        } else {
-            Log.log(Log.LOG_WARNING,
-                    "Couldn't open last project at " //$NON-NLS-1$
-                            + proj.getProjectFile()
-                            + ". Project pref store either doesn't exist or not a file."); //$NON-NLS-1$
-        }
+            @Override
+            public void run() {
+                LoadProj.load(proj, app.getContext(), page, mainPrefs, shell);
+            }
+        });
     }
     
     @CanExecute

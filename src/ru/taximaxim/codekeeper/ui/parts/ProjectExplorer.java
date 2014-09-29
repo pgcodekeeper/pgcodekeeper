@@ -248,7 +248,7 @@ public class ProjectExplorer {
             PgDbProject proj2)
             throws InvocationTargetException, InterruptedException {
         if (treeDb != null) {
-            final File treeInput = proj == null? null : proj.getProjectWorkingDir();
+            final File treeInput = proj == null? null : proj.getPathToProject().toFile();
             
             if(proj != null) {
                 IRunnableWithProgress loadRunnable = new IRunnableWithProgress() {

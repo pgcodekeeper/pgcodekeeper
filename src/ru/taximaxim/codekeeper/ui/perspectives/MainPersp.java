@@ -21,8 +21,8 @@ public class MainPersp implements IPerspectiveFactory {
         IFolderLayout left = layout.createFolder(PART_STACK.PROJXP,
                 IPageLayout.LEFT, 0.2f, layout.getEditorArea());
         
-        left.addView(PART.PROJXP);
-        layout.getViewLayout(PART.PROJXP).setCloseable(false);
+        left.addView("org.eclipse.jdt.ui.PackageExplorer");
+        layout.getViewLayout("org.eclipse.jdt.ui.PackageExplorer").setCloseable(false);
 
         IFolderLayout main = layout.createFolder(PART_STACK.EDITORS,
                 IPageLayout.TOP, 0.8f, layout.getEditorArea());
