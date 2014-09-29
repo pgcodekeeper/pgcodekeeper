@@ -393,6 +393,11 @@
                            property="org.eclipse.core.resources.projectNature"
                            value="ru.taximaxim.codekeeper.ui.nature">
                      </test>
+                     <or>
+                        <adapt
+                              type="org.eclipse.core.resources.IProject">
+                        </adapt>
+                     </or>
                   </iterate>
                </with>
             </visibleWhen>
