@@ -27,15 +27,19 @@ public class OpenEditor extends AbstractHandler {
         Object firstElement = selection.getFirstElement();
         if (firstElement instanceof IProject) {
             IProject proj = (IProject)firstElement;
-            ProjectEditorInput input = new ProjectEditorInput(proj.getName());
-            try {
-                page.openEditor(input, ProjectEditor.ID);
-
-              } catch (PartInitException e) {
-                throw new RuntimeException(e);
-              }
+            openEditor(page, proj);
         }
         return null;
+    }
+
+    public static void openEditor(IWorkbenchPage page, IProject proj) {
+        ProjectEditorInput input = new ProjectEditorInput(proj.getName());
+        try {
+            page.openEditor(input, ProjectEditor.ID);
+
+          } catch (PartInitException e) {
+            throw new RuntimeException(e);
+          }
     }
    
 

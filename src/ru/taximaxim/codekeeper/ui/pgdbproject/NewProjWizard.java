@@ -41,6 +41,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -52,6 +53,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
+import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class NewProjWizard extends BasicNewProjectResourceWizard implements IPageChangingListener, INewWizard,
@@ -187,6 +189,8 @@ IExecutableExtension {
         } catch (CoreException e) {
             Log.log(Log.LOG_ERROR, "Failed to add nature to project", e);
         }
+        OpenEditor.openEditor(PlatformUI.getWorkbench()
+                .getActiveWorkbenchWindow().getActivePage(), props.getProject());
         return true;
     }
 
