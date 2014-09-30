@@ -581,5 +581,11 @@
             label="PgCodekeeper console">
       </consoleFactory>
    </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer">
+      </initializer>
+   </extension>
 
 </plugin>

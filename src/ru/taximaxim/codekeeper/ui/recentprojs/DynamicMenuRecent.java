@@ -14,17 +14,17 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.handlers.LoadProj;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.prefs.UIScopedPreferenceStore;
 
 public class DynamicMenuRecent extends CompoundContributionItem {
     
     @Override
     protected IContributionItem[] getContributionItems() {
-        String pref = UIScopedPreferenceStore.get().getString(PREF.RECENT_PROJECTS);
+        String pref = Activator.getDefault().getPreferenceStore().getString(PREF.RECENT_PROJECTS);
         String[] recent = RecentProjects.getRecent(pref);
         
         if (recent == null) {
@@ -47,7 +47,7 @@ public class DynamicMenuRecent extends CompoundContributionItem {
                     PgDbProject proj = PgDbProject.getProgFromFile(path);
                     LoadProj.load(proj, (IEclipseContext) wb
                             .getService(IEclipseContext.class), wbw
-                            .getActivePage(), UIScopedPreferenceStore.get(), shell);
+                            .getActivePage(), Activator.getDefault().getPreferenceStore(), shell);
                 }
             };
             items[i] = new ActionContributionItem(a);
