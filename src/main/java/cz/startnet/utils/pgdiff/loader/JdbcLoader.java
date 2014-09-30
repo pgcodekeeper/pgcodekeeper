@@ -580,7 +580,6 @@ public class JdbcLoader {
         tableDef.append(");");
         
         PgTable t = new PgTable(tableName, tableDef.toString(), getSearchPath(schemaName));
-        
         // INHERITS
         String inherits = res.getString("inherited");
         if(inherits != null && !inherits.isEmpty()){
@@ -591,6 +590,24 @@ public class JdbcLoader {
             }
         }
 
+        // STORAGE PARAMETERS
+        Array arr = res.getArray("reloptions");
+        if (arr != null){
+            StringBuilder storageParameters = new StringBuilder();
+            String[] options = (String[])arr.getArray();
+            for(int i = 0; i < options.length; i++){
+                storageParameters.append(options[i]);
+                
+                if (i < options.length - 1){
+                    storageParameters.append(", ");
+                }
+            }
+            if (storageParameters.length() > 0){
+                storageParameters.insert(0, "(").append(")");
+                t.setWith(storageParameters.toString());
+            }
+        }
+        
         // Table COMMENTS
         String comment = res.getString("table_comment");
         if (comment != null && !comment.isEmpty()){

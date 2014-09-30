@@ -15,7 +15,8 @@ public interface JdbcQueries {
             + "     array_agg(attributes.atttypmod) AS col_typemod, "
             + "     array_agg(attributes.attnotnull) AS col_notnull, "
             + "     comments.description AS table_comment,"
-            + "     c2.relname AS inherited "
+            + "     c2.relname AS inherited, "
+            + "     c.reloptions "
             + "FROM "
             + "     pg_catalog.pg_class c "
             
@@ -57,7 +58,8 @@ public interface JdbcQueries {
             + "     c.relowner, "
             + "     aclArray, "
             + "     table_comment, "
-            + "     inherited "
+            + "     inherited, "
+            + "     c.reloptions "
             + "ORDER BY"
             + "     c.oid, "
             + "     inherited";
