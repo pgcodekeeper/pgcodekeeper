@@ -574,5 +574,12 @@
          </run>
       </runtime>
    </extension>
+   <extension
+         point="org.eclipse.ui.console.consoleFactories">
+      <consoleFactory
+            class="ru.taximaxim.codekeeper.ui.parts.ConsoleFactory"
+            label="PgCodekeeper console">
+      </consoleFactory>
+   </extension>
 
 </plugin>
