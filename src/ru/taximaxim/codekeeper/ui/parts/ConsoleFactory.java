@@ -12,8 +12,6 @@ import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
-import ru.taximaxim.codekeeper.apgdiff.Log;
-
 public class ConsoleFactory implements IConsoleFactory {
 
     private static MessageConsoleStream outer;
@@ -29,7 +27,7 @@ public class ConsoleFactory implements IConsoleFactory {
             view = (IConsoleView) page.showView(id);
             view.display(myConsole);
         } catch (PartInitException e) {
-            Log.log(Log.LOG_ERROR, "Cannot activate a console", e);
+            throw new IllegalStateException("Cannot activate a console", e);
         }
     }
 

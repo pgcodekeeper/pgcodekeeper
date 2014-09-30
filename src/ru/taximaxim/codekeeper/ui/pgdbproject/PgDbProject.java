@@ -48,7 +48,7 @@ public class PgDbProject {
         try {
             project.delete(false, true, null);
         } catch (CoreException e) {
-            Log.log(Log.LOG_ERROR, "Cannot remove proj from workspace", e);
+            throw new IllegalStateException("Cannot remove project from workspace", e);
         }
     }
     
@@ -56,7 +56,7 @@ public class PgDbProject {
         try {
             project.open(null);
         } catch (CoreException e) {
-            Log.log(Log.LOG_ERROR, "Cannot open proj", e);
+            throw new IllegalStateException("Cannot open project", e);
         }
     }
     
@@ -118,8 +118,7 @@ public class PgDbProject {
         try {
             return new PgDbProject(projectName, new URI("file:/" + pathToProject));
         } catch (URISyntaxException e1) {
-            Log.log(Log.LOG_ERROR, "Error while trying to load project", e1);
-            return null;
+            throw new IllegalStateException("Error while trying to load project", e1);
         }
     }
 

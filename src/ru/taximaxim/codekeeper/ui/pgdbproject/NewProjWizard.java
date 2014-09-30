@@ -185,9 +185,9 @@ IExecutableExtension {
             PgDbProject.addNatureToProject(props.getProject());
             props.getPrefs().flush();
         } catch (BackingStoreException e) {
-            Log.log(Log.LOG_ERROR, "Failed to save project preferences", e);
+            throw new IllegalStateException("Failed to save project preferences", e);
         } catch (CoreException e) {
-            Log.log(Log.LOG_ERROR, "Failed to add nature to project", e);
+            throw new IllegalStateException("Failed to add nature to project", e);
         }
         OpenEditor.openEditor(PlatformUI.getWorkbench()
                 .getActiveWorkbenchWindow().getActivePage(), props.getProject());
