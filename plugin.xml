@@ -388,16 +388,14 @@
                      variable="activeMenuSelection">
                   <iterate
                         ifEmpty="false"
-                        operator="or">
+                        operator="and">
                      <test
                            property="org.eclipse.core.resources.projectNature"
                            value="ru.taximaxim.codekeeper.ui.nature">
                      </test>
-                     <or>
-                        <adapt
-                              type="org.eclipse.core.resources.IProject">
-                        </adapt>
-                     </or>
+                     <adapt
+                           type="org.eclipse.core.resources.IProject">
+                     </adapt>
                   </iterate>
                </with>
             </visibleWhen>
@@ -408,7 +406,25 @@
             locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
          <command
                commandId="ru.taximaxim.codekeeper.ui.openeditor"
+               label="Open in Project Editor"
                style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="activeMenuSelection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <test
+                           property="org.eclipse.core.resources.projectNature"
+                           value="ru.taximaxim.codekeeper.ui.nature">
+                     </test>
+                     <adapt
+                           type="org.eclipse.core.resources.IProject">
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
          </command>
       </menuContribution>
    </extension>

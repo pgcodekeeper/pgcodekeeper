@@ -48,13 +48,13 @@ public class AddonExternalTools {
             
             @Override
             public void run() {
-                try {
-                    setPgdumpVersion(new PgDumper(pgdumpExec).getVersion());
-                } catch(IOException ex) {
-                    setPgdumpVersion("<unknown>"); //$NON-NLS-1$
-                    ExceptionNotifier.notify(Messages.addonExternalTools_error_while_trying_to_run_pg_admin
-                            + Messages.addonExternalTools_version_check_paths_in_program_preferences, ex);
-                }
+//                try {
+//                    setPgdumpVersion(new PgDumper(pgdumpExec).getVersion());
+//                } catch(IOException ex) {
+//                    setPgdumpVersion("<unknown>"); //$NON-NLS-1$
+//                    ExceptionNotifier.notify(Messages.addonExternalTools_error_while_trying_to_run_pg_admin
+//                            + Messages.addonExternalTools_version_check_paths_in_program_preferences, ex);
+//                }
             }
         };
         if (app != null) {
