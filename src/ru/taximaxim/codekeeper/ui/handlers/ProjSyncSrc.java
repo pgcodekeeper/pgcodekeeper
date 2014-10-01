@@ -1,49 +1,18 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import javax.inject.Inject;
-import javax.inject.Named;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.e4.core.di.annotations.CanExecute;
-import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.services.events.IEventBroker;
-import org.eclipse.e4.ui.services.IServiceConstants;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
-import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
-public class ProjSyncSrc extends E4HandlerWrapper {
+public class ProjSyncSrc {
     
     @Inject
     private static IEventBroker events;
     
-    @Execute
-    private void execute(
-            PgDbProject proj,
-            @Named(IServiceConstants.ACTIVE_SHELL) Shell shell,
-            @Named(UIConsts.PREF_STORE) IPreferenceStore prefStore) {
-        sync(proj, shell, prefStore);
-    }
-
-    @CanExecute
-    private boolean canExecute(PgDbProject proj) {
-        return proj != null;
-    }
-
     /**
      * @return false if sync fails due to version control conflicts
      */
@@ -51,7 +20,7 @@ public class ProjSyncSrc extends E4HandlerWrapper {
             final PgDbProject proj,
             Shell shell,
             final IPreferenceStore mainPrefs) {
-        Log.log(Log.LOG_INFO, "Syncing project " + proj.getProjectName() + //$NON-NLS-1$
+       /* Log.log(Log.LOG_INFO, "Syncing project " + proj.getProjectName() + //$NON-NLS-1$
                 " with repo url " + proj.getPrefs().get(PROJ_PREF.REPO_URL, "")); //$NON-NLS-1$
         
         final AtomicBoolean conflicted = new AtomicBoolean(true);
@@ -99,6 +68,8 @@ public class ProjSyncSrc extends E4HandlerWrapper {
             events.send(EVENT.REOPEN_PROJECT, proj);
         }
 
-        return !conflicted.get();
+        return !conflicted.get();*/
+        //TODO убрать совсем при убирании git
+        return true;
     }
 }
