@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Shell;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbStoreEditorDialog extends TrayDialog {
@@ -282,6 +283,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 try {
                     ((IPersistentPreferenceStore) prefStore).save();
                 } catch (IOException ex) {
+                    ExceptionNotifier.showErrorDialog(Messages.unexpected_error_while_saving_preferences, ex);
                     throw new IllegalStateException(
                             Messages.unexpected_error_while_saving_preferences, ex);
                 }

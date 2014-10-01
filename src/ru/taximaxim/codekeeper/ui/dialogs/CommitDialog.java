@@ -50,6 +50,7 @@ public class CommitDialog extends TrayDialog {
                     + Messages.commitPartDescr_branch 
                     + new JGitExec().getCurrentBranch(proj.getPathToProject().toFile());
         } catch (IOException ex) {
+            ExceptionNotifier.showErrorDialog(Messages.commitPartDescr_cannot_get_branch_name, ex);
             throw new IllegalStateException(Messages.commitPartDescr_cannot_get_branch_name, ex);
         }
         setShellStyle(getShellStyle() | SWT.RESIZE);

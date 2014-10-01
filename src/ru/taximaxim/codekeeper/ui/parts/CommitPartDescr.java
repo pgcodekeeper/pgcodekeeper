@@ -61,6 +61,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -328,6 +329,8 @@ public class CommitPartDescr extends DynamicE4View {
                             repo.repoRemoveMissingAddNew(workingDir);
                             repo.repoCommit(workingDir, commitComment);
                         } catch (IOException ex) {
+                            ExceptionNotifier.showErrorDialog(
+                                            Messages.commitPartDescr_ioexception_while_modifying_project, ex);
                             throw new InvocationTargetException(ex,
                                     Messages.commitPartDescr_ioexception_while_modifying_project);
                         }
@@ -342,10 +345,14 @@ public class CommitPartDescr extends DynamicE4View {
                     new ProgressMonitorDialog(shell).run(true, false,
                             commitRunnable);
                 } catch (InvocationTargetException ex) {
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.error_in_the_project_modifier_thread, ex);
                     throw new IllegalStateException(
                             Messages.error_in_the_project_modifier_thread, ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.project_modifier_thread_cancelled_shouldnt_happen, ex);
                     throw new IllegalStateException(
                             Messages.project_modifier_thread_cancelled_shouldnt_happen, ex);
                 }
@@ -492,6 +499,8 @@ public class CommitPartDescr extends DynamicE4View {
                             dbSrc.txtDbName.getText(),
                             proj.getPrefs().get(PROJ_PREF.ENCODING, "")));
                 } else {
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.undefined_source_for_db_changes, null);
                     throw new IllegalStateException(
                             Messages.undefined_source_for_db_changes);
                 }
@@ -501,9 +510,12 @@ public class CommitPartDescr extends DynamicE4View {
                 try {
                     new ProgressMonitorDialog(shell).run(true, false, treeDiffer);
                 } catch (InvocationTargetException ex) {
+                    ExceptionNotifier.showErrorDialog(Messages.error_in_differ_thread, ex);
                     throw new IllegalStateException(Messages.error_in_differ_thread, ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.differ_thread_cancelled_shouldnt_happen, ex);
                     throw new IllegalStateException(
                             Messages.differ_thread_cancelled_shouldnt_happen, ex);
                 }
@@ -593,6 +605,7 @@ public class CommitPartDescr extends DynamicE4View {
             page.showView(PART.SYNC, PgDiffUtils.md5(projectPath),
                     IWorkbenchPage.VIEW_CREATE);
         } catch (PartInitException ex) {
+            ExceptionNotifier.showErrorDialog("", ex);
             throw new IllegalStateException(ex);
         } finally {
             s_ProjectPath = null;

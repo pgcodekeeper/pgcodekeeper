@@ -47,6 +47,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PART;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
@@ -336,6 +337,7 @@ public class DiffPartDescr extends DynamicE4View {
                             dbSrc.txtDbName.getText(),
                             proj.getPrefs().get(PROJ_PREF.ENCODING, "")));
                 } else {
+                    ExceptionNotifier.showErrorDialog(Messages.undefined_source_for_db_changes, null);
                     throw new IllegalStateException(
                             Messages.undefined_source_for_db_changes);
                 }
@@ -345,9 +347,12 @@ public class DiffPartDescr extends DynamicE4View {
                 try {
                     new ProgressMonitorDialog(shell).run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
+                    ExceptionNotifier.showErrorDialog(Messages.error_in_differ_thread, ex);
                     throw new IllegalStateException(Messages.error_in_differ_thread, ex);
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.differ_thread_cancelled_shouldnt_happen, ex);
                     throw new IllegalStateException(
                             Messages.differ_thread_cancelled_shouldnt_happen, ex);
                 }
@@ -442,6 +447,7 @@ public class DiffPartDescr extends DynamicE4View {
             page.showView(PART.DIFF, PgDiffUtils.md5(projectPath),
                     IWorkbenchPage.VIEW_CREATE);
         } catch (PartInitException ex) {
+            ExceptionNotifier.showErrorDialog("", ex);
             throw new IllegalStateException(ex);
         } finally {
             s_ProjectPath = null;

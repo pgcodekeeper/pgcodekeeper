@@ -53,6 +53,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -160,11 +161,15 @@ IExecutableExtension {
                         new InitProjectFromSource(mainPrefStore, props, pageDb.getDumpPath()));
             } catch (InvocationTargetException ex) {
                 props.deleteFromWorkspace();
+                ExceptionNotifier.showErrorDialog(
+                        Messages.newProjWizard_error_in_initializing_repo_from_source, ex);
                 throw new IllegalStateException(
                         Messages.newProjWizard_error_in_initializing_repo_from_source, ex);
             } catch (InterruptedException ex) {
                 // assume run() was called as non cancelable
                 props.deleteFromWorkspace();
+                ExceptionNotifier.showErrorDialog(
+                        Messages.newProjWizard_project_initializer_thread_interrupted, ex);
                 throw new IllegalStateException(
                         Messages.newProjWizard_project_initializer_thread_interrupted, ex);
             }
@@ -185,8 +190,10 @@ IExecutableExtension {
             PgDbProject.addNatureToProject(props.getProject());
             props.getPrefs().flush();
         } catch (BackingStoreException e) {
+            ExceptionNotifier.showErrorDialog("Failed to save project preferences", e);
             throw new IllegalStateException("Failed to save project preferences", e);
         } catch (CoreException e) {
+            ExceptionNotifier.showErrorDialog("Failed to add nature to project", e);
             throw new IllegalStateException("Failed to add nature to project", e);
         }
         OpenEditor.openEditor(PlatformUI.getWorkbench()
@@ -249,6 +256,7 @@ IExecutableExtension {
             } else if (pageDb.isSourceNone()) {
                 src = PROJ_PREF.SOURCE_TYPE_NONE;
             } else {
+                ExceptionNotifier.showErrorDialog(Messages.newProjWizard_no_schema_source_selected, null);
                 throw new IllegalStateException(Messages.newProjWizard_no_schema_source_selected);
             }
         }

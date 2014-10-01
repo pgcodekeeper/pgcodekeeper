@@ -8,10 +8,10 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class TreeDiffer implements IRunnableWithProgress {
@@ -44,6 +44,7 @@ public class TreeDiffer implements IRunnableWithProgress {
     
     private void checkFinished() {
         if(!finished) {
+            ExceptionNotifier.showErrorDialog(Messages.runnable_has_not_finished, null);
             throw new IllegalStateException(Messages.runnable_has_not_finished);
         }
     }
@@ -58,6 +59,7 @@ public class TreeDiffer implements IRunnableWithProgress {
             dbSource = this.dbSource.get(pm.newChild(33)); // 33
             dbTarget = this.dbTarget.get(pm.newChild(33)); // 66
         } catch(IOException ex) {
+            ExceptionNotifier.showErrorDialog("", ex);
             throw new InvocationTargetException(ex);
         }
         

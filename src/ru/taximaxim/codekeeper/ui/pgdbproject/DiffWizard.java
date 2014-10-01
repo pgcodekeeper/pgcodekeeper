@@ -50,6 +50,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTreeViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
@@ -149,6 +150,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             }
         } catch (Exception ex) {
             e.doit = false;
+            ExceptionNotifier.showErrorDialog("", ex);
             throw ex;
         }
     }
@@ -210,6 +212,7 @@ class PageDiff extends WizardPage implements Listener {
             return DiffTargetType.PROJ;
         }
 
+        ExceptionNotifier.showErrorDialog(Messages.diffWizard_no_target_type_selection_found, null);
         throw new IllegalStateException(Messages.diffWizard_no_target_type_selection_found);
     }
 
@@ -307,6 +310,7 @@ class PageDiff extends WizardPage implements Listener {
             }
             break;
         default:
+            ExceptionNotifier.showErrorDialog(Messages.diffWizard_unexpected_target_type_value, null);
             throw new IllegalStateException(Messages.diffWizard_unexpected_target_type_value);
         }
 
@@ -852,6 +856,8 @@ class PageResult extends WizardPage {
                         encodedWriter.println(txtDiff.getText());
                     } catch (FileNotFoundException
                             | UnsupportedEncodingException ex) {
+                        ExceptionNotifier.showErrorDialog(
+                                Messages.diffWizard_unexpected_error_while_saving_diff, ex);
                         throw new IllegalStateException(
                                 Messages.diffWizard_unexpected_error_while_saving_diff, ex);
                     }

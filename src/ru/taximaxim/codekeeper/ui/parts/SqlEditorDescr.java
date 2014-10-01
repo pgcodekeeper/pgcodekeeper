@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
 import ru.taximaxim.codekeeper.ui.UIConsts.PART;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlSourceViewerExtender;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -114,6 +115,7 @@ public class SqlEditorDescr extends DynamicE4View {
             page.showView(PART.SQL_EDITOR, PgDiffUtils.md5(file.getAbsolutePath()), 
                             IWorkbenchPage.VIEW_ACTIVATE);
         } catch (PartInitException ex) {
+            ExceptionNotifier.showErrorDialog("", ex);
             throw new IllegalStateException(ex);
         } finally {
             // null out statics after use for the next call

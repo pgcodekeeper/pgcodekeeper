@@ -10,6 +10,7 @@ import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.UIScopedPreferenceStore;
 
@@ -28,6 +29,7 @@ public class AddonPrefLoader {
             try {
                 ((IPersistentPreferenceStore) mainPrefs).save();
             } catch (IOException ex) {
+                ExceptionNotifier.showErrorDialog(Messages.unexpected_error_while_saving_preferences, ex);
                 throw new IllegalStateException(
                         Messages.unexpected_error_while_saving_preferences, ex);
             }

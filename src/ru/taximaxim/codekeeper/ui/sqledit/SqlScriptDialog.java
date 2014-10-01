@@ -267,6 +267,8 @@ public class SqlScriptDialog extends MessageDialog {
                    writer.write(textRetrieved);
                }
             } catch (IOException ex) {
+                ExceptionNotifier.showErrorDialog(
+                        Messages.sqlScriptDialog_error_saving_script_to_tmp_file, ex);
                 throw new IllegalStateException(
                         Messages.sqlScriptDialog_error_saving_script_to_tmp_file, ex);
             }
@@ -288,6 +290,7 @@ public class SqlScriptDialog extends MessageDialog {
                             addDepcy = getDependenciesFromOutput(scriptOutputRes);
                         }
                     } catch (IOException ex) {
+                        ExceptionNotifier.showErrorDialog("", ex);
                         throw new IllegalStateException(ex);
                     } finally {
                         fileTmpScript.delete();

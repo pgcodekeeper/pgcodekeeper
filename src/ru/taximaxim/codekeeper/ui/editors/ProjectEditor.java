@@ -22,6 +22,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 
 public class ProjectEditor extends EditorPart {
 
@@ -34,6 +35,7 @@ public class ProjectEditor extends EditorPart {
     public void init(IEditorSite site, IEditorInput input)
             throws PartInitException {
         if (!(input instanceof ProjectEditorInput)) {
+            ExceptionNotifier.showErrorDialog("Wrong input", null);
             throw new RuntimeException("Wrong input");
         }
         this.input = (ProjectEditorInput)input;

@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.ui.Log;
@@ -35,6 +36,10 @@ import ru.taximaxim.codekeeper.ui.parts.Console;
  */
 public class ExceptionNotifier {
     
+    public static void showErrorDialog(final String message, Throwable source) {
+        notify(source, message, PlatformUI.getWorkbench()
+                .getActiveWorkbenchWindow().getShell(), true, true);
+    }
     /**
      * Outputs short message to {@link Console},
      * prints stack trace to log,
