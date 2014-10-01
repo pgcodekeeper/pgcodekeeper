@@ -28,6 +28,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.xml.sax.SAXException;
 
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -49,7 +50,7 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
     
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(UIScopedPreferenceStore.get());
+        setPreferenceStore(Activator.getDefault().getPreferenceStore());
     }
     
     private void updateList() {

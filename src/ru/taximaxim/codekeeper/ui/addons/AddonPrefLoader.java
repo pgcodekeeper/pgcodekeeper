@@ -11,14 +11,14 @@ import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.UIScopedPreferenceStore;
+import ru.taximaxim.codekeeper.ui.Activator;
 
 // migration TODO is this needed? rework prefstore
 public class AddonPrefLoader {
         
     @PostConstruct
     private void start(IEclipseContext ctx) {
-        ctx.set(UIConsts.PREF_STORE, UIScopedPreferenceStore.get());
+        ctx.set(UIConsts.PREF_STORE, Activator.getDefault().getPreferenceStore());
     }
     
     public static void savePreference(IPreferenceStore mainPrefs, String preference, String value){

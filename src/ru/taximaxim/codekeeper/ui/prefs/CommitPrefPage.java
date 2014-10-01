@@ -6,6 +6,7 @@ import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -18,7 +19,7 @@ public class CommitPrefPage extends FieldEditorPreferencePage implements
 
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(UIScopedPreferenceStore.get());
+        setPreferenceStore(Activator.getDefault().getPreferenceStore());
     }
 
     @Override
