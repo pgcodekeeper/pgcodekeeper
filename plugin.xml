@@ -40,11 +40,31 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
-            allPopups="false"
-            locationURI="menu:org.eclipse.ui.main.menu">
+            locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
          <menu
-               label="%menu.label.3"
-               mnemonic="P">
+               label="PgCodeKeeper">
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.openeditor"
+                  label="Open in Project Editor"
+                  style="push">
+            </command>
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="activeMenuSelection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <test
+                           property="org.eclipse.core.resources.projectNature"
+                           value="ru.taximaxim.codekeeper.ui.nature">
+                     </test>
+                     <adapt
+                           type="org.eclipse.core.resources.IProject">
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.Diff"
                   label="%handledmenuitem.label.6"
@@ -55,77 +75,38 @@
       </menuContribution>
       <menuContribution
             allPopups="false"
-            locationURI="toolbar:org.eclipse.ui.main.toolbar">
-         <toolbar
-               id="ru.taximaxim.codekeeper.ui.toolbarPgCodeKeeper">
+            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+         <menu
+               label="PgCodeKeeper">
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.openeditor"
+                  label="Open in Project Editor"
+                  style="push">
+            </command>
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="activeMenuSelection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <test
+                           property="org.eclipse.core.resources.projectNature"
+                           value="ru.taximaxim.codekeeper.ui.nature">
+                     </test>
+                     <adapt
+                           type="org.eclipse.core.resources.IProject">
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.Diff"
-                  icon="icons/compare_view.gif"
-                  style="push"
-                  tooltip="%handledtoolitem.tooltip.3">
+                  label="%handledmenuitem.label.6"
+                  mnemonic="D"
+                  style="push">
             </command>
-         </toolbar>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
-            locationURI="popup:ru.taximaxim.codekeeper.ui.popupmenu.project">
-         <command
-               commandId="ru.taximaxim.codekeeper.ui.command.Diff"
-               label="%handledmenuitem.label.15"
-               mnemonic="D"
-               style="push">
-         </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
-         <command
-               commandId="ru.taximaxim.codekeeper.ui.openeditor"
-               label="Open in Project Editor"
-               style="push">
-            <visibleWhen
-                  checkEnabled="false">
-               <with
-                     variable="activeMenuSelection">
-                  <iterate
-                        ifEmpty="false"
-                        operator="and">
-                     <test
-                           property="org.eclipse.core.resources.projectNature"
-                           value="ru.taximaxim.codekeeper.ui.nature">
-                     </test>
-                     <adapt
-                           type="org.eclipse.core.resources.IProject">
-                     </adapt>
-                  </iterate>
-               </with>
-            </visibleWhen>
-         </command>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
-            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
-         <command
-               commandId="ru.taximaxim.codekeeper.ui.openeditor"
-               label="Open in Project Editor"
-               style="push">
-            <visibleWhen
-                  checkEnabled="false">
-               <with
-                     variable="activeMenuSelection">
-                  <iterate
-                        ifEmpty="false"
-                        operator="and">
-                     <test
-                           property="org.eclipse.core.resources.projectNature"
-                           value="ru.taximaxim.codekeeper.ui.nature">
-                     </test>
-                     <adapt
-                           type="org.eclipse.core.resources.IProject">
-                     </adapt>
-                  </iterate>
-               </with>
-            </visibleWhen>
-         </command>
+         </menu>
       </menuContribution>
    </extension>
    <extension

@@ -41,6 +41,4 @@ public class OpenEditor extends AbstractHandler {
             throw new RuntimeException(e);
           }
     }
-   
-
 }
