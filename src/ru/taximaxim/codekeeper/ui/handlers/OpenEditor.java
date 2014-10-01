@@ -4,30 +4,44 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditor;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput;
+import ru.taximaxim.codekeeper.ui.natures.ProjectNature;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 
 public class OpenEditor extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        IProject proj;        
+        if ((proj = getProject(event).getProject()) != null) {
+            openEditor(HandlerUtil.getActiveWorkbenchWindow(event).getActivePage(), proj);
+        }
+        return null;
+    }
+
+    static PgDbProject getProject(ExecutionEvent event) {
         ISelection sel = HandlerUtil.getActiveMenuSelection(event);
         IStructuredSelection selection = (IStructuredSelection) sel;
-        IWorkbenchPage page = PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage();
-
         Object firstElement = selection.getFirstElement();
         if (firstElement instanceof IProject) {
             IProject proj = (IProject)firstElement;
-            openEditor(page, proj);
+            try {
+                if (proj.getNature(ProjectNature.ID) != null) {
+                    return new PgDbProject(proj);
+                }
+            } catch (CoreException e) {
+                // silently return null incorrect project
+                return null;
+            }
         }
         return null;
     }
@@ -41,6 +55,4 @@ public class OpenEditor extends AbstractHandler {
             throw new RuntimeException(e);
           }
     }
-   
-
 }

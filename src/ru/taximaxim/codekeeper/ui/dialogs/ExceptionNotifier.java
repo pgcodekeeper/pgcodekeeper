@@ -23,7 +23,6 @@ import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.handlers.OpenLog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.parts.Console;
 
@@ -133,16 +132,7 @@ class StackTraceErrorDialog extends ErrorDialog {
     
     @Override
     protected void createButtonsForButtonBar(final Composite parent) {
-        createButton(parent, Integer.MAX_VALUE, Messages.exceptionNotifier_open_log_file, false)
-                .addSelectionListener(new SelectionAdapter() {
-                    
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        OpenLog.openExternalViewer();
-                    }
-                });
-
-        createButton(parent, Integer.MAX_VALUE - 1, Messages.exceptionNotifier_copy_stack_trace, false)
+        createButton(parent, Integer.MAX_VALUE, Messages.exceptionNotifier_copy_stack_trace, false)
                 .addSelectionListener(new SelectionAdapter() {
 
                     @Override
