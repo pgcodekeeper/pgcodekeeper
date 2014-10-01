@@ -116,7 +116,7 @@ public class SqlEditorDescr extends DynamicE4View {
                             IWorkbenchPage.VIEW_ACTIVATE);
         } catch (PartInitException ex) {
             ExceptionNotifier.showErrorDialog("", ex);
-            throw new IllegalStateException(ex);
+            return;
         } finally {
             // null out statics after use for the next call
             s_file = null;

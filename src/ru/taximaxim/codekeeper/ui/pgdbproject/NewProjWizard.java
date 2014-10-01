@@ -48,6 +48,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -146,58 +147,72 @@ IExecutableExtension {
 
     @Override
     public boolean performFinish() {
-        props = PgDbProject
-                .getProgFromFile(pageRepo.getProjectName(), 
-                        pageRepo.getProjectRootPath());
-        
-        Log.log(Log.LOG_INFO, "Creating new project properties at " //$NON-NLS-1$
-                + props.getPathToProject());
-        
-        fillProjProps();
+        try {
+            props = PgDbProject.getProgFromFile(pageRepo.getProjectName(),
+                    pageRepo.getProjectRootPath());
 
-        if (pageSubdir.isDoInit()){
-            try {
-                getContainer().run(false, false, 
-                        new InitProjectFromSource(mainPrefStore, props, pageDb.getDumpPath()));
-            } catch (InvocationTargetException ex) {
-                props.deleteFromWorkspace();
-                ExceptionNotifier.showErrorDialog(
-                        Messages.newProjWizard_error_in_initializing_repo_from_source, ex);
-                throw new IllegalStateException(
-                        Messages.newProjWizard_error_in_initializing_repo_from_source, ex);
-            } catch (InterruptedException ex) {
-                // assume run() was called as non cancelable
-                props.deleteFromWorkspace();
-                ExceptionNotifier.showErrorDialog(
-                        Messages.newProjWizard_project_initializer_thread_interrupted, ex);
-                throw new IllegalStateException(
-                        Messages.newProjWizard_project_initializer_thread_interrupted, ex);
+            Log.log(Log.LOG_INFO, "Creating new project properties at " //$NON-NLS-1$
+                    + props.getPathToProject());
+
+            fillProjProps();
+
+            if (pageSubdir.isDoInit()) {
+                try {
+                    getContainer().run(
+                            false,
+                            false,
+                            new InitProjectFromSource(mainPrefStore, props,
+                                    pageDb.getDumpPath()));
+                } catch (InvocationTargetException ex) {
+                    props.deleteFromWorkspace();
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.newProjWizard_error_in_initializing_repo_from_source,
+                                    ex);
+                    return false;
+                } catch (InterruptedException ex) {
+                    // assume run() was called as non cancelable
+                    props.deleteFromWorkspace();
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.newProjWizard_project_initializer_thread_interrupted,
+                                    ex);
+                    return false;
+                }
+            } else if (!pageSubdir.isDoInit()
+                    && !new File(pageSubdir.getRepoSubdir(),
+                            ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()) {
+                new MessageDialog(getShell(),
+                        Messages.newProjWizard_bad_work_dir, null,
+                        Messages.missing_marker_file_in_working_directory
+                                + pageSubdir.getRepoSubdir()
+                                + Messages.create_marker_file_named
+                                + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER
+                                + Messages.manually_and_try_again,
+                        MessageDialog.WARNING, new String[] { "Ok" }, 0).open(); //$NON-NLS-1$
+                return false;
             }
-        } else if (!pageSubdir.isDoInit() && !new File(pageSubdir.getRepoSubdir(), 
-                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
-            new MessageDialog(getShell(), Messages.newProjWizard_bad_work_dir, null, 
-                    Messages.missing_marker_file_in_working_directory + pageSubdir.getRepoSubdir() + 
-                    Messages.create_marker_file_named + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
-                    Messages.manually_and_try_again, MessageDialog.WARNING, 
-                    new String []{"Ok"}, 0).open(); //$NON-NLS-1$
+            BasicNewProjectResourceWizard.updatePerspective(fConfigElement);
+            selectAndReveal(props.getProject());
+
+            props.openProject();
+            try {
+                PgDbProject.addNatureToProject(props.getProject());
+                props.getPrefs().flush();
+            } catch (BackingStoreException e) {
+                ExceptionNotifier.showErrorDialog(
+                        "Failed to save project preferences", e);
+                return false;
+            } catch (CoreException e) {
+                ExceptionNotifier.showErrorDialog(
+                        "Failed to add nature to project", e);
+                return false;
+            }
+            OpenEditor.openEditor(PlatformUI.getWorkbench()
+                    .getActiveWorkbenchWindow().getActivePage(),
+                    props.getProject());
+        } catch (PgCodekeeperUIException e) {
+            ExceptionNotifier.showErrorDialog("Some Errors occurs", e);
             return false;
         }
-        BasicNewProjectResourceWizard.updatePerspective(fConfigElement);
-        selectAndReveal(props.getProject());
-        
-        props.openProject();
-        try {
-            PgDbProject.addNatureToProject(props.getProject());
-            props.getPrefs().flush();
-        } catch (BackingStoreException e) {
-            ExceptionNotifier.showErrorDialog("Failed to save project preferences", e);
-            throw new IllegalStateException("Failed to save project preferences", e);
-        } catch (CoreException e) {
-            ExceptionNotifier.showErrorDialog("Failed to add nature to project", e);
-            throw new IllegalStateException("Failed to add nature to project", e);
-        }
-        OpenEditor.openEditor(PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage(), props.getProject());
         return true;
     }
 
@@ -257,7 +272,7 @@ IExecutableExtension {
                 src = PROJ_PREF.SOURCE_TYPE_NONE;
             } else {
                 ExceptionNotifier.showErrorDialog(Messages.newProjWizard_no_schema_source_selected, null);
-                throw new IllegalStateException(Messages.newProjWizard_no_schema_source_selected);
+                return;
             }
         }
         newPrefs.put(prefName, src);

@@ -68,6 +68,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
@@ -172,7 +173,12 @@ public class DiffTableViewer extends Composite {
                 PREVCHECKED_HIST_FILENAME, 
                 PREVCHECKED_HIST_ROOT,
                 PREVCHECKED_HIST_EL).elementSetTag(PREVCHECKED_HIST_SET).build();
-        prevChecked = prevCheckedHistory.getMapHistory();
+        try {
+            prevChecked = prevCheckedHistory.getMapHistory();
+        } catch (IOException e1) {
+            ExceptionNotifier.showErrorDialog("Cannot get previous checked elements", e1);
+            prevChecked = new HashMap<>();
+        }
         
         int viewerStyle = SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER;
         if (!viewOnly) {
@@ -551,9 +557,14 @@ public class DiffTableViewer extends Composite {
             for (TreeElement element : getCheckedElements(true)) {
                 checkedElements.add(element.getName());
             }
-            prevCheckedHistory.updateCheckedSetHistoryEntries(setName, 
-                        checkedElements, addEntry);
-            prevChecked = prevCheckedHistory.getMapHistory();
+            try {
+                prevCheckedHistory.updateCheckedSetHistoryEntries(setName, 
+                            checkedElements, addEntry);
+                prevChecked = prevCheckedHistory.getMapHistory();
+            } catch (IOException e) {
+                ExceptionNotifier.showErrorDialog("Cannot get previous elements checked", e);
+                prevChecked = new HashMap<>();
+            }
             cmbPrevChecked.setInput(prevChecked.keySet());
         }
     }
@@ -594,11 +605,18 @@ public class DiffTableViewer extends Composite {
 
     private void setDiffer(TreeDiffer differ, boolean reverseDiffSide) {
         this.reverseDiffSide = reverseDiffSide;
-        this.treeRoot = (differ == null) ? null : differ.getDiffTree();
-        this.dbSource = (differ == null) ? null : 
-            reverseDiffSide ? differ.getDbTarget() : differ.getDbSource();
-        this.dbTarget = (differ == null) ? null : 
-            reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
+        try {
+            this.treeRoot = (differ == null) ? null : differ.getDiffTree();
+            this.dbSource = (differ == null) ? null : 
+                reverseDiffSide ? differ.getDbTarget() : differ.getDbSource();
+            this.dbTarget = (differ == null) ? null : 
+                reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
+        } catch (PgCodekeeperUIException e) {
+            ExceptionNotifier.showErrorDialog("Cannot get DB object from differ object", e);
+            this.treeRoot = null;
+            this.dbSource = null;
+            this.dbTarget = null;
+        }
     }
     
     private void setInputTreeElement(TreeElement treeElement) {
@@ -723,7 +741,7 @@ public class DiffTableViewer extends Composite {
                             new StringReader((String) event.getNewValue()));
                 } catch (IOException | SAXException ex) {
                     ExceptionNotifier.showErrorDialog("", ex);
-                    throw new IllegalStateException(ex);
+                    return;
                 }
                 viewerRefresh();
             }

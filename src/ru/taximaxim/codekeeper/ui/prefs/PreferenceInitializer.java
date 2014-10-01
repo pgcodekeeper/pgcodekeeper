@@ -10,7 +10,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
@@ -41,8 +41,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
             try {
                 ((IPersistentPreferenceStore) mainPrefs).save();
             } catch (IOException ex) {
-                throw new IllegalStateException(
-                        Messages.unexpected_error_while_saving_preferences, ex);
+                ExceptionNotifier.showErrorDialog("Unexpected error occurs", ex);
             }
         }
     }

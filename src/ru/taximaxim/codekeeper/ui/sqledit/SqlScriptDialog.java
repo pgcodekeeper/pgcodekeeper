@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
@@ -172,7 +173,13 @@ public class SqlScriptDialog extends MessageDialog {
                 DB_USER_PLACEHOLDER + '=' + dbUser + n + 
                 DB_PASS_PLACEHOLDER + '=' + dbPass);
 
-        List<String> prev = history.getHistory();
+        List<String> prev;
+        try {
+            prev = history.getHistory();
+        } catch (IOException e1) {
+            ExceptionNotifier.showErrorDialog("Cannot get history entry", e1);
+            prev = new ArrayList<>();
+        }
         if (prev != null && !prev.isEmpty()) {
             for (String el : prev) {
                 cmbScript.add(el);
@@ -207,13 +214,17 @@ public class SqlScriptDialog extends MessageDialog {
             public void handleEvent(Event event) {
                 getShell().removeListener(SWT.Activate, this);
                 
-                if (differ.getScript().isDangerDdl(!searchForDropColumn,
-                        !searchForAlterColumn, !searchForDropTable)) {
-                    if (showDangerWarning() == SWT.OK) {
-                        sqlEditor.getTextWidget().setBackground(colorPink);
-                    } else {
-                        close();
+                try {
+                    if (differ.getScript().isDangerDdl(!searchForDropColumn,
+                            !searchForAlterColumn, !searchForDropTable)) {
+                        if (showDangerWarning() == SWT.OK) {
+                            sqlEditor.getTextWidget().setBackground(colorPink);
+                        } else {
+                            close();
+                        }
                     }
+                } catch (PgCodekeeperUIException e) {
+                    ExceptionNotifier.showErrorDialog("Cannot get script", e);
                 }
             }
         });
@@ -234,7 +245,11 @@ public class SqlScriptDialog extends MessageDialog {
         sqlEditor = new SqlSourceViewerExtender(parent, SWT.NONE);
         sqlEditor.addLineNumbers();
         sqlEditor.setEditable(true);
-        sqlEditor.setDocument(new Document(differ.getDiffDirect()));
+        try {
+            sqlEditor.setDocument(new Document(differ.getDiffDirect()));
+        } catch (PgCodekeeperUIException e) {
+            ExceptionNotifier.showErrorDialog("Cannot get script", e);
+        }
         sqlEditor.activateAutocomplete();
         
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -269,8 +284,7 @@ public class SqlScriptDialog extends MessageDialog {
             } catch (IOException ex) {
                 ExceptionNotifier.showErrorDialog(
                         Messages.sqlScriptDialog_error_saving_script_to_tmp_file, ex);
-                throw new IllegalStateException(
-                        Messages.sqlScriptDialog_error_saving_script_to_tmp_file, ex);
+                return;
             }
                 
             List<String> command = Arrays.asList(getReplacedString()
@@ -291,7 +305,7 @@ public class SqlScriptDialog extends MessageDialog {
                         }
                     } catch (IOException ex) {
                         ExceptionNotifier.showErrorDialog("", ex);
-                        throw new IllegalStateException(ex);
+                        return;
                     } finally {
                         fileTmpScript.delete();
                         
@@ -361,6 +375,7 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     private void showAddDepcyDialog() {
+        try {
         if (usePsqlDepcy && addDepcy != null && !addDepcy.isEmpty()) {
             MessageBox mb = new MessageBox(getShell(), 
                     SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
@@ -393,6 +408,9 @@ public class SqlScriptDialog extends MessageDialog {
                 sqlEditor.setDocument(new Document(differ.getDiffDirect()));
                 sqlEditor.refresh();
             }
+        }
+        } catch (PgCodekeeperUIException e) {
+            ExceptionNotifier.showErrorDialog("Error occurs while trying to open additional dependencies dialog", e);
         }
     }
 
@@ -493,7 +511,11 @@ public class SqlScriptDialog extends MessageDialog {
             return false;
         } else {
             differ.setAdditionalDepciesSource(oldDepcy);
-            history.addHistoryEntry(cmbScript.getText());
+            try {
+                history.addHistoryEntry(cmbScript.getText());
+            } catch (IOException e) {
+                ExceptionNotifier.notify("Error while trying to add entry history", e);
+            }
             return super.close();
         }
     }

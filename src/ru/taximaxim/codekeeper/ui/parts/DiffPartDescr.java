@@ -40,6 +40,7 @@ import org.eclipse.ui.PartInitException;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EVENT;
@@ -163,7 +164,12 @@ public class DiffPartDescr extends DynamicE4View {
                 differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
                 differ.setAdditionalDepciesSource(manualDepciesSource);
                 differ.setAdditionalDepciesTarget(manualDepciesTarget);
-                differ.runProgressMonitorDiffer(shell);
+                try {
+                    differ.runProgressMonitorDiffer(shell);
+                } catch (PgCodekeeperUIException e1) {
+                    ExceptionNotifier.showErrorDialog("Cannot get differ", e1);
+                    return;
+                }
 
                 SqlScriptDialog dialog = new SqlScriptDialog(shell,
                         SqlScriptDialog.INFORMATION, Messages.diffPartDescr_diff_script,
@@ -338,8 +344,7 @@ public class DiffPartDescr extends DynamicE4View {
                             proj.getPrefs().get(PROJ_PREF.ENCODING, "")));
                 } else {
                     ExceptionNotifier.showErrorDialog(Messages.undefined_source_for_db_changes, null);
-                    throw new IllegalStateException(
-                            Messages.undefined_source_for_db_changes);
+                    return;
                 }
                 
                 Log.log(Log.LOG_INFO, "Getting changes to generate script"); //$NON-NLS-1$
@@ -348,13 +353,12 @@ public class DiffPartDescr extends DynamicE4View {
                     new ProgressMonitorDialog(shell).run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
                     ExceptionNotifier.showErrorDialog(Messages.error_in_differ_thread, ex);
-                    throw new IllegalStateException(Messages.error_in_differ_thread, ex);
+                    return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     ExceptionNotifier.showErrorDialog(
                             Messages.differ_thread_cancelled_shouldnt_happen, ex);
-                    throw new IllegalStateException(
-                            Messages.differ_thread_cancelled_shouldnt_happen, ex);
+                    return;
                 }
 
                 diffTable.setInput(treediffer, true);
@@ -448,7 +452,7 @@ public class DiffPartDescr extends DynamicE4View {
                     IWorkbenchPage.VIEW_CREATE);
         } catch (PartInitException ex) {
             ExceptionNotifier.showErrorDialog("", ex);
-            throw new IllegalStateException(ex);
+            return;
         } finally {
             s_ProjectPath = null;
         }

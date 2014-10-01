@@ -11,6 +11,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditor;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput;
 import ru.taximaxim.codekeeper.ui.natures.ProjectNature;
@@ -23,7 +25,12 @@ public class OpenEditor extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IProject proj;        
         if ((proj = getProject(event).getProject()) != null) {
-            openEditor(HandlerUtil.getActiveWorkbenchWindow(event).getActivePage(), proj);
+            try {
+                openEditor(HandlerUtil.getActiveWorkbenchWindow(event).getActivePage(), proj);
+            } catch (PgCodekeeperUIException e) {
+                ExceptionNotifier.showErrorDialog(
+                        "Cannot open editor on project" + proj.getName(), e);
+            }
         }
         return null;
     }
@@ -46,13 +53,13 @@ public class OpenEditor extends AbstractHandler {
         return null;
     }
 
-    public static void openEditor(IWorkbenchPage page, IProject proj) {
+    public static void openEditor(IWorkbenchPage page, IProject proj) throws PgCodekeeperUIException {
         ProjectEditorInput input = new ProjectEditorInput(proj.getName());
         try {
             page.openEditor(input, ProjectEditor.ID);
 
           } catch (PartInitException e) {
-            throw new RuntimeException(e);
+            throw new PgCodekeeperUIException("Cannot open editor", e);
           }
     }
 }

@@ -15,6 +15,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.natures.ProjectNature;
 
@@ -42,20 +43,21 @@ public class PgDbProject {
     
     /**
      * Удалить проект из workspace, не удаляя содержимое
+     * @throws PgCodekeeperUIException 
      */
-    public void deleteFromWorkspace() {
+    public void deleteFromWorkspace() throws PgCodekeeperUIException {
         try {
             project.delete(false, true, null);
         } catch (CoreException e) {
-            throw new IllegalStateException("Cannot remove project from workspace", e);
+            throw new PgCodekeeperUIException("Cannot remove project from workspace", e);
         }
     }
     
-    public void openProject() {
+    public void openProject() throws PgCodekeeperUIException {
         try {
             project.open(null);
         } catch (CoreException e) {
-            throw new IllegalStateException("Cannot open project", e);
+            throw new PgCodekeeperUIException("Cannot open project", e);
         }
     }
     
@@ -110,18 +112,19 @@ public class PgDbProject {
      * Извлекает имя проекта из названия папки проекта
      * @param pathToProject
      * @return
+     * @throws PgCodekeeperUIException 
      */
-    public static PgDbProject getProgFromFile(String pathToProject) {
+    public static PgDbProject getProgFromFile(String pathToProject) throws PgCodekeeperUIException {
         return getProgFromFile(Paths.get(pathToProject).getFileName().toString(),
                 pathToProject);
     }
     
     public static PgDbProject getProgFromFile(String projectName, 
-            String pathToProject) {
+            String pathToProject) throws PgCodekeeperUIException {
         try {
             return createPgDbProject(projectName, new URI("file:/" + pathToProject));
         } catch (URISyntaxException e1) {
-            throw new IllegalStateException("Error while trying to load project", e1);
+            throw new PgCodekeeperUIException("Error while trying to load project", e1);
         }
     }
 

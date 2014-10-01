@@ -11,6 +11,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -22,17 +23,17 @@ public class TreeDiffer implements IRunnableWithProgress {
     
     private TreeElement diffTree;
     
-    public DbSource getDbSource() {
+    public DbSource getDbSource() throws PgCodekeeperUIException {
         checkFinished();
         return dbSource;
     }
     
-    public DbSource getDbTarget() {
+    public DbSource getDbTarget() throws PgCodekeeperUIException {
         checkFinished();
         return dbTarget;
     }
     
-    public TreeElement getDiffTree() {
+    public TreeElement getDiffTree() throws PgCodekeeperUIException {
         checkFinished();
         return diffTree;
     }
@@ -42,10 +43,10 @@ public class TreeDiffer implements IRunnableWithProgress {
         this.dbTarget = dbTarget;
     }
     
-    private void checkFinished() {
+    private void checkFinished() throws PgCodekeeperUIException {
         if(!finished) {
             ExceptionNotifier.showErrorDialog(Messages.runnable_has_not_finished, null);
-            throw new IllegalStateException(Messages.runnable_has_not_finished);
+            throw new PgCodekeeperUIException(Messages.runnable_has_not_finished);
         }
     }
     

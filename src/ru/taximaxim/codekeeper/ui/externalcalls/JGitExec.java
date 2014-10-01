@@ -346,7 +346,7 @@ public class JGitExec implements IRepoWorker{
         }
     }
     
-    private File getGitRoot(File subDir) {
+    private File getGitRoot(File subDir) throws IOException {
         File gitSubDir = subDir;
         while (gitSubDir != null) {
             gitSubDir = new File(gitSubDir, ".git"); //$NON-NLS-1$
@@ -356,7 +356,7 @@ public class JGitExec implements IRepoWorker{
                 gitSubDir = gitSubDir.getParentFile().getParentFile();
             }
         }
-        throw new IllegalStateException(Messages.jGitExec_couldnt_find_git_repository_in 
+        throw new IOException(Messages.jGitExec_couldnt_find_git_repository_in 
                                             + subDir + Messages.jGitExec_and_higher);
     }
     

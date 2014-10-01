@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.parts;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -182,7 +183,13 @@ public class CommitPartDescr extends DynamicE4View {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                List<String> comments = history.getHistory();
+                List<String> comments;
+                try {
+                    comments = history.getHistory();
+                } catch (IOException e1) {
+                    ExceptionNotifier.showErrorDialog("Cannot get history file", e1);
+                    comments = new ArrayList<>();
+                }
                 MenuManager mmComments = new MenuManager();
                 if (comments == null || comments.isEmpty()) {
                     mmComments.add(new Action(Messages.commitPartDescr_no_previous_comments) {
@@ -300,7 +307,11 @@ public class CommitPartDescr extends DynamicE4View {
                 
                 final TreeElement resultingTree = considerDepcy ? filteredTwiceWithAllDepcy : filtered;
                 
-                history.addHistoryEntry(commitComment);
+                try {
+                    history.addHistoryEntry(commitComment);
+                } catch (IOException e1) {
+                    ExceptionNotifier.showErrorDialog("Cannot add entry to history file", e1);
+                }
                 
                 IRunnableWithProgress commitRunnable = new IRunnableWithProgress() {
 
@@ -347,14 +358,12 @@ public class CommitPartDescr extends DynamicE4View {
                 } catch (InvocationTargetException ex) {
                     ExceptionNotifier.showErrorDialog(
                             Messages.error_in_the_project_modifier_thread, ex);
-                    throw new IllegalStateException(
-                            Messages.error_in_the_project_modifier_thread, ex);
+                    return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     ExceptionNotifier.showErrorDialog(
                             Messages.project_modifier_thread_cancelled_shouldnt_happen, ex);
-                    throw new IllegalStateException(
-                            Messages.project_modifier_thread_cancelled_shouldnt_happen, ex);
+                    return;
                 }
 
                 Console.addMessage(Messages.commitPartDescr_success_project_updated);
@@ -501,8 +510,7 @@ public class CommitPartDescr extends DynamicE4View {
                 } else {
                     ExceptionNotifier.showErrorDialog(
                             Messages.undefined_source_for_db_changes, null);
-                    throw new IllegalStateException(
-                            Messages.undefined_source_for_db_changes);
+                    return;
                 }
                 
                 Log.log(Log.LOG_INFO, "Getting changes for commit"); //$NON-NLS-1$
@@ -511,13 +519,12 @@ public class CommitPartDescr extends DynamicE4View {
                     new ProgressMonitorDialog(shell).run(true, false, treeDiffer);
                 } catch (InvocationTargetException ex) {
                     ExceptionNotifier.showErrorDialog(Messages.error_in_differ_thread, ex);
-                    throw new IllegalStateException(Messages.error_in_differ_thread, ex);
+                    return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     ExceptionNotifier.showErrorDialog(
                             Messages.differ_thread_cancelled_shouldnt_happen, ex);
-                    throw new IllegalStateException(
-                            Messages.differ_thread_cancelled_shouldnt_happen, ex);
+                    return;
                 }
 
                 diffTable.setInput(treeDiffer, false);
@@ -606,7 +613,7 @@ public class CommitPartDescr extends DynamicE4View {
                     IWorkbenchPage.VIEW_CREATE);
         } catch (PartInitException ex) {
             ExceptionNotifier.showErrorDialog("", ex);
-            throw new IllegalStateException(ex);
+            return;
         } finally {
             s_ProjectPath = null;
         }

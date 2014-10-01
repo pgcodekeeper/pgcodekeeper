@@ -136,14 +136,6 @@
       </category>
       <e4view
             category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            class="ru.taximaxim.codekeeper.ui.parts.ProjectExplorer"
-            icon="icons/tree_explorer.gif"
-            id="ru.taximaxim.codekeeper.ui.part.ProjectExplorer"
-            name="%part.label.1"
-            restorable="false">
-      </e4view>
-      <e4view
-            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             class="ru.taximaxim.codekeeper.ui.parts.Welcome"
             icon="icons/welcome16.gif"
             id="ru.taximaxim.codekeeper.ui.part.Welcome"

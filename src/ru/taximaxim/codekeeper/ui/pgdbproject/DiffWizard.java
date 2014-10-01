@@ -45,6 +45,7 @@ import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -108,12 +109,15 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     getContainer().run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
                     e.doit = false;
-                    throw new IllegalStateException(Messages.error_in_differ_thread, ex);
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.error_in_differ_thread, ex);
+                    return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     e.doit = false;
-                    throw new IllegalStateException(
+                    ExceptionNotifier.showErrorDialog(
                             Messages.differ_thread_cancelled_shouldnt_happen, ex);
+                    return;
                 }
 
                 dbSource = treediffer.getDbSource();
@@ -136,22 +140,24 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     getContainer().run(true, false, differ);
                 } catch (InvocationTargetException ex) {
                     e.doit = false;
-                    throw new IllegalStateException(Messages.error_in_differ_thread, ex);
+                    ExceptionNotifier.showErrorDialog(Messages.error_in_differ_thread, ex);
+                    return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     e.doit = false;
-                    throw new IllegalStateException(
+                    ExceptionNotifier.showErrorDialog(
                             Messages.differ_thread_cancelled_shouldnt_happen, ex);
+                    return;
                 }
 
                 pageResult.setData(fdbSource.getOrigin(), fdbTarget.getOrigin(),
                         differ.getDiffDirect(), differ.getDiffReverse());
                 pageResult.layout();
             }
-        } catch (Exception ex) {
+        } catch(PgCodekeeperUIException e1) {
             e.doit = false;
-            ExceptionNotifier.showErrorDialog("", ex);
-            throw ex;
+            ExceptionNotifier.showErrorDialog("Some Errors occurs", e1);
+            return;
         }
     }
 
@@ -272,7 +278,7 @@ class PageDiff extends WizardPage implements Listener {
         return cmbEncoding.getText();
     }
 
-    public DbSource getTargetDbSource() {
+    public DbSource getTargetDbSource() throws PgCodekeeperUIException {
         DbSource dbs;
 
         switch (getTargetType()) {
@@ -295,7 +301,9 @@ class PageDiff extends WizardPage implements Listener {
             break;
 
         case PROJ:
-            PgDbProject proj = PgDbProject.getProgFromFile(getProjPath());
+            PgDbProject proj;
+            proj = PgDbProject.getProgFromFile(getProjPath());
+            
 
             if (getProjRev().isEmpty()) {
                 dbs = DbSource.fromProject(proj);
@@ -560,9 +568,14 @@ class PageDiff extends WizardPage implements Listener {
 
                 if (!dir.isEmpty() && new File(dir).isFile() &&
                         dir.endsWith(FILE.PROJ_PREF_STORE)) {
-                    PgDbProject tmpProj = PgDbProject.getProgFromFile(dir);
-                    cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getPrefs().get(
-                            PROJ_PREF.ENCODING, "")));
+                    PgDbProject tmpProj;
+                    try {
+                        tmpProj = PgDbProject.getProgFromFile(dir);
+                        cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getPrefs().get(
+                                PROJ_PREF.ENCODING, "")));
+                    } catch (PgCodekeeperUIException e1) {
+                        ExceptionNotifier.showErrorDialog("Cannot get project", e1);
+                    }
                 }
             }
         });
