@@ -59,13 +59,19 @@ public class PgDbProject {
         }
     }
     
+    public PgDbProject(IProject newProject) {
+        this.project = newProject;
+        ProjectScope ps = new ProjectScope(newProject);
+        prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
+    }
+    
     /**
      * Just do the basics: create a basic project.
      *
      * @param location
      * @param projectName
      */
-    public PgDbProject(String projectName, URI location) {        
+    private static PgDbProject createPgDbProject(String projectName, URI location) {        
         // it is acceptable to use the ResourcesPlugin class
         IProject newProject = ResourcesPlugin.getWorkspace().getRoot()
                 .getProject(projectName);
@@ -86,9 +92,7 @@ public class PgDbProject {
                 e.printStackTrace();
             }
         }
-        this.project = newProject;
-        ProjectScope ps = new ProjectScope(newProject);
-        prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
+        return new PgDbProject(newProject);
     }
     
     public static void addNatureToProject(IProject project) throws CoreException {
@@ -115,7 +119,7 @@ public class PgDbProject {
     public static PgDbProject getProgFromFile(String projectName, 
             String pathToProject) {
         try {
-            return new PgDbProject(projectName, new URI("file:/" + pathToProject));
+            return createPgDbProject(projectName, new URI("file:/" + pathToProject));
         } catch (URISyntaxException e1) {
             throw new IllegalStateException("Error while trying to load project", e1);
         }
