@@ -11,7 +11,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import ru.taximaxim.codekeeper.ui.editors.ProjectEditor;
+import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput;
 
 
@@ -29,14 +29,11 @@ public class OpenEditor extends AbstractHandler {
             IProject proj = (IProject)firstElement;
             ProjectEditorInput input = new ProjectEditorInput(proj.getName());
             try {
-                page.openEditor(input, ProjectEditor.ID);
-
+                page.openEditor(input, EDITOR.PROJECT);
               } catch (PartInitException e) {
                 throw new RuntimeException(e);
               }
         }
         return null;
     }
-   
-
 }

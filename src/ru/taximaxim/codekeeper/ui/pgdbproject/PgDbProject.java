@@ -1,6 +1,3 @@
-/**
- * 
- */
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.net.URI;
@@ -19,14 +16,14 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.natures.ProjectNature;
 
-/**
- * Проект
- *
- */
 public class PgDbProject {
     
     private final IProject project;
     private final IEclipsePreferences prefs;
+    
+    public IProject getProject() {
+        return project;
+    }
     
     public IEclipsePreferences getPrefs() {
         return prefs;
@@ -37,35 +34,16 @@ public class PgDbProject {
     }
     
     public Path getPathToProject() {
-        return Paths.get(prefs.get(UIConsts.PROJ_PREF.REPO_ROOT_PATH, project.getLocation().toString()));
+        return Paths.get(prefs.get(
+                UIConsts.PROJ_PREF.REPO_ROOT_PATH, project.getLocation().toString()));
     }
     
-    /**
-     * Удалить проект из workspace, не удаляя содержимое
-     */
-    public void deleteFromWorkspace() {
-        try {
-            project.delete(false, true, null);
-        } catch (CoreException e) {
-            Log.log(Log.LOG_ERROR, "Cannot remove proj from workspace", e);
-        }
+    public PgDbProject(IProject proj) {
+        project = proj;
+        prefs = new ProjectScope(proj).getNode(UIConsts.PLUGIN_ID.THIS);
     }
     
-    public void openProject() {
-        try {
-            project.open(null);
-        } catch (CoreException e) {
-            Log.log(Log.LOG_ERROR, "Cannot open proj", e);
-        }
-    }
-    
-    /**
-     * Just do the basics: create a basic project.
-     *
-     * @param location
-     * @param projectName
-     */
-    public PgDbProject(String projectName, URI location) {        
+    protected PgDbProject(String projectName, URI location) {        
         // it is acceptable to use the ResourcesPlugin class
         IProject newProject = ResourcesPlugin.getWorkspace().getRoot()
                 .getProject(projectName);
@@ -90,6 +68,25 @@ public class PgDbProject {
         ProjectScope ps = new ProjectScope(newProject);
         prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
     }
+
+    /**
+     * Удалить проект из workspace, не удаляя содержимое
+     */
+    public void deleteFromWorkspace() {
+        try {
+            project.delete(false, true, null);
+        } catch (CoreException e) {
+            Log.log(Log.LOG_ERROR, "Cannot remove proj from workspace", e);
+        }
+    }
+    
+    public void openProject() {
+        try {
+            project.open(null);
+        } catch (CoreException e) {
+            Log.log(Log.LOG_ERROR, "Cannot open proj", e);
+        }
+    }
     
     public static void addNatureToProject(IProject project) throws CoreException {
         if (!project.hasNature(ProjectNature.ID)) {
@@ -104,15 +101,13 @@ public class PgDbProject {
     }
     /**
      * Извлекает имя проекта из названия папки проекта
-     * @param pathToProject
-     * @return
      */
-    public static PgDbProject getProgFromFile(String pathToProject) {
-        return getProgFromFile(Paths.get(pathToProject).getFileName().toString(),
+    public static PgDbProject getProjFromFile(String pathToProject) {
+        return getProjFromFile(Paths.get(pathToProject).getFileName().toString(),
                 pathToProject);
     }
     
-    public static PgDbProject getProgFromFile(String projectName, 
+    public static PgDbProject getProjFromFile(String projectName, 
             String pathToProject) {
         try {
             return new PgDbProject(projectName, new URI("file:/" + pathToProject));
@@ -120,9 +115,5 @@ public class PgDbProject {
             Log.log(Log.LOG_ERROR, "Error while trying to load project", e1);
             return null;
         }
-    }
-
-    public IProject getProject() {
-        return project;
     }
 }

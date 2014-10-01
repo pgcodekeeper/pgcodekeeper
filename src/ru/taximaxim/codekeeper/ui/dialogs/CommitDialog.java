@@ -35,7 +35,8 @@ public class CommitDialog extends TrayDialog {
     private HashSet<TreeElement> conflictingElementsSet;
     
     public CommitDialog(Shell parentShell, TreeElement filtered,
-            HashSet<TreeElement> depcyElementsSet, IPreferenceStore mainPrefs, PgDbProject proj, TreeDiffer treeDiffer) {
+            HashSet<TreeElement> depcyElementsSet, IPreferenceStore mainPrefs,
+            PgDbProject proj, TreeDiffer treeDiffer) {
         super(parentShell);
         
         this.filtered = filtered;

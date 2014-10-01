@@ -44,7 +44,7 @@ public class DynamicMenuRecent extends CompoundContributionItem {
                     IWorkbenchWindow wbw = wb.getActiveWorkbenchWindow();
                     Shell shell = wbw.getShell();
                     
-                    PgDbProject proj = PgDbProject.getProgFromFile(path);
+                    PgDbProject proj = PgDbProject.getProjFromFile(path);
                     LoadProj.load(proj, (IEclipseContext) wb
                             .getService(IEclipseContext.class), wbw
                             .getActivePage(), UIScopedPreferenceStore.get(), shell);

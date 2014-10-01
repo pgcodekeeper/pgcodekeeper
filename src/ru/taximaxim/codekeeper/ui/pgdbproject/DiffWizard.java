@@ -292,7 +292,7 @@ class PageDiff extends WizardPage implements Listener {
             break;
 
         case PROJ:
-            PgDbProject proj = PgDbProject.getProgFromFile(getProjPath());
+            PgDbProject proj = PgDbProject.getProjFromFile(getProjPath());
 
             if (getProjRev().isEmpty()) {
                 dbs = DbSource.fromProject(proj);
@@ -556,7 +556,7 @@ class PageDiff extends WizardPage implements Listener {
 
                 if (!dir.isEmpty() && new File(dir).isFile() &&
                         dir.endsWith(FILE.PROJ_PREF_STORE)) {
-                    PgDbProject tmpProj = PgDbProject.getProgFromFile(dir);
+                    PgDbProject tmpProj = PgDbProject.getProjFromFile(dir);
                     cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getPrefs().get(
                             PROJ_PREF.ENCODING, "")));
                 }

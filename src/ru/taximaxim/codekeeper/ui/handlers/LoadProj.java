@@ -47,7 +47,7 @@ public class LoadProj extends E4HandlerWrapper {
         
         String path = dialog.open();
         if(path != null) {
-            PgDbProject proj = PgDbProject.getProgFromFile(path);
+            PgDbProject proj = PgDbProject.getProjFromFile(path);
             if (load(proj, ctx, page, mainPrefs, shell)) {
                 AddonPrefLoader.savePreference(mainPrefs,
                         PREF.LAST_OPENED_LOCATION, new File(path).getParent());

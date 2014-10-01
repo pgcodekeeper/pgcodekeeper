@@ -41,7 +41,7 @@ public class AddonOpenLast {
             }
             
             String last = recent[0];
-            final PgDbProject proj = PgDbProject.getProgFromFile(last);
+            final PgDbProject proj = PgDbProject.getProjFromFile(last);
 
             sync.syncExec(new Runnable() {
 
