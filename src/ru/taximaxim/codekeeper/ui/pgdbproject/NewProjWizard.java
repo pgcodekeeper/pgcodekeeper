@@ -51,10 +51,10 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 
 public class NewProjWizard extends BasicNewProjectResourceWizard implements IPageChangingListener, INewWizard,
 IExecutableExtension {
@@ -333,7 +333,7 @@ class PageRepo extends WizardPage implements Listener {
                 String path = dialog.open();
                 if (path != null) {
                     txtProjectRoot.setText(path);
-                    AddonPrefLoader.savePreference(mainPrefStore, PREF.LAST_OPENED_LOCATION, path);
+                    PreferenceInitializer.savePreference(mainPrefStore, PREF.LAST_OPENED_LOCATION, path);
                 }
             }
         });
@@ -381,7 +381,7 @@ class PageRepo extends WizardPage implements Listener {
                 String path = dialog.open();
                 if (path != null) {
                     txtOldProgFile.setText(path);
-                    AddonPrefLoader.savePreference(mainPrefStore, PREF.LAST_OPENED_LOCATION, path);
+                    PreferenceInitializer.savePreference(mainPrefStore, PREF.LAST_OPENED_LOCATION, path);
                 }
             }
         });

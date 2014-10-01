@@ -48,7 +48,6 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTreeViewer;
@@ -56,6 +55,7 @@ import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 
 public class DiffWizard extends Wizard implements IPageChangingListener {
 
@@ -579,7 +579,7 @@ class PageDiff extends WizardPage implements Listener {
                     txtProjPath.setText(path);
                     txtProjPath.setEnabled(true);
                     btnThis.setSelection(false);
-                    AddonPrefLoader.savePreference(mainPrefs, PREF.LAST_OPENED_LOCATION, new File (path).getParent());
+                    PreferenceInitializer.savePreference(mainPrefs, PREF.LAST_OPENED_LOCATION, new File (path).getParent());
                 }
             }
         });

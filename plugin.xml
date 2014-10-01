@@ -2,15 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         id="id1"
-         point="org.eclipse.e4.workbench.model">
-      <processor
-            apply="always"
-            beforefragment="false"
-            class="ru.taximaxim.codekeeper.ui.addons.AddonsProcessor">
-      </processor>
-   </extension>
-   <extension
          point="org.eclipse.ui.contexts">
       <context
             id="ru.taximaxim.codekeeper.ui.pgCodeKeeper"
