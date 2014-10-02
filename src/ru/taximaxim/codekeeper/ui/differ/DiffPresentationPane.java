@@ -49,18 +49,23 @@ public abstract class DiffPresentationPane extends Composite {
 
     private void setDbSource(DbSource dbSource) {
         this.dbSource = dbSource;
-        if (diffPane != null) {
-            diffPane.setDbTarget(dbSource);
-        }
+        setDiffPaneDb(isProjSrc, dbSource);
     }
 
     private void setDbTarget(DbSource dbTarget) {
         this.dbTarget = dbTarget;
-        if (diffPane != null) {
-            diffPane.setDbSource(dbTarget);
-        }
+        setDiffPaneDb(!isProjSrc, dbTarget);
     }
 
+    private void setDiffPaneDb(boolean isDbSrc, DbSource db) {
+        if (diffPane != null) {
+            if (isDbSrc)
+                diffPane.setDbSource(db);
+            else 
+                diffPane.setDbTarget(db);    
+        }
+    }
+    
     public DiffPresentationPane(Composite parent, boolean projIsSrc,
             final IPreferenceStore mainPrefs, final PgDbProject proj) {
         super(parent, SWT.NONE);
