@@ -293,4 +293,9 @@ public abstract class DiffPresentationPane extends Composite {
      *            pre-made {@link GridLayout} of the container
      */
     protected abstract void createUpperContainer(Composite container, GridLayout gl);
+    
+    public void changeProject() {
+        diffTable.setInput(null, false);
+        diffPane.setInput(null);
+    };
 }

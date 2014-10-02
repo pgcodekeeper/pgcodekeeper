@@ -70,6 +70,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 public class ProjectEditorDiffer extends MultiPageEditorPart {
 
     private PgDbProject proj;
+    private DiffPresentationPane commit, diff;
     
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -86,15 +87,12 @@ public class ProjectEditorDiffer extends MultiPageEditorPart {
     
     @Override
     protected void createPages() {
-        int i;
-        
-        i = addPage(new CommitPage(getContainer(),
-                Activator.getDefault().getPreferenceStore(), proj));
-        setPageText(i, "Commit");
-        
-        i = addPage(new DiffPage(getContainer(),
-                Activator.getDefault().getPreferenceStore(), proj));
-        setPageText(i, "Diff");
+        commit = new CommitPage(getContainer(), 
+                Activator.getDefault().getPreferenceStore(), proj);
+        setPageText(addPage(commit), "Commit");
+        diff = new DiffPage(getContainer(), 
+                Activator.getDefault().getPreferenceStore(), proj);
+        setPageText(addPage(diff), "Diff");
     }
 
     @Override
@@ -150,9 +148,14 @@ public class ProjectEditorDiffer extends MultiPageEditorPart {
         IResourceDelta rootDelta = event.getDelta();
         IResourceDelta thisproj = rootDelta.findMember(proj.getProject().getFullPath());
         if (thisproj != null) {
-            // update editor somehow
-//            isPageModified = true;
-//            firePropertyChange(IEditorPart.PROP_DIRTY);
+            Display.getDefault().asyncExec(new Runnable() {
+                
+                @Override
+                public void run() {
+                    commit.changeProject();
+                    diff.changeProject();                    
+                }
+            });
         }
     }
 }
@@ -382,6 +385,13 @@ class CommitPage extends DiffPresentationPane {
 
         Console.addMessage(Messages.commitPartDescr_success_project_updated);
     }
+    
+    @Override
+    public final void changeProject() {
+        txtCommitComment.setText(""); //$NON-NLS-1$
+        btnCommit.setEnabled(false);
+        super.changeProject();
+    }
 }
 
 class DiffPage extends DiffPresentationPane {
@@ -479,5 +489,14 @@ class DiffPage extends DiffPresentationPane {
                     dbSrc.txtDbUser.getText(), dbSrc.txtDbPass.getText());
         }
         dialog.open();
+    }
+    
+    @Override
+    public final void changeProject() {
+        btnGetLatest.setEnabled(false);
+        btnAddDepcy.setEnabled(false);
+        manualDepciesSource.clear();
+        manualDepciesTarget.clear();
+        super.changeProject();
     }
 }
