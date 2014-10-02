@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/ru.taximaxim.codekeeper.feature_1.0.0.qualifier.jar" id="ru.taximaxim.codekeeper.feature" version="1.0.0.qualifier">
+      <category name="pgcodekeeper"/>
+   </feature>
+   <category-def name="pgcodekeeper" label="PgCodekeeper"/>
+</site>
