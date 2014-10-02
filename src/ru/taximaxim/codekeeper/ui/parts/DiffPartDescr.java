@@ -55,7 +55,6 @@ import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
-import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
@@ -308,10 +307,6 @@ public class DiffPartDescr extends DynamicE4View {
         btnGetChanges.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (!ProjSyncSrc.sync(proj, shell, mainPrefs)) {
-                    return;
-                }
-                
                 setDbTarget(DbSource.fromProject(proj));
                 if (btnDump.getSelection()) {
                     FileDialog dialog = new FileDialog(shell);

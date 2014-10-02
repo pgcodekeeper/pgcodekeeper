@@ -70,7 +70,6 @@ import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
-import ru.taximaxim.codekeeper.ui.handlers.ProjSyncSrc;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -474,10 +473,6 @@ public class CommitPartDescr extends DynamicE4View {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (!ProjSyncSrc.sync(proj, shell, mainPrefs)) {
-                    return;
-                }
-                
                 setDbSource(DbSource.fromProject(proj));
                 if (btnDump.getSelection()) {
                     FileDialog dialog = new FileDialog(shell);

@@ -21,7 +21,7 @@ public class Diff extends AbstractHandler {
         PgDbProject proj = OpenEditor.getProject(event);
         Shell shell = HandlerUtil.getActiveShell(event);
         IPreferenceStore prefStore = Activator.getDefault().getPreferenceStore();  
-        if(proj!= null && ProjSyncSrc.sync(proj, shell, prefStore)) {
+        if(proj!= null) {
             Log.log(Log.LOG_DEBUG, "Diff wizard about to show"); //$NON-NLS-1$
             
             WizardDialog dialog = new WizardDialog(
