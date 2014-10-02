@@ -97,14 +97,14 @@ public class DiffPartDescr extends DynamicE4View {
      */
     private DbSource dbTarget;
     
-    public void setDbSource(DbSource dbSource) {
+    private void setDbSource(DbSource dbSource) {
         this.dbSource = dbSource;
         if (diffPane != null) {
             diffPane.setDbTarget(dbSource);
         }
     }
 
-    public void setDbTarget(DbSource dbTarget) {
+    private void setDbTarget(DbSource dbTarget) {
         this.dbTarget = dbTarget;
         if (diffPane != null) {
             diffPane.setDbSource(dbTarget);

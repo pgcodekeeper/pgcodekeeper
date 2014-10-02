@@ -12,8 +12,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.editors.ProjectEditor;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput;
 import ru.taximaxim.codekeeper.ui.natures.ProjectNature;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -56,7 +56,7 @@ public class OpenEditor extends AbstractHandler {
     public static void openEditor(IWorkbenchPage page, IProject proj) throws PgCodekeeperUIException {
         ProjectEditorInput input = new ProjectEditorInput(proj.getName());
         try {
-            page.openEditor(input, ProjectEditor.ID);
+            page.openEditor(input, EDITOR.PROJECT);
 
           } catch (PartInitException e) {
             throw new PgCodekeeperUIException("Cannot open editor", e);

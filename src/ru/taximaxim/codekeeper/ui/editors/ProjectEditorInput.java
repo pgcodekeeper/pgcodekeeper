@@ -6,17 +6,18 @@ import org.eclipse.ui.IPersistableElement;
 
 public class ProjectEditorInput implements IEditorInput  {
 
-    private String projName;
+    private final String projName;
     
     public ProjectEditorInput(String projectName) {
         projName = projectName;
     }
+    
     public String getProjectName() {
         return projName;
     }
 
     @Override
-    public Object getAdapter(Class adapter) {
+    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         return null;
     }
 
@@ -66,5 +67,4 @@ public class ProjectEditorInput implements IEditorInput  {
             return false;
         return true;
     }
-
 }

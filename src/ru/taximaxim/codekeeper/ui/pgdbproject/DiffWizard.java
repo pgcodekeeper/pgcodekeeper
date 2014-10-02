@@ -204,7 +204,7 @@ class PageDiff extends WizardPage implements Listener {
 
     private LocalResourceManager lrm;
 
-    public DiffTargetType getTargetType() {
+    public DiffTargetType getTargetType() throws PgCodekeeperUIException {
         if (radioDb.getSelection()) {
             return DiffTargetType.DB;
         }
@@ -217,9 +217,7 @@ class PageDiff extends WizardPage implements Listener {
         if (radioProj.getSelection()) {
             return DiffTargetType.PROJ;
         }
-
-        ExceptionNotifier.showErrorDialog(Messages.diffWizard_no_target_type_selection_found, null);
-        throw new IllegalStateException(Messages.diffWizard_no_target_type_selection_found);
+        throw new PgCodekeeperUIException(Messages.diffWizard_no_target_type_selection_found);
     }
 
     public String getDbName() {
@@ -301,9 +299,7 @@ class PageDiff extends WizardPage implements Listener {
             break;
 
         case PROJ:
-            PgDbProject proj;
-            proj = PgDbProject.getProgFromFile(getProjPath());
-            
+            PgDbProject proj = PgDbProject.getProjFromFile(getProjPath());
 
             if (getProjRev().isEmpty()) {
                 dbs = DbSource.fromProject(proj);
@@ -318,8 +314,7 @@ class PageDiff extends WizardPage implements Listener {
             }
             break;
         default:
-            ExceptionNotifier.showErrorDialog(Messages.diffWizard_unexpected_target_type_value, null);
-            throw new IllegalStateException(Messages.diffWizard_unexpected_target_type_value);
+            throw new PgCodekeeperUIException(Messages.diffWizard_unexpected_target_type_value);
         }
 
         return dbs;
@@ -570,7 +565,7 @@ class PageDiff extends WizardPage implements Listener {
                         dir.endsWith(FILE.PROJ_PREF_STORE)) {
                     PgDbProject tmpProj;
                     try {
-                        tmpProj = PgDbProject.getProgFromFile(dir);
+                        tmpProj = PgDbProject.getProjFromFile(dir);
                         cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getPrefs().get(
                                 PROJ_PREF.ENCODING, "")));
                     } catch (PgCodekeeperUIException e1) {
@@ -650,39 +645,44 @@ class PageDiff extends WizardPage implements Listener {
     public boolean isPageComplete() {
         String errMsg = null;
 
-        switch (getTargetType()) {
-        case DB:
-            if (!grpDb.txtDbPort.getText().isEmpty()) {
-                try {
-                    Integer.parseInt(grpDb.txtDbPort.getText());
-                } catch (NumberFormatException ex) {
-                    errMsg = Messages.port_must_be_a_number;
+        try {
+            switch (getTargetType()) {
+            case DB:
+                if (!grpDb.txtDbPort.getText().isEmpty()) {
+                    try {
+                        Integer.parseInt(grpDb.txtDbPort.getText());
+                    } catch (NumberFormatException ex) {
+                        errMsg = Messages.port_must_be_a_number;
+                    }
                 }
+                break;
+
+            case DUMP:
+                if (txtDumpPath.getText().isEmpty()
+                        || !new File(txtDumpPath.getText()).isFile()) {
+                    errMsg = Messages.select_readable_db_dump_file;
+                }
+                break;
+
+            case GIT:
+                if (txtGitUrl.getText().isEmpty()) {
+                    errMsg = Messages.diffWizard_enter_git_repo_url;
+                }
+                break;
+
+            case PROJ:
+                String dir = txtProjPath.getText();
+
+                if (dir.isEmpty() || !dir.endsWith(FILE.PROJ_PREF_STORE) 
+                        || !new File(dir).isFile()) {
+                    errMsg = Messages.diffWizard_select_valid_project_file;
+                }
+
+                break;
             }
-            break;
-
-        case DUMP:
-            if (txtDumpPath.getText().isEmpty()
-                    || !new File(txtDumpPath.getText()).isFile()) {
-                errMsg = Messages.select_readable_db_dump_file;
-            }
-            break;
-
-        case GIT:
-            if (txtGitUrl.getText().isEmpty()) {
-                errMsg = Messages.diffWizard_enter_git_repo_url;
-            }
-            break;
-
-        case PROJ:
-            String dir = txtProjPath.getText();
-
-            if (dir.isEmpty() || !dir.endsWith(FILE.PROJ_PREF_STORE) 
-                    || !new File(dir).isFile()) {
-                errMsg = Messages.diffWizard_select_valid_project_file;
-            }
-
-            break;
+        } catch (PgCodekeeperUIException e) {
+            errMsg = "Cannot determine target DB type";
+            return false;
         }
 
         setErrorMessage(errMsg);
@@ -870,8 +870,6 @@ class PageResult extends WizardPage {
                     } catch (FileNotFoundException
                             | UnsupportedEncodingException ex) {
                         ExceptionNotifier.showErrorDialog(
-                                Messages.diffWizard_unexpected_error_while_saving_diff, ex);
-                        throw new IllegalStateException(
                                 Messages.diffWizard_unexpected_error_while_saving_diff, ex);
                     }
                 }

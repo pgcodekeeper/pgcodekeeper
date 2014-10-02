@@ -40,6 +40,10 @@ public interface UIConsts {
         String CTXP = PLUGIN_ID.THIS + ".part.CtXp";
     }
     
+    interface EDITOR {
+        String PROJECT = "ru.taximaxim.codekeeper.ui.projectEditorDiffer"; //$NON-NLS-1$
+    }
+    
     interface PERSP {
         String MAIN = PLUGIN_ID.THIS + ".perspective.Main"; //$NON-NLS-1$
     }

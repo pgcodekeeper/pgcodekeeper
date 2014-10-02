@@ -148,7 +148,7 @@ IExecutableExtension {
     @Override
     public boolean performFinish() {
         try {
-            props = PgDbProject.getProgFromFile(pageRepo.getProjectName(),
+            props = PgDbProject.getProjFromFile(pageRepo.getProjectName(),
                     pageRepo.getProjectRootPath());
 
             Log.log(Log.LOG_INFO, "Creating new project properties at " //$NON-NLS-1$

@@ -110,6 +110,15 @@
       </menuContribution>
    </extension>
    <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer"
+            default="false"
+            id="ru.taximaxim.codekeeper.ui.projectEditorDiffer"
+            name="pgCodeKeeper Project Edtor">
+      </editor>
+   </extension>
+   <extension
          point="org.eclipse.ui.views">
       <category
             id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"

@@ -97,7 +97,7 @@ public class ProjectEditor extends EditorPart {
             isPageModified = true;
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
-    }   
+    }
     
     @Override
     public void dispose() {

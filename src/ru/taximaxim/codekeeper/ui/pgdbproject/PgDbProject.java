@@ -1,6 +1,3 @@
-/**
- * 
- */
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.net.URI;
@@ -19,14 +16,14 @@ import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.natures.ProjectNature;
 
-/**
- * Проект
- *
- */
 public class PgDbProject {
     
     private final IProject project;
     private final IEclipsePreferences prefs;
+    
+    public IProject getProject() {
+        return project;
+    }
     
     public IEclipsePreferences getPrefs() {
         return prefs;
@@ -67,12 +64,6 @@ public class PgDbProject {
         prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
     }
     
-    /**
-     * Just do the basics: create a basic project.
-     *
-     * @param location
-     * @param projectName
-     */
     private static PgDbProject createPgDbProject(String projectName, URI location) {        
         // it is acceptable to use the ResourcesPlugin class
         IProject newProject = ResourcesPlugin.getWorkspace().getRoot()
@@ -114,21 +105,17 @@ public class PgDbProject {
      * @return
      * @throws PgCodekeeperUIException 
      */
-    public static PgDbProject getProgFromFile(String pathToProject) throws PgCodekeeperUIException {
-        return getProgFromFile(Paths.get(pathToProject).getFileName().toString(),
+    public static PgDbProject getProjFromFile(String pathToProject) throws PgCodekeeperUIException {
+        return getProjFromFile(Paths.get(pathToProject).getFileName().toString(),
                 pathToProject);
     }
     
-    public static PgDbProject getProgFromFile(String projectName, 
+    public static PgDbProject getProjFromFile(String projectName, 
             String pathToProject) throws PgCodekeeperUIException {
         try {
             return createPgDbProject(projectName, new URI("file:/" + pathToProject));
         } catch (URISyntaxException e1) {
             throw new PgCodekeeperUIException("Error while trying to load project", e1);
         }
-    }
-
-    public IProject getProject() {
-        return project;
     }
 }
