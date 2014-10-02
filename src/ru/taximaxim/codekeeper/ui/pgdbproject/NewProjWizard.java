@@ -238,6 +238,7 @@ IExecutableExtension {
         setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.ENCODING, pageMisc.getEncoding());
         setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.REPO_ROOT_PATH, 
                 pageSubdir.getRepoSubdir());
+        setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.REPO_SUBDIR_PATH,"");
         
         setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.DB_NAME, pageDb.getDbName());
         setNotEmptyString(newPrefs, oldPrefs, PROJ_PREF.DB_USER, pageDb.getDbUser());

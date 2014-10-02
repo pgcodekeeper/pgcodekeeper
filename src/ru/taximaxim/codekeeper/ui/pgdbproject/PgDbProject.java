@@ -1,7 +1,9 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -34,8 +36,13 @@ public class PgDbProject {
     }
     
     public Path getPathToProject() {
-        return Paths.get(prefs.get(UIConsts.PROJ_PREF.REPO_ROOT_PATH,
-                project.getLocation().toString()));
+        String mainPath =prefs.get(UIConsts.PROJ_PREF.REPO_ROOT_PATH,
+                project.getLocation().toString()); 
+        String subdir = prefs.get(UIConsts.PROJ_PREF.REPO_SUBDIR_PATH,"");
+        if (!subdir.isEmpty()) {
+            mainPath += File.separatorChar + subdir;
+        }
+        return Paths.get(mainPath);
     }
     
     /**
