@@ -282,6 +282,7 @@ public abstract class DiffPresentationPane extends Composite {
                     Messages.differ_thread_cancelled_shouldnt_happen, ex);
         }
 
+        activateControls();
         diffTable.setInput(treeDiffer, !isProjSrc);
         diffPane.setInput(null);
     }
@@ -293,6 +294,8 @@ public abstract class DiffPresentationPane extends Composite {
      *            pre-made {@link GridLayout} of the container
      */
     protected abstract void createUpperContainer(Composite container, GridLayout gl);
+    
+    protected abstract void activateControls();
     
     public void changeProject() {
         diffTable.setInput(null, false);

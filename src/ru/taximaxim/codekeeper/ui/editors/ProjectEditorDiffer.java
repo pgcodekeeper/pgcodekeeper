@@ -392,6 +392,11 @@ class CommitPage extends DiffPresentationPane {
         btnCommit.setEnabled(false);
         super.changeProject();
     }
+    
+    @Override
+    protected final void activateControls() {
+        btnCommit.setEnabled(true);
+    }
 }
 
 class DiffPage extends DiffPresentationPane {
@@ -493,10 +498,20 @@ class DiffPage extends DiffPresentationPane {
     
     @Override
     public final void changeProject() {
-        btnGetLatest.setEnabled(false);
-        btnAddDepcy.setEnabled(false);
+        setButtonsClearDepcies(false);
+        super.changeProject();
+    }
+
+    
+    @Override
+    protected final void activateControls() {
+        setButtonsClearDepcies(true);
+    }
+    
+    private void setButtonsClearDepcies(boolean state) {
+        btnGetLatest.setEnabled(state);
+        btnAddDepcy.setEnabled(state);
         manualDepciesSource.clear();
         manualDepciesTarget.clear();
-        super.changeProject();
     }
 }
