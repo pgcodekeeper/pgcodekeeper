@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -26,12 +30,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
@@ -75,6 +81,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart {
                 .getProject(in.getProjectName()));
         setPartName(in.getName());
         super.init(site, input);
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(editorUpdater);
     }
     
     @Override
@@ -101,6 +108,52 @@ public class ProjectEditorDiffer extends MultiPageEditorPart {
     @Override
     public boolean isSaveAsAllowed() {
         return false;
+    }
+    
+    @Override
+    public void dispose() {
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(editorUpdater);
+        super.dispose();
+    }
+    
+    private IResourceChangeListener editorUpdater = new IResourceChangeListener() {
+        public void resourceChanged(IResourceChangeEvent event) {
+            switch (event.getType()) {
+                case IResourceChangeEvent.PRE_CLOSE:
+                case IResourceChangeEvent.PRE_DELETE:
+                    handlerCloseProject(event);
+                    break;
+                case IResourceChangeEvent.POST_CHANGE:
+                    handleChangeProject(event);
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+    
+    private void handlerCloseProject(IResourceChangeEvent event) {
+        final IResource closingProject = event.getResource();
+        Display.getDefault().asyncExec(new Runnable(){
+            public void run() {
+                for (IWorkbenchPage page : getSite().getWorkbenchWindow().getPages()) {
+                    ProjectEditorInput editorInput = 
+                            (ProjectEditorInput) ProjectEditorDiffer.this.getEditorInput();
+                    if (editorInput.getName().equals(closingProject.getName()))
+                        page.closeEditor(page.findEditor(editorInput), true);
+                }
+            }
+        });
+    }
+    
+    private void handleChangeProject(IResourceChangeEvent event) {
+        IResourceDelta rootDelta = event.getDelta();
+        IResourceDelta thisproj = rootDelta.findMember(proj.getProject().getFullPath());
+        if (thisproj != null) {
+            // update editor somehow
+//            isPageModified = true;
+//            firePropertyChange(IEditorPart.PROP_DIRTY);
+        }
     }
 }
 
