@@ -31,18 +31,26 @@ public class ProjectUpdater {
             try {
                 safeCleanProjectDir(dirTmp);
                 new ModelExporter(dirExport, db, encoding).export();
-            } catch (IOException ex) {
+            } catch (Exception ex) {
+                Log.log(Log.LOG_ERROR, "Error while updating project!" //$NON-NLS-1$
+                        + " Trying to restore data from backup", ex); //$NON-NLS-1$
+            
                 try {
                     restoreProjectDir(dirTmp);
-                } catch (IOException exRestore) {
+                } catch (Exception exRestore) {
                     Log.log(Log.LOG_ERROR,
                             "Error while restoring backups after update error!", //$NON-NLS-1$
                             exRestore);
+                    IOException exNew = new IOException(
+                            Messages.ProjectUpdater_error_backup_restore, exRestore);
+                    exNew.addSuppressed(ex);
+                    throw exNew;
                 }
-                throw new IOException(
-                        Messages.ProjectUpdater_error_update, ex);
+                throw new IOException(Messages.ProjectUpdater_error_update, ex);
             }
-        } 
+        } catch (IOException ex) {
+            throw new IOException(Messages.ProjectUpdater_error_no_tempdir, ex);
+        }
     }
 
     private void safeCleanProjectDir(File dirTmp) throws IOException {

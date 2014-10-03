@@ -60,7 +60,7 @@ public class ProjectEditorInput implements IEditorInput  {
             return true;
         if (obj == null)
             return false;
-        if (getClass() != obj.getClass())
+        if (!(obj instanceof ProjectEditorInput))
             return false;
         ProjectEditorInput other = (ProjectEditorInput) obj;
         if (!projName.equals(other.projName))

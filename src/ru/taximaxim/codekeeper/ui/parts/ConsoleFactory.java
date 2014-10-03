@@ -12,8 +12,12 @@ import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+
 public class ConsoleFactory implements IConsoleFactory {
 
+    private static final String NAME = "pgCodeKeeper";
+    
     private static MessageConsoleStream outer;
     
     @Override
@@ -27,7 +31,7 @@ public class ConsoleFactory implements IConsoleFactory {
             view = (IConsoleView) page.showView(id);
             view.display(myConsole);
         } catch (PartInitException e) {
-            throw new IllegalStateException("Cannot activate a console", e);
+            ExceptionNotifier.showErrorDialog("Cannot activate a console", e);
         }
     }
 
@@ -39,18 +43,15 @@ public class ConsoleFactory implements IConsoleFactory {
     }
     
     private static MessageConsole findConsole() {
-        String name = "PgCodekeeper console";
         MessageConsole myConsole = null;
-        ConsolePlugin plugin = ConsolePlugin.getDefault();
-        IConsoleManager conMan = plugin.getConsoleManager();
-        IConsole[] existing = conMan.getConsoles();
-        for (int i = 0; i < existing.length; i++) {
-            if (name.equals(existing[i].getName())) {
-                myConsole = (MessageConsole) existing[i];
+        IConsoleManager conMan = ConsolePlugin.getDefault().getConsoleManager();
+        for (IConsole c : conMan.getConsoles()) {
+            if (NAME.equals(c.getName()) && (c instanceof MessageConsole)) {
+                myConsole = (MessageConsole) c;
             }
         }
         if (myConsole == null) {
-            myConsole = new MessageConsole(name, null);
+            myConsole = new MessageConsole(NAME, null);
         }
         conMan.addConsoles(new IConsole[] { myConsole });
         outer = myConsole.newMessageStream();

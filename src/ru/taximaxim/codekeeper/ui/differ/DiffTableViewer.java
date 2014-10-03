@@ -176,7 +176,7 @@ public class DiffTableViewer extends Composite {
         try {
             prevChecked = prevCheckedHistory.getMapHistory();
         } catch (IOException e1) {
-            ExceptionNotifier.showErrorDialog("Cannot get previous checked elements", e1);
+            ExceptionNotifier.showErrorDialog("Cannot load saved checked elements", e1);
             prevChecked = new HashMap<>();
         }
         
@@ -334,7 +334,7 @@ public class DiffTableViewer extends Composite {
             saveChecked.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    updateChekedSet(true);
+                    updateCheckedSet(true);
                 }
             });
             Button deleteCheckSet = new Button(contButtons, SWT.PUSH);
@@ -345,7 +345,7 @@ public class DiffTableViewer extends Composite {
             deleteCheckSet.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    updateChekedSet(false);
+                    updateCheckedSet(false);
                 }
             });
         
@@ -550,7 +550,7 @@ public class DiffTableViewer extends Composite {
         return path;
     }
     
-    private void updateChekedSet(boolean addEntry) {
+    private void updateCheckedSet(boolean addEntry) {
         String setName = cmbPrevChecked.getCombo().getText();
         if (!setName.isEmpty()) {
             LinkedList<String> checkedElements = new LinkedList<>();
@@ -562,7 +562,7 @@ public class DiffTableViewer extends Composite {
                             checkedElements, addEntry);
                 prevChecked = prevCheckedHistory.getMapHistory();
             } catch (IOException e) {
-                ExceptionNotifier.showErrorDialog("Cannot get previous elements checked", e);
+                ExceptionNotifier.showErrorDialog("Cannot save checked elements", e);
                 prevChecked = new HashMap<>();
             }
             cmbPrevChecked.setInput(prevChecked.keySet());
@@ -612,7 +612,7 @@ public class DiffTableViewer extends Composite {
             this.dbTarget = (differ == null) ? null : 
                 reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
         } catch (PgCodekeeperUIException e) {
-            ExceptionNotifier.showErrorDialog("Cannot get DB object from differ object", e);
+            ExceptionNotifier.showErrorDialog("Error while setting input", e);
             this.treeRoot = null;
             this.dbSource = null;
             this.dbTarget = null;
@@ -740,7 +740,7 @@ public class DiffTableViewer extends Composite {
                     ignoredElements = xml.deserializeList(
                             new StringReader((String) event.getNewValue()));
                 } catch (IOException | SAXException ex) {
-                    ExceptionNotifier.showErrorDialog("", ex);
+                    ExceptionNotifier.showErrorDialog("Error reading ignored objects list", ex);
                     return;
                 }
                 viewerRefresh();

@@ -38,9 +38,8 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         try {
             Log.log(Log.LOG_INFO, "Init project at " + props.getPathToProject()); //$NON-NLS-1$
             
-            SubMonitor pm = SubMonitor.convert(monitor, Messages.initProjectFromSource_initializing_project, 100);
-//            IRepoWorker repo = new JGitExec(props, 
-//                    mainPrefStore.getString(PREF.GIT_KEY_PRIVATE_FILE));
+            SubMonitor pm = SubMonitor.convert(monitor, Messages.initProjectFromSource_initializing_project, 75);
+
             initRepoFromSource(pm);
             
             pm.done();
@@ -55,7 +54,6 @@ public class InitProjectFromSource implements IRunnableWithProgress {
      */
     private void initRepoFromSource(SubMonitor pm)
             throws IOException, InvocationTargetException {
-//        IPath dirRepo = props.getPathToProject();
         SubMonitor taskpm = pm.newChild(25); // 50
 
         PgDatabase db;
@@ -76,9 +74,5 @@ public class InitProjectFromSource implements IRunnableWithProgress {
 
         pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model); // 75
         new ProjectUpdater(db, props).update();
-
-        pm.newChild(25).subTask(PROJ_PREF.REPO_TYPE_GIT_NAME + " committing..."); // 100 //$NON-NLS-1$
-//        repo.repoRemoveMissingAddNew(dirRepo);
-//        repo.repoCommit(dirRepo, "new rev"); //$NON-NLS-1$
     }
 }

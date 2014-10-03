@@ -102,6 +102,11 @@ public interface UIConsts {
         String REPO_ROOT_PATH = "prefRepoPath"; //$NON-NLS-1$
     }
     
+    interface NATURE {
+
+        public static final String ID = "ru.taximaxim.codekeeper.ui.nature";
+    }
+    
     interface FILE {
         String PROJ_PREF_STORE = ".project"; //$NON-NLS-1$
         

@@ -14,13 +14,9 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
-    public PreferenceInitializer() {
-    }
-
     @Override
     public void initializeDefaultPreferences() {
-        IPreferenceStore store = Activator.getDefault()
-                .getPreferenceStore();
+        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
         store.setDefault(PREF.PGDUMP_EXE_PATH, "pg_dump"); //$NON-NLS-1$
         store.setDefault(PREF.DB_STORE, "default\t\t\t\t\t0"); //$NON-NLS-1$
         store.setDefault(PREF.GIT_KEY_PRIVATE_FILE, new File(new File(
@@ -45,5 +41,4 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
             }
         }
     }
-
 }

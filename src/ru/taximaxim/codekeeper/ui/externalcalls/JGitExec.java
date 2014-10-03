@@ -29,9 +29,7 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.util.FS;
 
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.parts.Console;
@@ -305,7 +303,7 @@ public class JGitExec implements IRepoWorker{
 
     @Override
     public String repoGetVersion() throws IOException {
-        return Activator.getPluginVersions().get(PLUGIN_ID.JGIT).get(0);
+        return ""; //Activator.getPluginVersions().get(PLUGIN_ID.JGIT).get(0);
     }
     
     public static boolean isGitRepo(String path){

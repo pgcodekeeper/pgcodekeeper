@@ -14,7 +14,7 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.natures.ProjectNature;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 
 public class PgDbProject {
     
@@ -90,20 +90,18 @@ public class PgDbProject {
     }
     
     public static void addNatureToProject(IProject project) throws CoreException {
-        if (!project.hasNature(ProjectNature.ID)) {
+        if (!project.hasNature(NATURE.ID)) {
             IProjectDescription description = project.getDescription();
             String[] prevNatures = description.getNatureIds();
             String[] newNatures = new String[prevNatures.length + 1];
             System.arraycopy(prevNatures, 0, newNatures, 0, prevNatures.length);
-            newNatures[prevNatures.length] = ProjectNature.ID;
+            newNatures[prevNatures.length] = NATURE.ID;
             description.setNatureIds(newNatures);
             project.setDescription(description, null);
         }
     }
     /**
      * Извлекает имя проекта из названия папки проекта
-     * @param pathToProject
-     * @return
      * @throws PgCodekeeperUIException 
      */
     public static PgDbProject getProjFromFile(String pathToProject) throws PgCodekeeperUIException {

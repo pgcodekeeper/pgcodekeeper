@@ -6,19 +6,14 @@ import org.eclipse.core.runtime.CoreException;
 
 public class ProjectNature implements IProjectNature {
     
-    public static final String ID = "ru.taximaxim.codekeeper.ui.nature";
     private IProject proj;
 
     @Override
     public void configure() throws CoreException {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void deconfigure() throws CoreException {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -30,5 +25,4 @@ public class ProjectNature implements IProjectNature {
     public void setProject(IProject project) {
         proj = project;
     }
-
 }

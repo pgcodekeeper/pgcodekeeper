@@ -10,23 +10,17 @@ public class Log {
     public static final int LOG_INFO = IStatus.INFO;
     public static final int LOG_DEBUG = IStatus.OK;
 
-    /**
-     * Log some message
-     */
     public static void log(int level, String msg) {
         logInternal(level, msg, null);
     }
 
     /**
-     * Log an exception at ERROR level.
+     * Log an exception at {@link IStatus#ERROR} level.
      */
     public static void log(Throwable ex) {
         logInternal(IStatus.ERROR, "Unexpected Exception", ex); //$NON-NLS-1$
     }
 
-    /**
-     * Log throwable exception
-     */
     public static void log(int level, String msg, Throwable ex) {
         logInternal(level, msg, ex);
     }

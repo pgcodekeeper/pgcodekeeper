@@ -7,13 +7,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class TreeDiffer implements IRunnableWithProgress {
     
@@ -60,7 +60,7 @@ public class TreeDiffer implements IRunnableWithProgress {
             dbSource = this.dbSource.get(pm.newChild(33)); // 33
             dbTarget = this.dbTarget.get(pm.newChild(33)); // 66
         } catch(IOException ex) {
-            ExceptionNotifier.showErrorDialog("", ex);
+            ExceptionNotifier.showErrorDialog("Error while loading databases", ex);
             throw new InvocationTargetException(ex);
         }
         

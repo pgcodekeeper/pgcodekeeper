@@ -36,6 +36,8 @@ import ru.taximaxim.codekeeper.ui.parts.Console;
 public class ExceptionNotifier {
     
     public static void showErrorDialog(final String message, Throwable source) {
+        // TODO use default StatusHandler?
+        // shell from StackTraceDialogStatusHandler.java ?
         notify(source, message, PlatformUI.getWorkbench()
                 .getActiveWorkbenchWindow().getShell(), true, true);
     }

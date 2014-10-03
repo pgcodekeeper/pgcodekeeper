@@ -2,21 +2,19 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
+         point="org.eclipse.ui.console.consoleFactories">
+      <consoleFactory
+            class="ru.taximaxim.codekeeper.ui.parts.ConsoleFactory"
+            label="PgCodekeeper console">
+      </consoleFactory>
+   </extension>
+   <extension
          point="org.eclipse.ui.contexts">
       <context
             id="ru.taximaxim.codekeeper.ui.pgCodeKeeper"
             name="pgCodeKeeper"
             parentId="org.eclipse.ui.contexts.window">
       </context>
-   </extension>
-   <extension
-         point="org.eclipse.ui.bindings">
-      <key
-            commandId="ru.taximaxim.codekeeper.ui.command.Diff"
-            contextId="ru.taximaxim.codekeeper.ui.pgCodeKeeper"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+D">
-      </key>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -139,62 +137,9 @@
             name="%part.label.5"
             restorable="false">
       </e4view>
-      <category
-            id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            name="pgCodeKeeper">
-      </category>
-      <e4view
-            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            class="ru.taximaxim.codekeeper.ui.parts.Welcome"
-            icon="icons/welcome16.gif"
-            id="ru.taximaxim.codekeeper.ui.part.Welcome"
-            name="%part.label.2"
-            restorable="false">
-      </e4view>
-      <e4view
-            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            class="ru.taximaxim.codekeeper.ui.parts.Console"
-            icon="icons/console_view.gif"
-            id="ru.taximaxim.codekeeper.ui.part.Console"
-            name="%part.label.3"
-            restorable="false">
-      </e4view>
-      <e4view
-            allowMultiple="true"
-            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            class="ru.taximaxim.codekeeper.ui.parts.SqlEditorDescr"
-            icon="icons/file_obj.gif"
-            id="ru.taximaxim.codekeeper.ui.partdescriptor.SQLEditorDescr"
-            name="%partdescriptor.label.1"
-            restorable="false">
-      </e4view>
-      <e4view
-            allowMultiple="false"
-            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            class="ru.taximaxim.codekeeper.ui.parts.CommitPartDescr"
-            icon="icons/ball_blue.png"
-            id="ru.taximaxim.codekeeper.ui.partdescriptor.Sync"
-            name="%partdescriptor.label.2"
-            restorable="false">
-      </e4view>
-      <e4view
-            allowMultiple="false"
-            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            class="ru.taximaxim.codekeeper.ui.parts.DiffPartDescr"
-            icon="icons/ball_red.png"
-            id="ru.taximaxim.codekeeper.ui.partdescriptor.Diff"
-            name="%partdescriptor.label.3"
-            restorable="false">
-      </e4view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectives">
-      <perspective
-            class="ru.taximaxim.codekeeper.ui.perspectives.MainPersp"
-            icon="icons/app_icon.png"
-            id="ru.taximaxim.codekeeper.ui.perspective.Main"
-            name="%perspective.label.1">
-      </perspective>
       <perspective
             class="ru.taximaxim.codekeeper.ui.perspectives.DevtestPersp"
             icon="icons/beta_violet.png"
@@ -246,22 +191,13 @@
             category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
             class="ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard"
             id="ru.taximaxim.codekeeper.ui.newprojwizard"
-            name="New Project"
+            name="pgCodeKeeper Project"
             project="true">
       </wizard>
       <category
             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
             name="PgCodekeeper">
       </category>
-   </extension>
-   <extension
-         point="org.eclipse.ui.editors">
-      <editor
-            class="ru.taximaxim.codekeeper.ui.editors.ProjectEditor"
-            default="false"
-            id="ru.taximaxim.codekeeper.ui.projecteditor"
-            name="Project Editor">
-      </editor>
    </extension>
    <extension
          id="ru.taximaxim.codekeeper.ui.nature"
@@ -271,13 +207,6 @@
                class="ru.taximaxim.codekeeper.ui.natures.ProjectNature">
          </run>
       </runtime>
-   </extension>
-   <extension
-         point="org.eclipse.ui.console.consoleFactories">
-      <consoleFactory
-            class="ru.taximaxim.codekeeper.ui.parts.ConsoleFactory"
-            label="PgCodekeeper console">
-      </consoleFactory>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">

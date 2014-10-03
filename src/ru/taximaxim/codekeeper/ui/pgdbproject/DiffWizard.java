@@ -154,9 +154,9 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                         differ.getDiffDirect(), differ.getDiffReverse());
                 pageResult.layout();
             }
-        } catch(PgCodekeeperUIException e1) {
+        } catch(Exception e1) {
             e.doit = false;
-            ExceptionNotifier.showErrorDialog("Some Errors occurs", e1);
+            ExceptionNotifier.showErrorDialog("Unexpected error", e1);
             return;
         }
     }
@@ -178,7 +178,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 class PageDiff extends WizardPage implements Listener {
 
     public enum DiffTargetType {
-        DB, DUMP, /*SVN, */GIT, PROJ
+        DB, DUMP, GIT, PROJ
     }
 
     private final IPreferenceStore mainPrefs;
@@ -591,7 +591,8 @@ class PageDiff extends WizardPage implements Listener {
                     txtProjPath.setText(path);
                     txtProjPath.setEnabled(true);
                     btnThis.setSelection(false);
-                    PreferenceInitializer.savePreference(mainPrefs, PREF.LAST_OPENED_LOCATION, new File (path).getParent());
+                    PreferenceInitializer.savePreference(mainPrefs,
+                            PREF.LAST_OPENED_LOCATION, new File(path).getParent());
                 }
             }
         });
@@ -681,7 +682,7 @@ class PageDiff extends WizardPage implements Listener {
                 break;
             }
         } catch (PgCodekeeperUIException e) {
-            errMsg = "Cannot determine target DB type";
+            errMsg = "Cannot get target DB type";
             return false;
         }
 
@@ -867,8 +868,7 @@ class PageResult extends WizardPage {
                         Text txtDiff = (Text) tabs.getSelection()[0]
                                 .getControl();
                         encodedWriter.println(txtDiff.getText());
-                    } catch (FileNotFoundException
-                            | UnsupportedEncodingException ex) {
+                    } catch (FileNotFoundException | UnsupportedEncodingException ex) {
                         ExceptionNotifier.showErrorDialog(
                                 Messages.diffWizard_unexpected_error_while_saving_diff, ex);
                     }

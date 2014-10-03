@@ -236,10 +236,6 @@ public abstract class DiffPresentationPane extends Composite {
 
     private void loadChanges(PgDbProject proj, IEclipsePreferences projProps,
             IPreferenceStore mainPrefs) {
-       /* if (!ProjSyncSrc.sync(proj, getShell(), mainPrefs)) {
-            return;
-        }*/
-
         DbSource dbsProj, dbsRemote;
         dbsProj = DbSource.fromProject(proj);
         if (btnDump.getSelection()) {
@@ -287,9 +283,9 @@ public abstract class DiffPresentationPane extends Composite {
                     Messages.differ_thread_cancelled_shouldnt_happen, ex);
         }
 
-        activateControls();
         diffTable.setInput(treeDiffer, !isProjSrc);
         diffPane.setInput(null);
+        diffLoaded();
     }
 
     /**
@@ -300,10 +296,14 @@ public abstract class DiffPresentationPane extends Composite {
      */
     protected abstract void createUpperContainer(Composite container, GridLayout gl);
     
-    protected abstract void activateControls();
+    /**
+     * Allows clients to make actions after a diff has been loaded.
+     */
+    protected void diffLoaded() {
+    };
     
-    public void changeProject() {
-        diffTable.setInput(null, false);
+    public void reset() {
+        diffTable.setInput(null, !isProjSrc);
         diffPane.setInput(null);
     };
 }

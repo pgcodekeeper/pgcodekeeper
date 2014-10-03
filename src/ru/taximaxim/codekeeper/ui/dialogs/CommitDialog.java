@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
-import java.io.IOException;
 import java.util.HashSet;
 
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -15,10 +14,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
-import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -30,7 +27,6 @@ public class CommitDialog extends TrayDialog {
     private DiffTableViewer dtvTop;
     private DiffTableViewer dtvBottom;
     private TreeDiffer treeDiffer;
-    private TreeElement filteredDiffTree;
     private HashSet<TreeElement> depcyElementsSet;
     private HashSet<TreeElement> conflictingElementsSet;
     
@@ -44,16 +40,8 @@ public class CommitDialog extends TrayDialog {
         this.treeDiffer = treeDiffer;
         this.prefs = mainPrefs;
         this.depcyElementsSet = depcyElementsSet;
+        this.message = Messages.commitPartDescr_the_following_changes_be_included_in_commit;
         
-        try {
-            message = Messages.commitPartDescr_the_following_changes_be_included_in_commit
-                    + proj.getPrefs().get(PROJ_PREF.REPO_URL, "")
-                    + Messages.commitPartDescr_branch 
-                    + new JGitExec().getCurrentBranch(proj.getPathToProject().toFile());
-        } catch (IOException ex) {
-            ExceptionNotifier.showErrorDialog(Messages.commitPartDescr_cannot_get_branch_name, ex);
-            throw new IllegalStateException(Messages.commitPartDescr_cannot_get_branch_name, ex);
-        }
         setShellStyle(getShellStyle() | SWT.RESIZE);
     }
     
@@ -112,7 +100,8 @@ public class CommitDialog extends TrayDialog {
     
     @Override
     protected void okPressed() {
-        this.filteredDiffTree = dtvTop.filterDiffTree();
+        /// TODO unused??
+        // this.filteredDiffTree = dtvTop.filterDiffTree();
         super.okPressed();
     }
     

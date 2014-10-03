@@ -115,6 +115,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart {
     }
     
     private IResourceChangeListener editorUpdater = new IResourceChangeListener() {
+        @Override
         public void resourceChanged(IResourceChangeEvent event) {
             switch (event.getType()) {
                 case IResourceChangeEvent.PRE_CLOSE:
@@ -133,6 +134,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart {
     private void handlerCloseProject(IResourceChangeEvent event) {
         final IResource closingProject = event.getResource();
         Display.getDefault().asyncExec(new Runnable(){
+            @Override
             public void run() {
                 for (IWorkbenchPage page : getSite().getWorkbenchWindow().getPages()) {
                     ProjectEditorInput editorInput = 
@@ -152,8 +154,9 @@ public class ProjectEditorDiffer extends MultiPageEditorPart {
                 
                 @Override
                 public void run() {
-                    commit.changeProject();
-                    diff.changeProject();                    
+                    // TODO NPE
+                    commit.reset();
+                    diff.reset();                    
                 }
             });
         }
@@ -387,14 +390,14 @@ class CommitPage extends DiffPresentationPane {
     }
     
     @Override
-    public final void changeProject() {
+    public final void reset() {
         txtCommitComment.setText(""); //$NON-NLS-1$
         btnCommit.setEnabled(false);
-        super.changeProject();
+        super.reset();
     }
     
     @Override
-    protected final void activateControls() {
+    protected final void diffLoaded() {
         btnCommit.setEnabled(true);
     }
 }
@@ -497,14 +500,13 @@ class DiffPage extends DiffPresentationPane {
     }
     
     @Override
-    public final void changeProject() {
+    public final void reset() {
         setButtonsClearDepcies(false);
-        super.changeProject();
+        super.reset();
     }
 
-    
     @Override
-    protected final void activateControls() {
+    protected final void diffLoaded() {
         setButtonsClearDepcies(true);
     }
     

@@ -177,7 +177,7 @@ public class SqlScriptDialog extends MessageDialog {
         try {
             prev = history.getHistory();
         } catch (IOException e1) {
-            ExceptionNotifier.showErrorDialog("Cannot get history entry", e1);
+            ExceptionNotifier.showErrorDialog("Cannot get command history", e1);
             prev = new ArrayList<>();
         }
         if (prev != null && !prev.isEmpty()) {
@@ -298,14 +298,12 @@ public class SqlScriptDialog extends MessageDialog {
                 @Override
                 public void run() {
                     try {
-                        String scriptOutputRes =
-                                StdStreamRedirector.launchAndRedirect(pb);
+                        String scriptOutputRes = StdStreamRedirector.launchAndRedirect(pb);
                         if (usePsqlDepcy) {
                             addDepcy = getDependenciesFromOutput(scriptOutputRes);
                         }
                     } catch (IOException ex) {
-                        ExceptionNotifier.showErrorDialog("", ex);
-                        return;
+                        throw new IllegalStateException(ex);
                     } finally {
                         fileTmpScript.delete();
                         
@@ -514,7 +512,7 @@ public class SqlScriptDialog extends MessageDialog {
             try {
                 history.addHistoryEntry(cmbScript.getText());
             } catch (IOException e) {
-                ExceptionNotifier.notify("Error while trying to add entry history", e);
+                ExceptionNotifier.notify("Error while trying to add command history entry", e);
             }
             return super.close();
         }
