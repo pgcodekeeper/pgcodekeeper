@@ -171,9 +171,14 @@ public interface JdbcQueries {
             + "     CAST(confkey as integer[]), "
             + "     confupdtype, "
             + "     confdeltype, "
-            + "     confmatchtype "
+            + "     confmatchtype, "
+            + "     description "
             + "FROM "
-            + "     pg_catalog.pg_constraint "
+            + "     pg_catalog.pg_constraint c "
+            + "     LEFT JOIN "
+            + "         pg_catalog.pg_description d "
+            + "     ON "
+            + "         c.oid = d.objoid "
             + "WHERE "
             + "     conrelid = ?";
     
@@ -193,4 +198,35 @@ public interface JdbcQueries {
             + "     c.relkind IN ('i', 'r') "
             + "ORDER BY "
             + "     a.attrelid";
+    
+    String QUERY_EXTENSIONS = 
+            "SELECT "
+            + "     e.*, "
+            + "     d.description "
+            + "FROM "
+            + "     pg_catalog.pg_extension e "
+            + "     LEFT JOIN "
+            + "         pg_catalog.pg_description d "
+            + "     ON "
+            + "         e.oid = d.objoid";
+    
+    String QUERY_SCHEMAS = 
+            "SELECT "
+            + "     n.oid::bigint, "
+            + "     n.nspname, "
+            + "     n.nspacl, "
+            + "     r.rolname AS owner, "
+            + "     d.description AS comment "
+            + "FROM "
+            + "     pg_catalog.pg_namespace n "
+            + "     JOIN "
+            + "         pg_catalog.pg_roles r "
+            + "     ON "
+            + "         n.nspowner = r.oid AND "
+            + "         n.nspname NOT LIKE ('pg_%') AND "
+            + "         n.nspname != 'information_schema'"
+            + "     LEFT JOIN "
+            + "         pg_catalog.pg_description d "
+            + "     ON "
+            + "         n.oid = d.objoid";
 }

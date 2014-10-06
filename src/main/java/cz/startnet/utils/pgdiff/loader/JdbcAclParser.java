@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 
+import cz.startnet.utils.pgdiff.PgDiffUtils;
+
 /**
  * Parser for aclItem arrays
  * 
@@ -72,7 +74,8 @@ public class JdbcAclParser {
                 grantTypesParsed.append("ALL");
             }
             
-            privileges.put(grantee.isEmpty() ? "PUBLIC" : grantee, grantTypesParsed.toString());
+            privileges.put(grantee.isEmpty() ? "PUBLIC" : PgDiffUtils.getQuotedName(grantee), 
+                    grantTypesParsed.toString());
         }
         return privileges;
     }

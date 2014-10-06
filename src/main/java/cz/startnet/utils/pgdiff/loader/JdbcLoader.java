@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.Parser;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -58,7 +59,6 @@ public class JdbcLoader {
     private PreparedStatement prepStatFunctions;
     private PreparedStatement prepStatLanguages;
     private PreparedStatement prepStatSequences;
-    private PreparedStatement prepStatExtensions;
     private PreparedStatement prepStatConstraints;
     private PreparedStatement prepStatIndecies;
     private PreparedStatement prepStatColumnsOfSchema;
@@ -102,14 +102,22 @@ public class JdbcLoader {
             prepareData();
             metaData = connection.getMetaData();
 
-            try(ResultSet res = metaData.getSchemas()){
+            try(Statement stmnt = connection.createStatement(); 
+                    ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_SCHEMAS)){
                 while (res.next()) {
-                    String schemaName = res.getString("TABLE_SCHEM");
-                    if (schemaName.equals("pg_catalog") || schemaName.equals("information_schema")){
-                        continue;
+                    prepareDataForSchema(res.getLong("oid"));
+                    String schemaName = res.getString("nspname");
+                    PgSchema schema = getSchema(schemaName);
+                    
+                    if (!schemaName.equals("public")){
+                        schema.setOwner(res.getString("owner"));
                     }
-                    prepareDataForSchema(getSchemaOidByName(schemaName));
-                    PgSchema schema = getSchema(res.getString("TABLE_SCHEM"));
+                    setPrivileges(schema, schemaName, res.getString("nspacl"), res.getString("owner"));
+                    
+                    String comment = res.getString("comment");
+                    if (!schemaName.equals("public") && comment != null && !comment.isEmpty()){
+                        schema.setComment("'" + comment + "'");
+                    }
                     
                     if (schemaName.equals("public")){
                         d.replaceSchema(d.getSchema("public"), schema);                    
@@ -119,7 +127,8 @@ public class JdbcLoader {
                 }   
             }
             
-            try(ResultSet res = prepStatExtensions.executeQuery()){
+            try(Statement stmnt = connection.createStatement(); 
+                    ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_EXTENSIONS)){
                 while(res.next()){
                     PgExtension extension = getExtension(res);
                     if (extension != null){
@@ -138,7 +147,7 @@ public class JdbcLoader {
     }
     
     private void setTimeZone() throws SQLException {
-        try(Statement stmnt = connection.createStatement();){
+        try(Statement stmnt = connection.createStatement()){
             stmnt.execute("SET timezone = 'UTC'");
         }
     }
@@ -187,7 +196,6 @@ public class JdbcLoader {
         prepStatFunctions = connection.prepareStatement(JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA);
         prepStatLanguages = connection.prepareStatement("SELECT lanname FROM pg_catalog.pg_language WHERE oid = ?");
         prepStatSequences = connection.prepareStatement(JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA);
-        prepStatExtensions = connection.prepareStatement("SELECT * FROM pg_catalog.pg_extension");
         prepStatConstraints = connection.prepareStatement(JdbcQueries.QUERY_TABLE_CONSTRAINTS);
         prepStatIndecies = connection.prepareStatement(JdbcQueries.QUERY_INDEX);
         prepStatColumnsOfSchema = connection.prepareStatement(JdbcQueries.QUERY_COLUMNS_PER_SCHEMA);
@@ -229,11 +237,6 @@ public class JdbcLoader {
             prepStatSequences.close();
         } catch (Exception e) {
             Log.log(Log.LOG_INFO, "Could not close prepared statement for sequences", e);
-        }
-        try {
-            prepStatExtensions.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for extensions", e);
         }
         try {
             prepStatConstraints.close();
@@ -324,10 +327,12 @@ public class JdbcLoader {
     
     private PgExtension getExtension(ResultSet res) throws SQLException {
         PgExtension e = new PgExtension(res.getString("extname"), "");
-        e.setVersion(res.getString("extversion"));
+//        e.setVersion(res.getString("extversion"));
         e.setOwner(getRoleNameByOid(res.getLong("extowner")));
         e.setSchema(getScheNameByOid(res.getLong("extnamespace")));
         
+        String comment = res.getString("description");
+        e.setComment(comment != null && !comment.isEmpty() ? "'" + comment + "'" : null);
         return e;
     }
 
@@ -350,6 +355,7 @@ public class JdbcLoader {
                         definition = definition.concat(", ");
                     }
                 }
+                
                 SimpleEntry<String, String> referencedTableName = getTableNameByOid(res.getLong("confrelid"));
                 String schemaPrefix = "";
                 if (!referencedTableName.getKey().equals(schemaName)){
@@ -365,6 +371,45 @@ public class JdbcLoader {
                     }
                 }
                 definition = definition.concat(")");
+                
+                switch (res.getString("confmatchtype")){
+                    case "f":
+                        definition = definition.concat(" MATCH FULL");
+                        break;
+                    case "p":
+                        definition = definition.concat(" MATCH PARTIAL");
+                        break;
+                }
+                
+                switch(res.getString("confupdtype")){
+                    case "r":
+                        definition = definition.concat(" ON UPDATE RESTRICT");
+                        break;
+                    case "c":
+                        definition = definition.concat(" ON UPDATE CASCADE");
+                        break;
+                    case "n":
+                        definition = definition.concat(" ON UPDATE SET NULL");
+                        break;
+                    case "d":
+                        definition = definition.concat(" ON UPDATE SET DEFAULT");
+                        break;
+                }
+                
+                switch(res.getString("confdeltype")){
+                    case "r":
+                        definition = definition.concat(" ON DELETE RESTRICT");
+                        break;
+                    case "c":
+                        definition = definition.concat(" ON DELETE CASCADE");
+                        break;
+                    case "n":
+                        definition = definition.concat(" ON DELETE SET NULL");
+                        break;
+                    case "d":
+                        definition = definition.concat(" ON DELETE SET DEFAULT");
+                        break;
+                }
                 break;
             case "p":
                 definition = "PRIMARY KEY (";
@@ -393,49 +438,16 @@ public class JdbcLoader {
                 break;
         }
         
-        switch (res.getString("confmatchtype")){
-            case "f":
-                definition = definition.concat(" MATCH FULL");
-                break;
-            case "p":
-                definition = definition.concat(" MATCH PARTIAL");
-                break;
-        }
-        
-        switch(res.getString("confdeltype")){
-            case "r":
-                definition = definition.concat(" ON DELETE RESTRICT");
-                break;
-            case "c":
-                definition = definition.concat(" ON DELETE CASCADE");
-                break;
-            case "n":
-                definition = definition.concat(" ON DELETE SET NULL");
-                break;
-            case "d":
-                definition = definition.concat(" ON DELETE SET DEFAULT");
-                break;
-        }
-        
-        switch(res.getString("confupdtype")){
-            case "r":
-                definition = definition.concat(" ON UPDATE RESTRICT");
-                break;
-            case "c":
-                definition = definition.concat(" ON UPDATE CASCADE");
-                break;
-            case "n":
-                definition = definition.concat(" ON UPDATE SET NULL");
-                break;
-            case "d":
-                definition = definition.concat(" ON UPDATE SET DEFAULT");
-                break;
-        }
-
         c.setDefinition(definition);
+        
         // set table name
         c.setTableName(tableName);
-        // TODO c.setComment() ???
+        
+        String comment = res.getString("description");
+        if (comment != null && !comment.isEmpty()){
+            c.setComment("'" + comment + "'");
+        }
+        
         return c;
     }
     
@@ -511,9 +523,12 @@ public class JdbcLoader {
         
         // Query view privileges
         // UGLY way
-        try(Statement stmnt = connection.createStatement(); ResultSet res3 = stmnt.executeQuery("SELECT relacl FROM pg_catalog.pg_class WHERE relname = '" + view + "' AND relnamespace = " + getSchemaOidByName(schema));){
+        String viewAclQuery = "SELECT relacl FROM pg_catalog.pg_class WHERE relname = '" + 
+                                view + "' AND relnamespace = " + getSchemaOidByName(schema);
+        try(Statement stmnt = connection.createStatement(); 
+                ResultSet res3 = stmnt.executeQuery(viewAclQuery)){
             if (res3.next()){
-                setPrivileges(v, view, res3.getString("relacl"));
+                setPrivileges(v, view, res3.getString("relacl"), v.getOwner());
             }
         }
         return v;
@@ -616,7 +631,7 @@ public class JdbcLoader {
         
         // PRIVILEGES, OWNER
         t.setOwner(getRoleNameByOid(res.getLong("relowner")));
-        setPrivileges(t, t.getName(), res.getString("aclarray"));
+        setPrivileges(t, t.getName(), res.getString("aclarray"), t.getOwner());
         
         // Query CONSTRAINTS
         prepStatConstraints.setLong(1, tableOid);
@@ -800,7 +815,7 @@ public class JdbcLoader {
         
         // PRIVILEGES
         String signatureWithoutDefaults = functionName + "(" + res.getString("proarguments_without_default") + ")";
-        setPrivileges(f, signatureWithoutDefaults, res.getString("aclArray"));
+        setPrivileges(f, signatureWithoutDefaults, res.getString("aclArray"), f.getOwner());
         
         // COMMENT
         String comment = res.getString("comment");
@@ -833,12 +848,12 @@ public class JdbcLoader {
         setOwner(s, res.getLong("relowner"));
         
         // PRIVILEGES
-        setPrivileges(s, sequenceName, res.getString("aclArray"));
+        setPrivileges(s, sequenceName, res.getString("aclArray"), s.getOwner());
         
         return s;
     }
     
-    private void setPrivileges(PgStatement st, String stSignature, String aclItemsArrayAsString){
+    private void setPrivileges(PgStatement st, String stSignature, String aclItemsArrayAsString, String owner){
         if (aclItemsArrayAsString == null){
             return;
         }
@@ -853,15 +868,18 @@ public class JdbcLoader {
         }else if (st instanceof PgTable || st instanceof PgView){
             stType = "TABLE";
             possiblePrivilegeCount = 7;
+        }else if (st instanceof PgSchema){
+            stType = "SCHEMA";
+            possiblePrivilegeCount = 2;
         }else{
             throw new IllegalStateException("Not supported PgStatement class");
         }
         String revokePublic = "ALL ON " + stType + " " + stSignature + " FROM PUBLIC";
-        String revokeMaindb = "ALL ON " + stType + " " + stSignature + " FROM " + st.getOwner();
+        String revokeMaindb = "ALL ON " + stType + " " + stSignature + " FROM " + PgDiffUtils.getQuotedName(owner);
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
         st.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
         
-        LinkedHashMap<String, String> grants = new JdbcAclParser().parse(aclItemsArrayAsString, possiblePrivilegeCount, st.getOwner());
+        LinkedHashMap<String, String> grants = new JdbcAclParser().parse(aclItemsArrayAsString, possiblePrivilegeCount, owner);
         for(String granteeName : grants.keySet()){
             String privDefinition = grants.get(granteeName) + " ON " + stType + " " + stSignature + " TO " + granteeName;
             st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
