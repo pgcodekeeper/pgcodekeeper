@@ -248,7 +248,10 @@ public class JdbcLoader {
     private PgSchema getSchema(String schema) throws SQLException{
         PgSchema s = new PgSchema(schema, "");
 
-        connection.createStatement().execute("SET search_path TO " + schema + ";");
+        // setting current schema as default
+        try(Statement stmnt = connection.createStatement()){
+            stmnt.execute("SET search_path TO " + schema + ";");
+        }
         
         // TABLES
         prepStatTables.setLong(1, getSchemaOidByName(schema));
