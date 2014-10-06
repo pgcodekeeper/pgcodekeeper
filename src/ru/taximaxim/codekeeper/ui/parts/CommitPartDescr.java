@@ -109,7 +109,7 @@ public class CommitPartDescr {
     private Text txtCommitComment;
     private Button btnCommit;
     private DiffTableViewer diffTable;
-    private Button btnNone, btnDump, btnDb;
+    private Button btnDump, btnPgDump, btnJdbc;
     private Button btnGetChanges;
     private Composite containerSrc;
     private DbPicker dbSrc;
@@ -416,33 +416,30 @@ public class CommitPartDescr {
         grpSrc.setText(Messages.commitPartDescr_get_changes_from);
         grpSrc.setLayout(new GridLayout(3, false));
 
-        btnNone = new Button(grpSrc, SWT.RADIO);
-        btnNone.setText(Messages.none);
-        btnNone.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                showDbPicker(false);
-                btnGetChanges.setEnabled(false);
-            }
-        });
-
         btnDump = new Button(grpSrc, SWT.RADIO);
         btnDump.setText(Messages.dump);
         btnDump.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 showDbPicker(false);
-                btnGetChanges.setEnabled(true);
             }
         });
 
-        btnDb = new Button(grpSrc, SWT.RADIO);
-        btnDb.setText(Messages.db);
-        btnDb.addSelectionListener(new SelectionAdapter() {
+        btnPgDump = new Button(grpSrc, SWT.RADIO);
+        btnPgDump.setText(Messages.db);
+        btnPgDump.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 showDbPicker(true);
-                btnGetChanges.setEnabled(true);
+            }
+        });
+        
+        btnJdbc = new Button(grpSrc, SWT.RADIO);
+        btnJdbc.setText("JDBC");
+        btnJdbc.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showDbPicker(true);
             }
         });
 
@@ -469,7 +466,7 @@ public class CommitPartDescr {
                     } else {
                         return;
                     }
-                } else if (btnDb.getSelection()) {
+                } else if (btnPgDump.getSelection()) {
                     int port;
                     try {
                         String sPort = dbSrc.txtDbPort.getText();
@@ -487,7 +484,25 @@ public class CommitPartDescr {
                             dbSrc.txtDbPass.getText(),
                             dbSrc.txtDbName.getText(),
                             proj.getString(PROJ_PREF.ENCODING)));
-                } else {
+                } else if (btnJdbc.getSelection()){
+                    int port;
+                    try {
+                        String sPort = dbSrc.txtDbPort.getText();
+                        port = sPort.isEmpty()? 0 : Integer.parseInt(sPort);
+                    } catch (NumberFormatException ex) {
+                        MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR);
+                        mb.setText(Messages.bad_port);
+                        mb.setMessage(Messages.port_must_be_a_number);
+                        mb.open();
+                        return;
+                    }
+                    setDbTarget(DbSource.fromJdbc(
+                            dbSrc.txtDbHost.getText(), port,
+                            dbSrc.txtDbUser.getText(),
+                            dbSrc.txtDbPass.getText(),
+                            dbSrc.txtDbName.getText(),
+                            proj.getString(PROJ_PREF.ENCODING)));
+                }else {
                     throw new IllegalStateException(
                             Messages.undefined_source_for_db_changes);
                 }
@@ -517,13 +532,10 @@ public class CommitPartDescr {
 
         boolean useDbPicker = false;
         String src = proj.getString(PROJ_PREF.SOURCE);
-        if (src.equals(PROJ_PREF.SOURCE_TYPE_NONE)) {
-            btnNone.setSelection(true);
-            btnGetChanges.setEnabled(false);
-        } else if (src.equals(PROJ_PREF.SOURCE_TYPE_DUMP)) {
+        if (src.equals(PROJ_PREF.SOURCE_TYPE_DUMP)) {
             btnDump.setSelection(true);
         } else {
-            btnDb.setSelection(true);
+            btnPgDump.setSelection(true);
             useDbPicker = true;
         }
         showDbPicker(useDbPicker);
