@@ -1,5 +1,8 @@
 package cz.startnet.utils.pgdiff.loader;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Array;
 import java.sql.Connection;
@@ -17,6 +20,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -72,7 +76,7 @@ public class JdbcLoader {
     private int port;
     private String user;
     private String pass;
-    private Object dbName;
+    private String dbName;
     private String encoding;
     
     private Connection connection;
@@ -83,12 +87,55 @@ public class JdbcLoader {
     public JdbcLoader(String host, int port, String user, String pass, String dbName, String encoding) {
         this.host = host;
         this.port = port;
-        this.user = user;
-        this.pass = pass;
+        this.user = user.isEmpty() ? System.getProperty("user.name") : user;
         this.dbName = dbName;
         this.encoding = encoding;
+        this.pass = pass.isEmpty() ? getPgPassPassword() : pass;
     }
 
+    private String getPgPassPassword(){
+        File pgpass = new File(System.getProperty("user.home") + "/.pgpass");
+        
+        try (BufferedReader br = new BufferedReader(new FileReader(pgpass))){        
+            String line;
+            String [] koko = {
+                                host, 
+                                String.valueOf(port), 
+                                dbName, 
+                                user
+                            };
+            
+            while ((line = br.readLine()) != null) {
+                try(Scanner sc = new Scanner(line)){
+                    sc.useDelimiter(":");
+                    
+                    int tokenCounter = 0;
+                    boolean fits = true;
+                    
+                    while(sc.hasNext()){
+                        String token = sc.next();
+                        
+                        if (tokenCounter < 4){
+                            if (token.equals(koko[tokenCounter]) || token.equals("*")){
+                                
+                            }else{
+                                fits = false;                            
+                            }
+                        }else if (fits){
+                            // assume for now that password has no colons
+                            return token;
+                        }
+                        tokenCounter++;
+                    }
+                }
+                
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not retreive pgpass password", e);
+        }
+        return "";
+    }
+    
     public PgDatabase getDbFromJdbc() throws IOException{
         PgDatabase d = new PgDatabase();
         try {
