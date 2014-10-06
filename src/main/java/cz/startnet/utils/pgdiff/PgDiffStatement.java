@@ -1,5 +1,7 @@
 package cz.startnet.utils.pgdiff;
 
+import java.util.regex.Pattern;
+
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 /**
@@ -11,13 +13,45 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
  */
 public class PgDiffStatement {
 
+    public final DiffStatementType type;
+    public final String objname;
+    public final String statement;
+    
     public enum DiffStatementType {
         DROP, CREATE, OTHER
     }
     
-    public final DiffStatementType type;
-    public final String objname;
-    public final String statement;
+    private static final String ALTER_TABLE_PATTERN =
+            "^ALTER[\\s]+TABLE[\\s]+"
+            + "(IF[\\s]+EXISTS[\\s]+)?"
+            + "(ONLY[\\s]+)?"
+            + "([\\w]+[\\s]+)"
+            + "(\\*[\\s]+)?";
+    
+    public enum DangerStatement {
+        
+        DROP_TABLE("^DROP[\\s]+TABLE.+"),
+        
+        ALTER_COLUMN(ALTER_TABLE_PATTERN
+                // match 'ALTER COLUMN' or 'ALTER column_name'
+                + "ALTER[\\s]+([\\w]+).+"),
+                
+        DROP_COLUMN(ALTER_TABLE_PATTERN
+                // match 'DROP COLUMN' or 'DROP column_name'
+                // but *not* 'DROP CONSTRAINT constraint_name'
+                + "DROP[\\s]+(?!CONSTRAINT[\\s]+)([\\w]+).*");
+        
+        private final Pattern regex;
+        
+        private DangerStatement(String regex) {
+            this.regex = Pattern.compile(regex,
+                    Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        }
+        
+        public Pattern getRegex() {
+            return regex;
+        }
+    }
     
     public PgDiffStatement(DiffStatementType type, PgStatement obj, String statement) {
         if (obj == null && type != DiffStatementType.OTHER){
@@ -26,6 +60,10 @@ public class PgDiffStatement {
         this.type = type;
         this.objname = (obj == null) ? null : obj.getQualifiedName();
         this.statement = statement;
+    }
+    
+    public boolean isDangerStatement(DangerStatement dst) {
+        return dst.getRegex().matcher(statement).matches();
     }
     
     @Override
@@ -60,3 +98,4 @@ public class PgDiffStatement {
         return result;
     }
 }
+ 

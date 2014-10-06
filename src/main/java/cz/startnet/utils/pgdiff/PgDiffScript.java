@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
 import cz.startnet.utils.pgdiff.PgDiffStatement.DiffStatementType;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -25,9 +26,23 @@ public class PgDiffScript {
     // also String caches hashcodes, so that's a minor performance plus 
     private final Set<PgDiffStatement> unique = new HashSet<>();
     
-    /**
-     * Add a statement to the script.
-     */
+    public boolean isDangerDdl(boolean ignoreDropCol, boolean ignoreAlterCol,
+            boolean ignoreDropTable) {
+        // no need to traverse the list if all ignores are set
+        if (ignoreDropCol && ignoreAlterCol && ignoreDropTable) {
+            return false;
+        }
+        
+        for (PgDiffStatement st : statements) {
+            if ((!ignoreDropCol && st.isDangerStatement(DangerStatement.DROP_COLUMN))
+                    || (!ignoreAlterCol && st.isDangerStatement(DangerStatement.ALTER_COLUMN))
+                    || (!ignoreDropTable && st.isDangerStatement(DangerStatement.DROP_TABLE))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public void addStatement(String statement) {
         PgDiffStatement st = new PgDiffStatement(DiffStatementType.OTHER, null, statement);
         if (statements.isEmpty() || !st.equals(statements.getLast())){
@@ -63,8 +78,7 @@ public class PgDiffScript {
             Log.log(Log.LOG_DEBUG, "PgDiffScript: ignoring unique statement:\n"
                     + statement);
             
-            // move duplicated CREATEs to the back of the list
-            // this updates the statement to the most recent too
+            // update CREATEs to the most recent version
             if (type == DiffStatementType.CREATE) {
                 statements.set(statements.indexOf(st), st);
             }

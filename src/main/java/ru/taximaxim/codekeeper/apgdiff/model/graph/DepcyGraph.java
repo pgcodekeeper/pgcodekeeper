@@ -128,28 +128,29 @@ public class DepcyGraph {
                     }
                 }
                 
-                for (String seqDefinition : table.getSequences()) {
-                    String seqName = ParserUtils.getObjectName(seqDefinition);
-                    String schemaName = ParserUtils.getSecondObjectName(seqDefinition);
-                    
-                    PgSchema schemaToSearch = null;
-                    if (schemaName != null) {
-                        schemaToSearch = db.getSchema(schemaName);
-                    }
-                    if (schemaToSearch == null) {
-                        schemaToSearch = schema;
-                    }
-                    
-                    PgSequence seq = schemaToSearch.getSequence(seqName);
+                for (String seqName : table.getSequences()) {
+                    PgSequence seq = getSchemaForObject(schema, seqName).getSequence(
+                            ParserUtils.getObjectName(seqName));
                     if (seq != null) {
                         graph.addVertex(seq);
                         graph.addEdge(table, seq);
                          
                         String owned = seq.getOwnedBy();
-                        String ownedByTable = (owned != null) ? ParserUtils.getSecondObjectName(owned) : null;
-                        if (table.getName().equals(ownedByTable)) {
-                            graph.addEdge(seq, table);
+                        if (owned != null) {
+                            if (table.getName().equals(ParserUtils.getSecondObjectName(owned))) {
+                                graph.addEdge(seq, table);
+                            }
                         }
+                    }
+                }
+                
+                for (PgTrigger trigger : table.getTriggers()) {
+                    String funcDef = trigger.getFunction();
+                    PgFunction func = getSchemaForObject(schema, funcDef).getFunction(
+                            ParserUtils.getObjectName(funcDef));
+                    if (func != null) {
+                        graph.addVertex(func);
+                        graph.addEdge(trigger, func);
                     }
                 }
             }
@@ -208,6 +209,24 @@ public class DepcyGraph {
             graph.addVertex(ext);
             graph.addEdge(ext, db);
         }
+    }
+    /**
+     * Возвращает схему, на которую указывает строковое определение объекта,
+     * либо текущую схему
+     * @param currSchema текущая схема
+     * @param objQualifiedName определение объекта (имя_объекта, либо имя_схемы.имя_объекта)
+     * @return схема, содержащая объект, либо текущая схема
+     */
+    private PgSchema getSchemaForObject(PgSchema currSchema, String objQualifiedName) {
+        String schemaName = ParserUtils.getSecondObjectName(objQualifiedName);
+        PgSchema schemaToSearch = null;
+        if (schemaName != null) {
+            schemaToSearch = db.getSchema(schemaName);
+        }
+        if (schemaToSearch == null) {
+            schemaToSearch = currSchema;
+        }        
+        return schemaToSearch;
     }
     
     public void addCustomDepcies(List<Entry<PgStatement, PgStatement>> depcies) {

@@ -61,9 +61,9 @@ public class ModelExporter {
      * @param outDir outDir, directory should be empty or not exist
      * @param db database
      */
-    public ModelExporter(final String outDir, final PgDatabase db,
+    public ModelExporter(final File outDir, final PgDatabase db,
             final String sqlEncoding) {
-        this.outDir = new File(outDir);
+        this.outDir = outDir;
         this.outPath = this.outDir.toPath(); 
         this.db = db;
         this.sqlEncoding = sqlEncoding;

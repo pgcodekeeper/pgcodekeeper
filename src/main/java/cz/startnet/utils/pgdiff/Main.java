@@ -5,7 +5,7 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -32,34 +32,42 @@ public class Main {
      *                                      encoding has been encountered.
      */
     public static void main(final String[] args)
-            throws UnsupportedEncodingException, FileNotFoundException,
-                IOException {
+            throws UnsupportedEncodingException, IOException {
+        @SuppressWarnings("resource")
         final PrintWriter writer = new PrintWriter(System.out, true);
         final PgDiffArguments arguments = new PgDiffArguments();
 
         if (arguments.parse(writer, args)) {
             if(arguments.isModeDiff()) {
+                PgDiffScript script;
                 try(final PrintWriter encodedWriter = new UnixPrintWriter(
                         new OutputStreamWriter(
                             new FileOutputStream(arguments.getDiffOutfile()),
                                                 arguments.getOutCharsetName()))) {
-                    PgDiff.createDiff(encodedWriter, arguments);
+                    script = PgDiff.createDiff(encodedWriter, arguments);
+                }
+                if (script.isDangerDdl(arguments.isIgnoreDropColumn(),
+                        arguments.isIgnoreAlterColumn(), arguments.isIgnoreDropTable())) {
+                    try(final PrintWriter encodedWriter = new UnixPrintWriter(
+                            new OutputStreamWriter(
+                                new FileOutputStream(arguments.getDiffOutfile()),
+                                                    arguments.getOutCharsetName()))) {
+                        String msg = "Script contains dangerous statements,"
+                                + " use --allow-danger-ddl to override";
+                        encodedWriter.println("-- " +msg);
+                        writer.println(msg);
+                    }
                 }
             } else if(arguments.isModeParse()) {
-                new ModelExporter(arguments.getParserOutdir(),
+                new ModelExporter(new File(arguments.getParserOutdir()),
                         PgDiff.loadDatabaseSchema(arguments.getParseSrcFormat(),
                                 arguments.getParseSrc(), arguments),
                             arguments.getOutCharsetName())
                     .export();
             }
         }
-
-        writer.close();
     }
 
-    /**
-     * Creates a new Main object.
-     */
     private Main() {
     }
 }
