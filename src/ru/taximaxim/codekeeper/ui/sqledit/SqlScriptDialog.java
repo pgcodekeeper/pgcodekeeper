@@ -4,8 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IStatus;
@@ -13,34 +16,43 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.XmlHistory.Builder;
+import ru.taximaxim.codekeeper.ui.XmlHistory;
+import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.parts.Console;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class SqlScriptDialog extends MessageDialog {
+
+    private static final Pattern PATTERN_ERROR = Pattern.compile(
+            "^.+(ERROR|ОШИБКА):.+$"); //$NON-NLS-1$
+    private static final Pattern PATTERN_DROP_CASCADE = Pattern.compile(
+            "^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$"); //$NON-NLS-1$
     
     private static final String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
     private static final String DB_HOST_PLACEHOLDER = "%host"; //$NON-NLS-1$
@@ -49,16 +61,24 @@ public class SqlScriptDialog extends MessageDialog {
     private static final String DB_USER_PLACEHOLDER = "%user"; //$NON-NLS-1$
     private static final String DB_PASS_PLACEHOLDER = "%pass"; //$NON-NLS-1$
     
-    public static final String runScriptText =  Messages.sqlScriptDialog_run_script;
-    public static final String stopScriptText = Messages.sqlScriptDialog_stop_script;
+    private static final String RUN_SCRIPT_LABEL =  Messages.sqlScriptDialog_run_script;
+    private static final String STOP_SCRIPT_LABEL = Messages.sqlScriptDialog_stop_script;
     
-    private final static String SCRIPTS_HIST_ROOT = "scripts"; //$NON-NLS-1$
-    private final static String SCRIPTS_HIST_EL = "s"; //$NON-NLS-1$
-    private final static String SCRIPTS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
-    private final static int SCRIPTS_HIST_MAX_STORED = 20;
+    private static final String SCRIPTS_HIST_ROOT = "scripts"; //$NON-NLS-1$
+    private static final String SCRIPTS_HIST_EL = "s"; //$NON-NLS-1$
+    private static final String SCRIPTS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
+    private static final int SCRIPTS_HIST_MAX_STORED = 20;
 
     private final XmlHistory history;
-    private final String text;
+    private final Differ differ;
+    private List<Entry<String, String>> addDepcy;
+    private final List<Entry<PgStatement, PgStatement>> oldDepcy;
+    private List<PgStatement> objList;
+    private final boolean usePsqlDepcy;
+    private boolean searchForDropTable;
+    private boolean searchForAlterColumn;
+    private boolean searchForDropColumn;
+    private Color colorPink;
     
     private String dbHost;
     private String dbPort;
@@ -66,7 +86,7 @@ public class SqlScriptDialog extends MessageDialog {
     private String dbUser;
     private String dbPass;
     
-    private SqlSourceViewer sqlEditor;
+    private SqlSourceViewerExtender sqlEditor;
     private Text txtCommand;
     private Combo cmbScript;
     private Button runScriptBtn;
@@ -81,6 +101,14 @@ public class SqlScriptDialog extends MessageDialog {
         this.dbUser = dbUser;
         this.dbPass = dbPass;
         this.dbPort = dbPort;
+    }
+    
+    public void setDangerStatements(boolean searchForDropTable, 
+            boolean searchForAlterColumn,
+            boolean searchForDropColumn) {
+        this.searchForDropTable = searchForDropTable;
+        this.searchForAlterColumn = searchForAlterColumn;
+        this.searchForDropColumn = searchForDropColumn;
     }
     
     private String getReplacedString() {
@@ -104,17 +132,24 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     public SqlScriptDialog(Shell parentShell, int type, String title, String message,
-            String text) {
+            Differ differ, List<PgStatement> objList, boolean usePsqlDepcy) {
         super(parentShell, title, null, message, type, new String[] {
-                runScriptText, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }, 2);
+                RUN_SCRIPT_LABEL, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }, 2);
         
-        setShellStyle(getShellStyle() | SWT.RESIZE);
-        
-        this.text = text;
+        this.differ = differ;
+        this.oldDepcy = differ.getAdditionalDepciesSource();
+        differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
+        this.objList = objList;
+        this.usePsqlDepcy = usePsqlDepcy;
         this.history = new XmlHistory.Builder(SCRIPTS_HIST_MAX_STORED, 
                 SCRIPTS_HIST_FILENAME, 
                 SCRIPTS_HIST_ROOT, 
                 SCRIPTS_HIST_EL).build();
+    }
+    
+    @Override
+    protected boolean isResizable() {
+        return true;
     }
     
     @Override
@@ -169,69 +204,56 @@ public class SqlScriptDialog extends MessageDialog {
                 .getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         txtCommand.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
+        getShell().addListener(SWT.Activate, new Listener() {
+            
+            @Override
+            public void handleEvent(Event event) {
+                getShell().removeListener(SWT.Activate, this);
+                
+                if (differ.getScript().isDangerDdl(!searchForDropColumn,
+                        !searchForAlterColumn, !searchForDropTable)) {
+                    if (showDangerWarning() == SWT.OK) {
+                        sqlEditor.getTextWidget().setBackground(colorPink);
+                    } else {
+                        close();
+                    }
+                }
+            }
+        });
+        
+        colorPink = new Color(getShell().getDisplay(), new RGB(0xff, 0xe1, 0xff));
+        parent.addDisposeListener(new DisposeListener() {
+            
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                colorPink.dispose();
+            }
+        });
+        
         return parent;
     }
 
     private void createSQLViewer(Composite parent) {
-        
-        sqlEditor = new SqlSourceViewer(parent, SWT.NONE);
+        sqlEditor = new SqlSourceViewerExtender(parent, SWT.NONE);
         sqlEditor.addLineNumbers();
         sqlEditor.setEditable(true);
-        sqlEditor.setDocument(new Document(text));
+        sqlEditor.setDocument(new Document(differ.getDiffDirect()));
+        sqlEditor.activateAutocomplete();
         
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
         gd.heightHint = 400;
         sqlEditor.getControl().setLayoutData(gd);
-        
-        sqlEditor.getTextWidget().addKeyListener(new KeyListener() {
-            
-            @Override
-            public void keyPressed(KeyEvent e) {
-                // Listen to CTRL+Z for Undo, to CTRL+Y or CTRL+SHIFT+Z for Redo
-                boolean isCtrl = (e.stateMask & SWT.CTRL) > 0;
-                boolean isAlt = (e.stateMask & SWT.ALT) > 0;
-                if (isCtrl && !isAlt) {
-                    boolean isShift = (e.stateMask & SWT.SHIFT) > 0;
-                    if (!isShift && e.keyCode == 'z') {
-                        sqlEditor.doOperation(
-                                ITextOperationTarget.UNDO);
-                    } else if (!isShift && e.keyCode == 'y' || isShift
-                            && e.keyCode == 'z') {
-                        sqlEditor.doOperation(
-                                ITextOperationTarget.REDO);
-                    }
-                }
-            }
-            
-            @Override
-            public void keyReleased(KeyEvent e) {                
-            }
-        });
-        // TODO sql code completion
-        /** Этот кусочек скопипастен с сайта для поддержки автозавершения ввода
-         *  Не получилось прикрутить за незнанием некоторых классов
-         *  оставляю на будущее*/
-/*
-        IHandlerService handlerService = (IHandlerService) editor.getSite().getService(IHandlerService.class);
-        IHandler cahandler = new AbstractHandler() {
-
-        @Override
-        public Object execute(ExecutionEvent event)
-                throws org.eclipse.core.commands.ExecutionException {
-            sta.getViewer().doOperation(ISourceViewer.CONTENTASSIST_PROPOSALS);
-            return null;
-        }
-        };
-        if(contentAssistHandlerActivation != null){
-        handlerService.deactivateHandler(contentAssistHandlerActivation);
-        }
-        contentAssistHandlerActivation = handlerService.activateHandler(
-                ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
-        cahandler);
-*/
     }
     
+    private int showDangerWarning() {
+        MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING
+                | SWT.OK | SWT.CANCEL);
+        mb.setText(Messages.sqlScriptDialog_warning);
+        mb.setMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data);
+        return mb.open();
+    }
+
     @Override
     protected void buttonPressed(int buttonId) {
         final String textRetrieved = sqlEditor.getDocument().get();
@@ -263,7 +285,11 @@ public class SqlScriptDialog extends MessageDialog {
                 @Override
                 public void run() {
                     try {
-                        StdStreamRedirector.launchAndRedirect(pb);
+                        String scriptOutputRes =
+                                StdStreamRedirector.launchAndRedirect(pb);
+                        if (usePsqlDepcy) {
+                            addDepcy = getDependenciesFromOutput(scriptOutputRes);
+                        }
                     } catch (IOException ex) {
                         throw new IllegalStateException(ex);
                     } finally {
@@ -275,8 +301,11 @@ public class SqlScriptDialog extends MessageDialog {
                                     
                                     @Override
                                     public void run() {
+                                        if (!runScriptBtn.isDisposed()) {
+                                            runScriptBtn.setText(RUN_SCRIPT_LABEL);
+                                            showAddDepcyDialog();
+                                        }
                                         isRunning = false;
-                                        runScriptBtn.setText(runScriptText);
                                     }
                                 });
                     }
@@ -293,7 +322,7 @@ public class SqlScriptDialog extends MessageDialog {
                 }
             });
             scriptThread.start();
-            getButton(0).setText(stopScriptText);
+            getButton(0).setText(STOP_SCRIPT_LABEL);
             isRunning = true;
         }
         // case Stop script
@@ -302,7 +331,7 @@ public class SqlScriptDialog extends MessageDialog {
             Log.log(Log.LOG_INFO, Messages.sqlScriptDialog_script_interrupted_by_user);
             
             scriptThread.interrupt();
-            getButton(0).setText(runScriptText);
+            getButton(0).setText(RUN_SCRIPT_LABEL);
             isRunning = false;
         }
         // case Save to a file
@@ -333,6 +362,130 @@ public class SqlScriptDialog extends MessageDialog {
         }
     }
     
+    private void showAddDepcyDialog() {
+        if (usePsqlDepcy && addDepcy != null && !addDepcy.isEmpty()) {
+            MessageBox mb = new MessageBox(getShell(), 
+                    SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
+            mb.setText(Messages.sqlScriptDialog_psql_dependencies);
+            mb.setMessage(Messages.SqlScriptDialog__results_of_script_revealed_dependent_objects +
+                    depcyToString() + System.lineSeparator());
+            List<Entry<PgStatement, PgStatement>> depcyToAdd = 
+                    getAdditionalDepcyFromNames(addDepcy);
+            String repeats = getRepeatedDepcy(depcyToAdd);
+            if (repeats.length() > 0) {
+                mb.setMessage(mb.getMessage() + 
+                        Messages.sqlScriptDialog_this_dependencies_have_been_added_already_check_order + repeats);  
+            }
+            mb.setMessage(mb.getMessage() + System.lineSeparator() +
+                    Messages.SqlScriptDialog_add_it_to_script);
+            if (mb.open() == SWT.OK) {
+                List<Entry<PgStatement, PgStatement>> saveToRestore 
+                    = new ArrayList<>(differ.getAdditionalDepciesSource()); 
+                differ.addAdditionalDepciesSource(depcyToAdd);
+                differ.runProgressMonitorDiffer(getShell());
+
+                if (differ.getScript().isDangerDdl(!searchForDropColumn, !searchForAlterColumn, !searchForDropTable)) {
+                    if (showDangerWarning() != SWT.OK) {
+                        differ.setAdditionalDepciesSource(saveToRestore);
+                        return;
+                    } else {
+                        sqlEditor.getTextWidget().setBackground(colorPink);
+                    }
+                }
+                sqlEditor.setDocument(new Document(differ.getDiffDirect()));
+                sqlEditor.refresh();
+            }
+        }
+    }
+
+    private String getRepeatedDepcy(List<Entry<PgStatement, PgStatement>> depcyToAdd) {
+        List<Entry<PgStatement, PgStatement>> existingDepcy = differ.getAdditionalDepciesSource();
+        StringBuilder sb = new StringBuilder();
+        for (Entry<PgStatement, PgStatement> entry : depcyToAdd) {
+            if (existingDepcy.contains(entry)) {
+                sb.append(entry.getKey().getName() + " -> " + //$NON-NLS-1$
+                        entry.getValue().getName() + System.lineSeparator());
+            }
+        }
+        return sb.toString();
+    }
+    
+    private List<Entry<PgStatement, PgStatement>> getAdditionalDepcyFromNames(
+            List<Entry<String, String>> addDepcy) {
+        List<Entry<PgStatement, PgStatement>> result = new ArrayList<>();
+        for (Entry<String, String> entry : addDepcy) {
+            PgStatement depcy1 = getPgObjByName(entry.getKey());
+            PgStatement depcy2 = getPgObjByName(entry.getValue());
+            if (depcy1 != null && depcy2 != null) {
+                result.add(new AbstractMap.SimpleEntry<>(
+                    depcy1, depcy2));
+            }
+        }
+        return result; 
+    }
+
+    private PgStatement getPgObjByName(String objName) {
+        for (PgStatement obj : objList) {
+            if (obj.getName().equals(objName)) {
+                return obj; 
+            }
+        }
+        return null;
+    }
+    
+    private String depcyToString() {
+        StringBuilder sb = new StringBuilder();
+        for (Entry<String, String> entry : addDepcy) {
+            sb.append(' '); 
+            sb.append(entry.getKey());
+            sb.append(" -> "); //$NON-NLS-1$
+            sb.append(entry.getValue());
+            sb.append(System.lineSeparator()); 
+        }
+        return sb.toString();
+    }
+    
+    private List<Entry<String, String>> getDependenciesFromOutput(String output) {
+        List<Entry<String, String>> depciesList = new ArrayList<>();
+        if (output == null || output.isEmpty()) {
+            return depciesList;
+        }
+        
+        int begin, end;
+        begin = end = -1;
+        String[] lines = output.replaceAll("\\s{2,}", " ").split( //$NON-NLS-1$ //$NON-NLS-2$
+                Pattern.quote(System.lineSeparator()));
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            if (PATTERN_ERROR.matcher(line).matches()) {
+                begin = i;
+            } 
+            if (PATTERN_DROP_CASCADE.matcher(line).matches()) {
+                end = i;
+                break;
+            }
+        }
+        
+        if (begin != -1 && end != -1 && (end - begin) >= 2) {
+            String words[] = lines[begin + 1].split(Pattern.quote(" ")); //$NON-NLS-1$
+            depciesList.add(new AbstractMap.SimpleEntry<>(
+                    words[2], words[words.length - 1]));
+            parseDependencies(lines, begin + 2, end, depciesList);
+        }
+        
+        return depciesList;
+    }
+
+    private void parseDependencies(String[] lines, int begin, int end,
+            List<Entry<String, String>> listToFill) {
+        String space = Pattern.quote(" "); //$NON-NLS-1$
+        for (int i = begin; i < end; i++) {
+            String words[] = lines[i].split(space); 
+            listToFill.add(new AbstractMap.SimpleEntry<>(
+                    words[1], words[words.length - 1]));
+        }
+    }
+
     @Override
     public boolean close() {
         if (isRunning) {
@@ -341,6 +494,7 @@ public class SqlScriptDialog extends MessageDialog {
             errorDialog.open();
             return false;
         } else {
+            differ.setAdditionalDepciesSource(oldDepcy);
             history.addHistoryEntry(cmbScript.getText());
             return super.close();
         }

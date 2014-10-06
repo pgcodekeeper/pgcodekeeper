@@ -1,10 +1,11 @@
 package ru.taximaxim.codekeeper.ui;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
@@ -62,7 +63,7 @@ public class XmlHistory {
 
     public LinkedHashMap<String, LinkedList<String>> getMapHistory() {
         LinkedHashMap<String, LinkedList<String>> history;
-        try (Reader xmlReader = new FileReader(getHistoryXmlFile())) {
+        try (Reader xmlReader = new InputStreamReader(new FileInputStream(getHistoryXmlFile()), "UTF-8")) { //$NON-NLS-1$
             XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
             history = xml.deserializeMap(xmlReader);
         } catch (FileNotFoundException e) {
@@ -75,7 +76,7 @@ public class XmlHistory {
     
     public LinkedList<String> getHistory() {
         LinkedList<String> history;
-        try (Reader xmlReader = new FileReader(getHistoryXmlFile())) {
+        try (Reader xmlReader = new InputStreamReader(new FileInputStream(getHistoryXmlFile()), "UTF-8")) { //$NON-NLS-1$
             XmlStringList xml = new XmlStringList(rootTag, elementTag);
             history = xml.deserializeList(xmlReader);
         } catch (FileNotFoundException ex) {

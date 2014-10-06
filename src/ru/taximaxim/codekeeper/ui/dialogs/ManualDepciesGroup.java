@@ -1,21 +1,13 @@
-package ru.taximaxim.codekeeper.ui;
+package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
-import org.eclipse.jface.fieldassist.ContentProposal;
-import org.eclipse.jface.fieldassist.ContentProposalAdapter;
-import org.eclipse.jface.fieldassist.IContentProposal;
-import org.eclipse.jface.fieldassist.IContentProposalProvider;
-import org.eclipse.jface.fieldassist.IControlContentAdapter;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -37,74 +29,51 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
-public class ManualDepciesDialog extends TrayDialog {
-
+public class ManualDepciesGroup extends Group{
+    
     private final List<Entry<PgStatement, PgStatement>> depcies;
-    private final PgStatement[] objects;
-    private final String[] names;
+    private final List<PgStatement> objects;
     
-    private ComboViewer cmbDependants, cmbDependencies;
-    private Button btnAdd;
-    private ListViewer listDepcies;
-    private Button btnRemove;
-    
+    private final ComboViewer cmbDependants, cmbDependencies;
+    private final Button btnAdd;
+    private final ListViewer listDepcies;
+    private final Button btnRemove;
+
     public List<Entry<PgStatement, PgStatement>> getDepciesList() {
         return depcies;
     }
-    
-    public ManualDepciesDialog(Shell shell,
-            List<Entry<PgStatement, PgStatement>> depcies, List<PgStatement> objects) {
-        super(shell);
 
-        this.depcies = new LinkedList<>(depcies);
-        this.objects = objects.toArray(new PgStatement[objects.size()]);
+    public ManualDepciesGroup(Composite parent, int style,
+            List<Entry<PgStatement, PgStatement>> dependencies, 
+            List<PgStatement> objects, String groupName) {
+        super(parent, style);
         
-        Arrays.sort(this.objects, new Comparator<PgStatement>() {
-            
-            @Override
-            public int compare(PgStatement o1, PgStatement o2) {
-                return o1.getQualifiedName().compareTo(o2.getQualifiedName());
-            }
-        });
+        this.depcies = new LinkedList<>(dependencies);
+        this.objects = objects;
         
-        this.names = new String[this.objects.length];
-        for (int i = 0; i < this.objects.length; ++i) {
-            names[i] = this.objects[i].getQualifiedName();
-        }
+        setLayout(new GridLayout(3, false));
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 600;
+        setLayoutData(gd);
+        this.setText(groupName);
         
-        setShellStyle(getShellStyle() | SWT.RESIZE);
-    }
-    
-    @Override
-    protected void configureShell(Shell newShell) {
-        super.configureShell(newShell);
-        newShell.setText(Messages.ManualDepciesDialog_set_add_depcies);
-    }
-    
-    @Override
-    protected Control createDialogArea(Composite parent) {
-        parent = (Composite) super.createDialogArea(parent);
-        
-        Composite container = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(2, true);
-        gl.marginHeight = gl.marginWidth = 0;
-        container.setLayout(gl);
-        
-        container.setLayoutData(new GridData(GridData.FILL_BOTH));
-        
-        Group grpSelectors = new Group(container, SWT.NONE);
-        grpSelectors.setLayout(new GridLayout(2, false));
+        Composite grpSelectors = new Composite(this, SWT.NONE);
+        GridLayout gl = new GridLayout(2, false);
+        gl.marginWidth = gl.marginHeight = 0;
+        grpSelectors.setLayout(gl);
         grpSelectors.setLayoutData(new GridData(GridData.FILL_BOTH));
+        
+        // spacer
+        new Label(grpSelectors, SWT.NONE).setLayoutData(
+                new GridData(SWT.LEFT, SWT.DEFAULT, true, false, 2, 1));
         
         new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_object);
         
@@ -116,7 +85,7 @@ public class ManualDepciesDialog extends TrayDialog {
         cmbDependants.getCombo().addListener(SWT.Traverse, new ComboReturnKeyListener());
         cmbDependants.getCombo().addModifyListener(new ComboModifyListener());
         
-        new MyAutoCompleteField(cmbDependants.getCombo(), new ComboContentAdapter(), names);
+        new PgStatementAutoCompleteField(cmbDependants.getCombo(), new ComboContentAdapter(), objects);
         
         new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_depends_on);
         
@@ -128,7 +97,7 @@ public class ManualDepciesDialog extends TrayDialog {
         cmbDependencies.getCombo().addListener(SWT.Traverse, new ComboReturnKeyListener());
         cmbDependencies.getCombo().addModifyListener(new ComboModifyListener());
         
-        new MyAutoCompleteField(cmbDependencies.getCombo(), new ComboContentAdapter(), names);
+        new PgStatementAutoCompleteField(cmbDependencies.getCombo(), new ComboContentAdapter(), objects);
         
         btnAdd = new Button(grpSelectors, SWT.PUSH);
         btnAdd.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false, 2, 1));
@@ -143,16 +112,20 @@ public class ManualDepciesDialog extends TrayDialog {
             }
         });
         
-        Group grpList = new Group(container, SWT.NONE);
-        grpList.setLayout(new GridLayout());
+        new Label(this, SWT.SEPARATOR | SWT.VERTICAL)
+                .setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        
+        Composite grpList = new Composite(this, SWT.NONE);
+        gl = new GridLayout();
+        gl.marginWidth = gl.marginHeight = 0;
+        grpList.setLayout(gl);
         grpList.setLayoutData(new GridData(GridData.FILL_BOTH));
         
         new Label(grpList, SWT.NONE).setText(Messages.manualDepciesDialog_dependant_dependency);
         
         listDepcies = new ListViewer(grpList);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 200;
-        gd.heightHint = 400;
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 100;
         listDepcies.getList().setLayoutData(gd);
         
         listDepcies.setContentProvider(new IStructuredContentProvider() {
@@ -243,8 +216,6 @@ public class ManualDepciesDialog extends TrayDialog {
         cmbDependants.setInput(objects);
         cmbDependencies.setInput(objects);
         setInput();
-        
-        return parent;
     }
     
     private void setInput() {
@@ -261,6 +232,12 @@ public class ManualDepciesDialog extends TrayDialog {
                 (PgStatement) dependencySel.getFirstElement());
     }
     
+    @Override
+    protected void checkSubclass() {
+        // allow subclassing, we just use Group as a Composite
+        // ~should~ be fine
+    }
+    
     private class ComboModifyListener implements ModifyListener {
 
         @Override
@@ -269,7 +246,7 @@ public class ManualDepciesDialog extends TrayDialog {
             cmb.select(Arrays.asList(cmb.getItems()).indexOf(cmb.getText()));
             
             Entry<PgStatement, PgStatement> selection = 
-                    ManualDepciesDialog.this.getComboSelections();
+                    ManualDepciesGroup.this.getComboSelections();
             btnAdd.setEnabled(
                     selection.getKey() != null 
                     && selection.getValue() != null
@@ -289,118 +266,34 @@ public class ManualDepciesDialog extends TrayDialog {
             }
         }
     }
-}
-
-class PgStatementLabelProvider implements ILabelProvider {
     
-    @Override
-    public void addListener(ILabelProviderListener listener) {
-    }
-    
-    @Override
-    public void removeListener(ILabelProviderListener listener) {   
-    }
-    
-    @Override
-    public void dispose() {
-    }
-    
-    @Override
-    public boolean isLabelProperty(Object element, String property) {
-        return false;
-    }
-    
-    @Override
-    public Image getImage(Object element) {
-        return null;
-    }
-    
-    @Override
-    public String getText(Object element) {
-        return ((PgStatement) element).getQualifiedName();
-    }
-}
-
-class MyAutoCompleteField {
-
-    private MyContentProposalProvider proposalProvider;
-    private ContentProposalAdapter adapter;
-
-    /**
-     * Construct an AutoComplete field on the specified control, whose
-     * completions are characterized by the specified array of Strings.
-     * 
-     * @param control
-     *            the control for which autocomplete is desired. May not be
-     *            <code>null</code>.
-     * @param controlContentAdapter
-     *            the <code>IControlContentAdapter</code> used to obtain and
-     *            update the control's contents. May not be <code>null</code>.
-     * @param proposals
-     *            the array of Strings representing valid content proposals for
-     *            the field.
-     */
-    public MyAutoCompleteField(Control control,
-            IControlContentAdapter controlContentAdapter, String[] proposals) {
-        proposalProvider = new MyContentProposalProvider(proposals);
-        proposalProvider.setFiltering(true);
-        adapter = new ContentProposalAdapter(control, controlContentAdapter,
-                proposalProvider, null, null);
-        adapter.setPropagateKeys(true);
-        adapter
-                .setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
-    }
-}
-
-class MyContentProposalProvider implements IContentProposalProvider {
-
-    private final String[] proposals;
-    /*
-     * The proposals mapped to IContentProposal. Cached for speed in the case
-     * where filtering is not used.
-     */
-    private IContentProposal[] contentProposals;
-    
-    /*
-     * Boolean that tracks whether filtering is used.
-     */
-    private boolean filterProposals = false;
-    
-    public MyContentProposalProvider(String[] proposals) {
-        this.proposals = new String[proposals.length];
+    private static class PgStatementLabelProvider implements ILabelProvider {
         
-        for (int i = 0; i < proposals.length; ++i) {
-            this.proposals[i] = proposals[i].toLowerCase();
+        @Override
+        public void addListener(ILabelProviderListener listener) {
         }
-    }
-    
-    @Override
-    public IContentProposal[] getProposals(String contents, int position) {
-        if (filterProposals) {
-            String contentsLc = contents.toLowerCase();
-            String contentsNq = contentsLc.replace("\"", ""); //$NON-NLS-1$ //$NON-NLS-2$
-            ArrayList<ContentProposal> list = new ArrayList<ContentProposal>();
-            for (String proposal : proposals) {
-                if (proposal.contains(contentsLc)
-                        // ignore quotes
-                        || proposal.replace("\"", "").contains(contentsNq)) { //$NON-NLS-1$ //$NON-NLS-2$
-                    list.add(new ContentProposal(proposal));
-                }
-            }
-            return list.toArray(new IContentProposal[list.size()]);
+        
+        @Override
+        public void removeListener(ILabelProviderListener listener) {   
         }
-        if (contentProposals == null) {
-            contentProposals = new IContentProposal[proposals.length];
-            for (int i = 0; i < proposals.length; i++) {
-                contentProposals[i] = new ContentProposal(proposals[i]);
-            }
+        
+        @Override
+        public void dispose() {
         }
-        return contentProposals;
-    }
-
-    public void setFiltering(boolean filterProposals) {
-        this.filterProposals = filterProposals;
-        // Clear any cached proposals.
-        contentProposals = null;
+        
+        @Override
+        public boolean isLabelProperty(Object element, String property) {
+            return false;
+        }
+        
+        @Override
+        public Image getImage(Object element) {
+            return null;
+        }
+        
+        @Override
+        public String getText(Object element) {
+            return ((PgStatement) element).getQualifiedName();
+        }
     }
 }

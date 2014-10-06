@@ -47,8 +47,6 @@ public class Console {
 class LogSync {
     private final UISynchronize sync;
     
-    private final Object syncLog = new Object();
-    
     private Text consoleLog;
     
     LogSync(UISynchronize sync) {
@@ -56,9 +54,7 @@ class LogSync {
     }
     
     void setTextControl(Text text) {
-        synchronized (syncLog) {
-            consoleLog = text;
-        }
+        consoleLog = text;
     }
     
     void addMessage(final String msg) {
@@ -66,14 +62,12 @@ class LogSync {
             
             @Override
             public void run() {
-                synchronized (syncLog) {
-                    if(consoleLog == null) {
-                        return;
-                    }
-                    
-                    consoleLog.append(msg);
-                    consoleLog.append(System.lineSeparator());
+                if(consoleLog == null) {
+                    return;
                 }
+                
+                consoleLog.append(msg);
+                consoleLog.append(System.lineSeparator());
             }
         });
     } 
