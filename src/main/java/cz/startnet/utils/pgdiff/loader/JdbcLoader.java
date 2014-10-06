@@ -62,10 +62,8 @@ public class JdbcLoader {
     private PreparedStatement prepStatConstraints;
     private PreparedStatement prepStatIndecies;
     private PreparedStatement prepStatColumnsOfSchema;
-    private PreparedStatement prepStatIndexColumnDefault;
     
     private Map<String, Long> cachedSchemaByName = new HashMap<String, Long>();
-    private Map<Long, String> cachedIndexAccesMethodsByOid = new HashMap<Long, String>();
     private Map<Long, String> cachedRolesNamesByOid = new HashMap<Long, String>();
     private Map<Long, PgType> cachedTypeNamesByOid = new HashMap<Long, PgType>();
     private Map<Long, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<Long, Map<Integer,String>>();
@@ -161,13 +159,6 @@ public class JdbcLoader {
                 }                
             }
             
-            // fill in index access method map
-            try(ResultSet res = stmnt.executeQuery("SELECT oid::bigint, amname FROM pg_catalog.pg_am")){
-                while(res.next()){
-                    cachedIndexAccesMethodsByOid.put(res.getLong("oid"), res.getString("amname"));
-                }                
-            }
-            
             // fill in rolenames
             try(ResultSet res = stmnt.executeQuery("SELECT oid::bigint, rolname FROM pg_catalog.pg_roles")){
                 while (res.next()){
@@ -199,7 +190,6 @@ public class JdbcLoader {
         prepStatConstraints = connection.prepareStatement(JdbcQueries.QUERY_TABLE_CONSTRAINTS);
         prepStatIndecies = connection.prepareStatement(JdbcQueries.QUERY_INDEX);
         prepStatColumnsOfSchema = connection.prepareStatement(JdbcQueries.QUERY_COLUMNS_PER_SCHEMA);
-        prepStatIndexColumnDefault = connection.prepareStatement("SELECT pg_get_indexdef(?, ?, true) AS indexColumnDefault;");
     }
 
     private void closeResources() {
@@ -257,6 +247,8 @@ public class JdbcLoader {
     
     private PgSchema getSchema(String schema) throws SQLException{
         PgSchema s = new PgSchema(schema, "");
+
+        connection.createStatement().execute("SET search_path TO " + schema + ";");
         
         // TABLES
         prepStatTables.setLong(1, getSchemaOidByName(schema));
@@ -738,10 +730,6 @@ public class JdbcLoader {
     private void setOwner(PgStatement statement, String ownerName){
         statement.setOwner(ownerName);
     }
-    
-    private String getAccessMethodNameByOid(int accessMethodOid) {
-        return cachedIndexAccesMethodsByOid.get(accessMethodOid);
-    }
 
     /**
      * Returns function object accordingly to data stored in current res row
@@ -772,6 +760,11 @@ public class JdbcLoader {
         body = body.replace("LANGUAGE " + languageName + "\n SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " SECURITY DEFINER\n    AS ");
         body = body.replace("LANGUAGE " + languageName + "\n IMMUTABLE STRICT SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " IMMUTABLE STRICT SECURITY DEFINER\n    AS ");
         body = body.replace("LANGUAGE " + languageName + "\n STABLE SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " STABLE SECURITY DEFINER\n    AS ");
+        body = body.replace("LANGUAGE " + languageName + "\n IMMUTABLE\nAS ", "LANGUAGE " + languageName + " IMMUTABLE\n    AS ");
+        body = body.replace("LANGUAGE " + languageName + "\nAS","LANGUAGE " + languageName + "\n    AS");
+        body = body.replace("LANGUAGE " + languageName + "\n IMMUTABLE SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " IMMUTABLE SECURITY DEFINER\n    AS ");
+        body = body.replace("LANGUAGE " + languageName + "\n STABLE STRICT SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " STABLE STRICT SECURITY DEFINER\n    AS ");
+        body = body.replace("LANGUAGE " + languageName + "\n STRICT SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " STRICT SECURITY DEFINER\n    AS ");
         // END debug modifications
         
         f.setBody(body);
@@ -947,11 +940,12 @@ public class JdbcLoader {
 
     private String getFunctionNameByOid(Long functionOid, String targetSchemaName) throws SQLException{
         prepStatFuncName.setLong(1, functionOid);
-        ResultSet res = prepStatFuncName.executeQuery();
-        if (res.next()){
-            String funcSchemaName = res.getString("nspname");
-            return funcSchemaName.equals(targetSchemaName) ? 
-                    res.getString("proname") : funcSchemaName.concat(".").concat(res.getString("proname"));
+        try(ResultSet res = prepStatFuncName.executeQuery()){
+            if (res.next()){
+                String funcSchemaName = res.getString("nspname");
+                return funcSchemaName.equals(targetSchemaName) ? 
+                        res.getString("proname") : funcSchemaName.concat(".").concat(res.getString("proname"));
+            }            
         }
         return null;
     }
@@ -963,44 +957,19 @@ public class JdbcLoader {
      * @return
      */
     private SimpleEntry<String, String> getTableNameByOid(Long tableOid) throws SQLException{
-        String query = "SELECT relname, relnamespace FROM pg_catalog.pg_class WHERE oid = '" + tableOid + "'";
-        Statement stmt = connection.createStatement();
-        ResultSet res = stmt.executeQuery(query);
-        String tableName = null;
-        String schemaOid = null;
-        if(res.next()){
-            schemaOid = res.getString("relnamespace");
-            tableName = res.getString("relname");
-        }else{
-            return null;
+        String query = "SELECT relname, nspname FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON c.relnamespace = n.oid WHERE c.oid = '" + tableOid + "'";
+        
+        try(Statement stmt = connection.createStatement();
+                ResultSet res = stmt.executeQuery(query)){
+            if(res.next()){
+                String schemaName = res.getString("nspname");
+                String tableName = res.getString("relname");
+                return new SimpleEntry<String, String>(schemaName, tableName);
+            }else{
+                throw new IllegalStateException("Could not resolve table/index/view/etc "
+                        + "schemaName.name pair for oid = " + tableOid);
+            }
         }
-        query = "SELECT nspname FROM pg_catalog.pg_namespace WHERE oid = '" + schemaOid + "'";
-        res = stmt.executeQuery(query);
-        String schemaName = null;
-        if(res.next()){
-            schemaName = res.getString("nspname");
-        }else{
-            return null;
-        }
-        stmt.close();
-        return new SimpleEntry<String, String>(schemaName, tableName);
-    }
-
-    // TODO cache it too?
-    private Long getTableOidByName(String tableName, Long schemaOid) throws SQLException{
-        String query = "SELECT oid FROM pg_catalog.pg_class WHERE relname = '" + tableName + "' AND relnamespace = " + schemaOid + " AND relkind IN ('r', 'i')";
-        Statement stmt = connection.createStatement();
-        ResultSet res = stmt.executeQuery(query);
-        Long tableOid = 0L;
-        if(res.next()){
-            tableOid = res.getLong("oid");
-        }
-        if (res.next()){
-            // WHAT?
-            throw new IllegalArgumentException("There should be only one row for table " + tableName + 
-                    " in schema oid " + schemaOid + ". Modify select query to limit result to single row."); 
-        }
-        return tableOid;
     }
 
     private Long getSchemaOidByName(String schema){
