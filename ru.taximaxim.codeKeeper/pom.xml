@@ -17,6 +17,7 @@
         <module>../../apgdiff.tests</module>
         <module>../feature</module>
         <module>../updatesite</module>
+        <module>../../ru.taximaxim.codekeeper.ui.help</module>
     </modules>
 
     <properties>
