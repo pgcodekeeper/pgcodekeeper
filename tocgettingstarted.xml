@@ -3,7 +3,15 @@
 
 <toc label="Getting Started" link_to="toc.xml#gettingstarted"> 
  <topic href="html/gettingstarted/installation_eclipse.html" label="Installation">
-    <topic href="html/gettingstarted/new_wizard.html" label="New Wizard">
+    <topic href="html/gettingstarted/new_proj_wzd/new_wizard.html" label="New Wizard">
+       <topic href="html/gettingstarted/new_proj_wzd/project_initializer.html" label="Project Initialization">
+       </topic>
+       <topic href="html/gettingstarted/new_proj_wzd/work_dir_settings.html" label="Working Directory Settings">
+       </topic>
+       <topic href="html/gettingstarted/new_proj_wzd/schema_src_settings.html" label="Schema Source Settings">
+       </topic>
+       <topic href="html/gettingstarted/new_proj_wzd/miscellaneous.html" label="Miscellaneous">
+       </topic>
     </topic>
  </topic>
  <topic href="html/gettingstarted/pgcodekeeper_editor.html" label="pgCodeKeeper Editor">

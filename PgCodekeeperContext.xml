@@ -8,6 +8,22 @@
     </context>
     <context id="new_wizard">
        <description>New wizard for creating new pgCodeKeperProjects or importing existing projects.</description>
-       <topic href="html/gettingstarted/new_wizard.html" label="New Wizard"/>
+       <topic href="html/gettingstarted/new_proj_wzd/new_wizard.html" label="New Wizard"/>
+    </context>
+    <context id="project_initializer">
+       <description>Project setting initializing</description>
+       <topic href="html/gettingstarted/new_proj_wzd/project_initializer.html" label="Project Initializing"/>
+    </context>
+    <context id="work_dir_settings">
+       <description>Working directory settings</description>
+       <topic href="html/gettingstarted/new_proj_wzd/work_dir_settings.html" label="Working directory settings"/>
+    </context>
+    <context id="schema_src_settings">
+       <description>Schema source settings</description>
+       <topic href="html/gettingstarted/new_proj_wzd/schema_src_settings.html" label="Schema source settings"/>
+    </context>
+    <context id="miscellaneous">
+       <description>Miscellaneous</description>
+       <topic href="html/gettingstarted/new_proj_wzd/miscellaneous.html" label="Miscellaneous"/>
     </context>
 </contexts>
