@@ -10,6 +10,8 @@ import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.osgi.framework.Version;
 
@@ -31,6 +33,8 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
  * @author Alexander Levsha
  */
 public class ModelExporter {
+    
+    private static final Pattern INVALID_FILENAME = Pattern.compile("[\\/:*?\"<>|]");
     
     /**
      * Objects of the export directory;
@@ -220,9 +224,9 @@ public class ModelExporter {
     /**
      * @return a statement's exported file name
      */
-    public static String getExportedFilename(PgStatement statement) {              
-        return statement.getBareName().replaceAll("[\\/:*?\"<>|]", "")
-                + "_" + PgDiffUtils.md5(statement.getName());
+    public static String getExportedFilename(PgStatement statement) {
+        Matcher m = INVALID_FILENAME.matcher(statement.getBareName());
+        return m.replaceAll("") + "_" + PgDiffUtils.md5(statement.getName());
     }
     
     private void writeProjVersion(File f) throws IOException {
