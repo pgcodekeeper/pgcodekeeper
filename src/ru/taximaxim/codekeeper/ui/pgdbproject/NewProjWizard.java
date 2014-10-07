@@ -98,6 +98,8 @@ IExecutableExtension {
         super.createPageControls(pageContainer);
 
         ((WizardDialog) getContainer()).addPageChangingListener(this);
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), 
+                "ru.taximaxim.codekeeper.ui.help.new_wizard");
     }
 
     @Override
