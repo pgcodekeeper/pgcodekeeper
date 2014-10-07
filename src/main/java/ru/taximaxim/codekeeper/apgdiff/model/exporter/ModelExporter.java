@@ -1,14 +1,11 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.List;
@@ -236,27 +233,13 @@ public class ModelExporter {
                 prop.load(fStream);
             }
             String oldVersion = prop.getProperty(ApgdiffConsts.VERSION_PROP_NAME);
-            if (oldVersion != null) {
-                try {
-                    if (progVersion.compareTo(Version.parseVersion(oldVersion)) == 0) {
-                        return;
-                    }
-                } catch (IllegalArgumentException e) {
-                    Log.log(e);
-                }
+            if (progVersion.equals(Version.parseVersion(oldVersion))) {
+                return;
             }
         }
-        prop = new Properties();
-        prop.setProperty(ApgdiffConsts.VERSION_PROP_NAME, progVersion.toString());
-        writeToFile(prop, f);
-    }
-
-    private void writeToFile(Properties prop, File f) throws IOException {
-        try (OutputStream fout = new BufferedOutputStream(
-                Files.newOutputStream(f.toPath()))) {
-            String version = ApgdiffConsts.VERSION_PROP_NAME + " = "
-                    + prop.getProperty(ApgdiffConsts.VERSION_PROP_NAME);
-            fout.write(version.getBytes());
+        
+        try (PrintWriter pw = new UnixPrintWriter(f, "UTF-8")) {
+            pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = " + progVersion.toString());
         }
     }
 }
