@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?NLS TYPE="org.eclipse.help.toc"?>
+
+<toc label="Getting Started" link_to="toc.xml#gettingstarted"> 
+ <topic href="html/gettingstarted/installation_eclipse.html" label="Installation">
+ </topic>
+ <topic href="html/gettingstarted/pgcodekeeper_editor.html" label="pgCodeKeeper Editor">
+    <topic href="html/gettingstarted/import_project.html" label="Import Project">
+    </topic>
+ </topic> 
+</toc>

@@ -1,0 +1,9 @@
+<contexts>
+    <context id="pgcodekeeper_editor">
+        <description>This is the pgCodeKeeper Editor.</description>
+        <topic href="html/gettingstarted/pgcodekeeper_editor.html"
+            label="Using the pgCodeKeeper Editor" />
+        <topic href="html/gettingstarted/installation_eclipse.html" 
+            label="Installing the pgCodeKeeper Editor" />
+    </context>
+</contexts>
