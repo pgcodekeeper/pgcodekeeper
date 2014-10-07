@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
@@ -54,10 +55,11 @@ public class JdbcLoader {
     private final int TRIGGER_TYPE_TRUNCATE = 1 << 5;
     private final int TRIGGER_TYPE_INSTEAD = 1 << 6;
     
-    /**
+    /*
      * Prepared statements to be executed
      */
     private PreparedStatement prepStatTables;
+    private PreparedStatement prepStatViews;
     private PreparedStatement prepStatTriggers;
     private PreparedStatement prepStatFuncName;
     private PreparedStatement prepStatFunctions;
@@ -82,11 +84,9 @@ public class JdbcLoader {
     private Connection connection;
     private DatabaseMetaData metaData;
     
-    static final String JDBC_DRIVER = "org.postgresql.Driver";
-    
     public JdbcLoader(String host, int port, String user, String pass, String dbName, String encoding) {
         this.host = host;
-        this.port = port;
+        this.port = port == 0 ? ApgdiffConsts.JDBC_CONSTS.JDBC_DEFAULT_PORT : port;
         this.user = user.isEmpty() ? System.getProperty("user.name") : user;
         this.dbName = dbName;
         this.encoding = encoding;
@@ -139,7 +139,7 @@ public class JdbcLoader {
     public PgDatabase getDbFromJdbc() throws IOException{
         PgDatabase d = new PgDatabase();
         try {
-            Class.forName(JDBC_DRIVER);
+            Class.forName(ApgdiffConsts.JDBC_CONSTS.JDBC_DRIVER);
             connection = DriverManager.getConnection(
                    "jdbc:postgresql://" + host + ":" + port + "/" + dbName, user, pass);
             setTimeZone();
@@ -229,7 +229,8 @@ public class JdbcLoader {
 
     private void prepareStatements() throws SQLException{
         prepStatTables = connection.prepareStatement(JdbcQueries.QUERY_TABLES_PER_SCHEMA);
-        prepStatTriggers = connection.prepareStatement("SELECT tgfoid, tgname, tgfoid, tgtype, tgrelid FROM pg_catalog.pg_trigger WHERE tgrelid = ?");
+        prepStatViews = connection.prepareStatement(JdbcQueries.QUERY_VIEWS_PER_SCHEMA);
+        prepStatTriggers = connection.prepareStatement(JdbcQueries.QUERY_TRIGGERS_PER_TABLE);
         prepStatFuncName = connection.prepareStatement("SELECT proname, nsp.nspname FROM pg_catalog.pg_proc proc LEFT JOIN pg_catalog.pg_namespace nsp ON proc.pronamespace = nsp.oid WHERE proc.oid = ?");
         prepStatFunctions = connection.prepareStatement(JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA);
         prepStatLanguages = connection.prepareStatement("SELECT lanname FROM pg_catalog.pg_language WHERE oid = ?");
@@ -324,13 +325,10 @@ public class JdbcLoader {
         }
         
         // VIEWS
-        try(ResultSet res = metaData.getTables(null, schema, "%", new String[] {"VIEW"} )){
+        prepStatViews.setLong(1, getSchemaOidByName(schema));
+        try(ResultSet res = prepStatViews.executeQuery()){
             while (res.next()) {
-                PgView view = getView(schema, res.getString("table_name"));
-                String comment = res.getString("REMARKS");
-                if (comment != null && !comment.isEmpty()){
-                    view.setComment("'" + comment + "'");
-                }
+                PgView view = getView(res, schema);
                 s.addView(view);
             }
         }
@@ -504,35 +502,19 @@ public class JdbcLoader {
         timeNanosec = System.nanoTime();
     }
     
-    private PgView getView(String schema, String view) throws SQLException {
-        Statement stmt = null;
-        String query = "select view_definition from INFORMATION_SCHEMA.views WHERE table_schema = '" + schema + "'" + " AND table_name = '" + view + "'";
-        String definitionColumnName = "view_definition";
-        stmt = connection.createStatement();
-        ResultSet res = stmt.executeQuery(query);
+    private PgView getView(ResultSet res, String schemaName) throws SQLException {
+        String viewName = res.getString("relname");
         
-        // try pg_catalog.views, if view is blocked (invisible or definition is null)
-        if (!res.next() || res.getString(definitionColumnName) == null){
-            query = "select definition from pg_catalog.pg_views WHERE schemaname = '" + schema + "'" + " AND viewname = '" + view + "'";
-            stmt = connection.createStatement();
-            res = stmt.executeQuery(query);
-            definitionColumnName = "definition";
-            if (!res.next()){
-                // TODO throw exception, log, output to console?
-                System.err.println("No view info found in INFORMATION_SCHEMA and pg_catalog for " + schema + "." + view);
-                return null;
-            }
-        }
-        
-        String viewDef = res.getString(definitionColumnName).trim();
+        String viewDef = res.getString("definition").trim();
         if (viewDef == null){
             // TODO throw exception, log, output to console?
-            System.err.println("View without definition (locked): " + view);
+            System.err.println("View without definition (locked): " + viewName);
             viewDef = "";
         }else if (viewDef.charAt(viewDef.length() - 1) == ';'){
             viewDef = viewDef.substring(0, viewDef.length() - 1);
         }
-        PgView v = new PgView(view, viewDef, getSearchPath(schema));
+        
+        PgView v = new PgView(viewName, viewDef, getSearchPath(schemaName));
         v.setQuery(viewDef);
         // skip column names (aliases), as they are not used by us
         
@@ -542,7 +524,7 @@ public class JdbcLoader {
         v.setSelect(new PgSelect("", ""));
         
         // Query columns default values and comments
-        ResultSet res2 = metaData.getColumns(null, schema, view, null);
+        ResultSet res2 = metaData.getColumns(null, schemaName, viewName, null);
         while(res2.next()){
             String colName = res2.getString("COLUMN_NAME");
             String colDefault = res2.getString("COLUMN_DEF");
@@ -555,24 +537,26 @@ public class JdbcLoader {
             }
         }
         
-        // Query owners of view
-        query = "select viewowner from pg_catalog.pg_views WHERE schemaname = '" + schema + "'" + " AND viewname = '" + view + "'";
-        stmt = connection.createStatement();
-        res = stmt.executeQuery(query);
-        if (res.next()){
-            v.setOwner(res.getString("viewowner"));
-        }
+        // OWNER
+        v.setOwner(getRoleNameByOid(res.getLong("relowner")));
         
         // Query view privileges
         // UGLY way
         String viewAclQuery = "SELECT relacl FROM pg_catalog.pg_class WHERE relname = '" + 
-                                view + "' AND relnamespace = " + getSchemaOidByName(schema);
+                                viewName + "' AND relnamespace = " + getSchemaOidByName(schemaName);
         try(Statement stmnt = connection.createStatement(); 
                 ResultSet res3 = stmnt.executeQuery(viewAclQuery)){
             if (res3.next()){
-                setPrivileges(v, view, res3.getString("relacl"), v.getOwner());
+                setPrivileges(v, viewName, res3.getString("relacl"), v.getOwner());
             }
         }
+        
+        // COMMENT
+        String comment = res.getString("comment");
+        if (comment != null && !comment.isEmpty()){
+            v.setComment("'" + comment + "'");
+        }
+        
         return v;
     }
 
@@ -677,35 +661,37 @@ public class JdbcLoader {
         
         // Query CONSTRAINTS
         prepStatConstraints.setLong(1, tableOid);
-        ResultSet resSubObjects = prepStatConstraints.executeQuery();
-        while (resSubObjects.next()){
-            PgConstraint constraint = getConstraint(resSubObjects, schemaName, t.getName());
-            if (constraint != null){
-                t.addConstraint(constraint);
+        try(ResultSet resConstraints = prepStatConstraints.executeQuery()){
+            while (resConstraints.next()){
+                PgConstraint constraint = getConstraint(resConstraints, schemaName, t.getName());
+                if (constraint != null){
+                    t.addConstraint(constraint);
+                }
             }
         }
         
         // Query INDECIES
         prepStatIndecies.setLong(1, tableOid);
-        resSubObjects = prepStatIndecies.executeQuery();
-        while (resSubObjects.next()){
-            PgIndex index = getIndex(resSubObjects, t.getName(), tableOid);
-            if (index != null){
-                t.addIndex(index);
+        try(ResultSet resIndecies = prepStatIndecies.executeQuery()){
+            while (resIndecies.next()){
+                PgIndex index = getIndex(resIndecies, t.getName(), tableOid);
+                if (index != null){
+                    t.addIndex(index);
+                }
             }
         }
         
         // Query TRIGGERS
         prepStatTriggers.setLong(1, tableOid);
-        resSubObjects = prepStatTriggers.executeQuery();
-        while(resSubObjects.next()){
-            PgTrigger trigger = getTrigger(resSubObjects, schemaName);
-            if (trigger != null){
-                t.addTrigger(trigger);
+        try(ResultSet resTriggers = prepStatTriggers.executeQuery()){
+            while(resTriggers.next()){
+                PgTrigger trigger = getTrigger(resTriggers, schemaName);
+                if (trigger != null){
+                    t.addTrigger(trigger);
+                }
             }
         }
-        
-        resSubObjects.close();
+
         return t;
     }
 
@@ -793,6 +779,12 @@ public class JdbcLoader {
      *         proisstrict AS isnullonnull FROM pg_catalog.pg_proc WHERE pronamespace = ?"
      */
     private PgFunction getFunction(ResultSet res, String schemaName) throws SQLException{
+        for(String depType : (String[]) res.getArray("deps").getArray()){
+            if (depType.equals("e")){
+                return null;
+            }
+        }
+        
         String functionName = res.getString("proname");
         PgFunction f = new PgFunction(functionName, "", getSearchPath(schemaName));
         

@@ -18,4 +18,9 @@ public interface ApgdiffConsts {
         EXTENSION,
         SCHEMA
     }
+    
+    interface JDBC_CONSTS{
+        String JDBC_DRIVER = "org.postgresql.Driver";
+        int JDBC_DEFAULT_PORT = 5432;
+    }
 }

@@ -80,9 +80,18 @@ public interface JdbcQueries {
             + "     proargdefaults, "
             + "     proacl AS aclArray,"
             + "     d.description AS comment,"
-            + "     proretset "
+            + "     proretset, "
+            + "     array_agg(dep.deptype) AS deps "
             + "FROM "
-            + "     pg_catalog.pg_proc p LEFT JOIN pg_catalog.pg_description d ON d.objoid = p.oid "
+            + "     pg_catalog.pg_proc p "
+            + "     LEFT JOIN "
+            + "         pg_catalog.pg_description d "
+            + "     ON "
+            + "         d.objoid = p.oid "
+            + "     LEFT JOIN "
+            + "         pg_catalog.pg_depend dep "
+            + "     ON "
+            + "         p.oid = dep.objid "
             + "WHERE "
             + "     pronamespace = ? AND "
             + "     proisagg = FALSE "
@@ -229,4 +238,32 @@ public interface JdbcQueries {
             + "         pg_catalog.pg_description d "
             + "     ON "
             + "         n.oid = d.objoid";
+    
+    String QUERY_TRIGGERS_PER_TABLE = 
+            "SELECT "
+            + "     tgfoid, "
+            + "     tgname, "
+            + "     tgfoid, "
+            + "     tgtype, "
+            + "     tgrelid "
+            + "FROM "
+            + "     pg_catalog.pg_trigger "
+            + "WHERE "
+            + "     tgrelid = ?";
+
+    String QUERY_VIEWS_PER_SCHEMA = 
+            "SELECT "
+            + "     relname, "
+            + "     relowner::bigint, "
+            + "     pg_get_viewdef(c.oid) AS definition, "
+            + "     d.description AS comment "
+            + "FROM "
+            + "     pg_catalog.pg_class c "
+            + "     LEFT JOIN "
+            + "         pg_catalog.pg_description d "
+            + "     ON "
+            + "         c.oid = d.objoid "
+            + "WHERE "
+            + "     relkind = 'v' AND "
+            + "     relnamespace = ?";
 }
