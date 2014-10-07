@@ -220,8 +220,8 @@ public class ModelExporter {
     /**
      * @return a statement's exported file name
      */
-    public static String getExportedFilename(PgStatement statement) {
-        return statement.getBareName()
+    public static String getExportedFilename(PgStatement statement) {              
+        return statement.getBareName().replaceAll("[\\/:*?\"<>|]", "")
                 + "_" + PgDiffUtils.md5(statement.getName());
     }
     
