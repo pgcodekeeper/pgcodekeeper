@@ -39,6 +39,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
@@ -224,6 +225,8 @@ class CommitPage extends DiffPresentationPane {
                 commit();
             }
         });
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, 
+                "ru.taximaxim.codekeeper.ui.help.pgcodekeeper_editor");
     }
     
     private void showCommentsHistoryMenu(Composite container) {
@@ -461,6 +464,8 @@ class DiffPage extends DiffPresentationPane {
                 }
             }
         });
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, 
+                "ru.taximaxim.codekeeper.ui.help.pgcodekeeper_editor");
     }
     
     private void diff() throws PgCodekeeperUIException {
