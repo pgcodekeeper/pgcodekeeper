@@ -1,9 +1,13 @@
 <contexts>
     <context id="pgcodekeeper_editor">
-        <description>This is the pgCodeKeeper Editor.</description>
+        <description>The pgCodeKeeper Editor used for manipulating with pgCodeKeeper projects.</description>
         <topic href="html/gettingstarted/pgcodekeeper_editor.html"
             label="Using the pgCodeKeeper Editor" />
         <topic href="html/gettingstarted/installation_eclipse.html" 
             label="Installing the pgCodeKeeper Editor" />
+    </context>
+    <context id="new_wizard">
+       <description>New wizard for creating new pgCodeKeperProjects or importing existing projects.</description>
+       <topic href="html/gettingstarted/new_wizard.html" label="New Wizard"/>
     </context>
 </contexts>
