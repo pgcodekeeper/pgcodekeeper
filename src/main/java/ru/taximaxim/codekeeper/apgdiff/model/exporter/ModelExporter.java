@@ -226,7 +226,7 @@ public class ModelExporter {
      */
     public static String getExportedFilename(PgStatement statement) {
         Matcher m = INVALID_FILENAME.matcher(statement.getBareName());
-        return m.replaceAll("") + "_" + PgDiffUtils.md5(statement.getName());
+        return m.replaceAll("") + '_' + PgDiffUtils.md5(statement.getName());
     }
     
     private void writeProjVersion(File f) throws IOException {
