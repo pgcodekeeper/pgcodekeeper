@@ -377,7 +377,8 @@ class PageRepo extends WizardPage implements Listener {
                 String path = dialog.open();
                 if (path != null) {
                     txtOldProjFile.setText(path);
-                    PreferenceInitializer.savePreference(mainPrefStore, PREF.LAST_OPENED_LOCATION, path);
+                    PreferenceInitializer.savePreference(mainPrefStore,
+                            PREF.LAST_OPENED_LOCATION, new File(path).getParent());
                 }
             }
         });

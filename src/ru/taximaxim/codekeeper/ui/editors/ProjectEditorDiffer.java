@@ -15,8 +15,6 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -24,17 +22,13 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
@@ -51,7 +45,6 @@ import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
@@ -154,7 +147,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart {
                 
                 @Override
                 public void run() {
-                    // TODO NPE
+                    // FIXME NPE
                     commit.reset();
                     diff.reset();                    
                 }
@@ -165,17 +158,10 @@ public class ProjectEditorDiffer extends MultiPageEditorPart {
 
 class CommitPage extends DiffPresentationPane {
 
-    private final static String COMMENTS_HIST_ROOT = "comments"; //$NON-NLS-1$
-    private final static String COMMENTS_HIST_EL = "c"; //$NON-NLS-1$
-    private final static String COMMENTS_HIST_FILENAME = "commit_comments.xml"; //$NON-NLS-1$
-    private final static int COMMENT_HIST_MAX_STORED = 40;
-    
     private final IPreferenceStore mainPrefs;
     private final PgDbProject proj;
-    private final XmlHistory history;
     
-    private Text txtCommitComment;
-    private Button btnPrevComments, btnCommit;
+    private Button btnSave;
     
     public CommitPage(Composite parent, IPreferenceStore mainPrefs,
             PgDbProject proj) {
@@ -183,41 +169,18 @@ class CommitPage extends DiffPresentationPane {
         
         this.mainPrefs = mainPrefs;
         this.proj = proj;
-        history = new XmlHistory.Builder(COMMENT_HIST_MAX_STORED, 
-                COMMENTS_HIST_FILENAME, 
-                COMMENTS_HIST_ROOT, 
-                COMMENTS_HIST_EL).build();
     }
     
     @Override
     protected void createUpperContainer(final Composite container, GridLayout gl) {
-        gl.numColumns = 3;
         container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        txtCommitComment = new Text(container, SWT.BORDER | SWT.MULTI | 
-                SWT.H_SCROLL | SWT.V_SCROLL);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 50;
-        txtCommitComment.setLayoutData(gd);
-        
-        btnPrevComments = new Button(container, SWT.PUSH);
-        btnPrevComments.setLayoutData(new GridData(SWT.DEFAULT, SWT.FILL, false,
+        btnSave = new Button(container, SWT.PUSH);
+        btnSave.setLayoutData(new GridData(SWT.DEFAULT, SWT.FILL, false,
                 false));
-        btnPrevComments.setText("\u25bc"); //$NON-NLS-1$
-        btnPrevComments.addSelectionListener(new SelectionAdapter() {
-            
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                showCommentsHistoryMenu(container);
-            }
-        });
-        
-        btnCommit = new Button(container, SWT.PUSH);
-        btnCommit.setLayoutData(new GridData(SWT.DEFAULT, SWT.FILL, false,
-                false));
-        btnCommit.setText(Messages.commitPartDescr_commit);
-        btnCommit.setEnabled(false);
-        btnCommit.addSelectionListener(new SelectionAdapter() {
+        btnSave.setText(Messages.commitPartDescr_commit);
+        btnSave.setEnabled(false);
+        btnSave.addSelectionListener(new SelectionAdapter() {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -226,60 +189,11 @@ class CommitPage extends DiffPresentationPane {
         });
     }
     
-    private void showCommentsHistoryMenu(Composite container) {
-        List<String> comments = null;
-        try {
-            comments = history.getHistory();
-        } catch (IOException e) {
-           ExceptionNotifier.showErrorDialog("Cannot get comments", e);
-        }
-        MenuManager mmComments = new MenuManager();
-        if (comments == null || comments.isEmpty()) {
-            mmComments.add(new Action(Messages.commitPartDescr_no_previous_comments) {
-                @Override
-                public boolean isEnabled() {
-                    return false;
-                }
-            });
-        } else { 
-            for (final String comment : comments) {
-                String menuLabel = comment;
-                if (menuLabel.length() > 120) {
-                    menuLabel = menuLabel.substring(0, 120) + "..."; //$NON-NLS-1$
-                }
-                
-                mmComments.add(new Action(menuLabel) {
-                    @Override
-                    public void run() {
-                        txtCommitComment.setText(comment);
-                        txtCommitComment.setFocus();
-                    }
-                });
-            }
-        }
-        Menu menuComments = mmComments.createContextMenu(getShell());
-        
-        Point loc = btnPrevComments.getLocation();
-        Rectangle rectBtn = btnPrevComments.getBounds();
-        menuComments.setLocation(getShell().getDisplay().map(
-                container, null,
-                loc.x + rectBtn.width + 1, loc.y + rectBtn.height));
-        menuComments.setVisible(true);
-    }
-    
     private void commit() {
-        final String commitComment = txtCommitComment.getText();
         if (diffTable.getCheckedElementsCount() < 1){
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_INFORMATION);
             mb.setMessage(Messages.please_check_at_least_one_row);
             mb.setText(Messages.empty_selection);
-            mb.open();
-            return;
-        }
-        if (commitComment.isEmpty()) {
-            MessageBox mb = new MessageBox(getShell(), SWT.ICON_INFORMATION);
-            mb.setMessage(Messages.commitPartDescr_comment_required);
-            mb.setText(Messages.commitPartDescr_please_enter_a_comment_for_the_commit);
             mb.open();
             return;
         }
@@ -341,12 +255,6 @@ class CommitPage extends DiffPresentationPane {
         
         final TreeElement resultingTree = considerDepcy ? filteredTwiceWithAllDepcy : filtered;
         
-        try {
-            history.addHistoryEntry(commitComment);
-        } catch (IOException e) {
-            ExceptionNotifier.showErrorDialog("Cannot add comment to history", e);
-        }
-        
         IRunnableWithProgress commitRunnable = new IRunnableWithProgress() {
 
             @Override
@@ -391,14 +299,13 @@ class CommitPage extends DiffPresentationPane {
     
     @Override
     public final void reset() {
-        txtCommitComment.setText(""); //$NON-NLS-1$
-        btnCommit.setEnabled(false);
+        btnSave.setEnabled(false);
         super.reset();
     }
     
     @Override
     protected final void diffLoaded() {
-        btnCommit.setEnabled(true);
+        btnSave.setEnabled(true);
     }
 }
 

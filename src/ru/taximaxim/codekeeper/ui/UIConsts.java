@@ -35,6 +35,7 @@ public interface UIConsts {
         String DB_STORE = "prefDbStore"; //$NON-NLS-1$
         String GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile"; //$NON-NLS-1$
         String RECENT_PROJECTS = "prefRecentProject"; //$NON-NLS-1$
+        // TODO remove
         String OPEN_LAST_ON_START = "prefOpenLastOnStart"; //$NON-NLS-1$
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
