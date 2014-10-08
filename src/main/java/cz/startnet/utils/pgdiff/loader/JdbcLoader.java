@@ -520,7 +520,17 @@ public class JdbcLoader {
         PgView v = new PgView(viewName, viewDef, getSearchPath(schemaName));
         v.setQuery(viewDef);
         
-        v.setSelect(SelectParser.parse(new PgDatabase(), viewDef, getSearchPath(schemaName)));
+        // TODO костыль: необходимо передавать БД с дефолтной схемой = текущей схеме,
+        // чтобы заполнять имя схемы в PgSelect'e, если селект происходит из 
+        // не-schema-qualified таблицы. Передавать сюда рабочую БД (которую
+        // мы компилируем из JDBC) не имеет смысла - текущая схема туда еще не 
+        // добавлена, так как находится в работе.
+        PgDatabase fakeDb = new PgDatabase();
+        if (!schemaName.equals("public")){
+            fakeDb.addSchema(new PgSchema(schemaName, ""));
+        }
+        fakeDb.setDefaultSchema(schemaName);
+        v.setSelect(SelectParser.parse(fakeDb, viewDef, getSearchPath(schemaName)));
         
         // Query columns default values and comments
         ResultSet res2 = metaData.getColumns(null, schemaName, viewName, null);
