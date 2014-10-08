@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -488,7 +489,7 @@ class DiffPage extends DiffPresentationPane {
         differ.runProgressMonitorDiffer(getShell());
 
         SqlScriptDialog dialog = new SqlScriptDialog(getShell(),
-                SqlScriptDialog.INFORMATION, Messages.diffPartDescr_diff_script,
+                MessageDialog.INFORMATION, Messages.diffPartDescr_diff_script,
                 Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
                 differ, dbSource.getDbObject().flatten(), 
                 mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY));

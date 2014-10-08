@@ -12,7 +12,8 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.text.Document;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -20,8 +21,10 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -29,10 +32,12 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -45,7 +50,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.parts.Console;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
-public class SqlScriptDialog extends MessageDialog {
+public class SqlScriptDialog extends TrayDialog {
 
     private static final Pattern PATTERN_ERROR = Pattern.compile(
             "^.+(ERROR|ОШИБКА):.+$"); //$NON-NLS-1$
@@ -61,6 +66,8 @@ public class SqlScriptDialog extends MessageDialog {
     
     private static final String RUN_SCRIPT_LABEL =  Messages.sqlScriptDialog_run_script;
     private static final String STOP_SCRIPT_LABEL = Messages.sqlScriptDialog_stop_script;
+    private static final String[] BUTTONS = new String[] {
+        RUN_SCRIPT_LABEL, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }; 
     
     private static final String SCRIPTS_HIST_ROOT = "scripts"; //$NON-NLS-1$
     private static final String SCRIPTS_HIST_EL = "s"; //$NON-NLS-1$
@@ -91,6 +98,9 @@ public class SqlScriptDialog extends MessageDialog {
     
     private boolean isRunning;
     private Thread scriptThread;
+    private String title;
+    private String message;
+    private int type;
 
     public void setDbParams(String dbHost, String dbPort, String dbName,
             String dbUser, String dbPass) {
@@ -131,9 +141,10 @@ public class SqlScriptDialog extends MessageDialog {
     
     public SqlScriptDialog(Shell parentShell, int type, String title, String message,
             Differ differ, List<PgStatement> objList, boolean usePsqlDepcy) {
-        super(parentShell, title, null, message, type, new String[] {
-                RUN_SCRIPT_LABEL, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }, 2);
-        
+        super(parentShell);
+        this.title = title;
+        this.message = message;
+        this.type = type;
         this.differ = differ;
         this.oldDepcy = differ.getAdditionalDepciesSource();
         differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
@@ -146,12 +157,60 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     @Override
+    protected void configureShell(Shell newShell) {
+        newShell.setText(title);
+        super.configureShell(newShell);
+    }
+    
+    @Override
+    protected void createButtonsForButtonBar(Composite parent) {
+        for (int i = 0; i< BUTTONS.length; i++) {
+            createButton(parent, i, BUTTONS[i],
+                    i == BUTTONS.length - 1);
+        }
+    }
+    private Control createMessageArea(Composite composite) {
+        // create composite
+        // create image
+        Image image = composite.getDisplay().getSystemImage(type);
+        Composite comp = new Composite(composite, SWT.FILL);
+        Layout layout = new GridLayout(2, false);
+        comp.setLayout(layout);
+        
+        if (image != null) {
+            Label imageLabel = new Label(comp, SWT.NULL);
+            image.setBackground(imageLabel.getBackground());
+            imageLabel.setImage(image);
+//            addAccessibleListeners(imageLabel, image);
+            GridDataFactory.fillDefaults().align(SWT.CENTER, SWT.BEGINNING)
+                    .applyTo(imageLabel);
+        }
+        // create message
+        if (message != null) {
+            Label messageLabel = new Label(comp, SWT.WRAP);
+            messageLabel.setText(message);
+            GridDataFactory
+                    .fillDefaults()
+                    .align(SWT.FILL, SWT.BEGINNING)
+                    .grab(true, false)
+                    .hint(
+                            convertHorizontalDLUsToPixels(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH),
+                            SWT.DEFAULT).applyTo(messageLabel);
+        }
+        return composite;
+    }
+    
+    @Override
     protected boolean isResizable() {
         return true;
     }
     
     @Override
-    protected Control createCustomArea(Composite parent) {
+    protected Control createDialogArea(Composite parent) {
+        GridLayout lay = new GridLayout();
+        parent.setLayout(lay);
+        
+        createMessageArea(parent);
         createSQLViewer(parent);
         
         Label l = new Label(parent, SWT.NONE);
@@ -237,6 +296,8 @@ public class SqlScriptDialog extends MessageDialog {
                 colorPink.dispose();
             }
         });
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(this.getShell(), 
+                "ru.taximaxim.codekeeper.ui.help.roll_on_script");
         
         return parent;
     }
@@ -368,7 +429,7 @@ public class SqlScriptDialog extends MessageDialog {
                 Log.log(Log.LOG_INFO, fileSaved);
             }
         } else {
-            super.buttonPressed(buttonId);
+            this.close();
         }
     }
     
