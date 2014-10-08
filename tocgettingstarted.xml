@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?NLS TYPE="org.eclipse.help.toc"?>
 
-<toc label="Getting Started" link_to="toc.xml#gettingstarted"> 
- <topic href="html/gettingstarted/installation_eclipse.html" label="Installation">
-    <topic href="html/gettingstarted/new_proj_wzd/new_wizard.html" label="New Wizard">
-       <topic href="html/gettingstarted/new_proj_wzd/project_initializer.html" label="Project Initialization">
+<toc label="Начало работы" link_to="toc.xml#gettingstarted"> 
+ <topic href="html/gettingstarted/installation_eclipse.html" label="Установка">
+    <topic href="html/gettingstarted/new_proj_wzd/new_wizard.html" label="Мастер создания нового проекта">
+       <topic href="html/gettingstarted/new_proj_wzd/project_initializer.html" label="Инициализация проекта">
        </topic>
-       <topic href="html/gettingstarted/new_proj_wzd/work_dir_settings.html" label="Working Directory Settings">
+       <topic href="html/gettingstarted/new_proj_wzd/work_dir_settings.html" label="Установка рабочей директории">
        </topic>
-       <topic href="html/gettingstarted/new_proj_wzd/schema_src_settings.html" label="Schema Source Settings">
+       <topic href="html/gettingstarted/new_proj_wzd/schema_src_settings.html" label="Установки источника схемы">
        </topic>
-       <topic href="html/gettingstarted/new_proj_wzd/miscellaneous.html" label="Miscellaneous">
+       <topic href="html/gettingstarted/new_proj_wzd/miscellaneous.html" label="Прочее">
        </topic>
     </topic>
-    <topic href="html/gettingstarted/import_project.html" label="Import Project">
+    <topic href="html/gettingstarted/import_project.html" label="Импорт проекта">
     </topic>
  </topic>
- <topic href="html/gettingstarted/pgcodekeeper_editor.html" label="pgCodeKeeper Editor">
+ <topic href="html/gettingstarted/pgcodekeeper_editor.html" label="Редактор pgCodeKeeper">
  </topic>
 </toc>

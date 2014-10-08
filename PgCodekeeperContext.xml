@@ -1,29 +1,27 @@
 <contexts>
     <context id="pgcodekeeper_editor">
-        <description>The pgCodeKeeper Editor used for manipulating with pgCodeKeeper projects.</description>
+        <description>Редактор pgCodeKeeper используется для проведения операций над проектом pgCodeKeeper.</description>
         <topic href="html/gettingstarted/pgcodekeeper_editor.html"
-            label="Using the pgCodeKeeper Editor" />
-        <topic href="html/gettingstarted/installation_eclipse.html" 
-            label="Installing the pgCodeKeeper Editor" />
+            label="Использование редактора pgCodeKeeper" />
     </context>
     <context id="new_wizard">
-       <description>New wizard for creating new pgCodeKeperProjects or importing existing projects.</description>
-       <topic href="html/gettingstarted/new_proj_wzd/new_wizard.html" label="New Wizard"/>
+       <description>Мастер создания проекта pgCodeKeeper используется для создания нового и импорта существующего проекта pgCodeKeeper.</description>
+       <topic href="html/gettingstarted/new_proj_wzd/new_wizard.html" label="Мастер создания проекта"/>
     </context>
     <context id="project_initializer">
-       <description>Project setting initializing</description>
-       <topic href="html/gettingstarted/new_proj_wzd/project_initializer.html" label="Project Initializing"/>
+       <description>Установки настроек проекта</description>
+       <topic href="html/gettingstarted/new_proj_wzd/project_initializer.html" label="Инициализация проекта"/>
     </context>
     <context id="work_dir_settings">
-       <description>Working directory settings</description>
-       <topic href="html/gettingstarted/new_proj_wzd/work_dir_settings.html" label="Working directory settings"/>
+       <description>Установки рабочей директории</description>
+       <topic href="html/gettingstarted/new_proj_wzd/work_dir_settings.html" label="Установки рабочей директории"/>
     </context>
     <context id="schema_src_settings">
-       <description>Schema source settings</description>
-       <topic href="html/gettingstarted/new_proj_wzd/schema_src_settings.html" label="Schema source settings"/>
+       <description>Установки источника схемы БД</description>
+       <topic href="html/gettingstarted/new_proj_wzd/schema_src_settings.html" label="Установки источника схемы БД"/>
     </context>
     <context id="miscellaneous">
-       <description>Miscellaneous</description>
-       <topic href="html/gettingstarted/new_proj_wzd/miscellaneous.html" label="Miscellaneous"/>
+       <description>Общее</description>
+       <topic href="html/gettingstarted/new_proj_wzd/miscellaneous.html" label="Общее"/>
     </context>
 </contexts>

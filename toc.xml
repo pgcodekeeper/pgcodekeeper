@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?NLS TYPE="org.eclipse.help.toc"?>
 
-<toc label="PgCodekepeer Guide" topic="html/toc.html">
-   <topic label="Getting Started">
+<toc label="Руководство PgCodekepeer" topic="html/toc.html">
+   <topic label="Начало работы">
       <anchor id="gettingstarted"/>
    </topic>
 </toc>
