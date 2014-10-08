@@ -14,7 +14,7 @@
    <extension
          point="org.eclipse.help.contexts">
          <contexts
-               file="PgCodekeeperContext.xml">
+               file="pgCodeKeeperContext.xml">
          </contexts>
    </extension>
 
