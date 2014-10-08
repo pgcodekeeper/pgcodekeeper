@@ -1,7 +1,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
+import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -111,10 +111,6 @@ public class PgDbProject {
     
     public static PgDbProject getProjFromFile(String projectName, 
             String pathToProject) throws PgCodekeeperUIException {
-        try {
-            return createPgDbProject(projectName, new URI("file:/" + pathToProject));
-        } catch (URISyntaxException e1) {
-            throw new PgCodekeeperUIException("Error while trying to load project", e1);
-        }
+        return createPgDbProject(projectName, new File(pathToProject).toURI());
     }
 }
