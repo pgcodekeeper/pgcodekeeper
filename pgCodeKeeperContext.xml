@@ -28,4 +28,9 @@
        <description>Окно редакторования и выполения скрипта наката изменений</description>
        <topic href="html/gettingstarted/roll_on_script.html" label="Скрипт наката изменений"/>
     </context>
+    <context id="manual_depcies">
+       <description>В этом окне можно задать дополнительные зависимости, 
+которые будут учитываться при проведении операций над объектами.</description>
+       <topic href="html/gettingstarted/manual_depcy.html" label="Ручное добавление зависимостей"/>
+    </context>
 </contexts>
