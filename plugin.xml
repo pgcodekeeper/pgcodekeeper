@@ -5,7 +5,7 @@
          point="org.eclipse.ui.console.consoleFactories">
       <consoleFactory
             class="ru.taximaxim.codekeeper.ui.parts.ConsoleFactory"
-            label="PgCodekeeper console">
+            label="pgCodeKeeper console">
       </consoleFactory>
    </extension>
    <extension
@@ -40,7 +40,7 @@
       <menuContribution
             locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
          <menu
-               label="PgCodeKeeper">
+               label="pgCodeKeeper">
             <command
                   commandId="ru.taximaxim.codekeeper.ui.openeditor"
                   label="Open in Project Editor"
@@ -75,7 +75,7 @@
             allPopups="false"
             locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
          <menu
-               label="PgCodeKeeper">
+               label="pgCodeKeeper">
             <command
                   commandId="ru.taximaxim.codekeeper.ui.openeditor"
                   label="Open in Project Editor"
@@ -196,7 +196,7 @@
       </wizard>
       <category
             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
-            name="PgCodekeeper">
+            name="pgCodeKeeper">
       </category>
    </extension>
    <extension
