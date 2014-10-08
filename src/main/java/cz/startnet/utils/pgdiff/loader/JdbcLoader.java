@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.Parser;
+import cz.startnet.utils.pgdiff.parsers.SelectParser;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -36,7 +37,6 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -345,9 +345,17 @@ public class JdbcLoader {
                     if (sequence != null){
                         s.addSequence(sequence);
                     }
-                }else if (sequence != null && res.getInt("referenced_column") != 0){
+                }
+                
+                if (sequence != null && res.getInt("referenced_column") != 0){
                     Integer[] ownedColumnNumbers = {res.getInt("referenced_column")};
-                    sequence.setOwnedBy(res.getString("referenced_table_name") + "." + getColumnNames(ownedColumnNumbers, res.getLong("referenced_table_oid")).get(0));
+                    String refTable = res.getString("referenced_table_name");
+                    sequence.setOwnedBy(refTable + "." + getColumnNames(ownedColumnNumbers, res.getLong("referenced_table_oid")).get(0));
+                    
+                    PgTable table = s.getTable(refTable);
+                    if (table != null){
+                        table.addSequence(res.getString("sequence_name"));
+                    }
                 }
                 previousSeqOid = res.getInt("sequence_oid");
             }
@@ -511,12 +519,8 @@ public class JdbcLoader {
         
         PgView v = new PgView(viewName, viewDef, getSearchPath(schemaName));
         v.setQuery(viewDef);
-        // skip column names (aliases), as they are not used by us
         
-        // we skip PgSelect, as it does not affect export (does it?)
-        // TODO can query selected columns from pg_catalog
-        // prevent NPE, because select in PgView is not initialized
-        v.setSelect(new PgSelect("", ""));
+        v.setSelect(SelectParser.parse(new PgDatabase(), viewDef, getSearchPath(schemaName)));
         
         // Query columns default values and comments
         ResultSet res2 = metaData.getColumns(null, schemaName, viewName, null);
