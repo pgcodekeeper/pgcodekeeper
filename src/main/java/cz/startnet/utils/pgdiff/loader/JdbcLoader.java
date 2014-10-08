@@ -304,22 +304,10 @@ public class JdbcLoader {
         // TABLES
         prepStatTables.setLong(1, getSchemaOidByName(schema));
         try(ResultSet res = prepStatTables.executeQuery()){
-            Long previousTableOid = 0L;
-            PgTable previousTable = null;
-            while (res.next()) {
-                /**
-                 * Костыль: на данный момент не получается собрать имена нескольких 
-                 * наследуемых таблиц в массив строк, поэтому, при наличии нескольких 
-                 * таблиц в разделе INHERITS таблицы X, выводится соответствующее 
-                 * количество строк в ResultSet'e с relname = X
-                 */
-                if (previousTableOid.equals(res.getLong("oid")) && previousTable != null){
-                    previousTable.addInherits(res.getString("inherited"));
-                }else{
-                    PgTable table = getTable(res, schema);
+            while (res.next()) {                
+                PgTable table = getTable(res, schema);
+                if (table != null){
                     s.addTable(table);
-                    previousTableOid = res.getLong("oid");
-                    previousTable = table;
                 }
             }
         }
@@ -329,7 +317,9 @@ public class JdbcLoader {
         try(ResultSet res = prepStatViews.executeQuery()){
             while (res.next()) {
                 PgView view = getView(res, schema);
-                s.addView(view);
+                if (view != null){
+                    s.addView(view);                    
+                }
             }
         }
         
@@ -503,6 +493,11 @@ public class JdbcLoader {
     }
     
     private PgView getView(ResultSet res, String schemaName) throws SQLException {
+        for(String depType : (String[]) res.getArray("deptype").getArray()){
+            if (depType.equals("e")){
+                return null;
+            }
+        }
         String viewName = res.getString("relname");
         
         String viewDef = res.getString("definition").trim();
@@ -561,6 +556,11 @@ public class JdbcLoader {
     }
 
     private PgTable getTable(ResultSet res, String schemaName) throws SQLException{
+        for(String depType : (String[]) res.getArray("deptype").getArray()){
+            if (depType.equals("e")){
+                return null;
+            }
+        }
         Long tableOid = res.getLong("oid");
         String tableName = res.getString("relname");
         StringBuilder tableDef = new StringBuilder(); 
@@ -622,9 +622,12 @@ public class JdbcLoader {
         
         PgTable t = new PgTable(tableName, tableDef.toString(), getSearchPath(schemaName));
         // INHERITS
-        String inherits = res.getString("inherited");
-        if(inherits != null && !inherits.isEmpty()){
-            t.addInherits(inherits);
+        Array arrInherits = res.getArray("inherited");
+        String [] inherits = null;
+        if(arrInherits != null && (inherits = (String[]) arrInherits.getArray()) != null && inherits.length > 0){
+            for (String inherited : inherits){
+                t.addInherits(inherited);
+            }
         }else{
             for(PgColumn column : columns){
                 t.addColumn(column);
