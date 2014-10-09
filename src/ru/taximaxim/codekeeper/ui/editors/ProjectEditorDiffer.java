@@ -60,7 +60,7 @@ import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
-public class ProjectEditorDiffer extends MultiPageEditorPart {
+public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourceChangeListener {
 
     private PgDbProject proj;
     private DiffPresentationPane commit, diff;
@@ -75,7 +75,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart {
                 .getProject(in.getProjectName()));
         setPartName(in.getName());
         super.init(site, input);
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(editorUpdater);
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
     
     @Override
@@ -103,26 +103,24 @@ public class ProjectEditorDiffer extends MultiPageEditorPart {
     
     @Override
     public void dispose() {
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(editorUpdater);
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         super.dispose();
     }
     
-    private IResourceChangeListener editorUpdater = new IResourceChangeListener() {
-        @Override
-        public void resourceChanged(IResourceChangeEvent event) {
-            switch (event.getType()) {
-                case IResourceChangeEvent.PRE_CLOSE:
-                case IResourceChangeEvent.PRE_DELETE:
-                    handlerCloseProject(event);
-                    break;
-                case IResourceChangeEvent.POST_CHANGE:
-                    handleChangeProject(event);
-                    break;
-                default:
-                    break;
-            }
+    @Override
+    public void resourceChanged(IResourceChangeEvent event) {
+        switch (event.getType()) {
+        case IResourceChangeEvent.PRE_CLOSE:
+        case IResourceChangeEvent.PRE_DELETE:
+            handlerCloseProject(event);
+            break;
+        case IResourceChangeEvent.POST_CHANGE:
+            handleChangeProject(event);
+            break;
+        default:
+            break;
         }
-    };
+    }
     
     private void handlerCloseProject(IResourceChangeEvent event) {
         final IResource closingProject = event.getResource();
