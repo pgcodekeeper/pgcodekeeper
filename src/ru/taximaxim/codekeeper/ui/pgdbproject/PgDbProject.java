@@ -35,8 +35,7 @@ public class PgDbProject {
     
     public Path getPathToProject() {
         return Paths.get(prefs.get(UIConsts.PROJ_PREF.REPO_ROOT_PATH, 
-                project.getLocation().toString()), 
-                prefs.get(UIConsts.PROJ_PREF.REPO_SUBDIR_PATH, ""));
+                project.getLocation().toString()));
     }
     
     /**

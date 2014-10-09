@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
@@ -204,8 +205,8 @@ public class NewProjWizard extends BasicNewProjectResourceWizard
         PreferenceStore prefs = new PreferenceStore(oldPrefs);
         prefs.load();
         pageMisc.setEncoding(prefs.getString(PROJ_PREF.ENCODING));
-        pageRepo.setProjectRootPath(prefs.getString(PROJ_PREF.REPO_ROOT_PATH) + 
-                prefs.getString(PROJ_PREF.REPO_SUBDIR_PATH));
+        pageRepo.setProjectRootPath(Paths.get(prefs.getString(PROJ_PREF.REPO_ROOT_PATH), 
+                prefs.getString(PROJ_PREF.REPO_SUBDIR_PATH)).toString());
         pageDb.setDbName(prefs.getString(PROJ_PREF.DB_NAME));
         pageDb.setDbUser(prefs.getString(PROJ_PREF.DB_USER));
         pageDb.setDbPass(prefs.getString(PROJ_PREF.DB_PASS));
