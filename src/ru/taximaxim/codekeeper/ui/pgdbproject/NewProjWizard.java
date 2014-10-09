@@ -468,16 +468,30 @@ class PageDb extends WizardPage implements Listener {
         radioDb.notifyListeners(SWT.Selection, new Event());
     }
     
+    private void setSourceDump() {
+        radioDump.setSelection(true);
+        radioNone.setSelection(false);
+        radioDb.setSelection(false);
+        radioDump.notifyListeners(SWT.Selection, new Event());
+    }
+    
+    private void setSourceNone() {
+        radioDump.setSelection(false);
+        radioNone.setSelection(true);
+        radioDb.setSelection(false);
+        radioNone.notifyListeners(SWT.Selection, new Event());
+    }
+    
     void setSource(String value) {
         switch (value) {
         case PROJ_PREF.SOURCE_TYPE_DB:
-            setDbSelected();
+            setSourceDb();
             break;
         case PROJ_PREF.SOURCE_TYPE_DUMP:
-            setDumpSelected();
+            setSourceDump();
             break;
         default:
-            setNoneSelected();
+            setSourceNone();
             break;
         }
     }
@@ -566,7 +580,15 @@ class PageDb extends WizardPage implements Listener {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (radioDb.getSelection()) {
-                    setDbSelected();
+                    grpDump.setVisible(false);
+                    lblNoSource.setVisible(false);
+                    grpDb.setVisible(true);
+
+                    ((GridData) grpDump.getLayoutData()).exclude = true;
+                    ((GridData) lblNoSource.getLayoutData()).exclude = true;
+                    ((GridData) grpDb.getLayoutData()).exclude = false;
+
+                    container.layout(false);
                 }
             }
         });
@@ -579,7 +601,15 @@ class PageDb extends WizardPage implements Listener {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (radioDump.getSelection()) {
-                    setDumpSelected();
+                    grpDb.setVisible(false);
+                    lblNoSource.setVisible(false);
+                    grpDump.setVisible(true);
+
+                    ((GridData) grpDb.getLayoutData()).exclude = true;
+                    ((GridData) lblNoSource.getLayoutData()).exclude = true;
+                    ((GridData) grpDump.getLayoutData()).exclude = false;
+
+                    container.layout(false);
                 }
             }
         });
@@ -590,7 +620,15 @@ class PageDb extends WizardPage implements Listener {
         radioNone.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                setNoneSelected();
+                grpDb.setVisible(false);
+                grpDump.setVisible(false);
+                lblNoSource.setVisible(true);
+
+                ((GridData) grpDb.getLayoutData()).exclude = true;
+                ((GridData) grpDump.getLayoutData()).exclude = true;
+                ((GridData) lblNoSource.getLayoutData()).exclude = false;
+
+                container.layout(false);
             }
         });
         radioNone.addListener(SWT.Selection, this);
@@ -668,42 +706,6 @@ class PageDb extends WizardPage implements Listener {
     public void handleEvent(Event event) {
         getWizard().getContainer().updateButtons();
         getWizard().getContainer().updateMessage();
-    }
-
-    private void setDbSelected() {
-        grpDump.setVisible(false);
-        lblNoSource.setVisible(false);
-        grpDb.setVisible(true);
-
-        ((GridData) grpDump.getLayoutData()).exclude = true;
-        ((GridData) lblNoSource.getLayoutData()).exclude = true;
-        ((GridData) grpDb.getLayoutData()).exclude = false;
-
-        container.layout(false);
-    }
-
-    private void setDumpSelected() {
-        grpDb.setVisible(false);
-        lblNoSource.setVisible(false);
-        grpDump.setVisible(true);
-
-        ((GridData) grpDb.getLayoutData()).exclude = true;
-        ((GridData) lblNoSource.getLayoutData()).exclude = true;
-        ((GridData) grpDump.getLayoutData()).exclude = false;
-
-        container.layout(false);
-    }
-
-    private void setNoneSelected() {
-        grpDb.setVisible(false);
-        grpDump.setVisible(false);
-        lblNoSource.setVisible(true);
-
-        ((GridData) grpDb.getLayoutData()).exclude = true;
-        ((GridData) grpDump.getLayoutData()).exclude = true;
-        ((GridData) lblNoSource.getLayoutData()).exclude = false;
-
-        container.layout(false);
     }
 }
 
