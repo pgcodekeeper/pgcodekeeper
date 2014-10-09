@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.loader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
@@ -42,12 +43,15 @@ public class JdbcAclParser {
      * 
      * @param aclArrayAsString  String representation of AclItem array
      * @param maxTypes  Maximum available privilege bits for target DB object
+     * @param object 
      * @param owner     Owner name (owner's privileges go first)
      * @return
      */
-    public LinkedHashMap <String, String> parse(String aclArrayAsString, int maxTypes, String owner){
+    public LinkedHashMap <String, String> parse(String aclArrayAsString, int maxTypes, String order, String owner){
         LinkedHashMap<String, String> privileges = new LinkedHashMap<String, String>();
         ArrayList<String>  acls = new ArrayList<String>(Arrays.asList(aclArrayAsString.replace("{", "").replace("}", "").split(",")));
+        
+        // move owner's grants to front
         for (String s : acls){
             if (s.startsWith(owner)){
                 acls.remove(s);
@@ -55,18 +59,27 @@ public class JdbcAclParser {
                 break;
             }
         }
+        
         for(String s : acls){
             String aclExpression = s.substring(0, s.indexOf("/"));
             int indexOfEqualsSign = aclExpression.indexOf("=");
             String grantee = aclExpression.substring(0, indexOfEqualsSign);
             
+            // reorder chars according to order
+            String grantsString = aclExpression.substring(indexOfEqualsSign + 1);
+            List<Character> grantTypeChars = new ArrayList<Character>(grantsString.length());
+            for(int i = 0; i < order.length(); i++){
+                if (grantsString.contains(String.valueOf(order.charAt(i)))){
+                    grantTypeChars.add(order.charAt(i));
+                }
+            }
+            
             StringBuilder grantTypesParsed = new StringBuilder();
-            char[] grantTypeChars = aclExpression.substring(indexOfEqualsSign + 1).toCharArray();
-            if (grantTypeChars.length < maxTypes){
-                for(int i = 0; i < grantTypeChars.length; i++){
-                    char c = grantTypeChars[i];
+            if (grantTypeChars.size() < maxTypes){
+                for(int i = 0; i < grantTypeChars.size(); i++){
+                    char c = grantTypeChars.get(i);
                     grantTypesParsed.append(PrivilegeTypes.valueOf(String.valueOf(c)));
-                    if (i < grantTypeChars.length - 1){
+                    if (i < grantTypeChars.size() - 1){
                         grantTypesParsed.append(",");
                     }
                 }                

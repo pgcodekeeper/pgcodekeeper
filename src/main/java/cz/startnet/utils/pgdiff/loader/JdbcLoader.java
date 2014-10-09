@@ -910,19 +910,24 @@ public class JdbcLoader {
             return;
         }
         String stType = "";
+        String order = "arwdDxtXUCTc";
         int possiblePrivilegeCount = 12;
         if (st instanceof PgSequence){
             stType = "SEQUENCE";
             possiblePrivilegeCount = 3;
+            order = "rUw";
         }else if (st instanceof PgFunction){
             stType = "FUNCTION";
             possiblePrivilegeCount = 1;
+            order = "X";
         }else if (st instanceof PgTable || st instanceof PgView){
             stType = "TABLE";
             possiblePrivilegeCount = 7;
+            order = "raxdtDw";
         }else if (st instanceof PgSchema){
             stType = "SCHEMA";
             possiblePrivilegeCount = 2;
+            order = "CU";
         }else{
             throw new IllegalStateException("Not supported PgStatement class");
         }
@@ -931,7 +936,7 @@ public class JdbcLoader {
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
         st.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
         
-        LinkedHashMap<String, String> grants = new JdbcAclParser().parse(aclItemsArrayAsString, possiblePrivilegeCount, owner);
+        LinkedHashMap<String, String> grants = new JdbcAclParser().parse(aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
         for(String granteeName : grants.keySet()){
             String privDefinition = grants.get(granteeName) + " ON " + stType + " " + stSignature + " TO " + granteeName;
             st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));

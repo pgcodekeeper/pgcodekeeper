@@ -183,13 +183,15 @@ public interface JdbcQueries {
             + "     c.relowner, "
             + "     definition "
             + "FROM "
-            + "     pg_catalog.pg_index i, "
-            + "     pg_catalog.pg_class c, "
+            + "     pg_catalog.pg_index i "
+            + "     JOIN pg_catalog.pg_class c ON c.oid = i.indexrelid"
+            + "     LEFT OUTER JOIN pg_catalog.pg_constraint cons ON cons.conindid = i.indexrelid, "
             + "     pg_get_indexdef(c.oid) definition "
             + "WHERE "
             + "     i.indrelid = ? AND "
-            + "     c.oid = i.indexrelid AND "
-            + "     i.indisprimary = FALSE";
+            + "     i.indisprimary = FALSE AND "
+            + "     i.indisexclusion = FALSE AND"
+            + "     cons.conindid is NULL";
     
     String QUERY_TABLE_CONSTRAINTS = 
             "SELECT "
