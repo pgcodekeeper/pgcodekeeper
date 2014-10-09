@@ -100,8 +100,6 @@ public class CommitDialog extends TrayDialog {
     
     @Override
     protected void okPressed() {
-        /// TODO unused??
-        // this.filteredDiffTree = dtvTop.filterDiffTree();
         super.okPressed();
     }
     

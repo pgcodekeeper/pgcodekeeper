@@ -29,6 +29,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 import com.jcraft.jsch.JSchException;
 
+@Deprecated // TODO remove
 public class GitPrefPage extends FieldEditorPreferencePage
         implements IWorkbenchPreferencePage {
     
