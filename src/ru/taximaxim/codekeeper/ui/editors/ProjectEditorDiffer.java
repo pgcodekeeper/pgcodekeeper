@@ -147,9 +147,12 @@ public class ProjectEditorDiffer extends MultiPageEditorPart {
                 
                 @Override
                 public void run() {
-                    // FIXME NPE
-                    commit.reset();
-                    diff.reset();                    
+                    if (!commit.isDisposed()) {
+                        commit.reset();
+                    }
+                    if (!diff.isDisposed()) {
+                        diff.reset();
+                    }                   
                 }
             });
         }
@@ -184,12 +187,17 @@ class CommitPage extends DiffPresentationPane {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                commit();
+                try {
+                    commit();
+                } catch (PgCodekeeperUIException e1) {
+                    ExceptionNotifier.showErrorDialog(
+                            "Error while save changes", e1);
+                }
             }
         });
     }
     
-    private void commit() {
+    private void commit() throws PgCodekeeperUIException {
         if (diffTable.getCheckedElementsCount() < 1){
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_INFORMATION);
             mb.setMessage(Messages.please_check_at_least_one_row);
@@ -286,11 +294,11 @@ class CommitPage extends DiffPresentationPane {
                     proj.getPrefs().get(PROJ_PREF.REPO_URL, ""));
             new ProgressMonitorDialog(getShell()).run(true, false, commitRunnable);
         } catch (InvocationTargetException ex) {
-            throw new IllegalStateException(
+            throw new PgCodekeeperUIException(
                     Messages.error_in_the_project_modifier_thread, ex);
         } catch (InterruptedException ex) {
             // assume run() was called as non cancelable
-            throw new IllegalStateException(
+            throw new PgCodekeeperUIException(
                     Messages.project_modifier_thread_cancelled_shouldnt_happen, ex);
         }
 

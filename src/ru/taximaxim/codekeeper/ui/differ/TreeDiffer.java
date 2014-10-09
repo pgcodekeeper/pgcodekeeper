@@ -60,7 +60,6 @@ public class TreeDiffer implements IRunnableWithProgress {
             dbSource = this.dbSource.get(pm.newChild(33)); // 33
             dbTarget = this.dbTarget.get(pm.newChild(33)); // 66
         } catch(IOException ex) {
-            ExceptionNotifier.showErrorDialog("Error while loading databases", ex);
             throw new InvocationTargetException(ex);
         }
         
