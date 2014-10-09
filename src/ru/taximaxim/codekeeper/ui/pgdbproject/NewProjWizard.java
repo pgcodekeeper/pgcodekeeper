@@ -219,7 +219,6 @@ public class NewProjWizard extends BasicNewProjectResourceWizard
         setDbSource(newPrefs);
         newPrefs.put(PROJ_PREF.ENCODING, pageMisc.getEncoding());
         newPrefs.put(PROJ_PREF.REPO_ROOT_PATH, pageRepo.getProjectRootPath());
-        newPrefs.put(PROJ_PREF.REPO_ROOT_PATH, pageRepo.getProjectRootPath());
         newPrefs.put(PROJ_PREF.DB_NAME, pageDb.getDbName());
         newPrefs.put(PROJ_PREF.DB_USER, pageDb.getDbUser());
         newPrefs.put(PROJ_PREF.DB_PASS, pageDb.getDbPass());
