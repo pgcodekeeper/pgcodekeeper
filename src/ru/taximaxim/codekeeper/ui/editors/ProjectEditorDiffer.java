@@ -147,10 +147,10 @@ public class ProjectEditorDiffer extends MultiPageEditorPart {
                 
                 @Override
                 public void run() {
-                    if (!commit.isDisposed()) {
+                    if (commit != null && !commit.isDisposed()) {
                         commit.reset();
                     }
-                    if (!diff.isDisposed()) {
+                    if (diff != null && !diff.isDisposed()) {
                         diff.reset();
                     }                   
                 }
