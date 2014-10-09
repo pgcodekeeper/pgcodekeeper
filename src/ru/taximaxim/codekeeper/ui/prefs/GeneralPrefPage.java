@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
-import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
@@ -35,10 +34,5 @@ public class GeneralPrefPage extends FieldEditorPreferencePage
         
         addField(new StringFieldEditor(PREF.PGDUMP_CUSTOM_PARAMS,
                 Messages.generalPrefPage_pg_dump_custom_parameters, getFieldEditorParent()));
-        
-        BooleanFieldEditor openLast = new BooleanFieldEditor(
-                PREF.OPEN_LAST_ON_START, Messages.generalPrefPage_open_last_project_on_startup,
-                FileFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());
-        addField(openLast);
     }
 }

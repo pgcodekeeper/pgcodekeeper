@@ -21,7 +21,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(PREF.DB_STORE, "default\t\t\t\t\t0"); //$NON-NLS-1$
         store.setDefault(PREF.GIT_KEY_PRIVATE_FILE, new File(new File(
                 System.getProperty("user.home"), ".ssh"), "id_rsa").toString()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        store.setDefault(PREF.RECENT_PROJECTS, ""); //$NON-NLS-1$
         store.setDefault(PREF.PGDUMP_CUSTOM_PARAMS, ""); //$NON-NLS-1$
         store.setDefault(PREF.IGNORE_OBJECTS, ""); //$NON-NLS-1$
         store.setDefault(DB_UPDATE_PREF.USE_PSQL_DEPCY, true);
