@@ -42,7 +42,7 @@ import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.parts.Console;
+import ru.taximaxim.codekeeper.ui.parts.ConsoleFactory;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class SqlScriptDialog extends MessageDialog {
@@ -273,72 +273,67 @@ public class SqlScriptDialog extends MessageDialog {
         // case Run script
         if (buttonId == 0 && !isRunning){
             this.runScriptBtn = getButton(0);
-            final File fileTmpScript;
-            try {
-                // TODO remove fileTmpScript if script is done or interrupted
-                fileTmpScript = new TempFile("tmp_rollon_", ".sql").get(); //$NON-NLS-1$ //$NON-NLS-2$
-                
-               try (PrintWriter writer = new PrintWriter(fileTmpScript, "UTF-8")) { //$NON-NLS-1$
-                   writer.write(textRetrieved);
-               }
-            } catch (IOException ex) {
+            
+            try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
+                try (PrintWriter writer = new PrintWriter(tempFile.get(),
+                        "UTF-8")) { //$NON-NLS-1$
+                    writer.write(textRetrieved);
+                }
+
+                List<String> command = Arrays.asList(getReplacedString().replace(
+                        SCRIPT_PLACEHOLDER, 
+                        tempFile.get().getAbsolutePath()).split(Pattern.quote(" "))); //$NON-NLS-1$
+                final ProcessBuilder pb = new ProcessBuilder(command);
+
+                // new runnable to unlock the UI thread
+                Runnable launcher = new Runnable() {
+
+                    @Override
+                    public void run() {
+                        try {
+                            String scriptOutputRes = StdStreamRedirector.launchAndRedirect(pb);
+                            if (usePsqlDepcy) {
+                                addDepcy = getDependenciesFromOutput(scriptOutputRes);
+                            }
+                        } catch (IOException ex) {
+                            throw new IllegalStateException(ex);
+                        } finally {
+                            // request UI change: button label changed
+                            SqlScriptDialog.this.getShell().getDisplay().syncExec(new Runnable() {
+
+                                        @Override
+                                        public void run() {
+                                            if (!runScriptBtn.isDisposed()) {
+                                                runScriptBtn.setText(RUN_SCRIPT_LABEL);
+                                                showAddDepcyDialog();
+                                            }
+                                            isRunning = false;
+                                        }
+                                    });
+                        }
+                    }
+                };
+                // run thread that calls StdStreamRedirector.launchAndRedirect
+                scriptThread = new Thread(launcher);
+                scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                            @Override
+                            public void uncaughtException(Thread t, Throwable e) {
+                                ExceptionNotifier.showErrorDialog(
+                                        Messages.sqlScriptDialog_exception_during_script_execution,e);
+                            }
+                        });
+                scriptThread.start();
+            } catch (IOException | IllegalStateException ex) {
                 ExceptionNotifier.showErrorDialog(
-                        Messages.sqlScriptDialog_error_saving_script_to_tmp_file, ex);
+                        "Error while executing script", ex);
                 return;
             }
-                
-            List<String> command = Arrays.asList(getReplacedString()
-                    .replace(SCRIPT_PLACEHOLDER, fileTmpScript.getAbsolutePath())
-                    .split(Pattern.quote(" "))); //$NON-NLS-1$
-            final ProcessBuilder pb = new ProcessBuilder(command);
-            
-            // new runnable to unlock the UI thread
-            Runnable launcher = new Runnable() {
-                
-                @Override
-                public void run() {
-                    try {
-                        String scriptOutputRes = StdStreamRedirector.launchAndRedirect(pb);
-                        if (usePsqlDepcy) {
-                            addDepcy = getDependenciesFromOutput(scriptOutputRes);
-                        }
-                    } catch (IOException ex) {
-                        throw new IllegalStateException(ex);
-                    } finally {
-                        fileTmpScript.delete();
-                        
-                        // request UI change: button label changed
-                        SqlScriptDialog.this.getShell().getDisplay().syncExec(
-                                new Runnable() {
-                                    
-                                    @Override
-                                    public void run() {
-                                        if (!runScriptBtn.isDisposed()) {
-                                            runScriptBtn.setText(RUN_SCRIPT_LABEL);
-                                            showAddDepcyDialog();
-                                        }
-                                        isRunning = false;
-                                    }
-                                });
-                    }
-                }
-            };
-            // run thread that calls StdStreamRedirector.launchAndRedirect
-            scriptThread = new Thread(launcher);
-            scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler(){
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    ExceptionNotifier.notify(
-                            Messages.sqlScriptDialog_exception_during_script_execution, e);
-                }
-            });
-            scriptThread.start();
             getButton(0).setText(STOP_SCRIPT_LABEL);
             isRunning = true;
         }
         // case Stop script
         else if (buttonId == 0 && isRunning){
-            Console.addMessage(Messages.sqlScriptDialog_script_execution_interrupted);
+            ConsoleFactory.write(Messages.sqlScriptDialog_script_execution_interrupted);
             Log.log(Log.LOG_INFO, Messages.sqlScriptDialog_script_interrupted_by_user);
             
             scriptThread.interrupt();
@@ -358,13 +353,13 @@ public class SqlScriptDialog extends MessageDialog {
                 try (PrintWriter writer = new PrintWriter(script, "UTF-8")) { //$NON-NLS-1$
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
-                    ExceptionNotifier.notify(
+                    ExceptionNotifier.showErrorDialog(
                             Messages.sqlScriptDialog_error_saving_script_to_file, ex);
                     return;
                 }
                 
                 String fileSaved = Messages.sqlScriptDialog_script_saved_to_file + script.getAbsolutePath();
-                Console.addMessage(fileSaved);
+                ConsoleFactory.write(fileSaved);
                 Log.log(Log.LOG_INFO, fileSaved);
             }
         } else {
@@ -512,7 +507,7 @@ public class SqlScriptDialog extends MessageDialog {
             try {
                 history.addHistoryEntry(cmbScript.getText());
             } catch (IOException e) {
-                ExceptionNotifier.notify("Error while trying to add command history entry", e);
+                ExceptionNotifier.showErrorDialog("Error while trying to add command history entry", e);
             }
             return super.close();
         }
