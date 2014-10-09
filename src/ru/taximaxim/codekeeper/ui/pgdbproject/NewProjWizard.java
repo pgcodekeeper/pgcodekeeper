@@ -461,7 +461,7 @@ class PageDb extends WizardPage implements Listener {
         return radioDb.getSelection();
     }
 
-    public void setSourceDb() {
+    void setSourceDb() {
         radioDump.setSelection(false);
         radioNone.setSelection(false);
         radioDb.setSelection(true);
@@ -504,7 +504,7 @@ class PageDb extends WizardPage implements Listener {
         return radioNone.getSelection();
     }
 
-    public void setSourceNoneEnabled(boolean enabled) {
+    void setSourceNoneEnabled(boolean enabled) {
         radioNone.setEnabled(enabled);
     }
 
@@ -739,7 +739,7 @@ class PageMisc extends WizardPage {
                 | SWT.READ_ONLY);
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
-        cmbEncoding.select(cmbEncoding.indexOf(DEFAULT_ENCODING)); //$NON-NLS-1$
+        cmbEncoding.select(cmbEncoding.indexOf(DEFAULT_ENCODING)); 
 
         setControl(container);
     }
