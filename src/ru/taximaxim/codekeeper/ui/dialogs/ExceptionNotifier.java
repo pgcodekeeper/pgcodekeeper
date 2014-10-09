@@ -23,7 +23,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.parts.Console;
+import ru.taximaxim.codekeeper.ui.parts.ConsoleFactory;
 
 /**
  * Helper class for notifying user of exceptions thrown.<br>
@@ -66,7 +66,7 @@ public class ExceptionNotifier {
         }
         
         if (outputToConsole){
-            Console.addMessage(message + ": " + initialReason); //$NON-NLS-1$
+            ConsoleFactory.write(message + ": " + initialReason); //$NON-NLS-1$
         }
         if (showInDialog){
             final IStatus status = new Status(IStatus.ERROR, PLUGIN_ID.THIS,

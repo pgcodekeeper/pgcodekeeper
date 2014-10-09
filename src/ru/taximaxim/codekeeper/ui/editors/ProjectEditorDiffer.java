@@ -54,7 +54,7 @@ import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.parts.Console;
+import ru.taximaxim.codekeeper.ui.parts.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -302,7 +302,7 @@ class CommitPage extends DiffPresentationPane {
                     Messages.project_modifier_thread_cancelled_shouldnt_happen, ex);
         }
 
-        Console.addMessage(Messages.commitPartDescr_success_project_updated);
+        ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
     }
     
     @Override
