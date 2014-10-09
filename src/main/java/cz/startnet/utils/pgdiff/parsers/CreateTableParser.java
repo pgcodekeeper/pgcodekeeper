@@ -98,8 +98,7 @@ public class CreateTableParser {
         parser.expect("(");
 
         while (!parser.expectOptional(")")) {
-            table.addInherits(
-                    ParserUtils.getObjectName(parser.parseIdentifier()));
+            table.addInherits(parser.parseIdentifier());
 
             if (parser.expectOptional(")")) {
                 break;
