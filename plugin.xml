@@ -26,7 +26,7 @@
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.Diff"
             id="ru.taximaxim.codekeeper.ui.command.Diff"
-            name="%command.commandname.10">
+            name="%command.commandname.Diff">
       </command>
       <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
@@ -65,7 +65,7 @@
             </visibleWhen>
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.Diff"
-                  label="%handledmenuitem.label.6"
+                  label="%handledmenuitem.label.Diff"
                   mnemonic="D"
                   style="push">
             </command>
@@ -100,7 +100,7 @@
             </visibleWhen>
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.Diff"
-                  label="%handledmenuitem.label.6"
+                  label="%handledmenuitem.label.Diff"
                   mnemonic="D"
                   style="push">
             </command>
@@ -127,14 +127,14 @@
             category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
             class="ru.taximaxim.codekeeper.ui.parts.TestPart"
             id="ru.taximaxim.codekeeper.ui.part.TestPart"
-            name="%part.label.4"
+            name="%part.label.TestPart"
             restorable="false">
       </e4view>
       <e4view
             category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
             class="com.opcoach.e4.contextExplorer.parts.ContextExplorerPart"
             id="ru.taximaxim.codekeeper.ui.part.CtXp"
-            name="%part.label.5"
+            name="%part.label.CtXp"
             restorable="false">
       </e4view>
    </extension>
@@ -144,7 +144,7 @@
             class="ru.taximaxim.codekeeper.ui.perspectives.DevtestPersp"
             icon="icons/beta_violet.png"
             id="ru.taximaxim.codekeeper.ui.perspective.testbs"
-            name="%perspective.label.2">
+            name="%perspective.label.codekeeper_test">
       </perspective>
    </extension>
    <extension
