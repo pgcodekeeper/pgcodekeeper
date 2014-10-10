@@ -123,7 +123,7 @@ public class SelectParser {
             if (p.expectOptional("FROM")) {
                 do {
                     String withoutParens = removeExcessParens(
-                            new StringBuilder(p.getExpression(CLAUSES)), 0, 0, 0).toString();
+                            new StringBuilder(p.getExpression(CLAUSES)), 0, 0, 0, new ArrayList<Integer>()).toString();
                     from(new Parser(withoutParens), tableAliases, columns);
                 } while (p.expectOptional(","));
                 resolveAliases(columns, tableAliases);
@@ -181,24 +181,30 @@ public class SelectParser {
      * Leaves single-quoted parens intact
      * 
      * @param sb    Initial query string
+     * @param subselectStartsAt 
      * @return      Query string with excessive parens replaced by spaces
      */
     private StringBuilder removeExcessParens(StringBuilder sb, int startIndex, 
-            int parensCount, int subselectCounter) {
+            int parensCount, int subselectCounter, List<Integer> subselectStartsAt) {
         for(int j = startIndex; j < sb.length(); j++){
             if (sb.charAt(j) == '('){
                 parensCount++;
                 String next = sb.substring(j + 1).trim();
                 if (next.startsWith("SELECT ")){
                     subselectCounter++;
-                    removeExcessParens(sb, j + 1, parensCount, subselectCounter);
+                    subselectStartsAt.add(parensCount);
+                    removeExcessParens(sb, j + 1, parensCount, subselectCounter, subselectStartsAt);
                     break;
                 }else{
                     sb.setCharAt(j, ' ');
                 }
             }else if (sb.charAt(j) == ')'){
                 if (subselectCounter > 0){
-                    if (subselectCounter < parensCount){
+                    if (subselectStartsAt.contains(parensCount)){
+                        subselectStartsAt.remove(subselectStartsAt.indexOf(parensCount));
+                        parensCount--;
+                        subselectCounter--;
+                    }else if (subselectCounter < parensCount){
                         parensCount--;
                         sb.setCharAt(j, ' ');
                     }else{
@@ -211,7 +217,7 @@ public class SelectParser {
                 }
             }else if (sb.charAt(j) == '\''){
                 int nextQuoteIndex = sb.toString().indexOf('\'', j + 1);
-                removeExcessParens(sb, nextQuoteIndex + 1, parensCount, subselectCounter);
+                removeExcessParens(sb, nextQuoteIndex + 1, parensCount, subselectCounter, subselectStartsAt);
                 break;
             }
         }
