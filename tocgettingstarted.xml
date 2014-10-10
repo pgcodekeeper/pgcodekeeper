@@ -6,8 +6,6 @@
     <topic href="html/gettingstarted/new_proj_wzd/new_wizard.html" label="Мастер создания нового проекта">
        <topic href="html/gettingstarted/new_proj_wzd/project_initializer.html" label="Инициализация проекта">
        </topic>
-       <topic href="html/gettingstarted/new_proj_wzd/work_dir_settings.html" label="Установка рабочей директории">
-       </topic>
        <topic href="html/gettingstarted/new_proj_wzd/schema_src_settings.html" label="Установки источника схемы">
        </topic>
        <topic href="html/gettingstarted/new_proj_wzd/miscellaneous.html" label="Прочее">
