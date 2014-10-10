@@ -4,6 +4,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 public class ProjectEditorInput implements IEditorInput  {
 
     private final String projName;
@@ -43,7 +45,7 @@ public class ProjectEditorInput implements IEditorInput  {
 
     @Override
     public String getToolTipText() {
-        return "Project " + projName;
+        return projName + Messages.ProjectEditorInput_pgcodekeeper_project;
     }
     
     @Override

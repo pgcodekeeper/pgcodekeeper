@@ -154,9 +154,9 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                         differ.getDiffDirect(), differ.getDiffReverse());
                 pageResult.layout();
             }
-        } catch(Exception e1) {
+        } catch(PgCodekeeperUIException e1) {
             e.doit = false;
-            ExceptionNotifier.showErrorDialog("Unexpected error", e1);
+            ExceptionNotifier.showErrorDialog(Messages.DiffWizard_unexpected_error, e1);
             return;
         }
     }
@@ -305,11 +305,11 @@ class PageDiff extends WizardPage implements Listener {
                 dbs = DbSource.fromProject(proj);
             } else {
                 dbs = DbSource.fromGit(
-                                proj.getPrefs().get(PROJ_PREF.REPO_URL, ""),
-                                proj.getPrefs().get(PROJ_PREF.REPO_USER, ""),
-                                proj.getPrefs().get(PROJ_PREF.REPO_PASS, ""),
+                                proj.getPrefs().get(PROJ_PREF.REPO_URL, ""), //$NON-NLS-1$
+                                proj.getPrefs().get(PROJ_PREF.REPO_USER, ""), //$NON-NLS-1$
+                                proj.getPrefs().get(PROJ_PREF.REPO_PASS, ""), //$NON-NLS-1$
                                 getProjRev(),
-                                proj.getPrefs().get(PROJ_PREF.ENCODING, ""),
+                                proj.getPrefs().get(PROJ_PREF.ENCODING, ""), //$NON-NLS-1$
                                 mainPrefs.getString(PREF.GIT_KEY_PRIVATE_FILE));
             }
             break;
@@ -567,9 +567,9 @@ class PageDiff extends WizardPage implements Listener {
                     try {
                         tmpProj = PgDbProject.getProjFromFile(dir);
                         cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getPrefs().get(
-                                PROJ_PREF.ENCODING, "")));
+                                PROJ_PREF.ENCODING, ""))); //$NON-NLS-1$
                     } catch (PgCodekeeperUIException e1) {
-                        ExceptionNotifier.showErrorDialog("Cannot get project", e1);
+                        ExceptionNotifier.showErrorDialog(Messages.DiffWizard_error_opening_project, e1);
                     }
                 }
             }
@@ -682,7 +682,7 @@ class PageDiff extends WizardPage implements Listener {
                 break;
             }
         } catch (PgCodekeeperUIException e) {
-            errMsg = "Cannot get target DB type";
+            errMsg = Messages.DiffWizard_bad_target_db;
             return false;
         }
 
@@ -864,7 +864,7 @@ class PageResult extends WizardPage {
                     try (final PrintWriter encodedWriter = new UnixPrintWriter(
                             new OutputStreamWriter(
                                     new FileOutputStream(saveTo),
-                                    proj.getPrefs().get(PROJ_PREF.ENCODING, "")))) {
+                                    proj.getPrefs().get(PROJ_PREF.ENCODING, "")))) { //$NON-NLS-1$
                         Text txtDiff = (Text) tabs.getSelection()[0]
                                 .getControl();
                         encodedWriter.println(txtDiff.getText());

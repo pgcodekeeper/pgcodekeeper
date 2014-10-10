@@ -57,14 +57,14 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         SubMonitor taskpm = pm.newChild(25); // 50
 
         PgDatabase db;
-        switch (props.getPrefs().get(PROJ_PREF.SOURCE, "")) {
+        switch (props.getPrefs().get(PROJ_PREF.SOURCE, "")) { //$NON-NLS-1$
         case PROJ_PREF.SOURCE_TYPE_DB:
             db = DbSource.fromDb(exePgdump, pgdumpCustom, props).get(taskpm);
             break;
 
         case PROJ_PREF.SOURCE_TYPE_DUMP:
             db = DbSource.fromFile(dumpPath,
-                    props.getPrefs().get(PROJ_PREF.ENCODING, "")).get(taskpm);
+                    props.getPrefs().get(PROJ_PREF.ENCODING, "")).get(taskpm); //$NON-NLS-1$
             break;
 
         default:

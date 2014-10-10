@@ -29,7 +29,7 @@ public class OpenEditor extends AbstractHandler {
                 openEditor(HandlerUtil.getActiveWorkbenchWindow(event).getActivePage(), proj);
             } catch (PgCodekeeperUIException e) {
                 ExceptionNotifier.showErrorDialog(
-                        "Cannot open editor on project" + proj.getName(), e);
+                        Messages.OpenEditor_error_opening_editor + proj.getName(), e);
             }
         }
         return null;
@@ -58,7 +58,7 @@ public class OpenEditor extends AbstractHandler {
         try {
               page.openEditor(input, EDITOR.PROJECT);
           } catch (PartInitException e) {
-              throw new PgCodekeeperUIException("Cannot open editor", e);
+              throw new PgCodekeeperUIException(Messages.OpenEditor_error_opening_editor2, e);
           }
     }
 }

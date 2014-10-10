@@ -197,7 +197,7 @@ public abstract class DiffPresentationPane extends Composite {
                     loadChanges(proj, projProps, mainPrefs);
                 } catch (PgCodekeeperUIException e1) {
                     ExceptionNotifier.showErrorDialog(
-                            "Error while loading changes", e1);
+                            Messages.DiffPresentationPane_error_loading_changes, e1);
                 }
             }
         });
@@ -207,7 +207,7 @@ public abstract class DiffPresentationPane extends Composite {
         dbSrc.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
 
         boolean useDbPicker = false;
-        String src = projProps.get(PROJ_PREF.SOURCE, "");
+        String src = projProps.get(PROJ_PREF.SOURCE, ""); //$NON-NLS-1$
         if (src.equals(PROJ_PREF.SOURCE_TYPE_NONE)) {
             btnNone.setSelection(true);
             btnGetChanges.setEnabled(false);
@@ -220,10 +220,10 @@ public abstract class DiffPresentationPane extends Composite {
         showDbPicker(useDbPicker);
 
         if (useDbPicker) {
-            dbSrc.txtDbName.setText(projProps.get(PROJ_PREF.DB_NAME, ""));
-            dbSrc.txtDbUser.setText(projProps.get(PROJ_PREF.DB_USER, ""));
-            dbSrc.txtDbPass.setText(projProps.get(PROJ_PREF.DB_PASS, ""));
-            dbSrc.txtDbHost.setText(projProps.get(PROJ_PREF.DB_HOST, ""));
+            dbSrc.txtDbName.setText(projProps.get(PROJ_PREF.DB_NAME, "")); //$NON-NLS-1$
+            dbSrc.txtDbUser.setText(projProps.get(PROJ_PREF.DB_USER, "")); //$NON-NLS-1$
+            dbSrc.txtDbPass.setText(projProps.get(PROJ_PREF.DB_PASS, "")); //$NON-NLS-1$
+            dbSrc.txtDbHost.setText(projProps.get(PROJ_PREF.DB_HOST, "")); //$NON-NLS-1$
             dbSrc.txtDbPort
                     .setText(String.valueOf(projProps.getInt(PROJ_PREF.DB_PORT, 0)));
         }
@@ -253,7 +253,7 @@ public abstract class DiffPresentationPane extends Composite {
                 return;
             }
             dbsRemote = DbSource
-                    .fromFile(dumpfile, projProps.get(PROJ_PREF.ENCODING, ""));
+                    .fromFile(dumpfile, projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
         } else if (btnDb.getSelection()) {
             int port;
             try {
@@ -270,7 +270,7 @@ public abstract class DiffPresentationPane extends Composite {
             dbsRemote = DbSource.fromDb(exePgdump, pgdumpCustom,
                     dbSrc.txtDbHost.getText(), port, dbSrc.txtDbUser.getText(),
                     dbSrc.txtDbPass.getText(), dbSrc.txtDbName.getText(),
-                    projProps.get(PROJ_PREF.ENCODING, ""));
+                    projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
         } else {
             throw new PgCodekeeperUIException(Messages.undefined_source_for_db_changes);
         }

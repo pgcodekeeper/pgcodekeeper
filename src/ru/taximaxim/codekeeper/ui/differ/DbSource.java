@@ -133,10 +133,10 @@ class DbSourceRepo extends DbSource {
 
     public DbSourceRepo(String repoExec, PgDbProject proj, String rev, String privateKeyFile) {
         this(repoExec, 
-                 proj.getPrefs().get(PROJ_PREF.REPO_URL, ""), proj
-                        .getPrefs().get(PROJ_PREF.REPO_USER, ""), proj
-                        .getPrefs().get(PROJ_PREF.REPO_PASS, ""), rev, proj
-                        .getPrefs().get(PROJ_PREF.ENCODING, ""), privateKeyFile);
+                 proj.getPrefs().get(PROJ_PREF.REPO_URL, ""), proj //$NON-NLS-1$
+                        .getPrefs().get(PROJ_PREF.REPO_USER, ""), proj //$NON-NLS-1$
+                        .getPrefs().get(PROJ_PREF.REPO_PASS, ""), rev, proj //$NON-NLS-1$
+                        .getPrefs().get(PROJ_PREF.ENCODING, ""), privateKeyFile); //$NON-NLS-1$
     }
 
     DbSourceRepo(String repoExec, String url, String user,
@@ -181,7 +181,7 @@ class DbSourceProject extends DbSource {
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(proj
                 .getPathToProject().toString(), proj.getPrefs()
-                .get(PROJ_PREF.ENCODING, ""), false, false);
+                .get(PROJ_PREF.ENCODING, ""), false, false); //$NON-NLS-1$
     }
 }
 
@@ -217,12 +217,12 @@ class DbSourceDb extends DbSource {
 
     DbSourceDb(String exePgdump, String customParams, PgDbProject props) {
         this(exePgdump, customParams,
-                props.getPrefs().get(PROJ_PREF.DB_HOST, ""),
+                props.getPrefs().get(PROJ_PREF.DB_HOST, ""), //$NON-NLS-1$
                 props.getPrefs().getInt(PROJ_PREF.DB_PORT, 0),
-                props.getPrefs().get(PROJ_PREF.DB_USER, ""),
-                props.getPrefs().get(PROJ_PREF.DB_PASS, ""),
-                props.getPrefs().get(PROJ_PREF.DB_NAME, ""),
-                props.getPrefs().get(PROJ_PREF.ENCODING, ""));
+                props.getPrefs().get(PROJ_PREF.DB_USER, ""), //$NON-NLS-1$
+                props.getPrefs().get(PROJ_PREF.DB_PASS, ""), //$NON-NLS-1$
+                props.getPrefs().get(PROJ_PREF.DB_NAME, ""), //$NON-NLS-1$
+                props.getPrefs().get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
     }
 
     DbSourceDb(String exePgdump, String customParams,

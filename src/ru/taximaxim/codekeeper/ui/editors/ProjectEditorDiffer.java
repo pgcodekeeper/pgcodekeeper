@@ -68,7 +68,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         if (!(input instanceof ProjectEditorInput)) {
-            throw new PartInitException("Input must be ProjectEditorInput");
+            throw new PartInitException(Messages.ProjectEditorDiffer_error_bad_input_type);
         }
         ProjectEditorInput in = (ProjectEditorInput) input;
         this.proj = new PgDbProject(ResourcesPlugin.getWorkspace().getRoot()
@@ -82,10 +82,10 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     protected void createPages() {
         commit = new CommitPage(getContainer(), 
                 Activator.getDefault().getPreferenceStore(), proj);
-        setPageText(addPage(commit), "Commit");
+        setPageText(addPage(commit), Messages.ProjectEditorDiffer_page_text_commit);
         diff = new DiffPage(getContainer(), 
                 Activator.getDefault().getPreferenceStore(), proj);
-        setPageText(addPage(diff), "Diff");
+        setPageText(addPage(diff), Messages.ProjectEditorDiffer_page_text_diff);
     }
 
     @Override
@@ -189,7 +189,7 @@ class CommitPage extends DiffPresentationPane {
                     commit();
                 } catch (PgCodekeeperUIException e1) {
                     ExceptionNotifier.showErrorDialog(
-                            "Error while save changes", e1);
+                            Messages.ProjectEditorDiffer_commit_error, e1);
                 }
             }
         });
@@ -289,7 +289,7 @@ class CommitPage extends DiffPresentationPane {
 
         try {
             Log.log(Log.LOG_INFO, "Commit pressed. Commiting to " + //$NON-NLS-1$
-                    proj.getPrefs().get(PROJ_PREF.REPO_URL, ""));
+                    proj.getPrefs().get(PROJ_PREF.REPO_URL, "")); //$NON-NLS-1$
             new ProgressMonitorDialog(getShell()).run(true, false, commitRunnable);
         } catch (InvocationTargetException ex) {
             throw new PgCodekeeperUIException(
@@ -351,7 +351,7 @@ class DiffPage extends DiffPresentationPane {
                 try {
                     diff();
                 } catch (PgCodekeeperUIException e1) {
-                    ExceptionNotifier.showErrorDialog("Errors occurs while differing", e1);
+                    ExceptionNotifier.showErrorDialog(Messages.ProjectEditorDiffer_diff_error, e1);
                 }
             }
         });
@@ -367,7 +367,7 @@ class DiffPage extends DiffPresentationPane {
                         manualDepciesSource, manualDepciesTarget,
                         dbSource.getDbObject().flatten(),
                         dbTarget.getDbObject().flatten(),
-                        Messages.database, proj.getPrefs().get(PROJ_PREF.REPO_TYPE, ""));
+                        Messages.database, proj.getPrefs().get(PROJ_PREF.REPO_TYPE, "")); //$NON-NLS-1$
                 if (dialog.open() == Dialog.OK) {
                     manualDepciesSource = dialog.getDepciesSourceList();
                     manualDepciesTarget = dialog.getDepciesTargetList();

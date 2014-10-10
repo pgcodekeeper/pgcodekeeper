@@ -161,6 +161,8 @@ public class Messages extends NLS {
     public static String commitPartDescr_modifying_db_model;
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
+
+    public static String ConsoleFactory_error_opening_console;
     public static String to;
     public static String diffPaneDialog_diff_to_selected_object;
     public static String diffPartDescr_add_dependencies;
@@ -232,7 +234,23 @@ public class Messages extends NLS {
     public static String dBUpdatePrefPage_drop_column_statement;
     public static String dBUpdatePrefPage_drop_table;
     public static String dBUpdatePrefPage_set_warning_when_next_statements_present;
+    public static String DiffPresentationPane_error_loading_changes;
+
+    public static String DiffTableViewer_error_load_checked_set;
+
+    public static String DiffTableViewer_error_reading_ignored_objects;
+
+    public static String DiffTableViewer_error_save_checked_set;
+
+    public static String DiffTableViewer_error_setting_input;
+
     public static String DiffTableViewer_selected;
+    public static String DiffWizard_bad_target_db;
+
+    public static String DiffWizard_error_opening_project;
+
+    public static String DiffWizard_unexpected_error;
+
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
     public static String generalPrefPage_pg_dump_custom_parameters;
     public static String generalPrefPage_pg_dump_executable;
@@ -249,15 +267,65 @@ public class Messages extends NLS {
     public static String gitPrefPage_select_file_to_save_priv_key;
     public static String ignoreObjectsPrefPage_add_ignore;
     public static String ignoreObjectsPrefPage_delete_ignore;
+    public static String IgnoredObjectsPrefPage_error_getting_ignores_list;
+
+    public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
+
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
     public static String JGitExec_exception_thrown_at_jgit_push;
     public static String ManualDepciesDialog_set_add_depcies;
+
+    public static String NewProjWizard_demand_init_project;
+    public static String NewProjWizard_enter_project_name;
+
+    public static String NewProjWizard_error_adding_nature;
+
+    public static String NewProjWizard_error_creating_project;
+
+    public static String NewProjWizard_error_loading_old_proj;
+
+    public static String NewProjWizard_error_saving_projprefs;
+
+    public static String NewProjWizard_import_old_proj;
+
+    public static String NewProjWizard_project_name;
+
+    public static String NewProjWizard_select_old_proj;
+
+    public static String PgDbProject_error_creating_project;
+
+    public static String PgDbProject_error_deleting_project;
+
+    public static String PgDbProject_error_opening_project;
+
+    public static String PreferenceInitializer_error_saving_prefs;
+
+    public static String ProjectEditorDiffer_commit_error;
+
+    public static String ProjectEditorDiffer_diff_error;
+
+    public static String ProjectEditorDiffer_error_bad_input_type;
+
+    public static String ProjectEditorDiffer_page_text_commit;
+
+    public static String ProjectEditorDiffer_page_text_diff;
+
+    public static String ProjectEditorInput_pgcodekeeper_project;
+
     public static String ProjectUpdater_error_backup_restore;
     public static String ProjectUpdater_error_no_tempdir;
     public static String ProjectUpdater_error_update;
     public static String SqlScriptDialog_add_it_to_script;
     public static String SqlScriptDialog_command_to_execute;
     public static String SqlScriptDialog__results_of_script_revealed_dependent_objects;
+    public static String SqlScriptDialog_error_add_depcies;
+
+    public static String SqlScriptDialog_error_adding_command_history;
+
+    public static String SqlScriptDialog_error_get_script;
+
+    public static String SqlScriptDialog_error_loading_command_history;
+
     public static String SqlScriptDialog_will_be_replaced;
     public static String StdStreamRedirector_error_reading_std;
     public static String StdStreamRedirector_error_reading_std_external;

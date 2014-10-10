@@ -115,7 +115,7 @@ public class NewProjWizard extends BasicNewProjectResourceWizard
             if (!new File(sub, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
                 MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
                 mb.setMessage(Messages.missing_marker_file_in_working_directory 
-                        + sub + ' ' + "Initialize project from DB or dump file");
+                        + sub + ' ' + Messages.NewProjWizard_demand_init_project);
                 mb.setText(Messages.newProjWizard_bad_work_dir);
                 mb.open();
                 event.doit = false;
@@ -184,18 +184,18 @@ public class NewProjWizard extends BasicNewProjectResourceWizard
                 props.getPrefs().flush();
             } catch (BackingStoreException e) {
                 ExceptionNotifier.showErrorDialog(
-                        "Failed to save project preferences", e);
+                        Messages.NewProjWizard_error_saving_projprefs, e);
                 return false;
             } catch (CoreException e) {
                 ExceptionNotifier.showErrorDialog(
-                        "Failed to add nature to project", e);
+                        Messages.NewProjWizard_error_adding_nature, e);
                 return false;
             }
             OpenEditor.openEditor(PlatformUI.getWorkbench()
                     .getActiveWorkbenchWindow().getActivePage(),
                     props.getProject());
         } catch (PgCodekeeperUIException e) {
-            ExceptionNotifier.showErrorDialog("Some Errors occurs", e);
+            ExceptionNotifier.showErrorDialog(Messages.NewProjWizard_error_creating_project, e);
             return false;
         }
         return true;
@@ -284,7 +284,7 @@ class PageRepo extends WizardPage implements Listener {
         container.setLayout(new GridLayout(2, false));
         
         Button btnImportOldProjPrefs = new Button(container, SWT.CHECK);
-        btnImportOldProjPrefs.setText("Import settings from an old project file");
+        btnImportOldProjPrefs.setText(Messages.NewProjWizard_import_old_proj);
         GridData gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
@@ -296,12 +296,12 @@ class PageRepo extends WizardPage implements Listener {
                 boolean importOldProjPrefs = ((Button)e.widget).getSelection();
                 btnBrowseOldFile.setEnabled(importOldProjPrefs);
                 txtOldProjFile.setEnabled(importOldProjPrefs);
-                txtOldProjFile.setText("");
+                txtOldProjFile.setText(""); //$NON-NLS-1$
             }
         });
         
         Label lblOldProjFile = new Label(container, SWT.NONE);
-        lblOldProjFile.setText("Select old project file: ");
+        lblOldProjFile.setText(Messages.NewProjWizard_select_old_proj);
         gd = new GridData();
         gd.horizontalSpan = 2;
         lblOldProjFile.setLayoutData(gd);
@@ -330,7 +330,7 @@ class PageRepo extends WizardPage implements Listener {
                         ((NewProjWizard)getWizard()).setPageContentFromOldSettings(path);
                     } catch (IOException e1) {
                         ExceptionNotifier.showErrorDialog(
-                                "Cannot load previous settings", e1);
+                                Messages.NewProjWizard_error_loading_old_proj, e1);
                     }
                     PreferenceInitializer.savePreference(mainPrefStore,
                             PREF.LAST_OPENED_LOCATION, new File(path).getParent());
@@ -339,7 +339,7 @@ class PageRepo extends WizardPage implements Listener {
         });
         
         lblProjectFile = new Label(container, SWT.NONE);
-        lblProjectFile.setText("Project Name: ");
+        lblProjectFile.setText(Messages.NewProjWizard_project_name);
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
@@ -426,7 +426,7 @@ class PageRepo extends WizardPage implements Listener {
                 || !new File(getProjectRootPath()).isDirectory()) {
             errMsg = Messages.newProjWizard_select_repo_root_directory;
         } else if (getProjectName().isEmpty()) {
-            errMsg = "Enter Project Name";
+            errMsg = Messages.NewProjWizard_enter_project_name;
         } else if (new File(getProjectRootPath()).toPath().getNameCount() == 0) {
             errMsg = Messages.newProjWizard_select_project_directory_demand;
         }
@@ -711,7 +711,7 @@ class PageDb extends WizardPage implements Listener {
 
 class PageMisc extends WizardPage {
 
-    private static final String DEFAULT_ENCODING = "UTF-8";
+    private static final String DEFAULT_ENCODING = "UTF-8"; //$NON-NLS-1$
     private Combo cmbEncoding;
 
     public String getEncoding() {

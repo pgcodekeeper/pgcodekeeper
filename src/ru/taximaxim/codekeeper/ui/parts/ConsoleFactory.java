@@ -13,10 +13,11 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ConsoleFactory implements IConsoleFactory {
 
-    private static final String NAME = "pgCodeKeeper";
+    private static final String NAME = "pgCodeKeeper"; //$NON-NLS-1$
     
     private static MessageConsoleStream outer;
     
@@ -31,7 +32,7 @@ public class ConsoleFactory implements IConsoleFactory {
             view = (IConsoleView) page.showView(id);
             view.display(myConsole);
         } catch (PartInitException e) {
-            ExceptionNotifier.showErrorDialog("Cannot activate a console", e);
+            ExceptionNotifier.showErrorDialog(Messages.ConsoleFactory_error_opening_console, e);
         }
     }
 
