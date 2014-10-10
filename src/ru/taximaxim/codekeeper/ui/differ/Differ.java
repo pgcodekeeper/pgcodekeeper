@@ -134,13 +134,13 @@ public class Differ implements IRunnableWithProgress {
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
         try {
             PrintWriter writer = new UnixPrintWriter(
-                    new OutputStreamWriter(diffOut, "UTF-8"), true);
+                    new OutputStreamWriter(diffOut, "UTF-8"), true); //$NON-NLS-1$
         
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
                     dbSource, dbTarget, sourceDbFull, targetDbFull, 
                     additionalDepciesSource, additionalDepciesTarget);
             writer.flush();
-            diffDirect = diffOut.toString("UTF-8").trim();
+            diffDirect = diffOut.toString("UTF-8").trim(); //$NON-NLS-1$
     
             if (needTwoWay) {
                 Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin() //$NON-NLS-1$
@@ -151,7 +151,7 @@ public class Differ implements IRunnableWithProgress {
                 PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource,
                         targetDbFull, sourceDbFull);
                 writer.flush();
-                diffReverse = diffOut.toString("UTF-8").trim();
+                diffReverse = diffOut.toString("UTF-8").trim(); //$NON-NLS-1$
             }
         } catch (UnsupportedEncodingException ex) {
             throw new InvocationTargetException(ex);
