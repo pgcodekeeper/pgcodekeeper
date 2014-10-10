@@ -16,6 +16,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 
@@ -29,7 +30,7 @@ public class OpenEditor extends AbstractHandler {
                 openEditor(HandlerUtil.getActiveWorkbenchWindow(event).getActivePage(), proj);
             } catch (PgCodekeeperUIException e) {
                 ExceptionNotifier.showErrorDialog(
-                        Messages.OpenEditor_error_opening_editor + proj.getName(), e);
+                        Messages.OpenEditor_error_open_project_editor + proj.getName(), e);
             }
         }
         return null;
@@ -58,7 +59,7 @@ public class OpenEditor extends AbstractHandler {
         try {
               page.openEditor(input, EDITOR.PROJECT);
           } catch (PartInitException e) {
-              throw new PgCodekeeperUIException(Messages.OpenEditor_error_opening_editor2, e);
+              throw new PgCodekeeperUIException(Messages.OpenEditor_error_open_project, e);
           }
     }
 }
