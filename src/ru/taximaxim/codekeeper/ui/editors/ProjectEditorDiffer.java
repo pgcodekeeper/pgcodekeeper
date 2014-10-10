@@ -19,9 +19,11 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -44,6 +46,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -64,6 +67,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 
     private PgDbProject proj;
     private DiffPresentationPane commit, diff;
+    private Image iCommit, iDiff;
     
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -80,12 +84,24 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     
     @Override
     protected void createPages() {
+        int i;
         commit = new CommitPage(getContainer(), 
                 Activator.getDefault().getPreferenceStore(), proj);
-        setPageText(addPage(commit), Messages.ProjectEditorDiffer_page_text_commit);
+        i = addPage(commit);
+        
+        setPageText(i, Messages.ProjectEditorDiffer_page_text_commit);
+        iCommit = ImageDescriptor.createFromURL(Activator.getContext().getBundle()
+                .getResource(FILE.ICONBALLBLUE)).createImage();
+        setPageImage(i, iCommit);
+        
         diff = new DiffPage(getContainer(), 
                 Activator.getDefault().getPreferenceStore(), proj);
-        setPageText(addPage(diff), Messages.ProjectEditorDiffer_page_text_diff);
+        i = addPage(diff);
+        
+        setPageText(i, Messages.ProjectEditorDiffer_page_text_diff);
+        iDiff = ImageDescriptor.createFromURL(Activator.getContext().getBundle()
+                .getResource(FILE.ICONBALLRED)).createImage();
+        setPageImage(i, iDiff);
     }
 
     @Override
@@ -104,7 +120,10 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     @Override
     public void dispose() {
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        
         super.dispose();
+        iCommit.dispose();
+        iDiff.dispose();
     }
     
     @Override

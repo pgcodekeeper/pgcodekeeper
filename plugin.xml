@@ -43,6 +43,7 @@
                label="%menu.label.pgCodeKeeper2">
             <command
                   commandId="ru.taximaxim.codekeeper.ui.openeditor"
+                  icon="icons/app_icon16.png"
                   label="%command.label.openProjectEditor2"
                   style="push">
             </command>
@@ -78,6 +79,7 @@
                label="%menu.label.pgCodeKeeper">
             <command
                   commandId="ru.taximaxim.codekeeper.ui.openeditor"
+                  icon="icons/app_icon16.png"
                   label="%command.label.openProjectEditor"
                   style="push">
             </command>
@@ -112,6 +114,7 @@
       <editor
             class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer"
             default="false"
+            icon="icons/app_icon16.png"
             id="ru.taximaxim.codekeeper.ui.projectEditorDiffer"
             name="%editor.name.keeperProjectEditor">
       </editor>
