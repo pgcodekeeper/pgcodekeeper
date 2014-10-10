@@ -93,8 +93,6 @@ public class NewProjWizard extends BasicNewProjectResourceWizard
         IWorkbenchHelpSystem helpSystem = PlatformUI.getWorkbench().getHelpSystem();
         helpSystem.setHelp(pageRepo.getControl(),
                 "ru.taximaxim.codekeeper.ui.help.project_initializer");
-        helpSystem.setHelp(pageSubdir.getControl(),
-                "ru.taximaxim.codekeeper.ui.help.work_dir_settings");
         helpSystem.setHelp(pageDb.getControl(),
                 "ru.taximaxim.codekeeper.ui.help.schema_src_settings");
         helpSystem.setHelp(pageMisc.getControl(),
