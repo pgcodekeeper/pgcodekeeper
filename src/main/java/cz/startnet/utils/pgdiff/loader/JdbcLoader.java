@@ -351,11 +351,6 @@ public class JdbcLoader {
                     Integer[] ownedColumnNumbers = {res.getInt("referenced_column")};
                     String refTable = res.getString("referenced_table_name");
                     sequence.setOwnedBy(refTable + "." + getColumnNames(ownedColumnNumbers, res.getLong("referenced_table_oid")).get(0));
-                    
-                    PgTable table = s.getTable(refTable);
-                    if (table != null){
-                        table.addSequence(res.getString("sequence_name"));
-                    }
                 }
                 previousSeqOid = res.getInt("sequence_oid");
             }
@@ -645,6 +640,13 @@ public class JdbcLoader {
         }else{
             for(PgColumn column : columns){
                 t.addColumn(column);
+            }
+            
+            // SEQUENCES
+            for (String seqName : (String[])res.getArray("seqs").getArray()){
+                if (seqName != null && !seqName.isEmpty()){
+                    t.addSequence(seqName);
+                }
             }
         }
 
