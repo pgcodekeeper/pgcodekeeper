@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.Dialog;
@@ -304,6 +305,12 @@ class CommitPage extends DiffPresentationPane {
                     Messages.project_modifier_thread_cancelled_shouldnt_happen, ex);
         }
 
+        try {
+            proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+        } catch (CoreException e) {
+            ExceptionNotifier.showErrorDialog("Cannot update project structure", e);
+            return;
+        }
         ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
     }
     
