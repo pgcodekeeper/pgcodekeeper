@@ -35,8 +35,7 @@ public class PgDbProject {
     
     public Path getPathToProject() {
         return Paths.get(prefs.get(UIConsts.PROJ_PREF.REPO_ROOT_PATH, 
-                project.getLocation().toString()), 
-                prefs.get(UIConsts.PROJ_PREF.REPO_SUBDIR_PATH, ""));
+                project.getLocation().toString()));
     }
     
     /**
@@ -65,7 +64,7 @@ public class PgDbProject {
         prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
     }
     
-    private static PgDbProject createPgDbProject(String projectName, URI location) {        
+    private static PgDbProject createPgDbProject(String projectName, URI location) throws PgCodekeeperUIException {        
         // it is acceptable to use the ResourcesPlugin class
         IProject newProject = ResourcesPlugin.getWorkspace().getRoot()
                 .getProject(projectName);
@@ -83,7 +82,7 @@ public class PgDbProject {
             try {
                 newProject.create(desc, null);
             } catch (CoreException e) {
-                e.printStackTrace();
+                throw new PgCodekeeperUIException("Cannot create project", e);
             }
         }
         return new PgDbProject(newProject);

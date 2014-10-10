@@ -8,6 +8,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
@@ -47,7 +48,7 @@ import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.parts.Console;
+import ru.taximaxim.codekeeper.ui.parts.ConsoleFactory;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class SqlScriptDialog extends TrayDialog {
@@ -94,9 +95,8 @@ public class SqlScriptDialog extends TrayDialog {
     private SqlSourceViewerExtender sqlEditor;
     private Text txtCommand;
     private Combo cmbScript;
-    private Button runScriptBtn;
     
-    private boolean isRunning;
+    private volatile boolean isRunning;
     private Thread scriptThread;
     private String title;
     private String message;
@@ -332,33 +332,29 @@ public class SqlScriptDialog extends TrayDialog {
         final String textRetrieved = sqlEditor.getDocument().get();
         
         // case Run script
-        if (buttonId == 0 && !isRunning){
-            this.runScriptBtn = getButton(0);
-            final File fileTmpScript;
-            try {
-                // TODO remove fileTmpScript if script is done or interrupted
-                fileTmpScript = new TempFile("tmp_rollon_", ".sql").get(); //$NON-NLS-1$ //$NON-NLS-2$
-                
-               try (PrintWriter writer = new PrintWriter(fileTmpScript, "UTF-8")) { //$NON-NLS-1$
-                   writer.write(textRetrieved);
-               }
-            } catch (IOException ex) {
-                ExceptionNotifier.showErrorDialog(
-                        Messages.sqlScriptDialog_error_saving_script_to_tmp_file, ex);
-                return;
-            }
-                
-            List<String> command = Arrays.asList(getReplacedString()
-                    .replace(SCRIPT_PLACEHOLDER, fileTmpScript.getAbsolutePath())
-                    .split(Pattern.quote(" "))); //$NON-NLS-1$
-            final ProcessBuilder pb = new ProcessBuilder(command);
+        if (buttonId == 0 && !isRunning) {
+            final Button runScriptBtn = getButton(0);
+            final List<String> command = new ArrayList<>(Arrays.asList(
+                    getReplacedString().split(Pattern.quote(" "))));
             
             // new runnable to unlock the UI thread
             Runnable launcher = new Runnable() {
-                
+
                 @Override
                 public void run() {
-                    try {
+                    try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
+                        File outFile = tempFile.get();
+                        try (PrintWriter writer = new PrintWriter(outFile, "UTF-8")) { //$NON-NLS-1$
+                            writer.write(textRetrieved);
+                        }
+
+                        String filepath = outFile.getAbsolutePath();
+                        ListIterator<String> it = command.listIterator();
+                        while (it.hasNext()) {
+                            it.set(it.next().replace(SCRIPT_PLACEHOLDER, filepath));
+                        }
+                        
+                        ProcessBuilder pb = new ProcessBuilder(command);
                         String scriptOutputRes = StdStreamRedirector.launchAndRedirect(pb);
                         if (usePsqlDepcy) {
                             addDepcy = getDependenciesFromOutput(scriptOutputRes);
@@ -366,12 +362,10 @@ public class SqlScriptDialog extends TrayDialog {
                     } catch (IOException ex) {
                         throw new IllegalStateException(ex);
                     } finally {
-                        fileTmpScript.delete();
-                        
                         // request UI change: button label changed
                         SqlScriptDialog.this.getShell().getDisplay().syncExec(
                                 new Runnable() {
-                                    
+
                                     @Override
                                     public void run() {
                                         if (!runScriptBtn.isDisposed()) {
@@ -384,22 +378,25 @@ public class SqlScriptDialog extends TrayDialog {
                     }
                 }
             };
+            
             // run thread that calls StdStreamRedirector.launchAndRedirect
             scriptThread = new Thread(launcher);
-            scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler(){
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    ExceptionNotifier.notify(
-                            Messages.sqlScriptDialog_exception_during_script_execution, e);
-                }
-            });
+            scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                
+                        @Override
+                        public void uncaughtException(Thread t, Throwable e) {
+                            ExceptionNotifier.showErrorDialog(
+                                    Messages.sqlScriptDialog_exception_during_script_execution,e);
+                        }
+                    });
             scriptThread.start();
-            getButton(0).setText(STOP_SCRIPT_LABEL);
+            
             isRunning = true;
+            getButton(0).setText(STOP_SCRIPT_LABEL);
         }
         // case Stop script
         else if (buttonId == 0 && isRunning){
-            Console.addMessage(Messages.sqlScriptDialog_script_execution_interrupted);
+            ConsoleFactory.write(Messages.sqlScriptDialog_script_execution_interrupted);
             Log.log(Log.LOG_INFO, Messages.sqlScriptDialog_script_interrupted_by_user);
             
             scriptThread.interrupt();
@@ -419,13 +416,13 @@ public class SqlScriptDialog extends TrayDialog {
                 try (PrintWriter writer = new PrintWriter(script, "UTF-8")) { //$NON-NLS-1$
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
-                    ExceptionNotifier.notify(
+                    ExceptionNotifier.showErrorDialog(
                             Messages.sqlScriptDialog_error_saving_script_to_file, ex);
                     return;
                 }
                 
                 String fileSaved = Messages.sqlScriptDialog_script_saved_to_file + script.getAbsolutePath();
-                Console.addMessage(fileSaved);
+                ConsoleFactory.write(fileSaved);
                 Log.log(Log.LOG_INFO, fileSaved);
             }
         } else {
@@ -573,7 +570,7 @@ public class SqlScriptDialog extends TrayDialog {
             try {
                 history.addHistoryEntry(cmbScript.getText());
             } catch (IOException e) {
-                ExceptionNotifier.notify("Error while trying to add command history entry", e);
+                ExceptionNotifier.showErrorDialog("Error while trying to add command history entry", e);
             }
             return super.close();
         }

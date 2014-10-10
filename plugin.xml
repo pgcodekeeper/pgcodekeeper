@@ -121,7 +121,7 @@
       <category
             id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
             name="pgCodeKeeper - Devtest"
-            parentCategory="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper">
+            parentCategory="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest">
       </category>
       <e4view
             category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"

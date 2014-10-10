@@ -22,9 +22,11 @@ import org.eclipse.swt.widgets.MessageBox;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -191,7 +193,12 @@ public abstract class DiffPresentationPane extends Composite {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                loadChanges(proj, projProps, mainPrefs);
+                try {
+                    loadChanges(proj, projProps, mainPrefs);
+                } catch (PgCodekeeperUIException e1) {
+                    ExceptionNotifier.showErrorDialog(
+                            "Error while loading changes", e1);
+                }
             }
         });
 
@@ -235,7 +242,7 @@ public abstract class DiffPresentationPane extends Composite {
     }
 
     private void loadChanges(PgDbProject proj, IEclipsePreferences projProps,
-            IPreferenceStore mainPrefs) {
+            IPreferenceStore mainPrefs) throws PgCodekeeperUIException {
         DbSource dbsProj, dbsRemote;
         dbsProj = DbSource.fromProject(proj);
         if (btnDump.getSelection()) {
@@ -265,7 +272,7 @@ public abstract class DiffPresentationPane extends Composite {
                     dbSrc.txtDbPass.getText(), dbSrc.txtDbName.getText(),
                     projProps.get(PROJ_PREF.ENCODING, ""));
         } else {
-            throw new IllegalStateException(Messages.undefined_source_for_db_changes);
+            throw new PgCodekeeperUIException(Messages.undefined_source_for_db_changes);
         }
 
         setDbSource(isProjSrc ? dbsProj : dbsRemote);
@@ -276,10 +283,10 @@ public abstract class DiffPresentationPane extends Composite {
         try {
             new ProgressMonitorDialog(getShell()).run(true, false, treeDiffer);
         } catch (InvocationTargetException ex) {
-            throw new IllegalStateException(Messages.error_in_differ_thread, ex);
+            throw new PgCodekeeperUIException(Messages.error_in_differ_thread, ex);
         } catch (InterruptedException ex) {
             // assume run() was called as non cancelable
-            throw new IllegalStateException(
+            throw new PgCodekeeperUIException(
                     Messages.differ_thread_cancelled_shouldnt_happen, ex);
         }
 

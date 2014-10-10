@@ -53,7 +53,7 @@ public class StackTraceDialogStatusHandler extends AbstractStatusHandler{
      */
     private void showStatusAdapter(StatusAdapter statusAdapter) {
         ExceptionNotifier.notify(statusAdapter.getStatus().getException(),
-                statusAdapter.getStatus().getMessage(), getStatusDialogShell(), true, true);
+                statusAdapter.getStatus().getMessage(), true, true);
         
     }
 

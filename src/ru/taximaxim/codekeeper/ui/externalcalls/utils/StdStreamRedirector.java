@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.parts.Console;
+import ru.taximaxim.codekeeper.ui.parts.ConsoleFactory;
 
 /**
  * A Runnable that consumes everything from the {@link InputStream},
@@ -39,7 +39,7 @@ public class StdStreamRedirector implements Runnable {
         String line = null;
         try {
             while((line = in.readLine()) != null) {
-                Console.addMessage(line);
+                ConsoleFactory.write(line);
                 storage.append(line);
                 storage.append(System.lineSeparator());
             }
@@ -69,7 +69,7 @@ public class StdStreamRedirector implements Runnable {
             sb.append(' ');
         }
         String cmd = sb.toString();
-        Console.addMessage(cmd);
+        ConsoleFactory.write(cmd);
         
         pb.redirectErrorStream(true);
         final Process p = pb.start();
@@ -107,7 +107,7 @@ public class StdStreamRedirector implements Runnable {
             } catch (InterruptedException ex) {
                 throw new IOException(Messages.StdStreamRedirector_wait_thread_interrupted_unexpectedly, ex);
             }
-            Console.addMessage(pb.command().get(0) + 
+            ConsoleFactory.write(pb.command().get(0) + 
                     Messages.stdStreamRedirector_completed_with_code + p.exitValue());
 
             if (!redirector.isDestroyed.get() && p.exitValue() != 0) {
