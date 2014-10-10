@@ -13,5 +13,4 @@ Require-Bundle: org.junit,
  org.eclipse.e4.core.services,
  com.jcraft.jsch,
  org.eclipse.jgit
-Bundle-ClassPath: lib/mockito-all-1.9.5.jar,
- .
+Bundle-ClassPath: .
