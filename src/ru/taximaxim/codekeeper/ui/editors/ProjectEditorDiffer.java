@@ -308,8 +308,7 @@ class CommitPage extends DiffPresentationPane {
         try {
             proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
         } catch (CoreException e) {
-            ExceptionNotifier.showErrorDialog("Cannot update project structure", e);
-            return;
+            throw new PgCodekeeperUIException("Cannot update project structure", e);
         }
         ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
     }
