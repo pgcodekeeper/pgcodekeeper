@@ -36,10 +36,12 @@ public class ConsoleFactory implements IConsoleFactory {
     }
 
     public static void write(String msg) {
-        if (outer == null) {
-            findConsole();
+        if (PlatformUI.isWorkbenchRunning()) {
+            if (outer == null) {
+                findConsole();
+            }
+            outer.println(msg);
         }
-        outer.println(msg);
     }
     
     private static MessageConsole findConsole() {
