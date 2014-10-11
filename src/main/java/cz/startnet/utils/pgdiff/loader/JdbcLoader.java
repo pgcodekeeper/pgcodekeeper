@@ -63,7 +63,6 @@ public class JdbcLoader {
     private PreparedStatement prepStatTriggers;
     private PreparedStatement prepStatFuncName;
     private PreparedStatement prepStatFunctions;
-    private PreparedStatement prepStatLanguages;
     private PreparedStatement prepStatSequences;
     private PreparedStatement prepStatConstraints;
     private PreparedStatement prepStatIndecies;
@@ -233,7 +232,6 @@ public class JdbcLoader {
         prepStatTriggers = connection.prepareStatement(JdbcQueries.QUERY_TRIGGERS_PER_TABLE);
         prepStatFuncName = connection.prepareStatement("SELECT proname, nsp.nspname FROM pg_catalog.pg_proc proc LEFT JOIN pg_catalog.pg_namespace nsp ON proc.pronamespace = nsp.oid WHERE proc.oid = ?");
         prepStatFunctions = connection.prepareStatement(JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA);
-        prepStatLanguages = connection.prepareStatement("SELECT lanname FROM pg_catalog.pg_language WHERE oid = ?");
         prepStatSequences = connection.prepareStatement(JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA);
         prepStatConstraints = connection.prepareStatement(JdbcQueries.QUERY_TABLE_CONSTRAINTS);
         prepStatIndecies = connection.prepareStatement(JdbcQueries.QUERY_INDEX);
@@ -265,11 +263,6 @@ public class JdbcLoader {
             prepStatFunctions.close();
         } catch (Exception e) {
             Log.log(Log.LOG_INFO, "Could not close prepared statement for functions", e);
-        }
-        try {
-            prepStatLanguages.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for languages", e);
         }
         try {
             prepStatSequences.close();
@@ -807,28 +800,7 @@ public class JdbcLoader {
         String functionName = res.getString("proname");
         PgFunction f = new PgFunction(functionName, "", getSearchPath(schemaName));
         
-        String definition = res.getString("probody");
-        String languageName = getLangNameByOid(res.getLong("prolang"));
-        int langFirstOccurenceIndex = definition.indexOf("LANGUAGE " + languageName);
-        String body = definition.substring(langFirstOccurenceIndex);
-        
-        // TODO Some debug modifications are done to function body
-        // BEGIN debug modifications
-        if (body.charAt(body.length() - 1) == '\n'){
-            body = body.substring(0, body.length() - 1);
-        }
-        body = body.replaceAll("\\$function\\$", "\\$\\$");
-        body = body.replace("LANGUAGE " + languageName + "\n SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " SECURITY DEFINER\n    AS ");
-        body = body.replace("LANGUAGE " + languageName + "\n IMMUTABLE STRICT SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " IMMUTABLE STRICT SECURITY DEFINER\n    AS ");
-        body = body.replace("LANGUAGE " + languageName + "\n STABLE SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " STABLE SECURITY DEFINER\n    AS ");
-        body = body.replace("LANGUAGE " + languageName + "\n IMMUTABLE\nAS ", "LANGUAGE " + languageName + " IMMUTABLE\n    AS ");
-        body = body.replace("LANGUAGE " + languageName + "\nAS","LANGUAGE " + languageName + "\n    AS");
-        body = body.replace("LANGUAGE " + languageName + "\n IMMUTABLE SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " IMMUTABLE SECURITY DEFINER\n    AS ");
-        body = body.replace("LANGUAGE " + languageName + "\n STABLE STRICT SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " STABLE STRICT SECURITY DEFINER\n    AS ");
-        body = body.replace("LANGUAGE " + languageName + "\n STRICT SECURITY DEFINER\nAS ", "LANGUAGE " + languageName + " STRICT SECURITY DEFINER\n    AS ");
-        // END debug modifications
-        
-        f.setBody(body);
+        f.setBody(getFunctionBody(res));
         
         // RETURN TYPE
         Array proargmodes = res.getArray("proargmodes");
@@ -877,6 +849,79 @@ public class JdbcLoader {
         return f;
     }
     
+    private String getFunctionBody(ResultSet res) throws SQLException {
+        StringBuilder body = new StringBuilder();
+        
+        body.append("LANGUAGE ").append(res.getString("lang_name"));
+        
+        if (res.getBoolean("proiswindow")){
+            body.append(" WINDOW");
+        }
+        
+        // VOLATILE is default
+        switch (res.getString("provolatile")){
+            case "i":   body.append(" IMMUTABLE");
+                        break;
+            case "s":   body.append(" STABLE");
+                        break;
+        }
+        if (res.getBoolean("proleakproof")){
+            body.append(" LEAKPROOF");
+        }
+        
+        // CALLED ON NULL INPUT is default
+        if (res.getBoolean("proisstrict")){
+            body.append(" STRICT");
+        }
+        
+        // SECURITY INVOKER is default
+        if (res.getBoolean("prosecdef")){
+            body.append(" SECURITY DEFINER");
+        }
+        
+        float cost = res.getFloat("procost");
+        if (cost != 100.0f){
+            body.append(" COST ").append((int)cost);
+        }
+        
+        float rows = res.getFloat("prorows");
+        if (rows != 0.0f && rows != 1000.0f){
+            body.append(" ROWS ").append((int)rows);
+        }
+        
+        Array configParams = res.getArray("proconfig");
+        if (configParams != null){
+            for(String param : (String[]) configParams.getArray()){
+                body.append("\n    SET ").append(param.replaceFirst("=", " TO "));
+            }
+        }
+        
+        // TODO is it correct behaviour on all OS?
+        String definition = res.getString("prosrc").replaceAll("\r\n", "\n");
+        String quote = getStringLiteralDollarQuote(definition);
+        body.append("\n    AS ").append(quote).append(definition).append(quote);
+        return body.toString();
+    }
+
+    /**
+     * Function equivalent to appendStringLiteralDQ in dumputils.c
+     * 
+     * TODO implement other quoting based on probin column data, as in pg_dump.c::dumpFunc
+     * @param definition
+     * @return
+     */
+    private String getStringLiteralDollarQuote(String definition) {
+        final String suffixes = "_XXXXXXX";
+        String quote = "$";
+        int counter = 0;
+        while(definition.contains(quote) && counter < suffixes.length()){
+            quote = quote.concat(String.valueOf(suffixes.charAt(counter)));
+            counter++;
+        }
+        
+        return quote.concat("$");
+    }
+
     private PgSequence getSequence(ResultSet res, String schemaName) throws SQLException {
         String sequenceName = res.getString("sequence_name");
         PgSequence s = new PgSequence(sequenceName, "", getSearchPath(schemaName));
@@ -1040,16 +1085,6 @@ public class JdbcLoader {
 
     private Long getSchemaOidByName(String schema){
         return cachedSchemaByName.get(schema);
-    }
-    
-    private String getLangNameByOid (Long langOid) throws SQLException{
-        prepStatLanguages.setLong(1, langOid);
-        try(ResultSet res = prepStatLanguages.executeQuery()){
-            if (res.next()){
-                return res.getString("lanname");
-            }
-        }
-        return null;
     }
     
     /**
