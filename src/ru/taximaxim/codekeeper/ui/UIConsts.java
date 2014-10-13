@@ -17,8 +17,8 @@ public interface UIConsts {
     }
     
     interface PART {
-        String DEVTEST = PLUGIN_ID.THIS + ".part.TestPart";
-        String CTXP = PLUGIN_ID.THIS + ".part.CtXp";
+        String DEVTEST = PLUGIN_ID.THIS + ".part.TestPart"; //$NON-NLS-1$
+        String CTXP = PLUGIN_ID.THIS + ".part.CtXp"; //$NON-NLS-1$
     }
     
     interface EDITOR {
@@ -70,7 +70,7 @@ public interface UIConsts {
     }
     
     interface NATURE {
-        public static final String ID = "ru.taximaxim.codekeeper.ui.nature";
+        public static final String ID = "ru.taximaxim.codekeeper.ui.nature"; //$NON-NLS-1$
     }
     
     interface FILE {
@@ -86,5 +86,7 @@ public interface UIConsts {
         String ICONSELECTALL = "/icons/check_all.gif"; //$NON-NLS-1$
         String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
         String ICONINVERTSELECTION = "/icons/loop_obj.gif"; //$NON-NLS-1$
+        String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
+        String ICONBALLRED = "/icons/ball_red.png"; //$NON-NLS-1$
     }
 }

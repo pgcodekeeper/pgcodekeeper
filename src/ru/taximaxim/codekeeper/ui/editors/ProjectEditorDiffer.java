@@ -19,9 +19,11 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -44,6 +46,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -64,11 +67,12 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 
     private PgDbProject proj;
     private DiffPresentationPane commit, diff;
+    private Image iCommit, iDiff;
     
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         if (!(input instanceof ProjectEditorInput)) {
-            throw new PartInitException("Input must be ProjectEditorInput");
+            throw new PartInitException(Messages.ProjectEditorDiffer_error_bad_input_type);
         }
         ProjectEditorInput in = (ProjectEditorInput) input;
         this.proj = new PgDbProject(ResourcesPlugin.getWorkspace().getRoot()
@@ -80,12 +84,24 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     
     @Override
     protected void createPages() {
+        int i;
         commit = new CommitPage(getContainer(), 
                 Activator.getDefault().getPreferenceStore(), proj);
-        setPageText(addPage(commit), "Commit");
+        i = addPage(commit);
+        
+        setPageText(i, Messages.ProjectEditorDiffer_page_text_commit);
+        iCommit = ImageDescriptor.createFromURL(Activator.getContext().getBundle()
+                .getResource(FILE.ICONBALLBLUE)).createImage();
+        setPageImage(i, iCommit);
+        
         diff = new DiffPage(getContainer(), 
                 Activator.getDefault().getPreferenceStore(), proj);
-        setPageText(addPage(diff), "Diff");
+        i = addPage(diff);
+        
+        setPageText(i, Messages.ProjectEditorDiffer_page_text_diff);
+        iDiff = ImageDescriptor.createFromURL(Activator.getContext().getBundle()
+                .getResource(FILE.ICONBALLRED)).createImage();
+        setPageImage(i, iDiff);
     }
 
     @Override
@@ -104,7 +120,10 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     @Override
     public void dispose() {
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        
         super.dispose();
+        iCommit.dispose();
+        iDiff.dispose();
     }
     
     @Override
@@ -189,7 +208,7 @@ class CommitPage extends DiffPresentationPane {
                     commit();
                 } catch (PgCodekeeperUIException e1) {
                     ExceptionNotifier.showErrorDialog(
-                            "Error while save changes", e1);
+                            Messages.ProjectEditorDiffer_commit_error, e1);
                 }
             }
         });
@@ -289,7 +308,7 @@ class CommitPage extends DiffPresentationPane {
 
         try {
             Log.log(Log.LOG_INFO, "Commit pressed. Commiting to " + //$NON-NLS-1$
-                    proj.getPrefs().get(PROJ_PREF.REPO_URL, ""));
+                    proj.getPrefs().get(PROJ_PREF.REPO_URL, "")); //$NON-NLS-1$
             new ProgressMonitorDialog(getShell()).run(true, false, commitRunnable);
         } catch (InvocationTargetException ex) {
             throw new PgCodekeeperUIException(
@@ -351,7 +370,7 @@ class DiffPage extends DiffPresentationPane {
                 try {
                     diff();
                 } catch (PgCodekeeperUIException e1) {
-                    ExceptionNotifier.showErrorDialog("Errors occurs while differing", e1);
+                    ExceptionNotifier.showErrorDialog(Messages.ProjectEditorDiffer_diff_error, e1);
                 }
             }
         });
@@ -367,7 +386,7 @@ class DiffPage extends DiffPresentationPane {
                         manualDepciesSource, manualDepciesTarget,
                         dbSource.getDbObject().flatten(),
                         dbTarget.getDbObject().flatten(),
-                        Messages.database, proj.getPrefs().get(PROJ_PREF.REPO_TYPE, ""));
+                        Messages.database, Messages.ProjectEditorDiffer_project);
                 if (dialog.open() == Dialog.OK) {
                     manualDepciesSource = dialog.getDepciesSourceList();
                     manualDepciesTarget = dialog.getDepciesTargetList();
