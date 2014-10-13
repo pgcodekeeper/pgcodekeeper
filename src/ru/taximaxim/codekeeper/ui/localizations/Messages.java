@@ -316,6 +316,8 @@ public class Messages extends NLS {
 
     public static String ProjectEditorDiffer_page_text_diff;
 
+    public static String ProjectEditorDiffer_project;
+
     public static String ProjectEditorInput_pgcodekeeper_project;
 
     public static String ProjectUpdater_error_backup_restore;

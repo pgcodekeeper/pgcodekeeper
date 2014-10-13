@@ -386,7 +386,7 @@ class DiffPage extends DiffPresentationPane {
                         manualDepciesSource, manualDepciesTarget,
                         dbSource.getDbObject().flatten(),
                         dbTarget.getDbObject().flatten(),
-                        Messages.database, proj.getPrefs().get(PROJ_PREF.REPO_TYPE, "")); //$NON-NLS-1$
+                        Messages.database, Messages.ProjectEditorDiffer_project);
                 if (dialog.open() == Dialog.OK) {
                     manualDepciesSource = dialog.getDepciesSourceList();
                     manualDepciesTarget = dialog.getDepciesTargetList();

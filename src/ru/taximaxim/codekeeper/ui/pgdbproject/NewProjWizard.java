@@ -115,7 +115,8 @@ public class NewProjWizard extends BasicNewProjectResourceWizard
             if (!new File(sub, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
                 MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
                 mb.setMessage(Messages.missing_marker_file_in_working_directory 
-                        + sub + ' ' + Messages.NewProjWizard_demand_init_project);
+                        + sub + System.lineSeparator()
+                        + Messages.NewProjWizard_demand_init_project);
                 mb.setText(Messages.newProjWizard_bad_work_dir);
                 mb.open();
                 event.doit = false;
@@ -422,13 +423,11 @@ class PageRepo extends WizardPage implements Listener {
     @Override
     public boolean isPageComplete() {
         String errMsg = null;
-        if (getProjectRootPath().isEmpty()
+        if (getProjectName().isEmpty()) {
+            errMsg = Messages.NewProjWizard_enter_project_name;
+        } else if (getProjectRootPath().isEmpty()
                 || !new File(getProjectRootPath()).isDirectory()) {
             errMsg = Messages.newProjWizard_select_repo_root_directory;
-        } else if (getProjectName().isEmpty()) {
-            errMsg = Messages.NewProjWizard_enter_project_name;
-        } else if (new File(getProjectRootPath()).toPath().getNameCount() == 0) {
-            errMsg = Messages.newProjWizard_select_project_directory_demand;
         }
 
         setErrorMessage(errMsg);

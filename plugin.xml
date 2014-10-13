@@ -5,6 +5,7 @@
          point="org.eclipse.ui.console.consoleFactories">
       <consoleFactory
             class="ru.taximaxim.codekeeper.ui.parts.ConsoleFactory"
+            icon="icons/app_icon16.png"
             label="%consoleFactory.label.keeperConsole">
       </consoleFactory>
    </extension>
@@ -193,6 +194,7 @@
       <wizard
             category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
             class="ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard"
+            icon="icons/app_icon16.png"
             id="ru.taximaxim.codekeeper.ui.newprojwizard"
             name="%wizard.name.keeperNewWizard"
             project="true">
