@@ -16,6 +16,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -35,6 +36,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
@@ -212,6 +214,8 @@ class CommitPage extends DiffPresentationPane {
                 }
             }
         });
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, 
+                "ru.taximaxim.codekeeper.ui.help.pgcodekeeper_editor");
     }
     
     private void commit() throws PgCodekeeperUIException {
@@ -393,6 +397,8 @@ class DiffPage extends DiffPresentationPane {
                 }
             }
         });
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, 
+                "ru.taximaxim.codekeeper.ui.help.pgcodekeeper_editor");
     }
     
     private void diff() throws PgCodekeeperUIException {
@@ -415,7 +421,7 @@ class DiffPage extends DiffPresentationPane {
         differ.runProgressMonitorDiffer(getShell());
 
         SqlScriptDialog dialog = new SqlScriptDialog(getShell(),
-                SqlScriptDialog.INFORMATION, Messages.diffPartDescr_diff_script,
+                MessageDialog.INFORMATION, Messages.diffPartDescr_diff_script,
                 Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
                 differ, dbSource.getDbObject().flatten(), 
                 mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY));

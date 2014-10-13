@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.help.IWorkbenchHelpSystem;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -89,6 +90,13 @@ public class NewProjWizard extends BasicNewProjectResourceWizard
         super.createPageControls(pageContainer);
 
         ((WizardDialog) getContainer()).addPageChangingListener(this);
+        IWorkbenchHelpSystem helpSystem = PlatformUI.getWorkbench().getHelpSystem();
+        helpSystem.setHelp(pageRepo.getControl(),
+                "ru.taximaxim.codekeeper.ui.help.project_initializer");
+        helpSystem.setHelp(pageDb.getControl(),
+                "ru.taximaxim.codekeeper.ui.help.schema_src_settings");
+        helpSystem.setHelp(pageMisc.getControl(),
+                "ru.taximaxim.codekeeper.ui.help.miscellaneous");
     }
 
     @Override
