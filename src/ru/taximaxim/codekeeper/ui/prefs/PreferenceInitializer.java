@@ -27,6 +27,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.DROP_TABLE_STATEMENT, true);
+        store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
     }
 
     public static void savePreference(IPreferenceStore mainPrefs, String preference, String value){
