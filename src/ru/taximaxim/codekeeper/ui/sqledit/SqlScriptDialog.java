@@ -297,7 +297,7 @@ public class SqlScriptDialog extends TrayDialog {
             }
         });
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this.getShell(), 
-                "ru.taximaxim.codekeeper.ui.help.roll_on_script");
+                "ru.taximaxim.codekeeper.ui.help.roll_on_script"); //$NON-NLS-1$
         
         return parent;
     }

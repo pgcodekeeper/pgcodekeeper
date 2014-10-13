@@ -215,7 +215,7 @@ class CommitPage extends DiffPresentationPane {
             }
         });
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this, 
-                "ru.taximaxim.codekeeper.ui.help.pgcodekeeper_editor");
+                "ru.taximaxim.codekeeper.ui.help.pgcodekeeper_editor"); //$NON-NLS-1$
     }
     
     private void commit() throws PgCodekeeperUIException {
@@ -398,7 +398,7 @@ class DiffPage extends DiffPresentationPane {
             }
         });
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this, 
-                "ru.taximaxim.codekeeper.ui.help.pgcodekeeper_editor");
+                "ru.taximaxim.codekeeper.ui.help.pgcodekeeper_editor"); //$NON-NLS-1$
     }
     
     private void diff() throws PgCodekeeperUIException {

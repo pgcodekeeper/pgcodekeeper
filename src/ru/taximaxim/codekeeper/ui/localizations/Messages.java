@@ -223,7 +223,6 @@ public class Messages extends NLS {
     public static String newProjWizard_schema_source;
     public static String newProjWizard_schema_source_settings;
     public static String newProjWizard_select_git_repository_root_directory;
-    public static String newProjWizard_select_project_directory_demand;
     public static String newProjWizard_select_repo_root_directory;
     public static String newProjWizard_this_will_delete_contents_and_recreate_them;
     

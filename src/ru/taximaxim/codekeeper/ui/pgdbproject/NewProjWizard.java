@@ -92,11 +92,11 @@ public class NewProjWizard extends BasicNewProjectResourceWizard
         ((WizardDialog) getContainer()).addPageChangingListener(this);
         IWorkbenchHelpSystem helpSystem = PlatformUI.getWorkbench().getHelpSystem();
         helpSystem.setHelp(pageRepo.getControl(),
-                "ru.taximaxim.codekeeper.ui.help.project_initializer");
+                "ru.taximaxim.codekeeper.ui.help.project_initializer"); //$NON-NLS-1$
         helpSystem.setHelp(pageDb.getControl(),
-                "ru.taximaxim.codekeeper.ui.help.schema_src_settings");
+                "ru.taximaxim.codekeeper.ui.help.schema_src_settings"); //$NON-NLS-1$
         helpSystem.setHelp(pageMisc.getControl(),
-                "ru.taximaxim.codekeeper.ui.help.miscellaneous");
+                "ru.taximaxim.codekeeper.ui.help.miscellaneous"); //$NON-NLS-1$
     }
 
     @Override

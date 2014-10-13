@@ -64,7 +64,7 @@ public class ManualDepciesDialog extends TrayDialog {
         depcyGroupTarget = new ManualDepciesGroup(parent, SWT.NONE, 
                 depciesTarget, objectsTarget, groupTargetName);
         PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), 
-                "ru.taximaxim.codekeeper.ui.help.manual_depcies");
+                "ru.taximaxim.codekeeper.ui.help.manual_depcies"); //$NON-NLS-1$
         return parent;
     }
     
