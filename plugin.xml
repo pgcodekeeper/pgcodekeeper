@@ -121,37 +121,6 @@
       </editor>
    </extension>
    <extension
-         point="org.eclipse.ui.views">
-      <category
-            id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
-            name="%category.name.keeperDevtestViews"
-            parentCategory="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest">
-      </category>
-      <e4view
-            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
-            class="ru.taximaxim.codekeeper.ui.parts.TestPart"
-            id="ru.taximaxim.codekeeper.ui.part.TestPart"
-            name="%part.label.TestPart"
-            restorable="false">
-      </e4view>
-      <e4view
-            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
-            class="com.opcoach.e4.contextExplorer.parts.ContextExplorerPart"
-            id="ru.taximaxim.codekeeper.ui.part.CtXp"
-            name="%part.label.CtXp"
-            restorable="false">
-      </e4view>
-   </extension>
-   <extension
-         point="org.eclipse.ui.perspectives">
-      <perspective
-            class="ru.taximaxim.codekeeper.ui.perspectives.DevtestPersp"
-            icon="icons/beta_violet.png"
-            id="ru.taximaxim.codekeeper.ui.perspective.testbs"
-            name="%perspective.label.codekeeper_test">
-      </perspective>
-   </extension>
-   <extension
          point="org.eclipse.ui.preferencePages">
       <page
             class="ru.taximaxim.codekeeper.ui.prefs.GeneralPrefPage"
