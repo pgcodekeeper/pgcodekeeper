@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.editors;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,11 +13,14 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
@@ -44,13 +46,12 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
@@ -207,18 +208,13 @@ class CommitPage extends DiffPresentationPane {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                try {
-                    commit();
-                } catch (PgCodekeeperUIException e1) {
-                    ExceptionNotifier.showErrorDialog(
-                            Messages.ProjectEditorDiffer_commit_error, e1);
-                }
+                commit();
             }
         });
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
     }
     
-    private void commit() throws PgCodekeeperUIException {
+    private void commit() {
         if (diffTable.getCheckedElementsCount() < 1){
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_INFORMATION);
             mb.setMessage(Messages.please_check_at_least_one_row);
@@ -284,11 +280,10 @@ class CommitPage extends DiffPresentationPane {
         
         final TreeElement resultingTree = considerDepcy ? filteredTwiceWithAllDepcy : filtered;
         
-        IRunnableWithProgress commitRunnable = new IRunnableWithProgress() {
+        Job job = new Job("Save project") { //$NON-NLS-1$
 
             @Override
-            public void run(IProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException {
+            protected IStatus run(IProgressMonitor monitor) {
                 SubMonitor pm = SubMonitor.convert(monitor,
                         Messages.commitPartDescr_commiting, 2);
 
@@ -303,27 +298,24 @@ class CommitPage extends DiffPresentationPane {
                 try {
                     new ProjectUpdater(dbNew, proj).update();
                 } catch (IOException e) {
-                    throw new InvocationTargetException(e);
-                }
-
-                pm.done();
+                    return new Status(Status.ERROR, PLUGIN_ID.THIS, 
+                            Messages.ProjectEditorDiffer_commit_error, e);
+                } finally {
+                    pm.done();
+                }                             
+                return Status.OK_STATUS;
             }
         };
-
-        try {
-            Log.log(Log.LOG_INFO, "Commit pressed. Commiting to " + //$NON-NLS-1$
-                    proj.getPrefs().get(PROJ_PREF.REPO_URL, "")); //$NON-NLS-1$
-            new ProgressMonitorDialog(getShell()).run(true, false, commitRunnable);
-        } catch (InvocationTargetException ex) {
-            throw new PgCodekeeperUIException(
-                    Messages.error_in_the_project_modifier_thread, ex);
-        } catch (InterruptedException ex) {
-            // assume run() was called as non cancelable
-            throw new PgCodekeeperUIException(
-                    Messages.project_modifier_thread_cancelled_shouldnt_happen, ex);
-        }
-
-        ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
+        
+        job.addJobChangeListener(new JobChangeAdapter() {
+            public void done(IJobChangeEvent event) {
+                if (event.getResult().isOK()) {
+                    ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
+                }
+            }
+        });
+        job.setUser(true);
+        job.schedule();
     }
     
     @Override
