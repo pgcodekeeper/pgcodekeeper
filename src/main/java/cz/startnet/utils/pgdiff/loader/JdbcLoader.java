@@ -106,19 +106,17 @@ public class JdbcLoader {
                     
                     int tokenCounter = 0;
                     boolean fits = true;
-                    
+                    int tokensLength = 0;
                     while(sc.hasNext()){
                         String token = sc.next();
                         
                         if (tokenCounter < 4){
-                            if (token.equals(koko[tokenCounter]) || token.equals("*")){
-                                
-                            }else{
+                            tokensLength += token.length();
+                            if (!token.equals(koko[tokenCounter]) && !token.equals("*")){
                                 fits = false;                            
                             }
                         }else if (fits){
-                            // assume for now that password has no colons
-                            return token;
+                            return line.substring(tokensLength + 4);
                         }
                         tokenCounter++;
                     }
