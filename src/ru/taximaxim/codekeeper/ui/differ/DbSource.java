@@ -306,6 +306,7 @@ class DbSourceJdbc extends DbSource {
     
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
+        monitor.newChild(1).subTask(Messages.reading_db_from_jdbc);
         return jdbcLoader.getDbFromJdbc();
     }
 }

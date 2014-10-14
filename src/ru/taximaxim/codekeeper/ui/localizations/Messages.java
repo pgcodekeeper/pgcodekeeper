@@ -120,6 +120,7 @@ public class Messages extends NLS {
     public static String diffTreeViewer_expand_subtree;
     public static String diffTreeViewer_select_subtree;
     public static String treeDiffer_building_diff_tree;
+    public static String reading_db_from_jdbc;
 
     // ui.externalcalls
     public static String jGitExec_and_higher;
