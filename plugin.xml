@@ -39,43 +39,8 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
-            locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
-         <menu
-               label="%menu.label.pgCodeKeeper2">
-            <command
-                  commandId="ru.taximaxim.codekeeper.ui.openeditor"
-                  icon="icons/app_icon16.png"
-                  label="%command.label.openProjectEditor2"
-                  style="push">
-            </command>
-            <visibleWhen
-                  checkEnabled="false">
-               <with
-                     variable="activeMenuSelection">
-                  <iterate
-                        ifEmpty="false"
-                        operator="and">
-                     <test
-                           property="org.eclipse.core.resources.projectNature"
-                           value="ru.taximaxim.codekeeper.ui.nature">
-                     </test>
-                     <adapt
-                           type="org.eclipse.core.resources.IProject">
-                     </adapt>
-                  </iterate>
-               </with>
-            </visibleWhen>
-            <command
-                  commandId="ru.taximaxim.codekeeper.ui.command.Diff"
-                  label="%handledmenuitem.label.Diff"
-                  mnemonic="%command.mnemonic.Diff2"
-                  style="push">
-            </command>
-         </menu>
-      </menuContribution>
-      <menuContribution
             allPopups="false"
-            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+            locationURI="popup:org.eclipse.ui.popup.any?after=additions">
          <menu
                label="%menu.label.pgCodeKeeper">
             <command
@@ -103,6 +68,7 @@
             </visibleWhen>
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.Diff"
+                  icon="icons/compare_view.gif"
                   label="%handledmenuitem.label.Diff"
                   mnemonic="%command.mnemonic.Diff"
                   style="push">

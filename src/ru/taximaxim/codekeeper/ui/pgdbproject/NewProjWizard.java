@@ -46,6 +46,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
@@ -91,12 +92,9 @@ public class NewProjWizard extends BasicNewProjectResourceWizard
 
         ((WizardDialog) getContainer()).addPageChangingListener(this);
         IWorkbenchHelpSystem helpSystem = PlatformUI.getWorkbench().getHelpSystem();
-        helpSystem.setHelp(pageRepo.getControl(),
-                "ru.taximaxim.codekeeper.ui.help.project_initializer"); //$NON-NLS-1$
-        helpSystem.setHelp(pageDb.getControl(),
-                "ru.taximaxim.codekeeper.ui.help.schema_src_settings"); //$NON-NLS-1$
-        helpSystem.setHelp(pageMisc.getControl(),
-                "ru.taximaxim.codekeeper.ui.help.miscellaneous"); //$NON-NLS-1$
+        helpSystem.setHelp(pageRepo.getControl(), HELP.NEW_WIZARD);
+        helpSystem.setHelp(pageDb.getControl(), HELP.NEW_WIZARD_INIT);
+        helpSystem.setHelp(pageMisc.getControl(), HELP.NEW_WIZARD_MISC);
     }
 
     @Override

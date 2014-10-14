@@ -1,32 +1,14 @@
 package ru.taximaxim.codekeeper.ui;
 
-/**
- * Stores string ids for model objects, objects in IEclipseContext, etc,
- * that sort of string constants.
- * 
- * @author Alexander Levsha
- */
 public interface UIConsts {
 
     interface PLUGIN_ID {
         String THIS = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
-    }
-    
-    interface PART_STACK {
-        String DEVTEST = PLUGIN_ID.THIS + ".partstack.Devtest"; //$NON-NLS-1$
-    }
-    
-    interface PART {
-        String DEVTEST = PLUGIN_ID.THIS + ".part.TestPart"; //$NON-NLS-1$
-        String CTXP = PLUGIN_ID.THIS + ".part.CtXp"; //$NON-NLS-1$
+        String HELP = THIS + ".help"; //$NON-NLS-1$
     }
     
     interface EDITOR {
         String PROJECT = "ru.taximaxim.codekeeper.ui.projectEditorDiffer"; //$NON-NLS-1$
-    }
-    
-    interface PERSP {
-        String MAIN = PLUGIN_ID.THIS + ".perspective.Main"; //$NON-NLS-1$
     }
     
     interface PREF {
@@ -70,10 +52,20 @@ public interface UIConsts {
     }
     
     interface NATURE {
-        public static final String ID = "ru.taximaxim.codekeeper.ui.nature"; //$NON-NLS-1$
+        String ID = "ru.taximaxim.codekeeper.ui.nature"; //$NON-NLS-1$
+    }
+    
+    interface HELP {
+        String MANUAL_DEPCIES = PLUGIN_ID.HELP + ".manual_depcies"; //$NON-NLS-1$
+        String MAIN_EDITOR = PLUGIN_ID.HELP + ".pgcodekeeper_editor"; //$NON-NLS-1$
+        String NEW_WIZARD = PLUGIN_ID.HELP + ".project_initializer"; //$NON-NLS-1$
+        String NEW_WIZARD_INIT = PLUGIN_ID.HELP + ".schema_src_settings"; //$NON-NLS-1$
+        String NEW_WIZARD_MISC = PLUGIN_ID.HELP + ".miscellaneous"; //$NON-NLS-1$
+        String SQL_SCRIPT_DIALOG = PLUGIN_ID.HELP + ".roll_on_script"; //$NON-NLS-1$
     }
     
     interface FILE {
+        @Deprecated
         String PROJ_PREF_STORE = ".project"; //$NON-NLS-1$
         
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$

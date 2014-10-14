@@ -10,6 +10,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
+import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -46,13 +47,14 @@ public class ManualDepciesDialog extends TrayDialog {
         this.objectsTarget = objectsTarget;
         this.groupSourceName = groupSourceName;
         this.groupTargetName = groupTargetName;
+        
+        setShellStyle(getShellStyle() | SWT.RESIZE);
     }
     
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(Messages.ManualDepciesDialog_set_add_depcies);
-        setShellStyle(getShellStyle() | SWT.RESIZE);
     }
     
     @Override
@@ -63,8 +65,7 @@ public class ManualDepciesDialog extends TrayDialog {
                 depciesSource, objectsSource, groupSourceName);
         depcyGroupTarget = new ManualDepciesGroup(parent, SWT.NONE, 
                 depciesTarget, objectsTarget, groupTargetName);
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), 
-                "ru.taximaxim.codekeeper.ui.help.manual_depcies"); //$NON-NLS-1$
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), HELP.MANUAL_DEPCIES);
         return parent;
     }
     

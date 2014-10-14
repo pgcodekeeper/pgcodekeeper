@@ -42,6 +42,7 @@ import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
@@ -296,8 +297,8 @@ public class SqlScriptDialog extends TrayDialog {
                 colorPink.dispose();
             }
         });
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(this.getShell(), 
-                "ru.taximaxim.codekeeper.ui.help.roll_on_script"); //$NON-NLS-1$
+        
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), HELP.SQL_SCRIPT_DIALOG); 
         
         return parent;
     }

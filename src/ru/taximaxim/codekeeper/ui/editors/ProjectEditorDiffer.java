@@ -49,6 +49,7 @@ import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -214,8 +215,7 @@ class CommitPage extends DiffPresentationPane {
                 }
             }
         });
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, 
-                "ru.taximaxim.codekeeper.ui.help.pgcodekeeper_editor"); //$NON-NLS-1$
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
     }
     
     private void commit() throws PgCodekeeperUIException {
@@ -397,8 +397,7 @@ class DiffPage extends DiffPresentationPane {
                 }
             }
         });
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, 
-                "ru.taximaxim.codekeeper.ui.help.pgcodekeeper_editor"); //$NON-NLS-1$
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
     }
     
     private void diff() throws PgCodekeeperUIException {
