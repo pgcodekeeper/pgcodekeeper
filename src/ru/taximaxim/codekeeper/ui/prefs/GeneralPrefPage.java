@@ -37,7 +37,7 @@ public class GeneralPrefPage extends FieldEditorPreferencePage
                 Messages.generalPrefPage_pg_dump_custom_parameters, getFieldEditorParent()));
         
         addField(new BooleanFieldEditor(PREF.FORCE_SHOW_CONSOLE,
-                "Show console view when program writes to console", getFieldEditorParent()));
+                Messages.generalPrefPage_show_console_when_program_write_to_console, getFieldEditorParent()));
         
     }
 }
