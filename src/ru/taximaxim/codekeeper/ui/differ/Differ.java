@@ -77,7 +77,7 @@ public class Differ implements IRunnableWithProgress {
     }
     
     public Job getDifferJob() {
-        Job job = new Job("Get Differ") {
+        Job job = new Job(Messages.differ_get_differ) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {

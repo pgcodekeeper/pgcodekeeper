@@ -288,7 +288,7 @@ public abstract class DiffPresentationPane extends Composite {
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
         treeDiffer = new TreeDiffer(dbSource, dbTarget);
         
-        Job job = new Job("Getting changes for diff") { //$NON-NLS-1$
+        Job job = new Job(Messages.diffPresentationPane_getting_changes_for_diff) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {

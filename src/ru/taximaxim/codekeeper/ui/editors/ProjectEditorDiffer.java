@@ -280,7 +280,7 @@ class CommitPage extends DiffPresentationPane {
         
         final TreeElement resultingTree = considerDepcy ? filteredTwiceWithAllDepcy : filtered;
         
-        Job job = new Job("Save project") { //$NON-NLS-1$
+        Job job = new Job(Messages.projectEditorDiffer_save_project) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
