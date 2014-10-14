@@ -10,7 +10,6 @@ import org.eclipse.ui.statushandlers.AbstractStatusHandler;
 import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.ui.StackTraceDialogStatusHandler;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
@@ -21,7 +20,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
     @Override
     public String getInitialWindowPerspectiveId() {
-        return UIConsts.PERSP.MAIN;
+        return null;
     }
     
     @Override
