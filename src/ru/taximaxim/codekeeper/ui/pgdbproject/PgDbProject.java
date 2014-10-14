@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgDbProject {
     
@@ -46,7 +47,7 @@ public class PgDbProject {
         try {
             project.delete(false, true, null);
         } catch (CoreException e) {
-            throw new PgCodekeeperUIException("Cannot remove project from workspace", e);
+            throw new PgCodekeeperUIException(Messages.PgDbProject_error_deleting_project, e);
         }
     }
     
@@ -54,7 +55,7 @@ public class PgDbProject {
         try {
             project.open(null);
         } catch (CoreException e) {
-            throw new PgCodekeeperUIException("Cannot open project", e);
+            throw new PgCodekeeperUIException(Messages.PgDbProject_error_opening_project, e);
         }
     }
     
@@ -82,7 +83,7 @@ public class PgDbProject {
             try {
                 newProject.create(desc, null);
             } catch (CoreException e) {
-                throw new PgCodekeeperUIException("Cannot create project", e);
+                throw new PgCodekeeperUIException(Messages.PgDbProject_error_creating_project, e);
             }
         }
         return new PgDbProject(newProject);

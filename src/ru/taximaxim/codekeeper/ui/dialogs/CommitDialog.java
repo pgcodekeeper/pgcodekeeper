@@ -23,7 +23,6 @@ public class CommitDialog extends TrayDialog {
     
     private TreeElement filtered;
     private IPreferenceStore prefs;
-    private String message;
     private DiffTableViewer dtvTop;
     private DiffTableViewer dtvBottom;
     private TreeDiffer treeDiffer;
@@ -40,7 +39,6 @@ public class CommitDialog extends TrayDialog {
         this.treeDiffer = treeDiffer;
         this.prefs = mainPrefs;
         this.depcyElementsSet = depcyElementsSet;
-        this.message = Messages.commitPartDescr_the_following_changes_be_included_in_commit;
         
         setShellStyle(getShellStyle() | SWT.RESIZE);
     }
@@ -49,7 +47,7 @@ public class CommitDialog extends TrayDialog {
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
         shell.setText(Messages.commitPartDescr_commit_confirmation);
-     }
+    }
     
     @Override
     protected Control createDialogArea(Composite parent) {
@@ -61,12 +59,11 @@ public class CommitDialog extends TrayDialog {
         container.setLayout(gl);
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
         
-        Label lblMessage = new Label(container, SWT.BORDER);
-        lblMessage.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        lblMessage.setText(message);
-        Group gTop = new Group(container, SWT.NONE);
-        gTop.setLayout(new GridLayout(1, false));
+        new Label(container, SWT.NONE).setText(
+                Messages.commitPartDescr_the_following_changes_be_included_in_commit);
         
+        Group gTop = new Group(container, SWT.NONE);
+        gTop.setLayout(new GridLayout());
         GridData gd = new GridData(GridData.FILL_BOTH);
         gTop.setLayoutData(gd);
         gTop.setText(Messages.commitDialog_user_selected_elements);
@@ -80,7 +77,7 @@ public class CommitDialog extends TrayDialog {
         
         if (depcyElementsSet != null){
             Group gBottom = new Group(container, SWT.NONE);
-            gBottom.setLayout(new GridLayout(1, false));
+            gBottom.setLayout(new GridLayout());
             
             gd = new GridData(GridData.FILL_BOTH);
             gBottom.setLayoutData(gd);

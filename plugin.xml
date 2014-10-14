@@ -5,14 +5,15 @@
          point="org.eclipse.ui.console.consoleFactories">
       <consoleFactory
             class="ru.taximaxim.codekeeper.ui.parts.ConsoleFactory"
-            label="pgCodeKeeper console">
+            icon="icons/app_icon16.png"
+            label="%consoleFactory.label.keeperConsole">
       </consoleFactory>
    </extension>
    <extension
          point="org.eclipse.ui.contexts">
       <context
             id="ru.taximaxim.codekeeper.ui.pgCodeKeeper"
-            name="pgCodeKeeper"
+            name="%context.name.keeperContext"
             parentId="org.eclipse.ui.contexts.window">
       </context>
    </extension>
@@ -20,19 +21,19 @@
          point="org.eclipse.ui.commands">
       <category
             id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            name="pgCodeKeeper">
+            name="%category.name.keeperCategory">
       </category>
       <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.Diff"
             id="ru.taximaxim.codekeeper.ui.command.Diff"
-            name="%command.commandname.10">
+            name="%command.commandname.Diff">
       </command>
       <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenEditor"
             id="ru.taximaxim.codekeeper.ui.openeditor"
-            name="Open in Project Editor">
+            name="%command.name.openProjectEditor">
       </command>
    </extension>
    <extension
@@ -40,10 +41,11 @@
       <menuContribution
             locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
          <menu
-               label="pgCodeKeeper">
+               label="%menu.label.pgCodeKeeper2">
             <command
                   commandId="ru.taximaxim.codekeeper.ui.openeditor"
-                  label="Open in Project Editor"
+                  icon="icons/app_icon16.png"
+                  label="%command.label.openProjectEditor2"
                   style="push">
             </command>
             <visibleWhen
@@ -65,8 +67,8 @@
             </visibleWhen>
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.Diff"
-                  label="%handledmenuitem.label.6"
-                  mnemonic="D"
+                  label="%handledmenuitem.label.Diff"
+                  mnemonic="%command.mnemonic.Diff2"
                   style="push">
             </command>
          </menu>
@@ -75,10 +77,11 @@
             allPopups="false"
             locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
          <menu
-               label="pgCodeKeeper">
+               label="%menu.label.pgCodeKeeper">
             <command
                   commandId="ru.taximaxim.codekeeper.ui.openeditor"
-                  label="Open in Project Editor"
+                  icon="icons/app_icon16.png"
+                  label="%command.label.openProjectEditor"
                   style="push">
             </command>
             <visibleWhen
@@ -100,8 +103,8 @@
             </visibleWhen>
             <command
                   commandId="ru.taximaxim.codekeeper.ui.command.Diff"
-                  label="%handledmenuitem.label.6"
-                  mnemonic="D"
+                  label="%handledmenuitem.label.Diff"
+                  mnemonic="%command.mnemonic.Diff"
                   style="push">
             </command>
          </menu>
@@ -112,47 +115,17 @@
       <editor
             class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer"
             default="false"
+            icon="icons/app_icon16.png"
             id="ru.taximaxim.codekeeper.ui.projectEditorDiffer"
-            name="pgCodeKeeper Project Edtor">
+            name="%editor.name.keeperProjectEditor">
       </editor>
-   </extension>
-   <extension
-         point="org.eclipse.ui.views">
-      <category
-            id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
-            name="pgCodeKeeper - Devtest"
-            parentCategory="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest">
-      </category>
-      <e4view
-            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
-            class="ru.taximaxim.codekeeper.ui.parts.TestPart"
-            id="ru.taximaxim.codekeeper.ui.part.TestPart"
-            name="%part.label.4"
-            restorable="false">
-      </e4view>
-      <e4view
-            category="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeperDevtest"
-            class="com.opcoach.e4.contextExplorer.parts.ContextExplorerPart"
-            id="ru.taximaxim.codekeeper.ui.part.CtXp"
-            name="%part.label.5"
-            restorable="false">
-      </e4view>
-   </extension>
-   <extension
-         point="org.eclipse.ui.perspectives">
-      <perspective
-            class="ru.taximaxim.codekeeper.ui.perspectives.DevtestPersp"
-            icon="icons/beta_violet.png"
-            id="ru.taximaxim.codekeeper.ui.perspective.testbs"
-            name="%perspective.label.2">
-      </perspective>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
             class="ru.taximaxim.codekeeper.ui.prefs.GeneralPrefPage"
             id="ru.taximaxim.codekeeper.ui.general"
-            name="pgCodeKeeper">
+            name="%page.name.keeperPrefPage">
       </page>
       <page
             category="ru.taximaxim.codekeeper.ui.general"
@@ -190,13 +163,14 @@
       <wizard
             category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
             class="ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard"
+            icon="icons/app_icon16.png"
             id="ru.taximaxim.codekeeper.ui.newprojwizard"
-            name="pgCodeKeeper Project"
+            name="%wizard.name.keeperNewWizard"
             project="true">
       </wizard>
       <category
             id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
-            name="pgCodeKeeper">
+            name="%category.name.keeperNewWizard">
       </category>
    </extension>
    <extension

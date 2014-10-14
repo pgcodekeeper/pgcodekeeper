@@ -63,7 +63,7 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
             try {
                 ignoredObjects = xml.deserializeList(new StringReader(preference));
             } catch (IOException | SAXException ex) {
-                ExceptionNotifier.showErrorDialog("Cannot get list of ignored objects", ex);
+                ExceptionNotifier.showErrorDialog(Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, ex);
                 ignoredObjects = new ArrayList<>();
             }
         } else {
@@ -156,7 +156,7 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
             try {
                 xml.serializeList(ignoredObjects, true, sw);
             } catch (IOException |TransformerException ex) {
-                ExceptionNotifier.showErrorDialog("Cannot save ignored object list", ex);
+                ExceptionNotifier.showErrorDialog(Messages.IgnoredObjectsPrefPage_error_saving_ignores_list, ex);
             }
             preference = sw.toString();
             getPreferenceStore().setValue(

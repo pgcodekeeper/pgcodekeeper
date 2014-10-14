@@ -20,12 +20,8 @@ public class Messages extends NLS {
     public static String select_all;
     public static String select_none;
     public static String create_marker_file_named;
-    public static String directory_isnt_valid_project;
-    public static String load_failed;
     public static String manually_and_try_again;
     public static String missing_marker_file_in_working_directory;
-    public static String consider_using_ssh_authentication_instead_use_git;
-    public static String repo_url;
     public static String this_password_will_show_up_in_logs;
     public static String bad_port;
     public static String choose_dump_file_with_changes;
@@ -46,20 +42,15 @@ public class Messages extends NLS {
     public static String make_sure_you_have_priv_and_public_keys;
     public static String path_to_db_schema_dump;
     public static String select_readable_db_dump_file;
-    public static String user_;
     public static String dump_file;
     public static String miscellaneous;
     
     // ui
     public static String exceptionNotifier_copy_stack_trace;
-    public static String exceptionNotifier_open_log_file;
     public static String exceptionNotifier_string_reader_ioexception_world_ends;
     public static String exceptionNotifier_unhandled_exception;
-    public static String partContextInjector_empty_values_map;
-    public static String partContextInjector_only_class_and_string_are_allowed;
     public static String sqlScriptDialog_Enter_cmd_to_roll_on_sql_script;
     public static String sqlScriptDialog_error_saving_script_to_file;
-    public static String sqlScriptDialog_error_saving_script_to_tmp_file;
     public static String sqlScriptDialog_exception_during_script_execution;
     public static String sqlScriptDialog_psql_dependencies;
     public static String sqlScriptDialog_run_script;
@@ -81,10 +72,6 @@ public class Messages extends NLS {
     public static String commitDialog_user_selected_elements;
     public static String commitDialog_depcy_elements;
     
-    // ui.addons
-    public static String addonExternalTools_error_while_trying_to_run_pg_admin;
-    public static String addonExternalTools_version_check_paths_in_program_preferences;
-    
     // ui.dbstore
     public static String dbInfo_bad_dbinfo_string;
     public static String dbInfo_too_many_parts_in_dbinfo_string;
@@ -97,7 +84,6 @@ public class Messages extends NLS {
     public static String dbStoreEditorDialog_name_cannot_be_empty_or_whitespace;
     public static String dbStoreEditorDialog_new_entry;
     public static String dbStoreEditorDialog_not_valid_port_number;
-    public static String dbStorePickerDialog_choose_db_from_store;
     
     // ui.differ
     public static String dbSource_db_is_not_loaded_yet_object_is_null;
@@ -163,54 +149,20 @@ public class Messages extends NLS {
     public static String svnExec_cannot_svn_rm_an_empty_file_list;
     
     // ui.handlers
-    public static String about_about_pgcodekeeper;
-    public static String about_pg_dump_version;
-    public static String about_pgcodekeeper_version;
-    public static String about_version;
-    public static String about_version_n;
-    public static String loadProj_bad_project;
-    public static String loadProj_because_working_directory;
-    public static String loadProj_couldnt_open_project;
-    public static String loadProj_ecseption_during_get_project_version;
-    public static String loadProj_either_doesnt_exist_or_not_a_directory;
-    public static String loadProj_ok;
     public static String loadProj_open_project;
-    public static String loadProj_proj_can_modified_because_it_was_created_in_program_with_version_smaller_than_allowed;
-    public static String loadProj_proj_cannt_loaded_because_it_created_in_program_with_version_bigger_than_current;
-    public static String projProps_db_port;
-    public static String projProps_encoding_of_existing_files_willnt_be_changed;
-    public static String projProps_password;
-    public static String projProps_project_encoding;
-    public static String projProps_settings_for_database_schema_source;
     public static String database;
-    public static String projProps_source_of_the_db_schema;
-    public static String projSyncSrc_checking_conflicts;
-    public static String projSyncSrc_couldnt_synchronize_repository_with_remote;
-    public static String projSyncSrc_error_while_checking;
-    public static String projSyncSrc_repository_cache_has_conflict_resolve_them_manually;
-    public static String projSyncSrc_repository_sync_uncancellable_thread_interrupted;
-    public static String projSyncSrc_sync_error;
-    public static String projSyncSrc_syncing_repository_cache;
-    public static String projSyncSrc_updating_cache;
-    public static String switchBranch_exception_during_switching_branch;
-    public static String switchBranch_wrong_repository_or_ref_name;
-    public static String switchPerspective_open_perspective;
 
     // ui.parts
-    public static String commitPartDescr_branch;
-    public static String commitPartDescr_cannot_get_branch_name;
-    public static String commitPartDescr_comment_required;
     public static String commitPartDescr_commit;
     public static String commitPartDescr_commit_confirmation;
     public static String commitPartDescr_commiting;
     public static String commitPartDescr_exporting_db_model;
     public static String commitPartDescr_get_changes_from;
-    public static String commitPartDescr_ioexception_while_modifying_project;
     public static String commitPartDescr_modifying_db_model;
-    public static String commitPartDescr_no_previous_comments;
-    public static String commitPartDescr_please_enter_a_comment_for_the_commit;
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
+
+    public static String ConsoleFactory_error_opening_console;
     public static String to;
     public static String diffPaneDialog_diff_to_selected_object;
     public static String diffPartDescr_add_dependencies;
@@ -219,9 +171,6 @@ public class Messages extends NLS {
     public static String diffPartDescr_get_changes_for;
     public static String diffPartDescr_get_latest;
     public static String diffPartDescr_this_will_apply_selected_changes_to_your_database;
-    public static String projectExplorer_generating_object_hashes;
-    public static String projectExplorer_loading_project;
-    public static String projectExplorer_project_explorer;
     
     // ui.pgdbproject
     public static String diffWizard_consider_using_ssh_authentication_instead;
@@ -262,42 +211,20 @@ public class Messages extends NLS {
     public static String initProjectFromSource_initializing_project;
     public static String initProjectFromSource_ioexception_while_creating_project;
     public static String newProjWizard_bad_work_dir;
-    public static String newProjWizard_cloning_get_repo;
-    public static String newProjWizard_cloning_thread_interrupted;
-    public static String newProjWizard_cloning_wasnt_successful;
-    public static String newProjWizard_cannt_be_saved_in_working;
-    public static String newProjWizard_couldnt_create_empty_database_in;
     public static String newProjWizard_db_source_settings;
     public static String newProjWizard_dump_file_source_settings;
-    public static String newProjWizard_enter;
-    public static String newProjWizard_error_cloning_repository;
     public static String newProjWizard_error_in_initializing_repo_from_source;
-    public static String newProjWizard_error_while_saving_project_properties;
     public static String newProjWizard_init_project_subdir_from_schema_source;
     public static String newProjWizard_new_pg_db_project;
     public static String newProjWizard_no_schema_source_selected;
-    public static String newProjWizard_password;
     public static String newProjWizard_project_encoding;
-    public static String newProjWizard_project_fiel;
     public static String newProjWizard_project_initializer_thread_interrupted;
-    public static String newProjWizard_repo_url_demand;
     public static String newProjWizard_repository_settings;
     public static String newProjWizard_schema_source;
     public static String newProjWizard_schema_source_settings;
-    public static String newProjWizard_select_a_dir_inside_the_repo;
-    public static String newProjWizard_select_correct_subdir_of_the_git_repo;
     public static String newProjWizard_select_git_repository_root_directory;
-    public static String newProjWizard_select_project_directory_demand;
-    public static String newProjWizard_select_project_filename_demand;
-    public static String newProjWizard_select_project_name;
     public static String newProjWizard_select_repo_root_directory;
-    public static String newProjWizard_selected_directory_is_empty;
-    public static String newProjWizard_selecterd_dir_must_be_empty_or_be_a_root_dir_of;
-    public static String newProjWizard_target_dir_isnt_git_repository_root_dir;
     public static String newProjWizard_this_will_delete_contents_and_recreate_them;
-    public static String newProjWizard_to_selected_dir_now;
-    public static String newProjWizard_workdirectory_settings;
-    public static String pgDbProject_error_loading_project_file;
     
     // ui.prefs
     public static String dbStorePrefPage_clear_db_store;
@@ -306,9 +233,26 @@ public class Messages extends NLS {
     public static String dBUpdatePrefPage_drop_column_statement;
     public static String dBUpdatePrefPage_drop_table;
     public static String dBUpdatePrefPage_set_warning_when_next_statements_present;
+    public static String DiffPaneViewer_project;
+
+    public static String DiffPresentationPane_error_loading_changes;
+
+    public static String DiffTableViewer_error_load_checked_set;
+
+    public static String DiffTableViewer_error_reading_ignored_objects;
+
+    public static String DiffTableViewer_error_save_checked_set;
+
+    public static String DiffTableViewer_error_setting_input;
+
     public static String DiffTableViewer_selected;
+    public static String DiffWizard_bad_target_db;
+
+    public static String DiffWizard_error_opening_project;
+
+    public static String DiffWizard_unexpected_error;
+
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
-    public static String generalPrefPage_open_last_project_on_startup;
     public static String generalPrefPage_pg_dump_custom_parameters;
     public static String generalPrefPage_pg_dump_executable;
     public static String generalPrefPage_use_depcy_on_commit_page;
@@ -324,40 +268,78 @@ public class Messages extends NLS {
     public static String gitPrefPage_select_file_to_save_priv_key;
     public static String ignoreObjectsPrefPage_add_ignore;
     public static String ignoreObjectsPrefPage_delete_ignore;
-    
-    // ui.recentprojs
-    public static String dynamicMenuRecent_recent_list_is_empty;
+    public static String IgnoredObjectsPrefPage_error_getting_ignores_list;
+
+    public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
 
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
     public static String JGitExec_exception_thrown_at_jgit_push;
-
     public static String ManualDepciesDialog_set_add_depcies;
-    public static String NewProjWizard_settings;
+
+    public static String NewProjWizard_demand_init_project;
+    public static String NewProjWizard_enter_project_name;
+
+    public static String NewProjWizard_error_adding_nature;
+
+    public static String NewProjWizard_error_creating_project;
+
+    public static String NewProjWizard_error_loading_old_proj;
+
+    public static String NewProjWizard_error_saving_projprefs;
+
+    public static String NewProjWizard_import_old_proj;
+
+    public static String NewProjWizard_project_name;
+
+    public static String NewProjWizard_select_old_proj;
+
+    public static String OpenEditor_error_open_project;
+
+    public static String OpenEditor_error_open_project_editor;
+
+    public static String PgDbProject_error_creating_project;
+
+    public static String PgDbProject_error_deleting_project;
+
+    public static String PgDbProject_error_opening_project;
+
+    public static String PreferenceInitializer_error_saving_prefs;
+
+    public static String ProjectEditorDiffer_commit_error;
+
+    public static String ProjectEditorDiffer_diff_error;
+
+    public static String ProjectEditorDiffer_error_bad_input_type;
+
+    public static String ProjectEditorDiffer_page_text_commit;
+
+    public static String ProjectEditorDiffer_page_text_diff;
+
+    public static String ProjectEditorDiffer_project;
+
+    public static String ProjectEditorInput_pgcodekeeper_project;
+
     public static String ProjectUpdater_error_backup_restore;
-
     public static String ProjectUpdater_error_no_tempdir;
-
     public static String ProjectUpdater_error_update;
-
-    public static String ProjProps_settings;
     public static String SqlScriptDialog_add_it_to_script;
     public static String SqlScriptDialog_command_to_execute;
     public static String SqlScriptDialog__results_of_script_revealed_dependent_objects;
+    public static String SqlScriptDialog_error_add_depcies;
+
+    public static String SqlScriptDialog_error_adding_command_history;
+
+    public static String SqlScriptDialog_error_get_script;
+
+    public static String SqlScriptDialog_error_loading_command_history;
+
     public static String SqlScriptDialog_will_be_replaced;
-
     public static String StdStreamRedirector_error_reading_std;
-
     public static String StdStreamRedirector_error_reading_std_external;
-
     public static String StdStreamRedirector_error_returncode_see_for_details;
-
     public static String StdStreamRedirector_process_returned_with_error;
-
     public static String StdStreamRedirector_wait_destroy_interrupted_unexpectedly;
-
     public static String StdStreamRedirector_wait_thread_interrupted_unexpectedly;
-
-    public static String SwitchBranch_error_checkout_wait;
     public static String XmlHistory_read_error;
     public static String XmlHistory_write_error;
     public static String XmlStringList_root_name_invalid;

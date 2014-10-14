@@ -54,9 +54,9 @@ public class JGitExec implements IRepoWorker{
     }
 
     public JGitExec(PgDbProject proj, String privateKeyFile) {
-        this(proj.getPrefs().get(PROJ_PREF.REPO_URL, ""),
-                proj.getPrefs().get(PROJ_PREF.REPO_USER, ""),
-                proj.getPrefs().get(PROJ_PREF.REPO_PASS, ""), privateKeyFile);
+        this(proj.getPrefs().get(PROJ_PREF.REPO_URL, ""), //$NON-NLS-1$
+                proj.getPrefs().get(PROJ_PREF.REPO_USER, ""), //$NON-NLS-1$
+                proj.getPrefs().get(PROJ_PREF.REPO_PASS, ""), privateKeyFile); //$NON-NLS-1$
     }
 
     public JGitExec(String url, String user, String pass, String privateKeyFile) {
@@ -303,7 +303,7 @@ public class JGitExec implements IRepoWorker{
 
     @Override
     public String repoGetVersion() throws IOException {
-        return ""; //Activator.getPluginVersions().get(PLUGIN_ID.JGIT).get(0);
+        return ""; //Activator.getPluginVersions().get(PLUGIN_ID.JGIT).get(0); //$NON-NLS-1$
     }
     
     public static boolean isGitRepo(String path){

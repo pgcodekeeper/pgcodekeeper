@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.externalcalls;
 import java.io.File;
 import java.io.IOException;
 
+@Deprecated
 public interface IRepoWorker {
 
     /**

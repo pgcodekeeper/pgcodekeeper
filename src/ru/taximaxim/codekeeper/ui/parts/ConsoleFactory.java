@@ -12,6 +12,7 @@ import org.eclipse.ui.console.IConsoleView;
 import org.eclipse.ui.console.MessageConsole;
 
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ConsoleFactory implements IConsoleFactory {
     
@@ -28,7 +29,7 @@ public class ConsoleFactory implements IConsoleFactory {
             view = (IConsoleView) page.showView(id);
             view.display(myConsole);
         } catch (PartInitException e) {
-            ExceptionNotifier.showErrorDialog("Cannot activate a console", e);
+            ExceptionNotifier.showErrorDialog(Messages.ConsoleFactory_error_opening_console, e);
         }
     }
 

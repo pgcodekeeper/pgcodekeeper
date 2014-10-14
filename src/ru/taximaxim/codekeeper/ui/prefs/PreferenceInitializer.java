@@ -11,6 +11,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
@@ -37,7 +38,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
             try {
                 ((IPersistentPreferenceStore) mainPrefs).save();
             } catch (IOException ex) {
-                ExceptionNotifier.showErrorDialog("Unexpected error occurs", ex);
+                ExceptionNotifier.showErrorDialog(Messages.PreferenceInitializer_error_saving_prefs, ex);
             }
         }
     }
