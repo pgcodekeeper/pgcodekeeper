@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -73,41 +74,42 @@ public class Differ implements IRunnableWithProgress {
         this.needTwoWay = needTwoWay;
     }
     
-    public void runProgressMonitorDiffer(final Shell shell) {
+    public void runProgressMonitorDiffer(final Shell shell) throws PgCodekeeperUIException {
         try {
             new ProgressMonitorDialog(shell).run(true, false, this);
         } catch (InvocationTargetException ex) {
-            throw new IllegalStateException(
+            throw new PgCodekeeperUIException(
                     Messages.error_in_the_project_modifier_thread, ex);
         } catch (InterruptedException ex) {
             // assume run() was called as non cancelable
-            throw new IllegalStateException(
+            throw new PgCodekeeperUIException(
                     Messages.project_modifier_thread_cancelled_shouldnt_happen,
                     ex);
         }
     }
     
-    public String getDiffDirect() {
+    public String getDiffDirect() throws PgCodekeeperUIException {
         checkFinished();
         return diffDirect;
     }
     
-    public String getDiffReverse() {
+    public String getDiffReverse() throws PgCodekeeperUIException {
         checkFinished();
         return diffReverse;
     }
 
     /**
      * @return the script
+     * @throws PgCodekeeperUIException 
      */
-    public PgDiffScript getScript() {
+    public PgDiffScript getScript() throws PgCodekeeperUIException {
         checkFinished();
         return script;
     }
     
-    private void checkFinished() {
+    private void checkFinished() throws PgCodekeeperUIException {
         if(!finished) {
-            throw new IllegalStateException(Messages.runnable_has_not_finished);
+            throw new PgCodekeeperUIException(Messages.runnable_has_not_finished);
         }
     }
     
@@ -132,13 +134,13 @@ public class Differ implements IRunnableWithProgress {
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
         try {
             PrintWriter writer = new UnixPrintWriter(
-                    new OutputStreamWriter(diffOut, "UTF-8"), true);
+                    new OutputStreamWriter(diffOut, "UTF-8"), true); //$NON-NLS-1$
         
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
                     dbSource, dbTarget, sourceDbFull, targetDbFull, 
                     additionalDepciesSource, additionalDepciesTarget);
             writer.flush();
-            diffDirect = diffOut.toString("UTF-8").trim();
+            diffDirect = diffOut.toString("UTF-8").trim(); //$NON-NLS-1$
     
             if (needTwoWay) {
                 Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin() //$NON-NLS-1$
@@ -149,10 +151,10 @@ public class Differ implements IRunnableWithProgress {
                 PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource,
                         targetDbFull, sourceDbFull);
                 writer.flush();
-                diffReverse = diffOut.toString("UTF-8").trim();
+                diffReverse = diffOut.toString("UTF-8").trim(); //$NON-NLS-1$
             }
         } catch (UnsupportedEncodingException ex) {
-            throw new IllegalStateException(ex);
+            throw new InvocationTargetException(ex);
         }
         pm.done();
         finished = true;

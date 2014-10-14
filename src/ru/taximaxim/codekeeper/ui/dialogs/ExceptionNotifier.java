@@ -17,14 +17,13 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.List;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.statushandlers.StatusManager;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.handlers.OpenLog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.parts.Console;
+import ru.taximaxim.codekeeper.ui.parts.ConsoleFactory;
 
 /**
  * Helper class for notifying user of exceptions thrown.<br>
@@ -35,6 +34,10 @@ import ru.taximaxim.codekeeper.ui.parts.Console;
  */
 public class ExceptionNotifier {
     
+    public static void showErrorDialog(final String message, Throwable source) {
+        // TODO use default StatusHandler?
+        notify(source, message, true, true);
+    }
     /**
      * Outputs short message to {@link Console},
      * prints stack trace to log,
@@ -42,18 +45,18 @@ public class ExceptionNotifier {
      * 
      * @param shell dialog parent. Can be null if showInDialog is false
      */
-    public static void notify(Throwable source, final String message, final Shell shell, 
+    public static void notify(Throwable source, final String message, 
             boolean outputToConsole, boolean showInDialog) {
         if (source == null) {
             source = new Throwable("Throwable is null at this point!"); //$NON-NLS-1$
         }
         Log.log(Log.LOG_ERROR, source.getMessage(), source);
         
-        executeNotify(source, message, shell, outputToConsole, showInDialog);
+        executeNotify(source, message, outputToConsole, showInDialog);
     }
 
     private static void executeNotify(final Throwable source,
-            final String message, final Shell shell, boolean outputToConsole,
+            final String message, boolean outputToConsole,
             boolean showInDialog) {
         String initialReason = ""; //$NON-NLS-1$
         Throwable t = source.getCause();
@@ -63,7 +66,7 @@ public class ExceptionNotifier {
         }
         
         if (outputToConsole){
-            Console.addMessage(message + ": " + initialReason); //$NON-NLS-1$
+            ConsoleFactory.write(message + ": " + initialReason); //$NON-NLS-1$
         }
         if (showInDialog){
             final IStatus status = new Status(IStatus.ERROR, PLUGIN_ID.THIS,
@@ -72,7 +75,7 @@ public class ExceptionNotifier {
 
                 @Override
                 public void run() {
-                    new StackTraceErrorDialog(shell, Messages.exceptionNotifier_unhandled_exception,
+                    new StackTraceErrorDialog(Messages.exceptionNotifier_unhandled_exception,
                             message + ": " + source.toString(), status, status //$NON-NLS-1$
                                     .getSeverity()).open();
                 }
@@ -93,9 +96,10 @@ class StackTraceErrorDialog extends ErrorDialog {
     
     private List lstStackTrace;
     
-    public StackTraceErrorDialog(Shell parentShell, String dialogTitle,
+    public StackTraceErrorDialog(String dialogTitle,
             String message, IStatus status, int displayMask) {
-        super(parentShell, dialogTitle, message, status, displayMask);
+        super(PlatformUI.getWorkbench()
+                .getActiveWorkbenchWindow().getShell(), dialogTitle, message, status, displayMask);
         this.status = status;
     }
     
@@ -128,16 +132,7 @@ class StackTraceErrorDialog extends ErrorDialog {
     
     @Override
     protected void createButtonsForButtonBar(final Composite parent) {
-        createButton(parent, Integer.MAX_VALUE, Messages.exceptionNotifier_open_log_file, false)
-                .addSelectionListener(new SelectionAdapter() {
-                    
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        OpenLog.openExternalViewer();
-                    }
-                });
-
-        createButton(parent, Integer.MAX_VALUE - 1, Messages.exceptionNotifier_copy_stack_trace, false)
+        createButton(parent, Integer.MAX_VALUE, Messages.exceptionNotifier_copy_stack_trace, false)
                 .addSelectionListener(new SelectionAdapter() {
 
                     @Override

@@ -61,7 +61,7 @@ public class XmlHistory {
         }
     }
 
-    public LinkedHashMap<String, LinkedList<String>> getMapHistory() {
+    public LinkedHashMap<String, LinkedList<String>> getMapHistory() throws IOException {
         LinkedHashMap<String, LinkedList<String>> history;
         try (Reader xmlReader = new InputStreamReader(new FileInputStream(getHistoryXmlFile()), "UTF-8")) { //$NON-NLS-1$
             XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
@@ -69,12 +69,12 @@ public class XmlHistory {
         } catch (FileNotFoundException e) {
             history = new LinkedHashMap<String, LinkedList<String>>();
         } catch (IOException | SAXException e) {
-            throw new IllegalStateException(Messages.XmlHistory_read_error, e);
+            throw new IOException(Messages.XmlHistory_read_error, e);
         }
         return history;
     }
     
-    public LinkedList<String> getHistory() {
+    public LinkedList<String> getHistory() throws IOException {
         LinkedList<String> history;
         try (Reader xmlReader = new InputStreamReader(new FileInputStream(getHistoryXmlFile()), "UTF-8")) { //$NON-NLS-1$
             XmlStringList xml = new XmlStringList(rootTag, elementTag);
@@ -82,17 +82,17 @@ public class XmlHistory {
         } catch (FileNotFoundException ex) {
             history = null;
         } catch (IOException | SAXException ex) {
-            throw new IllegalStateException(Messages.XmlHistory_read_error, ex);
+            throw new IOException(Messages.XmlHistory_read_error, ex);
         }
         return history;
     }
 
-    private File getHistoryXmlFile() {
+    private File getHistoryXmlFile() throws IOException {
         File fileHistory;
         try {
             fileHistory = new File(Platform.getInstanceLocation().getURL().toURI());
         } catch(URISyntaxException ex) {
-            throw new IllegalStateException(ex);
+            throw new IOException(ex);
         }
         fileHistory = new File(fileHistory, ".metadata"); //$NON-NLS-1$
         fileHistory = new File(fileHistory, ".plugins"); //$NON-NLS-1$
@@ -104,8 +104,9 @@ public class XmlHistory {
     /**
      * Adds newEntry to the front of history XML.
      * Removes elements that exceed size limit from the back of the list.
+     * @throws IOException 
      */
-    public void addHistoryEntry(String newEntry) {
+    public void addHistoryEntry(String newEntry) throws IOException {
         LinkedList<String> historyEntries = getHistory();
         if (historyEntries == null) {
             historyEntries = new LinkedList<>();
@@ -128,7 +129,7 @@ public class XmlHistory {
                     xml.serializeList(historyEntries, false, xmlWriter);
                 }
             } catch (IOException | TransformerException ex) {
-                throw new IllegalStateException(
+                throw new IOException(
                         Messages.XmlHistory_write_error, ex);
             }
         }
@@ -136,9 +137,10 @@ public class XmlHistory {
     
     /**
      * @param addEntry adds entry if true, removes if false
+     * @throws IOException 
      */
     public void updateCheckedSetHistoryEntries(String checkSetName, 
-            LinkedList<String> values, boolean addEntry) {
+            LinkedList<String> values, boolean addEntry) throws IOException {
         if (values.isEmpty()) {
             return;
         }
@@ -166,7 +168,7 @@ public class XmlHistory {
                 xml.serializeMap(checkedSets, false, xmlWriter);
             }
         } catch (IOException | TransformerException e) {
-            throw new IllegalStateException(
+            throw new IOException(
                     Messages.XmlHistory_write_error, e);
         }
         

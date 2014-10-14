@@ -66,12 +66,12 @@ public class XmlStringList {
     }
 
     public void serializeList(List<String> listToConvert, boolean noFormatting,
-            Writer writer) throws TransformerException {
+            Writer writer) throws TransformerException, IOException {
         Document xml;
         try {
             xml = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
         } catch (ParserConfigurationException ex) {
-            throw new IllegalStateException(ex);
+            throw new IOException(ex);
         }
         
         Element root = xml.createElement(rootTagName);
@@ -92,12 +92,12 @@ public class XmlStringList {
     }
     
     public void serializeMap(Map<String, LinkedList<String>> mapToConvert, boolean noFormatting,
-            Writer writer) throws TransformerException {
+            Writer writer) throws TransformerException, IOException {
         Document xml;
         try {
             xml = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
         } catch (ParserConfigurationException ex) {
-            throw new IllegalStateException(ex);
+            throw new IOException(ex);
         }
         
         Element root = xml.createElement(rootTagName);
@@ -137,7 +137,7 @@ public class XmlStringList {
             
             return xml;
         } catch (ParserConfigurationException ex) {
-            throw new IllegalStateException(ex);
+            throw new IOException(ex);
         }
     }
     

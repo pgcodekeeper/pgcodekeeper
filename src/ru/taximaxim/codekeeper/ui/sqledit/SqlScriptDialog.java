@@ -8,13 +8,13 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.text.Document;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -22,8 +22,10 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -31,23 +33,25 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.statushandlers.StatusManager;
+import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.parts.Console;
+import ru.taximaxim.codekeeper.ui.parts.ConsoleFactory;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
-public class SqlScriptDialog extends MessageDialog {
+public class SqlScriptDialog extends TrayDialog {
 
     private static final Pattern PATTERN_ERROR = Pattern.compile(
             "^.+(ERROR|ОШИБКА):.+$"); //$NON-NLS-1$
@@ -63,6 +67,8 @@ public class SqlScriptDialog extends MessageDialog {
     
     private static final String RUN_SCRIPT_LABEL =  Messages.sqlScriptDialog_run_script;
     private static final String STOP_SCRIPT_LABEL = Messages.sqlScriptDialog_stop_script;
+    private static final String[] BUTTONS = new String[] {
+        RUN_SCRIPT_LABEL, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }; 
     
     private static final String SCRIPTS_HIST_ROOT = "scripts"; //$NON-NLS-1$
     private static final String SCRIPTS_HIST_EL = "s"; //$NON-NLS-1$
@@ -89,10 +95,12 @@ public class SqlScriptDialog extends MessageDialog {
     private SqlSourceViewerExtender sqlEditor;
     private Text txtCommand;
     private Combo cmbScript;
-    private Button runScriptBtn;
     
-    private boolean isRunning;
+    private volatile boolean isRunning;
     private Thread scriptThread;
+    private String title;
+    private String message;
+    private int type;
 
     public void setDbParams(String dbHost, String dbPort, String dbName,
             String dbUser, String dbPass) {
@@ -133,9 +141,10 @@ public class SqlScriptDialog extends MessageDialog {
     
     public SqlScriptDialog(Shell parentShell, int type, String title, String message,
             Differ differ, List<PgStatement> objList, boolean usePsqlDepcy) {
-        super(parentShell, title, null, message, type, new String[] {
-                RUN_SCRIPT_LABEL, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }, 2);
-        
+        super(parentShell);
+        this.title = title;
+        this.message = message;
+        this.type = type;
         this.differ = differ;
         this.oldDepcy = differ.getAdditionalDepciesSource();
         differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
@@ -148,12 +157,60 @@ public class SqlScriptDialog extends MessageDialog {
     }
     
     @Override
+    protected void configureShell(Shell newShell) {
+        newShell.setText(title);
+        super.configureShell(newShell);
+    }
+    
+    @Override
+    protected void createButtonsForButtonBar(Composite parent) {
+        for (int i = 0; i< BUTTONS.length; i++) {
+            createButton(parent, i, BUTTONS[i],
+                    i == BUTTONS.length - 1);
+        }
+    }
+    private Control createMessageArea(Composite composite) {
+        // create composite
+        // create image
+        Image image = composite.getDisplay().getSystemImage(type);
+        Composite comp = new Composite(composite, SWT.FILL);
+        Layout layout = new GridLayout(2, false);
+        comp.setLayout(layout);
+        
+        if (image != null) {
+            Label imageLabel = new Label(comp, SWT.NULL);
+            image.setBackground(imageLabel.getBackground());
+            imageLabel.setImage(image);
+//            addAccessibleListeners(imageLabel, image);
+            GridDataFactory.fillDefaults().align(SWT.CENTER, SWT.BEGINNING)
+                    .applyTo(imageLabel);
+        }
+        // create message
+        if (message != null) {
+            Label messageLabel = new Label(comp, SWT.WRAP);
+            messageLabel.setText(message);
+            GridDataFactory
+                    .fillDefaults()
+                    .align(SWT.FILL, SWT.BEGINNING)
+                    .grab(true, false)
+                    .hint(
+                            convertHorizontalDLUsToPixels(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH),
+                            SWT.DEFAULT).applyTo(messageLabel);
+        }
+        return composite;
+    }
+    
+    @Override
     protected boolean isResizable() {
         return true;
     }
     
     @Override
-    protected Control createCustomArea(Composite parent) {
+    protected Control createDialogArea(Composite parent) {
+        GridLayout lay = new GridLayout();
+        parent.setLayout(lay);
+        
+        createMessageArea(parent);
         createSQLViewer(parent);
         
         Label l = new Label(parent, SWT.NONE);
@@ -175,7 +232,13 @@ public class SqlScriptDialog extends MessageDialog {
                 DB_USER_PLACEHOLDER + '=' + dbUser + n + 
                 DB_PASS_PLACEHOLDER + '=' + dbPass);
 
-        List<String> prev = history.getHistory();
+        List<String> prev;
+        try {
+            prev = history.getHistory();
+        } catch (IOException e1) {
+            ExceptionNotifier.showErrorDialog(Messages.SqlScriptDialog_error_loading_command_history, e1);
+            prev = new ArrayList<>();
+        }
         if (prev != null && !prev.isEmpty()) {
             for (String el : prev) {
                 cmbScript.add(el);
@@ -210,13 +273,17 @@ public class SqlScriptDialog extends MessageDialog {
             public void handleEvent(Event event) {
                 getShell().removeListener(SWT.Activate, this);
                 
-                if (differ.getScript().isDangerDdl(!searchForDropColumn,
-                        !searchForAlterColumn, !searchForDropTable)) {
-                    if (showDangerWarning() == SWT.OK) {
-                        sqlEditor.getTextWidget().setBackground(colorPink);
-                    } else {
-                        close();
+                try {
+                    if (differ.getScript().isDangerDdl(!searchForDropColumn,
+                            !searchForAlterColumn, !searchForDropTable)) {
+                        if (showDangerWarning() == SWT.OK) {
+                            sqlEditor.getTextWidget().setBackground(colorPink);
+                        } else {
+                            close();
+                        }
                     }
+                } catch (PgCodekeeperUIException e) {
+                    ExceptionNotifier.showErrorDialog(Messages.SqlScriptDialog_error_get_script, e);
                 }
             }
         });
@@ -229,6 +296,8 @@ public class SqlScriptDialog extends MessageDialog {
                 colorPink.dispose();
             }
         });
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(this.getShell(), 
+                "ru.taximaxim.codekeeper.ui.help.roll_on_script"); //$NON-NLS-1$
         
         return parent;
     }
@@ -237,7 +306,11 @@ public class SqlScriptDialog extends MessageDialog {
         sqlEditor = new SqlSourceViewerExtender(parent, SWT.NONE);
         sqlEditor.addLineNumbers();
         sqlEditor.setEditable(true);
-        sqlEditor.setDocument(new Document(differ.getDiffDirect()));
+        try {
+            sqlEditor.setDocument(new Document(differ.getDiffDirect()));
+        } catch (PgCodekeeperUIException e) {
+            ExceptionNotifier.showErrorDialog(Messages.SqlScriptDialog_error_get_script, e);
+        }
         sqlEditor.activateAutocomplete();
         
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -259,46 +332,40 @@ public class SqlScriptDialog extends MessageDialog {
         final String textRetrieved = sqlEditor.getDocument().get();
         
         // case Run script
-        if (buttonId == 0 && !isRunning){
-            this.runScriptBtn = getButton(0);
-            final File fileTmpScript;
-            try {
-                // TODO remove fileTmpScript if script is done or interrupted
-                fileTmpScript = new TempFile("tmp_rollon_", ".sql").get(); //$NON-NLS-1$ //$NON-NLS-2$
-                
-               try (PrintWriter writer = new PrintWriter(fileTmpScript, "UTF-8")) { //$NON-NLS-1$
-                   writer.write(textRetrieved);
-               }
-            } catch (IOException ex) {
-                throw new IllegalStateException(
-                        Messages.sqlScriptDialog_error_saving_script_to_tmp_file, ex);
-            }
-                
-            List<String> command = Arrays.asList(getReplacedString()
-                    .replace(SCRIPT_PLACEHOLDER, fileTmpScript.getAbsolutePath())
-                    .split(Pattern.quote(" "))); //$NON-NLS-1$
-            final ProcessBuilder pb = new ProcessBuilder(command);
+        if (buttonId == 0 && !isRunning) {
+            final Button runScriptBtn = getButton(0);
+            final List<String> command = new ArrayList<>(Arrays.asList(
+                    getReplacedString().split(Pattern.quote(" ")))); //$NON-NLS-1$
             
             // new runnable to unlock the UI thread
             Runnable launcher = new Runnable() {
-                
+
                 @Override
                 public void run() {
-                    try {
-                        String scriptOutputRes =
-                                StdStreamRedirector.launchAndRedirect(pb);
+                    try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
+                        File outFile = tempFile.get();
+                        try (PrintWriter writer = new PrintWriter(outFile, "UTF-8")) { //$NON-NLS-1$
+                            writer.write(textRetrieved);
+                        }
+
+                        String filepath = outFile.getAbsolutePath();
+                        ListIterator<String> it = command.listIterator();
+                        while (it.hasNext()) {
+                            it.set(it.next().replace(SCRIPT_PLACEHOLDER, filepath));
+                        }
+                        
+                        ProcessBuilder pb = new ProcessBuilder(command);
+                        String scriptOutputRes = StdStreamRedirector.launchAndRedirect(pb);
                         if (usePsqlDepcy) {
                             addDepcy = getDependenciesFromOutput(scriptOutputRes);
                         }
                     } catch (IOException ex) {
                         throw new IllegalStateException(ex);
                     } finally {
-                        fileTmpScript.delete();
-                        
                         // request UI change: button label changed
                         SqlScriptDialog.this.getShell().getDisplay().syncExec(
                                 new Runnable() {
-                                    
+
                                     @Override
                                     public void run() {
                                         if (!runScriptBtn.isDisposed()) {
@@ -311,23 +378,25 @@ public class SqlScriptDialog extends MessageDialog {
                     }
                 }
             };
+            
             // run thread that calls StdStreamRedirector.launchAndRedirect
             scriptThread = new Thread(launcher);
-            scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler(){
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS, 
-                            Messages.sqlScriptDialog_exception_during_script_execution, e);
-                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
-                }
-            });
+            scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                
+                        @Override
+                        public void uncaughtException(Thread t, Throwable e) {
+                            ExceptionNotifier.showErrorDialog(
+                                    Messages.sqlScriptDialog_exception_during_script_execution,e);
+                        }
+                    });
             scriptThread.start();
-            getButton(0).setText(STOP_SCRIPT_LABEL);
+            
             isRunning = true;
+            getButton(0).setText(STOP_SCRIPT_LABEL);
         }
         // case Stop script
         else if (buttonId == 0 && isRunning){
-            Console.addMessage(Messages.sqlScriptDialog_script_execution_interrupted);
+            ConsoleFactory.write(Messages.sqlScriptDialog_script_execution_interrupted);
             Log.log(Log.LOG_INFO, Messages.sqlScriptDialog_script_interrupted_by_user);
             
             scriptThread.interrupt();
@@ -347,22 +416,22 @@ public class SqlScriptDialog extends MessageDialog {
                 try (PrintWriter writer = new PrintWriter(script, "UTF-8")) { //$NON-NLS-1$
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
-                    Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS, 
+                    ExceptionNotifier.showErrorDialog(
                             Messages.sqlScriptDialog_error_saving_script_to_file, ex);
-                    StatusManager.getManager().handle(status, StatusManager.BLOCK);
                     return;
                 }
                 
                 String fileSaved = Messages.sqlScriptDialog_script_saved_to_file + script.getAbsolutePath();
-                Console.addMessage(fileSaved);
+                ConsoleFactory.write(fileSaved);
                 Log.log(Log.LOG_INFO, fileSaved);
             }
         } else {
-            super.buttonPressed(buttonId);
+            this.close();
         }
     }
     
     private void showAddDepcyDialog() {
+        
         if (usePsqlDepcy && addDepcy != null && !addDepcy.isEmpty()) {
             MessageBox mb = new MessageBox(getShell(), 
                     SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
@@ -379,21 +448,26 @@ public class SqlScriptDialog extends MessageDialog {
             mb.setMessage(mb.getMessage() + System.lineSeparator() +
                     Messages.SqlScriptDialog_add_it_to_script);
             if (mb.open() == SWT.OK) {
-                List<Entry<PgStatement, PgStatement>> saveToRestore 
-                    = new ArrayList<>(differ.getAdditionalDepciesSource()); 
-                differ.addAdditionalDepciesSource(depcyToAdd);
-                differ.runProgressMonitorDiffer(getShell());
-
-                if (differ.getScript().isDangerDdl(!searchForDropColumn, !searchForAlterColumn, !searchForDropTable)) {
-                    if (showDangerWarning() != SWT.OK) {
-                        differ.setAdditionalDepciesSource(saveToRestore);
-                        return;
-                    } else {
-                        sqlEditor.getTextWidget().setBackground(colorPink);
+                try {
+                    List<Entry<PgStatement, PgStatement>> saveToRestore 
+                        = new ArrayList<>(differ.getAdditionalDepciesSource()); 
+                    differ.addAdditionalDepciesSource(depcyToAdd);
+                    differ.runProgressMonitorDiffer(getShell());
+    
+                    if (differ.getScript().isDangerDdl(!searchForDropColumn,
+                            !searchForAlterColumn, !searchForDropTable)) {
+                        if (showDangerWarning() != SWT.OK) {
+                            differ.setAdditionalDepciesSource(saveToRestore);
+                            return;
+                        } else {
+                            sqlEditor.getTextWidget().setBackground(colorPink);
+                        }
                     }
+                    sqlEditor.setDocument(new Document(differ.getDiffDirect()));
+                    sqlEditor.refresh();
+                } catch (PgCodekeeperUIException e) {
+                    ExceptionNotifier.showErrorDialog(Messages.SqlScriptDialog_error_add_depcies, e);
                 }
-                sqlEditor.setDocument(new Document(differ.getDiffDirect()));
-                sqlEditor.refresh();
             }
         }
     }
@@ -495,7 +569,11 @@ public class SqlScriptDialog extends MessageDialog {
             return false;
         } else {
             differ.setAdditionalDepciesSource(oldDepcy);
-            history.addHistoryEntry(cmbScript.getText());
+            try {
+                history.addHistoryEntry(cmbScript.getText());
+            } catch (IOException e) {
+                ExceptionNotifier.showErrorDialog(Messages.SqlScriptDialog_error_adding_command_history, e);
+            }
             return super.close();
         }
     }

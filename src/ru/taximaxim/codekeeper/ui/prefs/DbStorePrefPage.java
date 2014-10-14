@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -26,7 +27,7 @@ public class DbStorePrefPage extends FieldEditorPreferencePage
     
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(UIScopedPreferenceStore.get());
+        setPreferenceStore(Activator.getDefault().getPreferenceStore());
     }
     
     @Override

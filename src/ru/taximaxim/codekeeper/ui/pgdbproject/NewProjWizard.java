@@ -7,25 +7,20 @@ import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.Set;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.IPageChangingListener;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PageChangingEvent;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -39,37 +34,41 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.help.IWorkbenchHelpSystem;
+import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
+import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
-import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
-import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 
-public class NewProjWizard extends Wizard implements IPageChangingListener {
+public class NewProjWizard extends BasicNewProjectResourceWizard 
+        implements IPageChangingListener {
 
     private PageRepo pageRepo;
-    private PageSubdir pageSubdir;
     private PageDb pageDb;
     private PageMisc pageMisc;
 
     private final IPreferenceStore mainPrefStore;
 
     private PgDbProject props;
-
-    public NewProjWizard(IPreferenceStore mainPrefStore) {
+    
+    public NewProjWizard() {
         setWindowTitle(Messages.newProjWizard_new_pg_db_project);
         setNeedsProgressMonitor(true);
-        this.mainPrefStore = mainPrefStore;
+        this.mainPrefStore = Activator.getDefault().getPreferenceStore();
     }
     
     public PgDbProject getProject() {
@@ -80,8 +79,6 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
     public void addPages() {
         pageRepo = new PageRepo(Messages.newProjWizard_repository_settings, mainPrefStore);
         addPage(pageRepo);
-        pageSubdir = new PageSubdir(Messages.newProjWizard_workdirectory_settings);
-        addPage(pageSubdir);
         pageDb = new PageDb(Messages.newProjWizard_schema_source_settings, mainPrefStore);
         addPage(pageDb);
         pageMisc = new PageMisc(Messages.miscellaneous);
@@ -93,11 +90,18 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
         super.createPageControls(pageContainer);
 
         ((WizardDialog) getContainer()).addPageChangingListener(this);
+        IWorkbenchHelpSystem helpSystem = PlatformUI.getWorkbench().getHelpSystem();
+        helpSystem.setHelp(pageRepo.getControl(),
+                "ru.taximaxim.codekeeper.ui.help.project_initializer"); //$NON-NLS-1$
+        helpSystem.setHelp(pageDb.getControl(),
+                "ru.taximaxim.codekeeper.ui.help.schema_src_settings"); //$NON-NLS-1$
+        helpSystem.setHelp(pageMisc.getControl(),
+                "ru.taximaxim.codekeeper.ui.help.miscellaneous"); //$NON-NLS-1$
     }
 
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
-        if(page == pageSubdir && !pageSubdir.isDoInit()) {
+        if(page == pageRepo && !pageRepo.isDoInit()) {
             return pageMisc;
         }
         return super.getNextPage(page);
@@ -105,83 +109,24 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
 
     @Override
     public void handlePageChanging(PageChangingEvent event) {
-        if (event.getCurrentPage() == pageSubdir
-                && event.getTargetPage() == pageDb) {
-            boolean isInit = pageSubdir.isDoInit();
+        if (event.getCurrentPage() == pageRepo && event.getTargetPage() == pageDb) {
+            boolean isInit = pageRepo.isDoInit();
             
             if (isInit && pageDb.isSourceNone()) {
                 pageDb.setSourceDb();
             }
             
             pageDb.setSourceNoneEnabled(!isInit);
-        } else if (event.getCurrentPage() == pageRepo
-                && event.getTargetPage() == pageSubdir) {
-            pageSubdir.setRepoRoot(pageRepo.getRepoRootPath());
-            pageSubdir.setProjectFile(pageRepo.getProjectFile());
-            
-            if (JGitExec.isGitRepo(pageRepo.getRepoRootPath())){
-                return;
-            }
-            
-            if (MessageDialog.openQuestion(getShell(), Messages.newProjWizard_selected_directory_is_empty,
-                            Messages.newProjWizard_target_dir_isnt_git_repository_root_dir
-                            + pageRepo.getRepoUrl()
-                            + Messages.newProjWizard_to_selected_dir_now)) {
+        } else if (event.getCurrentPage() == pageRepo && event.getTargetPage() == pageMisc){
+            File sub = new File (pageRepo.getProjectRootPath()); 
 
-                final String repoUrl = pageRepo.getRepoUrl();
-                final String repoUser = pageRepo.getRepoUser();
-                final String repoPass = pageRepo.getRepoPass();
-                final String repoPath = pageRepo.getRepoRootPath();
-                
-                IRunnableWithProgress cloneRunnable = new IRunnableWithProgress() {
-                    
-                    @Override
-                    public void run(IProgressMonitor monitor)
-                            throws InvocationTargetException,
-                            InterruptedException {
-                        SubMonitor pm = SubMonitor.convert(monitor,
-                                Messages.newProjWizard_cloning_get_repo, 2);
-                        final JGitExec git = new JGitExec(repoUrl,repoUser, repoPass,
-                                mainPrefStore.getString(PREF.GIT_KEY_PRIVATE_FILE));
-                        pm.worked(1);
-                        try {
-                            git.repoCheckOut(new File(repoPath));
-                            AddonPrefLoader.savePreference(mainPrefStore, 
-                                    PREF.LAST_REPO, repoUrl);
-                        } catch (IOException e) {
-                            throw new InvocationTargetException(e, Messages.newProjWizard_error_cloning_repository);
-                        }
-                        pm.done();
-                    }
-                };
-                
-                try {
-                    new ProgressMonitorDialog(pageRepo.getShell()).run(true,
-                            false, cloneRunnable);
-                } catch (InvocationTargetException ex) {
-                    event.doit = false;
-                    throw new IllegalStateException(Messages.newProjWizard_cloning_wasnt_successful, ex);
-                } catch (InterruptedException ex) {
-                    // assume run() was called as non cancelable
-                    event.doit = false;
-                    throw new IllegalStateException(Messages.newProjWizard_cloning_thread_interrupted, ex);
-                }
-            } else {
-                // didn't clone the repo; can't proceed without it
-                event.doit = false;
-            }
-        }else if (event.getCurrentPage() == pageSubdir && event.getTargetPage() == pageMisc){
-            File sub = new File (pageSubdir.getRepoSubdir()); 
-
-            if (sub.list().length > 0 && !new File(sub, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
-                if (sub.list().length == 1 && sub.list()[0].equals(".git")){ //$NON-NLS-1$
-                    return;
-                }
-                new MessageDialog(getShell(), Messages.newProjWizard_bad_work_dir, null, 
-                        Messages.missing_marker_file_in_working_directory + sub + 
-                        Messages.create_marker_file_named + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
-                        Messages.manually_and_try_again, MessageDialog.WARNING, 
-                        new String []{"Ok"}, 0).open(); //$NON-NLS-1$
+            if (!new File(sub, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
+                MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
+                mb.setMessage(Messages.missing_marker_file_in_working_directory 
+                        + sub + System.lineSeparator()
+                        + Messages.NewProjWizard_demand_init_project);
+                mb.setText(Messages.newProjWizard_bad_work_dir);
+                mb.open();
                 event.doit = false;
             }
         }
@@ -189,7 +134,7 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
 
     @Override
     public boolean canFinish() {
-        if (getContainer().getCurrentPage() == pageSubdir && pageSubdir.isDoInit()) {
+        if (getContainer().getCurrentPage() == pageRepo && pageRepo.isDoInit()) {
             return false;
         }
         return super.canFinish();
@@ -197,20 +142,101 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
 
     @Override
     public boolean performFinish() {
-        props = new PgDbProject(pageRepo.getProjectFile());
+        try {
+            props = PgDbProject.getProjFromFile(pageRepo.getProjectName(),
+                    pageRepo.getProjectRootPath());
 
-        Log.log(Log.LOG_INFO, "Creating new project properties at " //$NON-NLS-1$
-                + props.getProjectFile());
+            Log.log(Log.LOG_INFO, "Creating new project properties"); //$NON-NLS-1$
 
-        props.setValue(PROJ_PREF.ENCODING, pageMisc.getEncoding());
+            fillProjProps();
 
-        props.setValue(PROJ_PREF.REPO_ROOT_PATH, pageRepo.getRepoRootPath());
+            if (pageRepo.isDoInit()) {
+                try {
+                    getContainer().run(false, false,
+                            new InitProjectFromSource(mainPrefStore, props,
+                                    pageDb.getDumpPath()));
+                } catch (InvocationTargetException ex) {
+                    props.deleteFromWorkspace();
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.newProjWizard_error_in_initializing_repo_from_source,
+                                    ex);
+                    return false;
+                } catch (InterruptedException ex) {
+                    // assume run() was called as non cancelable
+                    props.deleteFromWorkspace();
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.newProjWizard_project_initializer_thread_interrupted,
+                                    ex);
+                    return false;
+                }
+            } else if (!pageRepo.isDoInit()
+                    && !new File(pageRepo.getProjectRootPath(),
+                            ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()) {
+                props.deleteFromWorkspace();
+                MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
+                mb.setMessage(Messages.missing_marker_file_in_working_directory
+                        + pageRepo.getProjectRootPath()
+                        + Messages.create_marker_file_named
+                        + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER
+                        + Messages.manually_and_try_again);
+                mb.setText(Messages.newProjWizard_bad_work_dir);
+                mb.open();
+                return false;
+            }
+            
+            updatePerspective();
+            selectAndReveal(props.getProject());
 
-        props.setValue(PROJ_PREF.REPO_SUBDIR_PATH,
-                        Paths.get(pageRepo.getRepoRootPath())
-                        .relativize(Paths.get(pageSubdir.getRepoSubdir()))
-                        .toString());
+            props.openProject();
+            try {
+                PgDbProject.addNatureToProject(props.getProject());
+                props.getPrefs().flush();
+            } catch (BackingStoreException e) {
+                ExceptionNotifier.showErrorDialog(
+                        Messages.NewProjWizard_error_saving_projprefs, e);
+                return false;
+            } catch (CoreException e) {
+                ExceptionNotifier.showErrorDialog(
+                        Messages.NewProjWizard_error_adding_nature, e);
+                return false;
+            }
+            OpenEditor.openEditor(PlatformUI.getWorkbench()
+                    .getActiveWorkbenchWindow().getActivePage(),
+                    props.getProject());
+        } catch (PgCodekeeperUIException e) {
+            ExceptionNotifier.showErrorDialog(Messages.NewProjWizard_error_creating_project, e);
+            return false;
+        }
+        return true;
+    }
 
+    void setPageContentFromOldSettings(String oldPrefs) throws IOException {
+        PreferenceStore prefs = new PreferenceStore(oldPrefs);
+        prefs.load();
+        pageMisc.setEncoding(prefs.getString(PROJ_PREF.ENCODING));
+        pageRepo.setProjectRootPath(Paths.get(prefs.getString(PROJ_PREF.REPO_ROOT_PATH), 
+                prefs.getString(PROJ_PREF.REPO_SUBDIR_PATH)).toString());
+        pageDb.setDbName(prefs.getString(PROJ_PREF.DB_NAME));
+        pageDb.setDbUser(prefs.getString(PROJ_PREF.DB_USER));
+        pageDb.setDbPass(prefs.getString(PROJ_PREF.DB_PASS));
+        pageDb.setDbHost(prefs.getString(PROJ_PREF.DB_HOST));
+        pageDb.setDbPort(prefs.getInt(PROJ_PREF.DB_PORT));
+        pageDb.setSource(prefs.getString(PROJ_PREF.SOURCE));
+    }
+
+    private void fillProjProps() {
+        IEclipsePreferences newPrefs = props.getPrefs();
+        setDbSource(newPrefs);
+        newPrefs.put(PROJ_PREF.ENCODING, pageMisc.getEncoding());
+        newPrefs.put(PROJ_PREF.REPO_ROOT_PATH, pageRepo.getProjectRootPath());
+        newPrefs.put(PROJ_PREF.DB_NAME, pageDb.getDbName());
+        newPrefs.put(PROJ_PREF.DB_USER, pageDb.getDbUser());
+        newPrefs.put(PROJ_PREF.DB_PASS, pageDb.getDbPass());
+        newPrefs.put(PROJ_PREF.DB_HOST, pageDb.getDbHost());
+        newPrefs.putInt(PROJ_PREF.DB_PORT, pageDb.getDbPort());
+    }
+
+    private void setDbSource(IEclipsePreferences newPrefs) {
         String src;
         if (pageDb.isSourceDb()) {
             src = PROJ_PREF.SOURCE_TYPE_DB;
@@ -219,106 +245,39 @@ public class NewProjWizard extends Wizard implements IPageChangingListener {
         } else if (pageDb.isSourceNone()) {
             src = PROJ_PREF.SOURCE_TYPE_NONE;
         } else {
-            throw new IllegalStateException(Messages.newProjWizard_no_schema_source_selected);
+            ExceptionNotifier.showErrorDialog(
+                    Messages.newProjWizard_no_schema_source_selected, null);
+            return;
         }
-        props.setValue(PROJ_PREF.SOURCE, src);
-
-        props.setValue(PROJ_PREF.DB_NAME, pageDb.getDbName());
-        props.setValue(PROJ_PREF.DB_USER, pageDb.getDbUser());
-        props.setValue(PROJ_PREF.DB_PASS, pageDb.getDbPass());
-        props.setValue(PROJ_PREF.DB_HOST, pageDb.getDbHost());
-        props.setValue(PROJ_PREF.DB_PORT, pageDb.getDbPort());
-
-        props.setValue(PROJ_PREF.REPO_TYPE, pageRepo.getRepoType());
-        props.setValue(PROJ_PREF.REPO_URL, pageRepo.getRepoUrl());
-        props.setValue(PROJ_PREF.REPO_USER, pageRepo.getRepoUser());
-        props.setValue(PROJ_PREF.REPO_PASS, pageRepo.getRepoPass());
-
-        try {
-            props.save();
-        } catch (IOException ex) {
-            throw new IllegalStateException(
-                    Messages.newProjWizard_error_while_saving_project_properties, ex);
-        }
-
-        if (pageSubdir.isDoInit()){
-            try {
-                getContainer().run(false, false, 
-                        new InitProjectFromSource(mainPrefStore, props, pageDb.getDumpPath()));
-            } catch (InvocationTargetException ex) {
-                throw new IllegalStateException(
-                        Messages.newProjWizard_error_in_initializing_repo_from_source, ex);
-            } catch (InterruptedException ex) {
-                // assume run() was called as non cancelable
-                throw new IllegalStateException(
-                        Messages.newProjWizard_project_initializer_thread_interrupted, ex);
-            }
-        } else if (!pageSubdir.isDoInit() && new File(pageSubdir.getRepoSubdir()).list().length == 0 ){
-            try {
-                // init empty db for further commits
-                new ModelExporter(new File(pageSubdir.getRepoSubdir()),
-                        new PgDatabase(),props.getString(PROJ_PREF.ENCODING))
-                .export();
-                IRepoWorker repo = new JGitExec(props, 
-                        mainPrefStore.getString(PREF.GIT_KEY_PRIVATE_FILE));
-                repo.repoRemoveMissingAddNew(new File(pageSubdir.getRepoSubdir()));
-                repo.repoCommit(new File(pageSubdir.getRepoSubdir()), "empty working directory"); //$NON-NLS-1$
-            } catch (IOException ex) {
-                throw new IllegalStateException(Messages.newProjWizard_couldnt_create_empty_database_in
-                            + new File(pageSubdir.getRepoSubdir()), ex);
-            }
-        } else if (!pageSubdir.isDoInit() && !new File(pageSubdir.getRepoSubdir(), 
-                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
-            new MessageDialog(getShell(), Messages.newProjWizard_bad_work_dir, null, 
-                    Messages.missing_marker_file_in_working_directory + pageSubdir.getRepoSubdir() + 
-                    Messages.create_marker_file_named + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER +
-                    Messages.manually_and_try_again, MessageDialog.WARNING, 
-                    new String []{"Ok"}, 0).open(); //$NON-NLS-1$
-            return false;
-        }
-        
-        return true;
+        newPrefs.put(PROJ_PREF.SOURCE, src);
     }
 }
 
 class PageRepo extends WizardPage implements Listener {
 
     private Composite container;
-    private Group grpRepo;
-    private String repoTypeName;
-    private Text txtRepoUrl, txtRepoUser, txtRepoPass, txtRepoRoot;
-    private Label lblRepoUrl, lblRepoUser, lblRepoPass, lblRepoRoot;
-    private Text txtProjectFile;
-    private Label lblProjectFile;
-
-
+    private Text txtProjectRoot, txtProjectName, txtOldProjFile;
+    private Label lblProjRoot, lblProjectFile;
+    private Button btnBrowseOldFile, btnDoInit;
+    private CLabel lblWarnInit;
     private LocalResourceManager lrm;
     
-    private CLabel lblWarnPass;
     private final IPreferenceStore mainPrefStore;
 
-    public String getRepoType() {
-        return repoTypeName;
-    }
-
-    public String getRepoUrl() {
-        return txtRepoUrl.getText();
-    }
-
-    public String getRepoUser() {
-        return txtRepoUser.getText();
-    }
-
-    public String getRepoPass() {
-        return txtRepoPass.getText();
-    }
-
-    public String getRepoRootPath() {
-        return txtRepoRoot.getText();
+    public String getOldProjFilePath() {
+        return txtOldProjFile.getText();
     }
     
-    public String getProjectFile() {
-        return txtProjectFile.getText();
+    public String getProjectRootPath() {
+        return txtProjectRoot.getText();
+    }
+    
+    void setProjectRootPath(String value) {
+        txtProjectRoot.setText(value);
+    }
+    
+    public String getProjectName() {
+        return txtProjectName.getText();
     }
     
     PageRepo(String pageName, IPreferenceStore mainPrefStore) {
@@ -326,242 +285,110 @@ class PageRepo extends WizardPage implements Listener {
         this.mainPrefStore = mainPrefStore;
     }
     
-    private void redrawLabels() {
-            if (JGitExec.PATTERN_HTTP_URL.matcher(txtRepoUrl.getText()).matches()){
-                // TODO concatenate localizations
-                lblWarnPass.setText(Messages.warning
-                        + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
-                        + Messages.this_password_will_show_up_in_logs
-                        + Messages.consider_using_ssh_authentication_instead_use_git);
-            }else if (JGitExec.PATTERN_FILE_URL.matcher(txtRepoUrl.getText()).matches()){
-                lblWarnPass.setText(""); //$NON-NLS-1$
-            }else {
-                lblWarnPass.setText(Messages.make_sure_you_have_priv_and_public_keys);
-            }
-    }
-
     @Override
     public void createControl(final Composite parent) {
         this.lrm = new LocalResourceManager(JFaceResources.getResources(),
                 parent);
-        repoTypeName = PROJ_PREF.REPO_TYPE_GIT_NAME;
         container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(2, false));
         
-        grpRepo = new Group(container, SWT.NONE);
-        grpRepo.setText(repoTypeName + Messages.NewProjWizard_settings);
-        grpRepo.setLayout(new GridLayout(2, false));
-        grpRepo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
-
-        lblRepoUrl = new Label(grpRepo, SWT.NONE);
-        lblRepoUrl.setText(repoTypeName + Messages.repo_url);
-
-        txtRepoUrl = new Text(grpRepo, SWT.BORDER);
-        txtRepoUrl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtRepoUrl.setText(mainPrefStore.getString(PREF.LAST_REPO));
-        txtRepoUrl.selectAll();
-        txtRepoUrl.addListener(SWT.Modify, this);
-
-        lblRepoUser = new Label(grpRepo, SWT.NONE);
-        lblRepoUser.setText(repoTypeName + Messages.user_);
-
-        txtRepoUser = new Text(grpRepo, SWT.BORDER);
-        txtRepoUser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        lblRepoPass = new Label(grpRepo, SWT.NONE);
-        lblRepoPass.setText(repoTypeName + Messages.newProjWizard_password);
-
-        txtRepoPass = new Text(grpRepo, SWT.BORDER | SWT.PASSWORD);
-        txtRepoPass.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtRepoPass.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                GridData gd = (GridData) lblWarnPass.getLayoutData();
-                if ((txtRepoPass.getText().isEmpty() && !gd.exclude)
-                        || (!txtRepoPass.getText().isEmpty() && gd.exclude)) {
-                    gd.exclude = !gd.exclude;
-                    lblWarnPass.setVisible(!lblWarnPass.getVisible());
-                    container.layout(false);
-                }
-                if (!txtRepoUrl.getText().isEmpty() &&  
-                        !JGitExec.PATTERN_HTTP_URL.matcher(txtRepoUrl.getText()).matches() && 
-                        !JGitExec.PATTERN_FILE_URL.matcher(txtRepoUrl.getText()).matches()){
-                    lblWarnPass.setVisible(true);
-                    gd.exclude = false;
-                    container.layout(true);
-                }else if (!txtRepoPass.isEnabled()) {
-                    lblWarnPass.setVisible(false);
-                    gd.exclude = true;
-                    container.layout(false);
-                }
-                getShell().pack();
-            }
-        });
-        
-        txtRepoUrl.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                if (txtRepoUrl.getText().isEmpty()) {
-                    txtRepoUser.setEnabled(true);
-                    txtRepoPass.setEnabled(true);
-                    redrawLabels();
-                    txtRepoPass.notifyListeners(SWT.Modify, new Event());                    
-                } else if (JGitExec.PATTERN_HTTP_URL.matcher(
-                        txtRepoUrl.getText()).matches()) {
-                    txtRepoUser.setEnabled(true);
-                    txtRepoPass.setEnabled(true);
-                    redrawLabels();
-                    txtRepoPass.notifyListeners(SWT.Modify, new Event());
-                } else {
-                    txtRepoUser.setEnabled(false);
-                    txtRepoPass.setEnabled(false);
-                    redrawLabels();
-                    txtRepoPass.notifyListeners(SWT.Modify, new Event());
-                }
-            }
-        });
-        
-        lblWarnPass = new CLabel(grpRepo, SWT.NONE);
-        lblWarnPass.setImage(lrm.createImage(ImageDescriptor
-                .createFromURL(Activator.getContext().getBundle()
-                        .getResource(FILE.ICONWARNING))));
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
-        gd.exclude = true;
-        lblWarnPass.setLayoutData(gd);
-        lblWarnPass.setVisible(false);
-
-        lblRepoRoot = new Label(container, SWT.NONE);
-        lblRepoRoot.setText(Messages.newProjWizard_select_git_repository_root_directory);
-        gd = new GridData();
+        Button btnImportOldProjPrefs = new Button(container, SWT.CHECK);
+        btnImportOldProjPrefs.setText(Messages.NewProjWizard_import_old_proj);
+        GridData gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
-        lblRepoRoot.setLayoutData(gd);
-
-        txtRepoRoot = new Text(container, SWT.BORDER);
-        txtRepoRoot.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtRepoRoot.addListener(SWT.Modify, this);
-
-        Button btnBrowseRepo = new Button(container, SWT.PUSH);
-        btnBrowseRepo.setText(Messages.browse);
-        btnBrowseRepo.addSelectionListener(new SelectionAdapter() {
+        btnImportOldProjPrefs.setLayoutData(gd);
+        btnImportOldProjPrefs.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DirectoryDialog dialog = new DirectoryDialog(container
-                        .getShell());
+                boolean importOldProjPrefs = ((Button)e.widget).getSelection();
+                btnBrowseOldFile.setEnabled(importOldProjPrefs);
+                txtOldProjFile.setEnabled(importOldProjPrefs);
+                txtOldProjFile.setText(""); //$NON-NLS-1$
+            }
+        });
+        
+        Label lblOldProjFile = new Label(container, SWT.NONE);
+        lblOldProjFile.setText(Messages.NewProjWizard_select_old_proj);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        lblOldProjFile.setLayoutData(gd);
+        
+        txtOldProjFile = new Text(container, SWT.BORDER);
+        txtOldProjFile.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtOldProjFile.addListener(SWT.Modify, this);
+        txtOldProjFile.setEnabled(false);
+        
+        btnBrowseOldFile = new Button(container, SWT.PUSH);
+        btnBrowseOldFile.setText(Messages.browse);
+        btnBrowseOldFile.setEnabled(false);
+        btnBrowseOldFile.addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                FileDialog dialog = new FileDialog(container.getShell());
+                dialog.setText(Messages.loadProj_open_project);
+                dialog.setOverwrite(false);
+                dialog.setFilterExtensions(new String[] { "*.project", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
                 dialog.setFilterPath(mainPrefStore.getString(PREF.LAST_OPENED_LOCATION));
                 String path = dialog.open();
                 if (path != null) {
-                    txtRepoRoot.setText(path);
-                    AddonPrefLoader.savePreference(mainPrefStore, PREF.LAST_OPENED_LOCATION, path);
+                    txtOldProjFile.setText(path);
+                    try {
+                        ((NewProjWizard)getWizard()).setPageContentFromOldSettings(path);
+                    } catch (IOException e1) {
+                        ExceptionNotifier.showErrorDialog(
+                                Messages.NewProjWizard_error_loading_old_proj, e1);
+                    }
+                    PreferenceInitializer.savePreference(mainPrefStore,
+                            PREF.LAST_OPENED_LOCATION, new File(path).getParent());
                 }
             }
         });
         
         lblProjectFile = new Label(container, SWT.NONE);
-        lblProjectFile.setText(Messages.newProjWizard_select_project_name);
+        lblProjectFile.setText(Messages.NewProjWizard_project_name);
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
         lblProjectFile.setLayoutData(gd);
-        txtProjectFile = new Text(container, SWT.BORDER);
-        txtProjectFile.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtProjectFile.addListener(SWT.Modify, this);
         
-        Button btnBrowseProj = new Button(container, SWT.PUSH);
-        btnBrowseProj.setText(Messages.browse);
-        btnBrowseProj.addSelectionListener(new SelectionAdapter() {
+        txtProjectName = new Text(container, SWT.BORDER);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        txtProjectName.setLayoutData(gd);
+        txtProjectName.addListener(SWT.Modify, this);
+
+        lblProjRoot = new Label(container, SWT.NONE);
+        lblProjRoot.setText(Messages.newProjWizard_select_git_repository_root_directory);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.verticalIndent = 12;
+        lblProjRoot.setLayoutData(gd);
+
+        txtProjectRoot = new Text(container, SWT.BORDER);
+        txtProjectRoot.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        txtProjectRoot.addListener(SWT.Modify, this);
+
+        Button btnBrowseRepo = new Button(container, SWT.PUSH);
+        btnBrowseRepo.setText(Messages.browse);
+        btnBrowseRepo.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
-                FileDialog dialog = new FileDialog(container.getShell(),SWT.SAVE);
-                dialog.setFilterExtensions(new String [] {"*.project"}); //$NON-NLS-1$
-                dialog.setOverwrite(true);
+                DirectoryDialog dialog = new DirectoryDialog(container.getShell());
                 dialog.setFilterPath(mainPrefStore.getString(PREF.LAST_OPENED_LOCATION));
                 String path = dialog.open();
                 if (path != null) {
-                    txtProjectFile.setText(path);
-                    AddonPrefLoader.savePreference(mainPrefStore,
-                            PREF.LAST_OPENED_LOCATION, new File (path).getParent());
+                    txtProjectRoot.setText(path);
+                    PreferenceInitializer.savePreference(mainPrefStore,
+                            PREF.LAST_OPENED_LOCATION, path);
                 }
             }
         });
         
-        setControl(container);
-    }
-
-    @Override
-    public boolean isPageComplete() {
-        // TODO enable Next if git repo url is empty && selected root dir is 
-        // git repo root. In that case get git repo url from repo
-        
-        // TODO check for conflicting user repo url and existing repo url
-        String errMsg = null;
-        
-        if (getRepoUrl().isEmpty()) {
-            errMsg = Messages.newProjWizard_enter + repoTypeName + Messages.newProjWizard_repo_url_demand;
-        } else if (getRepoRootPath().isEmpty()
-                || !new File(getRepoRootPath()).isDirectory()) {
-            errMsg = Messages.newProjWizard_select_repo_root_directory;
-        } else if (!JGitExec.isGitRepo(getRepoRootPath())
-                && new File(txtRepoRoot.getText()).list().length != 0) {
-            errMsg = Messages.newProjWizard_selecterd_dir_must_be_empty_or_be_a_root_dir_of;
-        } else if (getProjectFile().isEmpty()
-                || !getProjectFile().endsWith(FILE.PROJ_PREF_STORE)) {
-            errMsg = Messages.newProjWizard_select_project_filename_demand;
-        } else if (new File(getRepoRootPath()).toPath().getNameCount() == 0) {
-            errMsg = Messages.newProjWizard_select_project_directory_demand;
-        }
-
-        setErrorMessage(errMsg);
-        return errMsg == null;
-    }
-
-    @Override
-    public void handleEvent(Event event) {
-        getWizard().getContainer().updateButtons();
-        getWizard().getContainer().updateMessage();
-    }
-}
-
-class PageSubdir extends WizardPage implements Listener {
-
-    private LocalResourceManager lrm;
-    
-    private Button btnDoInit;
-    private Composite container;
-    private CLabel lblWarnInit;
-    private Text txtRepoSubdir;
-    private Label lblRepoSubdir;
-    
-    private String repoRoot;
-
-    private String projectFile;
-    
-    public String getRepoSubdir() {
-        return txtRepoSubdir.getText();
-    }
-
-    public void setProjectFile(String projectFile) {
-       this.projectFile = projectFile;
-    }
-
-    public void setRepoRoot(String repoRoot) {
-        this.repoRoot = repoRoot;
-        this.txtRepoSubdir.setText(repoRoot);
-    }
-    
-    PageSubdir(String pageName) {
-        super(pageName, pageName, null);
-    }
-    
-    @Override
-    public void createControl(Composite parent) {
-        this.lrm = new LocalResourceManager(JFaceResources.getResources(),
-                parent);
-        container = new Composite(parent, SWT.NONE);
-        container.setLayout(new GridLayout(2, false));
-        GridData gd = new GridData();
+        gd = new GridData();
         gd.horizontalSpan = 2;
         btnDoInit = new Button(container, SWT.CHECK);
         btnDoInit.setText(Messages.newProjWizard_init_project_subdir_from_schema_source);
@@ -592,60 +419,33 @@ class PageSubdir extends WizardPage implements Listener {
         lblWarnInit.setLayoutData(gd);
         lblWarnInit.setVisible(false);
         
-        lblRepoSubdir = new Label(container, SWT.NONE);
-        lblRepoSubdir.setText(Messages.newProjWizard_select_a_dir_inside_the_repo);
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.verticalIndent = 12;
-        lblRepoSubdir.setLayoutData(gd);
-
-        txtRepoSubdir = new Text(container, SWT.BORDER);
-        txtRepoSubdir.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        txtRepoSubdir.addListener(SWT.Modify, this);
-        Button btnBrowseProj = new Button(container, SWT.PUSH);
-        btnBrowseProj.setText(Messages.browse);
-        btnBrowseProj.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                DirectoryDialog dialog = new DirectoryDialog(container
-                        .getShell());
-                dialog.setFilterPath(repoRoot);
-                String path = dialog.open();
-                if (path != null) {
-                    txtRepoSubdir.setText(path);
-                }
-            }
-        });
+        
+        
         setControl(container);
+    }
+    
+    public boolean isDoInit() {
+        return btnDoInit.getSelection();
+    }
+
+    @Override
+    public boolean isPageComplete() {
+        String errMsg = null;
+        if (getProjectName().isEmpty()) {
+            errMsg = Messages.NewProjWizard_enter_project_name;
+        } else if (getProjectRootPath().isEmpty()
+                || !new File(getProjectRootPath()).isDirectory()) {
+            errMsg = Messages.newProjWizard_select_repo_root_directory;
+        }
+
+        setErrorMessage(errMsg);
+        return errMsg == null;
     }
 
     @Override
     public void handleEvent(Event event) {
         getWizard().getContainer().updateButtons();
         getWizard().getContainer().updateMessage();
-    }
-    
-    public boolean isDoInit() {
-        return btnDoInit.getSelection();
-    }
-    
-    @Override
-    public boolean isPageComplete() {
-        String repoSubdir = txtRepoSubdir.getText();
-        String errMsg = null;
-        
-        if (repoSubdir.isEmpty() || !new File(repoSubdir).exists()
-                || !new File(repoSubdir).isDirectory() 
-                || !Paths.get(repoSubdir).startsWith(Paths.get(repoRoot))) {
-            errMsg = Messages.newProjWizard_select_correct_subdir_of_the_git_repo;
-        }else if (isDoInit() && Paths.get(projectFile).startsWith(getRepoSubdir())){
-            errMsg = Messages.newProjWizard_project_fiel + projectFile 
-                    + Messages.newProjWizard_cannt_be_saved_in_working;
-        }
-        
-        setErrorMessage(errMsg);
-        return errMsg == null;
     }
 }
 
@@ -668,11 +468,39 @@ class PageDb extends WizardPage implements Listener {
         return radioDb.getSelection();
     }
 
-    public void setSourceDb() {
+    void setSourceDb() {
         radioDump.setSelection(false);
         radioNone.setSelection(false);
         radioDb.setSelection(true);
         radioDb.notifyListeners(SWT.Selection, new Event());
+    }
+    
+    private void setSourceDump() {
+        radioDump.setSelection(true);
+        radioNone.setSelection(false);
+        radioDb.setSelection(false);
+        radioDump.notifyListeners(SWT.Selection, new Event());
+    }
+    
+    private void setSourceNone() {
+        radioDump.setSelection(false);
+        radioNone.setSelection(true);
+        radioDb.setSelection(false);
+        radioNone.notifyListeners(SWT.Selection, new Event());
+    }
+    
+    void setSource(String value) {
+        switch (value) {
+        case PROJ_PREF.SOURCE_TYPE_DB:
+            setSourceDb();
+            break;
+        case PROJ_PREF.SOURCE_TYPE_DUMP:
+            setSourceDump();
+            break;
+        default:
+            setSourceNone();
+            break;
+        }
     }
 
     public boolean isSourceDump() {
@@ -683,24 +511,40 @@ class PageDb extends WizardPage implements Listener {
         return radioNone.getSelection();
     }
 
-    public void setSourceNoneEnabled(boolean enabled) {
+    void setSourceNoneEnabled(boolean enabled) {
         radioNone.setEnabled(enabled);
     }
 
     public String getDbName() {
         return grpDb.txtDbName.getText();
     }
+    
+    void setDbName(String value) {
+        grpDb.txtDbName.setText(value);
+    }
 
     public String getDbUser() {
         return grpDb.txtDbUser.getText();
+    }
+    
+    void setDbUser(String value) {
+        grpDb.txtDbUser.setText(value);
     }
 
     public String getDbPass() {
         return grpDb.txtDbPass.getText();
     }
+    
+    void setDbPass(String value) {
+        grpDb.txtDbPass.setText(value);
+    }
 
     public String getDbHost() {
         return grpDb.txtDbHost.getText();
+    }
+    
+    void setDbHost(String value) {
+        grpDb.txtDbHost.setText(value);
     }
 
     public int getDbPort() {
@@ -709,6 +553,10 @@ class PageDb extends WizardPage implements Listener {
         } catch (NumberFormatException ex) {
             return 0;
         }
+    }
+    
+    void setDbPort(int value) {
+        grpDb.txtDbPort.setText(Integer.valueOf(value).toString());
     }
 
     public String getDumpPath() {
@@ -870,10 +718,16 @@ class PageDb extends WizardPage implements Listener {
 
 class PageMisc extends WizardPage {
 
+    private static final String DEFAULT_ENCODING = "UTF-8"; //$NON-NLS-1$
     private Combo cmbEncoding;
 
     public String getEncoding() {
         return cmbEncoding.getText();
+    }
+    
+    void setEncoding(String value) {
+        cmbEncoding.select(cmbEncoding.indexOf(value) == -1 ? 
+                cmbEncoding.indexOf(DEFAULT_ENCODING) : cmbEncoding.indexOf(value));
     }
 
     PageMisc(String pageName) {
@@ -892,7 +746,7 @@ class PageMisc extends WizardPage {
                 | SWT.READ_ONLY);
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
-        cmbEncoding.select(cmbEncoding.indexOf("UTF-8")); //$NON-NLS-1$
+        cmbEncoding.select(cmbEncoding.indexOf(DEFAULT_ENCODING)); 
 
         setControl(container);
     }

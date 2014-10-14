@@ -2,33 +2,130 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         id="id1"
-         point="org.eclipse.e4.workbench.model">
-      <fragment
-            uri="fragment.e4xmi">
-      </fragment>
+         point="org.eclipse.ui.console.consoleFactories">
+      <consoleFactory
+            class="ru.taximaxim.codekeeper.ui.parts.ConsoleFactory"
+            icon="icons/app_icon16.png"
+            label="%consoleFactory.label.keeperConsole">
+      </consoleFactory>
    </extension>
    <extension
-         point="org.eclipse.ui.perspectives">
-      <perspective
-            class="ru.taximaxim.codekeeper.ui.FakePerspectiveFactory"
-            icon="icons/app_icon.png"
-            id="ru.taximaxim.codekeeper.ui.perspective.Main"
-            name="pgCodeKeeper">
-      </perspective>
-      <perspective
-            class="ru.taximaxim.codekeeper.ui.FakePerspectiveFactory"
-            icon="icons/beta_violet.png"
-            id="ru.taximaxim.codekeeper.ui.perspective.testbs"
-            name="pgCodeKeeper - Devtest">
-      </perspective>
+         point="org.eclipse.ui.contexts">
+      <context
+            id="ru.taximaxim.codekeeper.ui.pgCodeKeeper"
+            name="%context.name.keeperContext"
+            parentId="org.eclipse.ui.contexts.window">
+      </context>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            id="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            name="%category.name.keeperCategory">
+      </category>
+      <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.Diff"
+            id="ru.taximaxim.codekeeper.ui.command.Diff"
+            name="%command.commandname.Diff">
+      </command>
+      <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.OpenEditor"
+            id="ru.taximaxim.codekeeper.ui.openeditor"
+            name="%command.name.openProjectEditor">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
+         <menu
+               label="%menu.label.pgCodeKeeper2">
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.openeditor"
+                  icon="icons/app_icon16.png"
+                  label="%command.label.openProjectEditor2"
+                  style="push">
+            </command>
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="activeMenuSelection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <test
+                           property="org.eclipse.core.resources.projectNature"
+                           value="ru.taximaxim.codekeeper.ui.nature">
+                     </test>
+                     <adapt
+                           type="org.eclipse.core.resources.IProject">
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.command.Diff"
+                  label="%handledmenuitem.label.Diff"
+                  mnemonic="%command.mnemonic.Diff2"
+                  style="push">
+            </command>
+         </menu>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+         <menu
+               label="%menu.label.pgCodeKeeper">
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.openeditor"
+                  icon="icons/app_icon16.png"
+                  label="%command.label.openProjectEditor"
+                  style="push">
+            </command>
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="activeMenuSelection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <test
+                           property="org.eclipse.core.resources.projectNature"
+                           value="ru.taximaxim.codekeeper.ui.nature">
+                     </test>
+                     <adapt
+                           type="org.eclipse.core.resources.IProject">
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.command.Diff"
+                  label="%handledmenuitem.label.Diff"
+                  mnemonic="%command.mnemonic.Diff"
+                  style="push">
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer"
+            default="false"
+            icon="icons/app_icon16.png"
+            id="ru.taximaxim.codekeeper.ui.projectEditorDiffer"
+            name="%editor.name.keeperProjectEditor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
             class="ru.taximaxim.codekeeper.ui.prefs.GeneralPrefPage"
             id="ru.taximaxim.codekeeper.ui.general"
-            name="pgCodeKeeper">
+            name="%page.name.keeperPrefPage">
       </page>
       <page
             category="ru.taximaxim.codekeeper.ui.general"
@@ -60,6 +157,36 @@
             id="ru.taximaxim.codekeeper.ui.dbupdateprefpage"
             name="%page.name.db_update_pref_page">
       </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <wizard
+            category="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+            class="ru.taximaxim.codekeeper.ui.pgdbproject.NewProjWizard"
+            icon="icons/app_icon16.png"
+            id="ru.taximaxim.codekeeper.ui.newprojwizard"
+            name="%wizard.name.keeperNewWizard"
+            project="true">
+      </wizard>
+      <category
+            id="ru.taximaxim.codekeeper.ui.pgcodekeepercategory"
+            name="%category.name.keeperNewWizard">
+      </category>
+   </extension>
+   <extension
+         id="ru.taximaxim.codekeeper.ui.nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="ru.taximaxim.codekeeper.ui.natures.ProjectNature">
+         </run>
+      </runtime>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer">
+      </initializer>
    </extension>
 
 </plugin>

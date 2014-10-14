@@ -40,7 +40,6 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 public class ManualDepciesGroup extends Group{
     
     private final List<Entry<PgStatement, PgStatement>> depcies;
-    private final List<PgStatement> objects;
     
     private final ComboViewer cmbDependants, cmbDependencies;
     private final Button btnAdd;
@@ -57,7 +56,6 @@ public class ManualDepciesGroup extends Group{
         super(parent, style);
         
         this.depcies = new LinkedList<>(dependencies);
-        this.objects = objects;
         
         setLayout(new GridLayout(3, false));
         GridData gd = new GridData(GridData.FILL_BOTH);

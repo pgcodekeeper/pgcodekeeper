@@ -39,7 +39,7 @@ public class DbInfo {
         this.dbport = dbport;
     }
     
-    public DbInfo(String coords) {
+    private DbInfo(String coords) {
         String[] parts = coords.split(Pattern.quote(String.valueOf(d)), -1);
         
         try {

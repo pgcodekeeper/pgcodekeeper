@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
@@ -28,6 +29,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 import com.jcraft.jsch.JSchException;
 
+@Deprecated // TODO remove
 public class GitPrefPage extends FieldEditorPreferencePage
         implements IWorkbenchPreferencePage {
     
@@ -41,7 +43,7 @@ public class GitPrefPage extends FieldEditorPreferencePage
     
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(UIScopedPreferenceStore.get());
+        setPreferenceStore(Activator.getDefault().getPreferenceStore());
     }
 
     @Override

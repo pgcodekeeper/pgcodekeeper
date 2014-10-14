@@ -68,10 +68,12 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.XmlStringList;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -171,7 +173,12 @@ public class DiffTableViewer extends Composite {
                 PREVCHECKED_HIST_FILENAME, 
                 PREVCHECKED_HIST_ROOT,
                 PREVCHECKED_HIST_EL).elementSetTag(PREVCHECKED_HIST_SET).build();
-        prevChecked = prevCheckedHistory.getMapHistory();
+        try {
+            prevChecked = prevCheckedHistory.getMapHistory();
+        } catch (IOException e1) {
+            ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_load_checked_set, e1);
+            prevChecked = new HashMap<>();
+        }
         
         int viewerStyle = SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER;
         if (!viewOnly) {
@@ -324,21 +331,26 @@ public class DiffTableViewer extends Composite {
                     Activator.getContext().getBundle().getResource(
                             FILE.ICONSAVE))));
             saveChecked.setToolTipText(Messages.diffTableViewer_save_checked);
+            
             saveChecked.addSelectionListener(new SelectionAdapter() {
+                
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    updateChekedSet(true);
+                    updateCheckedSet(true);
                 }
             });
+            
             Button deleteCheckSet = new Button(contButtons, SWT.PUSH);
             deleteCheckSet.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(
                             FILE.ICONDEL))));
             deleteCheckSet.setToolTipText(Messages.diffTableViewer_delete_checked_set);
+            
             deleteCheckSet.addSelectionListener(new SelectionAdapter() {
+                
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    updateChekedSet(false);
+                    updateCheckedSet(false);
                 }
             });
         
@@ -543,16 +555,21 @@ public class DiffTableViewer extends Composite {
         return path;
     }
     
-    private void updateChekedSet(boolean addEntry) {
+    private void updateCheckedSet(boolean addEntry) {
         String setName = cmbPrevChecked.getCombo().getText();
         if (!setName.isEmpty()) {
             LinkedList<String> checkedElements = new LinkedList<>();
             for (TreeElement element : getCheckedElements(true)) {
                 checkedElements.add(element.getName());
             }
-            prevCheckedHistory.updateCheckedSetHistoryEntries(setName, 
-                        checkedElements, addEntry);
-            prevChecked = prevCheckedHistory.getMapHistory();
+            try {
+                prevCheckedHistory.updateCheckedSetHistoryEntries(setName, 
+                            checkedElements, addEntry);
+                prevChecked = prevCheckedHistory.getMapHistory();
+            } catch (IOException e) {
+                ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_save_checked_set, e);
+                prevChecked = new HashMap<>();
+            }
             cmbPrevChecked.setInput(prevChecked.keySet());
         }
     }
@@ -593,11 +610,18 @@ public class DiffTableViewer extends Composite {
 
     private void setDiffer(TreeDiffer differ, boolean reverseDiffSide) {
         this.reverseDiffSide = reverseDiffSide;
-        this.treeRoot = (differ == null) ? null : differ.getDiffTree();
-        this.dbSource = (differ == null) ? null : 
-            reverseDiffSide ? differ.getDbTarget() : differ.getDbSource();
-        this.dbTarget = (differ == null) ? null : 
-            reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
+        try {
+            this.treeRoot = (differ == null) ? null : differ.getDiffTree();
+            this.dbSource = (differ == null) ? null : 
+                reverseDiffSide ? differ.getDbTarget() : differ.getDbSource();
+            this.dbTarget = (differ == null) ? null : 
+                reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
+        } catch (PgCodekeeperUIException e) {
+            ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_setting_input, e);
+            this.treeRoot = null;
+            this.dbSource = null;
+            this.dbTarget = null;
+        }
     }
     
     private void setInputTreeElement(TreeElement treeElement) {
@@ -721,7 +745,8 @@ public class DiffTableViewer extends Composite {
                     ignoredElements = xml.deserializeList(
                             new StringReader((String) event.getNewValue()));
                 } catch (IOException | SAXException ex) {
-                    throw new IllegalStateException(ex);
+                    ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_reading_ignored_objects, ex);
+                    return;
                 }
                 viewerRefresh();
             }

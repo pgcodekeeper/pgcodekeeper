@@ -7,58 +7,34 @@ package ru.taximaxim.codekeeper.ui;
  * @author Alexander Levsha
  */
 public interface UIConsts {
-    
+
     interface PLUGIN_ID {
-        String JGIT = "org.eclipse.jgit"; //$NON-NLS-1$
-        String MAINAPP = "ru.taximaxim.codekeeper.mainapp"; //$NON-NLS-1$
-        String APGDIFF = "apgdiff"; //$NON-NLS-1$
         String THIS = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
     }
     
-    String PREF_STORE = PLUGIN_ID.THIS + ".preferenceStore"; //$NON-NLS-1$
-    
     interface PART_STACK {
-        String EDITORS = UIConsts.PLUGIN_ID.THIS + ".partstack.Editors"; //$NON-NLS-1$
+        String DEVTEST = PLUGIN_ID.THIS + ".partstack.Devtest"; //$NON-NLS-1$
     }
     
     interface PART {
-        String SQL_EDITOR = UIConsts.PLUGIN_ID.THIS + ".partdescriptor.SQLEditorDescr"; //$NON-NLS-1$
-        String SQL_EDITOR_FILENAME = SQL_EDITOR + ".filename"; //$NON-NLS-1$
-        String SYNC = UIConsts.PLUGIN_ID.THIS + ".partdescriptor.Sync"; //$NON-NLS-1$
-        String SYNC_ID = SYNC + ".Id"; //$NON-NLS-1$
-        String DIFF = UIConsts.PLUGIN_ID.THIS + ".partdescriptor.Diff"; //$NON-NLS-1$
-        String DIFF_ID = DIFF + ".Id"; //$NON-NLS-1$
-        String WELCOME = UIConsts.PLUGIN_ID.THIS + ".part.Welcome"; //$NON-NLS-1$
+        String DEVTEST = PLUGIN_ID.THIS + ".part.TestPart"; //$NON-NLS-1$
+        String CTXP = PLUGIN_ID.THIS + ".part.CtXp"; //$NON-NLS-1$
+    }
+    
+    interface EDITOR {
+        String PROJECT = "ru.taximaxim.codekeeper.ui.projectEditorDiffer"; //$NON-NLS-1$
     }
     
     interface PERSP {
-        String MAIN = "ru.taximaxim.codekeeper.ui.perspective.Main"; //$NON-NLS-1$
+        String MAIN = PLUGIN_ID.THIS + ".perspective.Main"; //$NON-NLS-1$
     }
-    
-    interface MENU {
-        String PROJXP_TREE_POPUP = UIConsts.PLUGIN_ID.THIS + ".popupmenu.project"; //$NON-NLS-1$
-    }
-    
-    interface WINDOW {
-        String MAIN = "ru.taximaxim.codekeeper.mainapp.mainwindow"; //$NON-NLS-1$
-    }
-    
-    interface EVENT {
-        String REOPEN_PROJECT = "ru/taximaxim/codekeeper/ui/project/changed"; //$NON-NLS-1$
-    }
-    
-    String HANDLER_RECENT_PROJ = "bundleclass://" + PLUGIN_ID.THIS + "/" //$NON-NLS-1$ //$NON-NLS-2$
-            + PLUGIN_ID.THIS + ".handlers.OpenRecent"; //$NON-NLS-1$
     
     interface PREF {
         String PGDUMP_EXE_PATH = "prefPgdumpExePath"; //$NON-NLS-1$
         String PGDUMP_CUSTOM_PARAMS = "prefPgdumpCustomParams"; //$NON-NLS-1$
         String DB_STORE = "prefDbStore"; //$NON-NLS-1$
         String GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile"; //$NON-NLS-1$
-        String RECENT_PROJECTS = "prefRecentProject"; //$NON-NLS-1$
-        String OPEN_LAST_ON_START = "prefOpenLastOnStart"; //$NON-NLS-1$
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
-        String LAST_REPO = "prefLastRepo"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
     }
     
@@ -93,13 +69,15 @@ public interface UIConsts {
         String REPO_ROOT_PATH = "prefRepoPath"; //$NON-NLS-1$
     }
     
+    interface NATURE {
+        public static final String ID = "ru.taximaxim.codekeeper.ui.nature"; //$NON-NLS-1$
+    }
+    
     interface FILE {
         String PROJ_PREF_STORE = ".project"; //$NON-NLS-1$
         
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONWARNING = "/icons/warning.gif"; //$NON-NLS-1$
-        String ICONDIR = "/icons/exportdir_wiz.gif"; //$NON-NLS-1$
-        String ICONFILE = "/icons/file_obj.gif"; //$NON-NLS-1$
         String ICONADD = "/icons/add_obj.gif"; //$NON-NLS-1$
         String ICONSAVE = "/icons/save_edit.gif"; //$NON-NLS-1$
         String ICONDEL = "/icons/delete_obj.gif"; //$NON-NLS-1$
@@ -108,5 +86,7 @@ public interface UIConsts {
         String ICONSELECTALL = "/icons/check_all.gif"; //$NON-NLS-1$
         String ICONSELECTNONE = "/icons/uncheck_all.gif"; //$NON-NLS-1$
         String ICONINVERTSELECTION = "/icons/loop_obj.gif"; //$NON-NLS-1$
+        String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
+        String ICONBALLRED = "/icons/ball_red.png"; //$NON-NLS-1$
     }
 }

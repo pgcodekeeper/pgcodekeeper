@@ -29,9 +29,7 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.util.FS;
 
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.parts.Console;
@@ -56,9 +54,9 @@ public class JGitExec implements IRepoWorker{
     }
 
     public JGitExec(PgDbProject proj, String privateKeyFile) {
-        this(proj.getString(PROJ_PREF.REPO_URL),
-                proj.getString(PROJ_PREF.REPO_USER),
-                proj.getString(PROJ_PREF.REPO_PASS), privateKeyFile);
+        this(proj.getPrefs().get(PROJ_PREF.REPO_URL, ""), //$NON-NLS-1$
+                proj.getPrefs().get(PROJ_PREF.REPO_USER, ""), //$NON-NLS-1$
+                proj.getPrefs().get(PROJ_PREF.REPO_PASS, ""), privateKeyFile); //$NON-NLS-1$
     }
 
     public JGitExec(String url, String user, String pass, String privateKeyFile) {
@@ -305,7 +303,7 @@ public class JGitExec implements IRepoWorker{
 
     @Override
     public String repoGetVersion() throws IOException {
-        return Activator.getPluginVersions().get(PLUGIN_ID.JGIT).get(0);
+        return ""; //Activator.getPluginVersions().get(PLUGIN_ID.JGIT).get(0); //$NON-NLS-1$
     }
     
     public static boolean isGitRepo(String path){
@@ -346,7 +344,7 @@ public class JGitExec implements IRepoWorker{
         }
     }
     
-    private File getGitRoot(File subDir) {
+    private File getGitRoot(File subDir) throws IOException {
         File gitSubDir = subDir;
         while (gitSubDir != null) {
             gitSubDir = new File(gitSubDir, ".git"); //$NON-NLS-1$
@@ -356,7 +354,7 @@ public class JGitExec implements IRepoWorker{
                 gitSubDir = gitSubDir.getParentFile().getParentFile();
             }
         }
-        throw new IllegalStateException(Messages.jGitExec_couldnt_find_git_repository_in 
+        throw new IOException(Messages.jGitExec_couldnt_find_git_repository_in 
                                             + subDir + Messages.jGitExec_and_higher);
     }
     

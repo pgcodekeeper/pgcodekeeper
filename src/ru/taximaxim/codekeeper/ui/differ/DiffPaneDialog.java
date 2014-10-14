@@ -26,6 +26,8 @@ public class DiffPaneDialog extends Dialog {
         this.dbTarget = dbTarget;
         this.reverseSide = reverseSide;
         
+        setShellStyle(SWT.RESIZE | SWT.CLOSE | SWT.MODELESS
+                | SWT.BORDER | SWT.TITLE);
         setBlockOnOpen(false);
     }
 
@@ -33,8 +35,6 @@ public class DiffPaneDialog extends Dialog {
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(Messages.diffPaneDialog_diff_to_selected_object);
-        setShellStyle(getShellStyle() | SWT.RESIZE | SWT.CLOSE | SWT.MODELESS
-                | SWT.BORDER | SWT.TITLE);
     }
 
     @Override

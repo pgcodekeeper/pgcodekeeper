@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui.prefs;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -28,8 +29,10 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.xml.sax.SAXException;
 
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.XmlStringList;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
@@ -49,7 +52,7 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
     
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(UIScopedPreferenceStore.get());
+        setPreferenceStore(Activator.getDefault().getPreferenceStore());
     }
     
     private void updateList() {
@@ -60,7 +63,8 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
             try {
                 ignoredObjects = xml.deserializeList(new StringReader(preference));
             } catch (IOException | SAXException ex) {
-                throw new IllegalStateException(ex);
+                ExceptionNotifier.showErrorDialog(Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, ex);
+                ignoredObjects = new ArrayList<>();
             }
         } else {
             ignoredObjects.clear();
@@ -151,8 +155,8 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
             XmlStringList xml = new XmlStringList(IGNORED_OBJS_TAG, IGNORED_OBJS_ELEMENT);
             try {
                 xml.serializeList(ignoredObjects, true, sw);
-            } catch (TransformerException ex) {
-                throw new IllegalStateException(ex);
+            } catch (IOException |TransformerException ex) {
+                ExceptionNotifier.showErrorDialog(Messages.IgnoredObjectsPrefPage_error_saving_ignores_list, ex);
             }
             preference = sw.toString();
             getPreferenceStore().setValue(

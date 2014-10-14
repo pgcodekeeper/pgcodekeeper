@@ -45,17 +45,19 @@ import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.addons.AddonPrefLoader;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTreeViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 
 public class DiffWizard extends Wizard implements IPageChangingListener {
 
@@ -107,12 +109,15 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     getContainer().run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
                     e.doit = false;
-                    throw new IllegalStateException(Messages.error_in_differ_thread, ex);
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.error_in_differ_thread, ex);
+                    return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     e.doit = false;
-                    throw new IllegalStateException(
+                    ExceptionNotifier.showErrorDialog(
                             Messages.differ_thread_cancelled_shouldnt_happen, ex);
+                    return;
                 }
 
                 dbSource = treediffer.getDbSource();
@@ -135,21 +140,24 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     getContainer().run(true, false, differ);
                 } catch (InvocationTargetException ex) {
                     e.doit = false;
-                    throw new IllegalStateException(Messages.error_in_differ_thread, ex);
+                    ExceptionNotifier.showErrorDialog(Messages.error_in_differ_thread, ex);
+                    return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     e.doit = false;
-                    throw new IllegalStateException(
+                    ExceptionNotifier.showErrorDialog(
                             Messages.differ_thread_cancelled_shouldnt_happen, ex);
+                    return;
                 }
 
                 pageResult.setData(fdbSource.getOrigin(), fdbTarget.getOrigin(),
                         differ.getDiffDirect(), differ.getDiffReverse());
                 pageResult.layout();
             }
-        } catch (Exception ex) {
+        } catch(PgCodekeeperUIException e1) {
             e.doit = false;
-            throw ex;
+            ExceptionNotifier.showErrorDialog(Messages.DiffWizard_unexpected_error, e1);
+            return;
         }
     }
 
@@ -170,7 +178,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 class PageDiff extends WizardPage implements Listener {
 
     public enum DiffTargetType {
-        DB, DUMP, /*SVN, */GIT, PROJ
+        DB, DUMP, GIT, PROJ
     }
 
     private final IPreferenceStore mainPrefs;
@@ -196,7 +204,7 @@ class PageDiff extends WizardPage implements Listener {
 
     private LocalResourceManager lrm;
 
-    public DiffTargetType getTargetType() {
+    public DiffTargetType getTargetType() throws PgCodekeeperUIException {
         if (radioDb.getSelection()) {
             return DiffTargetType.DB;
         }
@@ -209,8 +217,7 @@ class PageDiff extends WizardPage implements Listener {
         if (radioProj.getSelection()) {
             return DiffTargetType.PROJ;
         }
-
-        throw new IllegalStateException(Messages.diffWizard_no_target_type_selection_found);
+        throw new PgCodekeeperUIException(Messages.diffWizard_no_target_type_selection_found);
     }
 
     public String getDbName() {
@@ -269,7 +276,7 @@ class PageDiff extends WizardPage implements Listener {
         return cmbEncoding.getText();
     }
 
-    public DbSource getTargetDbSource() {
+    public DbSource getTargetDbSource() throws PgCodekeeperUIException {
         DbSource dbs;
 
         switch (getTargetType()) {
@@ -292,23 +299,22 @@ class PageDiff extends WizardPage implements Listener {
             break;
 
         case PROJ:
-            PgDbProject fromProj = new PgDbProject(getProjPath());
-            fromProj.load();
+            PgDbProject proj = PgDbProject.getProjFromFile(getProjPath());
 
             if (getProjRev().isEmpty()) {
-                dbs = DbSource.fromProject(fromProj);
+                dbs = DbSource.fromProject(proj);
             } else {
                 dbs = DbSource.fromGit(
-                                fromProj.getString(PROJ_PREF.REPO_URL),
-                                fromProj.getString(PROJ_PREF.REPO_USER),
-                                fromProj.getString(PROJ_PREF.REPO_PASS),
+                                proj.getPrefs().get(PROJ_PREF.REPO_URL, ""), //$NON-NLS-1$
+                                proj.getPrefs().get(PROJ_PREF.REPO_USER, ""), //$NON-NLS-1$
+                                proj.getPrefs().get(PROJ_PREF.REPO_PASS, ""), //$NON-NLS-1$
                                 getProjRev(),
-                                fromProj.getString(PROJ_PREF.ENCODING),
+                                proj.getPrefs().get(PROJ_PREF.ENCODING, ""), //$NON-NLS-1$
                                 mainPrefs.getString(PREF.GIT_KEY_PRIVATE_FILE));
             }
             break;
         default:
-            throw new IllegalStateException(Messages.diffWizard_unexpected_target_type_value);
+            throw new PgCodekeeperUIException(Messages.diffWizard_unexpected_target_type_value);
         }
 
         return dbs;
@@ -530,7 +536,7 @@ class PageDiff extends WizardPage implements Listener {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (btnThis.getSelection()) {
-                    txtProjPath.setText(proj.getProjectWorkingDir().toString());
+                    txtProjPath.setText(proj.getPathToProject().toString());
                     txtProjPath.setEnabled(false);
                 } else {
                     txtProjPath.setEnabled(true);
@@ -557,10 +563,14 @@ class PageDiff extends WizardPage implements Listener {
 
                 if (!dir.isEmpty() && new File(dir).isFile() &&
                         dir.endsWith(FILE.PROJ_PREF_STORE)) {
-                    PgDbProject tmpProj = new PgDbProject(dir);
-                    tmpProj.load();
-                    cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getString(
-                            PROJ_PREF.ENCODING)));
+                    PgDbProject tmpProj;
+                    try {
+                        tmpProj = PgDbProject.getProjFromFile(dir);
+                        cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getPrefs().get(
+                                PROJ_PREF.ENCODING, ""))); //$NON-NLS-1$
+                    } catch (PgCodekeeperUIException e1) {
+                        ExceptionNotifier.showErrorDialog(Messages.DiffWizard_error_opening_project, e1);
+                    }
                 }
             }
         });
@@ -581,7 +591,8 @@ class PageDiff extends WizardPage implements Listener {
                     txtProjPath.setText(path);
                     txtProjPath.setEnabled(true);
                     btnThis.setSelection(false);
-                    AddonPrefLoader.savePreference(mainPrefs, PREF.LAST_OPENED_LOCATION, new File (path).getParent());
+                    PreferenceInitializer.savePreference(mainPrefs,
+                            PREF.LAST_OPENED_LOCATION, new File(path).getParent());
                 }
             }
         });
@@ -635,39 +646,44 @@ class PageDiff extends WizardPage implements Listener {
     public boolean isPageComplete() {
         String errMsg = null;
 
-        switch (getTargetType()) {
-        case DB:
-            if (!grpDb.txtDbPort.getText().isEmpty()) {
-                try {
-                    Integer.parseInt(grpDb.txtDbPort.getText());
-                } catch (NumberFormatException ex) {
-                    errMsg = Messages.port_must_be_a_number;
+        try {
+            switch (getTargetType()) {
+            case DB:
+                if (!grpDb.txtDbPort.getText().isEmpty()) {
+                    try {
+                        Integer.parseInt(grpDb.txtDbPort.getText());
+                    } catch (NumberFormatException ex) {
+                        errMsg = Messages.port_must_be_a_number;
+                    }
                 }
+                break;
+
+            case DUMP:
+                if (txtDumpPath.getText().isEmpty()
+                        || !new File(txtDumpPath.getText()).isFile()) {
+                    errMsg = Messages.select_readable_db_dump_file;
+                }
+                break;
+
+            case GIT:
+                if (txtGitUrl.getText().isEmpty()) {
+                    errMsg = Messages.diffWizard_enter_git_repo_url;
+                }
+                break;
+
+            case PROJ:
+                String dir = txtProjPath.getText();
+
+                if (dir.isEmpty() || !dir.endsWith(FILE.PROJ_PREF_STORE) 
+                        || !new File(dir).isFile()) {
+                    errMsg = Messages.diffWizard_select_valid_project_file;
+                }
+
+                break;
             }
-            break;
-
-        case DUMP:
-            if (txtDumpPath.getText().isEmpty()
-                    || !new File(txtDumpPath.getText()).isFile()) {
-                errMsg = Messages.select_readable_db_dump_file;
-            }
-            break;
-
-        case GIT:
-            if (txtGitUrl.getText().isEmpty()) {
-                errMsg = Messages.diffWizard_enter_git_repo_url;
-            }
-            break;
-
-        case PROJ:
-            String dir = txtProjPath.getText();
-
-            if (dir.isEmpty() || !dir.endsWith(FILE.PROJ_PREF_STORE) 
-                    || !new File(dir).isFile()) {
-                errMsg = Messages.diffWizard_select_valid_project_file;
-            }
-
-            break;
+        } catch (PgCodekeeperUIException e) {
+            errMsg = Messages.DiffWizard_bad_target_db;
+            return false;
         }
 
         setErrorMessage(errMsg);
@@ -841,20 +857,19 @@ class PageResult extends WizardPage {
                         + Messages.diffWizard_diff);
                 saveDialog.setOverwrite(true);
                 saveDialog.setFilterExtensions(new String[] { "*.sql", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
-                saveDialog.setFilterPath(proj.getProjectFile().getParent());
+                saveDialog.setFilterPath(proj.getPathToProject().toString());
 
                 String saveTo = saveDialog.open();
                 if (saveTo != null) {
                     try (final PrintWriter encodedWriter = new UnixPrintWriter(
                             new OutputStreamWriter(
                                     new FileOutputStream(saveTo),
-                                    proj.getString(PROJ_PREF.ENCODING)))) {
+                                    proj.getPrefs().get(PROJ_PREF.ENCODING, "")))) { //$NON-NLS-1$
                         Text txtDiff = (Text) tabs.getSelection()[0]
                                 .getControl();
                         encodedWriter.println(txtDiff.getText());
-                    } catch (FileNotFoundException
-                            | UnsupportedEncodingException ex) {
-                        throw new IllegalStateException(
+                    } catch (FileNotFoundException | UnsupportedEncodingException ex) {
+                        ExceptionNotifier.showErrorDialog(
                                 Messages.diffWizard_unexpected_error_while_saving_diff, ex);
                     }
                 }

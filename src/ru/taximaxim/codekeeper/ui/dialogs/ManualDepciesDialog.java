@@ -8,6 +8,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -62,7 +63,8 @@ public class ManualDepciesDialog extends TrayDialog {
                 depciesSource, objectsSource, groupSourceName);
         depcyGroupTarget = new ManualDepciesGroup(parent, SWT.NONE, 
                 depciesTarget, objectsTarget, groupTargetName);
-        
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), 
+                "ru.taximaxim.codekeeper.ui.help.manual_depcies"); //$NON-NLS-1$
         return parent;
     }
     

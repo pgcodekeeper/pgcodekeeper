@@ -20,11 +20,11 @@ public class ProjectUpdater {
     public ProjectUpdater(PgDatabase db, PgDbProject proj) {
         this.db = db;
 
-        this.encoding = proj.getString(PROJ_PREF.ENCODING);
-        this.dirExport = proj.getProjectWorkingDir();
+        this.encoding = proj.getPrefs().get(PROJ_PREF.ENCODING, ""); //$NON-NLS-1$
+        this.dirExport = proj.getPathToProject().toFile();
     }
 
-    public void update() {
+    public void update() throws IOException {
         try (TempDir tmp = new TempDir(dirExport.toPath(), "tmp-export")) { //$NON-NLS-1$
             File dirTmp = tmp.get();
             
@@ -34,25 +34,22 @@ public class ProjectUpdater {
             } catch (Exception ex) {
                 Log.log(Log.LOG_ERROR, "Error while updating project!" //$NON-NLS-1$
                         + " Trying to restore data from backup", ex); //$NON-NLS-1$
-                
+            
                 try {
                     restoreProjectDir(dirTmp);
-                } catch (IOException exRestore) {
+                } catch (Exception exRestore) {
                     Log.log(Log.LOG_ERROR,
                             "Error while restoring backups after update error!", //$NON-NLS-1$
                             exRestore);
-                    IllegalStateException exNew = new IllegalStateException(
-                            Messages.ProjectUpdater_error_backup_restore,
-                            exRestore);
+                    IOException exNew = new IOException(
+                            Messages.ProjectUpdater_error_backup_restore, exRestore);
                     exNew.addSuppressed(ex);
                     throw exNew;
                 }
-                throw new IllegalStateException(
-                        Messages.ProjectUpdater_error_update, ex);
+                throw new IOException(Messages.ProjectUpdater_error_update, ex);
             }
         } catch (IOException ex) {
-            throw new IllegalStateException(
-                    Messages.ProjectUpdater_error_no_tempdir, ex);
+            throw new IOException(Messages.ProjectUpdater_error_no_tempdir, ex);
         }
     }
 
