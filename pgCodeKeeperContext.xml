@@ -12,10 +12,6 @@
        <description>Установки настроек проекта</description>
        <topic href="html/gettingstarted/new_proj_wzd/project_initializer.html" label="Инициализация проекта"/>
     </context>
-    <context id="work_dir_settings">
-       <description>Установки рабочей директории</description>
-       <topic href="html/gettingstarted/new_proj_wzd/work_dir_settings.html" label="Установки рабочей директории"/>
-    </context>
     <context id="schema_src_settings">
        <description>Установки источника схемы БД</description>
        <topic href="html/gettingstarted/new_proj_wzd/schema_src_settings.html" label="Установки источника схемы БД"/>
