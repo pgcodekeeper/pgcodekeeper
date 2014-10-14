@@ -219,46 +219,51 @@ public interface JdbcQueries {
             + "     ref_col_name,"
             + "     aclArray";
     
-    String QUERY_INDEX = 
+    String QUERY_INDECIES_PER_SCHEMA = 
             "SELECT "
+            + "     ccc.relname AS table_name, "
             + "     i.indisunique, "
             + "     c.relname, "
             + "     (SELECT n.nspname FROM pg_catalog.pg_namespace n WHERE c.relnamespace = n.oid) namespace, "
             + "     c.relowner, "
             + "     definition "
             + "FROM "
-            + "     pg_catalog.pg_index i "
-            + "     JOIN pg_catalog.pg_class c ON c.oid = i.indexrelid"
+            + "     pg_catalog.pg_class ccc "
+            + "     RIGHT JOIN pg_catalog.pg_index i "
+            + "     ON ccc.oid = i.indrelid "
+            + "     JOIN pg_catalog.pg_class c ON c.oid = i.indexrelid "
             + "     LEFT JOIN pg_catalog.pg_constraint cons ON cons.conindid = i.indexrelid, "
             + "     pg_get_indexdef(c.oid) definition "
             + "WHERE "
-            + "     i.indrelid = ? AND "
+            + "     ccc.relkind = 'r' AND "
+            + "     ccc.relnamespace = ? AND "
             + "     i.indisprimary = FALSE AND "
             + "     i.indisexclusion = FALSE AND"
             + "     cons.conindid is NULL";
     
-    String QUERY_TABLE_CONSTRAINTS = 
+    String QUERY_CONSTRAINTS_PER_SCHEMA = 
             "SELECT "
-            + "     conname, "
-            + "     contype, "
-            + "     conrelid, "
-            + "     consrc, "
-            + "     CAST(conkey as integer[]), "
-            + "     confrelid, "
-            + "     confrelid::regclass::text AS confrelid_name, "
-            + "     CAST(confkey as integer[]), "
-            + "     confupdtype, "
+            + "     ccc.relname,"
+            + "     conname,"
+            + "     contype,"
+            + "     conrelid,"
+            + "     consrc,"
+            + "     conkey::integer[],"
+            + "     confrelid,"
+            + "     confrelid::regclass::text AS confrelid_name,"
+            + "     confkey::integer[],"
+            + "     confupdtype,"
             + "     confdeltype, "
-            + "     confmatchtype, "
+            + "     confmatchtype,"
             + "     description "
             + "FROM "
-            + "     pg_catalog.pg_constraint c "
-            + "     LEFT JOIN "
-            + "         pg_catalog.pg_description d "
-            + "     ON "
-            + "         c.oid = d.objoid "
+            + "     pg_catalog.pg_class ccc"
+            + "     RIGHT JOIN pg_catalog.pg_constraint c"
+            + "     ON ccc.oid = c.conrelid"
+            + "     LEFT JOIN pg_catalog.pg_description d"
+            + "     ON c.oid = d.objoid "
             + "WHERE "
-            + "     conrelid = ?";
+            + "     ccc.relkind = 'r' AND ccc.relnamespace = ?";
     
     String QUERY_COLUMNS_PER_SCHEMA = 
             "SELECT "
@@ -310,17 +315,26 @@ public interface JdbcQueries {
             + "     ON "
             + "         n.oid = d.objoid";
     
-    String QUERY_TRIGGERS_PER_TABLE = 
+    String QUERY_TRIGGERS_PER_SCHEMA = 
             "SELECT "
-            + "     tgfoid, "
+            + "     ccc.relname, "
+            + "     p.proname, "
+            + "     nsp.nspname, "
             + "     tgname, "
             + "     tgfoid, "
             + "     tgtype, "
             + "     tgrelid::regclass::text "
             + "FROM "
-            + "     pg_catalog.pg_trigger "
+            + "     pg_catalog.pg_class ccc "
+            + "     RIGHT JOIN pg_catalog.pg_trigger t "
+            + "     ON ccc.oid = t.tgrelid "
+            + "     JOIN pg_catalog.pg_proc p "
+            + "     ON p.oid = tgfoid "
+            + "     JOIN pg_catalog.pg_namespace nsp "
+            + "     ON p.pronamespace = nsp.oid "
             + "WHERE "
-            + "     tgrelid = ? AND "
+            + "     ccc.relkind = 'r' AND "
+            + "     ccc.relnamespace = ? AND "
             + "     tgisinternal = FALSE";
 
     String QUERY_VIEWS_PER_SCHEMA = 

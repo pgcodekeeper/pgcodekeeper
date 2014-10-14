@@ -59,7 +59,6 @@ public class JdbcLoader {
     private PreparedStatement prepStatTables;
     private PreparedStatement prepStatViews;
     private PreparedStatement prepStatTriggers;
-    private PreparedStatement prepStatFuncName;
     private PreparedStatement prepStatFunctions;
     private PreparedStatement prepStatSequences;
     private PreparedStatement prepStatConstraints;
@@ -208,12 +207,11 @@ public class JdbcLoader {
     private void prepareStatements() throws SQLException{
         prepStatTables = connection.prepareStatement(JdbcQueries.QUERY_TABLES_PER_SCHEMA);
         prepStatViews = connection.prepareStatement(JdbcQueries.QUERY_VIEWS_PER_SCHEMA);
-        prepStatTriggers = connection.prepareStatement(JdbcQueries.QUERY_TRIGGERS_PER_TABLE);
-        prepStatFuncName = connection.prepareStatement("SELECT proname, nsp.nspname FROM pg_catalog.pg_proc proc LEFT JOIN pg_catalog.pg_namespace nsp ON proc.pronamespace = nsp.oid WHERE proc.oid = ?");
+        prepStatTriggers = connection.prepareStatement(JdbcQueries.QUERY_TRIGGERS_PER_SCHEMA);
         prepStatFunctions = connection.prepareStatement(JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA);
         prepStatSequences = connection.prepareStatement(JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA);
-        prepStatConstraints = connection.prepareStatement(JdbcQueries.QUERY_TABLE_CONSTRAINTS);
-        prepStatIndecies = connection.prepareStatement(JdbcQueries.QUERY_INDEX);
+        prepStatConstraints = connection.prepareStatement(JdbcQueries.QUERY_CONSTRAINTS_PER_SCHEMA);
+        prepStatIndecies = connection.prepareStatement(JdbcQueries.QUERY_INDECIES_PER_SCHEMA);
         prepStatColumnsOfSchema = connection.prepareStatement(JdbcQueries.QUERY_COLUMNS_PER_SCHEMA);
     }
 
@@ -229,14 +227,14 @@ public class JdbcLoader {
             Log.log(Log.LOG_INFO, "Could not close prepared statement for tables", e);
         }
         try {
+            prepStatViews.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_INFO, "Could not close prepared statement for views", e);
+        }
+        try {
             prepStatTriggers.close();
         } catch (Exception e) {
             Log.log(Log.LOG_INFO, "Could not close prepared statement for triggers", e);
-        }
-        try {
-            prepStatFuncName.close();
-        } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for function names", e);
         }
         try {
             prepStatFunctions.close();
@@ -292,6 +290,50 @@ public class JdbcLoader {
                 PgTable table = getTable(resTables, schemaName);
                 if (table != null){
                     s.addTable(table);
+                }
+            }
+        }
+        
+        // CONSTRAINTS
+        PgTable table = null;
+        prepStatConstraints.setLong(1, schemaOid);
+        try(ResultSet resConstraints = prepStatConstraints.executeQuery()){
+            while (resConstraints.next()){
+                table = s.getTable(resConstraints.getString("relname"));
+                if (table != null){
+                    PgConstraint constraint = getConstraint(resConstraints, schemaName, table.getName());
+                    if (constraint != null){
+                        table.addConstraint(constraint);
+                    }
+                }
+            }
+        }
+        
+        // INDECIES
+        prepStatIndecies.setLong(1, schemaOid);
+        try(ResultSet resIndecies = prepStatIndecies.executeQuery()){
+            while (resIndecies.next()){
+                table = s.getTable(resIndecies.getString("table_name"));
+                if (table != null){
+                    PgIndex index = getIndex(resIndecies, table.getName());
+                    if (index != null){
+                        table.addIndex(index);
+                    }
+                }
+            }
+        }
+        
+        // TRIGGERS
+        
+        prepStatTriggers.setLong(1, schemaOid);
+        try(ResultSet resTriggers = prepStatTriggers.executeQuery()){
+            while(resTriggers.next()){
+                table = s.getTable(resTriggers.getString("relname"));
+                if (table != null){
+                    PgTrigger trigger = getTrigger(resTriggers, schemaName);
+                    if (trigger != null){
+                        table.addTrigger(trigger);
+                    }    
                 }
             }
         }
@@ -530,7 +572,6 @@ public class JdbcLoader {
                 return null;
             }
         }
-        Long tableOid = res.getLong("oid");
         String tableName = res.getString("relname");
         StringBuilder tableDef = new StringBuilder(); 
         tableDef.append("CREATE TABLE ".concat(tableName).concat(" (\n"));
@@ -637,39 +678,6 @@ public class JdbcLoader {
         // PRIVILEGES, OWNER
         t.setOwner(getRoleNameByOid(res.getLong("relowner")));
         setPrivileges(t, t.getName(), res.getString("aclarray"), t.getOwner());
-        
-        // Query CONSTRAINTS
-        prepStatConstraints.setLong(1, tableOid);
-        try(ResultSet resConstraints = prepStatConstraints.executeQuery()){
-            while (resConstraints.next()){
-                PgConstraint constraint = getConstraint(resConstraints, schemaName, t.getName());
-                if (constraint != null){
-                    t.addConstraint(constraint);
-                }
-            }
-        }
-        
-        // Query INDECIES
-        prepStatIndecies.setLong(1, tableOid);
-        try(ResultSet resIndecies = prepStatIndecies.executeQuery()){
-            while (resIndecies.next()){
-                PgIndex index = getIndex(resIndecies, t.getName(), tableOid);
-                if (index != null){
-                    t.addIndex(index);
-                }
-            }
-        }
-        
-        // Query TRIGGERS
-        prepStatTriggers.setLong(1, tableOid);
-        try(ResultSet resTriggers = prepStatTriggers.executeQuery()){
-            while(resTriggers.next()){
-                PgTrigger trigger = getTrigger(resTriggers, schemaName);
-                if (trigger != null){
-                    t.addTrigger(trigger);
-                }
-            }
-        }
 
         return t;
     }
@@ -717,12 +725,16 @@ public class JdbcLoader {
         String tableName = res.getString("tgrelid");
         t.setTableName(tableName);
         
-        String functionName = getFunctionNameByOid(res.getLong("tgfoid"), schemaName).concat("()");
+        String functionName = res.getString("proname").concat("()");
+        if (!res.getString("nspname").equals(schemaName)){
+            functionName = res.getString("nspname").concat(".").concat(functionName);
+        }
+        
         t.setFunction(functionName);
         return t;
     }
     
-    private PgIndex getIndex(ResultSet res, String tableName, Long tableOid) throws SQLException {
+    private PgIndex getIndex(ResultSet res, String tableName) throws SQLException {
         String schemaName = res.getString("namespace");
         
         String indexName = res.getString("relname");
@@ -1013,18 +1025,6 @@ public class JdbcLoader {
             result.add(tableColumns.get(n));
         }
         return result;
-    }
-
-    private String getFunctionNameByOid(Long functionOid, String targetSchemaName) throws SQLException{
-        prepStatFuncName.setLong(1, functionOid);
-        try(ResultSet res = prepStatFuncName.executeQuery()){
-            if (res.next()){
-                String funcSchemaName = res.getString("nspname");
-                return funcSchemaName.equals(targetSchemaName) ? 
-                        res.getString("proname") : funcSchemaName.concat(".").concat(res.getString("proname"));
-            }            
-        }
-        return null;
     }
     
     /**
