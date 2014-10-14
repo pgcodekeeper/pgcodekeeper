@@ -5,8 +5,6 @@ Bundle-SymbolicName: ru.taximaxim.codekeeper.mainapp;singleton:=true
 Bundle-Version: 0.6.0.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.mainapp.Activator
 Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.e4.tools.css.spy,
- org.eclipse.e4.tools.emf.liveeditor,
  org.eclipse.equinox.event,
  org.eclipse.equinox.launcher,
  org.eclipse.pde.runtime,

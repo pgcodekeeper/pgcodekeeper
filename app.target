@@ -1,16 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="app" sequenceNumber="70">
+<?pde version="3.8"?><target name="app" sequenceNumber="74">
 <locations>
-<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.emf.edit.feature.group" version="2.10.0.v20140519-0339"/>
-<repository location="http://download.eclipse.org/modeling/emf/emf/updates/releases/"/>
-</location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.jdt.feature.group" version="3.10.0.v20140925-0400"/>
 <unit id="org.eclipse.equinox.sdk.feature.group" version="3.10.0.v20140909-1633"/>
 <unit id="org.eclipse.platform.ide" version="4.4.1.M20140925-0400"/>
 <unit id="org.eclipse.pde.feature.group" version="3.10.0.v20140925-0400"/>
 <repository location="http://download.eclipse.org/eclipse/updates/4.4"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.draw2d.source.feature.group" version="3.9.101.201408150207"/>
+<unit id="org.eclipse.draw2d.feature.group" version="3.9.101.201408150207"/>
+<unit id="org.eclipse.draw2d.sdk.feature.group" version="3.9.101.201408150207"/>
+<repository location="http://download.eclipse.org/tools/gef/updates/releases/"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.jgit.pgm.feature.group" version="3.5.1.201410131835-r"/>
+<unit id="org.eclipse.jgit.http.apache.feature.group" version="3.5.1.201410131835-r"/>
+<unit id="org.eclipse.jgit.pgm.source.feature.group" version="3.5.1.201410131835-r"/>
+<unit id="org.eclipse.jgit.feature.group" version="3.5.1.201410131835-r"/>
+<unit id="org.eclipse.egit.source.feature.group" version="3.5.1.201410131835-r"/>
+<unit id="org.eclipse.egit.feature.group" version="3.5.1.201410131835-r"/>
+<unit id="org.eclipse.jgit.java7.feature.group" version="3.5.1.201410131835-r"/>
+<unit id="org.eclipse.jgit.source.feature.group" version="3.5.1.201410131835-r"/>
+<repository location="http://download.eclipse.org/egit/updates/"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.datatools.sqldevtools.ddlgen.feature.feature.group" version="1.12.0.v201406061321-7A-7DF7RZHQUMdThK5_t"/>
+<unit id="org.eclipse.datatools.sqldevtools.data.feature.feature.group" version="1.12.0.v201406061321-647ABgJ9EKDJDNAdHO"/>
+<unit id="org.eclipse.datatools.sqldevtools.sqlbuilder.feature.feature.group" version="1.12.0.v201406061321-79-7FEVVFNSI_QiI-Sd"/>
+<unit id="org.eclipse.datatools.sqldevtools.ddl.feature.feature.group" version="1.12.0.v201406061321-27B-78B08EG8S_IRVNeUiL6au"/>
+<unit id="org.eclipse.datatools.sqldevtools.results.feature.feature.group" version="1.12.0.v201406061321-427H9oB58F6A8I5KGJ"/>
+<repository location="http://download.eclipse.org/datatools/updates/1.12"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.babel.nls_tools.tm_ru.feature.group" version="4.4.0.v20140623020002"/>
@@ -24,36 +45,8 @@
 <repository location="http://download.eclipse.org/technology/babel/update-site/R0.12.0/luna/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.e4.core.tools.feature.feature.group" version="0.14.0.v20140502-1911"/>
-<unit id="org.eclipse.e4.tools.css.spy.feature.source.feature.group" version="0.14.0.v20140402-1524"/>
-<unit id="org.eclipse.e4.tools.css.spy.feature.feature.group" version="0.14.0.v20140402-1524"/>
-<unit id="org.eclipse.e4.core.tools.feature.source.feature.group" version="0.14.0.v20140502-1911"/>
-<repository location="http://storage.chelny.taximaxim.ru/codekeeper/p2/e4/I20140504-2200_custom_build/"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.datatools.sqldevtools.ddlgen.feature.feature.group" version="1.12.0.v201406061321-7A-7DF7RZHQUMdThK5_t"/>
-<unit id="org.eclipse.datatools.sqldevtools.data.feature.feature.group" version="1.12.0.v201406061321-647ABgJ9EKDJDNAdHO"/>
-<unit id="org.eclipse.datatools.sqldevtools.sqlbuilder.feature.feature.group" version="1.12.0.v201406061321-79-7FEVVFNSI_QiI-Sd"/>
-<unit id="org.eclipse.datatools.sqldevtools.ddl.feature.feature.group" version="1.12.0.v201406061321-27B-78B08EG8S_IRVNeUiL6au"/>
-<unit id="org.eclipse.datatools.sqldevtools.results.feature.feature.group" version="1.12.0.v201406061321-427H9oB58F6A8I5KGJ"/>
-<repository location="http://download.eclipse.org/datatools/updates/1.12"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.draw2d.source.feature.group" version="3.9.101.201408150207"/>
-<unit id="org.eclipse.draw2d.feature.group" version="3.9.101.201408150207"/>
-<unit id="org.eclipse.draw2d.sdk.feature.group" version="3.9.101.201408150207"/>
-<repository location="http://download.eclipse.org/tools/gef/updates/releases/"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.egit.source.feature.group" version="3.5.0.201409260305-r"/>
-<unit id="org.eclipse.jgit.java7.feature.group" version="3.5.0.201409260305-r"/>
-<unit id="org.eclipse.egit.feature.group" version="3.5.0.201409260305-r"/>
-<unit id="org.eclipse.jgit.http.apache.feature.group" version="3.5.0.201409260305-r"/>
-<unit id="org.eclipse.jgit.pgm.source.feature.group" version="3.5.0.201409260305-r"/>
-<unit id="org.eclipse.jgit.pgm.feature.group" version="3.5.0.201409260305-r"/>
-<unit id="org.eclipse.jgit.source.feature.group" version="3.5.0.201409260305-r"/>
-<unit id="org.eclipse.jgit.feature.group" version="3.5.0.201409260305-r"/>
-<repository location="http://download.eclipse.org/egit/updates/"/>
+<unit id="org.eclipse.emf.edit.feature.group" version="2.10.0.v20140519-0339"/>
+<repository location="http://download.eclipse.org/modeling/emf/emf/updates/releases/"/>
 </location>
 </locations>
 </target>
