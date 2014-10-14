@@ -12,6 +12,9 @@ import java.util.ListIterator;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -30,6 +33,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
@@ -432,7 +436,6 @@ public class SqlScriptDialog extends TrayDialog {
     }
     
     private void showAddDepcyDialog() {
-        
         if (usePsqlDepcy && addDepcy != null && !addDepcy.isEmpty()) {
             MessageBox mb = new MessageBox(getShell(), 
                     SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
@@ -449,27 +452,45 @@ public class SqlScriptDialog extends TrayDialog {
             mb.setMessage(mb.getMessage() + System.lineSeparator() +
                     Messages.SqlScriptDialog_add_it_to_script);
             if (mb.open() == SWT.OK) {
-                try {
-                    List<Entry<PgStatement, PgStatement>> saveToRestore 
-                        = new ArrayList<>(differ.getAdditionalDepciesSource()); 
-                    differ.addAdditionalDepciesSource(depcyToAdd);
-                    differ.runProgressMonitorDiffer(getShell());
-    
-                    if (differ.getScript().isDangerDdl(!searchForDropColumn,
-                            !searchForAlterColumn, !searchForDropTable)) {
-                        if (showDangerWarning() != SWT.OK) {
-                            differ.setAdditionalDepciesSource(saveToRestore);
-                            return;
-                        } else {
-                            sqlEditor.getTextWidget().setBackground(colorPink);
+                final List<Entry<PgStatement, PgStatement>> saveToRestore = new ArrayList<>(
+                        differ.getAdditionalDepciesSource());
+                differ.addAdditionalDepciesSource(depcyToAdd);
+                Job job = differ.getDifferJob();
+                job.addJobChangeListener(new JobChangeAdapter() {
+                    public void done(IJobChangeEvent event) {
+                        if (event.getResult().isOK()) {
+                            Display.getDefault().asyncExec(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    showDialog(saveToRestore);
+                                }
+                            });
                         }
                     }
-                    sqlEditor.setDocument(new Document(differ.getDiffDirect()));
-                    sqlEditor.refresh();
-                } catch (PgCodekeeperUIException e) {
-                    ExceptionNotifier.showErrorDialog(Messages.SqlScriptDialog_error_add_depcies, e);
+                });
+                job.setUser(true);
+                job.schedule();
+            }
+        }
+    }
+    
+    private void showDialog(
+            final List<Entry<PgStatement, PgStatement>> saveToRestore) {
+        try {
+            if (differ.getScript().isDangerDdl(!searchForDropColumn,
+                    !searchForAlterColumn, !searchForDropTable)) {
+                if (showDangerWarning() != SWT.OK) {
+                    differ.setAdditionalDepciesSource(saveToRestore);
+                    return;
+                } else {
+                    sqlEditor.getTextWidget().setBackground(colorPink);
                 }
             }
+            sqlEditor.setDocument(new Document(differ.getDiffDirect()));
+            sqlEditor.refresh();
+        } catch (PgCodekeeperUIException e) {
+            ExceptionNotifier.showErrorDialog(Messages.SqlScriptDialog_error_add_depcies, e);
         }
     }
 

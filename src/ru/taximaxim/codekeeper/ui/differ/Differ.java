@@ -10,14 +10,16 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -74,18 +76,21 @@ public class Differ implements IRunnableWithProgress {
         this.needTwoWay = needTwoWay;
     }
     
-    public void runProgressMonitorDiffer(final Shell shell) throws PgCodekeeperUIException {
-        try {
-            new ProgressMonitorDialog(shell).run(true, false, this);
-        } catch (InvocationTargetException ex) {
-            throw new PgCodekeeperUIException(
-                    Messages.error_in_the_project_modifier_thread, ex);
-        } catch (InterruptedException ex) {
-            // assume run() was called as non cancelable
-            throw new PgCodekeeperUIException(
-                    Messages.project_modifier_thread_cancelled_shouldnt_happen,
-                    ex);
-        }
+    public Job getDifferJob() {
+        Job job = new Job("Get Differ") {
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    Differ.this.run(monitor);
+                } catch (InvocationTargetException e) {
+                    return new Status(Status.ERROR, PLUGIN_ID.THIS, 
+                            Messages.error_in_the_project_modifier_thread, e);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        return job;
     }
     
     public String getDiffDirect() throws PgCodekeeperUIException {
