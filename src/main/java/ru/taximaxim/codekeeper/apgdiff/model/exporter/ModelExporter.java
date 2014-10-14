@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.DirectoryNotEmptyException;
@@ -11,6 +10,8 @@ import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.osgi.framework.Version;
 
@@ -32,6 +33,8 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
  * @author Alexander Levsha
  */
 public class ModelExporter {
+    
+    private static final Pattern INVALID_FILENAME = Pattern.compile("[\\/:*?\"<>|]");
     
     /**
      * Objects of the export directory;
@@ -222,8 +225,8 @@ public class ModelExporter {
      * @return a statement's exported file name
      */
     public static String getExportedFilename(PgStatement statement) {
-        return statement.getBareName()
-                + "_" + PgDiffUtils.md5(statement.getName());
+        Matcher m = INVALID_FILENAME.matcher(statement.getBareName());
+        return m.replaceAll("") + '_' + PgDiffUtils.md5(statement.getName());
     }
     
     private void writeProjVersion(File f) throws IOException {
@@ -234,20 +237,13 @@ public class ModelExporter {
                 prop.load(fStream);
             }
             String oldVersion = prop.getProperty(ApgdiffConsts.VERSION_PROP_NAME);
-            if (oldVersion != null) {
-                try {
-                    if (progVersion.compareTo(Version.parseVersion(oldVersion)) == 0) {
-                        return;
-                    }
-                } catch (IllegalArgumentException e) {
-                    Log.log(e);
-                }
+            if (progVersion.equals(Version.parseVersion(oldVersion))) {
+                return;
             }
         }
-        prop = new Properties();
-        prop.setProperty(ApgdiffConsts.VERSION_PROP_NAME, progVersion.toString());
-        try(FileOutputStream fOutputStream = new FileOutputStream(f)){
-            prop.store(fOutputStream , null);
+        
+        try (PrintWriter pw = new UnixPrintWriter(f, "UTF-8")) {
+            pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = " + progVersion.toString());
         }
     }
 }

@@ -315,7 +315,8 @@ public class PgDumpLoader { //NOPMD
                 Arrays.sort(files);
                 
                 for (File f : files) {
-                    if (f.exists() && !f.isDirectory()) {
+                    if (f.exists() && !f.isDirectory() && 
+                            f.getName().toLowerCase().endsWith(".sql")) {
                         try (FileInputStream inputStream = new FileInputStream(f)) {
                             loadDatabaseSchemaCore(inputStream, charsetName,
                                     outputIgnoredStatements,
