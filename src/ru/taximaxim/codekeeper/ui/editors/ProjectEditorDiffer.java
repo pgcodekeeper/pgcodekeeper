@@ -429,7 +429,7 @@ class DiffPage extends DiffPresentationPane {
                 mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
                 mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
                 mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT));
-        if (btnDb.getSelection()) {
+        if (btnPgDump.getSelection() || btnJdbc.getSelection()) {
             dialog.setDbParams(dbSrc.txtDbHost.getText(),
                     dbSrc.txtDbPort.getText(), dbSrc.txtDbName.getText(),
                     dbSrc.txtDbUser.getText(), dbSrc.txtDbPass.getText());

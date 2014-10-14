@@ -34,6 +34,7 @@ public class Messages extends NLS {
     public static String error_in_the_project_modifier_thread;
     public static String get_changes;
     public static String none;
+    public static String jdbc;
     public static String please_check_at_least_one_row;
     public static String port_must_be_a_number;
     public static String project_modifier_thread_cancelled_shouldnt_happen;

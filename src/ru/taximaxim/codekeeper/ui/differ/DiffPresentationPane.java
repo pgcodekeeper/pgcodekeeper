@@ -40,7 +40,7 @@ public abstract class DiffPresentationPane extends Composite {
 
     protected final DiffTableViewer diffTable;
     private final Composite containerSrc;
-    protected final Button btnNone, btnDump, btnDb;
+    protected final Button btnDump, btnPgDump, btnJdbc;
     private final Button btnGetChanges;
     protected final DbPicker dbSrc;
     private final DiffPaneViewer diffPane;
@@ -153,17 +153,6 @@ public abstract class DiffPresentationPane extends Composite {
                 : Messages.diffPartDescr_get_changes_for);
         grpSrc.setLayout(new GridLayout(3, false));
 
-        btnNone = new Button(grpSrc, SWT.RADIO);
-        btnNone.setText(Messages.none);
-        btnNone.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                showDbPicker(false);
-                btnGetChanges.setEnabled(false);
-            }
-        });
-
         btnDump = new Button(grpSrc, SWT.RADIO);
         btnDump.setText(Messages.dump);
         btnDump.addSelectionListener(new SelectionAdapter() {
@@ -171,21 +160,29 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 showDbPicker(false);
-                btnGetChanges.setEnabled(true);
             }
         });
 
-        btnDb = new Button(grpSrc, SWT.RADIO);
-        btnDb.setText(Messages.db);
-        btnDb.addSelectionListener(new SelectionAdapter() {
+        btnPgDump = new Button(grpSrc, SWT.RADIO);
+        btnPgDump.setText(Messages.db);
+        btnPgDump.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 showDbPicker(true);
-                btnGetChanges.setEnabled(true);
             }
         });
 
+        btnJdbc = new Button(grpSrc, SWT.RADIO);
+        btnJdbc.setText(Messages.jdbc);
+        btnJdbc.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showDbPicker(true);
+            }
+        });
+        
         btnGetChanges = new Button(containerSrc, SWT.PUSH);
         btnGetChanges.setText(Messages.get_changes);
         btnGetChanges.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -208,13 +205,10 @@ public abstract class DiffPresentationPane extends Composite {
 
         boolean useDbPicker = false;
         String src = projProps.get(PROJ_PREF.SOURCE, ""); //$NON-NLS-1$
-        if (src.equals(PROJ_PREF.SOURCE_TYPE_NONE)) {
-            btnNone.setSelection(true);
-            btnGetChanges.setEnabled(false);
-        } else if (src.equals(PROJ_PREF.SOURCE_TYPE_DUMP)) {
+        if (src.equals(PROJ_PREF.SOURCE_TYPE_DUMP)) {
             btnDump.setSelection(true);
         } else {
-            btnDb.setSelection(true);
+            btnPgDump.setSelection(true);
             useDbPicker = true;
         }
         showDbPicker(useDbPicker);
@@ -254,7 +248,7 @@ public abstract class DiffPresentationPane extends Composite {
             }
             dbsRemote = DbSource
                     .fromFile(dumpfile, projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
-        } else if (btnDb.getSelection()) {
+        } else if (btnPgDump.getSelection()) {
             int port;
             try {
                 String sPort = dbSrc.txtDbPort.getText();
@@ -271,7 +265,23 @@ public abstract class DiffPresentationPane extends Composite {
                     dbSrc.txtDbHost.getText(), port, dbSrc.txtDbUser.getText(),
                     dbSrc.txtDbPass.getText(), dbSrc.txtDbName.getText(),
                     projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
-        } else {
+        } else if (btnJdbc.getSelection()){
+            int port;
+            try {
+                String sPort = dbSrc.txtDbPort.getText();
+                port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
+            } catch (NumberFormatException ex) {
+                MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
+                mb.setText(Messages.bad_port);
+                mb.setMessage(Messages.port_must_be_a_number);
+                mb.open();
+                return;
+            }
+
+            dbsRemote = DbSource.fromJdbc(dbSrc.txtDbHost.getText(), port, dbSrc.txtDbUser.getText(),
+                    dbSrc.txtDbPass.getText(), dbSrc.txtDbName.getText(),
+                    projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
+        }else {
             throw new PgCodekeeperUIException(Messages.undefined_source_for_db_changes);
         }
 
