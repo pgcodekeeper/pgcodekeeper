@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.parts;
+package ru.taximaxim.codekeeper.ui.consoles;
 
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -9,17 +9,13 @@ import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsoleFactory;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IConsoleView;
-import org.eclipse.ui.console.MessageConsole;
-import org.eclipse.ui.console.MessageConsoleStream;
 
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ConsoleFactory implements IConsoleFactory {
-
-    private static final String NAME = "pgCodeKeeper"; //$NON-NLS-1$
     
-    private static MessageConsoleStream outer;
+    private static CodekeeperConsole myConsole;
     
     @Override
     public void openConsole() {
@@ -38,26 +34,25 @@ public class ConsoleFactory implements IConsoleFactory {
 
     public static void write(String msg) {
         if (PlatformUI.isWorkbenchRunning()) {
-            if (outer == null) {
-                findConsole();
+            if (myConsole == null) {
+                myConsole = findConsole();
             }
-            outer.println(msg);
+            myConsole.write(msg);
         }
     }
     
-    private static MessageConsole findConsole() {
-        MessageConsole myConsole = null;
+    private static CodekeeperConsole findConsole() {
+        CodekeeperConsole myConsole = null;
         IConsoleManager conMan = ConsolePlugin.getDefault().getConsoleManager();
         for (IConsole c : conMan.getConsoles()) {
-            if (NAME.equals(c.getName()) && (c instanceof MessageConsole)) {
-                myConsole = (MessageConsole) c;
+            if (c instanceof CodekeeperConsole) {
+                myConsole = (CodekeeperConsole) c;
             }
         }
         if (myConsole == null) {
-            myConsole = new MessageConsole(NAME, null);
+            myConsole = new CodekeeperConsole();
         }
         conMan.addConsoles(new IConsole[] { myConsole });
-        outer = myConsole.newMessageStream();
         return myConsole;
      }
 }

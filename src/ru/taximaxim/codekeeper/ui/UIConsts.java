@@ -18,6 +18,7 @@ public interface UIConsts {
         String GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile"; //$NON-NLS-1$
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
+        String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
     }
     
     interface COMMIT_PREF {
