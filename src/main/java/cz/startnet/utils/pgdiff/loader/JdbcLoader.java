@@ -67,6 +67,12 @@ public class JdbcLoader {
     
     private Map<Long, String> cachedRolesNamesByOid = new HashMap<Long, String>();
     private Map<Long, PgType> cachedTypeNamesByOid = new HashMap<Long, PgType>();
+    /*
+     * Stores cached results of query "SELECT typmodout(colTypeMod)" for types.<br>
+     * Key is the oid of pg_catalog.pg_type table. Inner map stores pairs of colTypeMod 
+     * and result of "SELECT typmodout(colTypeMod)" query.
+     */
+    private Map<Long, Map<Integer,String>> cachedTypesTypmodouts = new HashMap<Long, Map<Integer,String>>();
     private Map<Long, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<Long, Map<Integer,String>>();
     
     private String host;
@@ -92,14 +98,14 @@ public class JdbcLoader {
         File pgpass = new File(System.getProperty("user.home") + "/.pgpass");
         
         try (BufferedReader br = new BufferedReader(new FileReader(pgpass))){        
-            String line;
-            String [] koko = {
+            String [] expectedTokens = {
                                 host, 
                                 String.valueOf(port), 
                                 dbName, 
                                 user
                             };
             
+            String line;
             while ((line = br.readLine()) != null) {
                 try(Scanner sc = new Scanner(line)){
                     sc.useDelimiter(":");
@@ -112,7 +118,7 @@ public class JdbcLoader {
                         
                         if (tokenCounter < 4){
                             tokensLength += token.length();
-                            if (!token.equals(koko[tokenCounter]) && !token.equals("*")){
+                            if (!token.equals(expectedTokens[tokenCounter]) && !token.equals("*")){
                                 fits = false;                            
                             }
                         }else if (fits){
@@ -593,16 +599,47 @@ public class JdbcLoader {
             
             PgType columnType = cachedTypeNamesByOid.get(colTypes[i]);
             String columnTypeName = getTypeNameByOid(colTypes[i], schemaName);
-            
+             
+            // pg_catalog.pg_attribute.atttypmod records type-specific data supplied 
+            // at table creation time (for example, the maximum length of a varchar column). 
+            // It is passed to type-specific input functions and length coercion functions. 
+            // The value will generally be -1 for types that do not need atttypmod.
+            //
+            // if column type has it's "Type modifier output function" typmodout and
+            // column type has it's atttypmod set up (colTypeMod[i] != -1)
             if (colTypeMod[i] != -1 && columnType.getTypmodout() != null && !columnType.getTypmodout().isEmpty()){
-                StringBuilder query = new StringBuilder();
-                query.append("SELECT ").append(columnType.getTypmodout()).append("(").append(String.valueOf(colTypeMod[i])).append(")");
-                try(Statement stmnt = connection.createStatement();
-                        ResultSet res2 = stmnt.executeQuery(query.toString())){
-                    if (res2.next()){
-                        columnTypeName = columnTypeName.concat(res2.getString(1));
+                String typMod = "";
+                
+                // Map of those colTypeMod values that 've been already queried in
+                // form of "SELECT typmodout(colTypeMod)"
+                Map<Integer, String> typeAvailableModes = cachedTypesTypmodouts.get(colTypes[i]);
+                
+                // if it was queried already, just use cached value
+                if (typeAvailableModes != null && typeAvailableModes.containsKey(colTypeMod[i])){
+                    typMod = typeAvailableModes.get(colTypeMod[i]);
+                }
+                // else query "SELECT typmodout(colTypeMod)" and cache result for further use
+                else{
+                    StringBuilder query = new StringBuilder();
+                    query.append("SELECT ").append(columnType.getTypmodout()).append("(").append(String.valueOf(colTypeMod[i])).append(")");
+                    try(Statement stmnt = connection.createStatement();
+                            ResultSet res2 = stmnt.executeQuery(query.toString())){
+                        if (res2.next()){
+                            typMod = res2.getString(1);
+                            // cache queried values 
+                            if (typeAvailableModes == null){
+                                typeAvailableModes = new HashMap<Integer, String>();
+                                typeAvailableModes.put(colTypeMod[i], typMod);
+                                cachedTypesTypmodouts.put(colTypes[i], typeAvailableModes);
+                            }else{
+                                typeAvailableModes.put(colTypeMod[i], typMod);
+                            }
+                        }
                     }
                 }
+                
+                // finally append type modifier
+                columnTypeName = columnTypeName.concat(typMod);
             }
             column.setType(columnTypeName);
             
