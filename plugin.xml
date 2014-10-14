@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.ui.console.consoleFactories">
       <consoleFactory
-            class="ru.taximaxim.codekeeper.ui.parts.ConsoleFactory"
+            class="ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory"
             icon="icons/app_icon16.png"
             label="%consoleFactory.label.keeperConsole">
       </consoleFactory>

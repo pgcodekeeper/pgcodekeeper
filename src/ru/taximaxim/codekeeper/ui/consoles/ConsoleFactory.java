@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.parts;
+package ru.taximaxim.codekeeper.ui.consoles;
 
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -9,7 +9,6 @@ import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsoleFactory;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IConsoleView;
-import org.eclipse.ui.console.MessageConsole;
 
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -46,7 +45,7 @@ public class ConsoleFactory implements IConsoleFactory {
         CodekeeperConsole myConsole = null;
         IConsoleManager conMan = ConsolePlugin.getDefault().getConsoleManager();
         for (IConsole c : conMan.getConsoles()) {
-            if (CodekeeperConsole.NAME.equals(c.getName()) && (c instanceof MessageConsole)) {
+            if (c instanceof CodekeeperConsole) {
                 myConsole = (CodekeeperConsole) c;
             }
         }

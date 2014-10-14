@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.parts;
+package ru.taximaxim.codekeeper.ui.consoles;
 
 import java.io.IOException;
 
@@ -14,7 +14,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 
 class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
 
-    static final String NAME = "pgCodeKeeper";
+    public static final String NAME = "pgCodeKeeper"; //$NON-NLS-1$
+    
     private IOConsoleOutputStream outer;
     
     public CodekeeperConsole() {
@@ -25,7 +26,6 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
         super(name, imageDescriptor);
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(this);
     }
-    
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
