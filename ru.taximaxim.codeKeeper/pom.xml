@@ -11,7 +11,7 @@
         <module>..</module>
 <!--         <module>../product</module> -->
         <module>../../apgdiff/pom_tycho.xml</module>
-        <module>../../com.opcoach.e4.contextExplorer</module>
+<!--         <module>../../com.opcoach.e4.contextExplorer</module> -->
         <module>../../ru.taximaxim.codekeeper.ui</module>
         <module>../../ru.taximaxim.codekeeper.ui.tests</module>
         <module>../../apgdiff.tests</module>
