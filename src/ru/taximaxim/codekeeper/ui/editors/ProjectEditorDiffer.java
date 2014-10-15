@@ -280,7 +280,7 @@ class CommitPage extends DiffPresentationPane {
         
         final TreeElement resultingTree = considerDepcy ? filteredTwiceWithAllDepcy : filtered;
         
-        Job job = new Job("Save project") { //$NON-NLS-1$
+        Job job = new Job(Messages.projectEditorDiffer_save_project) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -402,15 +402,32 @@ class DiffPage extends DiffPresentationPane {
         }
         final TreeElement filtered = diffTable.filterDiffTree();
 
-        Differ differ = new Differ(
+        final Differ differ = new Differ(
                 DbSource.fromFilter(dbSource, filtered, DiffSide.LEFT),
                 DbSource.fromFilter(dbTarget,filtered, DiffSide.RIGHT),
                 false);
         differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
-        differ.runProgressMonitorDiffer(getShell());
-
+        Job job = differ.getDifferJob();
+        job.addJobChangeListener(new JobChangeAdapter() {
+            public void done(IJobChangeEvent event) {
+                if (event.getResult().isOK()) {
+                    Display.getDefault().asyncExec(new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            showScriptDialog(differ);
+                        }
+                    });
+                }
+            }
+        });
+        job.setUser(true);
+        job.schedule();
+    }
+    
+    private void showScriptDialog(Differ differ) {
         SqlScriptDialog dialog = new SqlScriptDialog(getShell(),
                 MessageDialog.INFORMATION, Messages.diffPartDescr_diff_script,
                 Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
