@@ -293,22 +293,26 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                treeDiffer.run(monitor);
+                    treeDiffer.run(monitor);
                 } catch (InvocationTargetException e) {
                     return new Status(Status.ERROR, PLUGIN_ID.THIS, 
                             Messages.error_in_differ_thread, e);
                 }
                 return Status.OK_STATUS;
-            } 
-            
+            }
         };
         job.addJobChangeListener(new JobChangeAdapter() {
+            
+            @Override
             public void done(IJobChangeEvent event) {
                 if (event.getResult().isOK()) {
                     Display.getDefault().asyncExec(new Runnable() {
                         
                         @Override
                         public void run() {
+                            if (DiffPresentationPane.this.isDisposed()) {
+                                return;
+                            }
                             diffTable.setInput(treeDiffer, !isProjSrc);
                             diffPane.setInput(null);
                             diffLoaded();
