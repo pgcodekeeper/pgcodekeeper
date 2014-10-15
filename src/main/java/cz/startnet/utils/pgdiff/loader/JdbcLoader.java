@@ -83,7 +83,6 @@ public class JdbcLoader {
     private String encoding;
     
     private Connection connection;
-    private DatabaseMetaData metaData;
     
     public JdbcLoader(String host, int port, String user, String pass, String dbName, String encoding) {
         this.host = host;
@@ -144,7 +143,6 @@ public class JdbcLoader {
             setTimeZone();
             prepareStatements();
             prepareData();
-            metaData = connection.getMetaData();
 
             try(Statement stmnt = connection.createStatement(); 
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_SCHEMAS)){
@@ -498,17 +496,6 @@ public class JdbcLoader {
         return c;
     }
     
-    private long timeNanosec = 0L;
-    
-    /**
-     * Output to stderr time of some operation (required to be called twice)  
-     */
-    private void t(String mes){
-        if (!mes.isEmpty())
-            System.err.println(mes + " " + (System.nanoTime() - timeNanosec)/1000000 + " msec");
-        timeNanosec = System.nanoTime();
-    }
-    
     private PgView getView(ResultSet res, String schemaName, Long schemaOid) throws SQLException {
         for(String depType : (String[]) res.getArray("deptype").getArray()){
             if (depType.equals("e")){
@@ -542,16 +529,22 @@ public class JdbcLoader {
         v.setSelect(SelectParser.parse(fakeDb, viewDef, getSearchPath(schemaName)));
         
         // Query columns default values and comments
-        ResultSet res2 = metaData.getColumns(null, schemaName, viewName, null);
-        while(res2.next()){
-            String colName = res2.getString("COLUMN_NAME");
-            String colDefault = res2.getString("COLUMN_DEF");
-            if (colDefault != null){
-                v.addColumnDefaultValue(colName, colDefault);
-            }
-            String colComment = res2.getString("REMARKS");
-            if (colComment != null){
-                v.addColumnComment(colName, colComment);
+        Array colNamesArr = res.getArray("column_names");
+        if (colNamesArr != null){
+            String[] colNames = (String[]) colNamesArr.getArray();
+            String[] colComments = (String[]) res.getArray("column_comments").getArray();
+            String[] colDefaults = (String[]) res.getArray("column_defaults").getArray();
+            
+            for (int i = 0; i < colNames.length; i++){
+                String colName = colNames[i];
+                String colDefault = colDefaults[i];
+                if (colDefault != null){
+                    v.addColumnDefaultValue(colName, colDefault);
+                }
+                String colComment = colComments[i];
+                if (colComment != null){
+                    v.addColumnComment(colName, colComment);
+                }    
             }
         }
         
