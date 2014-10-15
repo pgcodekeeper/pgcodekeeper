@@ -455,17 +455,43 @@ public class SqlScriptDialog extends TrayDialog {
                 final List<Entry<PgStatement, PgStatement>> saveToRestore = new ArrayList<>(
                         differ.getAdditionalDepciesSource());
                 differ.addAdditionalDepciesSource(depcyToAdd);
+                
                 Job job = differ.getDifferJob();
                 job.addJobChangeListener(new JobChangeAdapter() {
+                    
+                    @Override
                     public void done(IJobChangeEvent event) {
                         if (event.getResult().isOK()) {
                             Display.getDefault().asyncExec(new Runnable() {
 
                                 @Override
                                 public void run() {
-                                    showDialog(saveToRestore);
+                                    if (getShell().isDisposed()) {
+                                        return;
+                                    }
+                                    checkAskDanger(saveToRestore);
                                 }
                             });
+                        }
+                    }
+                    
+                    private void checkAskDanger(
+                            List<Entry<PgStatement, PgStatement>> saveToRestore) {
+                        try {
+                            if (differ.getScript().isDangerDdl(!searchForDropColumn,
+                                    !searchForAlterColumn, !searchForDropTable)) {
+                                if (showDangerWarning() != SWT.OK) {
+                                    differ.setAdditionalDepciesSource(saveToRestore);
+                                    return;
+                                } else {
+                                    sqlEditor.getTextWidget().setBackground(colorPink);
+                                }
+                            }
+                            sqlEditor.setDocument(new Document(differ.getDiffDirect()));
+                            sqlEditor.refresh();
+                        } catch (PgCodekeeperUIException e) {
+                            ExceptionNotifier.showErrorDialog(
+                                    Messages.SqlScriptDialog_error_add_depcies, e);
                         }
                     }
                 });
@@ -475,25 +501,6 @@ public class SqlScriptDialog extends TrayDialog {
         }
     }
     
-    private void showDialog(
-            final List<Entry<PgStatement, PgStatement>> saveToRestore) {
-        try {
-            if (differ.getScript().isDangerDdl(!searchForDropColumn,
-                    !searchForAlterColumn, !searchForDropTable)) {
-                if (showDangerWarning() != SWT.OK) {
-                    differ.setAdditionalDepciesSource(saveToRestore);
-                    return;
-                } else {
-                    sqlEditor.getTextWidget().setBackground(colorPink);
-                }
-            }
-            sqlEditor.setDocument(new Document(differ.getDiffDirect()));
-            sqlEditor.refresh();
-        } catch (PgCodekeeperUIException e) {
-            ExceptionNotifier.showErrorDialog(Messages.SqlScriptDialog_error_add_depcies, e);
-        }
-    }
-
     private String getRepeatedDepcy(List<Entry<PgStatement, PgStatement>> depcyToAdd) {
         List<Entry<PgStatement, PgStatement>> existingDepcy = differ.getAdditionalDepciesSource();
         StringBuilder sb = new StringBuilder();

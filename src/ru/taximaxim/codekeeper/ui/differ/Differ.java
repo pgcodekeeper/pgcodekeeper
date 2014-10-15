@@ -77,7 +77,7 @@ public class Differ implements IRunnableWithProgress {
     }
     
     public Job getDifferJob() {
-        Job job = new Job(Messages.differ_get_differ) {
+        return new Job(Messages.differ_get_differ) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -90,7 +90,6 @@ public class Differ implements IRunnableWithProgress {
                 return Status.OK_STATUS;
             }
         };
-        return job;
     }
     
     public String getDiffDirect() throws PgCodekeeperUIException {

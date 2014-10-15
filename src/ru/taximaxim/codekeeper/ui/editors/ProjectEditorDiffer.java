@@ -308,6 +308,7 @@ class CommitPage extends DiffPresentationPane {
         };
         
         job.addJobChangeListener(new JobChangeAdapter() {
+            @Override
             public void done(IJobChangeEvent event) {
                 if (event.getResult().isOK()) {
                     ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
@@ -411,12 +412,17 @@ class DiffPage extends DiffPresentationPane {
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
         Job job = differ.getDifferJob();
         job.addJobChangeListener(new JobChangeAdapter() {
+            
+            @Override
             public void done(IJobChangeEvent event) {
                 if (event.getResult().isOK()) {
                     Display.getDefault().asyncExec(new Runnable() {
                         
                         @Override
                         public void run() {
+                            if (DiffPage.this.isDisposed()) {
+                                return;
+                            }
                             showScriptDialog(differ);
                         }
                     });
