@@ -34,6 +34,7 @@ public class Messages extends NLS {
     public static String error_in_the_project_modifier_thread;
     public static String get_changes;
     public static String none;
+    public static String jdbc;
     public static String please_check_at_least_one_row;
     public static String port_must_be_a_number;
     public static String projectEditorDiffer_save_project;
@@ -120,6 +121,7 @@ public class Messages extends NLS {
     public static String diffTreeViewer_expand_subtree;
     public static String diffTreeViewer_select_subtree;
     public static String treeDiffer_building_diff_tree;
+    public static String reading_db_from_jdbc;
 
     // ui.externalcalls
     public static String jGitExec_and_higher;

@@ -17,6 +17,7 @@ import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -94,6 +95,11 @@ public abstract class DbSource {
     public static DbSource fromFilter(DbSource src, TreeElement filter,
             DiffSide side) {
         return new DbSourceFilter(src, filter, side);
+    }
+    
+    public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
+            String encoding) {
+        return new DbSourceJdbc(host, port, user, pass, dbname, encoding);
     }
 }
 
@@ -287,5 +293,20 @@ class DbSourceFilter extends DbSource {
         }
 
         return new PgDbFilter2(db, filter, side).apply();
+    }
+}
+
+class DbSourceJdbc extends DbSource {
+    private JdbcLoader jdbcLoader;
+    
+    DbSourceJdbc(String host, int port, String user, String pass, String dbName, String encoding) {
+        super(dbName);
+        jdbcLoader = new JdbcLoader(host, port, user, pass, dbName, encoding);
+    }
+    
+    @Override
+    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
+        monitor.newChild(1).subTask(Messages.reading_db_from_jdbc);
+        return jdbcLoader.getDbFromJdbc();
     }
 }

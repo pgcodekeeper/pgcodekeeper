@@ -1,0 +1,10 @@
+
+bin.includes = META-INF/,\
+               .,\
+               plugin.xml,\
+               icons/,\
+               OSGI-INF/
+
+output.. = bin/
+
+source.. = src/
