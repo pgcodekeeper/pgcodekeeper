@@ -67,6 +67,12 @@ public class JdbcLoader {
     
     private Map<Long, String> cachedRolesNamesByOid = new HashMap<Long, String>();
     private Map<Long, PgType> cachedTypeNamesByOid = new HashMap<Long, PgType>();
+    /*
+     * Stores cached results of query "SELECT typmodout(colTypeMod)" for types.<br>
+     * Key is the oid of pg_catalog.pg_type table. Inner map stores pairs of colTypeMod 
+     * and result of "SELECT typmodout(colTypeMod)" query.
+     */
+    private Map<Long, Map<Integer,String>> cachedTypesTypmodouts = new HashMap<Long, Map<Integer,String>>();
     private Map<Long, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<Long, Map<Integer,String>>();
     
     private String host;
@@ -77,7 +83,6 @@ public class JdbcLoader {
     private String encoding;
     
     private Connection connection;
-    private DatabaseMetaData metaData;
     
     public JdbcLoader(String host, int port, String user, String pass, String dbName, String encoding) {
         this.host = host;
@@ -89,36 +94,35 @@ public class JdbcLoader {
     }
 
     private String getPgPassPassword(){
+        Log.log(Log.LOG_INFO, "User provided an empty password. Reading password from .pgpass file.");
         File pgpass = new File(System.getProperty("user.home") + "/.pgpass");
         
         try (BufferedReader br = new BufferedReader(new FileReader(pgpass))){        
-            String line;
-            String [] koko = {
+            String [] expectedTokens = {
                                 host, 
                                 String.valueOf(port), 
                                 dbName, 
                                 user
                             };
             
+            String line;
             while ((line = br.readLine()) != null) {
                 try(Scanner sc = new Scanner(line)){
                     sc.useDelimiter(":");
                     
                     int tokenCounter = 0;
                     boolean fits = true;
-                    
+                    int tokensLength = 0;
                     while(sc.hasNext()){
                         String token = sc.next();
                         
                         if (tokenCounter < 4){
-                            if (token.equals(koko[tokenCounter]) || token.equals("*")){
-                                
-                            }else{
+                            tokensLength += token.length();
+                            if (!token.equals(expectedTokens[tokenCounter]) && !token.equals("*")){
                                 fits = false;                            
                             }
                         }else if (fits){
-                            // assume for now that password has no colons
-                            return token;
+                            return line.substring(tokensLength + 4);
                         }
                         tokenCounter++;
                     }
@@ -128,23 +132,31 @@ public class JdbcLoader {
         } catch (IOException e) {
             throw new IllegalStateException("Could not retreive pgpass password", e);
         }
+        Log.log(Log.LOG_INFO, "Using empty password, because no password has been found "
+                + "in .pgpass file for " + host + ":" + port + ":" + dbName + ":" + user);
         return "";
     }
     
     public PgDatabase getDbFromJdbc() throws IOException{
         PgDatabase d = new PgDatabase();
         try {
+            Log.log(Log.LOG_INFO, "Reading db using JDBC.");
             Class.forName(ApgdiffConsts.JDBC_CONSTS.JDBC_DRIVER);
+            Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " + 
+                    host + ":" + port + ", db name " + dbName + ", username " + user);
             connection = DriverManager.getConnection(
                    "jdbc:postgresql://" + host + ":" + port + "/" + dbName, user, pass);
-            setTimeZone();
+            Log.log(Log.LOG_INFO, "JDBC connection has been established successfully");
+            
+            setTimeZone("'UTC'");
             prepareStatements();
             prepareData();
-            metaData = connection.getMetaData();
-
+            
+            Log.log(Log.LOG_INFO, "Quering schemas");
             try(Statement stmnt = connection.createStatement(); 
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_SCHEMAS)){
                 while (res.next()) {
+                    Log.log(Log.LOG_INFO, "Quering objects for schema " + res.getString("nspname"));
                     prepareDataForSchema(res.getLong("oid"));
                     
                     PgSchema schema = getSchema(res);
@@ -156,6 +168,7 @@ public class JdbcLoader {
                 }   
             }
             
+            Log.log(Log.LOG_INFO, "Quering extensions");
             try(Statement stmnt = connection.createStatement(); 
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_EXTENSIONS)){
                 while(res.next()){
@@ -165,19 +178,22 @@ public class JdbcLoader {
                     }
                 }
             }
+            Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (SQLException e) {
             throw new IOException("Database JDBC access error occured", e);
         } catch (ClassNotFoundException e) {
             throw new IOException("JDBC driver class not found", e);
         }finally{
+            Log.log(Log.LOG_INFO, "Closing used JDBC resources");
             closeResources();
         }
         return d;
     }
     
-    private void setTimeZone() throws SQLException {
+    private void setTimeZone(String timezone) throws SQLException {
+        Log.log(Log.LOG_INFO, "Setting JDBC session timezone to " + timezone);
         try(Statement stmnt = connection.createStatement()){
-            stmnt.execute("SET timezone = 'UTC'");
+            stmnt.execute("SET timezone = " + timezone);
         }
     }
 
@@ -199,7 +215,7 @@ public class JdbcLoader {
                 while (res.next()){
                     PgType type = new PgType(res.getString("typname"), res.getString("castedType"), res.getLong("typarray"), res.getInt("typlen"), res.getString("proname"), res.getString("nspname"));
                     cachedTypeNamesByOid.put(res.getLong("oid"), type);
-                }                
+                }
             }
         }
     }
@@ -219,47 +235,47 @@ public class JdbcLoader {
         try {
             connection.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close JDBC connection", e);
+            Log.log(Log.LOG_DEBUG, "Could not close JDBC connection", e);
         }
         try {
             prepStatTables.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for tables", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for tables", e);
         }
         try {
             prepStatViews.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for views", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for views", e);
         }
         try {
             prepStatTriggers.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for triggers", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for triggers", e);
         }
         try {
             prepStatFunctions.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for functions", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for functions", e);
         }
         try {
             prepStatSequences.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for sequences", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for sequences", e);
         }
         try {
             prepStatConstraints.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for constraints", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for constraints", e);
         }
         try {
             prepStatIndecies.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for indecies", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for indecies", e);
         }
         try {
             prepStatColumnsOfSchema.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for schema columns", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for schema columns", e);
         }
     }
     
@@ -494,17 +510,6 @@ public class JdbcLoader {
         return c;
     }
     
-    private long timeNanosec = 0L;
-    
-    /**
-     * Output to stderr time of some operation (required to be called twice)  
-     */
-    private void t(String mes){
-        if (!mes.isEmpty())
-            System.err.println(mes + " " + (System.nanoTime() - timeNanosec)/1000000 + " msec");
-        timeNanosec = System.nanoTime();
-    }
-    
     private PgView getView(ResultSet res, String schemaName, Long schemaOid) throws SQLException {
         for(String depType : (String[]) res.getArray("deptype").getArray()){
             if (depType.equals("e")){
@@ -538,16 +543,22 @@ public class JdbcLoader {
         v.setSelect(SelectParser.parse(fakeDb, viewDef, getSearchPath(schemaName)));
         
         // Query columns default values and comments
-        ResultSet res2 = metaData.getColumns(null, schemaName, viewName, null);
-        while(res2.next()){
-            String colName = res2.getString("COLUMN_NAME");
-            String colDefault = res2.getString("COLUMN_DEF");
-            if (colDefault != null){
-                v.addColumnDefaultValue(colName, colDefault);
-            }
-            String colComment = res2.getString("REMARKS");
-            if (colComment != null){
-                v.addColumnComment(colName, colComment);
+        Array colNamesArr = res.getArray("column_names");
+        if (colNamesArr != null){
+            String[] colNames = (String[]) colNamesArr.getArray();
+            String[] colComments = (String[]) res.getArray("column_comments").getArray();
+            String[] colDefaults = (String[]) res.getArray("column_defaults").getArray();
+            
+            for (int i = 0; i < colNames.length; i++){
+                String colName = colNames[i];
+                String colDefault = colDefaults[i];
+                if (colDefault != null){
+                    v.addColumnDefaultValue(colName, colDefault);
+                }
+                String colComment = colComments[i];
+                if (colComment != null){
+                    v.addColumnComment(colName, colComment);
+                }    
             }
         }
         
@@ -595,16 +606,47 @@ public class JdbcLoader {
             
             PgType columnType = cachedTypeNamesByOid.get(colTypes[i]);
             String columnTypeName = getTypeNameByOid(colTypes[i], schemaName);
-            
+             
+            // pg_catalog.pg_attribute.atttypmod records type-specific data supplied 
+            // at table creation time (for example, the maximum length of a varchar column). 
+            // It is passed to type-specific input functions and length coercion functions. 
+            // The value will generally be -1 for types that do not need atttypmod.
+            //
+            // if column type has it's "Type modifier output function" typmodout and
+            // column type has it's atttypmod set up (colTypeMod[i] != -1)
             if (colTypeMod[i] != -1 && columnType.getTypmodout() != null && !columnType.getTypmodout().isEmpty()){
-                StringBuilder query = new StringBuilder();
-                query.append("SELECT ").append(columnType.getTypmodout()).append("(").append(String.valueOf(colTypeMod[i])).append(")");
-                try(Statement stmnt = connection.createStatement();
-                        ResultSet res2 = stmnt.executeQuery(query.toString())){
-                    if (res2.next()){
-                        columnTypeName = columnTypeName.concat(res2.getString(1));
+                String typMod = "";
+                
+                // Map of those colTypeMod values that 've been already queried in
+                // form of "SELECT typmodout(colTypeMod)"
+                Map<Integer, String> typeAvailableModes = cachedTypesTypmodouts.get(colTypes[i]);
+                
+                // if it was queried already, just use cached value
+                if (typeAvailableModes != null && typeAvailableModes.containsKey(colTypeMod[i])){
+                    typMod = typeAvailableModes.get(colTypeMod[i]);
+                }
+                // else query "SELECT typmodout(colTypeMod)" and cache result for further use
+                else{
+                    StringBuilder query = new StringBuilder();
+                    query.append("SELECT ").append(columnType.getTypmodout()).append("(").append(String.valueOf(colTypeMod[i])).append(")");
+                    try(Statement stmnt = connection.createStatement();
+                            ResultSet res2 = stmnt.executeQuery(query.toString())){
+                        if (res2.next()){
+                            typMod = res2.getString(1);
+                            // cache queried values 
+                            if (typeAvailableModes == null){
+                                typeAvailableModes = new HashMap<Integer, String>();
+                                typeAvailableModes.put(colTypeMod[i], typMod);
+                                cachedTypesTypmodouts.put(colTypes[i], typeAvailableModes);
+                            }else{
+                                typeAvailableModes.put(colTypeMod[i], typMod);
+                            }
+                        }
                     }
                 }
+                
+                // finally append type modifier
+                columnTypeName = columnTypeName.concat(typMod);
             }
             column.setType(columnTypeName);
             
