@@ -94,6 +94,7 @@ public class JdbcLoader {
     }
 
     private String getPgPassPassword(){
+        Log.log(Log.LOG_INFO, "User provided an empty password. Reading password from .pgpass file.");
         File pgpass = new File(System.getProperty("user.home") + "/.pgpass");
         
         try (BufferedReader br = new BufferedReader(new FileReader(pgpass))){        
@@ -131,22 +132,31 @@ public class JdbcLoader {
         } catch (IOException e) {
             throw new IllegalStateException("Could not retreive pgpass password", e);
         }
+        Log.log(Log.LOG_INFO, "Using empty password, because no password has been found "
+                + "in .pgpass file for " + host + ":" + port + ":" + dbName + ":" + user);
         return "";
     }
     
     public PgDatabase getDbFromJdbc() throws IOException{
         PgDatabase d = new PgDatabase();
         try {
+            Log.log(Log.LOG_INFO, "Reading db using JDBC.");
             Class.forName(ApgdiffConsts.JDBC_CONSTS.JDBC_DRIVER);
+            Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " + 
+                    host + ":" + port + ", db name " + dbName + ", username " + user);
             connection = DriverManager.getConnection(
                    "jdbc:postgresql://" + host + ":" + port + "/" + dbName, user, pass);
-            setTimeZone();
+            Log.log(Log.LOG_INFO, "JDBC connection has been established successfully");
+            
+            setTimeZone("'UTC'");
             prepareStatements();
             prepareData();
-
+            
+            Log.log(Log.LOG_INFO, "Quering schemas");
             try(Statement stmnt = connection.createStatement(); 
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_SCHEMAS)){
                 while (res.next()) {
+                    Log.log(Log.LOG_INFO, "Quering objects for schema " + res.getString("nspname"));
                     prepareDataForSchema(res.getLong("oid"));
                     
                     PgSchema schema = getSchema(res);
@@ -158,6 +168,7 @@ public class JdbcLoader {
                 }   
             }
             
+            Log.log(Log.LOG_INFO, "Quering extensions");
             try(Statement stmnt = connection.createStatement(); 
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_EXTENSIONS)){
                 while(res.next()){
@@ -167,19 +178,22 @@ public class JdbcLoader {
                     }
                 }
             }
+            Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (SQLException e) {
             throw new IOException("Database JDBC access error occured", e);
         } catch (ClassNotFoundException e) {
             throw new IOException("JDBC driver class not found", e);
         }finally{
+            Log.log(Log.LOG_INFO, "Closing used JDBC resources");
             closeResources();
         }
         return d;
     }
     
-    private void setTimeZone() throws SQLException {
+    private void setTimeZone(String timezone) throws SQLException {
+        Log.log(Log.LOG_INFO, "Setting JDBC session timezone to " + timezone);
         try(Statement stmnt = connection.createStatement()){
-            stmnt.execute("SET timezone = 'UTC'");
+            stmnt.execute("SET timezone = " + timezone);
         }
     }
 
@@ -201,7 +215,7 @@ public class JdbcLoader {
                 while (res.next()){
                     PgType type = new PgType(res.getString("typname"), res.getString("castedType"), res.getLong("typarray"), res.getInt("typlen"), res.getString("proname"), res.getString("nspname"));
                     cachedTypeNamesByOid.put(res.getLong("oid"), type);
-                }                
+                }
             }
         }
     }
@@ -221,47 +235,47 @@ public class JdbcLoader {
         try {
             connection.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close JDBC connection", e);
+            Log.log(Log.LOG_DEBUG, "Could not close JDBC connection", e);
         }
         try {
             prepStatTables.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for tables", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for tables", e);
         }
         try {
             prepStatViews.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for views", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for views", e);
         }
         try {
             prepStatTriggers.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for triggers", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for triggers", e);
         }
         try {
             prepStatFunctions.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for functions", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for functions", e);
         }
         try {
             prepStatSequences.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for sequences", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for sequences", e);
         }
         try {
             prepStatConstraints.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for constraints", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for constraints", e);
         }
         try {
             prepStatIndecies.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for indecies", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for indecies", e);
         }
         try {
             prepStatColumnsOfSchema.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_INFO, "Could not close prepared statement for schema columns", e);
+            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for schema columns", e);
         }
     }
     
