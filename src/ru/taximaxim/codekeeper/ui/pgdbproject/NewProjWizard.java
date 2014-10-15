@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.Set;
 
+import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
@@ -16,7 +17,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
@@ -473,8 +473,7 @@ class PageRepo extends WizardPage implements Listener {
             return nameStatus.getMessage();
         }
         
-        if (ResourcesPlugin.getWorkspace().getRoot().getProject(
-                getProjectName()).exists()) {
+        if (workspace.getRoot().getProject(getProjectName()).exists()) {
             return Messages.newProjWizard_project_with_that_name_already_exist;
         }
         
@@ -483,13 +482,14 @@ class PageRepo extends WizardPage implements Listener {
             return Messages.newProjWizard_select_repo_root_directory;
         }
         
-        IProject existingProj = ResourcesPlugin.getWorkspace().getRoot()
-                .getProject(getProjectName());
-        URI existingProjPath = existingProj.getLocationURI();
+        IProject existingProj = workspace.getRoot().getProject(getProjectName());
         URI projPath = new File(getProjectRootPath()).toURI();
-        if (existingProj != null && existingProjPath != null
-                && URIUtil.equals(existingProjPath, projPath)) {
-            return Messages.newProjWizard_location_is_the_current_location;
+        if (existingProj != null) {
+            URI existingProjPath = existingProj.getLocationURI();
+            if (existingProjPath != null && 
+                    URIUtil.equals(existingProjPath, projPath)) {
+                return Messages.newProjWizard_location_is_the_current_location;
+            }
         }
         
         IStatus locationStatus = 
