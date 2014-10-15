@@ -297,12 +297,14 @@ class CommitPage extends DiffPresentationPane {
                 pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
                 try {
                     new ProjectUpdater(dbNew, proj).update();
+                    pm.done();
                 } catch (IOException e) {
                     return new Status(Status.ERROR, PLUGIN_ID.THIS, 
                             Messages.ProjectEditorDiffer_commit_error, e);
-                } finally {
-                    pm.done();
-                }                             
+                }
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
+                }
                 return Status.OK_STATUS;
             }
         };
@@ -410,6 +412,7 @@ class DiffPage extends DiffPresentationPane {
         differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
+        
         Job job = differ.getDifferJob();
         job.addJobChangeListener(new JobChangeAdapter() {
             

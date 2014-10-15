@@ -87,6 +87,9 @@ public class Differ implements IRunnableWithProgress {
                     return new Status(Status.ERROR, PLUGIN_ID.THIS, 
                             Messages.error_in_the_project_modifier_thread, e);
                 }
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
+                }
                 return Status.OK_STATUS;
             }
         };

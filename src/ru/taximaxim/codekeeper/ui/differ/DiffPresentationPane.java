@@ -298,6 +298,9 @@ public abstract class DiffPresentationPane extends Composite {
                     return new Status(Status.ERROR, PLUGIN_ID.THIS, 
                             Messages.error_in_differ_thread, e);
                 }
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
+                }
                 return Status.OK_STATUS;
             }
         };
