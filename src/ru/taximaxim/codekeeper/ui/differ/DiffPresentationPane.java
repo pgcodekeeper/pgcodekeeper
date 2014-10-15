@@ -2,8 +2,13 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -16,6 +21,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.MessageBox;
@@ -23,6 +29,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
@@ -280,19 +287,45 @@ public abstract class DiffPresentationPane extends Composite {
 
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
         treeDiffer = new TreeDiffer(dbSource, dbTarget);
-        try {
-            new ProgressMonitorDialog(getShell()).run(true, false, treeDiffer);
-        } catch (InvocationTargetException ex) {
-            throw new PgCodekeeperUIException(Messages.error_in_differ_thread, ex);
-        } catch (InterruptedException ex) {
-            // assume run() was called as non cancelable
-            throw new PgCodekeeperUIException(
-                    Messages.differ_thread_cancelled_shouldnt_happen, ex);
-        }
+        
+        Job job = new Job(Messages.diffPresentationPane_getting_changes_for_diff) {
 
-        diffTable.setInput(treeDiffer, !isProjSrc);
-        diffPane.setInput(null);
-        diffLoaded();
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    treeDiffer.run(monitor);
+                } catch (InvocationTargetException e) {
+                    return new Status(Status.ERROR, PLUGIN_ID.THIS, 
+                            Messages.error_in_differ_thread, e);
+                }
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.addJobChangeListener(new JobChangeAdapter() {
+            
+            @Override
+            public void done(IJobChangeEvent event) {
+                if (event.getResult().isOK()) {
+                    Display.getDefault().asyncExec(new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            if (DiffPresentationPane.this.isDisposed()) {
+                                return;
+                            }
+                            diffTable.setInput(treeDiffer, !isProjSrc);
+                            diffPane.setInput(null);
+                            diffLoaded();
+                        }
+                    });
+                }
+            }
+        });
+        job.setUser(true);
+        job.schedule();
     }
 
     /**

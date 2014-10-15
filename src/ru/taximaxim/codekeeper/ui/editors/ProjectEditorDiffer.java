@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.editors;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,11 +14,14 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
@@ -51,7 +53,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -208,18 +210,13 @@ class CommitPage extends DiffPresentationPane {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                try {
-                    commit();
-                } catch (PgCodekeeperUIException e1) {
-                    ExceptionNotifier.showErrorDialog(
-                            Messages.ProjectEditorDiffer_commit_error, e1);
-                }
+                commit();
             }
         });
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
     }
     
-    private void commit() throws PgCodekeeperUIException {
+    private void commit() {
         if (diffTable.getCheckedElementsCount() < 1){
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_INFORMATION);
             mb.setMessage(Messages.please_check_at_least_one_row);
@@ -284,12 +281,12 @@ class CommitPage extends DiffPresentationPane {
         }
         
         final TreeElement resultingTree = considerDepcy ? filteredTwiceWithAllDepcy : filtered;
-        
-        IRunnableWithProgress commitRunnable = new IRunnableWithProgress() {
+
+        Log.log(Log.LOG_INFO, "Updating project " + proj.getProjectName()); //$NON-NLS-1$
+        Job job = new Job(Messages.projectEditorDiffer_save_project) {
 
             @Override
-            public void run(IProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException {
+            protected IStatus run(IProgressMonitor monitor) {
                 SubMonitor pm = SubMonitor.convert(monitor,
                         Messages.commitPartDescr_commiting, 2);
 
@@ -303,33 +300,34 @@ class CommitPage extends DiffPresentationPane {
                 pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
                 try {
                     new ProjectUpdater(dbNew, proj).update();
+                    pm.done();
                 } catch (IOException e) {
-                    throw new InvocationTargetException(e);
+                    return new Status(Status.ERROR, PLUGIN_ID.THIS, 
+                            Messages.ProjectEditorDiffer_commit_error, e);
                 }
-
-                pm.done();
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
+                }
+                return Status.OK_STATUS;
             }
         };
-
-        try {
-            Log.log(Log.LOG_INFO, "Commit pressed. Commiting to " + //$NON-NLS-1$
-                    proj.getPrefs().get(PROJ_PREF.REPO_URL, "")); //$NON-NLS-1$
-            new ProgressMonitorDialog(getShell()).run(true, false, commitRunnable);
-        } catch (InvocationTargetException ex) {
-            throw new PgCodekeeperUIException(
-                    Messages.error_in_the_project_modifier_thread, ex);
-        } catch (InterruptedException ex) {
-            // assume run() was called as non cancelable
-            throw new PgCodekeeperUIException(
-                    Messages.project_modifier_thread_cancelled_shouldnt_happen, ex);
-        }
-
-        try {
-            proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-        } catch (CoreException e) {
-            throw new PgCodekeeperUIException("Cannot update project structure", e);
-        }
-        ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
+        
+        job.addJobChangeListener(new JobChangeAdapter() {
+            
+            @Override
+            public void done(IJobChangeEvent event) {
+                if (event.getResult().isOK()) {
+                    ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
+                    try {
+                        proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+                    } catch (CoreException e) {
+                        ExceptionNotifier.showErrorDialog("Error while refreshing project", e);
+                    }
+                }
+            }
+        });
+        job.setUser(true);
+        job.schedule();
     }
     
     @Override
@@ -347,7 +345,6 @@ class CommitPage extends DiffPresentationPane {
 class DiffPage extends DiffPresentationPane {
     
     private final IPreferenceStore mainPrefs;
-    private final PgDbProject proj;
     
     private Button btnGetLatest, btnAddDepcy;
 
@@ -362,7 +359,6 @@ class DiffPage extends DiffPresentationPane {
             PgDbProject proj) {
         super(parent, false, mainPrefs, proj);
         this.mainPrefs = mainPrefs;
-        this.proj = proj;
     }
     
     @Override
@@ -416,15 +412,38 @@ class DiffPage extends DiffPresentationPane {
         }
         final TreeElement filtered = diffTable.filterDiffTree();
 
-        Differ differ = new Differ(
+        final Differ differ = new Differ(
                 DbSource.fromFilter(dbSource, filtered, DiffSide.LEFT),
                 DbSource.fromFilter(dbTarget,filtered, DiffSide.RIGHT),
                 false);
         differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
-        differ.runProgressMonitorDiffer(getShell());
-
+        
+        Job job = differ.getDifferJob();
+        job.addJobChangeListener(new JobChangeAdapter() {
+            
+            @Override
+            public void done(IJobChangeEvent event) {
+                if (event.getResult().isOK()) {
+                    Display.getDefault().asyncExec(new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            if (DiffPage.this.isDisposed()) {
+                                return;
+                            }
+                            showScriptDialog(differ);
+                        }
+                    });
+                }
+            }
+        });
+        job.setUser(true);
+        job.schedule();
+    }
+    
+    private void showScriptDialog(Differ differ) {
         SqlScriptDialog dialog = new SqlScriptDialog(getShell(),
                 MessageDialog.INFORMATION, Messages.diffPartDescr_diff_script,
                 Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
