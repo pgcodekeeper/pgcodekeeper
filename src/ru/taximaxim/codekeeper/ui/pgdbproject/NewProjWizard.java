@@ -456,51 +456,49 @@ class PageRepo extends WizardPage implements Listener {
 
     @Override
     public boolean isPageComplete() {
-        String errMsg = null;
-        try {
-            if (getProjectName().isEmpty()) {
-                throw new IllegalStateException(
-                        Messages.NewProjWizard_enter_project_name);
-            }
-            
-            IWorkspace workspace = ResourcesPlugin.getWorkspace();
-            IStatus nameStatus = workspace.validateName(getProjectName(), IResource.PROJECT); 
-            if (!nameStatus.isOK()) {
-                throw new IllegalStateException(nameStatus.getMessage());
-            }
-            
-            if (ResourcesPlugin.getWorkspace().getRoot().getProject(
-                    getProjectName()).exists()) {
-                throw new IllegalStateException(Messages.newProjWizard_project_with_that_name_already_exist);
-            }
-            
-            if (getProjectRootPath().isEmpty()
-                    || !new File(getProjectRootPath()).isDirectory()) {
-                throw new IllegalStateException(
-                        Messages.newProjWizard_select_repo_root_directory);
-            }
-            
-            IProject existingProj = ResourcesPlugin.getWorkspace().getRoot()
-                    .getProject(getProjectName());
-            URI existingProjPath = existingProj.getLocationURI();
-            URI projPath = new File(getProjectRootPath()).toURI();
-            if (existingProj != null && existingProjPath != null
-                    && URIUtil.equals(existingProjPath, projPath)) {
-                throw new IllegalStateException(
-                        Messages.newProjWizard_location_is_the_current_location);
-            }
-            
-            IStatus locationStatus = 
-                    workspace.validateProjectLocationURI(existingProj, projPath);
-            if (!locationStatus.isOK()) {
-                throw new IllegalStateException(locationStatus.getMessage());
-            }
-        }
-        catch (IllegalStateException e) {
-            errMsg = e.getMessage();
-        }
+        String errMsg = checkFields();
+        
         setErrorMessage(errMsg);
         return errMsg == null;
+    }
+    
+    private String checkFields() {
+        if (getProjectName().isEmpty()) {
+            return Messages.NewProjWizard_enter_project_name;
+        }
+        
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        IStatus nameStatus = workspace.validateName(getProjectName(), IResource.PROJECT); 
+        if (!nameStatus.isOK()) {
+            return nameStatus.getMessage();
+        }
+        
+        if (ResourcesPlugin.getWorkspace().getRoot().getProject(
+                getProjectName()).exists()) {
+            return Messages.newProjWizard_project_with_that_name_already_exist;
+        }
+        
+        if (getProjectRootPath().isEmpty()
+                || !new File(getProjectRootPath()).isDirectory()) {
+            return Messages.newProjWizard_select_repo_root_directory;
+        }
+        
+        IProject existingProj = ResourcesPlugin.getWorkspace().getRoot()
+                .getProject(getProjectName());
+        URI existingProjPath = existingProj.getLocationURI();
+        URI projPath = new File(getProjectRootPath()).toURI();
+        if (existingProj != null && existingProjPath != null
+                && URIUtil.equals(existingProjPath, projPath)) {
+            return Messages.newProjWizard_location_is_the_current_location;
+        }
+        
+        IStatus locationStatus = 
+                workspace.validateProjectLocationURI(existingProj, projPath);
+        if (!locationStatus.isOK()) {
+            return locationStatus.getMessage();
+        }
+        
+        return null;
     }
 
     @Override
