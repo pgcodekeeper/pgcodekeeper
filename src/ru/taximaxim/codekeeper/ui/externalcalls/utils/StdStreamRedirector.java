@@ -15,7 +15,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
  * A Runnable that consumes everything from the {@link InputStream},
- * redirects data to {@link Console} and stores it as a String.
+ * redirects data to {@link ConsoleFactory} and stores it as a String.
  * 
  * @author Alexander Levsha
  */
@@ -54,7 +54,7 @@ public class StdStreamRedirector implements Runnable {
     
     /**
      * Launches a process combining stdout & stderr and redirecting them
-     * onto {@link Console}. Blocks until process exits and all output is consumed.
+     * onto {@link ConsoleFactory}. Blocks until process exits and all output is consumed.
      * 
      * @param pb process to start
      * @param returnedValue reference to Integer to store returned value, may be null 

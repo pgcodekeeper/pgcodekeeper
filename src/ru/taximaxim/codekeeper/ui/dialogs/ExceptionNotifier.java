@@ -39,7 +39,7 @@ public class ExceptionNotifier {
         notify(source, message, true, true);
     }
     /**
-     * Outputs short message to {@link Console},
+     * Outputs short message to {@link ConsoleFactory},
      * prints stack trace to log,
      * displays UI dialog with message and stack trace
      * 
