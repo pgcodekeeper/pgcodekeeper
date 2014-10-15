@@ -216,10 +216,12 @@ public class Messages extends NLS {
     public static String newProjWizard_dump_file_source_settings;
     public static String newProjWizard_error_in_initializing_repo_from_source;
     public static String newProjWizard_init_project_subdir_from_schema_source;
+    public static String newProjWizard_location_is_the_current_location;
     public static String newProjWizard_new_pg_db_project;
     public static String newProjWizard_no_schema_source_selected;
     public static String newProjWizard_project_encoding;
     public static String newProjWizard_project_initializer_thread_interrupted;
+    public static String newProjWizard_project_with_that_name_already_exist;
     public static String newProjWizard_repository_settings;
     public static String newProjWizard_schema_source;
     public static String newProjWizard_schema_source_settings;

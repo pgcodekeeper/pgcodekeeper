@@ -3,11 +3,20 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.Set;
 
+import org.eclipse.core.filesystem.URIUtil;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExecutableExtension;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
@@ -16,7 +25,9 @@ import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -36,9 +47,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.INewWizard;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.help.IWorkbenchHelpSystem;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
+import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -55,8 +69,8 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 
-public class NewProjWizard extends BasicNewProjectResourceWizard 
-        implements IPageChangingListener {
+public class NewProjWizard extends Wizard 
+        implements IPageChangingListener, IExecutableExtension, INewWizard {
 
     private PageRepo pageRepo;
     private PageDb pageDb;
@@ -65,6 +79,8 @@ public class NewProjWizard extends BasicNewProjectResourceWizard
     private final IPreferenceStore mainPrefStore;
 
     private PgDbProject props;
+    private IConfigurationElement config;
+    private IWorkbench workbench;
     
     public NewProjWizard() {
         setWindowTitle(Messages.newProjWizard_new_pg_db_project);
@@ -182,8 +198,9 @@ public class NewProjWizard extends BasicNewProjectResourceWizard
                 return false;
             }
             
-            updatePerspective();
-            selectAndReveal(props.getProject());
+            BasicNewProjectResourceWizard.updatePerspective(config);
+            BasicNewResourceWizard.selectAndReveal(props.getProject(), 
+                    workbench.getActiveWorkbenchWindow());
 
             props.openProject();
             try {
@@ -249,6 +266,17 @@ public class NewProjWizard extends BasicNewProjectResourceWizard
         }
         newPrefs.put(PROJ_PREF.SOURCE, src);
     }
+
+    @Override
+    public void setInitializationData(IConfigurationElement config,
+            String propertyName, Object data) throws CoreException {
+        this.config = config;        
+    }
+
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
+        this.workbench = workbench;
+    }    
 }
 
 class PageRepo extends WizardPage implements Listener {
@@ -275,7 +303,7 @@ class PageRepo extends WizardPage implements Listener {
     }
     
     public String getProjectName() {
-        return txtProjectName.getText();
+        return txtProjectName.getText().trim();
     }
     
     PageRepo(String pageName, IPreferenceStore mainPrefStore) {
@@ -428,16 +456,49 @@ class PageRepo extends WizardPage implements Listener {
 
     @Override
     public boolean isPageComplete() {
-        String errMsg = null;
-        if (getProjectName().isEmpty()) {
-            errMsg = Messages.NewProjWizard_enter_project_name;
-        } else if (getProjectRootPath().isEmpty()
-                || !new File(getProjectRootPath()).isDirectory()) {
-            errMsg = Messages.newProjWizard_select_repo_root_directory;
-        }
-
+        String errMsg = checkFields();
+        
         setErrorMessage(errMsg);
         return errMsg == null;
+    }
+    
+    private String checkFields() {
+        if (getProjectName().isEmpty()) {
+            return Messages.NewProjWizard_enter_project_name;
+        }
+        
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        IStatus nameStatus = workspace.validateName(getProjectName(), IResource.PROJECT); 
+        if (!nameStatus.isOK()) {
+            return nameStatus.getMessage();
+        }
+        
+        if (workspace.getRoot().getProject(getProjectName()).exists()) {
+            return Messages.newProjWizard_project_with_that_name_already_exist;
+        }
+        
+        if (getProjectRootPath().isEmpty()
+                || !new File(getProjectRootPath()).isDirectory()) {
+            return Messages.newProjWizard_select_repo_root_directory;
+        }
+        
+        IProject existingProj = workspace.getRoot().getProject(getProjectName());
+        URI projPath = new File(getProjectRootPath()).toURI();
+        if (existingProj != null) {
+            URI existingProjPath = existingProj.getLocationURI();
+            if (existingProjPath != null && 
+                    URIUtil.equals(existingProjPath, projPath)) {
+                return Messages.newProjWizard_location_is_the_current_location;
+            }
+        }
+        
+        IStatus locationStatus = 
+                workspace.validateProjectLocationURI(existingProj, projPath);
+        if (!locationStatus.isOK()) {
+            return locationStatus.getMessage();
+        }
+        
+        return null;
     }
 
     @Override
