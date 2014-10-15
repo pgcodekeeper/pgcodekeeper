@@ -36,7 +36,6 @@ public class Messages extends NLS {
     public static String none;
     public static String please_check_at_least_one_row;
     public static String port_must_be_a_number;
-    public static String project_modifier_thread_cancelled_shouldnt_happen;
     public static String projectEditorDiffer_save_project;
     public static String undefined_source_for_db_changes;
     public static String browse;
@@ -285,6 +284,8 @@ public class Messages extends NLS {
     public static String ProjectEditorDiffer_commit_error;
     public static String ProjectEditorDiffer_diff_error;
     public static String ProjectEditorDiffer_error_bad_input_type;
+
+    public static String ProjectEditorDiffer_error_refreshing_project;
     public static String ProjectEditorDiffer_page_text_commit;
     public static String ProjectEditorDiffer_page_text_diff;
     public static String ProjectEditorDiffer_project;

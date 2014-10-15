@@ -321,7 +321,7 @@ class CommitPage extends DiffPresentationPane {
                     try {
                         proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
                     } catch (CoreException e) {
-                        ExceptionNotifier.showErrorDialog("Error while refreshing project", e);
+                        ExceptionNotifier.showErrorDialog(Messages.ProjectEditorDiffer_error_refreshing_project, e);
                     }
                 }
             }
