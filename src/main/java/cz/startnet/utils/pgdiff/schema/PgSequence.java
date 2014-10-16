@@ -213,7 +213,8 @@ public class PgSequence extends PgStatementWithSearchPath {
                     && cycle == seq.isCycle()
                     && Objects.equals(ownedBy, seq.getOwnedBy())
                     && privileges.equals(seq.privileges)
-                    && Objects.equals(owner, seq.getOwner());
+                    && Objects.equals(owner, seq.getOwner())
+                    && Objects.equals(comment, seq.getComment());
         }
         
         return eq;
@@ -233,6 +234,7 @@ public class PgSequence extends PgStatementWithSearchPath {
         result = prime * result + ((ownedBy == null) ? 0 : ownedBy.hashCode());
         result = prime * result + ((startWith == null) ? 0 : startWith.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
 

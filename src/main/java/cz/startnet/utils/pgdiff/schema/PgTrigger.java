@@ -245,20 +245,25 @@ public class PgTrigger extends PgStatementWithSearchPath {
             eq = true;
         } else if (obj instanceof PgTrigger) {
             PgTrigger trigger = (PgTrigger) obj;
-            eq = (before == trigger.isBefore())
-                    && (forEachRow == trigger.isForEachRow())
-                    && Objects.equals(function, trigger.getFunction())
-                    && Objects.equals(name, trigger.getName())
-                    && (onDelete == trigger.isOnDelete())
-                    && (onInsert == trigger.isOnInsert())
-                    && (onUpdate == trigger.isOnUpdate())
-                    && (onTruncate == trigger.isOnTruncate())
-                    && Objects.equals(tableName, trigger.getTableName())
-                    && Objects.equals(when, trigger.getWhen())
-                    && new HashSet<>(updateColumns).equals(new HashSet<>(trigger.updateColumns));
+            eq = compareWithoutComments(trigger)
+                    && Objects.equals(comment, trigger.getComment());
         }
 
         return eq;
+    }
+    
+    public boolean compareWithoutComments(PgTrigger trigger) {
+        return (before == trigger.isBefore())
+                && (forEachRow == trigger.isForEachRow())
+                && Objects.equals(function, trigger.getFunction())
+                && Objects.equals(name, trigger.getName())
+                && (onDelete == trigger.isOnDelete())
+                && (onInsert == trigger.isOnInsert())
+                && (onUpdate == trigger.isOnUpdate())
+                && (onTruncate == trigger.isOnTruncate())
+                && Objects.equals(tableName, trigger.getTableName())
+                && Objects.equals(when, trigger.getWhen())
+                && new HashSet<>(updateColumns).equals(new HashSet<>(trigger.updateColumns));
     }
 
     @Override
@@ -276,6 +281,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
         result = prime * result + ((when == null) ? 0 : when.hashCode());
         result = prime * result + new HashSet<>(updateColumns).hashCode();
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
     

@@ -248,6 +248,7 @@ public class PgSchema extends PgStatement {
         
         setAuthorization(newSchema.getAuthorization());
         setDefinition(newSchema.getDefinition());
+        setComment(newSchema.getComment());
     }
     
     @Override
@@ -262,7 +263,8 @@ public class PgSchema extends PgStatement {
             eq = Objects.equals(name, schema.getName())
                     && Objects.equals(authorization, schema.getAuthorization())
                     && Objects.equals(definition, schema.getDefinition())
-                    && privileges.equals(schema.privileges);
+                    && privileges.equals(schema.privileges)
+                    && Objects.equals(comment, schema.getComment());
         }
         
         return eq;
@@ -300,6 +302,7 @@ public class PgSchema extends PgStatement {
         result = prime * result + new HashSet<>(sequences).hashCode();
         result = prime * result + new HashSet<>(tables).hashCode();
         result = prime * result + new HashSet<>(views).hashCode();
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
     

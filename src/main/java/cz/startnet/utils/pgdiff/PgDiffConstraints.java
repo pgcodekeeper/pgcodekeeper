@@ -121,8 +121,8 @@ public class PgDiffConstraints {
             for (final PgConstraint constraint : oldTable.getConstraints()) {
                 if (constraint.isPrimaryKeyConstraint() == primaryKey
                         && (!newTable.containsConstraint(constraint.getName())
-                        || !newTable.getConstraint(constraint.getName()).equals(
-                        constraint))) {
+                        || !newTable.getConstraint(constraint.getName()).
+                        compareWithoutComments(constraint))) {
                     list.add(constraint);
                 }
             }
@@ -160,7 +160,7 @@ public class PgDiffConstraints {
                             && (!oldTable.containsConstraint(
                             constraint.getName())
                             || !oldTable.getConstraint(constraint.getName()).
-                            equals(constraint))) {
+                            compareWithoutComments(constraint))) {
                         list.add(constraint);
                     }
                 }

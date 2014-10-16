@@ -213,7 +213,8 @@ public class PgView extends PgStatementWithSearchPath {
                     && columnNames.equals(view.columnNames)
                     && new HashSet<>(defaultValues).equals(new HashSet<>(view.defaultValues))
                     && privileges.equals(view.privileges)
-                    && Objects.equals(owner, view.getOwner());
+                    && Objects.equals(owner, view.getOwner())
+                    && Objects.equals(comment, view.getComment());
         }
         
         return eq;
@@ -230,6 +231,7 @@ public class PgView extends PgStatementWithSearchPath {
         result = prime * result + ((normalizedQuery == null) ? 0 : normalizedQuery.hashCode());
         result = prime * result + ((select == null) ? 0 : select.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
     

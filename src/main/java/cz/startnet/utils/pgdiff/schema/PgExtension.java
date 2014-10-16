@@ -105,7 +105,8 @@ public class PgExtension extends PgStatement {
             eq = Objects.equals(name, ext.getName()) 
                     && Objects.equals(schema, ext.getSchema())
                     && Objects.equals(version, ext.getVersion())
-                    && Objects.equals(oldVersion, ext.getOldVersion());
+                    && Objects.equals(oldVersion, ext.getOldVersion())
+                    && Objects.equals(comment, ext.getComment());
         }
         
         return eq;
@@ -119,6 +120,7 @@ public class PgExtension extends PgStatement {
         result = prime * result + ((oldVersion == null) ? 0 : oldVersion.hashCode());
         result = prime * result + ((schema == null) ? 0 : schema.hashCode());
         result = prime * result + ((version == null) ? 0 : version.hashCode());
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
 

@@ -114,7 +114,7 @@ public class PgDiffIndexes {
         if (newTable != null && oldTable != null) {
             for (final PgIndex index : oldTable.getIndexes()) {
                 if (!newTable.containsIndex(index.getName())
-                        || !newTable.getIndex(index.getName()).equals(index)) {
+                        || !newTable.getIndex(index.getName()).compareWithoutComments(index)) {
                     list.add(index);
                 }
             }
@@ -144,7 +144,7 @@ public class PgDiffIndexes {
                 for (final PgIndex index : newTable.getIndexes()) {
                     if (!oldTable.containsIndex(index.getName())
                             || !oldTable.getIndex(index.getName()).
-                            equals(index)) {
+                            compareWithoutComments(index)) {
                         list.add(index);
                     }
                 }

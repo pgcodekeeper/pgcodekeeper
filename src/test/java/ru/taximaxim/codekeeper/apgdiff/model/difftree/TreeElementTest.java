@@ -56,6 +56,7 @@ public class TreeElementTest {
             schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM postgres", ""));
             schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO postgres", ""));
             schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO PUBLIC", ""));
+            schema.setComment("'Standard public schema'");
         }
         
         for (String function : FUNC_NAMES){

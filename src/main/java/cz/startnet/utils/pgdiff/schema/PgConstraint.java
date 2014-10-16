@@ -105,11 +105,18 @@ public class PgConstraint extends PgStatementWithSearchPath {
             eq = true;
         } else if (obj instanceof PgConstraint) {
             PgConstraint constraint = (PgConstraint) obj;
-            eq = Objects.equals(definition, constraint.getDefinition())
-                    && Objects.equals(name, constraint.getName())
-                    && Objects.equals(tableName, constraint.getTableName());
+            eq = compareWithoutComments(constraint)
+                    && Objects.equals(comment, constraint.getComment());
         }
 
+        return eq;
+    }
+
+    public boolean compareWithoutComments(PgConstraint constraint) {
+        boolean eq;
+        eq = Objects.equals(definition, constraint.getDefinition())
+                && Objects.equals(name, constraint.getName())
+                && Objects.equals(tableName, constraint.getTableName());
         return eq;
     }
 
@@ -120,6 +127,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
     

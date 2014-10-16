@@ -199,7 +199,8 @@ public class PgColumn extends PgStatement {
                     && nullValue == col.getNullValue()
                     && Objects.equals(defaultValue, col.getDefaultValue())
                     && Objects.equals(statistics, col.getStatistics())
-                    && Objects.equals(storage, col.getStorage());
+                    && Objects.equals(storage, col.getStorage())
+                    && Objects.equals(comment, col.getComment());
         }
         
         return eq;
@@ -215,6 +216,7 @@ public class PgColumn extends PgStatement {
         result = prime * result + ((statistics == null) ? 0 : statistics.hashCode());
         result = prime * result + ((storage == null) ? 0 : storage.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
     

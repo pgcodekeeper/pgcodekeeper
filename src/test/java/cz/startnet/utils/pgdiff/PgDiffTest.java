@@ -366,18 +366,18 @@ public class PgDiffTest {
                 fileNameTemplate + "_new.sql"));
         writer.flush();
 
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(
-                PgDiffTest.class.getResourceAsStream(
-                fileNameTemplate + "_diff.sql")));
-        final StringBuilder sbExpDiff = new StringBuilder(1024);
+        StringBuilder sbExpDiff;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                PgDiffTest.class.getResourceAsStream(fileNameTemplate 
+                        + "_diff.sql")))) {
+            sbExpDiff = new StringBuilder(1024);
 
-        String line;
-        while ((line = reader.readLine()) != null) {
-            sbExpDiff.append(line);
-            sbExpDiff.append('\n');
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sbExpDiff.append(line);
+                sbExpDiff.append('\n');
+            }
         }
-
-        reader.close();
 
         Assert.assertEquals("File name template: " + fileNameTemplate,
                 sbExpDiff.toString().trim(),

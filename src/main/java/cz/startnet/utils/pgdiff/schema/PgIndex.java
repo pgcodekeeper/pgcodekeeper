@@ -101,14 +101,20 @@ public class PgIndex extends PgStatementWithSearchPath {
             equals = true;
         } else if (obj instanceof PgIndex) {
             PgIndex index = (PgIndex) obj;
-            equals = Objects.equals(definition, index.getDefinition())
-                    && Objects.equals(name, index.getName())
-                    && Objects.equals(tableName, index.getTableName())
-                    && unique == index.isUnique();
+            equals = compareWithoutComments(index)
+                    && Objects.equals(comment, index.getComment());
         }
 
         return equals;
     }
+
+    public boolean compareWithoutComments(PgIndex index) {
+        return Objects.equals(definition, index.getDefinition())
+                && Objects.equals(name, index.getName())
+                && Objects.equals(tableName, index.getTableName())
+                && unique == index.isUnique();
+    }
+    
 
     @Override
     public int computeHash() {
@@ -118,6 +124,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
         result = prime * result + (unique ? 1231 : 1237);
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
     
