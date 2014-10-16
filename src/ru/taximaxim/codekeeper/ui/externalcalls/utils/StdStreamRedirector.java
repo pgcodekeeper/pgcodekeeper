@@ -111,8 +111,12 @@ public class StdStreamRedirector implements Runnable {
                     Messages.stdStreamRedirector_completed_with_code + p.exitValue());
 
             if (!redirector.isDestroyed.get() && p.exitValue() != 0) {
-                throw new IOException(Messages.StdStreamRedirector_process_returned_with_error
-                            + p.exitValue() + Messages.StdStreamRedirector_error_returncode_see_for_details);
+                ReturnCodeException ex = new ReturnCodeException(
+                        Messages.StdStreamRedirector_process_returned_with_error
+                        + p.exitValue() +
+                        Messages.StdStreamRedirector_error_returncode_see_for_details);
+                ex.setOutput(redirector.storage.toString());
+                throw ex;
             }
             
             if (lastException.get() != null){

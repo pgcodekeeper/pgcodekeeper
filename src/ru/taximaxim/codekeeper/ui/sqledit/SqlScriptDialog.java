@@ -51,6 +51,7 @@ import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
+import ru.taximaxim.codekeeper.ui.externalcalls.utils.ReturnCodeException;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -365,6 +366,13 @@ public class SqlScriptDialog extends TrayDialog {
                             addDepcy = getDependenciesFromOutput(scriptOutputRes);
                         }
                     } catch (IOException ex) {
+                        // FIXME no other simple way of getting process's output if exception occured (retval != 0)
+                        if (ex instanceof ReturnCodeException) {
+                            if (usePsqlDepcy) {
+                                addDepcy = getDependenciesFromOutput(
+                                        ((ReturnCodeException) ex).getOutput());
+                            }
+                        }
                         throw new IllegalStateException(ex);
                     } finally {
                         // request UI change: button label changed
