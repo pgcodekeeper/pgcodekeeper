@@ -366,11 +366,15 @@ public class SqlScriptDialog extends TrayDialog {
                             addDepcy = getDependenciesFromOutput(scriptOutputRes);
                         }
                     } catch (IOException ex) {
-                        // FIXME no other simple way of getting process's output if exception occured (retval != 0)
                         if (ex instanceof ReturnCodeException) {
+                            // FIXME no other simple way of getting process's output if exception occured (retval != 0)
                             if (usePsqlDepcy) {
                                 addDepcy = getDependenciesFromOutput(
                                         ((ReturnCodeException) ex).getOutput());
+                                if (!addDepcy.isEmpty()) {
+                                    // actually parsed some depcies, do not rethrow
+                                    return;
+                                }
                             }
                         }
                         throw new IllegalStateException(ex);
