@@ -8,13 +8,13 @@
         <version>0.0.1-SNAPSHOT</version>
         <relativePath>../ru.taximaxim.codeKeeper/</relativePath>
     </parent>
-  
+
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.updatesite</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
-    
-     <build>
+
+    <build>
         <extensions>
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
@@ -22,46 +22,35 @@
                 <version>2.6</version>
             </extension>
         </extensions>
-        <plugins>
-          <plugin>
-            <groupId>org.eclipse.tycho</groupId>
-            <artifactId>tycho-p2-repository-plugin</artifactId>
-            <version>${tycho.version}</version>
-            <configuration>
-              <includeAllDependencies>true</includeAllDependencies>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-  
-  <profiles>
+    </build>
+
+    <profiles>
         <profile>
             <id>default</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <build>
-            
                 <plugins>
-                    
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>wagon-maven-plugin</artifactId>
                         <version>1.0-beta-5</version>
                         <executions>
                             <execution>
-                              <id>execute-test-commands</id>
-                              <phase>deploy</phase>
-                              <goals>
-                                <goal>sshexec</goal>
-                              </goals>
-                              <configuration>
-                                <serverId>palceholder4</serverId>
-                                <url>scp://codekeeper@storage/home/codekeeper/webroot/p2/codekeeperplugins</url>
-                                <commands>
-                                  <command>rm -rf /home/codekeeper/webroot/p2/codekeeperplugins/*</command>
-                                </commands>
-                              </configuration>
+                                <id>execute-test-commands</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>sshexec</goal>
+                                </goals>
+                                <configuration>
+                                    <serverId>palceholder4</serverId>
+                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/p2/codekeeperplugins</url>
+                                    <commands>
+                                        <command>rm -rf
+                                            /home/codekeeper/webroot/p2/codekeeperplugins/*</command>
+                                    </commands>
+                                </configuration>
                             </execution>
                             <execution>
                                 <id>upload-p2-repo</id>
@@ -78,7 +67,6 @@
                             </execution>
                         </executions>
                     </plugin>
-
                 </plugins>
             </build>
         </profile>
