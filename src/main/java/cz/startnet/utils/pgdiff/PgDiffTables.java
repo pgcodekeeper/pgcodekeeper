@@ -617,18 +617,20 @@ public class PgDiffTables {
     private static void updateTableColumns(final PgDiffScript script,
             final PgDiffArguments arguments, final PgTable oldTable,
             final PgTable newTable, final SearchPathHelper searchPathHelper) {
-        final List<String> statements = new ArrayList<>();
+        final List<String> statementsAlter = new ArrayList<>();
+        final List<String> statementsCreate = new ArrayList<>();
+        final List<String> statementsDrop = new ArrayList<>();
         final List<PgColumn> dropDefaultsColumns = new ArrayList<>();
         final List<String> defaultStatements = new ArrayList<>();
         
         // ordered pairs of <statementToDrop, reasonOfDrop>
         Map<PgStatement, String> statementsToDrop = new LinkedHashMap<>(10);
         
-        addDropTableColumns(statementsToDrop, statements, oldTable, newTable);
-        addCreateTableColumns(statements, arguments, oldTable, newTable, 
+        addDropTableColumns(statementsToDrop, statementsDrop, oldTable, newTable);
+        addCreateTableColumns(statementsCreate, arguments, oldTable, newTable, 
                 dropDefaultsColumns, defaultStatements);
         addModifyTableColumns(statementsToDrop, 
-                statements, arguments, oldTable, newTable, dropDefaultsColumns);
+                statementsAlter, arguments, oldTable, newTable, dropDefaultsColumns);
 
         // write dependent PgViews/PgForeignKey drop sql in REVERSE order before table altering
         Set<Entry<PgStatement, String>> dependants = statementsToDrop.entrySet();
@@ -658,9 +660,13 @@ public class PgDiffTables {
 
         final String quotedTableName = PgDiffUtils.getQuotedName(newTable.getName());
         
-        alterTblStatement(script, searchPathHelper, statements, quotedTableName);
+        alterTblDropColumns(newTable, script, searchPathHelper, statementsDrop, quotedTableName);
+
+        alterTblCreateColumns(newTable, script, searchPathHelper, statementsCreate, quotedTableName);
         
-        alterTblStatement(script, searchPathHelper, defaultStatements, quotedTableName);
+        alterTblAlterColumns(script, searchPathHelper, statementsAlter, quotedTableName);
+        
+        alterTblAlterColumns(script, searchPathHelper, defaultStatements, quotedTableName);
 
         if (!dropDefaultsColumns.isEmpty()) {
             StringBuilder sb = new StringBuilder();
@@ -696,23 +702,44 @@ public class PgDiffTables {
         }// end write dependent PgViews create sql code after table altering
     }
 
-    private static void alterTblStatement(final PgDiffScript script,
+    private static void alterTblCreateColumns(PgTable table, final PgDiffScript script,
             final SearchPathHelper searchPathHelper,
             final List<String> statements, final String quotedTableName) {
         if (!statements.isEmpty()) {
             searchPathHelper.outputSearchPath(script);
-            
-            StringBuilder sb = new StringBuilder();
-            sb.append("ALTER TABLE ");
-            sb.append(quotedTableName);
-            sb.append('\n');
-
-            for (int i = 0; i < statements.size(); i++) {
-                sb.append(statements.get(i));
-                sb.append((i + 1) < statements.size() ? ",\n" : ";");
-            }
-            script.addStatement(sb.toString());
+            script.addCreate(table, null, getAlterTableStatements(statements, quotedTableName));
         }
+    }
+    
+    private static void alterTblDropColumns(PgTable table, final PgDiffScript script,
+            final SearchPathHelper searchPathHelper,
+            final List<String> statements, final String quotedTableName) {
+        if (!statements.isEmpty()) {
+            searchPathHelper.outputSearchPath(script);
+            script.addDrop(table, null, getAlterTableStatements(statements, quotedTableName));
+        }
+    }
+    
+    private static void alterTblAlterColumns(final PgDiffScript script,
+            final SearchPathHelper searchPathHelper,
+            final List<String> statements, final String quotedTableName) {
+        if (!statements.isEmpty()) {
+            searchPathHelper.outputSearchPath(script);
+            script.addStatement(getAlterTableStatements(statements, quotedTableName));
+        }
+    }
+    
+    private static String getAlterTableStatements(final List<String> statements, final String quotedTableName){
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER TABLE ");
+        sb.append(quotedTableName);
+        sb.append('\n');
+
+        for (int i = 0; i < statements.size(); i++) {
+            sb.append(statements.get(i));
+            sb.append((i + 1) < statements.size() ? ",\n" : ";");
+        }
+        return sb.toString();
     }
 
     /**
