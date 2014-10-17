@@ -6,7 +6,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Array;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -72,8 +71,10 @@ public class JdbcLoader {
      * Key is the oid of pg_catalog.pg_type table. Inner map stores pairs of colTypeMod 
      * and result of "SELECT typmodout(colTypeMod)" query.
      */
-    private Map<Long, Map<Integer,String>> cachedTypesTypmodouts = new HashMap<Long, Map<Integer,String>>();
-    private Map<Long, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<Long, Map<Integer,String>>();
+    private Map<Long, Map<Integer,String>> cachedTypesTypmodouts = 
+            new HashMap<Long, Map<Integer,String>>();
+    private Map<Long, Map<Integer, String>> cachedColumnNamesByTableOid = 
+            new HashMap<Long, Map<Integer,String>>();
     
     private String host;
     private int port;
@@ -213,7 +214,9 @@ public class JdbcLoader {
                     + "LEFT JOIN pg_catalog.pg_proc proc ON proc.oid = t.typmodout "
                     + "LEFT JOIN pg_catalog.pg_namespace nsp ON t.typnamespace = nsp.oid")){
                 while (res.next()){
-                    PgType type = new PgType(res.getString("typname"), res.getString("castedType"), res.getLong("typarray"), res.getInt("typlen"), res.getString("proname"), res.getString("nspname"));
+                    PgType type = new PgType(res.getString("typname"), res.getString("castedType"), 
+                            res.getLong("typarray"), res.getInt("typlen"), res.getString("proname"),
+                            res.getString("nspname"));
                     cachedTypeNamesByOid.put(res.getLong("oid"), type);
                 }
             }
@@ -400,104 +403,78 @@ public class JdbcLoader {
         return e;
     }
 
-    private PgConstraint getConstraint(ResultSet res, String schemaName, String tableName) throws SQLException {
+    private PgConstraint getConstraint(ResultSet res, String schemaName, String tableName) 
+            throws SQLException {
         String constraintName = res.getString("conname");
-        String definition = "";
+        StringBuilder definition = new StringBuilder();
         PgConstraint c = new PgConstraint(constraintName, "", getSearchPath(schemaName));
         
-        List<String> columnNames = getColumnNames((Integer[])res.getArray("conkey").getArray(), res.getLong("conrelid"));
+        List<String> columnNames = 
+                getColumnNames((Integer[])res.getArray("conkey").getArray(), res.getLong("conrelid"));
+        
         switch (res.getString("contype")){
             case "f":
                 c = new PgForeignKey(constraintName, "", getSearchPath(schemaName));
-                List<String> referencedColumnNames = getColumnNames((Integer[])res.getArray("confkey").getArray(), res.getLong("confrelid"));
-                definition = "FOREIGN KEY (";
-                // TODO code reuse
-                for(int i = 0; i < columnNames.size(); i++){
-                    String columnName = columnNames.get(i);
-                    definition = definition.concat(columnName);
-                    if(i < columnNames.size() - 1){
-                        definition = definition.concat(", ");
-                    }
-                }
+                List<String> referencedColumnNames = getColumnNames(
+                        (Integer[])res.getArray("confkey").getArray(), res.getLong("confrelid"));
                 
-                definition = definition.concat(") REFERENCES " + res.getString("confrelid_name") + "(");
-                
-                for(int i = 0; i < referencedColumnNames.size(); i++){
-                    String columnName = referencedColumnNames.get(i);
-                    definition = definition.concat(columnName);
-                    if(i < referencedColumnNames.size() - 1){
-                        definition = definition.concat(", ");
-                    }
-                }
-                definition = definition.concat(")");
+                definition.append("FOREIGN KEY (").append(getStringListAsString(columnNames, ", "));
+                definition.append(") REFERENCES " + res.getString("confrelid_name") + "(");
+                definition.append(getStringListAsString(referencedColumnNames, ", ")).append(")");
                 
                 switch (res.getString("confmatchtype")){
                     case "f":
-                        definition = definition.concat(" MATCH FULL");
+                        definition.append(" MATCH FULL");
                         break;
                     case "p":
-                        definition = definition.concat(" MATCH PARTIAL");
+                        definition.append(" MATCH PARTIAL");
                         break;
                 }
                 
                 switch(res.getString("confupdtype")){
                     case "r":
-                        definition = definition.concat(" ON UPDATE RESTRICT");
+                        definition.append(" ON UPDATE RESTRICT");
                         break;
                     case "c":
-                        definition = definition.concat(" ON UPDATE CASCADE");
+                        definition.append(" ON UPDATE CASCADE");
                         break;
                     case "n":
-                        definition = definition.concat(" ON UPDATE SET NULL");
+                        definition.append(" ON UPDATE SET NULL");
                         break;
                     case "d":
-                        definition = definition.concat(" ON UPDATE SET DEFAULT");
+                        definition.append(" ON UPDATE SET DEFAULT");
                         break;
                 }
                 
                 switch(res.getString("confdeltype")){
                     case "r":
-                        definition = definition.concat(" ON DELETE RESTRICT");
+                        definition.append(" ON DELETE RESTRICT");
                         break;
                     case "c":
-                        definition = definition.concat(" ON DELETE CASCADE");
+                        definition.append(" ON DELETE CASCADE");
                         break;
                     case "n":
-                        definition = definition.concat(" ON DELETE SET NULL");
+                        definition.append(" ON DELETE SET NULL");
                         break;
                     case "d":
-                        definition = definition.concat(" ON DELETE SET DEFAULT");
+                        definition.append(" ON DELETE SET DEFAULT");
                         break;
                 }
                 break; // end foreign key
             case "p":
-                definition = "PRIMARY KEY (";
-                for(int i = 0; i < columnNames.size(); i++){
-                    String columnName = columnNames.get(i);
-                    definition = definition.concat(columnName);
-                    if(i < columnNames.size() - 1){
-                        definition = definition.concat(", ");
-                    }
-                }
-                definition = definition.concat(")");
+                definition.append("PRIMARY KEY (");
+                definition.append(getStringListAsString(columnNames, ", ")).append(")");
                 break;
             case "c":
-                definition = "CHECK (" + res.getString("consrc") + ")";
+                definition.append("CHECK (" + res.getString("consrc") + ")");
                 break;
             case "u":
-                definition = "UNIQUE (";
-                for(int i = 0; i < columnNames.size(); i++){
-                    String columnName = columnNames.get(i);
-                    definition = definition.concat(columnName);
-                    if(i < columnNames.size() - 1){
-                        definition = definition.concat(", ");
-                    }
-                }
-                definition = definition.concat(")");
+                definition.append("UNIQUE (");
+                definition.append(getStringListAsString(columnNames, ", ")).append(")");
                 break;
         }
         
-        c.setDefinition(definition);
+        c.setDefinition(definition.toString());
         
         // set table name
         c.setTableName(tableName);
@@ -508,6 +485,18 @@ public class JdbcLoader {
         }
         
         return c;
+    }
+    
+    private String getStringListAsString(List<String> strings, String delimeter){
+        StringBuilder resultList = new StringBuilder();
+        for(int i = 0; i < strings.size(); i++){
+            String listItem = strings.get(i);
+            resultList.append(listItem);
+            if(i < strings.size() - 1){
+                resultList.append(delimeter);
+            }
+        }
+        return resultList.toString();
     }
     
     private PgView getView(ResultSet res, String schemaName, Long schemaOid) throws SQLException {
@@ -614,7 +603,8 @@ public class JdbcLoader {
             //
             // if column type has it's "Type modifier output function" typmodout and
             // column type has it's atttypmod set up (colTypeMod[i] != -1)
-            if (colTypeMod[i] != -1 && columnType.getTypmodout() != null && !columnType.getTypmodout().isEmpty()){
+            if (colTypeMod[i] != -1 && columnType.getTypmodout() != null && 
+                    !columnType.getTypmodout().isEmpty()){
                 String typMod = "";
                 
                 // Map of those colTypeMod values that 've been already queried in
@@ -628,11 +618,12 @@ public class JdbcLoader {
                 // else query "SELECT typmodout(colTypeMod)" and cache result for further use
                 else{
                     StringBuilder query = new StringBuilder();
-                    query.append("SELECT ").append(columnType.getTypmodout()).append("(").append(String.valueOf(colTypeMod[i])).append(")");
+                    query.append("SELECT ").append(columnType.getTypmodout());
+                    query.append("(").append(String.valueOf(colTypeMod[i])).append(")");
                     try(Statement stmnt = connection.createStatement();
-                            ResultSet res2 = stmnt.executeQuery(query.toString())){
-                        if (res2.next()){
-                            typMod = res2.getString(1);
+                            ResultSet resTypMod = stmnt.executeQuery(query.toString())){
+                        if (resTypMod.next()){
+                            typMod = resTypMod.getString(1);
                             // cache queried values 
                             if (typeAvailableModes == null){
                                 typeAvailableModes = new HashMap<Integer, String>();
@@ -676,7 +667,8 @@ public class JdbcLoader {
         // INHERITS
         Array arrInherits = res.getArray("inherited");
         String [] inherits = null;
-        if(arrInherits != null && (inherits = (String[]) arrInherits.getArray()) != null && inherits.length > 0){
+        if(arrInherits != null && (inherits = (String[]) arrInherits.getArray()) != null && 
+                inherits.length > 0){
             for (String inherited : inherits){
                 t.addInherits(inherited);
             }
@@ -838,7 +830,8 @@ public class JdbcLoader {
                     if(returnedTableArguments.length() > 0){
                         returnedTableArguments.append(", ");
                     }
-                    returnedTableArguments.append(argNames[i] + " " + getTypeNameByOid(argTypeOids[i], schemaName));
+                    returnedTableArguments.append(argNames[i]).append(" ");
+                    returnedTableArguments.append(getTypeNameByOid(argTypeOids[i], schemaName));
                 }
             }            
         }
@@ -861,7 +854,8 @@ public class JdbcLoader {
         setOwner(f, res.getLong("proowner"));
         
         // PRIVILEGES
-        String signatureWithoutDefaults = functionName + "(" + res.getString("proarguments_without_default") + ")";
+        String signatureWithoutDefaults = functionName + "(" + 
+                res.getString("proarguments_without_default") + ")";
         setPrivileges(f, signatureWithoutDefaults, res.getString("aclArray"), f.getOwner());
         
         // COMMENT
@@ -973,7 +967,8 @@ public class JdbcLoader {
         return s;
     }
     
-    private void setPrivileges(PgStatement st, String stSignature, String aclItemsArrayAsString, String owner){
+    private void setPrivileges(PgStatement st, String stSignature, 
+            String aclItemsArrayAsString, String owner){
         if (aclItemsArrayAsString == null){
             return;
         }
@@ -1000,13 +995,16 @@ public class JdbcLoader {
             throw new IllegalStateException("Not supported PgStatement class");
         }
         String revokePublic = "ALL ON " + stType + " " + stSignature + " FROM PUBLIC";
-        String revokeMaindb = "ALL ON " + stType + " " + stSignature + " FROM " + PgDiffUtils.getQuotedName(owner);
+        String revokeMaindb = "ALL ON " + stType + " " + stSignature + " FROM " + 
+                PgDiffUtils.getQuotedName(owner);
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
         st.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
         
-        LinkedHashMap<String, String> grants = new JdbcAclParser().parse(aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
+        LinkedHashMap<String, String> grants = new JdbcAclParser().parse(
+                aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
         for(String granteeName : grants.keySet()){
-            String privDefinition = grants.get(granteeName) + " ON " + stType + " " + stSignature + " TO " + granteeName;
+            String privDefinition = grants.get(granteeName) + " ON " + stType + " " + 
+                    stSignature + " TO " + granteeName;
             st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
         }
     }
