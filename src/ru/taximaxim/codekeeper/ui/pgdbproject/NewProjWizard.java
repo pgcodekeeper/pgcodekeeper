@@ -445,8 +445,6 @@ class PageRepo extends WizardPage implements Listener {
         lblWarnInit.setLayoutData(gd);
         lblWarnInit.setVisible(false);
         
-        
-        
         setControl(container);
     }
     
