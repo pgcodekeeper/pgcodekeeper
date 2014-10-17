@@ -57,8 +57,7 @@
                                     <serverId>palceholder4</serverId>
                                     <url>scp://codekeeper@storage/home/codekeeper/webroot/p2/codekeeperplugins</url>
                                     <commands>
-                                        <command>rm -rf
-                                            /home/codekeeper/webroot/p2/codekeeperplugins/*</command>
+                                        <command>rm -rf /home/codekeeper/webroot/p2/codekeeperplugins/*</command>
                                     </commands>
                                 </configuration>
                             </execution>
