@@ -35,9 +35,9 @@
       <import plugin="org.eclipse.ui.console"/>
       <import plugin="org.eclipse.ui.editors"/>
       <import plugin="org.eclipse.ui.ide"/>
-      <import feature="org.eclipse.jgit" version="0.0.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.egit" version="0.0.0" match="greaterOrEqual"/>
       <import feature="org.eclipse.jdt" version="0.0.0" match="greaterOrEqual"/>
-      <import feature="org.eclipse.datatools.sqldevtools.sqlbuilder.feature" version="0.0.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.datatools.sdk.feature" version="0.0.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin
