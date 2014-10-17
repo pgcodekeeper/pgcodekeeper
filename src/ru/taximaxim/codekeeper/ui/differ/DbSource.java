@@ -33,7 +33,7 @@ public abstract class DbSource {
 
     public PgDatabase getDbObject() {
         if (dbObject == null) {
-            throw new NullPointerException(
+            throw new IllegalStateException(
                     Messages.dbSource_db_is_not_loaded_yet_object_is_null);
         }
         return dbObject;
@@ -100,6 +100,10 @@ public abstract class DbSource {
     public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
             String encoding) {
         return new DbSourceJdbc(host, port, user, pass, dbname, encoding);
+    }
+    
+    public static DbSource fromDbObject(PgDatabase db, String origin) {
+        return new DbSourceFromDbObject(db, origin);
     }
 }
 
@@ -309,4 +313,20 @@ class DbSourceJdbc extends DbSource {
         monitor.newChild(1).subTask(Messages.reading_db_from_jdbc);
         return jdbcLoader.getDbFromJdbc();
     }
+}
+
+class DbSourceFromDbObject extends DbSource {
+
+    PgDatabase db;
+    
+    protected DbSourceFromDbObject(PgDatabase db, String origin) {
+        super(origin);
+        this.db = db;
+    }
+
+    @Override
+    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
+        return db;
+    }
+    
 }
