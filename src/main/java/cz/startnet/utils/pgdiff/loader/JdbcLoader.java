@@ -377,7 +377,7 @@ public class JdbcLoader {
         }
 
         // SEQUENCES
-        prepStatSequences.setString(1, schemaName);
+        prepStatSequences.setLong(1, schemaOid);
         try(ResultSet resSeq = prepStatSequences.executeQuery()){
             while(resSeq.next()){
                 PgSequence sequence = getSequence(resSeq, schemaName);
@@ -944,7 +944,7 @@ public class JdbcLoader {
     }
 
     private PgSequence getSequence(ResultSet res, String schemaName) throws SQLException {
-        String sequenceName = res.getString("sequence_name");
+        String sequenceName = res.getString("relname");
         PgSequence s = new PgSequence(sequenceName, "", getSearchPath(schemaName));
         s.setCycle(res.getBoolean("cycle_option"));
         s.setIncrement(res.getString("increment"));
@@ -956,8 +956,9 @@ public class JdbcLoader {
         s.setMinValue(minValue.equals("1") ? null : minValue);
         
         s.setStartWith(res.getString("start_value"));
-        s.setCache(String.valueOf(1));
+
         // TODO SELECT cache_value FROM tableName;
+        s.setCache(String.valueOf(1));
         
         Integer referenced_column = res.getInt("referenced_column");
         if (referenced_column != 0){

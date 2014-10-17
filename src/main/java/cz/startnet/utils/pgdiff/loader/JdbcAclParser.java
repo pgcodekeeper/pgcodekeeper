@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  * @author ryabinin_av
  */
 public class JdbcAclParser {
+    private final String ACL_ASSIGNMENT_SIGN = "=";
     
     public enum PrivilegeTypes {
         a("INSERT"), r("SELECT"), w("UPDATE"), d("DELETE"), D("TRUNCATE"), x("REFERENCES"), 
@@ -53,7 +54,7 @@ public class JdbcAclParser {
         
         // move owner's grants to front
         for (String s : acls){
-            if (s.startsWith(owner)){
+            if (s.startsWith(owner + ACL_ASSIGNMENT_SIGN)){
                 acls.remove(s);
                 acls.add(0, s);
                 break;
@@ -62,7 +63,7 @@ public class JdbcAclParser {
         
         for(String s : acls){
             String aclExpression = s.substring(0, s.indexOf("/"));
-            int indexOfEqualsSign = aclExpression.indexOf("=");
+            int indexOfEqualsSign = aclExpression.indexOf(ACL_ASSIGNMENT_SIGN);
             String grantee = aclExpression.substring(0, indexOfEqualsSign);
             
             // reorder chars according to order
