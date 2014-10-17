@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -95,8 +96,11 @@ public class JdbcLoader {
     }
 
     private String getPgPassPassword(){
-        Log.log(Log.LOG_INFO, "User provided an empty password. Reading password from .pgpass file.");
-        File pgpass = new File(System.getProperty("user.home") + "/.pgpass");
+        Log.log(Log.LOG_INFO, "User provided an empty password. Reading password from pgpass file.");
+        String os = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
+        String pgPassFileName = os.contains("win") ? System.getenv("APPDATA") + "\\postgresql\\pgpass.conf" : System.getProperty("user.home") + "/.pgpass";
+        Log.log(Log.LOG_INFO, "pgpass file will be read at " + pgPassFileName);
+        File pgpass = new File(pgPassFileName);
         
         try (BufferedReader br = new BufferedReader(new FileReader(pgpass))){        
             String [] expectedTokens = {
