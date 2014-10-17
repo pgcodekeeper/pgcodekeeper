@@ -13,45 +13,69 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-/**
- * A Runnable that consumes everything from the {@link InputStream},
- * redirects data to {@link ConsoleFactory} and stores it as a String.
- * 
- * @author Alexander Levsha
- */
-public class StdStreamRedirector implements Runnable {
-
-    private BufferedReader in;
+public class StreamRedirector {
     
     private StringBuilder storage = new StringBuilder(20000);
-    
-    private AtomicBoolean isDestroyed = new AtomicBoolean(false);
+    /**
+     * @return the storage
+     */
+    public String getStorage() {
+        return storage.toString();
+    }
     
     /**
-     * @param in {@link InputStream} to 
+     * A Runnable that consumes everything from the {@link InputStream},
+     * redirects data to {@link ConsoleFactory} and stores it as a String.
+     * 
+     * @author Alexander Levsha
      */
-    private StdStreamRedirector(InputStream in) {
-        this.in = new BufferedReader(new InputStreamReader(in));
-    }
-    
-    @Override
-    public void run() {
-        String line = null;
-        try {
-            while((line = in.readLine()) != null) {
-                ConsoleFactory.write(line);
-                storage.append(line);
-                storage.append(System.lineSeparator());
-            }
-        } catch(IOException ex) {
-            if (isDestroyed.get()) {
-                // the process was destroyed by us, exit silently
-                return;
-            }
-            throw new IllegalStateException(Messages.StdStreamRedirector_error_reading_std, ex);
+    class StdStreamRedirector implements Runnable {
+
+
+        private BufferedReader in;
+        private StringBuilder storage;
+        private AtomicBoolean isDestroyed = new AtomicBoolean(false);
+        
+        /**
+         * @return the in
+         */
+        protected BufferedReader getIn() {
+            return in;
         }
+        /**
+         * @return the isDestroyed
+         */
+        AtomicBoolean getIsDestroyed() {
+            return isDestroyed;
+        }
+        /**
+         * @param in {@link InputStream} to 
+         */
+        StdStreamRedirector(InputStream in, StringBuilder storage) {
+            this.in = new BufferedReader(new InputStreamReader(in));
+            this.storage = storage;
+        }
+        
+        @Override
+        public void run() {
+            String line = null;
+            try {
+                while((line = in.readLine()) != null) {
+                    ConsoleFactory.write(line);
+                    storage.append(line);
+                    storage.append(System.lineSeparator());
+                }
+            } catch(IOException ex) {
+                if (isDestroyed.get()) {
+                    // the process was destroyed by us, exit silently
+                    return;
+                }
+                throw new IllegalStateException(Messages.StdStreamRedirector_error_reading_std, ex);
+            }
+        }
+        
+        
     }
-    
     /**
      * Launches a process combining stdout & stderr and redirecting them
      * onto {@link ConsoleFactory}. Blocks until process exits and all output is consumed.
@@ -61,7 +85,7 @@ public class StdStreamRedirector implements Runnable {
      * @return captured stdout & stderr output
      * @throws IOException
      */
-    public static String launchAndRedirect(ProcessBuilder pb)
+    public void launchAndRedirect(ProcessBuilder pb)
             throws IOException {
         StringBuilder sb = new StringBuilder(1000 * pb.command().size());
         for(String param : pb.command()) {
@@ -74,8 +98,8 @@ public class StdStreamRedirector implements Runnable {
         pb.redirectErrorStream(true);
         final Process p = pb.start();
         
-        final StdStreamRedirector redirector = new StdStreamRedirector(p.getInputStream());
-        try (BufferedReader t = redirector.in) {
+        final StdStreamRedirector redirector = new StdStreamRedirector(p.getInputStream(), storage);
+        try (BufferedReader t = redirector.getIn()) {
             Thread redirectorThread = new Thread(redirector);
             final AtomicReference<Throwable> lastException = new AtomicReference<>();
             redirectorThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
@@ -83,7 +107,7 @@ public class StdStreamRedirector implements Runnable {
                 @Override
                 public void uncaughtException(Thread t, Throwable e) {
                     lastException.set(e);
-                    redirector.isDestroyed.set(true);
+                    redirector.getIsDestroyed().set(true);
                     p.destroy();
                 }
             });
@@ -92,7 +116,7 @@ public class StdStreamRedirector implements Runnable {
             try {
                 p.waitFor();
             } catch (InterruptedException ex) {
-                redirector.isDestroyed.set(true);
+                redirector.getIsDestroyed().set(true);
                 p.destroy();
                 try {
                     // wait for destroy to get the exitValue()
@@ -110,30 +134,27 @@ public class StdStreamRedirector implements Runnable {
             ConsoleFactory.write(pb.command().get(0) + 
                     Messages.stdStreamRedirector_completed_with_code + p.exitValue());
 
-            if (!redirector.isDestroyed.get() && p.exitValue() != 0) {
-                ReturnCodeException ex = new ReturnCodeException(
-                        Messages.StdStreamRedirector_process_returned_with_error
+            if (!redirector.getIsDestroyed().get() && p.exitValue() != 0) {
+                throw new IOException(Messages.StdStreamRedirector_process_returned_with_error
                         + p.exitValue() +
                         Messages.StdStreamRedirector_error_returncode_see_for_details);
-                ex.setOutput(redirector.storage.toString());
-                throw ex;
             }
             
             if (lastException.get() != null){
                 throw new IOException(Messages.StdStreamRedirector_error_reading_std_external,
                         lastException.get());
             }
-            return redirector.storage.toString();
+            
         } finally {
             StringBuilder msg = new StringBuilder(
-                    cmd.length() + redirector.storage.length() + 128);
+                    cmd.length() + storage.length() + 128);
             msg.append("External command:") //$NON-NLS-1$
                 .append(System.lineSeparator())
                 .append(cmd)
                 .append(System.lineSeparator())
                 .append("Output: ") //$NON-NLS-1$
                 .append(System.lineSeparator())
-                .append(redirector.storage);
+                .append(storage);
             
             Log.log(Log.LOG_INFO, msg.toString());
         }

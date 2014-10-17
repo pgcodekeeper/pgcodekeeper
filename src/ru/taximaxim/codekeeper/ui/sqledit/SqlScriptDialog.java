@@ -51,8 +51,7 @@ import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
-import ru.taximaxim.codekeeper.ui.externalcalls.utils.ReturnCodeException;
-import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
+import ru.taximaxim.codekeeper.ui.externalcalls.utils.StreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -348,6 +347,7 @@ public class SqlScriptDialog extends TrayDialog {
 
                 @Override
                 public void run() {
+                    final StreamRedirector sr = new StreamRedirector();
                     try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
                         File outFile = tempFile.get();
                         try (PrintWriter writer = new PrintWriter(outFile, "UTF-8")) { //$NON-NLS-1$
@@ -361,23 +361,15 @@ public class SqlScriptDialog extends TrayDialog {
                         }
                         
                         ProcessBuilder pb = new ProcessBuilder(command);
-                        String scriptOutputRes = StdStreamRedirector.launchAndRedirect(pb);
-                        if (usePsqlDepcy) {
-                            addDepcy = getDependenciesFromOutput(scriptOutputRes);
-                        }
+                        sr.launchAndRedirect(pb);
+                        
                     } catch (IOException ex) {
-                        if (ex instanceof ReturnCodeException) {
-                            // FIXME no other simple way of getting process's output if exception occured (retval != 0)
                             if (usePsqlDepcy) {
-                                addDepcy = getDependenciesFromOutput(
-                                        ((ReturnCodeException) ex).getOutput());
-                                if (!addDepcy.isEmpty()) {
-                                    // actually parsed some depcies, do not rethrow
-                                    return;
-                                }
+                                addDepcy = getDependenciesFromOutput(sr.getStorage());
                             }
-                        }
-                        throw new IllegalStateException(ex);
+                            if (addDepcy.isEmpty()) {
+                                throw new IllegalStateException(ex);
+                            }
                     } finally {
                         // request UI change: button label changed
                         SqlScriptDialog.this.getShell().getDisplay().syncExec(
