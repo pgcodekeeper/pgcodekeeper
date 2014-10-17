@@ -370,7 +370,7 @@ public abstract class DiffPresentationPane extends Composite {
                 }
                 loadChanges();
             } catch (IllegalStateException ex) {
-                Log.log(Log.LOG_ERROR, "Remote db Object is not loaded yet", ex);
+                Log.log(Log.LOG_ERROR, "Remote db Object is not loaded yet", ex); //$NON-NLS-1$
             }
         }
     };
