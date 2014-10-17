@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target includeMode="feature" name="app" sequenceNumber="77">
+<?pde version="3.8"?><target includeMode="feature" name="app" sequenceNumber="78">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.jdt.feature.group" version="3.10.0.v20140925-0400"/>
@@ -19,6 +19,10 @@
 <repository location="http://download.eclipse.org/modeling/emf/emf/updates/releases/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.datatools.sdk.feature.feature.group" version="1.12.0.v201406061321-7PB21FEpPZQXdcX0z-_yMM0Hfz0w"/>
+<repository location="http://download.eclipse.org/datatools/updates/1.12"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.egit.source.feature.group" version="3.4.1.201406201815-r"/>
 <unit id="org.eclipse.jgit.feature.group" version="3.4.1.201406201815-r"/>
 <unit id="org.eclipse.jgit.pgm.feature.group" version="3.4.1.201406201815-r"/>
@@ -28,21 +32,6 @@
 <unit id="org.eclipse.jgit.source.feature.group" version="3.4.1.201406201815-r"/>
 <unit id="org.eclipse.jgit.pgm.source.feature.group" version="3.4.1.201406201815-r"/>
 <repository location="http://download.eclipse.org/releases/luna"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.datatools.sdk.feature.feature.group" version="1.12.0.v201406061321-7PB21FEpPZQXdcX0z-_yMM0Hfz0w"/>
-<repository location="http://download.eclipse.org/datatools/updates/1.12"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.babel.nls_tools.tm_ru.feature.group" version="4.4.0.v20140623020002"/>
-<unit id="org.eclipse.babel.nls_soa.stardust_ru.feature.group" version="4.4.0.v20140623020002"/>
-<unit id="org.eclipse.babel.nls_rt.rap_ru.feature.group" version="4.4.0.v20140623020002"/>
-<unit id="org.eclipse.babel.nls_webtools_ru.feature.group" version="4.4.0.v20140623020002"/>
-<unit id="org.eclipse.babel.nls_mylyn_ru.feature.group" version="4.4.0.v20140623020002"/>
-<unit id="org.eclipse.babel.nls_technology.packaging_ru.feature.group" version="4.4.0.v20140623020002"/>
-<unit id="org.eclipse.babel.nls_eclipse_ru.feature.group" version="4.4.0.v20140623020002"/>
-<unit id="org.eclipse.babel.nls_datatools_ru.feature.group" version="4.4.0.v20140623020002"/>
-<repository location="http://download.eclipse.org/technology/babel/update-site/R0.12.0/luna/"/>
 </location>
 </locations>
 </target>
