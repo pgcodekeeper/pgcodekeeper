@@ -26,4 +26,6 @@ public class Dir {
     public static void moveDirAtomic(File source, File destination) throws IOException {
         Files.move(source.toPath(), destination.toPath(), StandardCopyOption.ATOMIC_MOVE);
     }
+    
+    private Dir() {}
 }

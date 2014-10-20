@@ -63,7 +63,7 @@ class GroupFieldsEditor extends FieldEditor {
                 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    setManageButtonSelection(((Button)e.widget).getSelection());
+                    setManageButtonSelection();
                 }
             });
             buttons.put(name, btn);
@@ -75,7 +75,7 @@ class GroupFieldsEditor extends FieldEditor {
         for (String name : buttons.keySet()) {
             boolean selection = getPreferenceStore().getBoolean(name);
             buttons.get(name).setSelection(selection);
-            setManageButtonSelection(selection);
+            setManageButtonSelection();
         }
     }
 
@@ -84,13 +84,13 @@ class GroupFieldsEditor extends FieldEditor {
         for (String name : buttons.keySet()) {
             boolean selection = getPreferenceStore().getDefaultBoolean(name);
             buttons.get(name).setSelection(selection);
-            setManageButtonSelection(selection);
+            setManageButtonSelection();
         }
     }
     /**
      * Устанавливает статус управляющего чекбокса в зависимости от выбора элементов
      */
-    private void setManageButtonSelection(boolean state) {
+    private void setManageButtonSelection() {
         boolean existChecked = false;
         boolean allChecked = buttons.size() > 0;
         
