@@ -19,6 +19,7 @@ public interface UIConsts {
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
+        String ENCODING = "UTF-8"; //$NON-NLS-1$
     }
     
     interface COMMIT_PREF {

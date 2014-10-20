@@ -47,6 +47,7 @@ import org.eclipse.ui.PlatformUI;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -350,7 +351,7 @@ public class SqlScriptDialog extends TrayDialog {
                 public void run() {
                     try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
                         File outFile = tempFile.get();
-                        try (PrintWriter writer = new PrintWriter(outFile, "UTF-8")) { //$NON-NLS-1$
+                        try (PrintWriter writer = new PrintWriter(outFile, PREF.ENCODING)) {
                             writer.write(textRetrieved);
                         }
 
@@ -430,7 +431,7 @@ public class SqlScriptDialog extends TrayDialog {
             
             if (scriptFileName != null) {
                 File script = new File(scriptFileName);
-                try (PrintWriter writer = new PrintWriter(script, "UTF-8")) { //$NON-NLS-1$
+                try (PrintWriter writer = new PrintWriter(script, PREF.ENCODING)) {
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
                     ExceptionNotifier.showErrorDialog(

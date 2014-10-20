@@ -351,7 +351,7 @@ class PageDiff extends WizardPage implements Listener {
 
                     if (to != grpProj) {
                         cmbEncoding.setEnabled(true);
-                        cmbEncoding.select(cmbEncoding.indexOf("UTF-8")); //$NON-NLS-1$
+                        cmbEncoding.select(cmbEncoding.indexOf(PREF.ENCODING));
                     } else {
                         cmbEncoding.setEnabled(false);
                         txtProjPath.notifyListeners(SWT.Modify, null);
@@ -621,7 +621,7 @@ class PageDiff extends WizardPage implements Listener {
                 | SWT.READ_ONLY);
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
-        cmbEncoding.select(cmbEncoding.indexOf("UTF-8")); //$NON-NLS-1$
+        cmbEncoding.select(cmbEncoding.indexOf(PREF.ENCODING));
 
         setControl(container);
     }
