@@ -90,7 +90,6 @@ public class Messages extends NLS {
     public static String dbSource_filter_on;
     public static String dbSource_loading_dump;
     public static String dbSource_loading_tree;
-    public static String dbSource_repository_rev_checkout;
     public static String differ_direct_diff;
     public static String differ_get_differ;
     public static String differ_reverse_diff;
@@ -122,32 +121,7 @@ public class Messages extends NLS {
     public static String reading_db_from_jdbc;
 
     // ui.externalcalls
-    public static String jGitExec_and_higher;
-    public static String jGitExec_couldnt_find_git_repository_in;
-    public static String jGitExec_exception_thrown_at_jgit_clone;
-    public static String jGitExec_exception_thrown_at_jgit_commit;
-    public static String jGitExec_exception_thrown_at_jgit_push_status_isnt_ok_or_up_to_date;
-    public static String jGitExec_exception_thrown_at_jgit_repo_remove_missing_add_new;
-    public static String jGitExec_exception_thrown_at_jgit_repo_update;
-    public static String jGitExec_get_conflicts;
-    public static String jGitExec_git_failed_cause;
-    public static String jGitExec_git_result;
-    public static String jGitExec_git_start;
-    public static String jGitExec_git_start_url;
-    public static String jGitExec_git_status;
-    public static String jGitExec_git_success;
-    public static String jGitExec_message;
-    public static String jGitExec_repository_doesnt_have_conflicts;
-    public static String jGitExec_repository_has_conflicts;
-    public static String jGitExec_repository_update;
-    public static String jGitExec_skip_pull_branch_does_not_exist;
-    public static String jGitExec_skip_pull_branch_does_not_exist_skipped;
-    public static String jGitExec_status;
-    public static String jGitExec_successfull;
-    public static String jGitExec_un;
     public static String pgDumper_bad_pg_dump_version_output;
-    public static String svnExec_bad_svn_version_output;
-    public static String svnExec_cannot_svn_rm_an_empty_file_list;
     
     // ui.handlers
     public static String loadProj_open_project;
@@ -183,7 +157,6 @@ public class Messages extends NLS {
     public static String diffWizard_dump_taget;
     public static String diffWizard_encoding;
     public static String diffWizard_no_target_type_selection_found;
-    public static String diffWizard_open_project_file;
     public static String diffWizard_path_to_target_project;
     public static String diffWizard_project;
     public static String diffWizard_project_target;
@@ -216,7 +189,7 @@ public class Messages extends NLS {
     public static String newProjWizard_repository_settings;
     public static String newProjWizard_schema_source;
     public static String newProjWizard_schema_source_settings;
-    public static String newProjWizard_select_git_repository_root_directory;
+    public static String newProjWizard_select_project_working_directory;
     public static String newProjWizard_select_repo_root_directory;
     public static String newProjWizard_this_will_delete_contents_and_recreate_them;
     
@@ -243,21 +216,11 @@ public class Messages extends NLS {
     public static String generalPrefPage_show_console_when_program_write_to_console;
     public static String generalPrefPage_use_depcy_on_commit_page;
     public static String generalPrefPage_use_psql_depcy_on_generating_script;
-    public static String gitPrefPage_copy_public_keys_to_clipboard;
-    public static String gitPrefPage_either_doesnt_exist_or_inaccessible;
-    public static String gitPrefPage_error_while_rsa_keys_generation;
-    public static String gitPrefPage_file_not_found;
-    public static String gitPrefPage_generate_keys;
-    public static String gitPrefPage_private_key;
-    public static String gitPrefPage_public_key_file;
-    public static String gitPrefPage_save_priv_key_to_file;
-    public static String gitPrefPage_select_file_to_save_priv_key;
     public static String ignoreObjectsPrefPage_add_ignore;
     public static String ignoreObjectsPrefPage_delete_ignore;
     public static String IgnoredObjectsPrefPage_error_getting_ignores_list;
     public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
-    public static String JGitExec_exception_thrown_at_jgit_push;
     public static String ManualDepciesDialog_set_add_depcies;
     public static String NewProjWizard_demand_init_project;
     public static String NewProjWizard_enter_project_name;
