@@ -178,7 +178,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 class PageDiff extends WizardPage implements Listener {
 
     public enum DiffTargetType {
-        DB, DUMP, GIT, PROJ
+        DB, DUMP, JDBC, GIT, PROJ
     }
 
     private final IPreferenceStore mainPrefs;
@@ -187,7 +187,7 @@ class PageDiff extends WizardPage implements Listener {
 
     private Composite container;
 
-    private Button radioDb, radioDump, radioGit, radioProj;
+    private Button radioDb, radioJdbc, radioDump, radioGit, radioProj;
 
     private Group currentTargetGrp;
 
@@ -207,14 +207,13 @@ class PageDiff extends WizardPage implements Listener {
     public DiffTargetType getTargetType() throws PgCodekeeperUIException {
         if (radioDb.getSelection()) {
             return DiffTargetType.DB;
-        }
-        if (radioDump.getSelection()) {
+        }else if (radioJdbc.getSelection()){
+            return DiffTargetType.JDBC;
+        }else if (radioDump.getSelection()) {
             return DiffTargetType.DUMP;
-        }
-        if (radioGit.getSelection()) {
+        }else if (radioGit.getSelection()) {
             return DiffTargetType.GIT;
-        }
-        if (radioProj.getSelection()) {
+        }else if (radioProj.getSelection()) {
             return DiffTargetType.PROJ;
         }
         throw new PgCodekeeperUIException(Messages.diffWizard_no_target_type_selection_found);
@@ -288,6 +287,11 @@ class PageDiff extends WizardPage implements Listener {
                     getDbName(), getTargetEncoding());
             break;
 
+        case JDBC:
+            dbs = DbSource.fromJdbc(getDbHost(), getDbPort(), getDbUser(), 
+                    getDbPass(),getDbName(), getTargetEncoding());
+            break;
+            
         case DUMP:
             dbs = DbSource.fromFile(getDumpPath(), getTargetEncoding());
             break;
@@ -366,6 +370,11 @@ class PageDiff extends WizardPage implements Listener {
         radioDb.setSelection(true);
         radioDb.addSelectionListener(switcher);
 
+        radioJdbc = new Button(grpRadio, SWT.RADIO);
+        radioJdbc.setText(Messages.jdbc);
+        radioJdbc.setSelection(false);
+        radioJdbc.addSelectionListener(switcher);
+        
         radioDump = new Button(grpRadio, SWT.RADIO);
         radioDump.setText(Messages.dump);
         radioDump.addSelectionListener(switcher);
@@ -604,6 +613,7 @@ class PageDiff extends WizardPage implements Listener {
         txtProjRev.setLayoutData(new GridData());
 
         radioDb.setData(grpDb);
+        radioJdbc.setData(grpDb);
         radioDump.setData(grpDump);
         radioGit.setData(grpGit);
         radioProj.setData(grpProj);
@@ -658,6 +668,16 @@ class PageDiff extends WizardPage implements Listener {
                 }
                 break;
 
+            case JDBC:
+                if (!grpDb.txtDbPort.getText().isEmpty()) {
+                    try {
+                        Integer.parseInt(grpDb.txtDbPort.getText());
+                    } catch (NumberFormatException ex) {
+                        errMsg = Messages.port_must_be_a_number;
+                    }
+                }
+                break;
+                
             case DUMP:
                 if (txtDumpPath.getText().isEmpty()
                         || !new File(txtDumpPath.getText()).isFile()) {
