@@ -13,15 +13,12 @@ import java.util.Set;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -32,6 +29,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
@@ -44,7 +42,6 @@ import org.eclipse.swt.widgets.Text;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -55,7 +52,6 @@ import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTreeViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
-import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 
@@ -178,7 +174,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 class PageDiff extends WizardPage implements Listener {
 
     public enum DiffTargetType {
-        DB, DUMP, JDBC, GIT, PROJ
+        DB, DUMP, JDBC, PROJ
     }
 
     private final IPreferenceStore mainPrefs;
@@ -187,22 +183,17 @@ class PageDiff extends WizardPage implements Listener {
 
     private Composite container;
 
-    private Button radioDb, radioJdbc, radioDump, radioGit, radioProj;
+    private Button radioDb, radioJdbc, radioDump, radioProj;
 
     private Group currentTargetGrp;
 
     private DbPicker grpDb;
 
-    private Group grpDump, grpGit, grpProj;
+    private Group grpDump, grpProj;
 
-    private Text txtDumpPath, txtProjPath, txtProjRev, txtGitUrl, txtGitUser, 
-                    txtGitPass, txtGitRev;
-
-    private CLabel lblWarnGitPass;
+    private Text txtDumpPath, txtProjPath;
 
     private Combo cmbEncoding;
-
-    private LocalResourceManager lrm;
 
     public DiffTargetType getTargetType() throws PgCodekeeperUIException {
         if (radioDb.getSelection()) {
@@ -211,8 +202,6 @@ class PageDiff extends WizardPage implements Listener {
             return DiffTargetType.JDBC;
         }else if (radioDump.getSelection()) {
             return DiffTargetType.DUMP;
-        }else if (radioGit.getSelection()) {
-            return DiffTargetType.GIT;
         }else if (radioProj.getSelection()) {
             return DiffTargetType.PROJ;
         }
@@ -247,28 +236,8 @@ class PageDiff extends WizardPage implements Listener {
         return txtDumpPath.getText();
     }
 
-    public String getGitUrl() {
-        return txtGitUrl.getText();
-    }
-
-    public String getGitUser() {
-        return txtGitUser.getText();
-    }
-
-    public String getGitPass() {
-        return txtGitPass.getText();
-    }
-
-    public String getGitRev() {
-        return txtGitRev.getText();
-    }
-
     public String getProjPath() {
         return txtProjPath.getText();
-    }
-
-    public String getProjRev() {
-        return txtProjRev.getText();
     }
 
     public String getTargetEncoding() {
@@ -296,27 +265,11 @@ class PageDiff extends WizardPage implements Listener {
             dbs = DbSource.fromFile(getDumpPath(), getTargetEncoding());
             break;
 
-        case GIT:
-            dbs = DbSource.fromGit(
-                    getGitUrl(), getGitUser(), getGitPass(), getGitRev(),
-                    getTargetEncoding(), mainPrefs.getString(PREF.GIT_KEY_PRIVATE_FILE));
-            break;
-
         case PROJ:
             PgDbProject proj = PgDbProject.getProjFromFile(getProjPath());
-
-            if (getProjRev().isEmpty()) {
-                dbs = DbSource.fromProject(proj);
-            } else {
-                dbs = DbSource.fromGit(
-                                proj.getPrefs().get(PROJ_PREF.REPO_URL, ""), //$NON-NLS-1$
-                                proj.getPrefs().get(PROJ_PREF.REPO_USER, ""), //$NON-NLS-1$
-                                proj.getPrefs().get(PROJ_PREF.REPO_PASS, ""), //$NON-NLS-1$
-                                getProjRev(),
-                                proj.getPrefs().get(PROJ_PREF.ENCODING, ""), //$NON-NLS-1$
-                                mainPrefs.getString(PREF.GIT_KEY_PRIVATE_FILE));
-            }
+            dbs = DbSource.fromProject(proj);
             break;
+            
         default:
             throw new PgCodekeeperUIException(Messages.diffWizard_unexpected_target_type_value);
         }
@@ -334,9 +287,6 @@ class PageDiff extends WizardPage implements Listener {
 
     @Override
     public void createControl(Composite parent) {
-        this.lrm = new LocalResourceManager(JFaceResources.getResources(),
-                parent);
-
         container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout());
 
@@ -378,9 +328,6 @@ class PageDiff extends WizardPage implements Listener {
         radioDump = new Button(grpRadio, SWT.RADIO);
         radioDump.setText(Messages.dump);
         radioDump.addSelectionListener(switcher);
-        radioGit = new Button(grpRadio, SWT.RADIO);
-        radioGit.setText(PROJ_PREF.REPO_TYPE_GIT_NAME);
-        radioGit.addSelectionListener(switcher);
 
         radioProj = new Button(grpRadio, SWT.RADIO);
         radioProj.setText(Messages.diffWizard_project);
@@ -428,104 +375,6 @@ class PageDiff extends WizardPage implements Listener {
                 }
             }
         });
-        
-        grpGit = new Group(container, SWT.NONE);
-        grpGit.setText(Messages.diffWizard_git_target);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.verticalIndent = 12;
-        grpGit.setLayoutData(gd);
-        grpGit.setLayout(new GridLayout(2, false));
-
-        gd.exclude = true;
-        grpGit.setVisible(false);
-
-        new Label(grpGit, SWT.NONE).setText(Messages.diffWizard_git_repo_url);
-
-        txtGitUrl = new Text(grpGit, SWT.BORDER);
-        txtGitUrl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtGitUrl.addListener(SWT.Modify, this);
-        txtGitUrl.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                if (txtGitUrl.getText().isEmpty()) {
-                    txtGitUser.setEnabled(true);
-                    txtGitPass.setEnabled(true);
-                    txtGitPass.notifyListeners(SWT.Modify, new Event());                    
-                } else if (JGitExec.PATTERN_HTTP_URL.matcher(
-                        txtGitUrl.getText()).matches()) {
-                    txtGitUser.setEnabled(true);
-                    txtGitPass.setEnabled(true);
-                    lblWarnGitPass.setText(Messages.warning
-                            + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
-                            + Messages.this_password_will_show_up_in_logs
-                            + Messages.diffWizard_consider_using_ssh_authentication_instead);
-                    txtGitPass.notifyListeners(SWT.Modify, new Event());
-                } else if (JGitExec.PATTERN_FILE_URL.matcher(
-                        txtGitUrl.getText()).matches()) {
-                    txtGitUser.setEnabled(false);
-                    txtGitPass.setEnabled(false);
-                    txtGitPass.notifyListeners(SWT.Modify, new Event());
-                }else {
-                    txtGitUser.setEnabled(false);
-                    txtGitPass.setEnabled(false);
-                    lblWarnGitPass.setText(Messages.make_sure_you_have_priv_and_public_keys);
-                    txtGitPass.notifyListeners(SWT.Modify, new Event());
-                }
-            }
-        });
-        
-        new Label(grpGit, SWT.NONE).setText(Messages.diffWizard_git_user);
-
-        txtGitUser = new Text(grpGit, SWT.BORDER);
-        txtGitUser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        new Label(grpGit, SWT.NONE).setText(Messages.diffWizard_git_password);
-
-        txtGitPass = new Text(grpGit, SWT.BORDER | SWT.PASSWORD);
-        txtGitPass.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtGitPass.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                GridData gd = (GridData) lblWarnGitPass.getLayoutData();
-                if ((txtGitPass.getText().isEmpty() && !gd.exclude)
-                        || (!txtGitPass.getText().isEmpty() && gd.exclude)) {
-                    gd.exclude = !gd.exclude;
-                    lblWarnGitPass.setVisible(!lblWarnGitPass.getVisible());
-                    container.layout(false);
-                }
-                if (!txtGitUrl.getText().isEmpty() &&  !JGitExec.PATTERN_HTTP_URL.matcher(txtGitUrl.getText()).matches() && !JGitExec.PATTERN_FILE_URL.matcher(txtGitUrl.getText()).matches()){
-                    lblWarnGitPass.setVisible(true);
-                    gd.exclude = false;
-                    container.layout(true);
-                }else if (!txtGitPass.isEnabled()) {
-                    lblWarnGitPass.setVisible(false);
-                    gd.exclude = true;
-                    container.layout(false);
-                }
-                getShell().pack();
-            }
-        });
-
-        lblWarnGitPass = new CLabel(grpGit, SWT.NONE);
-        lblWarnGitPass.setImage(lrm.createImage(ImageDescriptor
-                .createFromURL(Activator.getContext().getBundle()
-                        .getResource(FILE.ICONWARNING))));
-        lblWarnGitPass.setText(Messages.warning
-                + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
-                + Messages.this_password_will_show_up_in_logs
-                + Messages.diffWizard_consider_using_ssh_authentication_instead);
-        gd = new GridData(SWT.FILL, SWT.FILL, false, false, 3, 1);
-        gd.exclude = true;
-        lblWarnGitPass.setLayoutData(gd);
-        lblWarnGitPass.setVisible(false);
-
-        new Label(grpGit, SWT.NONE).setText(Messages.diffWizard_git_commit_hash);
-
-        txtGitRev = new Text(grpGit, SWT.BORDER);
-        txtGitRev.setLayoutData(new GridData());
-        txtGitRev.addListener(SWT.Modify, this);
 
         grpProj = new Group(container, SWT.NONE);
         grpProj.setText(Messages.diffWizard_project_target);
@@ -536,22 +385,6 @@ class PageDiff extends WizardPage implements Listener {
 
         gd.exclude = true;
         grpProj.setVisible(false);
-
-        final Button btnThis = new Button(grpProj, SWT.CHECK);
-        btnThis.setText(Messages.diffWizard_this_project);
-        btnThis.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false,
-                2, 1));
-        btnThis.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (btnThis.getSelection()) {
-                    txtProjPath.setText(proj.getPathToProject().toString());
-                    txtProjPath.setEnabled(false);
-                } else {
-                    txtProjPath.setEnabled(true);
-                }
-            }
-        });
 
         Composite tmpCont = new Composite(grpProj, SWT.NONE);
         tmpCont.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false,
@@ -570,8 +403,7 @@ class PageDiff extends WizardPage implements Listener {
             public void modifyText(ModifyEvent e) {
                 String dir = txtProjPath.getText();
 
-                if (!dir.isEmpty() && new File(dir).isFile() &&
-                        dir.endsWith(FILE.PROJ_PREF_STORE)) {
+                if (!dir.isEmpty() && new File(dir).isDirectory()) {
                     PgDbProject tmpProj;
                     try {
                         tmpProj = PgDbProject.getProjFromFile(dir);
@@ -590,32 +422,20 @@ class PageDiff extends WizardPage implements Listener {
         btnBrowseProj.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                FileDialog dialog = new FileDialog(container.getShell());
-                dialog.setText(Messages.diffWizard_open_project_file);
-                dialog.setOverwrite(false);
-                dialog.setFilterExtensions(new String[] { "*.project", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
+                DirectoryDialog dialog = new DirectoryDialog(container.getShell());
                 dialog.setFilterPath(mainPrefs.getString(PREF.LAST_OPENED_LOCATION));
                 String path = dialog.open();
                 if (path != null) {
                     txtProjPath.setText(path);
-                    txtProjPath.setEnabled(true);
-                    btnThis.setSelection(false);
                     PreferenceInitializer.savePreference(mainPrefs,
                             PREF.LAST_OPENED_LOCATION, new File(path).getParent());
                 }
             }
         });
 
-        new Label(grpProj, SWT.NONE)
-                .setText(Messages.diffWizard_project_revision_grab_from_repo);
-
-        txtProjRev = new Text(grpProj, SWT.BORDER);
-        txtProjRev.setLayoutData(new GridData());
-
         radioDb.setData(grpDb);
         radioJdbc.setData(grpDb);
         radioDump.setData(grpDump);
-        radioGit.setData(grpGit);
         radioProj.setData(grpProj);
 
         Group grpEncoding = new Group(container, SWT.NONE);
@@ -685,17 +505,10 @@ class PageDiff extends WizardPage implements Listener {
                 }
                 break;
 
-            case GIT:
-                if (txtGitUrl.getText().isEmpty()) {
-                    errMsg = Messages.diffWizard_enter_git_repo_url;
-                }
-                break;
-
             case PROJ:
                 String dir = txtProjPath.getText();
 
-                if (dir.isEmpty() || !dir.endsWith(FILE.PROJ_PREF_STORE) 
-                        || !new File(dir).isFile()) {
+                if (dir.isEmpty() || !new File(dir).isDirectory()) {
                     errMsg = Messages.diffWizard_select_valid_project_file;
                 }
 

@@ -22,7 +22,6 @@ public class Messages extends NLS {
     public static String create_marker_file_named;
     public static String manually_and_try_again;
     public static String missing_marker_file_in_working_directory;
-    public static String this_password_will_show_up_in_logs;
     public static String bad_port;
     public static String choose_dump_file_with_changes;
     public static String db;
@@ -40,7 +39,6 @@ public class Messages extends NLS {
     public static String projectEditorDiffer_save_project;
     public static String undefined_source_for_db_changes;
     public static String browse;
-    public static String make_sure_you_have_priv_and_public_keys;
     public static String path_to_db_schema_dump;
     public static String select_readable_db_dump_file;
     public static String dump_file;
@@ -176,7 +174,6 @@ public class Messages extends NLS {
     public static String diffPresentationPane_getting_changes_for_diff;
     
     // ui.pgdbproject
-    public static String diffWizard_consider_using_ssh_authentication_instead;
     public static String diffWizard_db_taget;
     public static String diffWizard_Diff;
     public static String diffWizard_diff_parameters;
@@ -185,17 +182,10 @@ public class Messages extends NLS {
     public static String diffWizard_diff_tree;
     public static String diffWizard_dump_taget;
     public static String diffWizard_encoding;
-    public static String diffWizard_enter_git_repo_url;
-    public static String diffWizard_git_commit_hash;
-    public static String diffWizard_git_password;
-    public static String diffWizard_git_repo_url;
-    public static String diffWizard_git_target;
-    public static String diffWizard_git_user;
     public static String diffWizard_no_target_type_selection_found;
     public static String diffWizard_open_project_file;
     public static String diffWizard_path_to_target_project;
     public static String diffWizard_project;
-    public static String diffWizard_project_revision_grab_from_repo;
     public static String diffWizard_project_target;
     public static String diffWizard_save;
     public static String diffWizard_save__;
@@ -205,7 +195,6 @@ public class Messages extends NLS {
     public static String diffWizard_target;
     public static String diffWizard_target_encoding;
     public static String diffWizard_target_source;
-    public static String diffWizard_this_project;
     public static String diffWizard_unexpected_error_while_saving_diff;
     public static String diffWizard_unexpected_target_type_value;
     public static String diffWizard_diff;

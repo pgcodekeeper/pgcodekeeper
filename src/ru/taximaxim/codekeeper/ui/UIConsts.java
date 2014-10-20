@@ -66,9 +66,6 @@ public interface UIConsts {
     }
     
     interface FILE {
-        @Deprecated
-        String PROJ_PREF_STORE = ".project"; //$NON-NLS-1$
-        
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONWARNING = "/icons/warning.gif"; //$NON-NLS-1$
         String ICONADD = "/icons/add_obj.gif"; //$NON-NLS-1$
