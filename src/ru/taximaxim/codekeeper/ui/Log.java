@@ -34,4 +34,6 @@ public class Log {
     private static void logToPlugin(IStatus status) {
         Activator.getDefault().getLog().log(status);
     }
+    
+    private Log() {}
 }

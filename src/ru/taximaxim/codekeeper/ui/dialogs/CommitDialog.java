@@ -95,11 +95,6 @@ public class CommitDialog extends TrayDialog {
         return parent;
     }
     
-    @Override
-    protected void okPressed() {
-        super.okPressed();
-    }
-    
     public DiffTableViewer getBottomTableViewer(){
         return dtvBottom;
     }

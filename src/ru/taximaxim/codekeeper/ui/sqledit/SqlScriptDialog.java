@@ -518,8 +518,10 @@ public class SqlScriptDialog extends TrayDialog {
         StringBuilder sb = new StringBuilder();
         for (Entry<PgStatement, PgStatement> entry : depcyToAdd) {
             if (existingDepcy.contains(entry)) {
-                sb.append(entry.getKey().getName() + " -> " + //$NON-NLS-1$
-                        entry.getValue().getName() + System.lineSeparator());
+                sb.append(entry.getKey().getName())
+                    .append(" -> ") //$NON-NLS-1$
+                    .append(entry.getValue().getName())
+                    .append(System.lineSeparator());
             }
         }
         return sb.toString();
