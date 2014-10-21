@@ -33,14 +33,6 @@ public class StdStreamRedirector {
         private StringBuilder storage;
         private AtomicBoolean isDestroyed = new AtomicBoolean(false);
         
-        protected BufferedReader getIn() {
-            return in;
-        }
-        
-        AtomicBoolean getIsDestroyed() {
-            return isDestroyed;
-        }
-        
         /**
          * @param in {@link InputStream} to 
          */
@@ -77,8 +69,7 @@ public class StdStreamRedirector {
      * @return captured stdout & stderr output
      * @throws IOException
      */
-    public void launchAndRedirect(ProcessBuilder pb)
-            throws IOException {
+    public String launchAndRedirect(ProcessBuilder pb) throws IOException {
         StringBuilder sb = new StringBuilder(1000 * pb.command().size());
         for(String param : pb.command()) {
             sb.append(param);
@@ -90,8 +81,9 @@ public class StdStreamRedirector {
         pb.redirectErrorStream(true);
         final Process p = pb.start();
         
-        final StdStreamRedirectorWorker redirector = new StdStreamRedirectorWorker(p.getInputStream(), storage);
-        try (BufferedReader t = redirector.getIn()) {
+        final StdStreamRedirectorWorker redirector = new StdStreamRedirectorWorker(
+                p.getInputStream(), storage);
+        try (BufferedReader t = redirector.in) {
             Thread redirectorThread = new Thread(redirector);
             final AtomicReference<Throwable> lastException = new AtomicReference<>();
             redirectorThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
@@ -99,7 +91,7 @@ public class StdStreamRedirector {
                 @Override
                 public void uncaughtException(Thread t, Throwable e) {
                     lastException.set(e);
-                    redirector.getIsDestroyed().set(true);
+                    redirector.isDestroyed.set(true);
                     p.destroy();
                 }
             });
@@ -108,7 +100,7 @@ public class StdStreamRedirector {
             try {
                 p.waitFor();
             } catch (InterruptedException ex) {
-                redirector.getIsDestroyed().set(true);
+                redirector.isDestroyed.set(true);
                 p.destroy();
                 try {
                     // wait for destroy to get the exitValue()
@@ -126,7 +118,7 @@ public class StdStreamRedirector {
             ConsoleFactory.write(pb.command().get(0) + 
                     Messages.stdStreamRedirector_completed_with_code + p.exitValue());
 
-            if (!redirector.getIsDestroyed().get() && p.exitValue() != 0) {
+            if (!redirector.isDestroyed.get() && p.exitValue() != 0) {
                 throw new IOException(Messages.StdStreamRedirector_process_returned_with_error
                         + p.exitValue() +
                         Messages.StdStreamRedirector_error_returncode_see_for_details);
@@ -136,7 +128,7 @@ public class StdStreamRedirector {
                 throw new IOException(Messages.StdStreamRedirector_error_reading_std_external,
                         lastException.get());
             }
-            
+            return storage.toString();
         } finally {
             StringBuilder msg = new StringBuilder(cmd.length() + storage.length() + 128);
             msg.append("External command:") //$NON-NLS-1$

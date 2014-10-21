@@ -182,9 +182,7 @@ public class SvnExec implements IRepoWorker {
         }
 
         svn.directory(dirIn);
-        StdStreamRedirector sr = new StdStreamRedirector();
-        sr.launchAndRedirect(svn);
-        return sr.getStorage();
+        return new StdStreamRedirector().launchAndRedirect(svn);
     }
 
     /**
@@ -201,9 +199,8 @@ public class SvnExec implements IRepoWorker {
         addCredentials(svn);
         svn.directory(dirIn);
         
-        StdStreamRedirector sr = new StdStreamRedirector();
-        sr.launchAndRedirect(svn);
-        return !PATTERN_UP_CONFLICTED.matcher(sr.getStorage()).find();
+        return !PATTERN_UP_CONFLICTED.matcher(
+                new StdStreamRedirector().launchAndRedirect(svn)).find();
     }
 
     private void addCredentials(ProcessBuilder pb) {
@@ -231,9 +228,7 @@ public class SvnExec implements IRepoWorker {
     public String repoGetVersion() throws IOException {
         ProcessBuilder svn = new ProcessBuilder(svnExec, "--version", //$NON-NLS-1$
                 "--quiet", "--non-interactive"); //$NON-NLS-1$ //$NON-NLS-2$
-        StdStreamRedirector sr = new StdStreamRedirector();
-        sr.launchAndRedirect(svn);
-        String version = sr.getStorage().trim();
+        String version = new StdStreamRedirector().launchAndRedirect(svn).trim();
         if (!PATTERN_VERSION.matcher(version).matches()) {
             throw new IOException(Messages.svnExec_bad_svn_version_output + version);
         }

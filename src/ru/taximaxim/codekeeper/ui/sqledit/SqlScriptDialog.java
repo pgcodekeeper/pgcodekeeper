@@ -362,14 +362,18 @@ public class SqlScriptDialog extends TrayDialog {
                         
                         ProcessBuilder pb = new ProcessBuilder(command);
                         sr.launchAndRedirect(pb);
-                        
+                        if (usePsqlDepcy) {
+                            addDepcy = getDependenciesFromOutput(sr.getStorage());
+                        }
                     } catch (IOException ex) {
-                            if (usePsqlDepcy) {
-                                addDepcy = getDependenciesFromOutput(sr.getStorage());
+                        if (usePsqlDepcy) {
+                            addDepcy = getDependenciesFromOutput(sr.getStorage());
+                            if (!addDepcy.isEmpty()) {
+                                // actually parsed some depcies, do not rethrow
+                                return;
                             }
-                            if (addDepcy.isEmpty()) {
-                                throw new IllegalStateException(ex);
-                            }
+                        }
+                        throw new IllegalStateException(ex);
                     } finally {
                         // request UI change: button label changed
                         SqlScriptDialog.this.getShell().getDisplay().syncExec(
@@ -388,7 +392,7 @@ public class SqlScriptDialog extends TrayDialog {
                 }
             };
             
-            // run thread that calls StdStreamRedirectorWorker.launchAndRedirect
+            // run thread that calls StdStreamRedirector.launchAndRedirect()
             scriptThread = new Thread(launcher);
             scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
                 

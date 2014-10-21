@@ -81,9 +81,7 @@ public class PgDumper {
     public String getVersion() throws IOException {
         ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
                 "--version", "--no-password"); //$NON-NLS-1$ //$NON-NLS-2$
-        StdStreamRedirector sr = new StdStreamRedirector();
-        sr.launchAndRedirect(pgdump);
-        String version = sr.getStorage().trim();
+        String version = new StdStreamRedirector().launchAndRedirect(pgdump).trim();
         Matcher m = PATTERN_VERSION.matcher(version);
         if(!m.matches()) {
             throw new IOException(Messages.pgDumper_bad_pg_dump_version_output + version);
