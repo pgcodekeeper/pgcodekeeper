@@ -251,6 +251,7 @@ public class DiffTableViewer extends Composite {
             public void widgetSelected(SelectionEvent e) {
                 comparator.clearSortList();
                 sortViewer(columnName.getColumn(), Columns.NAME);
+                viewer.refresh();
             }
         });
         
@@ -581,6 +582,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 sortViewer(column, index);
+                viewer.refresh();
             }            
         };
         return selectionAdapter;
@@ -588,8 +590,6 @@ public class DiffTableViewer extends Composite {
     
     private void sortViewer(final TableColumn column, final Columns index) {
         comparator.addSort(index);
-        
-        viewer.refresh();
         
         viewer.getTable().setSortDirection(comparator.getSwtDirection());
         viewer.getTable().setSortColumn(column);
@@ -654,6 +654,7 @@ public class DiffTableViewer extends Composite {
         sortViewer(columnChange.getColumn(), Columns.CHANGE);
         sortViewer(columnType.getColumn(), Columns.TYPE);
         sortViewer(columnLocation.getColumn(), Columns.LOCATION);
+        viewer.refresh();
     }
     
     private void generateFlatElementsMap(TreeElement subtree) {
