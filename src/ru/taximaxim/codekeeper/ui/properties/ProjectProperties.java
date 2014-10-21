@@ -131,6 +131,19 @@ public class ProjectProperties extends PropertyPage implements
     }
     
     @Override
+    public boolean isValid() {
+        try  {
+            Integer.parseInt(dbStorePicker.txtDbPort.getText());
+        } catch (NumberFormatException e) {
+            setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties
+                    + e.getLocalizedMessage());
+            return false;
+        }
+        setErrorMessage(null);
+        return super.isValid();
+    }
+    
+    @Override
     protected void performDefaults() {
         cmbEncoding.select(cmbEncoding.indexOf("UTF-8")); //$NON-NLS-1$
         selectedSource = Sources.DB;
@@ -154,39 +167,35 @@ public class ProjectProperties extends PropertyPage implements
     
     @Override
     public boolean performOk() {
+        if (!isValid()) {
+            return false;
+        }
         try {
             fillPrefs();
-        } catch (BackingStoreException | NumberFormatException e) {
+        } catch (BackingStoreException e) {
             setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties
                     + e.getLocalizedMessage());
             setValid(false);
         }
-
-        return isValid();
+        setErrorMessage(null);
+        return true;
     }
 
     private void fillPrefs() throws BackingStoreException {
-        setStringValue(PROJ_PREF.ENCODING, cmbEncoding.getText());
-        setStringValue(PROJ_PREF.SOURCE, selectedSource.toString());
+        prefs.put(PROJ_PREF.ENCODING, cmbEncoding.getText());
+        prefs.put(PROJ_PREF.SOURCE, selectedSource.toString());
         if (selectedSource == Sources.DUMP) {
             dropDbSettings();
         }
-        setStringValue(PROJ_PREF.DB_HOST, dbStorePicker.txtDbHost.getText());
-        setStringValue(PROJ_PREF.DB_NAME, dbStorePicker.txtDbName.getText());
-        setStringValue(PROJ_PREF.DB_PASS, dbStorePicker.txtDbPass.getText());
-        setStringValue(PROJ_PREF.DB_USER, dbStorePicker.txtDbUser.getText());
-        String portValue = dbStorePicker.txtDbPort.getText();
-        setIntValue(PROJ_PREF.DB_PORT, portValue.isEmpty() ? "0" : portValue); //$NON-NLS-1$
+        prefs.put(PROJ_PREF.DB_HOST, dbStorePicker.txtDbHost.getText());
+        prefs.put(PROJ_PREF.DB_NAME, dbStorePicker.txtDbName.getText());
+        prefs.put(PROJ_PREF.DB_PASS, dbStorePicker.txtDbPass.getText());
+        prefs.put(PROJ_PREF.DB_USER, dbStorePicker.txtDbUser.getText());
+        prefs.putInt(PROJ_PREF.DB_PORT,
+                Integer.parseInt(dbStorePicker.txtDbPort.getText())); //$NON-NLS-1$
         prefs.flush();
         setValid(true);
         setErrorMessage(null);
-    }
-    
-    protected void setStringValue(String key, String value) throws BackingStoreException {
-        prefs.put(key, value);
-    }
-    protected void setIntValue(String key, String value) throws BackingStoreException {
-        prefs.putInt(key, Integer.parseInt(value));
     }
     
     private enum Sources {
