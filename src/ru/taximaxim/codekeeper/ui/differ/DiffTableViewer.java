@@ -95,7 +95,7 @@ public class DiffTableViewer extends Composite {
     
     private TreeElement treeRoot;
     // values are checked states of the elements
-    private Map<TreeElement, Boolean> elements = new HashMap<>();
+    private ElementsModel<TreeElement> elements = new ElementsModel<>();
     
     private final IgnoresChangeListener ignoresListener = new IgnoresChangeListener();
     
@@ -625,7 +625,7 @@ public class DiffTableViewer extends Composite {
     }
     
     private void setInputTreeElement(TreeElement treeElement) {
-        elements = new HashMap<>();
+        elements = new ElementsModel<>();
         if (treeElement != null) {
             generateFlatElementsMap(treeElement);
         }
@@ -693,19 +693,14 @@ public class DiffTableViewer extends Composite {
     }
     
     private void updateCheckedLabel() {
-        lblCheckedCount.setText(Messages.DiffTableViewer_selected + getCheckedElementsCount());
+        lblCheckedCount.setText(Messages.DiffTableViewer_selected + elements.getCheckedElementsCount());
         lblCheckedCount.getParent().layout();
     }
     
     public int getCheckedElementsCount() {
-        int i = 0;
-        for (boolean checked : elements.values()) {
-            if (checked) {
-                ++i;
-            }
-        }
-        return i;
+        return elements.getCheckedElementsCount();
     }
+    
     
     public Set<TreeElement> getCheckedElements(boolean checkedStatus) {
         Set<TreeElement> checked = new HashSet<>(elements.size());
@@ -807,7 +802,7 @@ public class DiffTableViewer extends Composite {
     public void setInputCollection(HashSet<TreeElement> shouldBeDeleted, 
             TreeDiffer rootDiffer, boolean reverseDiffSide) {
         setDiffer(rootDiffer, reverseDiffSide);
-        elements = new HashMap<>();
+        elements = new ElementsModel<>();
         for (TreeElement e : shouldBeDeleted){
             elements.put(e, true);
         }
@@ -1002,6 +997,51 @@ public class DiffTableViewer extends Composite {
             } else {
                 return ((TreeElement) element).getName().toLowerCase().contains(filterName);
             }
+        }
+    }
+    
+    private class ElementsModel<T> {
+        private Map<T, Boolean> elements = new HashMap<>();
+
+        private boolean updateChecked = false;
+        private int checkedCount = 0;
+        
+        public boolean get(Object el) {
+            return elements.get(el);
+        }
+        
+        public void put(T subtree, boolean b) {
+            elements.put(subtree, b);
+            updateChecked = true;
+        }
+
+        public boolean containsKey(T element) {
+            return elements.containsKey(element);
+        }
+        
+        public Set<T> keySet() {
+            return elements.keySet();
+        }
+
+        public Set<Map.Entry<T, Boolean>> entrySet() {
+            return elements.entrySet();
+        }
+
+        public int size() {
+            return elements.size();
+        }
+        
+        public int getCheckedElementsCount() {
+            if (updateChecked) {
+                checkedCount = 0;
+                updateChecked = false;
+                for (boolean checked : elements.values()) {
+                    if (checked) {
+                        ++checkedCount;
+                    }
+                }
+            }
+            return checkedCount;
         }
     }
 }
