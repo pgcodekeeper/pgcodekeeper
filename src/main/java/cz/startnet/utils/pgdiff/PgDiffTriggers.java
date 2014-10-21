@@ -106,13 +106,7 @@ public class PgDiffTriggers {
         final List<PgTrigger> list = new ArrayList<PgTrigger>();
 
         if (newTable != null && oldTable != null) {
-            final List<PgTrigger> newTriggers = newTable.getTriggers();
-
-            for (final PgTrigger oldTrigger : oldTable.getTriggers()) {
-                if (!newTriggers.contains(oldTrigger)) {
-                    list.add(oldTrigger);
-                }
-            }
+            checkTrgExists(newTable, oldTable, list);
         }
 
         return list;
@@ -134,15 +128,27 @@ public class PgDiffTriggers {
             if (oldTable == null) {
                 list.addAll(newTable.getTriggers());
             } else {
-                for (final PgTrigger newTrigger : newTable.getTriggers()) {
-                    if (!oldTable.getTriggers().contains(newTrigger)) {
+                checkTrgExists(oldTable, newTable, list);
+            }
+        }
+
+        return list;
+    }
+
+    private static void checkTrgExists(final PgTable containerToCheck,
+            final PgTable containerSrc, final List<PgTrigger> list) {
+        List<PgTrigger> oldTriggers = containerToCheck.getTriggers();
+        for (final PgTrigger newTrigger : containerSrc.getTriggers()) {
+            if (oldTriggers.isEmpty()) {
+                list.add(newTrigger);
+            } else {
+                for (PgTrigger trig : oldTriggers) {
+                    if (!trig.compareWithoutComments(newTrigger)) {
                         list.add(newTrigger);
                     }
                 }
             }
         }
-
-        return list;
     }
 
     /**

@@ -398,7 +398,8 @@ public class PgTable extends PgStatementWithSearchPath {
                     && columns.equals(table.columns)
                     && privileges.equals(table.privileges)
                     && sequences.equals(table.sequences)
-                    && Objects.equals(owner, table.getOwner());
+                    && Objects.equals(owner, table.getOwner())
+                    && Objects.equals(comment, table.getComment());
         }
         
         return eq;
@@ -439,6 +440,7 @@ public class PgTable extends PgStatementWithSearchPath {
         result = prime * result + new HashSet<>(sequences).hashCode();
         result = prime * result + ((with == null) ? 0 : with.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
 

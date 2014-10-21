@@ -252,7 +252,8 @@ public class PgFunction extends PgStatementWithSearchPath {
         }
         
         if (obj instanceof PgFunction) {
-            return equalsWhitespace((PgFunction) obj, false);
+            return equalsWhitespace((PgFunction) obj, false)
+                    && Objects.equals(comment, ((PgFunction)obj).getComment());
         }
         return false;
     }
@@ -267,6 +268,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         result = prime * result + ((body == null) ? 0 : body.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
 
