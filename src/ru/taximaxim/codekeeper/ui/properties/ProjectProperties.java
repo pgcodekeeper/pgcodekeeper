@@ -177,7 +177,6 @@ public class ProjectProperties extends PropertyPage implements
                     + e.getLocalizedMessage());
             setValid(false);
         }
-        setErrorMessage(null);
         return true;
     }
 
