@@ -384,8 +384,8 @@ public class DiffTableViewer extends Composite {
         String comboText = cmbPrevChecked.getCombo().getText();
         if (comboText != null && !comboText.isEmpty()) {
             LinkedList<String> elementsToCheck = prevChecked.get(comboText);
-            List<TreeElement> prevCheckedList = new ArrayList<>();
             if (elementsToCheck != null && !elementsToCheck.isEmpty()) {
+                List<TreeElement> prevCheckedList = new ArrayList<>();
                 for (TreeElement elementKey : elements.keySet()) {
                     if (elementsToCheck.contains((elementKey.getName()))) {
                         prevCheckedList.add(elementKey);
@@ -733,27 +733,6 @@ public class DiffTableViewer extends Composite {
         return treeRoot.getFilteredCopy(getCheckedElements(true));
     }
     
-    private class IgnoresChangeListener implements IPropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent event) {
-            if (event.getProperty().equals(PREF.IGNORE_OBJECTS)
-                    && !event.getNewValue().equals(event.getOldValue())) {
-                XmlStringList xml = new XmlStringList(
-                        IgnoredObjectsPrefPage.IGNORED_OBJS_TAG,
-                        IgnoredObjectsPrefPage.IGNORED_OBJS_ELEMENT);
-                try {
-                    ignoredElements = xml.deserializeList(
-                            new StringReader((String) event.getNewValue()));
-                } catch (IOException | SAXException ex) {
-                    ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_reading_ignored_objects, ex);
-                    return;
-                }
-                viewerRefresh();
-            }
-        }
-    }
-
     private MenuManager getViewerMenu() {
         MenuManager menuMgr = new MenuManager();
         if (!viewOnly) {
@@ -817,6 +796,57 @@ public class DiffTableViewer extends Composite {
         
         for (TreeElement child : element.getChildren()) {
             setSubTreeChecked(child, selected);
+        }
+    }
+    
+    public void setCheckedElements(HashSet<TreeElement> elementsToCheck, boolean markChecked) {
+        checkListener.setElementsChecked(elementsToCheck.toArray(), markChecked);
+        viewerRefresh();
+    }
+    
+    public void setInputCollection(HashSet<TreeElement> shouldBeDeleted, 
+            TreeDiffer rootDiffer, boolean reverseDiffSide) {
+        setDiffer(rootDiffer, reverseDiffSide);
+        elements = new HashMap<>();
+        for (TreeElement e : shouldBeDeleted){
+            elements.put(e, true);
+        }
+        viewer.setInput(elements.keySet());
+        
+        int widthOfColumns = 0;
+        for (TableColumn c : viewer.getTable().getColumns()){
+            c.pack();
+            widthOfColumns += c.getWidth();
+        }
+        columnName.getColumn().setWidth(widthOfColumns - viewer.getTable().getSize().x);
+        
+        updateObjectsLabel();
+        
+        if (!viewOnly) {
+            updateCheckedLabel();
+        }
+        
+        initialSorting();
+    }
+    
+    private class IgnoresChangeListener implements IPropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+            if (event.getProperty().equals(PREF.IGNORE_OBJECTS)
+                    && !event.getNewValue().equals(event.getOldValue())) {
+                XmlStringList xml = new XmlStringList(
+                        IgnoredObjectsPrefPage.IGNORED_OBJS_TAG,
+                        IgnoredObjectsPrefPage.IGNORED_OBJS_ELEMENT);
+                try {
+                    ignoredElements = xml.deserializeList(
+                            new StringReader((String) event.getNewValue()));
+                } catch (IOException | SAXException ex) {
+                    ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_reading_ignored_objects, ex);
+                    return;
+                }
+                viewerRefresh();
+            }
         }
     }
     
@@ -936,15 +966,22 @@ public class DiffTableViewer extends Composite {
             return 0;
         }
     }
-
+    
     private class TableViewerFilter extends ViewerFilter {
 
         private String filterName;
         private boolean useRegEx;
+        private Pattern regExPattern; 
         
         public void setFilter(String value) {
-            filterName = (value == null || value.isEmpty()) ?
-                    null : value.toLowerCase();
+            if (value == null || value.isEmpty()) {
+                filterName = null;
+                regExPattern = null;
+            } else {
+                filterName = value.toLowerCase();
+                regExPattern = Pattern.compile(filterName, Pattern.CASE_INSENSITIVE);    
+            }
+            
         }
         
         public void setUseRegEx(Boolean useRegEx) {
@@ -958,8 +995,7 @@ public class DiffTableViewer extends Composite {
             }
             if (useRegEx) {
                 try {
-                    return Pattern.compile(filterName, Pattern.CASE_INSENSITIVE)
-                            .matcher(((TreeElement) element).getName()).find();
+                    return regExPattern.matcher(((TreeElement) element).getName()).find();
                 } catch (PatternSyntaxException e) {
                     return false;
                 }
@@ -967,35 +1003,5 @@ public class DiffTableViewer extends Composite {
                 return ((TreeElement) element).getName().toLowerCase().contains(filterName);
             }
         }
-    }
-
-    public void setCheckedElements(HashSet<TreeElement> elementsToCheck, boolean markChecked) {
-        checkListener.setElementsChecked(elementsToCheck.toArray(), markChecked);
-        viewerRefresh();
-    }
-    
-    public void setInputCollection(HashSet<TreeElement> shouldBeDeleted, 
-            TreeDiffer rootDiffer, boolean reverseDiffSide) {
-        setDiffer(rootDiffer, reverseDiffSide);
-        elements = new HashMap<>();
-        for (TreeElement e : shouldBeDeleted){
-            elements.put(e, true);
-        }
-        viewer.setInput(elements.keySet());
-        
-        int widthOfColumns = 0;
-        for (TableColumn c : viewer.getTable().getColumns()){
-            c.pack();
-            widthOfColumns += c.getWidth();
-        }
-        columnName.getColumn().setWidth(widthOfColumns - viewer.getTable().getSize().x);
-        
-        updateObjectsLabel();
-        
-        if (!viewOnly) {
-            updateCheckedLabel();
-        }
-        
-        initialSorting();
     }
 }
