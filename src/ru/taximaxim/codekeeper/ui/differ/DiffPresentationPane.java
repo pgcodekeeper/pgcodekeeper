@@ -244,7 +244,7 @@ public abstract class DiffPresentationPane extends Composite {
 
         dbSrc.getParent().layout();
     }
-    
+
     private boolean fillDbSources(PgDbProject proj, IEclipsePreferences projProps)
             throws PgCodekeeperUIException {
         DbSource dbsProj, dbsRemote;
@@ -297,7 +297,7 @@ public abstract class DiffPresentationPane extends Composite {
 
         setDbSource(isProjSrc ? dbsProj : dbsRemote);
         setDbTarget(isProjSrc ? dbsRemote : dbsProj);
-        
+
         return true;
     }
 
