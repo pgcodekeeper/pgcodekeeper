@@ -135,6 +135,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                 }
                 grpDbData.lblName.setText(db.name);
                 grpDbData.txtDbName.setText(db.dbname);
+                grpDbData.txtDbName.selectAll();
+                grpDbData.txtDbName.setFocus();
                 grpDbData.txtDbUser.setText(db.dbuser);
                 grpDbData.txtDbPass.setText(db.dbpass);
                 grpDbData.txtDbHost.setText(db.dbhost);
@@ -176,7 +178,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                         return;
                     }
                     
-                    store.put(newName, DbInfo.getEmpty(newName));
+                    store.put(newName, DbInfo.getEmptyNamed(newName));
                     cmbDbNames.add(newName);
                     cmbDbNames.select(cmbDbNames.indexOf(newName));
                 }
