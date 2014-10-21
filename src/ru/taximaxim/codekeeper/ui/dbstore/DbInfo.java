@@ -63,6 +63,10 @@ public class DbInfo {
         return new DbInfo(name, "", "", "", "", 0); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
     }
     
+    public static DbInfo getEmptyNamed(String name) {
+        return new DbInfo(name, name, "", "", "", 0); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    }
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(
