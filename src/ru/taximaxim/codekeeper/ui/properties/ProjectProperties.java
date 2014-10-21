@@ -9,6 +9,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -31,7 +33,7 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ProjectProperties extends PropertyPage implements
-        IWorkbenchPropertyPage {
+        IWorkbenchPropertyPage, ModifyListener {
 
     private Combo cmbEncoding;
     private Button dumpBtn;
@@ -96,6 +98,7 @@ public class ProjectProperties extends PropertyPage implements
         dbStorePicker.txtDbUser.setText(prefs.get(PROJ_PREF.DB_USER, ""));
         dbStorePicker.txtDbPort.setText(Integer.valueOf(
                 prefs.getInt(PROJ_PREF.DB_PORT, 0)).toString());
+        dbStorePicker.txtDbPort.addModifyListener(this);
         
         String projSource = prefs.get(PROJ_PREF.SOURCE, Sources.DB.toString());
         for (Sources sourse : Sources.values()) {
@@ -134,12 +137,13 @@ public class ProjectProperties extends PropertyPage implements
     public boolean isValid() {
         try  {
             Integer.parseInt(dbStorePicker.txtDbPort.getText());
+            setErrorMessage(null);
+            setValid(true);
         } catch (NumberFormatException e) {
             setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties
                     + e.getLocalizedMessage());
-            return false;
+            setValid(false);
         }
-        setErrorMessage(null);
         return super.isValid();
     }
     
@@ -178,6 +182,11 @@ public class ProjectProperties extends PropertyPage implements
             setValid(false);
         }
         return true;
+    }
+    
+    @Override
+    public void modifyText(ModifyEvent e) {
+        isValid();
     }
 
     private void fillPrefs() throws BackingStoreException {
