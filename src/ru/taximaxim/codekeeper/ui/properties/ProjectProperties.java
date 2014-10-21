@@ -9,6 +9,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -33,7 +35,7 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ProjectProperties extends PropertyPage implements
-        IWorkbenchPropertyPage, ModifyListener {
+        IWorkbenchPropertyPage {
 
     private Combo cmbEncoding;
     private Button dumpBtn;
@@ -42,6 +44,12 @@ public class ProjectProperties extends PropertyPage implements
     private DbPicker dbStorePicker;
     private Sources selectedSource;
     private IEclipsePreferences prefs;
+    private ModifyListener modListener = new ModifyListener() {
+        @Override
+        public void modifyText(ModifyEvent e) {
+            isValid();
+        }
+    };
     
     public ProjectProperties() {
     }
@@ -98,7 +106,14 @@ public class ProjectProperties extends PropertyPage implements
         dbStorePicker.txtDbUser.setText(prefs.get(PROJ_PREF.DB_USER, ""));
         dbStorePicker.txtDbPort.setText(Integer.valueOf(
                 prefs.getInt(PROJ_PREF.DB_PORT, 0)).toString());
-        dbStorePicker.txtDbPort.addModifyListener(this);
+        dbStorePicker.txtDbPort.addModifyListener(modListener);
+        dbStorePicker.addDisposeListener(new DisposeListener() {
+            
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                dbStorePicker.txtDbPort.removeModifyListener(modListener);                
+            }
+        });
         
         String projSource = prefs.get(PROJ_PREF.SOURCE, Sources.DB.toString());
         for (Sources sourse : Sources.values()) {
@@ -184,11 +199,6 @@ public class ProjectProperties extends PropertyPage implements
         return true;
     }
     
-    @Override
-    public void modifyText(ModifyEvent e) {
-        isValid();
-    }
-
     private void fillPrefs() throws BackingStoreException {
         prefs.put(PROJ_PREF.ENCODING, cmbEncoding.getText());
         prefs.put(PROJ_PREF.SOURCE, selectedSource.toString());
