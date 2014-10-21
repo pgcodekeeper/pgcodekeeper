@@ -154,5 +154,24 @@
             class="ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer">
       </initializer>
    </extension>
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            class="ru.taximaxim.codekeeper.ui.properties.ProjectProperties"
+            id="ru.taximaxim.codekeeper.ui.proj_properties"
+            name="pgCodeKeeper">
+         <enabledWhen>
+            <and>
+               <test
+                     property="org.eclipse.core.resources.projectNature"
+                     value="ru.taximaxim.codekeeper.ui.nature">
+               </test>
+               <adapt
+                     type="org.eclipse.core.resources.IProject">
+               </adapt>
+            </and>
+         </enabledWhen>
+      </page>
+   </extension>
 
 </plugin>
