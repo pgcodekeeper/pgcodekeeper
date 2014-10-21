@@ -51,7 +51,7 @@ import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
-import ru.taximaxim.codekeeper.ui.externalcalls.utils.StreamRedirector;
+import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -347,7 +347,7 @@ public class SqlScriptDialog extends TrayDialog {
 
                 @Override
                 public void run() {
-                    final StreamRedirector sr = new StreamRedirector();
+                    final StdStreamRedirector sr = new StdStreamRedirector();
                     try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
                         File outFile = tempFile.get();
                         try (PrintWriter writer = new PrintWriter(outFile, "UTF-8")) { //$NON-NLS-1$
@@ -388,7 +388,7 @@ public class SqlScriptDialog extends TrayDialog {
                 }
             };
             
-            // run thread that calls StdStreamRedirector.launchAndRedirect
+            // run thread that calls StdStreamRedirectorWorker.launchAndRedirect
             scriptThread = new Thread(launcher);
             scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
                 

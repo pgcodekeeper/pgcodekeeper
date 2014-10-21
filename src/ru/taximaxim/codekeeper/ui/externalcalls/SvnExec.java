@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.externalcalls.utils.StreamRedirector;
+import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -82,7 +82,7 @@ public class SvnExec implements IRepoWorker {
 
         svn.directory(dirTo);
 
-        new StreamRedirector().launchAndRedirect(svn);
+        new StdStreamRedirector().launchAndRedirect(svn);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class SvnExec implements IRepoWorker {
 
         svn.directory(dirFrom);
 
-        new StreamRedirector().launchAndRedirect(svn);
+        new StdStreamRedirector().launchAndRedirect(svn);
     }
 
     private void repoRemoveMissing(File dirIn) throws IOException {
@@ -126,7 +126,7 @@ public class SvnExec implements IRepoWorker {
         svn.command().addAll(files);
         svn.directory(dirIn);
 
-        new StreamRedirector().launchAndRedirect(svn);
+        new StdStreamRedirector().launchAndRedirect(svn);
     }
 
 
@@ -140,7 +140,7 @@ public class SvnExec implements IRepoWorker {
             svn.command().addAll(files);
             svn.directory(dirIn);
 
-            new StreamRedirector().launchAndRedirect(svn);
+            new StdStreamRedirector().launchAndRedirect(svn);
 
             files = repoGetUnversioned(dirIn);
         }
@@ -182,7 +182,7 @@ public class SvnExec implements IRepoWorker {
         }
 
         svn.directory(dirIn);
-        StreamRedirector sr = new StreamRedirector();
+        StdStreamRedirector sr = new StdStreamRedirector();
         sr.launchAndRedirect(svn);
         return sr.getStorage();
     }
@@ -201,7 +201,7 @@ public class SvnExec implements IRepoWorker {
         addCredentials(svn);
         svn.directory(dirIn);
         
-        StreamRedirector sr = new StreamRedirector();
+        StdStreamRedirector sr = new StdStreamRedirector();
         sr.launchAndRedirect(svn);
         return !PATTERN_UP_CONFLICTED.matcher(sr.getStorage()).find();
     }
@@ -231,7 +231,7 @@ public class SvnExec implements IRepoWorker {
     public String repoGetVersion() throws IOException {
         ProcessBuilder svn = new ProcessBuilder(svnExec, "--version", //$NON-NLS-1$
                 "--quiet", "--non-interactive"); //$NON-NLS-1$ //$NON-NLS-2$
-        StreamRedirector sr = new StreamRedirector();
+        StdStreamRedirector sr = new StdStreamRedirector();
         sr.launchAndRedirect(svn);
         String version = sr.getStorage().trim();
         if (!PATTERN_VERSION.matcher(version).matches()) {

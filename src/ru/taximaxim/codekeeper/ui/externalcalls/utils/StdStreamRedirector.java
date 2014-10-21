@@ -13,12 +13,10 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class StreamRedirector {
+public class StdStreamRedirector {
     
     private StringBuilder storage = new StringBuilder(20000);
-    /**
-     * @return the storage
-     */
+    
     public String getStorage() {
         return storage.toString();
     }
@@ -29,29 +27,24 @@ public class StreamRedirector {
      * 
      * @author Alexander Levsha
      */
-    class StdStreamRedirector implements Runnable {
-
+    static class StdStreamRedirectorWorker implements Runnable {
 
         private BufferedReader in;
         private StringBuilder storage;
         private AtomicBoolean isDestroyed = new AtomicBoolean(false);
         
-        /**
-         * @return the in
-         */
         protected BufferedReader getIn() {
             return in;
         }
-        /**
-         * @return the isDestroyed
-         */
+        
         AtomicBoolean getIsDestroyed() {
             return isDestroyed;
         }
+        
         /**
          * @param in {@link InputStream} to 
          */
-        StdStreamRedirector(InputStream in, StringBuilder storage) {
+        StdStreamRedirectorWorker(InputStream in, StringBuilder storage) {
             this.in = new BufferedReader(new InputStreamReader(in));
             this.storage = storage;
         }
@@ -73,9 +66,8 @@ public class StreamRedirector {
                 throw new IllegalStateException(Messages.StdStreamRedirector_error_reading_std, ex);
             }
         }
-        
-        
     }
+    
     /**
      * Launches a process combining stdout & stderr and redirecting them
      * onto {@link ConsoleFactory}. Blocks until process exits and all output is consumed.
@@ -98,7 +90,7 @@ public class StreamRedirector {
         pb.redirectErrorStream(true);
         final Process p = pb.start();
         
-        final StdStreamRedirector redirector = new StdStreamRedirector(p.getInputStream(), storage);
+        final StdStreamRedirectorWorker redirector = new StdStreamRedirectorWorker(p.getInputStream(), storage);
         try (BufferedReader t = redirector.getIn()) {
             Thread redirectorThread = new Thread(redirector);
             final AtomicReference<Throwable> lastException = new AtomicReference<>();
@@ -146,8 +138,7 @@ public class StreamRedirector {
             }
             
         } finally {
-            StringBuilder msg = new StringBuilder(
-                    cmd.length() + storage.length() + 128);
+            StringBuilder msg = new StringBuilder(cmd.length() + storage.length() + 128);
             msg.append("External command:") //$NON-NLS-1$
                 .append(System.lineSeparator())
                 .append(cmd)

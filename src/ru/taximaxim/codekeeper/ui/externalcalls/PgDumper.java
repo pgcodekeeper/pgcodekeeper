@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.ProcBuilderUtils;
-import ru.taximaxim.codekeeper.ui.externalcalls.utils.StreamRedirector;
+import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgDumper {
@@ -75,13 +75,13 @@ public class PgDumper {
         env.addEnv("PGPASSWORD", pass); //$NON-NLS-1$
         env.addEnv("PGCLIENTENCODING", encoding); //$NON-NLS-1$
         
-        new StreamRedirector().launchAndRedirect(pgdump);
+        new StdStreamRedirector().launchAndRedirect(pgdump);
     }
     
     public String getVersion() throws IOException {
         ProcessBuilder pgdump = new ProcessBuilder(exePgdump,
                 "--version", "--no-password"); //$NON-NLS-1$ //$NON-NLS-2$
-        StreamRedirector sr = new StreamRedirector();
+        StdStreamRedirector sr = new StdStreamRedirector();
         sr.launchAndRedirect(pgdump);
         String version = sr.getStorage().trim();
         Matcher m = PATTERN_VERSION.matcher(version);
