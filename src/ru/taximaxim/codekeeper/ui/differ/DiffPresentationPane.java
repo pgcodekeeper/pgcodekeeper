@@ -198,6 +198,7 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
+                    reset();
                     loadChanges(proj, projProps, mainPrefs);
                 } catch (PgCodekeeperUIException e1) {
                     ExceptionNotifier.showErrorDialog(
