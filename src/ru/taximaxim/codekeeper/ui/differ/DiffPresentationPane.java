@@ -198,8 +198,10 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    fillDbSources(proj, projProps);
-                    loadChanges();
+                    if (fillDbSources(proj, projProps)) {
+                        clearInputs();
+                        loadChanges();
+                    }
                 } catch (PgCodekeeperUIException e1) {
                     ExceptionNotifier.showErrorDialog(
                             Messages.DiffPresentationPane_error_loading_changes, e1);
@@ -243,7 +245,7 @@ public abstract class DiffPresentationPane extends Composite {
         dbSrc.getParent().layout();
     }
     
-    private void fillDbSources(PgDbProject proj, IEclipsePreferences projProps)
+    private boolean fillDbSources(PgDbProject proj, IEclipsePreferences projProps)
             throws PgCodekeeperUIException {
         DbSource dbsProj, dbsRemote;
         dbsProj = DbSource.fromProject(proj);
@@ -252,7 +254,7 @@ public abstract class DiffPresentationPane extends Composite {
             dialog.setText(Messages.choose_dump_file_with_changes);
             String dumpfile = dialog.open();
             if (dumpfile == null) {
-                return;
+                return false;
             }
             dbsRemote = DbSource
                     .fromFile(dumpfile, projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
@@ -266,7 +268,7 @@ public abstract class DiffPresentationPane extends Composite {
                 mb.setText(Messages.bad_port);
                 mb.setMessage(Messages.port_must_be_a_number);
                 mb.open();
-                return;
+                return false;
             }
 
             dbsRemote = DbSource.fromDb(exePgdump, pgdumpCustom,
@@ -283,7 +285,7 @@ public abstract class DiffPresentationPane extends Composite {
                 mb.setText(Messages.bad_port);
                 mb.setMessage(Messages.port_must_be_a_number);
                 mb.open();
-                return;
+                return false;
             }
 
             dbsRemote = DbSource.fromJdbc(dbSrc.txtDbHost.getText(), port, dbSrc.txtDbUser.getText(),
@@ -295,6 +297,8 @@ public abstract class DiffPresentationPane extends Composite {
 
         setDbSource(isProjSrc ? dbsProj : dbsRemote);
         setDbTarget(isProjSrc ? dbsRemote : dbsProj);
+        
+        return true;
     }
 
     private void loadChanges() {
@@ -354,11 +358,15 @@ public abstract class DiffPresentationPane extends Composite {
      * Allows clients to make actions after a diff has been loaded.
      */
     protected void diffLoaded() {
-    };
+    }
     
-    public void reset() {
+    private void clearInputs() {
         diffTable.setInput(null, !isProjSrc);
         diffPane.setInput(null);
+    }
+    
+    public void reset() {
+        clearInputs();
         if (dbTarget != null && dbSource != null) {
             try {
                 if (isProjSrc) {
@@ -369,9 +377,9 @@ public abstract class DiffPresentationPane extends Composite {
                             dbSource.getOrigin()));
                 }
                 loadChanges();
-            } catch (IllegalStateException ex) {
-                Log.log(Log.LOG_ERROR, "Remote db Object is not loaded yet", ex); //$NON-NLS-1$
+            } catch (Exception ex) {
+                Log.log(Log.LOG_ERROR, "Error while autodiffing on project update", ex); //$NON-NLS-1$
             }
         }
-    };
+    }
 }
