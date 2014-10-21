@@ -172,8 +172,8 @@ public class ProjectProperties extends PropertyPage implements
         } catch (BackingStoreException e) {
             setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties
                     + e.getLocalizedMessage());
+            setValid(false);
         }
-        super.performDefaults();
     }
 
     private void dropDbSettings() {
@@ -195,6 +195,7 @@ public class ProjectProperties extends PropertyPage implements
             setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties
                     + e.getLocalizedMessage());
             setValid(false);
+            return false;
         }
         return true;
     }
