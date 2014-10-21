@@ -51,7 +51,6 @@ import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
-import ru.taximaxim.codekeeper.ui.externalcalls.utils.ReturnCodeException;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -348,6 +347,7 @@ public class SqlScriptDialog extends TrayDialog {
 
                 @Override
                 public void run() {
+                    final StdStreamRedirector sr = new StdStreamRedirector();
                     try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
                         File outFile = tempFile.get();
                         try (PrintWriter writer = new PrintWriter(outFile, "UTF-8")) { //$NON-NLS-1$
@@ -361,20 +361,16 @@ public class SqlScriptDialog extends TrayDialog {
                         }
                         
                         ProcessBuilder pb = new ProcessBuilder(command);
-                        String scriptOutputRes = StdStreamRedirector.launchAndRedirect(pb);
+                        sr.launchAndRedirect(pb);
                         if (usePsqlDepcy) {
-                            addDepcy = getDependenciesFromOutput(scriptOutputRes);
+                            addDepcy = getDependenciesFromOutput(sr.getStorage());
                         }
                     } catch (IOException ex) {
-                        if (ex instanceof ReturnCodeException) {
-                            // FIXME no other simple way of getting process's output if exception occured (retval != 0)
-                            if (usePsqlDepcy) {
-                                addDepcy = getDependenciesFromOutput(
-                                        ((ReturnCodeException) ex).getOutput());
-                                if (!addDepcy.isEmpty()) {
-                                    // actually parsed some depcies, do not rethrow
-                                    return;
-                                }
+                        if (usePsqlDepcy) {
+                            addDepcy = getDependenciesFromOutput(sr.getStorage());
+                            if (!addDepcy.isEmpty()) {
+                                // actually parsed some depcies, do not rethrow
+                                return;
                             }
                         }
                         throw new IllegalStateException(ex);
@@ -396,7 +392,7 @@ public class SqlScriptDialog extends TrayDialog {
                 }
             };
             
-            // run thread that calls StdStreamRedirector.launchAndRedirect
+            // run thread that calls StdStreamRedirector.launchAndRedirect()
             scriptThread = new Thread(launcher);
             scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
                 
