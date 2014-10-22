@@ -59,6 +59,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -775,7 +776,6 @@ class PageDb extends WizardPage implements Listener {
 
 class PageMisc extends WizardPage {
 
-    private static final String DEFAULT_ENCODING = "UTF-8"; //$NON-NLS-1$
     private Combo cmbEncoding;
 
     public String getEncoding() {
@@ -784,7 +784,7 @@ class PageMisc extends WizardPage {
     
     void setEncoding(String value) {
         cmbEncoding.select(cmbEncoding.indexOf(value) == -1 ? 
-                cmbEncoding.indexOf(DEFAULT_ENCODING) : cmbEncoding.indexOf(value));
+                cmbEncoding.indexOf(UIConsts.UTF_8) : cmbEncoding.indexOf(value));
     }
 
     PageMisc(String pageName) {
@@ -803,7 +803,7 @@ class PageMisc extends WizardPage {
                 | SWT.READ_ONLY);
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
-        cmbEncoding.select(cmbEncoding.indexOf(DEFAULT_ENCODING)); 
+        cmbEncoding.select(cmbEncoding.indexOf(UIConsts.UTF_8)); 
 
         setControl(container);
     }

@@ -46,6 +46,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -351,7 +352,7 @@ class PageDiff extends WizardPage implements Listener {
 
                     if (to != grpProj) {
                         cmbEncoding.setEnabled(true);
-                        cmbEncoding.select(cmbEncoding.indexOf("UTF-8")); //$NON-NLS-1$
+                        cmbEncoding.select(cmbEncoding.indexOf(UIConsts.UTF_8));
                     } else {
                         cmbEncoding.setEnabled(false);
                         txtProjPath.notifyListeners(SWT.Modify, null);
@@ -621,7 +622,7 @@ class PageDiff extends WizardPage implements Listener {
                 | SWT.READ_ONLY);
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
-        cmbEncoding.select(cmbEncoding.indexOf("UTF-8")); //$NON-NLS-1$
+        cmbEncoding.select(cmbEncoding.indexOf(UIConsts.UTF_8));
 
         setControl(container);
     }

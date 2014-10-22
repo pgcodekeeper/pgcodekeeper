@@ -46,6 +46,7 @@ import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
@@ -350,7 +351,7 @@ public class SqlScriptDialog extends TrayDialog {
                     final StdStreamRedirector sr = new StdStreamRedirector();
                     try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
                         File outFile = tempFile.get();
-                        try (PrintWriter writer = new PrintWriter(outFile, "UTF-8")) { //$NON-NLS-1$
+                        try (PrintWriter writer = new PrintWriter(outFile, UIConsts.UTF_8)) {
                             writer.write(textRetrieved);
                         }
 
@@ -426,7 +427,7 @@ public class SqlScriptDialog extends TrayDialog {
             
             if (scriptFileName != null) {
                 File script = new File(scriptFileName);
-                try (PrintWriter writer = new PrintWriter(script, "UTF-8")) { //$NON-NLS-1$
+                try (PrintWriter writer = new PrintWriter(script, UIConsts.UTF_8)) {
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
                     ExceptionNotifier.showErrorDialog(
@@ -514,8 +515,10 @@ public class SqlScriptDialog extends TrayDialog {
         StringBuilder sb = new StringBuilder();
         for (Entry<PgStatement, PgStatement> entry : depcyToAdd) {
             if (existingDepcy.contains(entry)) {
-                sb.append(entry.getKey().getName() + " -> " + //$NON-NLS-1$
-                        entry.getValue().getName() + System.lineSeparator());
+                sb.append(entry.getKey().getName())
+                    .append(" -> ") //$NON-NLS-1$
+                    .append(entry.getValue().getName())
+                    .append(System.lineSeparator());
             }
         }
         return sb.toString();
