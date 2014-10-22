@@ -373,10 +373,17 @@ public class SqlScriptDialog extends TrayDialog {
                                             super.configureShell(newShell);
                                         }
                                         @Override
+                                        protected boolean isResizable() {
+                                            return true;
+                                        }
+                                        @Override
                                         protected Control createDialogArea(
                                                 Composite parent) {
                                             Composite comp = (Composite)super.createDialogArea(parent);
-                                            new Text(comp, SWT.MULTI | SWT.WRAP).setText(sr.getStorage());
+                                            Text filed = new Text(comp, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
+                                                    | SWT.READ_ONLY | SWT.MULTI);
+                                            filed.setText(sr.getStorage());
+                                            filed.setLayoutData(new GridData(GridData.FILL_BOTH));
                                             return comp;
                                         }
                                         
