@@ -43,7 +43,7 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         
         BooleanFieldEditor showScriptOutputSeparately = new BooleanFieldEditor(
                 DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY,
-                "Show script output in separate window", getFieldEditorParent());
+                Messages.dbUpdatePrefPage_show_script_output_in_separate_window, getFieldEditorParent());
         addField(showScriptOutputSeparately);
     }
 }

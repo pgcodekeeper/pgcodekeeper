@@ -379,7 +379,7 @@ public class SqlScriptDialog extends TrayDialog {
                                         if (!runScriptBtn.isDisposed()) {
                                             runScriptBtn.setText(RUN_SCRIPT_LABEL);
                                             if (mainPrefs.getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
-                                                MessageDialog dialog = new MessageDialog(getShell(), "Script output:", null,
+                                                MessageDialog dialog = new MessageDialog(getShell(), Messages.sqlScriptDialog_script_output, null,
                                                         sr.getStorage(), MessageDialog.INFORMATION, new String[] { IDialogConstants.OK_LABEL }, 0);
                                                 dialog.open();
                                             }

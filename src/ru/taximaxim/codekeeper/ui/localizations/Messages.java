@@ -59,6 +59,7 @@ public class Messages extends NLS {
     public static String sqlScriptDialog_script_contains_statements_that_may_modify_data;
     public static String sqlScriptDialog_script_execution_interrupted;
     public static String sqlScriptDialog_script_interrupted_by_user;
+    public static String sqlScriptDialog_script_output;
     public static String sqlScriptDialog_script_saved_to_file;
     public static String sqlScriptDialog_stop_script;
     public static String sqlScriptDialog_stop_script_before_closing_dialog;
@@ -234,6 +235,7 @@ public class Messages extends NLS {
     // ui.prefs
     public static String dbStorePrefPage_clear_db_store;
     public static String dbStorePrefPage_edit_db_store;
+    public static String dbUpdatePrefPage_show_script_output_in_separate_window;
     public static String dBUpdatePrefPage_alter_column_statement;
     public static String dBUpdatePrefPage_drop_column_statement;
     public static String dBUpdatePrefPage_drop_table;
