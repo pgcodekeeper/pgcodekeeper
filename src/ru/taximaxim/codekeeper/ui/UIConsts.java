@@ -28,6 +28,7 @@ public interface UIConsts {
     }
     
     interface DB_UPDATE_PREF {
+        String SHOW_SCRIPT_OUTPUT_SEPARATELY = "prefShowScriptOutputSeparately"; //$NON-NLS-1$
         String USE_PSQL_DEPCY = "prefUsePSQLDepcy"; //$NON-NLS-1$
         String DROP_TABLE_STATEMENT = "prefDropTableStatement"; //$NON-NLS-1$
         String ALTER_COLUMN_STATEMENT = "prefAlterColumnStatement"; //$NON-NLS-1$
