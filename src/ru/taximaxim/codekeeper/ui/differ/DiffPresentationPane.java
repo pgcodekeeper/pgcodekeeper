@@ -15,8 +15,6 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -57,22 +55,6 @@ public abstract class DiffPresentationPane extends Composite {
     protected DbSource dbSource;
     protected DbSource dbTarget;
     protected TreeDiffer treeDiffer;
-
-    private ISelectionChangedListener selectionListener = new ISelectionChangedListener() {
-
-        @Override
-        public void selectionChanged(SelectionChangedEvent event) {
-            StructuredSelection selection = ((StructuredSelection) event
-                    .getSelection());
-
-            if (selection.size() != 1) {
-                diffPane.setInput(null);
-            } else {
-                TreeElement el = (TreeElement) selection.getFirstElement();
-                diffPane.setInput(el);
-            }
-        }
-    };
 
     private void setDbSource(DbSource dbSource) {
         this.dbSource = dbSource;
@@ -126,12 +108,19 @@ public abstract class DiffPresentationPane extends Composite {
 
         diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs, false);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        diffTable.addSelectionChangedListener(selectionListener);
-        diffTable.addDisposeListener(new DisposeListener() {
-            
+        diffTable.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+
             @Override
-            public void widgetDisposed(DisposeEvent e) {
-                diffTable.removeSelectionChangedListener(selectionListener);
+            public void selectionChanged(SelectionChangedEvent event) {
+                StructuredSelection selection = ((StructuredSelection) event
+                        .getSelection());
+
+                if (selection.size() != 1) {
+                    diffPane.setInput(null);
+                } else {
+                    TreeElement el = (TreeElement) selection.getFirstElement();
+                    diffPane.setInput(el);
+                }
             }
         });
 

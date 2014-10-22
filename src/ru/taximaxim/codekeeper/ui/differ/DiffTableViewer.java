@@ -95,7 +95,7 @@ public class DiffTableViewer extends Composite {
     
     private TreeElement treeRoot;
     // values are checked states of the elements
-    private ElementsModel<TreeElement> elements = new ElementsModel<>();
+    private ElementsModel elements = new ElementsModel();
     
     private final IgnoresChangeListener ignoresListener = new IgnoresChangeListener();
     
@@ -107,7 +107,7 @@ public class DiffTableViewer extends Composite {
     
     private Text txtFilterName;
     private Button useRegEx;
-    private final CheckboxTableViewer viewer;
+    protected final CheckboxTableViewer viewer;
     private TableViewerFilter viewerFilter = new TableViewerFilter();
     private TableViewerColumn columnType, columnChange, columnName, columnLocation;
     private Label lblObjectCount;
@@ -576,12 +576,6 @@ public class DiffTableViewer extends Composite {
         }
     }
     
-    void addSelectionChangedListener(ISelectionChangedListener listener) {
-        viewer.addSelectionChangedListener(listener);
-    }
-    void removeSelectionChangedListener(ISelectionChangedListener listener) {
-        viewer.removeSelectionChangedListener(listener);
-    }
     private SelectionAdapter getHeaderSelectionAdapter(final TableColumn column,
             final Columns index) {
         SelectionAdapter selectionAdapter = new SelectionAdapter() {
@@ -590,7 +584,7 @@ public class DiffTableViewer extends Composite {
             public void widgetSelected(SelectionEvent e) {
                 sortViewer(column, index);
                 viewer.refresh();
-            }            
+            }
         };
         return selectionAdapter;
     }
@@ -632,7 +626,7 @@ public class DiffTableViewer extends Composite {
     }
     
     private void setInputTreeElement(TreeElement treeElement) {
-        elements = new ElementsModel<>();
+        elements = new ElementsModel();
         if (treeElement != null) {
             generateFlatElementsMap(treeElement);
         }
@@ -708,7 +702,6 @@ public class DiffTableViewer extends Composite {
         return elements.getCheckedElementsCount();
     }
     
-    
     public Set<TreeElement> getCheckedElements(boolean checkedStatus) {
         Set<TreeElement> checked = new HashSet<>(elements.size());
         for (Entry<TreeElement, Boolean> el : elements.entrySet()) {
@@ -723,7 +716,6 @@ public class DiffTableViewer extends Composite {
      * ВНИМАНИЕ!!!<br>
      * 
      * Список объектов в таблице должен быть поднабором рута, который попадает в таблицу из TreeDiffer
-     * @return
      */
     public TreeElement filterDiffTree() {
         if (treeRoot == null){
@@ -809,7 +801,7 @@ public class DiffTableViewer extends Composite {
     public void setInputCollection(HashSet<TreeElement> shouldBeDeleted, 
             TreeDiffer rootDiffer, boolean reverseDiffSide) {
         setDiffer(rootDiffer, reverseDiffSide);
-        elements = new ElementsModel<>();
+        elements = new ElementsModel();
         for (TreeElement e : shouldBeDeleted){
             elements.put(e, true);
         }
@@ -969,7 +961,7 @@ public class DiffTableViewer extends Composite {
         }
     }
     
-    private class TableViewerFilter extends ViewerFilter {
+    private static class TableViewerFilter extends ViewerFilter {
 
         private String filterName;
         private boolean useRegEx;
@@ -981,9 +973,12 @@ public class DiffTableViewer extends Composite {
                 regExPattern = null;
             } else {
                 filterName = value.toLowerCase();
-                regExPattern = Pattern.compile(filterName, Pattern.CASE_INSENSITIVE);    
+                try {
+                    regExPattern = Pattern.compile(value, Pattern.CASE_INSENSITIVE);
+                } catch (PatternSyntaxException e) {
+                    regExPattern = null;
+                }
             }
-            
         }
         
         public void setUseRegEx(Boolean useRegEx) {
@@ -996,9 +991,9 @@ public class DiffTableViewer extends Composite {
                 return true;
             }
             if (useRegEx) {
-                try {
+                if (regExPattern != null) {
                     return regExPattern.matcher(((TreeElement) element).getName()).find();
-                } catch (PatternSyntaxException e) {
+                } else {
                     return false;
                 }
             } else {
@@ -1006,49 +1001,57 @@ public class DiffTableViewer extends Composite {
             }
         }
     }
+
+}
+
+class ElementsModel extends HashMap<TreeElement, Boolean> {
     
-    private class ElementsModel<T> {
-        private Map<T, Boolean> elements = new HashMap<>();
+    private static final long serialVersionUID = -5490220191211349874L;
 
-        private boolean updateChecked = false;
-        private int checkedCount = 0;
-        
-        public boolean get(Object el) {
-            return elements.get(el);
-        }
-        
-        public void put(T subtree, boolean b) {
-            elements.put(subtree, b);
-            updateChecked = true;
-        }
+    //private Map<T, Boolean> elements = new HashMap<>();
 
-        public boolean containsKey(T element) {
-            return elements.containsKey(element);
-        }
-        
-        public Set<T> keySet() {
-            return elements.keySet();
-        }
+    private boolean updateChecked;
+    private int checkedCount;
+/*
+    @Override
+    public boolean get(Object el) {
+        return elements.get(el);
+    }
+*/
+    public void put(TreeElement subtree, boolean b) {
+        super.put(subtree, b);
+        updateChecked = true;
+    }
+/*
+    public boolean containsKey(T element) {
+        return elements.containsKey(element);
+    }
+    
+    @Override
+    public Set<T> keySet() {
+        return elements.keySet();
+    }
 
-        public Set<Map.Entry<T, Boolean>> entrySet() {
-            return elements.entrySet();
-        }
+    @Override
+    public Set<Map.Entry<T, Boolean>> entrySet() {
+        return elements.entrySet();
+    }
 
-        public int size() {
-            return elements.size();
-        }
-        
-        public int getCheckedElementsCount() {
-            if (updateChecked) {
-                checkedCount = 0;
-                updateChecked = false;
-                for (boolean checked : elements.values()) {
-                    if (checked) {
-                        ++checkedCount;
-                    }
+    @Override
+    public int size() {
+        return elements.size();
+    }
+*/
+    public int getCheckedElementsCount() {
+        if (updateChecked) {
+            checkedCount = 0;
+            updateChecked = false;
+            for (boolean checked : values()) {
+                if (checked) {
+                    ++checkedCount;
                 }
             }
-            return checkedCount;
         }
+        return checkedCount;
     }
 }
