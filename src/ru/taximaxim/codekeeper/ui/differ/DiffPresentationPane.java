@@ -42,9 +42,6 @@ public abstract class DiffPresentationPane extends Composite {
     // should be true for commit, false for diff script
     private final boolean isProjSrc;
 
-    private final String exePgdump;
-    private final String pgdumpCustom;
-
     protected final DiffTableViewer diffTable;
     private final Composite containerSrc;
     protected final Button btnDump, btnPgDump, btnJdbc;
@@ -55,6 +52,8 @@ public abstract class DiffPresentationPane extends Composite {
     protected DbSource dbSource;
     protected DbSource dbTarget;
     protected TreeDiffer treeDiffer;
+
+    private IPreferenceStore mainPrefs;
 
     private void setDbSource(DbSource dbSource) {
         this.dbSource = dbSource;
@@ -81,8 +80,7 @@ public abstract class DiffPresentationPane extends Composite {
         setLayout(new GridLayout());
 
         this.isProjSrc = projIsSrc;
-        exePgdump = mainPrefs.getString(PREF.PGDUMP_EXE_PATH);
-        pgdumpCustom = mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS);
+        this.mainPrefs = mainPrefs;
         final IEclipsePreferences projProps = proj.getPrefs();
 
         // upper container
@@ -271,7 +269,8 @@ public abstract class DiffPresentationPane extends Composite {
                 return false;
             }
 
-            dbsRemote = DbSource.fromDb(exePgdump, pgdumpCustom,
+            dbsRemote = DbSource.fromDb(mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
+                    mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     dbSrc.txtDbHost.getText(), port, dbSrc.txtDbUser.getText(),
                     dbSrc.txtDbPass.getText(), dbSrc.txtDbName.getText(),
                     projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
