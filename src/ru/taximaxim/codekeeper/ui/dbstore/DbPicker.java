@@ -190,7 +190,7 @@ public class DbPicker extends Group {
         }
     }
     
-    public String getSelectedDbPresetName (){
+    public String getSelectedDbPresetName(){
         return dbStorePicker.getSelectedName();
     }
 

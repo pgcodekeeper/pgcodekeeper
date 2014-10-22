@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -38,6 +39,7 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 
 public abstract class DiffPresentationPane extends Composite {
 
@@ -49,8 +51,10 @@ public abstract class DiffPresentationPane extends Composite {
 
     protected final DiffTableViewer diffTable;
     private final Composite containerSrc;
+    private final Composite containerDb;
     protected final Button btnDump, btnPgDump, btnJdbc;
     private final Button btnGetChanges;
+    private final Button btnFlipDbPicker;
     protected final DbPicker dbSrc;
     private final DiffPaneViewer diffPane;
     private final Label lblSourceInfo;
@@ -135,7 +139,7 @@ public abstract class DiffPresentationPane extends Composite {
         sashOuter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // middle container
-        final Composite containerDb = new Composite(sashOuter, SWT.NONE);
+        containerDb = new Composite(sashOuter, SWT.NONE);
         gl = new GridLayout(3, false);
         gl.marginHeight = gl.marginWidth = 0;
         gl.horizontalSpacing = gl.verticalSpacing = 2;
@@ -160,7 +164,7 @@ public abstract class DiffPresentationPane extends Composite {
         });
 
         // flip button set up
-        final Button btnFlipDbPicker = new Button(containerDb, SWT.PUSH | SWT.FLAT);
+        btnFlipDbPicker = new Button(containerDb, SWT.PUSH | SWT.FLAT);
         btnFlipDbPicker.setText("\u25B8"); //$NON-NLS-1$
         gd = new GridData(GridData.FILL_VERTICAL);
         gd.widthHint = 20;
@@ -169,14 +173,7 @@ public abstract class DiffPresentationPane extends Composite {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                boolean open = containerSrc.getVisible();
-
-                containerSrc.setVisible(!open);
-                ((GridData) containerSrc.getLayoutData()).exclude = open;
-                containerDb.layout();
-
-                btnFlipDbPicker.setText(open ? "\u25C2" // ◂ //$NON-NLS-1$
-                        : "\u25B8"); // ▸ //$NON-NLS-1$
+                flipDbPicker(containerSrc.getVisible());
             }
         });
 
@@ -261,14 +258,29 @@ public abstract class DiffPresentationPane extends Composite {
             dbSrc.txtDbPort
                     .setText(String.valueOf(projProps.getInt(PROJ_PREF.DB_PORT, 0)));
         }
-        lblSourceInfo.setText(getSourceInfoText());
         // end middle right container
+        
+        // read flip position from preferences
+        flipDbPicker(Activator.getDefault().getPreferenceStore().getBoolean(PREF.IS_FLIPPED_DB_SOURCE));       
         // end middle container
+        
+        lblSourceInfo.setText(getSourceInfoText());
 
         diffPane = new DiffPaneViewer(sashOuter, SWT.NONE, isProjSrc ? dbSource
                 : dbTarget, isProjSrc ? dbTarget : dbSource, !isProjSrc);
     }
 
+    private void flipDbPicker(boolean open){
+        containerSrc.setVisible(!open);
+        ((GridData) containerSrc.getLayoutData()).exclude = open;
+        containerDb.layout();
+
+        btnFlipDbPicker.setText(open ? "\u25C2" // ◂ //$NON-NLS-1$
+                : "\u25B8"); // ▸ //$NON-NLS-1$
+        PreferenceInitializer.savePreference(Activator.getDefault().getPreferenceStore(), 
+                PREF.IS_FLIPPED_DB_SOURCE, String.valueOf(open));
+    }
+    
     private String getSourceInfoText(){
         StringBuilder value = new StringBuilder().append(Messages.source);
         if (btnDump.getSelection()){
