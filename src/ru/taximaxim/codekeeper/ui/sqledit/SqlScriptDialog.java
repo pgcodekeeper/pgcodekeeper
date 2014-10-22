@@ -16,7 +16,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -360,24 +359,39 @@ public class SqlScriptDialog extends TrayDialog {
                         if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                             addDepcy = getDependenciesFromOutput(sr.getStorage());
                         }
-                        SqlScriptDialog.this.getShell().getDisplay()
-                                .syncExec(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if (mainPrefs
-                                                .getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
-                                            MessageDialog dialog = new MessageDialog(
-                                                    getShell(),
-                                                    Messages.sqlScriptDialog_script_output,
-                                                    null,
-                                                    sr.getStorage(),
-                                                    MessageDialog.INFORMATION,
-                                                    new String[] { IDialogConstants.OK_LABEL },
-                                                    0);
-                                            dialog.open();
+                        Runnable showScriptOutput = new Runnable() {
+                            @Override
+                            public void run() {
+                                if (mainPrefs
+                                        .getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
+                                    TrayDialog dialog = new TrayDialog(getShell()) {
+                                        
+                                        @Override
+                                        protected void configureShell(
+                                                Shell newShell) {
+                                            newShell.setText(Messages.sqlScriptDialog_script_output);
+                                            super.configureShell(newShell);
                                         }
-                                    }
-                                });
+                                        @Override
+                                        protected Control createDialogArea(
+                                                Composite parent) {
+                                            Composite comp = (Composite)super.createDialogArea(parent);
+                                            new Text(comp, SWT.MULTI | SWT.WRAP).setText(sr.getStorage());
+                                            return comp;
+                                        }
+                                        
+                                        @Override
+                                        protected void createButtonsForButtonBar(Composite parent) {
+                                                createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL,
+                                                        true);
+                                        };
+                                    };
+                                    dialog.open();
+                                }
+                            }
+                        };
+                        SqlScriptDialog.this.getShell().getDisplay()
+                                .syncExec(showScriptOutput);
                     } catch (IOException ex) {
                         if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                             addDepcy = getDependenciesFromOutput(sr.getStorage());
