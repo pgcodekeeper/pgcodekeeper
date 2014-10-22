@@ -360,6 +360,24 @@ public class SqlScriptDialog extends TrayDialog {
                         if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                             addDepcy = getDependenciesFromOutput(sr.getStorage());
                         }
+                        SqlScriptDialog.this.getShell().getDisplay()
+                                .syncExec(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (mainPrefs
+                                                .getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
+                                            MessageDialog dialog = new MessageDialog(
+                                                    getShell(),
+                                                    Messages.sqlScriptDialog_script_output,
+                                                    null,
+                                                    sr.getStorage(),
+                                                    MessageDialog.INFORMATION,
+                                                    new String[] { IDialogConstants.OK_LABEL },
+                                                    0);
+                                            dialog.open();
+                                        }
+                                    }
+                                });
                     } catch (IOException ex) {
                         if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                             addDepcy = getDependenciesFromOutput(sr.getStorage());
@@ -378,11 +396,6 @@ public class SqlScriptDialog extends TrayDialog {
                                     public void run() {
                                         if (!runScriptBtn.isDisposed()) {
                                             runScriptBtn.setText(RUN_SCRIPT_LABEL);
-                                            if (mainPrefs.getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
-                                                MessageDialog dialog = new MessageDialog(getShell(), Messages.sqlScriptDialog_script_output, null,
-                                                        sr.getStorage(), MessageDialog.INFORMATION, new String[] { IDialogConstants.OK_LABEL }, 0);
-                                                dialog.open();
-                                            }
                                             showAddDepcyDialog();
                                         }
                                         isRunning = false;
