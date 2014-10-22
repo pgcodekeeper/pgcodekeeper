@@ -88,6 +88,8 @@ public class ExceptionNotifier {
                 message, ex);
         StatusManager.getManager().handle(status, StatusManager.BLOCK);
     }
+    
+    private ExceptionNotifier() {}
 }
 
 class StackTraceErrorDialog extends ErrorDialog {
