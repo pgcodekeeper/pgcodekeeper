@@ -84,11 +84,11 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  */
 public class DiffTableViewer extends Composite {
 
-    private final static String PREVCHECKED_HIST_ROOT = "CheckSets"; //$NON-NLS-1$
-    private final static String PREVCHECKED_HIST_SET = "CheckSet"; //$NON-NLS-1$
-    private final static String PREVCHECKED_HIST_EL = "Checked"; //$NON-NLS-1$
-    private final static String PREVCHECKED_HIST_FILENAME = "check_sets.xml"; //$NON-NLS-1$
-    private final static int PREVCHECKED_HIST_MAX_STORED = 20;
+    private static final String PREVCHECKED_HIST_ROOT = "CheckSets"; //$NON-NLS-1$
+    private static final String PREVCHECKED_HIST_SET = "CheckSet"; //$NON-NLS-1$
+    private static final String PREVCHECKED_HIST_EL = "Checked"; //$NON-NLS-1$
+    private static final String PREVCHECKED_HIST_FILENAME = "check_sets.xml"; //$NON-NLS-1$
+    private static final int PREVCHECKED_HIST_MAX_STORED = 20;
     
     private final boolean viewOnly;
     private boolean reverseDiffSide;
@@ -107,9 +107,9 @@ public class DiffTableViewer extends Composite {
     
     private Text txtFilterName;
     private Button useRegEx;
-    public final CheckboxTableViewer viewer;
+    private final CheckboxTableViewer viewer;
     private TableViewerFilter viewerFilter = new TableViewerFilter();
-    private TableViewerColumn columnCheck, columnType, columnChange, columnName, columnLocation;
+    private TableViewerColumn columnType, columnChange, columnName, columnLocation;
     private Label lblObjectCount;
     private Label lblCheckedCount;
     private ComboViewer cmbPrevChecked;
@@ -398,22 +398,23 @@ public class DiffTableViewer extends Composite {
     }
     
     private void initColumns() {
-            columnCheck = new TableViewerColumn(viewer, SWT.LEFT);
-            
-            columnCheck.getColumn().setResizable(false);
-            columnCheck.getColumn().setText(" "); //$NON-NLS-1$
-            columnCheck.getColumn().setMoveable(true);
-            
-            columnCheck.getColumn().addSelectionListener(
-                    getHeaderSelectionAdapter(columnCheck.getColumn(), Columns.CHECK));
-            
-            columnCheck.setLabelProvider(new ColumnLabelProvider(){
-                
-                @Override
-                public String getText(Object element) {
-                    return " "; //$NON-NLS-1$
-                }
-            });
+        TableViewerColumn columnCheck = new TableViewerColumn(viewer, SWT.LEFT);
+
+        columnCheck.getColumn().setResizable(false);
+        columnCheck.getColumn().setText(" "); //$NON-NLS-1$
+        columnCheck.getColumn().setMoveable(true);
+
+        columnCheck.getColumn().addSelectionListener(
+                getHeaderSelectionAdapter(columnCheck.getColumn(),
+                        Columns.CHECK));
+
+        columnCheck.setLabelProvider(new ColumnLabelProvider() {
+
+            @Override
+            public String getText(Object element) {
+                return " "; //$NON-NLS-1$
+            }
+        });
 
         columnType = new TableViewerColumn(viewer, SWT.LEFT);
         columnChange = new TableViewerColumn(viewer, SWT.LEFT);
@@ -575,6 +576,12 @@ public class DiffTableViewer extends Composite {
         }
     }
     
+    void addSelectionChangedListener(ISelectionChangedListener listener) {
+        viewer.addSelectionChangedListener(listener);
+    }
+    void removeSelectionChangedListener(ISelectionChangedListener listener) {
+        viewer.removeSelectionChangedListener(listener);
+    }
     private SelectionAdapter getHeaderSelectionAdapter(final TableColumn column,
             final Columns index) {
         SelectionAdapter selectionAdapter = new SelectionAdapter() {
