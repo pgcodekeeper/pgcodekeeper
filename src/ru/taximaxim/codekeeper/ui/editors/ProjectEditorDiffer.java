@@ -199,11 +199,7 @@ class CommitPage extends DiffPresentationPane {
     
     @Override
     protected void createUpperContainer(final Composite container, GridLayout gl) {
-        container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
         btnSave = new Button(container, SWT.PUSH);
-        btnSave.setLayoutData(new GridData(SWT.DEFAULT, SWT.FILL, false,
-                false));
         btnSave.setText(Messages.commitPartDescr_commit);
         btnSave.setEnabled(false);
         btnSave.addSelectionListener(new SelectionAdapter() {
@@ -213,6 +209,12 @@ class CommitPage extends DiffPresentationPane {
                 commit();
             }
         });
+        
+        GridData gd = new GridData(SWT.DEFAULT, SWT.FILL, false, false);
+        gd.widthHint = btnSave.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+        gd.minimumWidth = btnSave.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;        
+        container.setLayoutData(gd);
+        
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
     }
     

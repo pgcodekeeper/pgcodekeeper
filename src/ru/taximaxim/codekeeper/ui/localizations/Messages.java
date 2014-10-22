@@ -23,7 +23,6 @@ public class Messages extends NLS {
     public static String manually_and_try_again;
     public static String missing_marker_file_in_working_directory;
     public static String this_password_will_show_up_in_logs;
-    public static String bad_port;
     public static String choose_dump_file_with_changes;
     public static String db;
     public static String db_source;
@@ -35,8 +34,9 @@ public class Messages extends NLS {
     public static String get_changes;
     public static String none;
     public static String jdbc;
+    public static String pg_dump;
+    public static String source;
     public static String please_check_at_least_one_row;
-    public static String port_must_be_a_number;
     public static String projectEditorDiffer_save_project;
     public static String undefined_source_for_db_changes;
     public static String browse;
@@ -45,6 +45,9 @@ public class Messages extends NLS {
     public static String select_readable_db_dump_file;
     public static String dump_file;
     public static String miscellaneous;
+    public static String unknown_db;
+    public static String unknown_host;
+    public static String connection_details;
     
     // ui
     public static String exceptionNotifier_copy_stack_trace;
@@ -164,6 +167,7 @@ public class Messages extends NLS {
     public static String commitPartDescr_modifying_db_model;
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
+    public static String commitPartDescr_used_connection_template;
     public static String ConsoleFactory_error_opening_console;
     public static String to;
     public static String diffPaneDialog_diff_to_selected_object;

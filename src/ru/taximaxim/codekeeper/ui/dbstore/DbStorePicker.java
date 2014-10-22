@@ -107,6 +107,14 @@ public class DbStorePicker extends Group {
         return dbinfo;
     }
 
+    public String getSelectedName (){
+        return cmbDbNames.getText();
+    }
+    
+    public void clearSelection(){
+        cmbDbNames.deselectAll();
+    }
+    
     public void addListenerToCombo(SelectionListener listener) {
         cmbDbNames.addSelectionListener(listener);
     }

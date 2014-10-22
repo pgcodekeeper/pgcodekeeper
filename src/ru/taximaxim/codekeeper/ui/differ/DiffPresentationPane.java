@@ -22,9 +22,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -51,7 +53,8 @@ public abstract class DiffPresentationPane extends Composite {
     private final Button btnGetChanges;
     protected final DbPicker dbSrc;
     private final DiffPaneViewer diffPane;
-
+    private final Label lblSourceInfo;
+    
     protected DbSource dbSource;
     protected DbSource dbTarget;
     protected TreeDiffer treeDiffer;
@@ -86,14 +89,46 @@ public abstract class DiffPresentationPane extends Composite {
         final IEclipsePreferences projProps = proj.getPrefs();
 
         // upper container
-        Composite containerUpper = new Composite(this, SWT.NONE);
+        final Composite containerUpper = new Composite(this, SWT.NONE);
         containerUpper.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         // initialize default layout for customizable container
-        GridLayout gl = new GridLayout();
+        GridLayout gl = new GridLayout(3, false);
         gl.marginHeight = gl.marginWidth = 0;
         containerUpper.setLayout(gl);
+        
+        // upper left part
+        Composite contUpperLeft = new Composite(containerUpper, SWT.NONE);
+        contUpperLeft.setLayoutData(new GridData(GridData.FILL_BOTH));
+        gl = new GridLayout();
+        gl.marginHeight = gl.marginWidth = 0;
+        contUpperLeft.setLayout(gl);
+        createUpperContainer(contUpperLeft, gl);
+        
+        // upper middle part
+        lblSourceInfo = new Label(containerUpper, SWT.NONE);
+        lblSourceInfo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, true, 1, 1));
 
-        createUpperContainer(containerUpper, gl);
+        // upper right part
+        btnGetChanges = new Button(containerUpper, SWT.PUSH);
+        btnGetChanges.setText(Messages.get_changes);
+        btnGetChanges.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    loadChanges(proj, projProps, mainPrefs);
+                } catch (PgCodekeeperUIException e1) {
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.DiffPresentationPane_error_loading_changes, e1);
+                }
+            }
+        });
+
+        GridData gd = new GridData(SWT.RIGHT, SWT.FILL, false, true, 1, 1);
+        gd.widthHint = btnGetChanges.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+        gd.minimumWidth = btnGetChanges.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+        gd.horizontalIndent = 20;
+        btnGetChanges.setLayoutData(gd);
         // end upper container
 
         SashForm sashOuter = new SashForm(this, SWT.VERTICAL | SWT.SMOOTH);
@@ -127,7 +162,7 @@ public abstract class DiffPresentationPane extends Composite {
         // flip button set up
         final Button btnFlipDbPicker = new Button(containerDb, SWT.PUSH | SWT.FLAT);
         btnFlipDbPicker.setText("\u25B8"); //$NON-NLS-1$
-        GridData gd = new GridData(GridData.FILL_VERTICAL);
+        gd = new GridData(GridData.FILL_VERTICAL);
         gd.widthHint = 20;
         btnFlipDbPicker.setLayoutData(gd);
         btnFlipDbPicker.addSelectionListener(new SelectionAdapter() {
@@ -153,6 +188,7 @@ public abstract class DiffPresentationPane extends Composite {
 
         gd = new GridData(SWT.FILL, SWT.FILL, false, true);
         gd.minimumWidth = 300;
+        gd.widthHint = 300;
         containerSrc.setLayoutData(gd);
 
         Group grpSrc = new Group(containerSrc, SWT.NONE);
@@ -167,6 +203,8 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 showDbPicker(false);
+                lblSourceInfo.setText(getSourceInfoText());
+                containerUpper.layout();
             }
         });
 
@@ -177,6 +215,8 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 showDbPicker(true);
+                lblSourceInfo.setText(getSourceInfoText());
+                containerUpper.layout();
             }
         });
 
@@ -187,29 +227,22 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 showDbPicker(true);
+                lblSourceInfo.setText(getSourceInfoText());
+                containerUpper.layout();
             }
         });
         
-        btnGetChanges = new Button(containerSrc, SWT.PUSH);
-        btnGetChanges.setText(Messages.get_changes);
-        btnGetChanges.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-        btnGetChanges.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                try {
-                    loadChanges(proj, projProps, mainPrefs);
-                } catch (PgCodekeeperUIException e1) {
-                    ExceptionNotifier.showErrorDialog(
-                            Messages.DiffPresentationPane_error_loading_changes, e1);
-                }
-            }
-        });
-
         dbSrc = new DbPicker(containerSrc, SWT.NONE, mainPrefs, false);
         dbSrc.setText(Messages.db_source);
         dbSrc.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
-
+        dbSrc.addListener(SWT.Modify, new Listener() {
+            
+            @Override
+            public void handleEvent(Event event) {
+                lblSourceInfo.setText(getSourceInfoText());
+            }
+        });
+        
         boolean useDbPicker = false;
         String src = projProps.get(PROJ_PREF.SOURCE, ""); //$NON-NLS-1$
         if (src.equals(PROJ_PREF.SOURCE_TYPE_DUMP)) {
@@ -228,6 +261,7 @@ public abstract class DiffPresentationPane extends Composite {
             dbSrc.txtDbPort
                     .setText(String.valueOf(projProps.getInt(PROJ_PREF.DB_PORT, 0)));
         }
+        lblSourceInfo.setText(getSourceInfoText());
         // end middle right container
         // end middle container
 
@@ -235,6 +269,29 @@ public abstract class DiffPresentationPane extends Composite {
                 : dbTarget, isProjSrc ? dbTarget : dbSource, !isProjSrc);
     }
 
+    private String getSourceInfoText(){
+        StringBuilder value = new StringBuilder().append(Messages.source);
+        if (btnDump.getSelection()){
+            return value.append(Messages.dump_file).toString();
+        }else if (btnPgDump.getSelection()){
+            value.append(Messages.pg_dump);
+        }else if (btnJdbc.getSelection()){
+            value.append(Messages.jdbc);
+        }
+        String preset = dbSrc.getSelectedDbPresetName();
+        if (preset.isEmpty()){
+            value.append("     " + Messages.connection_details);
+            value.append(dbSrc.txtDbUser.getText().isEmpty() ? "" : dbSrc.txtDbUser.getText() + "@");
+            value.append(dbSrc.txtDbHost.getText().isEmpty() ? Messages.unknown_host : dbSrc.txtDbHost.getText());
+            value.append(dbSrc.txtDbPort.getText().isEmpty() ? "" : ":" + dbSrc.txtDbPort.getText());
+            value.append("/");
+            value.append(dbSrc.txtDbName.getText().isEmpty() ? Messages.unknown_db : dbSrc.txtDbName.getText());
+        }else{
+            value.append("     " + Messages.commitPartDescr_used_connection_template + "[" + preset + "]");
+        }
+        return value.toString();
+    }
+    
     private void showDbPicker(boolean show) {
         ((GridData) dbSrc.getLayoutData()).exclude = !show;
         dbSrc.setVisible(show);
@@ -256,34 +313,16 @@ public abstract class DiffPresentationPane extends Composite {
             dbsRemote = DbSource
                     .fromFile(dumpfile, projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
         } else if (btnPgDump.getSelection()) {
-            int port;
-            try {
-                String sPort = dbSrc.txtDbPort.getText();
-                port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
-            } catch (NumberFormatException ex) {
-                MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
-                mb.setText(Messages.bad_port);
-                mb.setMessage(Messages.port_must_be_a_number);
-                mb.open();
-                return;
-            }
+            String sPort = dbSrc.txtDbPort.getText();
+            int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
             dbsRemote = DbSource.fromDb(exePgdump, pgdumpCustom,
                     dbSrc.txtDbHost.getText(), port, dbSrc.txtDbUser.getText(),
                     dbSrc.txtDbPass.getText(), dbSrc.txtDbName.getText(),
                     projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
         } else if (btnJdbc.getSelection()){
-            int port;
-            try {
-                String sPort = dbSrc.txtDbPort.getText();
-                port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
-            } catch (NumberFormatException ex) {
-                MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
-                mb.setText(Messages.bad_port);
-                mb.setMessage(Messages.port_must_be_a_number);
-                mb.open();
-                return;
-            }
+            String sPort = dbSrc.txtDbPort.getText();
+            int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
             dbsRemote = DbSource.fromJdbc(dbSrc.txtDbHost.getText(), port, dbSrc.txtDbUser.getText(),
                     dbSrc.txtDbPass.getText(), dbSrc.txtDbName.getText(),

@@ -753,13 +753,6 @@ class PageDb extends WizardPage implements Listener {
                 && (txtDumpPath.getText().isEmpty()
                         || !new File(txtDumpPath.getText()).isFile())) {
             errMsg = Messages.select_readable_db_dump_file;
-        } else if (radioDb.getSelection()
-                && !grpDb.txtDbPort.getText().isEmpty()) {
-            try {
-                Integer.parseInt(grpDb.txtDbPort.getText());
-            } catch (NumberFormatException ex) {
-                errMsg = Messages.port_must_be_a_number;
-            }
         }
 
         setErrorMessage(errMsg);
