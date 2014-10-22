@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.Platform;
 import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class XmlHistory {
@@ -64,7 +63,7 @@ public class XmlHistory {
 
     public LinkedHashMap<String, LinkedList<String>> getMapHistory() throws IOException {
         LinkedHashMap<String, LinkedList<String>> history;
-        try (Reader xmlReader = new InputStreamReader(new FileInputStream(getHistoryXmlFile()), PREF.ENCODING)) {
+        try (Reader xmlReader = new InputStreamReader(new FileInputStream(getHistoryXmlFile()), UIConsts.UTF_8)) {
             XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
             history = xml.deserializeMap(xmlReader);
         } catch (FileNotFoundException e) {
@@ -77,7 +76,7 @@ public class XmlHistory {
     
     public LinkedList<String> getHistory() throws IOException {
         LinkedList<String> history;
-        try (Reader xmlReader = new InputStreamReader(new FileInputStream(getHistoryXmlFile()), PREF.ENCODING)) {
+        try (Reader xmlReader = new InputStreamReader(new FileInputStream(getHistoryXmlFile()), UIConsts.UTF_8)) {
             XmlStringList xml = new XmlStringList(rootTag, elementTag);
             history = xml.deserializeList(xmlReader);
         } catch (FileNotFoundException ex) {
@@ -125,7 +124,7 @@ public class XmlHistory {
                 histFile.getParentFile().mkdirs();
                 histFile.createNewFile();
                 
-                try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(histFile), PREF.ENCODING)) {
+                try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(histFile), UIConsts.UTF_8)) {
                     XmlStringList xml = new XmlStringList(rootTag, elementTag);
                     xml.serializeList(historyEntries, false, xmlWriter);
                 }
@@ -164,7 +163,7 @@ public class XmlHistory {
         try {
             historyFile.getParentFile().mkdirs();
             historyFile.createNewFile();
-            try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(historyFile), PREF.ENCODING)) {
+            try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(historyFile), UIConsts.UTF_8)) {
                 XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
                 xml.serializeMap(checkedSets, false, xmlWriter);
             }

@@ -19,8 +19,8 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
@@ -142,13 +142,13 @@ public class Differ implements IRunnableWithProgress {
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
         try {
             PrintWriter writer = new UnixPrintWriter(
-                    new OutputStreamWriter(diffOut, PREF.ENCODING), true);
+                    new OutputStreamWriter(diffOut, UIConsts.UTF_8), true);
         
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
                     dbSource, dbTarget, sourceDbFull, targetDbFull, 
                     additionalDepciesSource, additionalDepciesTarget);
             writer.flush();
-            diffDirect = diffOut.toString(PREF.ENCODING).trim();
+            diffDirect = diffOut.toString(UIConsts.UTF_8).trim();
     
             if (needTwoWay) {
                 Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin() //$NON-NLS-1$
@@ -159,7 +159,7 @@ public class Differ implements IRunnableWithProgress {
                 PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource,
                         targetDbFull, sourceDbFull);
                 writer.flush();
-                diffReverse = diffOut.toString(PREF.ENCODING).trim();
+                diffReverse = diffOut.toString(UIConsts.UTF_8).trim();
             }
         } catch (UnsupportedEncodingException ex) {
             throw new InvocationTargetException(ex);
