@@ -95,7 +95,7 @@ public class DiffTableViewer extends Composite {
     
     private TreeElement treeRoot;
     // values are checked states of the elements
-    private ElementsModel elements = new ElementsModel();
+    private ElementsModel<TreeElement> elements = new ElementsModel<>();
     
     private final IgnoresChangeListener ignoresListener = new IgnoresChangeListener();
     
@@ -1004,49 +1004,43 @@ public class DiffTableViewer extends Composite {
 
 }
 
-class ElementsModel extends HashMap<TreeElement, Boolean> {
+class ElementsModel<T> {
     
-    private static final long serialVersionUID = -5490220191211349874L;
-
-    //private Map<T, Boolean> elements = new HashMap<>();
+    private Map<T, Boolean> elements = new HashMap<>();
 
     private boolean updateChecked;
     private int checkedCount;
-/*
-    @Override
-    public boolean get(Object el) {
+
+    public Boolean get(Object el) {
         return elements.get(el);
     }
-*/
-    public void put(TreeElement subtree, boolean b) {
-        super.put(subtree, b);
+
+    public void put(T subtree, boolean b) {
+        elements.put(subtree, b);
         updateChecked = true;
     }
-/*
-    public boolean containsKey(T element) {
+
+    public boolean containsKey(Object element) {
         return elements.containsKey(element);
     }
     
-    @Override
     public Set<T> keySet() {
         return elements.keySet();
     }
 
-    @Override
     public Set<Map.Entry<T, Boolean>> entrySet() {
         return elements.entrySet();
     }
 
-    @Override
     public int size() {
         return elements.size();
     }
-*/
+    
     public int getCheckedElementsCount() {
         if (updateChecked) {
             checkedCount = 0;
             updateChecked = false;
-            for (boolean checked : values()) {
+            for (boolean checked : elements.values()) {
                 if (checked) {
                     ++checkedCount;
                 }
