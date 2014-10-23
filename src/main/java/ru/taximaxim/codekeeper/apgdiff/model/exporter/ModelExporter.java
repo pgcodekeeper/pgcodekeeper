@@ -7,8 +7,10 @@ import java.io.PrintWriter;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NotDirectoryException;
-import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,6 +23,7 @@ import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
+import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
@@ -35,16 +38,13 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
 public class ModelExporter {
     
     private static final Pattern INVALID_FILENAME = Pattern.compile("[\\/:*?\"<>|]");
+    private static final String GROUP_DELIMITER = 
+            "\n\n--------------------------------------------------------------------------------\n\n";
     
     /**
      * Objects of the export directory;
      */
     private final File outDir;
-    
-    /**
-     * Path for the outDir;
-     */
-    private final Path outPath;
     
     /**
      * Database to export.
@@ -64,10 +64,8 @@ public class ModelExporter {
      * @param outDir outDir, directory should be empty or not exist
      * @param db database
      */
-    public ModelExporter(final File outDir, final PgDatabase db,
-            final String sqlEncoding) {
+    public ModelExporter(File outDir, PgDatabase db, String sqlEncoding) {
         this.outDir = outDir;
-        this.outPath = this.outDir.toPath(); 
         this.db = db;
         this.sqlEncoding = sqlEncoding;
     }
@@ -108,7 +106,7 @@ public class ModelExporter {
         }
         
         for(PgSchema schema : db.getSchemas()) {
-            File schemaSQL = new File(schemasSharedDir, getExportedFilename(schema)+ ".sql");
+            File schemaSQL = new File(schemasSharedDir, getExportedFilenameSql(schema));
             dumpSQL(schema.getCreationSQL(), schemaSQL);
         }
         
@@ -121,7 +119,7 @@ public class ModelExporter {
         }
         
         for(PgExtension ext : db.getExtensions()) {
-            File extSQL = new File(extensionsDir, getExportedFilename(ext) + ".sql");
+            File extSQL = new File(extensionsDir, getExportedFilenameSql(ext));
             dumpSQL(ext.getCreationSQL(), extSQL);
         }
         
@@ -132,37 +130,62 @@ public class ModelExporter {
                 throw new DirectoryException("Could not create schema directory:"
                         + schemaDir.getAbsolutePath());
             }
-            
-            processObjects(schema.getFunctions(), schemaDir, "FUNCTION");
-            processObjects(schema.getSequences(), schemaDir, "SEQUENCE");
-            processObjects(schema.getTables(), schemaDir, "TABLE");
-            processObjects(schema.getViews(), schemaDir, "VIEW");
-            
-            // indexes, triggers, constraints are saved when tables are processed
+            dumpFunctions(schema.getFunctions(), schemaDir);
+            dumpObjects(schema.getSequences(), schemaDir, "SEQUENCE");
+            dumpTables(schema.getTables(), schemaDir);
+            dumpObjects(schema.getViews(), schemaDir, "VIEW");
+
+            // indexes, triggers, constraints are dumped when tables are processed
         }
         writeProjVersion(new File(outDir.getPath(), 
                 ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
     
-    /**
-     * Processes dumping of objects.
-     * 
-     * @param objects List of {@link #PgStatementWithSearchPath} to dump
-     * @param parentOutDir schema directory
-     * @param outDirName object type directory
-     * 
-     * @throws NotDirectoryException
-     * @throws FileAlreadyExistsException
-     * @throws DirectoryException
-     * @throws FileException
-     * @throws IOException
-     */
-    private void processObjects(final List<? extends PgStatementWithSearchPath> objects,
-            final File parentOutDir, final String outDirName) throws IOException {
-        if(objects.isEmpty()) {
+    private void dumpFunctions(List<PgFunction> funcs, File parentDir) throws IOException {
+        if (funcs.isEmpty()) {
             return;
         }
+        File funcDir = mkdirObjects(parentDir, "FUNCTION");
         
+        Map<String, StringBuilder> dumps = new HashMap<>(funcs.size());
+        for(PgFunction f : funcs) {
+            String fileName = getExportedFilenameSql(f);
+            StringBuilder groupedDump = dumps.get(fileName);
+            if (groupedDump == null) {
+                groupedDump = new StringBuilder(getDumpSql(f));
+                dumps.put(fileName, groupedDump);
+            } else {
+                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(f));
+            }
+        }
+        for (Entry<String, StringBuilder> dump : dumps.entrySet()) {
+            dumpSQL(dump.getValue(), new File(funcDir, dump.getKey()));
+        }
+    }
+    
+    private void dumpTables(List<PgTable> tables, File parentDir) throws IOException {
+        dumpObjects(tables, parentDir, "TABLE");
+        for (PgTable table : tables) {
+            dumpObjects(table.getConstraints(), parentDir, "CONSTRAINT");
+            dumpObjects(table.getTriggers(), parentDir, "TRIGGER");
+            dumpObjects(table.getIndexes(), parentDir, "INDEX");
+        }
+    }
+
+    private void dumpObjects(List<? extends PgStatementWithSearchPath> objects,
+            File parentOutDir, String objectDirName) throws IOException {
+        if (objects.isEmpty()) {
+            return;
+        }
+        File objectDir = mkdirObjects(parentOutDir, objectDirName);
+        
+        for(PgStatementWithSearchPath obj : objects) {
+            dumpSQL(getDumpSql(obj), new File(objectDir, getExportedFilenameSql(obj)));
+        }
+    }
+
+    private File mkdirObjects(File parentOutDir, String outDirName)
+            throws NotDirectoryException, DirectoryException {
         File objectDir = new File(parentOutDir, outDirName);
         
         if(objectDir.exists()) {
@@ -175,36 +198,10 @@ public class ModelExporter {
                         + objectDir.getAbsolutePath());
             }
         }
-        
-        for(PgStatementWithSearchPath obj : objects) {
-            String filename = null;
-            filename = getExportedFilename(obj) + ".sql";
-            String sqlToDump = obj.getSearchPath() + "\n\n" + obj.getFullSQL();
-            
-            File objectSQL = new File(objectDir, filename);
-            dumpSQL(sqlToDump, objectSQL);
-
-            if(obj instanceof PgTable) {
-                PgTable table = (PgTable) obj;
-                // out them to their own directory in schema, not table directory
-                processObjects(table.getConstraints(), parentOutDir, "CONSTRAINT");
-                processObjects(table.getTriggers(), parentOutDir, "TRIGGER");
-                processObjects(table.getIndexes(), parentOutDir, "INDEX");
-            }
-        }
+        return objectDir;
     }
     
-    /**
-     * Writes out SQL code to file.
-     *     
-     * @param sql SQL code
-     * @param file file
-     * 
-     * @throws FileAlreadyExistsException
-     * @throws FileException
-     */
-    private void dumpSQL(final String sql,
-            final File file) throws IOException{
+    private void dumpSQL(CharSequence sql, File file) throws IOException {
         if(file.exists()) {
             throw new FileAlreadyExistsException(file.getAbsolutePath());
         }
@@ -225,8 +222,27 @@ public class ModelExporter {
      * @return a statement's exported file name
      */
     public static String getExportedFilename(PgStatement statement) {
-        Matcher m = INVALID_FILENAME.matcher(statement.getBareName());
-        return m.replaceAll("") + '_' + PgDiffUtils.md5(statement.getName());
+        String name = statement.getBareName();
+        Matcher m = INVALID_FILENAME.matcher(name);
+        if (m.find()) {
+            boolean bareNameGrouped = statement instanceof PgFunction;
+            String hash = PgDiffUtils.md5(
+                    bareNameGrouped? statement.getBareName() : statement.getName())
+                            // 2^40 variants, should be enough for this purpose
+                            .substring(0, 10);
+            
+            return m.replaceAll("") + '_' + hash;
+        } else {
+            return name;
+        }
+    }
+    
+    private static String getExportedFilenameSql(PgStatement statement) {
+        return getExportedFilename(statement) + ".sql";
+    }
+    
+    private String getDumpSql(PgStatementWithSearchPath statement) {
+        return statement.getSearchPath() + "\n\n" + statement.getFullSQL();
     }
     
     private void writeProjVersion(File f) throws IOException {
