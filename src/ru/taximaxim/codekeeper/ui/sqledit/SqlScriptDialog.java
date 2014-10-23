@@ -19,6 +19,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -383,6 +384,9 @@ public class SqlScriptDialog extends TrayDialog {
                                             Text filed = new Text(comp, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
                                                     | SWT.READ_ONLY | SWT.MULTI);
                                             filed.setText(sr.getStorage());
+                                            filed.setBackground(getShell().getDisplay().getSystemColor(
+                                                    SWT.COLOR_LIST_BACKGROUND));
+                                            filed.setFont(JFaceResources.getTextFont());
                                             filed.setLayoutData(new GridData(GridData.FILL_BOTH));
                                             return comp;
                                         }
