@@ -11,15 +11,17 @@ repositoryList=("apgdiff" "ru.taximaxim.codekeeper.ui");
 
 # Get path to script
 ROOT_PATH=$(cd $(dirname $0) && pwd);
+TOOLS_GEN_CHANGE_LOG="gitchangelog"
 # changelog filename
 CHANGE_LOG_FILENAME="changelog.txt";
+# Command to get changelog
+COMMAND=${TOOLS_GEN_CHANGE_LOG}" > "${CHANGE_LOG_FILENAME};
 # Set path to changeLogSettings
 export GITCHANGELOG_CONFIG_FILENAME=${ROOT_PATH}"/.gitchangelog.rc";
-# Command to get changelog
-COMMAND="gitchangelog > "${CHANGE_LOG_FILENAME};
 #-----------------------------------------------
+version=$(${TOOLS_GEN_CHANGE_LOG} | egrep -m 1 -i -o 'Версия .\..\..')
 # Write Version to file
-echo "Some version has been released." > ${ROOT_PATH}"/"${CHANGE_LOG_FILENAME}
+echo $version" has been released." > ${ROOT_PATH}"/"${CHANGE_LOG_FILENAME}
 # Combine changes from repository to one file
 for ((i=0;i<${#repositoryList[@]};i++));do 
 	PATH_TO_REPO=${ROOT_PATH}"/../"${repositoryList[$i]};
