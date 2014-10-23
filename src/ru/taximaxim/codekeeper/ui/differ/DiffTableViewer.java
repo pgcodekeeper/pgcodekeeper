@@ -626,7 +626,7 @@ public class DiffTableViewer extends Composite {
     }
     
     private void setInputTreeElement(TreeElement treeElement) {
-        elements = new ElementsModel();
+        elements = new ElementsModel<>();
         if (treeElement != null) {
             generateFlatElementsMap(treeElement);
         }
@@ -801,7 +801,7 @@ public class DiffTableViewer extends Composite {
     public void setInputCollection(HashSet<TreeElement> shouldBeDeleted, 
             TreeDiffer rootDiffer, boolean reverseDiffSide) {
         setDiffer(rootDiffer, reverseDiffSide);
-        elements = new ElementsModel();
+        elements = new ElementsModel<>();
         for (TreeElement e : shouldBeDeleted){
             elements.put(e, true);
         }
