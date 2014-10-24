@@ -48,8 +48,9 @@ public class PgDumpLoader { //NOPMD
     /**
      * Loading order and directory names of the objects in exported DB schemas.
      */
+    // NOTE: constraints, triggers and indexes are stored in tables
     private static final String[] walkOrder = new String[] { "SEQUENCE",
-        "FUNCTION", "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW" };
+        "FUNCTION", "TABLE", /*"CONSTRAINT", "INDEX", "TRIGGER",*/ "VIEW" };
 
     /**
      * Pattern for testing whether it is CREATE SCHEMA statement.

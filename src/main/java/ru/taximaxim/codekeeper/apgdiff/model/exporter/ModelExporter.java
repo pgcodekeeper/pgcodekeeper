@@ -21,13 +21,16 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.PgTrigger;
 
 /**
  * Exports PgDatabase model as a directory tree with
@@ -164,11 +167,27 @@ public class ModelExporter {
     }
     
     private void dumpTables(List<PgTable> tables, File parentDir) throws IOException {
-        dumpObjects(tables, parentDir, "TABLE");
+        if (tables.isEmpty()) {
+            return;
+        }
+        File tablesDir = mkdirObjects(parentDir, "TABLE");
+        
         for (PgTable table : tables) {
-            dumpObjects(table.getConstraints(), parentDir, "CONSTRAINT");
-            dumpObjects(table.getTriggers(), parentDir, "TRIGGER");
-            dumpObjects(table.getIndexes(), parentDir, "INDEX");
+            StringBuilder groupSql = new StringBuilder(getDumpSql(table));
+            
+            for (PgConstraint constr : table.getConstraints()) {
+                groupSql.append(GROUP_DELIMITER).append(getDumpSql(constr));
+            }
+            
+            for (PgIndex idx : table.getIndexes()) {
+                groupSql.append(GROUP_DELIMITER).append(getDumpSql(idx));
+            }
+            
+            for (PgTrigger trig : table.getTriggers()) {
+                groupSql.append(GROUP_DELIMITER).append(getDumpSql(trig));
+            }
+            
+            dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(table)));
         }
     }
 
