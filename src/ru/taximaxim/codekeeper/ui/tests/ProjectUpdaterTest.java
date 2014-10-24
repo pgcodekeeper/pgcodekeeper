@@ -57,7 +57,7 @@ public class ProjectUpdaterTest {
             File workingDirectory = td.get();
             new ModelExporter(workingDirectory, dbOld, ENCODING).export();
                     
-            PgDbProject proj = PgDbProject.getProjFromFile("/home/ryabinin_av/aaaqs");
+            PgDbProject proj = PgDbProject.getProjFromFile(workingDirectory.getAbsolutePath());
             proj.getPrefs().put(UIConsts.PROJ_PREF.ENCODING, ENCODING);
             new ProjectUpdater(dbNew, proj).update();
             
