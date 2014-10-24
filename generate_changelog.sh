@@ -32,7 +32,36 @@ echo $version" has been released." > ${ROOT_PATH}${change_log_folder}"/"${CHANGE
 for ((i=0;i<${#repositoryList[@]};i++));do 
 	PATH_TO_REPO=${ROOT_PATH}"/../"${repositoryList[$i]};
 	cd $PATH_TO_REPO;
+	# get revereted repolist git_tag_rev
+	declare -a git_tags
+	git_tags=($(git tag))
+	declare -a git_tag_rev
+	declare -i ind_rev
+	ind_rev=0
+	for ((ind=${#git_tags[@]} - 1; ind >= 0; ind --)); do
+		git_tag_rev[ind_rev]=${git_tags[$ind]}
+		ind_rev=$(expr $ind_rev + 1)
+	done
+	# -------------------------------
+	# get last and pre last tag name 
+	last_tag=${git_tag_rev[0]}
+	pre_last_tag=${git_tag_rev[1]} 
+	# get file with commits separated by tag
 	eval $COMMAND;
+	# find numbers tags
+	last_tag_number=$(cat ${CHANGE_LOG_FILENAME} | awk "/$last_tag/{ print NR; exit }")
+	pre_last_tag_number=$(cat ${CHANGE_LOG_FILENAME} | awk "/$pre_last_tag/{ print NR; exit }")
+	# set numbers to right values to use with head tail commands
+	pre_last_tag_number=$(expr $pre_last_tag_number - 1)
+	last_tag_number=$(expr $pre_last_tag_number - $last_tag_number)
+	#echo "$pre_last_tag_number $last_tag_number"
+	#cat ${CHANGE_LOG_FILENAME} | head -n $pre_last_tag_number | tail -n $last_tag_number
+	# write repo name to file
+	echo ${repositoryList[$i]} >> ${ROOT_PATH}${change_log_folder}"/"${CHANGE_LOG_FILENAME}
+	# write commits to file
+	cat ${CHANGE_LOG_FILENAME} | head -n $pre_last_tag_number | tail -n $last_tag_number >> ${ROOT_PATH}${change_log_folder}"/"${CHANGE_LOG_FILENAME}
+	# write all commits to separate file
 	cat ${CHANGE_LOG_FILENAME} > ${ROOT_PATH}${change_log_folder}"/"${repositoryList[$i]}".txt"
+	# remove commits file from repository
 	rm -rf ${CHANGE_LOG_FILENAME}
 done
