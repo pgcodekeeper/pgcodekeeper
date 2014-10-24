@@ -5,11 +5,11 @@
  */
 package cz.startnet.utils.pgdiff.parsers;
 
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 /**
  * Parser utilities.
@@ -177,6 +177,10 @@ public class ParserUtils {
 
             return strings.toArray(new String[strings.size()]);
         }
+    }
+    
+    public static String quoteString(String s) {
+        return "'" + s.replace("'", "''") + "'";
     }
 
     /**

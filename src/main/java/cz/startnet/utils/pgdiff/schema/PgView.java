@@ -214,7 +214,8 @@ public class PgView extends PgStatementWithSearchPath {
                     && new HashSet<>(defaultValues).equals(new HashSet<>(view.defaultValues))
                     && privileges.equals(view.privileges)
                     && Objects.equals(owner, view.getOwner())
-                    && Objects.equals(comment, view.getComment());
+                    && Objects.equals(comment, view.getComment())
+                    && Objects.equals(columnComments, view.getColumnComments());
         }
         
         return eq;
@@ -232,6 +233,7 @@ public class PgView extends PgStatementWithSearchPath {
         result = prime * result + ((select == null) ? 0 : select.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
+        result = prime * result + ((columnComments == null) ? 0 : columnComments.hashCode());
         return result;
     }
     
@@ -325,6 +327,30 @@ public class PgView extends PgStatementWithSearchPath {
 
         public String getComment() {
             return comment;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            boolean eq = false;
+            
+            if (this == obj) {
+                eq = true;
+            } else if(obj instanceof ColumnComment) {
+                ColumnComment val = (ColumnComment) obj;
+                eq = Objects.equals(columnName, val.getColumnName())
+                        && Objects.equals(comment, val.getComment());
+            }
+            
+            return eq;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((columnName == null) ? 0 : columnName.hashCode());
+            result = prime * result + ((comment == null) ? 0 : comment.hashCode());
+            return result;
         }
     }
 }
