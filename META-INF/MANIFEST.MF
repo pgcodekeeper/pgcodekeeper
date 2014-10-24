@@ -6,7 +6,9 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.ui.Activator
 Export-Package: ru.taximaxim.codekeeper.ui,
  ru.taximaxim.codekeeper.ui.externalcalls,
- ru.taximaxim.codekeeper.ui.fileutils
+ ru.taximaxim.codekeeper.ui.fileutils,
+ ru.taximaxim.codekeeper.ui.localizations,
+ ru.taximaxim.codekeeper.ui.pgdbproject
 Require-Bundle: com.jcraft.jsch,
  org.eclipse.compare,
  org.eclipse.core.commands,
