@@ -17,6 +17,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.EnumSet;
 
+import junit.framework.Assert;
+
 import org.eclipse.core.internal.resources.PreferenceInitializer;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.junit.Test;
@@ -40,10 +42,16 @@ public class ProjectUpdaterTest {
     public void updateSuccessTest() throws IOException, PgCodekeeperUIException{
         String filenameOld = "old.sql";
         String filenameNew = "new.sql";
+        
+        InputStream isOld = ProjectUpdaterTest.class.getResourceAsStream(filenameOld);
+        Assert.assertNotNull(isOld);
         PgDatabase dbOld = PgDumpLoader.loadDatabaseSchemaFromDump(
-                ProjectUpdaterTest.class.getResourceAsStream(filenameOld), ENCODING, false, false);
+                isOld, ENCODING, false, false);
+        
+        InputStream isNew = ProjectUpdaterTest.class.getResourceAsStream(filenameNew);
+        Assert.assertNotNull(isNew);
         PgDatabase dbNew = PgDumpLoader.loadDatabaseSchemaFromDump(
-                ProjectUpdaterTest.class.getResourceAsStream(filenameNew), ENCODING, false, false);
+                isNew, ENCODING, false, false);
         
         try (TempDir td = new TempDir("test_new")) { //$NON-NLS-1$
             File workingDirectory = td.get();
