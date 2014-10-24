@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.Parser;
+import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.SelectParser;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -98,6 +99,7 @@ public class JdbcLoader {
     private String getPgPassPassword(){
         Log.log(Log.LOG_INFO, "User provided an empty password. Reading password from pgpass file.");
         String os = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
+        // FIXME use File instead of concats
         String pgPassFileName = os.contains("win") ? System.getenv("APPDATA") + "\\postgresql\\pgpass.conf" : System.getProperty("user.home") + "/.pgpass";
         Log.log(Log.LOG_INFO, "pgpass file will be read at " + pgPassFileName);
         File pgpass = new File(pgPassFileName);
@@ -298,7 +300,7 @@ public class JdbcLoader {
         
         String comment = res.getString("comment");
         if (!schemaName.equals("public") && comment != null && !comment.isEmpty()){
-            s.setComment("'" + comment + "'");
+            s.setComment(ParserUtils.quoteString(comment));
         }
         
         // setting current schema as default
@@ -403,7 +405,8 @@ public class JdbcLoader {
         e.setSchema(res.getString("namespace"));
         
         String comment = res.getString("description");
-        e.setComment(comment != null && !comment.isEmpty() ? "'" + comment + "'" : null);
+        e.setComment(comment != null && !comment.isEmpty() ? 
+                ParserUtils.quoteString(comment) : null);
         return e;
     }
 
@@ -485,7 +488,7 @@ public class JdbcLoader {
         
         String comment = res.getString("description");
         if (comment != null && !comment.isEmpty()){
-            c.setComment("'" + comment + "'");
+            c.setComment(ParserUtils.quoteString(comment));
         }
         
         return c;
@@ -550,7 +553,7 @@ public class JdbcLoader {
                 }
                 String colComment = colComments[i];
                 if (colComment != null){
-                    v.addColumnComment(colName, colComment);
+                    v.addColumnComment(colName, ParserUtils.quoteString(colComment));
                 }    
             }
         }
@@ -564,7 +567,7 @@ public class JdbcLoader {
         // COMMENT
         String comment = res.getString("comment");
         if (comment != null && !comment.isEmpty()){
-            v.setComment("'" + comment + "'");
+            v.setComment(ParserUtils.quoteString(comment));
         }
         
         return v;
@@ -661,7 +664,7 @@ public class JdbcLoader {
             tableDef.append(",\n");
             String comment = colComments[i];
             if (comment != null && !comment.isEmpty()){
-                column.setComment("'" + comment + "'");                
+                column.setComment(ParserUtils.quoteString(comment));                
             }
             columns.add(column);
         }
@@ -710,7 +713,7 @@ public class JdbcLoader {
         // Table COMMENTS
         String comment = res.getString("table_comment");
         if (comment != null && !comment.isEmpty()){
-            t.setComment("'" + comment + "'");                
+            t.setComment(ParserUtils.quoteString(comment));                
         }
         
         // PRIVILEGES, OWNER
@@ -864,7 +867,8 @@ public class JdbcLoader {
         
         // COMMENT
         String comment = res.getString("comment");
-        f.setComment(comment != null && !comment.isEmpty() ? "'" + comment + "'" : null);
+        f.setComment(comment != null && !comment.isEmpty() ?
+                ParserUtils.quoteString(comment) : null);
         return f;
     }
     
