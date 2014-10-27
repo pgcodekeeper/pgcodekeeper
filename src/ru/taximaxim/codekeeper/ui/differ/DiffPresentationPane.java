@@ -318,7 +318,6 @@ public abstract class DiffPresentationPane extends Composite {
                 if (monitor.isCanceled()) {
                     return Status.CANCEL_STATUS;
                 }
-                DiffPresentationPane.this.treeDiffer = treeDiffer;
                 return Status.OK_STATUS;
             }
         };
@@ -334,6 +333,7 @@ public abstract class DiffPresentationPane extends Composite {
                             if (DiffPresentationPane.this.isDisposed()) {
                                 return;
                             }
+                            DiffPresentationPane.this.treeDiffer = treeDiffer;
                             diffTable.setInput(
                                     DiffPresentationPane.this.treeDiffer, !isProjSrc);
                             diffPane.setInput(null);
