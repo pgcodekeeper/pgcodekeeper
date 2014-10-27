@@ -50,6 +50,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
@@ -455,7 +456,8 @@ class DiffPage extends DiffPresentationPane {
                 mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
                 mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
                 mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT));
-        if (btnPgDump.getSelection() || btnJdbc.getSelection()) {
+        if (selectedDBSource == DBSources.SOURCE_TYPE_DUMP || 
+                selectedDBSource == DBSources.SOURCE_TYPE_JDBC) {
             dialog.setDbParams(dbSrc.txtDbHost.getText(),
                     dbSrc.txtDbPort.getText(), dbSrc.txtDbName.getText(),
                     dbSrc.txtDbUser.getText(), dbSrc.txtDbPass.getText());

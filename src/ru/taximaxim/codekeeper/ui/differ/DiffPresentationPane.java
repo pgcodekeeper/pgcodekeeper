@@ -27,11 +27,13 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -52,12 +54,13 @@ public abstract class DiffPresentationPane extends Composite {
     protected final DiffTableViewer diffTable;
     private final Composite containerSrc;
     private final Composite containerDb;
-    protected final Button btnDump, btnPgDump, btnJdbc;
+    private final Button btnDump, btnPgDump, btnJdbc;
     private final Button btnGetChanges;
     private final Button btnFlipDbPicker;
     protected final DbPicker dbSrc;
     private final DiffPaneViewer diffPane;
     private final Label lblSourceInfo;
+    protected DBSources selectedDBSource;
     
     protected DbSource dbSource;
     protected DbSource dbTarget;
@@ -121,9 +124,13 @@ public abstract class DiffPresentationPane extends Composite {
             public void widgetSelected(SelectionEvent e) {
                 try {
                     loadChanges(proj, projProps, mainPrefs);
+                    saveDBPrefs(projProps);
                 } catch (PgCodekeeperUIException e1) {
                     ExceptionNotifier.showErrorDialog(
                             Messages.DiffPresentationPane_error_loading_changes, e1);
+                } catch (BackingStoreException e1) {
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.DiffPresentationPane_cannotSaveDbPropToProjProps, e1);
                 }
             }
         });
@@ -200,6 +207,7 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 showDbPicker(false);
+                selectedDBSource = DBSources.SOURCE_TYPE_DUMP;
                 lblSourceInfo.setText(getSourceInfoText());
                 containerUpper.layout();
             }
@@ -212,6 +220,7 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 showDbPicker(true);
+                selectedDBSource = DBSources.SOURCE_TYPE_DB;
                 lblSourceInfo.setText(getSourceInfoText());
                 containerUpper.layout();
             }
@@ -224,6 +233,7 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 showDbPicker(true);
+                selectedDBSource = DBSources.SOURCE_TYPE_JDBC;
                 lblSourceInfo.setText(getSourceInfoText());
                 containerUpper.layout();
             }
@@ -241,13 +251,21 @@ public abstract class DiffPresentationPane extends Composite {
         });
         
         boolean useDbPicker = false;
-        String src = projProps.get(PROJ_PREF.SOURCE, ""); //$NON-NLS-1$
-        if (src.equals(PROJ_PREF.SOURCE_TYPE_DUMP)) {
+        selectedDBSource = DBSources.getEnum(projProps.get(PROJ_PREF.SOURCE, "")); //$NON-NLS-1$
+        switch (selectedDBSource) {
+        case SOURCE_TYPE_DUMP:
             btnDump.setSelection(true);
-        } else {
+            break;
+        case SOURCE_TYPE_DB:
             btnPgDump.setSelection(true);
             useDbPicker = true;
+            break;
+        case SOURCE_TYPE_JDBC:
+            btnJdbc.setSelection(true);
+            useDbPicker = true;
+            break;
         }
+        
         showDbPicker(useDbPicker);
 
         if (useDbPicker) {
@@ -269,6 +287,28 @@ public abstract class DiffPresentationPane extends Composite {
         diffPane = new DiffPaneViewer(sashOuter, SWT.NONE, isProjSrc ? dbSource
                 : dbTarget, isProjSrc ? dbTarget : dbSource, !isProjSrc);
     }
+    
+    private void saveDBPrefs(IEclipsePreferences projProps) throws BackingStoreException {
+        projProps.put(PROJ_PREF.SOURCE, selectedDBSource.toString());
+        switch (selectedDBSource) {
+        case SOURCE_TYPE_DUMP:
+            projProps.put(PROJ_PREF.DB_NAME, ""); //$NON-NLS-1$
+            projProps.put(PROJ_PREF.DB_USER, ""); //$NON-NLS-1$
+            projProps.put(PROJ_PREF.DB_PASS, ""); //$NON-NLS-1$
+            projProps.put(PROJ_PREF.DB_HOST, ""); //$NON-NLS-1$
+            projProps.putInt(PROJ_PREF.DB_PORT, 0);
+            break;
+        case SOURCE_TYPE_DB:
+        case SOURCE_TYPE_JDBC:
+            projProps.put(PROJ_PREF.DB_NAME, dbSrc.txtDbName.getText());
+            projProps.put(PROJ_PREF.DB_USER, dbSrc.txtDbUser.getText());
+            projProps.put(PROJ_PREF.DB_PASS, dbSrc.txtDbPass.getText());
+            projProps.put(PROJ_PREF.DB_HOST, dbSrc.txtDbHost.getText());
+            projProps.putInt(PROJ_PREF.DB_PORT, Integer.valueOf(dbSrc.txtDbPort.getText()));
+            break;
+        }
+        projProps.flush();
+    }
 
     private void flipDbPicker(boolean open){
         containerSrc.setVisible(!open);
@@ -283,23 +323,28 @@ public abstract class DiffPresentationPane extends Composite {
     
     private String getSourceInfoText(){
         StringBuilder value = new StringBuilder().append(Messages.source);
-        if (btnDump.getSelection()){
+        switch (selectedDBSource) {
+        case SOURCE_TYPE_DUMP:
             return value.append(Messages.dump_file).toString();
-        }else if (btnPgDump.getSelection()){
+        case SOURCE_TYPE_DB:
             value.append(Messages.pg_dump);
-        }else if (btnJdbc.getSelection()){
+            break;
+        case SOURCE_TYPE_JDBC:
             value.append(Messages.jdbc);
+            break;
         }
         String preset = dbSrc.getSelectedDbPresetName();
         if (preset.isEmpty()){
-            value.append("     " + Messages.connection_details);
-            value.append(dbSrc.txtDbUser.getText().isEmpty() ? "" : dbSrc.txtDbUser.getText() + "@");
+            value.append("     " + Messages.connection_details); //$NON-NLS-1$
+            value.append(dbSrc.txtDbUser.getText().isEmpty() ? "" : dbSrc.txtDbUser.getText() + "@"); //$NON-NLS-1$ //$NON-NLS-2$
             value.append(dbSrc.txtDbHost.getText().isEmpty() ? Messages.unknown_host : dbSrc.txtDbHost.getText());
-            value.append(dbSrc.txtDbPort.getText().isEmpty() ? "" : ":" + dbSrc.txtDbPort.getText());
-            value.append("/");
+            value.append(dbSrc.txtDbPort.getText().isEmpty() ? "" : ":" + dbSrc.txtDbPort.getText()); //$NON-NLS-1$ //$NON-NLS-2$
+            value.append("/"); //$NON-NLS-1$
             value.append(dbSrc.txtDbName.getText().isEmpty() ? Messages.unknown_db : dbSrc.txtDbName.getText());
         }else{
-            value.append("     " + Messages.commitPartDescr_used_connection_template + "[" + preset + "]");
+            value.append("     ") //$NON-NLS-1$
+                    .append(Messages.commitPartDescr_used_connection_template)
+                    .append("[").append(preset).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         return value.toString();
     }
@@ -315,7 +360,8 @@ public abstract class DiffPresentationPane extends Composite {
             IPreferenceStore mainPrefs) throws PgCodekeeperUIException {
         DbSource dbsProj, dbsRemote;
         dbsProj = DbSource.fromProject(proj);
-        if (btnDump.getSelection()) {
+        switch (selectedDBSource) {
+        case SOURCE_TYPE_DUMP:
             FileDialog dialog = new FileDialog(getShell());
             dialog.setText(Messages.choose_dump_file_with_changes);
             String dumpfile = dialog.open();
@@ -324,7 +370,8 @@ public abstract class DiffPresentationPane extends Composite {
             }
             dbsRemote = DbSource
                     .fromFile(dumpfile, projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
-        } else if (btnPgDump.getSelection()) {
+            break;
+        case SOURCE_TYPE_DB:
             String sPort = dbSrc.txtDbPort.getText();
             int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
@@ -332,14 +379,16 @@ public abstract class DiffPresentationPane extends Composite {
                     dbSrc.txtDbHost.getText(), port, dbSrc.txtDbUser.getText(),
                     dbSrc.txtDbPass.getText(), dbSrc.txtDbName.getText(),
                     projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
-        } else if (btnJdbc.getSelection()){
-            String sPort = dbSrc.txtDbPort.getText();
-            int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
+            break;
+        case SOURCE_TYPE_JDBC:
+            sPort = dbSrc.txtDbPort.getText();
+            port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
             dbsRemote = DbSource.fromJdbc(dbSrc.txtDbHost.getText(), port, dbSrc.txtDbUser.getText(),
                     dbSrc.txtDbPass.getText(), dbSrc.txtDbName.getText(),
                     projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
-        }else {
+            break;
+        default:
             throw new PgCodekeeperUIException(Messages.undefined_source_for_db_changes);
         }
 
