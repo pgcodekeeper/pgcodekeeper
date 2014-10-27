@@ -1,11 +1,9 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.nio.file.Paths;
 import java.util.Set;
 
 import org.eclipse.core.filesystem.URIUtil;
@@ -21,7 +19,6 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
@@ -226,20 +223,6 @@ public class NewProjWizard extends Wizard
         return true;
     }
 
-    void setPageContentFromOldSettings(String oldPrefs) throws IOException {
-        PreferenceStore prefs = new PreferenceStore(oldPrefs);
-        prefs.load();
-        pageMisc.setEncoding(prefs.getString(PROJ_PREF.ENCODING));
-        pageRepo.setProjectRootPath(Paths.get(prefs.getString(PROJ_PREF.REPO_ROOT_PATH), 
-                prefs.getString(PROJ_PREF.REPO_SUBDIR_PATH)).toString());
-        pageDb.setDbName(prefs.getString(PROJ_PREF.DB_NAME));
-        pageDb.setDbUser(prefs.getString(PROJ_PREF.DB_USER));
-        pageDb.setDbPass(prefs.getString(PROJ_PREF.DB_PASS));
-        pageDb.setDbHost(prefs.getString(PROJ_PREF.DB_HOST));
-        pageDb.setDbPort(prefs.getInt(PROJ_PREF.DB_PORT));
-        pageDb.setSource(prefs.getString(PROJ_PREF.SOURCE));
-    }
-
     private void fillProjProps() {
         IEclipsePreferences newPrefs = props.getPrefs();
         setDbSource(newPrefs);
@@ -284,7 +267,7 @@ class PageRepo extends WizardPage implements Listener {
     private Composite container;
     private Text txtProjectRoot, txtProjectName, txtOldProjFile;
     private Label lblProjRoot, lblProjectFile;
-    private Button btnBrowseOldFile, btnDoInit;
+    private Button btnDoInit;
     private CLabel lblWarnInit;
     private LocalResourceManager lrm;
     
@@ -318,64 +301,9 @@ class PageRepo extends WizardPage implements Listener {
         container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(2, false));
         
-        Button btnImportOldProjPrefs = new Button(container, SWT.CHECK);
-        btnImportOldProjPrefs.setText(Messages.NewProjWizard_import_old_proj);
-        GridData gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.verticalIndent = 12;
-        btnImportOldProjPrefs.setLayoutData(gd);
-        btnImportOldProjPrefs.addSelectionListener(new SelectionAdapter() {
-            
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                boolean importOldProjPrefs = ((Button)e.widget).getSelection();
-                btnBrowseOldFile.setEnabled(importOldProjPrefs);
-                txtOldProjFile.setEnabled(importOldProjPrefs);
-                txtOldProjFile.setText(""); //$NON-NLS-1$
-            }
-        });
-        
-        Label lblOldProjFile = new Label(container, SWT.NONE);
-        lblOldProjFile.setText(Messages.NewProjWizard_select_old_proj);
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        lblOldProjFile.setLayoutData(gd);
-        
-        txtOldProjFile = new Text(container, SWT.BORDER);
-        txtOldProjFile.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtOldProjFile.addListener(SWT.Modify, this);
-        txtOldProjFile.setEnabled(false);
-        
-        btnBrowseOldFile = new Button(container, SWT.PUSH);
-        btnBrowseOldFile.setText(Messages.browse);
-        btnBrowseOldFile.setEnabled(false);
-        btnBrowseOldFile.addSelectionListener(new SelectionAdapter() {
-            
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                FileDialog dialog = new FileDialog(container.getShell());
-                dialog.setText(Messages.loadProj_open_project);
-                dialog.setOverwrite(false);
-                dialog.setFilterExtensions(new String[] { "*.project", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
-                dialog.setFilterPath(mainPrefStore.getString(PREF.LAST_OPENED_LOCATION));
-                String path = dialog.open();
-                if (path != null) {
-                    txtOldProjFile.setText(path);
-                    try {
-                        ((NewProjWizard)getWizard()).setPageContentFromOldSettings(path);
-                    } catch (IOException e1) {
-                        ExceptionNotifier.showErrorDialog(
-                                Messages.NewProjWizard_error_loading_old_proj, e1);
-                    }
-                    PreferenceInitializer.savePreference(mainPrefStore,
-                            PREF.LAST_OPENED_LOCATION, new File(path).getParent());
-                }
-            }
-        });
-        
         lblProjectFile = new Label(container, SWT.NONE);
         lblProjectFile.setText(Messages.NewProjWizard_project_name);
-        gd = new GridData();
+        GridData gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
         lblProjectFile.setLayoutData(gd);
