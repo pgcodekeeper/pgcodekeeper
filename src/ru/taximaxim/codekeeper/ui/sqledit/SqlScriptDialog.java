@@ -360,49 +360,6 @@ public class SqlScriptDialog extends TrayDialog {
                         if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                             addDepcy = getDependenciesFromOutput(sr.getStorage());
                         }
-                        Runnable showScriptOutput = new Runnable() {
-                            @Override
-                            public void run() {
-                                if (mainPrefs
-                                        .getBoolean(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
-                                    TrayDialog dialog = new TrayDialog(getShell()) {
-                                        
-                                        @Override
-                                        protected void configureShell(
-                                                Shell newShell) {
-                                            newShell.setText(Messages.sqlScriptDialog_script_output);
-                                            super.configureShell(newShell);
-                                        }
-                                        @Override
-                                        protected boolean isResizable() {
-                                            return true;
-                                        }
-                                        @Override
-                                        protected Control createDialogArea(
-                                                Composite parent) {
-                                            Composite comp = (Composite)super.createDialogArea(parent);
-                                            Text filed = new Text(comp, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
-                                                    | SWT.READ_ONLY | SWT.MULTI);
-                                            filed.setText(sr.getStorage());
-                                            filed.setBackground(getShell().getDisplay().getSystemColor(
-                                                    SWT.COLOR_LIST_BACKGROUND));
-                                            filed.setFont(JFaceResources.getTextFont());
-                                            filed.setLayoutData(new GridData(GridData.FILL_BOTH));
-                                            return comp;
-                                        }
-                                        
-                                        @Override
-                                        protected void createButtonsForButtonBar(Composite parent) {
-                                                createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL,
-                                                        true);
-                                        };
-                                    };
-                                    dialog.open();
-                                }
-                            }
-                        };
-                        SqlScriptDialog.this.getShell().getDisplay()
-                                .syncExec(showScriptOutput);
                     } catch (IOException ex) {
                         if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                             addDepcy = getDependenciesFromOutput(sr.getStorage());
@@ -420,6 +377,11 @@ public class SqlScriptDialog extends TrayDialog {
                                     @Override
                                     public void run() {
                                         if (!runScriptBtn.isDisposed()) {
+                                            if (mainPrefs.getBoolean(
+                                                    DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
+                                                new ScriptRunResultDialog(
+                                                        getShell(), sr.getStorage()).open();
+                                            }
                                             runScriptBtn.setText(RUN_SCRIPT_LABEL);
                                             showAddDepcyDialog();
                                         }
@@ -656,4 +618,42 @@ public class SqlScriptDialog extends TrayDialog {
             return super.close();
         }
     }
+    
+
+    private static class ScriptRunResultDialog extends TrayDialog {
+        
+        private final String text;
+
+        private ScriptRunResultDialog(Shell shell, String text) {
+            super(shell);
+            this.text = text;
+            setShellStyle(getShellStyle() | SWT.RESIZE);
+        }
+
+        @Override
+        protected void configureShell(Shell newShell) {
+            super.configureShell(newShell);
+            newShell.setText(Messages.sqlScriptDialog_script_output);
+        }
+
+        @Override
+        protected Control createDialogArea(Composite parent) {
+            Composite comp = (Composite) super.createDialogArea(parent);
+            Text filed = new Text(comp, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
+                    | SWT.READ_ONLY | SWT.MULTI);
+            filed.setText(text);
+            filed.setBackground(getShell().getDisplay().getSystemColor(
+                    SWT.COLOR_LIST_BACKGROUND));
+            filed.setFont(JFaceResources.getTextFont());
+            filed.setLayoutData(new GridData(GridData.FILL_BOTH));
+            return comp;
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(Composite parent) {
+                createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL,
+                        true);
+        }
+    }
+
 }

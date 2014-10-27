@@ -22,7 +22,8 @@ class GroupFieldsEditor extends FieldEditor {
     
     private Button btnManage;
 
-    public GroupFieldsEditor(Map<String, String> prefWithLables, String groupName, Composite parent) {
+    public GroupFieldsEditor(Map<String, String> prefWithLables,
+            String groupName, Composite parent) {
         for (String name : prefWithLables.keySet()) {
             prefNames.put(name, prefWithLables.get(name));
         }
@@ -56,7 +57,7 @@ class GroupFieldsEditor extends FieldEditor {
             Button btn = new Button(parent, SWT.CHECK | SWT.LEFT);
             btn.setText(prefNames.get(name));
             gd = new GridData();
-            gd.horizontalIndent = 5;
+            gd.horizontalIndent = 10;
             gd.horizontalSpan = numColumns;
             btn.setLayoutData(gd);
             btn.addSelectionListener(new SelectionAdapter() {
