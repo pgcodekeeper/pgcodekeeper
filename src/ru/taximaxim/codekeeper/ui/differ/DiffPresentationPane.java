@@ -302,7 +302,7 @@ public abstract class DiffPresentationPane extends Composite {
 
     private void loadChanges() {
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
-        treeDiffer = new TreeDiffer(dbSource, dbTarget);
+        final TreeDiffer treeDiffer = new TreeDiffer(dbSource, dbTarget);
 
         Job job = new Job(
                 Messages.diffPresentationPane_getting_changes_for_diff) {
@@ -318,6 +318,7 @@ public abstract class DiffPresentationPane extends Composite {
                 if (monitor.isCanceled()) {
                     return Status.CANCEL_STATUS;
                 }
+                DiffPresentationPane.this.treeDiffer = treeDiffer;
                 return Status.OK_STATUS;
             }
         };
@@ -333,7 +334,8 @@ public abstract class DiffPresentationPane extends Composite {
                             if (DiffPresentationPane.this.isDisposed()) {
                                 return;
                             }
-                            diffTable.setInput(treeDiffer, !isProjSrc);
+                            diffTable.setInput(
+                                    DiffPresentationPane.this.treeDiffer, !isProjSrc);
                             diffPane.setInput(null);
                             diffLoaded();
                         }
