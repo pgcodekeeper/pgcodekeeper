@@ -38,12 +38,8 @@ public class Messages extends NLS {
     public static String please_check_at_least_one_row;
     public static String port_must_be_a_number;
     public static String projectEditorDiffer_save_project;
-    public static String projectProperties_db;
-    public static String projectProperties_dump_file;
     public static String projectProperties_encoding_for_all_operation_with_project;
     public static String projectProperties_error_occurs_while_saving_properties;
-    public static String projectProperties_jdbc;
-    public static String projectProperties_project_default_source;
     public static String undefined_source_for_db_changes;
     public static String browse;
     public static String make_sure_you_have_priv_and_public_keys;
