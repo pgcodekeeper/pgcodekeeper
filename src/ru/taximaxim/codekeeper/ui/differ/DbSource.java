@@ -97,6 +97,15 @@ public abstract class DbSource {
         return new DbSourceFilter(src, filter, side);
     }
     
+    public static DbSource fromJdbc(PgDbProject proj){
+        return fromJdbc(proj.getPrefs().get(PROJ_PREF.DB_HOST, ""), 
+                proj.getPrefs().getInt(PROJ_PREF.DB_PORT, 0),
+                proj.getPrefs().get(PROJ_PREF.DB_USER, ""), 
+                proj.getPrefs().get(PROJ_PREF.DB_PASS, ""), 
+                proj.getPrefs().get(PROJ_PREF.DB_NAME, ""), 
+                proj.getPrefs().get(PROJ_PREF.ENCODING, ""));
+    }
+    
     public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
             String encoding) {
         return new DbSourceJdbc(host, port, user, pass, dbname, encoding);

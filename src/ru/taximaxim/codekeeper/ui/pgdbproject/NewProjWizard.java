@@ -124,15 +124,7 @@ public class NewProjWizard extends Wizard
 
     @Override
     public void handlePageChanging(PageChangingEvent event) {
-        if (event.getCurrentPage() == pageRepo && event.getTargetPage() == pageDb) {
-            boolean isInit = pageRepo.isDoInit();
-            
-            if (isInit && pageDb.isSourceNone()) {
-                pageDb.setSourceDb();
-            }
-            
-            pageDb.setSourceNoneEnabled(!isInit);
-        } else if (event.getCurrentPage() == pageRepo && event.getTargetPage() == pageMisc){
+        if (event.getCurrentPage() == pageRepo && event.getTargetPage() == pageMisc){
             File sub = new File (pageRepo.getProjectRootPath()); 
 
             if (!new File(sub, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
@@ -258,8 +250,8 @@ public class NewProjWizard extends Wizard
             src = PROJ_PREF.SOURCE_TYPE_DB;
         } else if (pageDb.isSourceDump()) {
             src = PROJ_PREF.SOURCE_TYPE_DUMP;
-        } else if (pageDb.isSourceNone()) {
-            src = PROJ_PREF.SOURCE_TYPE_NONE;
+        } else if (pageDb.isSourceJdbc()) {
+            src = PROJ_PREF.SOURCE_TYPE_JDBC;
         } else {
             ExceptionNotifier.showErrorDialog(
                     Messages.newProjWizard_no_schema_source_selected, null);
@@ -513,12 +505,10 @@ class PageDb extends WizardPage implements Listener {
 
     private Composite container;
 
-    private Button radioDb, radioDump, radioNone;
+    private Button radioDb, radioDump, radioJdbc;
 
     private DbPicker grpDb;
     private Group grpDump;
-
-    private Label lblNoSource;
 
     private Text txtDumpPath;
 
@@ -526,25 +516,18 @@ class PageDb extends WizardPage implements Listener {
         return radioDb.getSelection();
     }
 
-    void setSourceDb() {
+    private void setSourceDb() {
         radioDump.setSelection(false);
-        radioNone.setSelection(false);
+        radioJdbc.setSelection(false);
         radioDb.setSelection(true);
         radioDb.notifyListeners(SWT.Selection, new Event());
     }
     
     private void setSourceDump() {
         radioDump.setSelection(true);
-        radioNone.setSelection(false);
+        radioJdbc.setSelection(false);
         radioDb.setSelection(false);
         radioDump.notifyListeners(SWT.Selection, new Event());
-    }
-    
-    private void setSourceNone() {
-        radioDump.setSelection(false);
-        radioNone.setSelection(true);
-        radioDb.setSelection(false);
-        radioNone.notifyListeners(SWT.Selection, new Event());
     }
     
     void setSource(String value) {
@@ -555,9 +538,6 @@ class PageDb extends WizardPage implements Listener {
         case PROJ_PREF.SOURCE_TYPE_DUMP:
             setSourceDump();
             break;
-        default:
-            setSourceNone();
-            break;
         }
     }
 
@@ -565,12 +545,8 @@ class PageDb extends WizardPage implements Listener {
         return radioDump.getSelection();
     }
 
-    public boolean isSourceNone() {
-        return radioNone.getSelection();
-    }
-
-    void setSourceNoneEnabled(boolean enabled) {
-        radioNone.setEnabled(enabled);
+    public boolean isSourceJdbc() {
+        return radioJdbc.getSelection();
     }
 
     public String getDbName() {
@@ -646,11 +622,9 @@ class PageDb extends WizardPage implements Listener {
             public void widgetSelected(SelectionEvent e) {
                 if (radioDb.getSelection()) {
                     grpDump.setVisible(false);
-                    lblNoSource.setVisible(false);
                     grpDb.setVisible(true);
 
                     ((GridData) grpDump.getLayoutData()).exclude = true;
-                    ((GridData) lblNoSource.getLayoutData()).exclude = true;
                     ((GridData) grpDb.getLayoutData()).exclude = false;
 
                     container.layout(false);
@@ -667,11 +641,9 @@ class PageDb extends WizardPage implements Listener {
             public void widgetSelected(SelectionEvent e) {
                 if (radioDump.getSelection()) {
                     grpDb.setVisible(false);
-                    lblNoSource.setVisible(false);
                     grpDump.setVisible(true);
 
                     ((GridData) grpDb.getLayoutData()).exclude = true;
-                    ((GridData) lblNoSource.getLayoutData()).exclude = true;
                     ((GridData) grpDump.getLayoutData()).exclude = false;
 
                     container.layout(false);
@@ -680,32 +652,30 @@ class PageDb extends WizardPage implements Listener {
         });
         radioDb.addListener(SWT.Selection, this);
 
-        radioNone = new Button(radioGrp, SWT.RADIO);
-        radioNone.setText(Messages.none);
-        radioNone.addSelectionListener(new SelectionAdapter() {
+        radioJdbc = new Button(radioGrp, SWT.RADIO);
+        radioJdbc.setText(Messages.jdbc);
+        radioJdbc.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                grpDb.setVisible(false);
+                grpDb.setVisible(true);
                 grpDump.setVisible(false);
-                lblNoSource.setVisible(true);
 
-                ((GridData) grpDb.getLayoutData()).exclude = true;
+                ((GridData) grpDb.getLayoutData()).exclude = false;
                 ((GridData) grpDump.getLayoutData()).exclude = true;
-                ((GridData) lblNoSource.getLayoutData()).exclude = false;
 
                 container.layout(false);
             }
         });
-        radioNone.addListener(SWT.Selection, this);
-        radioNone.setSelection(true);
+        radioJdbc.addListener(SWT.Selection, this);
+        radioJdbc.setSelection(true);
 
         grpDb = new DbPicker(container, SWT.NONE, mainPrefs);
         grpDb.setText(Messages.newProjWizard_db_source_settings);
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-        gd.exclude = true;
+        gd.exclude = false;
         gd.verticalIndent = 12;
         grpDb.setLayoutData(gd);
-        grpDb.setVisible(false);
+        grpDb.setVisible(true);
 
         grpDb.txtDbPort.addListener(SWT.Modify, this);
 
@@ -740,9 +710,6 @@ class PageDb extends WizardPage implements Listener {
                 }
             }
         });
-
-        lblNoSource = new Label(container, SWT.NONE);
-        lblNoSource.setText(Messages.newProjWizard_no_schema_source_selected);
 
         setControl(container);
     }

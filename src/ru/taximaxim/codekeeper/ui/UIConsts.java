@@ -37,7 +37,7 @@ public interface UIConsts {
     interface PROJ_PREF {
         String ENCODING = "prefGeneralEncoding"; //$NON-NLS-1$
         String SOURCE = "prefGeneralSource"; //$NON-NLS-1$
-        String SOURCE_TYPE_NONE = "none"; //$NON-NLS-1$
+        String SOURCE_TYPE_JDBC = "jdbc"; //$NON-NLS-1$
         String SOURCE_TYPE_DB = "db"; //$NON-NLS-1$
         String SOURCE_TYPE_DUMP = "dump"; //$NON-NLS-1$
         String REPO_TYPE_GIT_NAME = "GIT"; //$NON-NLS-1$
