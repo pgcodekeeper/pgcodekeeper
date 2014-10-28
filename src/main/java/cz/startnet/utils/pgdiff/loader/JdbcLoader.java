@@ -112,7 +112,7 @@ public class JdbcLoader {
         Log.log(Log.LOG_INFO, "pgpass file will be read at " + pgPassFile.getAbsolutePath());
 
         if (!pgPassFile.isFile() || !pgPassFile.exists()){
-            Log.log(Log.LOG_INFO, "Using empty password, because either pgpass file "
+            Log.log(Log.LOG_INFO, "Using empty password, because pgpass file either "
                     + "does not exist or is not a file: " + pgPassFile.getAbsolutePath());
             return "";
         }
