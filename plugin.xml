@@ -101,12 +101,6 @@
       </page>
       <page
             category="ru.taximaxim.codekeeper.ui.general"
-            class="ru.taximaxim.codekeeper.ui.prefs.GitPrefPage"
-            id="ru.taximaxim.codekeeper.ui.git"
-            name="%page.name.gitssh">
-      </page>
-      <page
-            category="ru.taximaxim.codekeeper.ui.general"
             class="ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage"
             id="ru.taximaxim.codekeeper.ui.ignoredobjects"
             name="%page.name.ignored_objects">

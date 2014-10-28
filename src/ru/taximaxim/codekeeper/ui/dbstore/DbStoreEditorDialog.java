@@ -87,25 +87,27 @@ public class DbStoreEditorDialog extends TrayDialog {
     }
     
     @Override
-    protected void configureShell(Shell newShell) {
+    protected void configureShell(final Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(Messages.dbStoreEditorDialog_db_store_editor);
         
         newShell.addShellListener(new ShellAdapter() {
+            
             @Override
             public void shellActivated(ShellEvent e) {
 
                 // do pack-calling methods after open has returned
                 // otherwise shell is opened at (0,0) coordinates
 
+                // one-time listener, remove after first execution
+                newShell.removeShellListener(this);
+                
                 grpDbData.setStoreEditMode();
                 
                 if(cmbDbNames.getItemCount() > 0) {
-                    cmbDbNames.select(0); // select an element and trigger modify event
+                    // select an element and trigger modify event
+                    cmbDbNames.select(0);
                 }
-                
-                // one-time listener, remove after first execution
-                ((Shell) e.getSource()).removeShellListener(this);
             }
         });
     }
@@ -135,6 +137,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                 }
                 grpDbData.lblName.setText(db.name);
                 grpDbData.txtDbName.setText(db.dbname);
+                grpDbData.txtDbName.selectAll();
+                grpDbData.txtDbName.setFocus();
                 grpDbData.txtDbUser.setText(db.dbuser);
                 grpDbData.txtDbPass.setText(db.dbpass);
                 grpDbData.txtDbHost.setText(db.dbhost);
@@ -176,7 +180,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                         return;
                     }
                     
-                    store.put(newName, DbInfo.getEmpty(newName));
+                    store.put(newName, DbInfo.getEmptyNamed(newName));
                     cmbDbNames.add(newName);
                     cmbDbNames.select(cmbDbNames.indexOf(newName));
                 }

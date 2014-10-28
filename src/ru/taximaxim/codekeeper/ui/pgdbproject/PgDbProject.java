@@ -35,8 +35,7 @@ public class PgDbProject {
     }
     
     public Path getPathToProject() {
-        return Paths.get(prefs.get(UIConsts.PROJ_PREF.REPO_ROOT_PATH, 
-                project.getLocation().toString()));
+        return Paths.get(project.getLocationURI());
     }
     
     /**
@@ -65,21 +64,12 @@ public class PgDbProject {
         prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
     }
     
-    private static PgDbProject createPgDbProject(String projectName, URI location) throws PgCodekeeperUIException {        
-        // it is acceptable to use the ResourcesPlugin class
-        IProject newProject = ResourcesPlugin.getWorkspace().getRoot()
-                .getProject(projectName);
- 
+    private static PgDbProject createPgDbProject(IProject newProject, URI location) throws PgCodekeeperUIException {        
         if (!newProject.exists()) {
-            URI projectLocation = location;
             IProjectDescription desc = newProject.getWorkspace()
                     .newProjectDescription(newProject.getName());
-            if (location != null && ResourcesPlugin.getWorkspace().getRoot()
-                    .getLocationURI().equals(location)) {
-                projectLocation = null;
-            }
  
-            desc.setLocationURI(projectLocation);
+            desc.setLocationURI(location);
             try {
                 newProject.create(desc, null);
             } catch (CoreException e) {
@@ -104,13 +94,21 @@ public class PgDbProject {
      * Извлекает имя проекта из названия папки проекта
      * @throws PgCodekeeperUIException 
      */
-    public static PgDbProject getProjFromFile(String pathToProject) throws PgCodekeeperUIException {
+    public static PgDbProject getProjFromFile(String pathToProject) 
+            throws PgCodekeeperUIException {
         return getProjFromFile(Paths.get(pathToProject).getFileName().toString(),
                 pathToProject);
     }
     
     public static PgDbProject getProjFromFile(String projectName, 
             String pathToProject) throws PgCodekeeperUIException {
-        return createPgDbProject(projectName, new File(pathToProject).toURI());
+     // it is acceptable to use the ResourcesPlugin class
+        return createPgDbProject(ResourcesPlugin.getWorkspace().getRoot()
+                .getProject(projectName), new File(pathToProject).toURI());
+    }
+    
+    public static PgDbProject getProjectFromIProjectHandle(IProject projHandle, URI location) 
+            throws PgCodekeeperUIException {
+        return createPgDbProject(projHandle, location);
     }
 }

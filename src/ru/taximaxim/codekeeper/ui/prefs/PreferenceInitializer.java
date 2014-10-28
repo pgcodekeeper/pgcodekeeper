@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
@@ -22,8 +21,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         
         store.setDefault(PREF.PGDUMP_EXE_PATH, "pg_dump"); //$NON-NLS-1$
         store.setDefault(PREF.DB_STORE, "default\t\t\t\t\t0"); //$NON-NLS-1$
-        store.setDefault(PREF.GIT_KEY_PRIVATE_FILE, new File(new File(
-                System.getProperty("user.home"), ".ssh"), "id_rsa").toString()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         store.setDefault(PREF.PGDUMP_CUSTOM_PARAMS, ""); //$NON-NLS-1$
         store.setDefault(PREF.IGNORE_OBJECTS, ""); //$NON-NLS-1$
         store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
@@ -32,6 +29,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.DROP_TABLE_STATEMENT, true);
+        store.setDefault(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY, true);
+        
         
         store.setDefault(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT, true);
     }

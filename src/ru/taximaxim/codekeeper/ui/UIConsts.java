@@ -2,6 +2,8 @@ package ru.taximaxim.codekeeper.ui;
 
 public interface UIConsts {
 
+    String UTF_8 = "UTF-8"; //$NON-NLS-1$
+
     interface PLUGIN_ID {
         String THIS = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
         String HELP = THIS + ".help"; //$NON-NLS-1$
@@ -15,7 +17,6 @@ public interface UIConsts {
         String PGDUMP_EXE_PATH = "prefPgdumpExePath"; //$NON-NLS-1$
         String PGDUMP_CUSTOM_PARAMS = "prefPgdumpCustomParams"; //$NON-NLS-1$
         String DB_STORE = "prefDbStore"; //$NON-NLS-1$
-        String GIT_KEY_PRIVATE_FILE = "prefGitKeyPrivateFile"; //$NON-NLS-1$
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
@@ -26,6 +27,7 @@ public interface UIConsts {
     }
     
     interface DB_UPDATE_PREF {
+        String SHOW_SCRIPT_OUTPUT_SEPARATELY = "prefShowScriptOutputSeparately"; //$NON-NLS-1$
         String USE_PSQL_DEPCY = "prefUsePSQLDepcy"; //$NON-NLS-1$
         String DROP_TABLE_STATEMENT = "prefDropTableStatement"; //$NON-NLS-1$
         String ALTER_COLUMN_STATEMENT = "prefAlterColumnStatement"; //$NON-NLS-1$
@@ -35,19 +37,14 @@ public interface UIConsts {
     interface PROJ_PREF {
         String ENCODING = "prefGeneralEncoding"; //$NON-NLS-1$
         String SOURCE = "prefGeneralSource"; //$NON-NLS-1$
-        String SOURCE_TYPE_NONE = "none"; //$NON-NLS-1$
+        String SOURCE_TYPE_JDBC = "jdbc"; //$NON-NLS-1$
         String SOURCE_TYPE_DB = "db"; //$NON-NLS-1$
         String SOURCE_TYPE_DUMP = "dump"; //$NON-NLS-1$
-        String REPO_TYPE_GIT_NAME = "GIT"; //$NON-NLS-1$
         String DB_NAME = "prefDbName"; //$NON-NLS-1$
         String DB_HOST = "prefDbHost"; //$NON-NLS-1$
         String DB_PORT = "prefDbPort"; //$NON-NLS-1$
         String DB_USER = "prefDbUser"; //$NON-NLS-1$
         String DB_PASS = "prefDbPass"; //$NON-NLS-1$
-        String REPO_URL = "prefRepoUrl"; //$NON-NLS-1$
-        String REPO_USER = "prefRepoUser"; //$NON-NLS-1$
-        String REPO_PASS = "prefRepoPass"; //$NON-NLS-1$
-        String REPO_TYPE = "prefRepoType"; //$NON-NLS-1$
         String REPO_SUBDIR_PATH = "prefWorkingDirPath"; //$NON-NLS-1$
         String REPO_ROOT_PATH = "prefRepoPath"; //$NON-NLS-1$
     }
@@ -66,9 +63,6 @@ public interface UIConsts {
     }
     
     interface FILE {
-        @Deprecated
-        String PROJ_PREF_STORE = ".project"; //$NON-NLS-1$
-        
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONWARNING = "/icons/warning.gif"; //$NON-NLS-1$
         String ICONADD = "/icons/add_obj.gif"; //$NON-NLS-1$
