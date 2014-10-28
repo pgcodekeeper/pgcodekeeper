@@ -1009,12 +1009,12 @@ class ElementsModel<T> {
         return elements.get(el);
     }
 
-    public void put(T subtree, boolean b) {
-        elements.put(subtree, b);
-        if (b) {
-            checked.add(subtree);
+    public void put(T el, boolean isChecked) {
+        elements.put(el, isChecked);
+        if (isChecked) {
+            checked.add(el);
         } else {
-            checked.remove(subtree);
+            checked.remove(el);
         }
         updateChecked = true;
     }
