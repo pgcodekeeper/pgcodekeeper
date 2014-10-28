@@ -230,9 +230,7 @@ public class Messages extends NLS {
     public static String NewProjWizard_error_creating_project;
     public static String NewProjWizard_error_loading_old_proj;
     public static String NewProjWizard_error_saving_projprefs;
-    public static String NewProjWizard_import_old_proj;
     public static String NewProjWizard_project_name;
-    public static String NewProjWizard_select_old_proj;
     public static String OpenEditor_error_open_project;
     public static String OpenEditor_error_open_project_editor;
     public static String PgDbProject_error_creating_project;
