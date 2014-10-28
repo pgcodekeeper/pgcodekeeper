@@ -5,8 +5,8 @@ import java.nio.charset.Charset;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -28,14 +28,16 @@ public class ProjectProperties extends PropertyPage implements
 
     private Combo cmbEncoding;
     private IEclipsePreferences prefs;
-    
-    public ProjectProperties() {
-    }
 
     @Override
+    public void setElement(IAdaptable element) {
+        super.setElement(element);
+        prefs = new ProjectScope((IProject) element.getAdapter(IProject.class))
+                .getNode(UIConsts.PLUGIN_ID.THIS);
+    }
+    
+    @Override
     protected Control createContents(Composite parent) {
-        prefs = new ProjectScope((IProject) getElement().getAdapter(
-                IResource.class)).getNode(UIConsts.PLUGIN_ID.THIS);
         Composite panel = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(2, false);
         layout.marginHeight = 0;
@@ -45,8 +47,8 @@ public class ProjectProperties extends PropertyPage implements
         Label label = new Label(panel, SWT.NONE);
         label.setLayoutData(new GridData());
         label.setText(Messages.projectProperties_encoding_for_all_operation_with_project);
-        cmbEncoding = new Combo(panel, SWT.BORDER | SWT.DROP_DOWN
-                | SWT.READ_ONLY);
+        
+        cmbEncoding = new Combo(panel, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         cmbEncoding.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
