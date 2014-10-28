@@ -24,6 +24,8 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -74,7 +76,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 
     @Override
     public void addPages() {
-        pageDiff = new PageDiff(Messages.diffWizard_diff_parameters, mainPrefs, proj);
+        pageDiff = new PageDiff(Messages.diffWizard_diff_parameters, mainPrefs);
         pagePartial = new PagePartial(Messages.diffWizard_diff_tree);
         pageResult = new PageResult(Messages.diffWizard_diff_result, proj);
 
@@ -86,6 +88,16 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     @Override
     public void createPageControls(Composite pageContainer) {
         super.createPageControls(pageContainer);
+        
+        getShell().addShellListener(new ShellAdapter() {
+            
+            @Override
+            public void shellActivated(ShellEvent e) {
+                getShell().removeShellListener(this);
+                
+                getShell().pack();
+            }
+        });
 
         ((WizardDialog) getContainer()).addPageChangingListener(this);
     };
@@ -178,20 +190,12 @@ class PageDiff extends WizardPage implements Listener {
 
     private final IPreferenceStore mainPrefs;
 
-    private final PgDbProject proj;
-
     private Composite container;
-
     private Button radioDb, radioJdbc, radioDump, radioProj;
-
     private Group currentTargetGrp;
-
     private DbPicker grpDb;
-
     private Group grpDump, grpProj;
-
     private Text txtDumpPath, txtProjPath;
-
     private Combo cmbEncoding;
 
     public DiffTargetType getTargetType() throws PgCodekeeperUIException {
@@ -265,8 +269,7 @@ class PageDiff extends WizardPage implements Listener {
             break;
 
         case PROJ:
-            PgDbProject proj = PgDbProject.getProjFromFile(getProjPath());
-            dbs = DbSource.fromProject(proj);
+            dbs = DbSource.fromProject(PgDbProject.getProjFromFile(getProjPath()));
             break;
             
         default:
@@ -276,12 +279,10 @@ class PageDiff extends WizardPage implements Listener {
         return dbs;
     }
 
-    public PageDiff(String pageName, IPreferenceStore mainPrefs,
-            PgDbProject proj) {
+    public PageDiff(String pageName, IPreferenceStore mainPrefs) {
         super(pageName, pageName, null);
 
         this.mainPrefs = mainPrefs;
-        this.proj = proj;
     }
 
     @Override
@@ -331,6 +332,9 @@ class PageDiff extends WizardPage implements Listener {
         radioProj = new Button(grpRadio, SWT.RADIO);
         radioProj.setText(Messages.diffWizard_project);
         radioProj.addSelectionListener(switcher);
+        // TODO fix diff against another project
+        // cannot create IProject here, it's being added to the workspace
+        radioProj.setEnabled(false);
 
         grpDb = new DbPicker(container, SWT.NONE, mainPrefs);
         grpDb.setText(Messages.diffWizard_db_taget);
@@ -403,9 +407,8 @@ class PageDiff extends WizardPage implements Listener {
                 String dir = txtProjPath.getText();
 
                 if (!dir.isEmpty() && new File(dir).isDirectory()) {
-                    PgDbProject tmpProj;
                     try {
-                        tmpProj = PgDbProject.getProjFromFile(dir);
+                        PgDbProject tmpProj = PgDbProject.getProjFromFile(dir);
                         cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getPrefs().get(
                                 PROJ_PREF.ENCODING, ""))); //$NON-NLS-1$
                     } catch (PgCodekeeperUIException e1) {
