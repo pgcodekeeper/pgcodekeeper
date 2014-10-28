@@ -387,7 +387,7 @@ class PageRepo extends WizardPage implements Listener {
         txtProjectName.addListener(SWT.Modify, this);
 
         lblProjRoot = new Label(container, SWT.NONE);
-        lblProjRoot.setText(Messages.newProjWizard_select_git_repository_root_directory);
+        lblProjRoot.setText(Messages.newProjWizard_select_project_working_directory);
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.verticalIndent = 12;
