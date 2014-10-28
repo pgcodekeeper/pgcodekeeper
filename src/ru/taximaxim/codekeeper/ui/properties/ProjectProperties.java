@@ -52,14 +52,15 @@ public class ProjectProperties extends PropertyPage implements
         cmbEncoding.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
-        cmbEncoding.select(cmbEncoding.indexOf(prefs.get(PROJ_PREF.ENCODING, "UTF-8")));
+        cmbEncoding.select(cmbEncoding.indexOf(
+                prefs.get(PROJ_PREF.ENCODING,UIConsts.UTF_8)));
         
         return panel;
     }
     
     @Override
     protected void performDefaults() {
-        cmbEncoding.select(cmbEncoding.indexOf("UTF-8")); //$NON-NLS-1$
+        cmbEncoding.select(cmbEncoding.indexOf(UIConsts.UTF_8));
         try {
             fillPrefs();
         } catch (BackingStoreException e) {
