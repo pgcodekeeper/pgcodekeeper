@@ -37,6 +37,8 @@ public class Messages extends NLS {
     public static String please_check_at_least_one_row;
     public static String port_must_be_a_number;
     public static String projectEditorDiffer_save_project;
+    public static String projectProperties_encoding_for_all_operation_with_project;
+    public static String projectProperties_error_occurs_while_saving_properties;
     public static String undefined_source_for_db_changes;
     public static String browse;
     public static String path_to_db_schema_dump;

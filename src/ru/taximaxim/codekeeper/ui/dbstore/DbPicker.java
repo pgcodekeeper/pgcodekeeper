@@ -145,7 +145,6 @@ public class DbPicker extends Group {
         }
     }
     
-
     private void fillDbFieldsFromDbInfo() {
         DbInfo dbInfo = dbStorePicker.getDbInfo();
         if (dbInfo != null) {
