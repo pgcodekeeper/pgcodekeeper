@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -626,7 +625,7 @@ public class DiffTableViewer extends Composite {
     }
     
     private void setInputTreeElement(TreeElement treeElement) {
-        elements = new ElementsModel();
+        elements = new ElementsModel<>();
         if (treeElement != null) {
             generateFlatElementsMap(treeElement);
         }
@@ -703,13 +702,7 @@ public class DiffTableViewer extends Composite {
     }
     
     public Set<TreeElement> getCheckedElements(boolean checkedStatus) {
-        Set<TreeElement> checked = new HashSet<>(elements.size());
-        for (Entry<TreeElement, Boolean> el : elements.entrySet()) {
-            if (el.getValue() == checkedStatus) {
-                checked.add(el.getKey());
-            }
-        }
-        return checked;
+        return elements.getCheckedElements(checkedStatus);
     }
     
     /**
@@ -801,7 +794,7 @@ public class DiffTableViewer extends Composite {
     public void setInputCollection(HashSet<TreeElement> shouldBeDeleted, 
             TreeDiffer rootDiffer, boolean reverseDiffSide) {
         setDiffer(rootDiffer, reverseDiffSide);
-        elements = new ElementsModel();
+        elements = new ElementsModel<>();
         for (TreeElement e : shouldBeDeleted){
             elements.put(e, true);
         }
@@ -1010,13 +1003,19 @@ class ElementsModel<T> {
 
     private boolean updateChecked;
     private int checkedCount;
+    private Set<T> checked = new HashSet<>();
 
     public Boolean get(Object el) {
         return elements.get(el);
     }
 
-    public void put(T subtree, boolean b) {
-        elements.put(subtree, b);
+    public void put(T el, boolean isChecked) {
+        elements.put(el, isChecked);
+        if (isChecked) {
+            checked.add(el);
+        } else {
+            checked.remove(el);
+        }
         updateChecked = true;
     }
 
@@ -1047,5 +1046,15 @@ class ElementsModel<T> {
             }
         }
         return checkedCount;
+    }
+    
+    public Set<T> getCheckedElements(boolean checkedStatus) {
+        if (checkedStatus) {
+            return checked;
+        } else {
+            Set<T> difference = new HashSet<>(elements.keySet());
+            difference.removeAll(checked);
+            return difference;
+        }
     }
 }

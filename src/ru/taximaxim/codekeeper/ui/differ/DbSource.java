@@ -10,10 +10,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.externalcalls.IRepoWorker;
-import ru.taximaxim.codekeeper.ui.externalcalls.JGitExec;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
-import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -57,21 +54,6 @@ public abstract class DbSource {
         return new DbSourceDirTree(dirTreePath, encoding);
     }
 
-    public static DbSource fromGit(PgDbProject proj, String privateKeyFile) {
-        return new DbSourceRepo(null, proj, privateKeyFile);
-    }
-
-    public static DbSource fromGit(PgDbProject proj,
-            String commitHash, String privateKeyFile) {
-        return new DbSourceRepo(null, proj, commitHash, privateKeyFile);
-    }
-
-    public static DbSource fromGit(String url, String user,
-            String pass, String commitHash, String encoding, String privateKeyFile) {
-        return new DbSourceRepo(null, url, user, pass,
-                commitHash, encoding, privateKeyFile);
-    }
-
     public static DbSource fromProject(PgDbProject proj) {
         return new DbSourceProject(proj);
     }
@@ -95,6 +77,15 @@ public abstract class DbSource {
     public static DbSource fromFilter(DbSource src, TreeElement filter,
             DiffSide side) {
         return new DbSourceFilter(src, filter, side);
+    }
+    
+    public static DbSource fromJdbc(PgDbProject proj){
+        return fromJdbc(proj.getPrefs().get(PROJ_PREF.DB_HOST, ""),  //$NON-NLS-1$
+                proj.getPrefs().getInt(PROJ_PREF.DB_PORT, 0),
+                proj.getPrefs().get(PROJ_PREF.DB_USER, ""),  //$NON-NLS-1$
+                proj.getPrefs().get(PROJ_PREF.DB_PASS, ""),  //$NON-NLS-1$
+                proj.getPrefs().get(PROJ_PREF.DB_NAME, ""),  //$NON-NLS-1$
+                proj.getPrefs().get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
     }
     
     public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
@@ -126,52 +117,6 @@ class DbSourceDirTree extends DbSource {
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
                 encoding, false, false);
-    }
-}
-
-class DbSourceRepo extends DbSource {
-
-    final private IRepoWorker repo;
-
-    final private String encoding;
-
-    final private String rev;
-
-    DbSourceRepo(String repoExec, PgDbProject proj, String privateKeyFile) {
-        this(repoExec, proj, null, privateKeyFile);
-    }
-
-    public DbSourceRepo(String repoExec, PgDbProject proj, String rev, String privateKeyFile) {
-        this(repoExec, 
-                 proj.getPrefs().get(PROJ_PREF.REPO_URL, ""), proj //$NON-NLS-1$
-                        .getPrefs().get(PROJ_PREF.REPO_USER, ""), proj //$NON-NLS-1$
-                        .getPrefs().get(PROJ_PREF.REPO_PASS, ""), rev, proj //$NON-NLS-1$
-                        .getPrefs().get(PROJ_PREF.ENCODING, ""), privateKeyFile); //$NON-NLS-1$
-    }
-
-    DbSourceRepo(String repoExec, String url, String user,
-            String pass, String rev, String encoding, String privateKeyFile) {
-        super(url + (rev.isEmpty() ? "" : "@" + rev)); //$NON-NLS-1$ //$NON-NLS-2$
-        repo = new JGitExec(url, user, pass, privateKeyFile);
-        this.encoding = encoding;
-        this.rev = rev;
-    }
-
-    @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
-        SubMonitor pm = SubMonitor.convert(monitor, 2);
-
-        try (TempDir tmpDir = new TempDir("tmp_repo_")) { //$NON-NLS-1$
-            File dir = tmpDir.get();
-
-            pm.newChild(1).subTask(Messages.dbSource_repository_rev_checkout);
-            repo.repoCheckOut(dir, rev);
-
-            pm.newChild(1).subTask(Messages.dbSource_loading_tree);
-            // TODO Implement reading subdir to be passed to loadDBSchema...
-            return PgDumpLoader.loadDatabaseSchemaFromDirTree(
-                    dir.getAbsolutePath(), encoding, false, false);
-        }
     }
 }
 
