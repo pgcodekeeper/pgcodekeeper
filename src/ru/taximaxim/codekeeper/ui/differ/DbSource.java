@@ -80,12 +80,12 @@ public abstract class DbSource {
     }
     
     public static DbSource fromJdbc(PgDbProject proj){
-        return fromJdbc(proj.getPrefs().get(PROJ_PREF.DB_HOST, ""), 
+        return fromJdbc(proj.getPrefs().get(PROJ_PREF.DB_HOST, ""),  //$NON-NLS-1$
                 proj.getPrefs().getInt(PROJ_PREF.DB_PORT, 0),
-                proj.getPrefs().get(PROJ_PREF.DB_USER, ""), 
-                proj.getPrefs().get(PROJ_PREF.DB_PASS, ""), 
-                proj.getPrefs().get(PROJ_PREF.DB_NAME, ""), 
-                proj.getPrefs().get(PROJ_PREF.ENCODING, ""));
+                proj.getPrefs().get(PROJ_PREF.DB_USER, ""),  //$NON-NLS-1$
+                proj.getPrefs().get(PROJ_PREF.DB_PASS, ""),  //$NON-NLS-1$
+                proj.getPrefs().get(PROJ_PREF.DB_NAME, ""),  //$NON-NLS-1$
+                proj.getPrefs().get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
     }
     
     public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
