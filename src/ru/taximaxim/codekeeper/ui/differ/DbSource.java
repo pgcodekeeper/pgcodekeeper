@@ -122,7 +122,7 @@ class DbSourceDirTree extends DbSource {
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) {
-        SubMonitor.convert(monitor, 1).newChild(1).subTask(Messages.dbSource_loading_tree);
+        monitor.subTask(Messages.dbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
                 encoding, false, false);
@@ -187,7 +187,7 @@ class DbSourceProject extends DbSource {
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) {
-        SubMonitor.convert(monitor, 1).newChild(1).subTask(Messages.dbSource_loading_tree);
+        monitor.subTask(Messages.dbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(proj
                 .getPathToProject().toString(), proj.getPrefs()
@@ -210,7 +210,7 @@ class DbSourceFile extends DbSource {
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) {
-        SubMonitor.convert(monitor, 1).newChild(1).subTask(Messages.dbSource_loading_dump);
+        monitor.subTask(Messages.dbSource_loading_dump);
 
         return PgDumpLoader.loadDatabaseSchemaFromDump(filename, encoding,
                 false, false);
@@ -310,8 +310,8 @@ class DbSourceJdbc extends DbSource {
     
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
-        monitor.newChild(1).subTask(Messages.reading_db_from_jdbc);
-        return jdbcLoader.getDbFromJdbc();
+        monitor.subTask(Messages.reading_db_from_jdbc);
+        return jdbcLoader.getDbFromJdbc(monitor);
     }
 }
 
