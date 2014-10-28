@@ -1,8 +1,7 @@
 package cz.startnet.utils.pgdiff.loader;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Array;
 import java.sql.Connection;
@@ -19,6 +18,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -54,6 +57,7 @@ public class JdbcLoader {
     private final int TRIGGER_TYPE_TRUNCATE = 1 << 5;
     private final int TRIGGER_TYPE_INSTEAD = 1 << 6;
     
+    private final int DEFAULT_OBJECTS_COUNT = 100;
     /*
      * Prepared statements to be executed
      */
@@ -86,6 +90,7 @@ public class JdbcLoader {
     private String encoding;
     
     private Connection connection;
+    private IProgressMonitor monitor;
     
     public JdbcLoader(String host, int port, String user, String pass, String dbName, String encoding) {
         this.host = host;
@@ -98,53 +103,48 @@ public class JdbcLoader {
 
     private String getPgPassPassword(){
         Log.log(Log.LOG_INFO, "User provided an empty password. Reading password from pgpass file.");
-        String os = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
-        // FIXME use File instead of concats
-        String pgPassFileName = os.contains("win") ? System.getenv("APPDATA") + "\\postgresql\\pgpass.conf" : System.getProperty("user.home") + "/.pgpass";
-        Log.log(Log.LOG_INFO, "pgpass file will be read at " + pgPassFileName);
-        File pgpass = new File(pgPassFileName);
+        File pgPassFile;
+        if (System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH).contains("win")){
+            pgPassFile = new File(System.getenv("APPDATA"),"\\postgresql\\pgpass.conf");
+        }else{
+            pgPassFile = new File(System.getProperty("user.home"), "/.pgpass");
+        }
+        Log.log(Log.LOG_INFO, "pgpass file will be read at " + pgPassFile.getAbsolutePath());
+
+        if (!pgPassFile.isFile() || !pgPassFile.exists()){
+            Log.log(Log.LOG_INFO, "Using empty password, because either pgpass file "
+                    + "does not exist or is not a file: " + pgPassFile.getAbsolutePath());
+            return "";
+        }
         
-        try (BufferedReader br = new BufferedReader(new FileReader(pgpass))){        
-            String [] expectedTokens = {
-                                host, 
-                                String.valueOf(port), 
-                                dbName, 
-                                user
-                            };
-            
-            String line;
-            while ((line = br.readLine()) != null) {
-                try(Scanner sc = new Scanner(line)){
-                    sc.useDelimiter(":");
+        String [] expectedTokens = {host, String.valueOf(port), dbName, user};
+        try (Scanner sc = new Scanner(pgPassFile)){
+            sc.useDelimiter(":|\n");
+            while(sc.hasNextLine()) {
+                int tokenCounter = 0;
+                 
+                while(sc.hasNext()){
+                    if (tokenCounter > 3){
+                        return sc.skip(":").nextLine();
+                    }
                     
-                    int tokenCounter = 0;
-                    boolean fits = true;
-                    int tokensLength = 0;
-                    while(sc.hasNext()){
-                        String token = sc.next();
-                        
-                        if (tokenCounter < 4){
-                            tokensLength += token.length();
-                            if (!token.equals(expectedTokens[tokenCounter]) && !token.equals("*")){
-                                fits = false;                            
-                            }
-                        }else if (fits){
-                            return line.substring(tokensLength + 4);
-                        }
-                        tokenCounter++;
+                    String token = sc.next();
+                    if (!token.equals(expectedTokens[tokenCounter++]) && !token.equals("*")){
+                        break;
                     }
                 }
-                
+                sc.nextLine();
             }
-        } catch (IOException e) {
-            throw new IllegalStateException("Could not retreive pgpass password", e);
+        } catch (FileNotFoundException e) {
+            throw new IllegalStateException("Error reading pgpass file", e);
         }
         Log.log(Log.LOG_INFO, "Using empty password, because no password has been found "
-                + "in .pgpass file for " + host + ":" + port + ":" + dbName + ":" + user);
+                + "in pgpass file for " + host + ":" + port + ":" + dbName + ":" + user);
         return "";
     }
     
-    public PgDatabase getDbFromJdbc() throws IOException{
+    public PgDatabase getDbFromJdbc(IProgressMonitor mon) throws IOException{
+        monitor = mon == null ? new NullProgressMonitor() : SubMonitor.convert(mon, 1);
         PgDatabase d = new PgDatabase();
         try {
             Log.log(Log.LOG_INFO, "Reading db using JDBC.");
@@ -159,9 +159,22 @@ public class JdbcLoader {
             prepareStatements();
             prepareData();
             
+            // query total objects count
+            if (monitor instanceof SubMonitor){
+                try(Statement stmnt = connection.createStatement();
+                        ResultSet resCount = stmnt.executeQuery(JdbcQueries.QUERY_TOTAL_OBJECTS_COUNT)){
+                    if (resCount.next()){
+                        ((SubMonitor)monitor).setWorkRemaining(resCount.getInt(1) + 50);
+                    }else{
+                        ((SubMonitor)monitor).setWorkRemaining(DEFAULT_OBJECTS_COUNT);
+                    }
+                }
+            }
+            
             Log.log(Log.LOG_INFO, "Quering schemas");
             try(Statement stmnt = connection.createStatement(); 
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_SCHEMAS)){
+                
                 while (res.next()) {
                     Log.log(Log.LOG_INFO, "Quering objects for schema " + res.getString("nspname"));
                     prepareDataForSchema(res.getLong("oid"));
@@ -180,6 +193,7 @@ public class JdbcLoader {
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_EXTENSIONS)){
                 while(res.next()){
                     PgExtension extension = getExtension(res);
+                    monitor.worked(1);
                     if (extension != null){
                         d.addExtension(extension);
                     }
@@ -313,6 +327,7 @@ public class JdbcLoader {
         try(ResultSet resTables = prepStatTables.executeQuery()){
             while (resTables.next()) {                
                 PgTable table = getTable(resTables, schemaName);
+                monitor.worked(1);
                 if (table != null){
                     s.addTable(table);
                 }
@@ -341,6 +356,7 @@ public class JdbcLoader {
                 table = s.getTable(resIndecies.getString("table_name"));
                 if (table != null){
                     PgIndex index = getIndex(resIndecies, table.getName());
+                    monitor.worked(1);
                     if (index != null){
                         table.addIndex(index);
                     }
@@ -368,6 +384,7 @@ public class JdbcLoader {
         try(ResultSet resViews = prepStatViews.executeQuery()){
             while (resViews.next()) {
                 PgView view = getView(resViews, schemaName, schemaOid);
+                monitor.worked(1);
                 if (view != null){
                     s.addView(view);                    
                 }
@@ -390,6 +407,7 @@ public class JdbcLoader {
         try(ResultSet resSeq = prepStatSequences.executeQuery()){
             while(resSeq.next()){
                 PgSequence sequence = getSequence(resSeq, schemaName);
+                monitor.worked(1);
                 if (sequence != null){
                     s.addSequence(sequence);
                 }
