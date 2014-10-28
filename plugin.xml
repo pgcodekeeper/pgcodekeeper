@@ -85,6 +85,13 @@
             id="ru.taximaxim.codekeeper.ui.projectEditorDiffer"
             name="%editor.name.keeperProjectEditor">
       </editor>
+      <editor
+            class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor"
+            default="false"
+            filenames="*.sql"
+            id="ru.taximaxim.codekeeper.ui.SQLEditor"
+            name="PgCodeKeeper SQL Editor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
