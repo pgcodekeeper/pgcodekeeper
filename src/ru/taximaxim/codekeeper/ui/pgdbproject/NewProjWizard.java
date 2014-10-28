@@ -264,6 +264,8 @@ public class NewProjWizard extends Wizard
 }
 
 class PageRepo extends WizardNewProjectCreationPage implements Listener {
+    
+    private final static String WORKING_SET_ID = "org.eclipse.ui.resourceWorkingSetPage"; //$NON-NLS-1$
 
     private Composite container;
     private Button btnDoInit;
@@ -279,16 +281,12 @@ class PageRepo extends WizardNewProjectCreationPage implements Listener {
     
     @Override
     public void createControl(final Composite parent) {
-        this.lrm = new LocalResourceManager(JFaceResources.getResources(),
-                parent);
         super.createControl(parent);
-        createWorkingSetGroup(
-                (Composite) getControl(),
-                selection,
-                new String[] { "org.eclipse.ui.resourceWorkingSetPage" }); //$NON-NLS-1$
-        Dialog.applyDialogFont(getControl());
         
-        Composite comp = (Composite)getControl();
+        this.lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
+        
+        Composite comp = (Composite) getControl();
+        createWorkingSetGroup(comp, selection, new String[] { WORKING_SET_ID });
         
         container = new Composite(comp, SWT.NONE);
         container.setLayout(new GridLayout(2, false));
@@ -314,15 +312,16 @@ class PageRepo extends WizardNewProjectCreationPage implements Listener {
         btnDoInit.addListener(SWT.Selection, this);
         
         lblWarnInit = new CLabel(container, SWT.NONE);
-        lblWarnInit.setImage(lrm.createImage(ImageDescriptor
-                .createFromURL(Activator.getContext().getBundle()
-                        .getResource(FILE.ICONWARNING))));
+        lblWarnInit.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONWARNING))));
         lblWarnInit.setText(Messages.warning
                         + Messages.newProjWizard_this_will_delete_contents_and_recreate_them);        
         gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
         gd.exclude = true;
         lblWarnInit.setLayoutData(gd);
         lblWarnInit.setVisible(false);
+        
+        Dialog.applyDialogFont(getControl());
     }
     
     public boolean isDoInit() {
