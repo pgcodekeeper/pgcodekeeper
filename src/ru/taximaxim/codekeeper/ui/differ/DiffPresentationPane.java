@@ -268,14 +268,11 @@ public abstract class DiffPresentationPane extends Composite {
         
         showDbPicker(useDbPicker);
 
-        if (useDbPicker) {
-            dbSrc.txtDbName.setText(projProps.get(PROJ_PREF.DB_NAME, "")); //$NON-NLS-1$
-            dbSrc.txtDbUser.setText(projProps.get(PROJ_PREF.DB_USER, "")); //$NON-NLS-1$
-            dbSrc.txtDbPass.setText(projProps.get(PROJ_PREF.DB_PASS, "")); //$NON-NLS-1$
-            dbSrc.txtDbHost.setText(projProps.get(PROJ_PREF.DB_HOST, "")); //$NON-NLS-1$
-            dbSrc.txtDbPort
-                    .setText(String.valueOf(projProps.getInt(PROJ_PREF.DB_PORT, 0)));
-        }
+        dbSrc.txtDbName.setText(projProps.get(PROJ_PREF.DB_NAME, "")); //$NON-NLS-1$
+        dbSrc.txtDbUser.setText(projProps.get(PROJ_PREF.DB_USER, "")); //$NON-NLS-1$
+        dbSrc.txtDbPass.setText(projProps.get(PROJ_PREF.DB_PASS, "")); //$NON-NLS-1$
+        dbSrc.txtDbHost.setText(projProps.get(PROJ_PREF.DB_HOST, "")); //$NON-NLS-1$
+        dbSrc.txtDbPort.setText(String.valueOf(projProps.getInt(PROJ_PREF.DB_PORT, 0)));
         // end middle right container
         
         // read flip position from preferences
@@ -292,11 +289,7 @@ public abstract class DiffPresentationPane extends Composite {
         projProps.put(PROJ_PREF.SOURCE, selectedDBSource.toString());
         switch (selectedDBSource) {
         case SOURCE_TYPE_DUMP:
-            projProps.put(PROJ_PREF.DB_NAME, ""); //$NON-NLS-1$
-            projProps.put(PROJ_PREF.DB_USER, ""); //$NON-NLS-1$
-            projProps.put(PROJ_PREF.DB_PASS, ""); //$NON-NLS-1$
-            projProps.put(PROJ_PREF.DB_HOST, ""); //$NON-NLS-1$
-            projProps.putInt(PROJ_PREF.DB_PORT, 0);
+            // keep old db values, change only source type
             break;
         case SOURCE_TYPE_DB:
         case SOURCE_TYPE_JDBC:
@@ -336,15 +329,15 @@ public abstract class DiffPresentationPane extends Composite {
         String preset = dbSrc.getSelectedDbPresetName();
         if (preset.isEmpty()){
             value.append("     " + Messages.connection_details); //$NON-NLS-1$
-            value.append(dbSrc.txtDbUser.getText().isEmpty() ? "" : dbSrc.txtDbUser.getText() + "@"); //$NON-NLS-1$ //$NON-NLS-2$
+            value.append(dbSrc.txtDbUser.getText().isEmpty() ? "" : dbSrc.txtDbUser.getText() + '@'); //$NON-NLS-1$
             value.append(dbSrc.txtDbHost.getText().isEmpty() ? Messages.unknown_host : dbSrc.txtDbHost.getText());
-            value.append(dbSrc.txtDbPort.getText().isEmpty() ? "" : ":" + dbSrc.txtDbPort.getText()); //$NON-NLS-1$ //$NON-NLS-2$
-            value.append("/"); //$NON-NLS-1$
+            value.append(dbSrc.txtDbPort.getText().isEmpty() ? "" : ':' + dbSrc.txtDbPort.getText()); //$NON-NLS-1$ 
+            value.append('/'); 
             value.append(dbSrc.txtDbName.getText().isEmpty() ? Messages.unknown_db : dbSrc.txtDbName.getText());
         }else{
             value.append("     ") //$NON-NLS-1$
                     .append(Messages.commitPartDescr_used_connection_template)
-                    .append("[").append(preset).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
+                    .append('[').append(preset).append(']'); 
         }
         return value.toString();
     }
