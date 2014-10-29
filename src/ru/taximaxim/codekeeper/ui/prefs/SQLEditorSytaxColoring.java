@@ -1,17 +1,29 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -23,27 +35,115 @@ import ru.taximaxim.codekeeper.ui.Activator;
 public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
         IWorkbenchPreferencePage {
 
-    enum statementsTypes {
-        FUNCTIONS("prefsFunction"),
-        PREDICATES("prefsPredicates"),
-        RESERVED_WORDS("prefsReservedWords"),
-        UN_RESERVED_WORDS("prefsUnReservedWords"),
-        TYPES("prefsTypes"),
-        CONSTANTS("prefsConstants"),
-        SINGLE_LINE_COMMENTS("prefsSingleLineComments"),
-        GLOBAL_VARIABLES("prefsGlobalVariables");
+    enum StatementsTypes {
+        FUNCTIONS("prefsFunction", "Function"),
+        PREDICATES("prefsPredicates", "Predicates"),
+        RESERVED_WORDS("prefsReservedWords", "ReservedWords"),
+        UN_RESERVED_WORDS("prefsUnReservedWords", "UnReservedWords"),
+        TYPES("prefsTypes", "Types"),
+        CONSTANTS("prefsConstants", "Constants"),
+        SINGLE_LINE_COMMENTS("prefsSingleLineComments", "SingleLineComments"),
+        GLOBAL_VARIABLES("prefsGlobalVariables", "GlobalVariables");
         
         private String name;
-        private statementsTypes(String name) {
+        private String tranclatedName;
+        private StatementsTypes(String name, String tranclatedName) {
             this.name = name;
+            this.tranclatedName = tranclatedName;
         }
         @Override
         public String toString() {
+            return tranclatedName;
+        }
+        public String getPrefName() {
             return name;
         }
     }
     
+    class SyntaxModel {
+        
+        public SyntaxModel(StatementsTypes type, IPreferenceStore prefStore) {
+            this.type = type;
+            this.prefStore = prefStore;
+        }
+        protected RGB getColor() {
+            return color;
+        }
+        protected void setColor(RGB color) {
+            this.color = color;
+        }
+        protected void setBold(boolean bold) {
+            this.bold = bold;
+        }
+        protected void setItalic(boolean italic) {
+            this.italic = italic;
+        }
+        protected void setStrikethrough(boolean strikethrough) {
+            this.strikethrough = strikethrough;
+        }
+        protected void setUnderline(boolean underline) {
+            this.underline = underline;
+        }
+        protected boolean isBold() {
+            return bold;
+        }
+        protected boolean isItalic() {
+            return italic;
+        }
+        protected boolean isStrikethrough() {
+            return strikethrough;
+        }
+        protected boolean isUnderline() {
+            return underline;
+        }
+        public StatementsTypes getType() {
+            return type;
+        }
+        public String getPrefName() {
+            return type.getPrefName();
+        }
+
+        private StatementsTypes type;
+        private RGB color;
+        private boolean bold;
+        private boolean italic;
+        private boolean strikethrough;
+        private boolean underline;
+        private IPreferenceStore prefStore;
+        
+        SyntaxModel load() {
+            color = PreferenceConverter.getColor(prefStore,
+                    type.getPrefName() + ".Color");
+            bold = prefStore.getBoolean(type.getPrefName() + ".Bold");
+            italic = prefStore.getBoolean(type.getPrefName() + ".Italic");
+            strikethrough = prefStore.getBoolean(type.getPrefName() + ".strikethrough");
+            underline = prefStore.getBoolean(type.getPrefName() + ".underline");
+            return this;
+        }
+        
+        @Override
+        public String toString() {
+            return type.toString();
+        }
+        public void store() {
+            PreferenceConverter.setValue(prefStore, type.getPrefName() + ".Color", color);
+            prefStore.setValue(type.getPrefName() + ".Bold", bold);
+            prefStore.setValue(type.getPrefName() + ".Italic", italic);
+            prefStore.setValue(type.getPrefName() + ".strikethrough", strikethrough);
+            prefStore.setValue(type.getPrefName() + ".underline", underline);
+        }
+    }
+    
     private ListViewer listIgnoredObjs;
+    private ColorFieldEditor colorFieldEditor;
+    private BooleanFieldEditor boldField;
+    private BooleanFieldEditor italicField;
+    private BooleanFieldEditor strikethroughField;
+    private BooleanFieldEditor underlineField;
+    private IPreferenceStore store;
+    private SyntaxModel sel;
+    private List<SyntaxModel> input = new ArrayList<>();
+    private Group group;
 
     public SQLEditorSytaxColoring() {
         super(GRID);
@@ -51,7 +151,8 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
 
     @Override
     public void init(IWorkbench workbench) {
-        setPreferenceStore(Activator.getDefault().getPreferenceStore());
+        store = Activator.getDefault().getPreferenceStore();
+        setPreferenceStore(store);
     }
 
     @Override
@@ -69,109 +170,95 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
         listIgnoredObjs.setContentProvider(new ArrayContentProvider());
         listIgnoredObjs.setLabelProvider(new LabelProvider());
         listIgnoredObjs.setSorter(new ViewerSorter());
+        listIgnoredObjs.addSelectionChangedListener(new ISelectionChangedListener() {
+
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                sel = (SyntaxModel) ((StructuredSelection) event
+                                .getSelection()).getFirstElement();
+                if (sel == null) {
+                    return;
+                }
+                colorFieldEditor.getColorSelector().setColorValue(sel.getColor());
+                ((Button)boldField.getDescriptionControl(group)).setSelection(sel.isBold());
+                ((Button)italicField.getDescriptionControl(group)).setSelection(sel.isItalic());
+                ((Button)strikethroughField.getDescriptionControl(group)).setSelection(sel.isStrikethrough());
+                ((Button)underlineField.getDescriptionControl(group)).setSelection(sel.isUnderline());
+            }
+            
+        });
         
-        Group group = new Group(composite, SWT.NONE);
+        group = new Group(composite, SWT.NONE);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         group.setText("Font and color preference");
+        StatementsTypes first = StatementsTypes.CONSTANTS;
+        colorFieldEditor = new ColorFieldEditor(first.getPrefName() + ".Color", "Color:", group);
+        colorFieldEditor.setPreferenceStore(store);
+        colorFieldEditor.getColorSelector().addListener(new IPropertyChangeListener() {
+            
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                sel.setColor((RGB)event.getNewValue());
+            }
+        });
+        addField(colorFieldEditor);
+        
+        boldField = new BooleanFieldEditor(first.getPrefName() + ".Bold", "Bold:", group);
+        ((Button)boldField.getDescriptionControl(group)).addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                sel.setBold(((Button)e.widget).getSelection());
+            }
+        });
+        addField(boldField);
+        
+        italicField = new BooleanFieldEditor(first.getPrefName() + ".Italic", "Italic", group);
+        ((Button)italicField.getDescriptionControl(group)).addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                sel.setItalic(((Button)e.widget).getSelection());
+            }
+        });
+        addField(italicField);
+        strikethroughField = new BooleanFieldEditor(first.getPrefName() + ".strikethrough", "Strikethrough", group);
+        ((Button)strikethroughField.getDescriptionControl(group)).addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                sel.setStrikethrough(((Button)e.widget).getSelection());
+            }
+        });
+        addField(strikethroughField);
+        underlineField = new BooleanFieldEditor(first.getPrefName() + ".underline", "Underline", group);
+        ((Button)underlineField.getDescriptionControl(group)).addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                sel.setUnderline(((Button)e.widget).getSelection());
+            }
+        });
+        addField(underlineField);
+        
+        for (StatementsTypes type : StatementsTypes.values()) {
+            input.add(new SyntaxModel(type, store).load());
+        }
+        listIgnoredObjs.setInput(input);
+        listIgnoredObjs.setSelection(new StructuredSelection(first));
         
         return composite;
     }
 
     @Override
     protected void createFieldEditors() {
-        // TODO Auto-generated method stub
-        
     }
-    /**
-     * A syntax item object
-     * 
-     * @author renj
-     */
-    class SyntaxItem {
-        private Pattern pattern = Pattern.compile("(\\d)\\,(\\d)\\,(\\d)\\,(\\d)\\,(\\d)\\,(\\d{1,3})\\,(\\d{1,3})\\,(\\d{1,3})");
-
-        private Boolean _boldKey = Boolean.FALSE;
-        private Boolean _italicKey = Boolean.FALSE;
-        private Boolean _strikethroughKey = Boolean.FALSE;
-        private Boolean _underlineKey = Boolean.FALSE;
-        private Boolean _systemDefault = Boolean.FALSE;
-        private RGB _color = new RGB(0, 0, 0);
-
-        public SyntaxItem(String preferenceCodes) {
-            if (preferenceCodes != null && !preferenceCodes.equals("")) {
-                Matcher m = pattern.matcher(preferenceCodes);
-                if (m.matches()) {
-                    _boldKey = Boolean.valueOf(m.group(1).equals("1") ? true : false);
-                    _italicKey = Boolean.valueOf(m.group(2).equals("1") ? true : false);
-                    _strikethroughKey = Boolean.valueOf(m.group(3).equals("1") ? true : false);
-                    _underlineKey = Boolean.valueOf(m.group(4).equals("1") ? true : false);
-                    _systemDefault = Boolean.valueOf(m.group(5).equals("1") ? true : false);
-                    _color = new RGB(Integer.parseInt(m.group(6)), Integer.parseInt(m.group(7)), Integer.parseInt(m.group(8)));
-                }
-            }
+    
+    @Override
+    public boolean performOk() {
+        for (SyntaxModel element : input) {
+            element.store();
         }
-
-        public SyntaxItem(boolean bk, boolean ik, boolean sk, boolean uk, boolean sys, RGB rgb) {
-            _boldKey = Boolean.valueOf(bk);
-            _italicKey = Boolean.valueOf(ik);
-            _strikethroughKey = Boolean.valueOf(sk);
-            _underlineKey = Boolean.valueOf(uk);
-            _systemDefault = Boolean.valueOf(sys);
-            _color = rgb;
-        }
-
-        public void setBoldKey(boolean bk) {
-            _boldKey = Boolean.valueOf(bk);
-        }
-
-        public void setItalicKey(boolean ik) {
-            _italicKey = Boolean.valueOf(ik);
-        }
-
-        public void setStrikethroughKey(boolean sk) {
-            _strikethroughKey = Boolean.valueOf(sk);
-        }
-
-        public void setUnderlineKey(boolean uk) {
-            _underlineKey = Boolean.valueOf(uk);
-        }
-
-        public void setSystemDefault(boolean sys) {
-            _systemDefault = Boolean.valueOf(sys);
-        }
-
-        public void setColor(RGB rgb) {
-            _color = rgb;
-        }
-
-        public boolean isBold() {
-            return _boldKey.booleanValue();
-        }
-
-        public boolean isItalic() {
-            return _italicKey.booleanValue();
-        }
-
-        public boolean isStrikethrough() {
-            return _strikethroughKey.booleanValue();
-        }
-
-        public boolean isUnderline() {
-            return _underlineKey.booleanValue();
-        }
-
-        public boolean isSystemDefault() {
-            return _systemDefault.booleanValue();
-        }
-
-        public RGB getColor() {
-            return _color;
-        }
-
-        public String toString() {
-            String preferenceCodes = (_boldKey.booleanValue() ? "1" : "0") + "," + (_italicKey.booleanValue() ? "1" : "0") + "," + (_strikethroughKey.booleanValue() ? "1" : "0") + ","
-                    + (_underlineKey.booleanValue() ? "1" : "0") + "," + (_systemDefault.booleanValue() ? "1" : "0") + "," + _color.red + "," + _color.green + "," + _color.blue;
-            return preferenceCodes;
-        }
+        return true;
     }
 }
