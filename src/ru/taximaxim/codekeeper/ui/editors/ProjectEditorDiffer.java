@@ -195,6 +195,8 @@ class CommitPage extends DiffPresentationPane {
         
         this.mainPrefs = mainPrefs;
         this.proj = proj;
+        
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
     }
     
     @Override
@@ -212,10 +214,8 @@ class CommitPage extends DiffPresentationPane {
         
         GridData gd = new GridData(SWT.DEFAULT, SWT.FILL, false, false);
         gd.widthHint = btnSave.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
-        gd.minimumWidth = btnSave.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;        
+        gd.minimumWidth = gd.widthHint;
         container.setLayoutData(gd);
-        
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
     }
     
     private void commit() {
