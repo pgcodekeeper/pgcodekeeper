@@ -51,7 +51,6 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
-import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -450,12 +449,7 @@ class DiffPage extends DiffPresentationPane {
         SqlScriptDialog dialog = new SqlScriptDialog(getShell(),
                 MessageDialog.INFORMATION, Messages.diffPartDescr_diff_script,
                 Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
-                differ, dbSource.getDbObject().flatten(), 
-                mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY));
-        dialog.setDangerStatements(
-                mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
-                mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
-                mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT));
+                differ, dbSource.getDbObject().flatten(), mainPrefs);
         if (selectedDBSource == DBSources.SOURCE_TYPE_DUMP || 
                 selectedDBSource == DBSources.SOURCE_TYPE_JDBC) {
             dialog.setDbParams(dbSrc.txtDbHost.getText(),

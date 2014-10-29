@@ -11,4 +11,6 @@ public class ReadOnlyFileRemover {
         Files.getFileAttributeView(path, DosFileAttributeView.class).setReadOnly(false);
         Files.delete(path);
     }
+    
+    private ReadOnlyFileRemover() {}
 }

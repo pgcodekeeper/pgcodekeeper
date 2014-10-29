@@ -18,6 +18,8 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -46,12 +48,13 @@ import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
-import ru.taximaxim.codekeeper.ui.externalcalls.utils.ReturnCodeException;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -86,10 +89,7 @@ public class SqlScriptDialog extends TrayDialog {
     private List<Entry<String, String>> addDepcy;
     private final List<Entry<PgStatement, PgStatement>> oldDepcy;
     private List<PgStatement> objList;
-    private final boolean usePsqlDepcy;
-    private boolean searchForDropTable;
-    private boolean searchForAlterColumn;
-    private boolean searchForDropColumn;
+    private final IPreferenceStore mainPrefs;
     private Color colorPink;
     
     private String dbHost;
@@ -117,14 +117,6 @@ public class SqlScriptDialog extends TrayDialog {
         this.dbPort = dbPort;
     }
     
-    public void setDangerStatements(boolean searchForDropTable, 
-            boolean searchForAlterColumn,
-            boolean searchForDropColumn) {
-        this.searchForDropTable = searchForDropTable;
-        this.searchForAlterColumn = searchForAlterColumn;
-        this.searchForDropColumn = searchForDropColumn;
-    }
-    
     private String getReplacedString() {
         String s = cmbScript.getText();
         if (dbHost != null) {
@@ -146,7 +138,7 @@ public class SqlScriptDialog extends TrayDialog {
     }
     
     public SqlScriptDialog(Shell parentShell, int type, String title, String message,
-            Differ differ, List<PgStatement> objList, boolean usePsqlDepcy) {
+            Differ differ, List<PgStatement> objList, IPreferenceStore mainPrefs) {
         super(parentShell);
         this.title = title;
         this.message = message;
@@ -155,7 +147,7 @@ public class SqlScriptDialog extends TrayDialog {
         this.oldDepcy = differ.getAdditionalDepciesSource();
         differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
         this.objList = objList;
-        this.usePsqlDepcy = usePsqlDepcy;
+        this.mainPrefs = mainPrefs;
         this.history = new XmlHistory.Builder(SCRIPTS_HIST_MAX_STORED, 
                 SCRIPTS_HIST_FILENAME, 
                 SCRIPTS_HIST_ROOT, 
@@ -280,8 +272,10 @@ public class SqlScriptDialog extends TrayDialog {
                 getShell().removeListener(SWT.Activate, this);
                 
                 try {
-                    if (differ.getScript().isDangerDdl(!searchForDropColumn,
-                            !searchForAlterColumn, !searchForDropTable)) {
+                    if (differ.getScript().isDangerDdl(
+                            !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
+                            !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
+                            !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT))) {
                         if (showDangerWarning() == SWT.OK) {
                             sqlEditor.getTextWidget().setBackground(colorPink);
                         } else {
@@ -348,9 +342,10 @@ public class SqlScriptDialog extends TrayDialog {
 
                 @Override
                 public void run() {
+                    final StdStreamRedirector sr = new StdStreamRedirector();
                     try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
                         File outFile = tempFile.get();
-                        try (PrintWriter writer = new PrintWriter(outFile, "UTF-8")) { //$NON-NLS-1$
+                        try (PrintWriter writer = new PrintWriter(outFile, UIConsts.UTF_8)) {
                             writer.write(textRetrieved);
                         }
 
@@ -361,20 +356,16 @@ public class SqlScriptDialog extends TrayDialog {
                         }
                         
                         ProcessBuilder pb = new ProcessBuilder(command);
-                        String scriptOutputRes = StdStreamRedirector.launchAndRedirect(pb);
-                        if (usePsqlDepcy) {
-                            addDepcy = getDependenciesFromOutput(scriptOutputRes);
+                        sr.launchAndRedirect(pb);
+                        if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
+                            addDepcy = getDependenciesFromOutput(sr.getStorage());
                         }
                     } catch (IOException ex) {
-                        if (ex instanceof ReturnCodeException) {
-                            // FIXME no other simple way of getting process's output if exception occured (retval != 0)
-                            if (usePsqlDepcy) {
-                                addDepcy = getDependenciesFromOutput(
-                                        ((ReturnCodeException) ex).getOutput());
-                                if (!addDepcy.isEmpty()) {
-                                    // actually parsed some depcies, do not rethrow
-                                    return;
-                                }
+                        if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
+                            addDepcy = getDependenciesFromOutput(sr.getStorage());
+                            if (!addDepcy.isEmpty()) {
+                                // actually parsed some depcies, do not rethrow
+                                return;
                             }
                         }
                         throw new IllegalStateException(ex);
@@ -386,6 +377,11 @@ public class SqlScriptDialog extends TrayDialog {
                                     @Override
                                     public void run() {
                                         if (!runScriptBtn.isDisposed()) {
+                                            if (mainPrefs.getBoolean(
+                                                    DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
+                                                new ScriptRunResultDialog(
+                                                        getShell(), sr.getStorage()).open();
+                                            }
                                             runScriptBtn.setText(RUN_SCRIPT_LABEL);
                                             showAddDepcyDialog();
                                         }
@@ -396,7 +392,7 @@ public class SqlScriptDialog extends TrayDialog {
                 }
             };
             
-            // run thread that calls StdStreamRedirector.launchAndRedirect
+            // run thread that calls StdStreamRedirector.launchAndRedirect()
             scriptThread = new Thread(launcher);
             scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
                 
@@ -430,7 +426,7 @@ public class SqlScriptDialog extends TrayDialog {
             
             if (scriptFileName != null) {
                 File script = new File(scriptFileName);
-                try (PrintWriter writer = new PrintWriter(script, "UTF-8")) { //$NON-NLS-1$
+                try (PrintWriter writer = new PrintWriter(script, UIConsts.UTF_8)) {
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
                     ExceptionNotifier.showErrorDialog(
@@ -448,7 +444,7 @@ public class SqlScriptDialog extends TrayDialog {
     }
     
     private void showAddDepcyDialog() {
-        if (usePsqlDepcy && addDepcy != null && !addDepcy.isEmpty()) {
+        if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY) && addDepcy != null && !addDepcy.isEmpty()) {
             MessageBox mb = new MessageBox(getShell(), 
                     SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
             mb.setText(Messages.sqlScriptDialog_psql_dependencies);
@@ -490,8 +486,10 @@ public class SqlScriptDialog extends TrayDialog {
                     private void checkAskDanger(
                             List<Entry<PgStatement, PgStatement>> saveToRestore) {
                         try {
-                            if (differ.getScript().isDangerDdl(!searchForDropColumn,
-                                    !searchForAlterColumn, !searchForDropTable)) {
+                            if (differ.getScript().isDangerDdl(
+                                    !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
+                                    !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
+                                    !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT))) {
                                 if (showDangerWarning() != SWT.OK) {
                                     differ.setAdditionalDepciesSource(saveToRestore);
                                     return;
@@ -518,8 +516,10 @@ public class SqlScriptDialog extends TrayDialog {
         StringBuilder sb = new StringBuilder();
         for (Entry<PgStatement, PgStatement> entry : depcyToAdd) {
             if (existingDepcy.contains(entry)) {
-                sb.append(entry.getKey().getName() + " -> " + //$NON-NLS-1$
-                        entry.getValue().getName() + System.lineSeparator());
+                sb.append(entry.getKey().getName())
+                    .append(" -> ") //$NON-NLS-1$
+                    .append(entry.getValue().getName())
+                    .append(System.lineSeparator());
             }
         }
         return sb.toString();
@@ -618,4 +618,42 @@ public class SqlScriptDialog extends TrayDialog {
             return super.close();
         }
     }
+    
+
+    private static class ScriptRunResultDialog extends TrayDialog {
+        
+        private final String text;
+
+        private ScriptRunResultDialog(Shell shell, String text) {
+            super(shell);
+            this.text = text;
+            setShellStyle(getShellStyle() | SWT.RESIZE);
+        }
+
+        @Override
+        protected void configureShell(Shell newShell) {
+            super.configureShell(newShell);
+            newShell.setText(Messages.sqlScriptDialog_script_output);
+        }
+
+        @Override
+        protected Control createDialogArea(Composite parent) {
+            Composite comp = (Composite) super.createDialogArea(parent);
+            Text filed = new Text(comp, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
+                    | SWT.READ_ONLY | SWT.MULTI);
+            filed.setText(text);
+            filed.setBackground(getShell().getDisplay().getSystemColor(
+                    SWT.COLOR_LIST_BACKGROUND));
+            filed.setFont(JFaceResources.getTextFont());
+            filed.setLayoutData(new GridData(GridData.FILL_BOTH));
+            return comp;
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(Composite parent) {
+                createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL,
+                        true);
+        }
+    }
+
 }

@@ -67,6 +67,10 @@ public class InitProjectFromSource implements IRunnableWithProgress {
                     props.getPrefs().get(PROJ_PREF.ENCODING, "")).get(taskpm); //$NON-NLS-1$
             break;
 
+        case PROJ_PREF.SOURCE_TYPE_JDBC:
+            db = DbSource.fromJdbc(props).get(taskpm);
+            break;
+            
         default:
             throw new InvocationTargetException(new IllegalStateException(
                     Messages.initProjectFromSource_init_request_but_no_schema_source));

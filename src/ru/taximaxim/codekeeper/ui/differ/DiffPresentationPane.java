@@ -48,9 +48,6 @@ public abstract class DiffPresentationPane extends Composite {
     // should be true for commit, false for diff script
     private final boolean isProjSrc;
 
-    private final String exePgdump;
-    private final String pgdumpCustom;
-
     protected final DiffTableViewer diffTable;
     private final Composite containerSrc;
     private final Composite containerDb;
@@ -61,10 +58,12 @@ public abstract class DiffPresentationPane extends Composite {
     private final DiffPaneViewer diffPane;
     private final Label lblSourceInfo;
     protected DBSources selectedDBSource;
-    
+
     protected DbSource dbSource;
     protected DbSource dbTarget;
     protected TreeDiffer treeDiffer;
+
+    private IPreferenceStore mainPrefs;
 
     private void setDbSource(DbSource dbSource) {
         this.dbSource = dbSource;
@@ -91,8 +90,7 @@ public abstract class DiffPresentationPane extends Composite {
         setLayout(new GridLayout());
 
         this.isProjSrc = projIsSrc;
-        exePgdump = mainPrefs.getString(PREF.PGDUMP_EXE_PATH);
-        pgdumpCustom = mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS);
+        this.mainPrefs = mainPrefs;
         final IEclipsePreferences projProps = proj.getPrefs();
 
         // upper container
@@ -102,7 +100,7 @@ public abstract class DiffPresentationPane extends Composite {
         GridLayout gl = new GridLayout(3, false);
         gl.marginHeight = gl.marginWidth = 0;
         containerUpper.setLayout(gl);
-        
+
         // upper left part
         Composite contUpperLeft = new Composite(containerUpper, SWT.NONE);
         contUpperLeft.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -123,8 +121,11 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    loadChanges(proj, projProps, mainPrefs);
-                    saveDBPrefs(projProps);
+                    if (fillDbSources(proj, projProps)) {
+                        clearInputs();
+                        loadChanges();
+                        saveDBPrefs(projProps);
+                    }
                 } catch (PgCodekeeperUIException e1) {
                     ExceptionNotifier.showErrorDialog(
                             Messages.DiffPresentationPane_error_loading_changes, e1);
@@ -243,13 +244,13 @@ public abstract class DiffPresentationPane extends Composite {
         dbSrc.setText(Messages.db_source);
         dbSrc.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
         dbSrc.addListener(SWT.Modify, new Listener() {
-            
+
             @Override
             public void handleEvent(Event event) {
                 lblSourceInfo.setText(getSourceInfoText());
             }
         });
-        
+
         boolean useDbPicker = false;
         selectedDBSource = DBSources.getEnum(projProps.get(PROJ_PREF.SOURCE, "")); //$NON-NLS-1$
         switch (selectedDBSource) {
@@ -265,7 +266,6 @@ public abstract class DiffPresentationPane extends Composite {
             useDbPicker = true;
             break;
         }
-        
         showDbPicker(useDbPicker);
 
         dbSrc.txtDbName.setText(projProps.get(PROJ_PREF.DB_NAME, "")); //$NON-NLS-1$
@@ -278,13 +278,13 @@ public abstract class DiffPresentationPane extends Composite {
         // read flip position from preferences
         flipDbPicker(Activator.getDefault().getPreferenceStore().getBoolean(PREF.IS_FLIPPED_DB_SOURCE));       
         // end middle container
-        
+
         lblSourceInfo.setText(getSourceInfoText());
 
         diffPane = new DiffPaneViewer(sashOuter, SWT.NONE, isProjSrc ? dbSource
                 : dbTarget, isProjSrc ? dbTarget : dbSource, !isProjSrc);
     }
-    
+
     private void saveDBPrefs(IEclipsePreferences projProps) throws BackingStoreException {
         projProps.put(PROJ_PREF.SOURCE, selectedDBSource.toString());
         switch (selectedDBSource) {
@@ -349,8 +349,8 @@ public abstract class DiffPresentationPane extends Composite {
         dbSrc.getParent().layout();
     }
 
-    private void loadChanges(PgDbProject proj, IEclipsePreferences projProps,
-            IPreferenceStore mainPrefs) throws PgCodekeeperUIException {
+    private boolean fillDbSources(PgDbProject proj, IEclipsePreferences projProps)
+            throws PgCodekeeperUIException {
         DbSource dbsProj, dbsRemote;
         dbsProj = DbSource.fromProject(proj);
         switch (selectedDBSource) {
@@ -359,7 +359,7 @@ public abstract class DiffPresentationPane extends Composite {
             dialog.setText(Messages.choose_dump_file_with_changes);
             String dumpfile = dialog.open();
             if (dumpfile == null) {
-                return;
+                return false;
             }
             dbsRemote = DbSource
                     .fromFile(dumpfile, projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
@@ -368,7 +368,8 @@ public abstract class DiffPresentationPane extends Composite {
             String sPort = dbSrc.txtDbPort.getText();
             int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
-            dbsRemote = DbSource.fromDb(exePgdump, pgdumpCustom,
+            dbsRemote = DbSource.fromDb(mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
+                    mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     dbSrc.txtDbHost.getText(), port, dbSrc.txtDbUser.getText(),
                     dbSrc.txtDbPass.getText(), dbSrc.txtDbName.getText(),
                     projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
@@ -388,9 +389,13 @@ public abstract class DiffPresentationPane extends Composite {
         setDbSource(isProjSrc ? dbsProj : dbsRemote);
         setDbTarget(isProjSrc ? dbsRemote : dbsProj);
 
+        return true;
+    }
+
+    private void loadChanges() {
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
-        treeDiffer = new TreeDiffer(dbSource, dbTarget);
-        
+        final TreeDiffer treeDiffer = new TreeDiffer(dbSource, dbTarget);
+
         Job job = new Job(Messages.diffPresentationPane_getting_changes_for_diff) {
 
             @Override
@@ -398,7 +403,7 @@ public abstract class DiffPresentationPane extends Composite {
                 try {
                     treeDiffer.run(monitor);
                 } catch (InvocationTargetException e) {
-                    return new Status(Status.ERROR, PLUGIN_ID.THIS, 
+                    return new Status(Status.ERROR, PLUGIN_ID.THIS,
                             Messages.error_in_differ_thread, e);
                 }
                 if (monitor.isCanceled()) {
@@ -419,7 +424,9 @@ public abstract class DiffPresentationPane extends Composite {
                             if (DiffPresentationPane.this.isDisposed()) {
                                 return;
                             }
-                            diffTable.setInput(treeDiffer, !isProjSrc);
+                            DiffPresentationPane.this.treeDiffer = treeDiffer;
+                            diffTable.setInput(
+                                    DiffPresentationPane.this.treeDiffer, !isProjSrc);
                             diffPane.setInput(null);
                             diffLoaded();
                         }
@@ -443,10 +450,28 @@ public abstract class DiffPresentationPane extends Composite {
      * Allows clients to make actions after a diff has been loaded.
      */
     protected void diffLoaded() {
-    };
+    }
     
-    public void reset() {
+    private void clearInputs() {
         diffTable.setInput(null, !isProjSrc);
         diffPane.setInput(null);
-    };
+    }
+    
+    public void reset() {
+        clearInputs();
+        if (dbTarget != null && dbSource != null) {
+            try {
+                if (isProjSrc) {
+                    setDbTarget(DbSource.fromDbObject(dbTarget.getDbObject(), 
+                            dbTarget.getOrigin()));
+                } else {
+                    setDbSource(DbSource.fromDbObject(dbSource.getDbObject(), 
+                            dbSource.getOrigin()));
+                }
+                loadChanges();
+            } catch (Exception ex) {
+                Log.log(Log.LOG_ERROR, "Error while autodiffing on project update", ex); //$NON-NLS-1$
+            }
+        }
+    }
 }

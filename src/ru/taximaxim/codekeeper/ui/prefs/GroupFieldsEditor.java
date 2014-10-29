@@ -22,7 +22,8 @@ class GroupFieldsEditor extends FieldEditor {
     
     private Button btnManage;
 
-    public GroupFieldsEditor(Map<String, String> prefWithLables, String groupName, Composite parent) {
+    public GroupFieldsEditor(Map<String, String> prefWithLables,
+            String groupName, Composite parent) {
         for (String name : prefWithLables.keySet()) {
             prefNames.put(name, prefWithLables.get(name));
         }
@@ -56,14 +57,14 @@ class GroupFieldsEditor extends FieldEditor {
             Button btn = new Button(parent, SWT.CHECK | SWT.LEFT);
             btn.setText(prefNames.get(name));
             gd = new GridData();
-            gd.horizontalIndent = 5;
+            gd.horizontalIndent = 10;
             gd.horizontalSpan = numColumns;
             btn.setLayoutData(gd);
             btn.addSelectionListener(new SelectionAdapter() {
                 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    setManageButtonSelection(((Button)e.widget).getSelection());
+                    setManageButtonSelection();
                 }
             });
             buttons.put(name, btn);
@@ -75,7 +76,7 @@ class GroupFieldsEditor extends FieldEditor {
         for (String name : buttons.keySet()) {
             boolean selection = getPreferenceStore().getBoolean(name);
             buttons.get(name).setSelection(selection);
-            setManageButtonSelection(selection);
+            setManageButtonSelection();
         }
     }
 
@@ -84,13 +85,13 @@ class GroupFieldsEditor extends FieldEditor {
         for (String name : buttons.keySet()) {
             boolean selection = getPreferenceStore().getDefaultBoolean(name);
             buttons.get(name).setSelection(selection);
-            setManageButtonSelection(selection);
+            setManageButtonSelection();
         }
     }
     /**
      * Устанавливает статус управляющего чекбокса в зависимости от выбора элементов
      */
-    private void setManageButtonSelection(boolean state) {
+    private void setManageButtonSelection() {
         boolean existChecked = false;
         boolean allChecked = buttons.size() > 0;
         
