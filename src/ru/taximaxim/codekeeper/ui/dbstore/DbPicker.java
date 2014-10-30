@@ -12,6 +12,8 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -35,6 +37,8 @@ public class DbPicker extends Group {
     
     public Label lblName;
     public Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort;
+    
+    private final ModifyListener ml;
     
     /**
      * Constructs a control that is allowed to modify its shell size.
@@ -73,6 +77,8 @@ public class DbPicker extends Group {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     fillDbFieldsFromDbInfo();
+                    notifyListeners(SWT.Modify, null);
+                    layout();
                 }
             };
             dbStorePicker.addListenerToCombo(sa);
@@ -84,16 +90,36 @@ public class DbPicker extends Group {
                 }
             });
         }
+        ml = new ModifyListener(){
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                DbInfo dbInfo = dbStorePicker.getDbInfo();
+                if (dbInfo != null && (!txtDbName.getText().equals(dbInfo.dbname) ||
+                        !txtDbUser.getText().equals(dbInfo.dbuser) ||
+                        !txtDbPass.getText().equals(dbInfo.dbpass) ||
+                        !txtDbHost.getText().equals(dbInfo.dbhost) ||
+                        !txtDbPort.getText().equals(String.valueOf(dbInfo.dbport)))) {
+                    
+                    dbStorePicker.clearSelection();
+                }
+                notifyListeners(SWT.Modify, null);
+                layout();
+            }  
+        };
 
         new Label(this, SWT.NONE).setText(Messages.dB_name);
         
         txtDbName = new Text(this, SWT.BORDER);
         txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        txtDbName.addModifyListener(ml);
+        
         
         new Label(this, SWT.NONE).setText(Messages.dB_user);
         
         txtDbUser = new Text(this, SWT.BORDER);
         txtDbUser.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        txtDbUser.addModifyListener(ml);
         
         new Label(this, SWT.NONE).setText(Messages.dB_password);
         
@@ -114,6 +140,7 @@ public class DbPicker extends Group {
                 }
             }
         });
+        txtDbPass.addModifyListener(ml);
         
         lblWarnDbPass = new CLabel(this, SWT.NONE);
         lblWarnDbPass.setImage(lrm.createImage(ImageDescriptor.createFromURL(
@@ -134,25 +161,59 @@ public class DbPicker extends Group {
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 80;
         txtDbHost.setLayoutData(gd);
+        txtDbHost.addModifyListener(ml);
         
         new Label(this, SWT.NONE).setText(Messages.dbPicker_port);
         
         txtDbPort = new Text(this, SWT.BORDER);
         gd = new GridData(60, SWT.DEFAULT);
         txtDbPort.setLayoutData(gd);
+        txtDbPort.addModifyListener(ml);
+        txtDbPort.addVerifyListener(new VerifyListener() {
+            
+            @Override
+            public void verifyText(VerifyEvent e) {
+                try{
+                    if (!e.text.isEmpty()){
+                        if (Integer.valueOf(e.text) < 0){
+                            e.doit = false;
+                        }
+                    }
+                }catch(NumberFormatException ex){
+                    e.doit = false;
+                }
+            }
+        });
+
         if (dbStorePicker != null) {
             fillDbFieldsFromDbInfo();
         }
     }
     
+    public String getSelectedDbPresetName(){
+        return dbStorePicker.getSelectedName();
+    }
+
     private void fillDbFieldsFromDbInfo() {
         DbInfo dbInfo = dbStorePicker.getDbInfo();
         if (dbInfo != null) {
+            txtDbName.removeModifyListener(ml);
+            txtDbUser.removeModifyListener(ml);
+            txtDbPass.removeModifyListener(ml);
+            txtDbHost.removeModifyListener(ml);
+            txtDbPort.removeModifyListener(ml);
+            
             txtDbName.setText(dbInfo.dbname);
             txtDbUser.setText(dbInfo.dbuser);
             txtDbPass.setText(dbInfo.dbpass);
             txtDbHost.setText(dbInfo.dbhost);
             txtDbPort.setText(String.valueOf(dbInfo.dbport));
+            
+            txtDbName.addModifyListener(ml);
+            txtDbUser.addModifyListener(ml);
+            txtDbPass.addModifyListener(ml);
+            txtDbHost.addModifyListener(ml);
+            txtDbPort.addModifyListener(ml);
         }
     }
     

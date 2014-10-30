@@ -50,6 +50,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -194,15 +195,13 @@ class CommitPage extends DiffPresentationPane {
         
         this.mainPrefs = mainPrefs;
         this.proj = proj;
+        
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
     }
     
     @Override
     protected void createUpperContainer(final Composite container, GridLayout gl) {
-        container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
         btnSave = new Button(container, SWT.PUSH);
-        btnSave.setLayoutData(new GridData(SWT.DEFAULT, SWT.FILL, false,
-                false));
         btnSave.setText(Messages.commitPartDescr_commit);
         btnSave.setEnabled(false);
         btnSave.addSelectionListener(new SelectionAdapter() {
@@ -212,7 +211,11 @@ class CommitPage extends DiffPresentationPane {
                 commit();
             }
         });
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
+        
+        GridData gd = new GridData(SWT.DEFAULT, SWT.FILL, false, false);
+        gd.widthHint = btnSave.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+        gd.minimumWidth = gd.widthHint;
+        container.setLayoutData(gd);
     }
     
     private void commit() {
@@ -447,7 +450,8 @@ class DiffPage extends DiffPresentationPane {
                 MessageDialog.INFORMATION, Messages.diffPartDescr_diff_script,
                 Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
                 differ, dbSource.getDbObject().flatten(), mainPrefs);
-        if (btnPgDump.getSelection() || btnJdbc.getSelection()) {
+        if (selectedDBSource == DBSources.SOURCE_TYPE_DUMP || 
+                selectedDBSource == DBSources.SOURCE_TYPE_JDBC) {
             dialog.setDbParams(dbSrc.txtDbHost.getText(),
                     dbSrc.txtDbPort.getText(), dbSrc.txtDbName.getText(),
                     dbSrc.txtDbUser.getText(), dbSrc.txtDbPass.getText());

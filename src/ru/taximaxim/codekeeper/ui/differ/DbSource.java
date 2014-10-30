@@ -183,8 +183,8 @@ class DbSourceDb extends DbSource {
     DbSourceDb(String exePgdump, String customParams,
             String host, int port, String user, String pass,
             String dbname, String encoding) {
-        super((dbname.isEmpty() ? "unknown_db" : dbname) + "@" //$NON-NLS-1$ //$NON-NLS-2$
-                + (host.isEmpty() ? "unknown_host" : host)); //$NON-NLS-1$
+        super((dbname.isEmpty() ? Messages.unknown_db : dbname) + "@" //$NON-NLS-1$
+                + (host.isEmpty() ? Messages.unknown_host : host));
 
         this.exePgdump = exePgdump;
         this.customParams = customParams;
