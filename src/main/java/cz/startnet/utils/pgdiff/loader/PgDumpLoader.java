@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.parsers.AlterFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.AlterSchemaParser;
@@ -36,7 +36,6 @@ import cz.startnet.utils.pgdiff.parsers.CreateTriggerParser;
 import cz.startnet.utils.pgdiff.parsers.CreateViewParser;
 import cz.startnet.utils.pgdiff.parsers.PrivilegeParser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -48,9 +47,10 @@ public class PgDumpLoader { //NOPMD
     /**
      * Loading order and directory names of the objects in exported DB schemas.
      */
-    // NOTE: constraints, triggers and indexes are stored in tables
+    // NOTE: constraints, triggers and indexes are now stored in tables,
+    // those directories are here for backward compatibility only
     private static final String[] walkOrder = new String[] { "SEQUENCE",
-        "FUNCTION", "TABLE", /*"CONSTRAINT", "INDEX", "TRIGGER",*/ "VIEW" };
+        "FUNCTION", "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW" };
 
     /**
      * Pattern for testing whether it is CREATE SCHEMA statement.
@@ -290,17 +290,22 @@ public class PgDumpLoader { //NOPMD
 
         // step 1
         // read files in schema folder, add schemas to db
-
+        ApgdiffConsts.WORK_DIR_NAMES[] dirEnums = ApgdiffConsts.WORK_DIR_NAMES.values();
+        String[] dirs = new String[dirEnums.length];
+        for (int i = 0; i < dirEnums.length; ++i) {
+            dirs[i] = dirEnums[i].toString();
+        }
         walkSubdirsRunCore(dir, charsetName, outputIgnoredStatements,
-                ignoreSlonyTriggers, new String[] { "SCHEMA", "EXTENSION" }, db);
+                ignoreSlonyTriggers, dirs, db);
 
         // step 2
         // read out schemas names, and work in loop on each
-        for (PgSchema schema : db.getSchemas()) {
-            File schemaFolder = new File(new File(dir, "SCHEMA"),
-                    ModelExporter.getExportedFilename(schema));
-            walkSubdirsRunCore(schemaFolder, charsetName,
-                    outputIgnoredStatements, ignoreSlonyTriggers, walkOrder, db);
+        for (File schemaFolder : new File(dir, "SCHEMA").listFiles()) {
+            if (schemaFolder.isDirectory()) {
+                System.err.println(schemaFolder);
+                walkSubdirsRunCore(schemaFolder, charsetName, outputIgnoredStatements,
+                        ignoreSlonyTriggers, walkOrder, db);
+            }
         }
         return db;
     }
