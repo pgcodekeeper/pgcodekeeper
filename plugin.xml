@@ -87,6 +87,7 @@
       </editor>
       <editor
             class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor"
+            contributorClass="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorActionContributor"
             default="false"
             filenames="*.sql"
             id="ru.taximaxim.codekeeper.ui.SQLEditor"

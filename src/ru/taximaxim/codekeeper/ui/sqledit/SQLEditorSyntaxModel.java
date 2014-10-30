@@ -4,11 +4,9 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.swt.graphics.RGB;
 
-import ru.taximaxim.codekeeper.ui.prefs.SQLEditorSytaxColoring.StatementsTypes;
-
 public class SQLEditorSyntaxModel {
     
-    public SQLEditorSyntaxModel(StatementsTypes type, IPreferenceStore prefStore) {
+    public SQLEditorSyntaxModel(SQLEditorStatementTypes type, IPreferenceStore prefStore) {
         this.type = type;
         this.prefStore = prefStore;
     }
@@ -42,14 +40,14 @@ public class SQLEditorSyntaxModel {
     public boolean isUnderline() {
         return underline;
     }
-    public StatementsTypes getType() {
+    public SQLEditorStatementTypes getType() {
         return type;
     }
     public String getPrefName() {
         return type.getPrefName();
     }
 
-    private StatementsTypes type;
+    private SQLEditorStatementTypes type;
     private RGB color;
     private boolean bold;
     private boolean italic;

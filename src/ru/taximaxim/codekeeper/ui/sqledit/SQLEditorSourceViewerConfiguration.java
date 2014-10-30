@@ -1,8 +1,5 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -11,14 +8,8 @@ import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
-import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
-import org.eclipse.jface.text.contentassist.ContextInformation;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
-import org.eclipse.jface.text.contentassist.IContextInformation;
-import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
@@ -37,7 +28,6 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.prefs.SQLEditorSytaxColoring;
 
 public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
@@ -114,7 +104,8 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         ContentAssistant assistant= new ContentAssistant();
-        assistant.setContentAssistProcessor(new IContentAssistProcessor() {
+        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor()
+                /*new IContentAssistProcessor() {
             
             @Override
             public String getErrorMessage() {
@@ -156,7 +147,8 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                 }
                 return result.toArray(new ICompletionProposal[result.size()]);
             }
-        }, IDocument.DEFAULT_CONTENT_TYPE);
+        }*/
+        , SQLEditorDocumentProvider.SQL_CODE);
         assistant.enableAutoActivation(true);
         assistant.setAutoActivationDelay(500);
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
@@ -211,47 +203,47 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         WordRule wordRule = new WordRule(new WordDetector(), Token.WHITESPACE);
         for (String reservedWord : sqlSyntax.getReservedwords()) {
             wordRule.addWord(reservedWord.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.RESERVED_WORDS)));
+                    getTextAttribute(prefs, SQLEditorStatementTypes.RESERVED_WORDS)));
             wordRule.addWord(reservedWord.toUpperCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.RESERVED_WORDS)));
+                    getTextAttribute(prefs, SQLEditorStatementTypes.RESERVED_WORDS)));
         }
         // TODO render unreserved keywords in the same way with reserved
         // keywords, should let user decide via preference
         for (String unreservedWord : sqlSyntax.getUnreservedwords()) {
             wordRule.addWord(unreservedWord.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.UN_RESERVED_WORDS)));
+                    getTextAttribute(prefs, SQLEditorStatementTypes.UN_RESERVED_WORDS)));
             wordRule.addWord(unreservedWord.toUpperCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.UN_RESERVED_WORDS)));
+                    getTextAttribute(prefs, SQLEditorStatementTypes.UN_RESERVED_WORDS)));
         }
 
         // Add the SQL datatype names to the word rule.
         for (String datatype : sqlSyntax.getTypes()) {
             wordRule.addWord(datatype.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.TYPES)));
+                    getTextAttribute(prefs, SQLEditorStatementTypes.TYPES)));
             wordRule.addWord(datatype.toUpperCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.TYPES)));
+                    getTextAttribute(prefs, SQLEditorStatementTypes.TYPES)));
         }
 
         // Add the SQL function names to the word rule.
         for (String function : sqlSyntax.getFunctions()) {
             wordRule.addWord(function.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.FUNCTIONS)));
+                    getTextAttribute(prefs, SQLEditorStatementTypes.FUNCTIONS)));
             wordRule.addWord(function.toUpperCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.FUNCTIONS)));
+                    getTextAttribute(prefs, SQLEditorStatementTypes.FUNCTIONS)));
         }
 
         // Add the SQL constants to the word rule.
         for (String constant : sqlSyntax.getConstants()) {
             wordRule.addWord(constant.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.CONSTANTS)));
+                    getTextAttribute(prefs, SQLEditorStatementTypes.CONSTANTS)));
             wordRule.addWord(constant.toUpperCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.CONSTANTS)));
+                    getTextAttribute(prefs, SQLEditorStatementTypes.CONSTANTS)));
         }
 
         return wordRule;
     }
     
-    private TextAttribute getTextAttribute(IPreferenceStore prefs, SQLEditorSytaxColoring.StatementsTypes type) {
+    private TextAttribute getTextAttribute(IPreferenceStore prefs, SQLEditorStatementTypes type) {
         SQLEditorSyntaxModel sm = new SQLEditorSyntaxModel(type, prefs).load();
         int style = 0 | (sm.isBold() ? SWT.BOLD : 0)
                 | (sm.isItalic() ? SWT.ITALIC: 0)
@@ -263,14 +255,16 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     private RuleBasedScanner createCommentScanner() {
         RuleBasedScanner commentScanner= new RuleBasedScanner();
-        commentScanner.setDefaultReturnToken(new Token(getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.SINGLE_LINE_COMMENTS)));
+        commentScanner.setDefaultReturnToken(new Token(
+                getTextAttribute(prefs, SQLEditorStatementTypes.SINGLE_LINE_COMMENTS)));
         return commentScanner;
     }
     
     private RuleBasedScanner createMultiCommentScanner() {
         Color blue= fSharedColors.getColor(new RGB(0, 0, 200));
         RuleBasedScanner commentScanner= new RuleBasedScanner();
-        commentScanner.setDefaultReturnToken(new Token(new TextAttribute(blue, null, SWT.ITALIC)));
+        commentScanner.setDefaultReturnToken(new Token(
+                new TextAttribute(blue, null, SWT.ITALIC)));
         return commentScanner;
     }
 }

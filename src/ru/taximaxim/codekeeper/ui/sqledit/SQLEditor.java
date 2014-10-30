@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.util.ResourceBundle;
+
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.projection.Segment;
 import org.eclipse.jface.viewers.ISelection;
@@ -12,12 +14,18 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
+import org.eclipse.ui.texteditor.ContentAssistAction;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 public class SQLEditor extends AbstractDecoratedTextEditor {
 
+    static final String CONTENT_ASSIST= "ContentAssist"; //$NON-NLS-1$
+    
     // разобраться с вычислением частей документа и выводить части в аутлайн
     private final class MyContentOutlinePage extends ContentOutlinePage {
         private IEditorInput fInput;
@@ -134,5 +142,15 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
             return fOutlinePage;
         }
         return super.getAdapter(adapter);
+    }
+    
+    @Override
+    protected void createActions() {
+        super.createActions();
+        
+        ResourceBundle bundle= ResourceBundle.getBundle(Messages.BUNDLE_NAME);
+        ContentAssistAction action= new ContentAssistAction(bundle, "contentAssist.", this); //$NON-NLS-1$
+        action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
+        setAction(CONTENT_ASSIST, action);
     }
 }

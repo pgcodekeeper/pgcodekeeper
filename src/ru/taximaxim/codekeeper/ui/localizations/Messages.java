@@ -3,7 +3,7 @@ package ru.taximaxim.codekeeper.ui.localizations;
 import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
-    private static final String BUNDLE_NAME = "ru.taximaxim.codekeeper.ui.localizations.messages"; //$NON-NLS-1$
+    public static final String BUNDLE_NAME = "ru.taximaxim.codekeeper.ui.localizations.messages"; //$NON-NLS-1$
     
     // common phrases
     public static String unexpected_error_while_saving_preferences;

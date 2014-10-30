@@ -30,38 +30,12 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorStatementTypes;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorSyntaxModel;
 
 public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
         IWorkbenchPreferencePage {
 
-    public enum StatementsTypes {
-        FUNCTIONS("prefsFunction", "Function"),
-        PREDICATES("prefsPredicates", "Predicates"),
-        RESERVED_WORDS("prefsReservedWords", "ReservedWords"),
-        UN_RESERVED_WORDS("prefsUnReservedWords", "UnReservedWords"),
-        TYPES("prefsTypes", "Types"),
-        CONSTANTS("prefsConstants", "Constants"),
-        SINGLE_LINE_COMMENTS("prefsSingleLineComments", "SingleLineComments"),
-        GLOBAL_VARIABLES("prefsGlobalVariables", "GlobalVariables");
-        
-        private String name;
-        private String tranclatedName;
-        private StatementsTypes(String name, String tranclatedName) {
-            this.name = name;
-            this.tranclatedName = tranclatedName;
-        }
-        @Override
-        public String toString() {
-            return tranclatedName;
-        }
-        public String getPrefName() {
-            return name;
-        }
-    }
-    
-    
-    
     private ListViewer listIgnoredObjs;
     private ColorFieldEditor colorFieldEditor;
     private BooleanFieldEditor boldField;
@@ -119,7 +93,7 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
         group = new Group(composite, SWT.NONE);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         group.setText("Font and color preference");
-        StatementsTypes first = StatementsTypes.CONSTANTS;
+        SQLEditorStatementTypes first = SQLEditorStatementTypes.CONSTANTS;
         colorFieldEditor = new ColorFieldEditor(first.getPrefName() + ".Color", "Color:", group);
         colorFieldEditor.setPreferenceStore(store);
         colorFieldEditor.getColorSelector().addListener(new IPropertyChangeListener() {
@@ -169,7 +143,7 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
         });
         addField(underlineField);
         
-        for (StatementsTypes type : StatementsTypes.values()) {
+        for (SQLEditorStatementTypes type : SQLEditorStatementTypes.values()) {
             input.add(new SQLEditorSyntaxModel(type, store).load());
         }
         listIgnoredObjs.setInput(input);
