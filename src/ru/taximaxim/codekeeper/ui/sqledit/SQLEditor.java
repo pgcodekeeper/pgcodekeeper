@@ -119,8 +119,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
 
     public SQLEditor() {
         super();
-        setSourceViewerConfiguration(new SQLSourceViewerConfiguration(getSharedColors(), getPreferenceStore()));
-        setDocumentProvider(new SQLDocumentProvider());
+        setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(getSharedColors(), getPreferenceStore()));
+        setDocumentProvider(new SQLEditorDocumentProvider());
     }
 
     @Override

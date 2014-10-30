@@ -6,9 +6,9 @@ import org.eclipse.swt.graphics.RGB;
 
 import ru.taximaxim.codekeeper.ui.prefs.SQLEditorSytaxColoring.StatementsTypes;
 
-public class SyntaxModel {
+public class SQLEditorSyntaxModel {
     
-    public SyntaxModel(StatementsTypes type, IPreferenceStore prefStore) {
+    public SQLEditorSyntaxModel(StatementsTypes type, IPreferenceStore prefStore) {
         this.type = type;
         this.prefStore = prefStore;
     }
@@ -57,7 +57,7 @@ public class SyntaxModel {
     private boolean underline;
     private IPreferenceStore prefStore;
     
-    public SyntaxModel load() {
+    public SQLEditorSyntaxModel load() {
         color = PreferenceConverter.getColor(prefStore,
                 type.getPrefName() + ".Color");
         bold = prefStore.getBoolean(type.getPrefName() + ".Bold");

@@ -11,7 +11,7 @@ import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 
-public class SQLDocumentProvider extends FileDocumentProvider {
+public class SQLEditorDocumentProvider extends FileDocumentProvider {
 
     /**
      * The recipe partitioning. It contains two partition types: {@link #SQL_CODE} and

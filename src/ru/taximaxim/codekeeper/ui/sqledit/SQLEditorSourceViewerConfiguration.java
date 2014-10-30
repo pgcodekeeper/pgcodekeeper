@@ -39,7 +39,7 @@ import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.prefs.SQLEditorSytaxColoring;
 
-public class SQLSourceViewerConfiguration extends TextSourceViewerConfiguration {
+public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
     private static final class WordDetector implements IWordDetector {
         public boolean isWordPart(char c) {
@@ -55,7 +55,7 @@ public class SQLSourceViewerConfiguration extends TextSourceViewerConfiguration 
     private final SqlPostgresSyntax sqlSyntax = new SqlPostgresSyntax();
     private IPreferenceStore prefs;;
     
-    public SQLSourceViewerConfiguration(ISharedTextColors sharedColors, IPreferenceStore store) {
+    public SQLEditorSourceViewerConfiguration(ISharedTextColors sharedColors, IPreferenceStore store) {
         super(store);
         fSharedColors= sharedColors;
         this.prefs = Activator.getDefault().getPreferenceStore();
@@ -166,14 +166,14 @@ public class SQLSourceViewerConfiguration extends TextSourceViewerConfiguration 
 
     @Override
     public String getConfiguredDocumentPartitioning(ISourceViewer sourceViewer) {
-        return SQLDocumentProvider.SQL_PARTITIONING;
+        return SQLEditorDocumentProvider.SQL_PARTITIONING;
     }
     
     @Override
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
         return new String[] {
-                SQLDocumentProvider.SQL_CODE,
-                SQLDocumentProvider.SQL_SINGLE_COMMENT
+                SQLEditorDocumentProvider.SQL_CODE,
+                SQLEditorDocumentProvider.SQL_SINGLE_COMMENT
         };
     }
     
@@ -182,9 +182,9 @@ public class SQLSourceViewerConfiguration extends TextSourceViewerConfiguration 
         PresentationReconciler reconciler= new PresentationReconciler();
         reconciler.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         
-        addDamagerRepairer(reconciler, createCommentScanner(), SQLDocumentProvider.SQL_SINGLE_COMMENT);
-        addDamagerRepairer(reconciler, createMultiCommentScanner(), SQLDocumentProvider.SQL_MULTI_COMMENT);
-        addDamagerRepairer(reconciler, createRecipeScanner(), SQLDocumentProvider.SQL_CODE);
+        addDamagerRepairer(reconciler, createCommentScanner(), SQLEditorDocumentProvider.SQL_SINGLE_COMMENT);
+        addDamagerRepairer(reconciler, createMultiCommentScanner(), SQLEditorDocumentProvider.SQL_MULTI_COMMENT);
+        addDamagerRepairer(reconciler, createRecipeScanner(), SQLEditorDocumentProvider.SQL_CODE);
         
         return reconciler;
     }
@@ -252,7 +252,7 @@ public class SQLSourceViewerConfiguration extends TextSourceViewerConfiguration 
     }
     
     private TextAttribute getTextAttribute(IPreferenceStore prefs, SQLEditorSytaxColoring.StatementsTypes type) {
-        SyntaxModel sm = new SyntaxModel(type, prefs).load();
+        SQLEditorSyntaxModel sm = new SQLEditorSyntaxModel(type, prefs).load();
         int style = 0 | (sm.isBold() ? SWT.BOLD : 0)
                 | (sm.isItalic() ? SWT.ITALIC: 0)
                 | (sm.isUnderline() ? SWT.UNDERLINE_SINGLE: 0)

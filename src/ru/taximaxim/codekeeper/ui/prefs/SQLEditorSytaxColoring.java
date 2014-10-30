@@ -30,7 +30,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.sqledit.SyntaxModel;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorSyntaxModel;
 
 public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
         IWorkbenchPreferencePage {
@@ -69,8 +69,8 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
     private BooleanFieldEditor strikethroughField;
     private BooleanFieldEditor underlineField;
     private IPreferenceStore store;
-    private SyntaxModel sel;
-    private List<SyntaxModel> input = new ArrayList<>();
+    private SQLEditorSyntaxModel sel;
+    private List<SQLEditorSyntaxModel> input = new ArrayList<>();
     private Group group;
 
     public SQLEditorSytaxColoring() {
@@ -102,7 +102,7 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
 
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                sel = (SyntaxModel) ((StructuredSelection) event
+                sel = (SQLEditorSyntaxModel) ((StructuredSelection) event
                                 .getSelection()).getFirstElement();
                 if (sel == null) {
                     return;
@@ -170,7 +170,7 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
         addField(underlineField);
         
         for (StatementsTypes type : StatementsTypes.values()) {
-            input.add(new SyntaxModel(type, store).load());
+            input.add(new SQLEditorSyntaxModel(type, store).load());
         }
         listIgnoredObjs.setInput(input);
         listIgnoredObjs.setSelection(new StructuredSelection(first));
@@ -184,7 +184,7 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
     
     @Override
     public boolean performOk() {
-        for (SyntaxModel element : input) {
+        for (SQLEditorSyntaxModel element : input) {
             element.store();
         }
         return true;
