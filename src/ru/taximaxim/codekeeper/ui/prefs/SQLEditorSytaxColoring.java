@@ -7,7 +7,6 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ColorFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -31,11 +30,12 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.sqledit.SyntaxModel;
 
 public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
         IWorkbenchPreferencePage {
 
-    enum StatementsTypes {
+    public enum StatementsTypes {
         FUNCTIONS("prefsFunction", "Function"),
         PREDICATES("prefsPredicates", "Predicates"),
         RESERVED_WORDS("prefsReservedWords", "ReservedWords"),
@@ -60,79 +60,7 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
         }
     }
     
-    class SyntaxModel {
-        
-        public SyntaxModel(StatementsTypes type, IPreferenceStore prefStore) {
-            this.type = type;
-            this.prefStore = prefStore;
-        }
-        protected RGB getColor() {
-            return color;
-        }
-        protected void setColor(RGB color) {
-            this.color = color;
-        }
-        protected void setBold(boolean bold) {
-            this.bold = bold;
-        }
-        protected void setItalic(boolean italic) {
-            this.italic = italic;
-        }
-        protected void setStrikethrough(boolean strikethrough) {
-            this.strikethrough = strikethrough;
-        }
-        protected void setUnderline(boolean underline) {
-            this.underline = underline;
-        }
-        protected boolean isBold() {
-            return bold;
-        }
-        protected boolean isItalic() {
-            return italic;
-        }
-        protected boolean isStrikethrough() {
-            return strikethrough;
-        }
-        protected boolean isUnderline() {
-            return underline;
-        }
-        public StatementsTypes getType() {
-            return type;
-        }
-        public String getPrefName() {
-            return type.getPrefName();
-        }
-
-        private StatementsTypes type;
-        private RGB color;
-        private boolean bold;
-        private boolean italic;
-        private boolean strikethrough;
-        private boolean underline;
-        private IPreferenceStore prefStore;
-        
-        SyntaxModel load() {
-            color = PreferenceConverter.getColor(prefStore,
-                    type.getPrefName() + ".Color");
-            bold = prefStore.getBoolean(type.getPrefName() + ".Bold");
-            italic = prefStore.getBoolean(type.getPrefName() + ".Italic");
-            strikethrough = prefStore.getBoolean(type.getPrefName() + ".strikethrough");
-            underline = prefStore.getBoolean(type.getPrefName() + ".underline");
-            return this;
-        }
-        
-        @Override
-        public String toString() {
-            return type.toString();
-        }
-        public void store() {
-            PreferenceConverter.setValue(prefStore, type.getPrefName() + ".Color", color);
-            prefStore.setValue(type.getPrefName() + ".Bold", bold);
-            prefStore.setValue(type.getPrefName() + ".Italic", italic);
-            prefStore.setValue(type.getPrefName() + ".strikethrough", strikethrough);
-            prefStore.setValue(type.getPrefName() + ".underline", underline);
-        }
-    }
+    
     
     private ListViewer listIgnoredObjs;
     private ColorFieldEditor colorFieldEditor;

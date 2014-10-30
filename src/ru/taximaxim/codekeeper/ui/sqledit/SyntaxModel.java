@@ -1,0 +1,81 @@
+package ru.taximaxim.codekeeper.ui.sqledit;
+
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.swt.graphics.RGB;
+
+import ru.taximaxim.codekeeper.ui.prefs.SQLEditorSytaxColoring.StatementsTypes;
+
+public class SyntaxModel {
+    
+    public SyntaxModel(StatementsTypes type, IPreferenceStore prefStore) {
+        this.type = type;
+        this.prefStore = prefStore;
+    }
+    public RGB getColor() {
+        return color;
+    }
+    public void setColor(RGB color) {
+        this.color = color;
+    }
+    public void setBold(boolean bold) {
+        this.bold = bold;
+    }
+    public void setItalic(boolean italic) {
+        this.italic = italic;
+    }
+    public void setStrikethrough(boolean strikethrough) {
+        this.strikethrough = strikethrough;
+    }
+    public void setUnderline(boolean underline) {
+        this.underline = underline;
+    }
+    public boolean isBold() {
+        return bold;
+    }
+    public boolean isItalic() {
+        return italic;
+    }
+    public boolean isStrikethrough() {
+        return strikethrough;
+    }
+    public boolean isUnderline() {
+        return underline;
+    }
+    public StatementsTypes getType() {
+        return type;
+    }
+    public String getPrefName() {
+        return type.getPrefName();
+    }
+
+    private StatementsTypes type;
+    private RGB color;
+    private boolean bold;
+    private boolean italic;
+    private boolean strikethrough;
+    private boolean underline;
+    private IPreferenceStore prefStore;
+    
+    public SyntaxModel load() {
+        color = PreferenceConverter.getColor(prefStore,
+                type.getPrefName() + ".Color");
+        bold = prefStore.getBoolean(type.getPrefName() + ".Bold");
+        italic = prefStore.getBoolean(type.getPrefName() + ".Italic");
+        strikethrough = prefStore.getBoolean(type.getPrefName() + ".strikethrough");
+        underline = prefStore.getBoolean(type.getPrefName() + ".underline");
+        return this;
+    }
+    
+    @Override
+    public String toString() {
+        return type.toString();
+    }
+    public void store() {
+        PreferenceConverter.setValue(prefStore, type.getPrefName() + ".Color", color);
+        prefStore.setValue(type.getPrefName() + ".Bold", bold);
+        prefStore.setValue(type.getPrefName() + ".Italic", italic);
+        prefStore.setValue(type.getPrefName() + ".strikethrough", strikethrough);
+        prefStore.setValue(type.getPrefName() + ".underline", underline);
+    }
+}

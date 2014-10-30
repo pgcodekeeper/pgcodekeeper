@@ -36,6 +36,9 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
+import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.prefs.SQLEditorSytaxColoring;
+
 public class SQLSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
     private static final class WordDetector implements IWordDetector {
@@ -49,11 +52,13 @@ public class SQLSourceViewerConfiguration extends TextSourceViewerConfiguration 
     }
     
     private final ISharedTextColors fSharedColors;
-    private final SqlPostgresSyntax sqlSyntax = new SqlPostgresSyntax();;
+    private final SqlPostgresSyntax sqlSyntax = new SqlPostgresSyntax();
+    private IPreferenceStore prefs;;
     
     public SQLSourceViewerConfiguration(ISharedTextColors sharedColors, IPreferenceStore store) {
         super(store);
         fSharedColors= sharedColors;
+        this.prefs = Activator.getDefault().getPreferenceStore();
     }
     
     // Всплывающая подсказка пока
@@ -206,50 +211,59 @@ public class SQLSourceViewerConfiguration extends TextSourceViewerConfiguration 
         WordRule wordRule = new WordRule(new WordDetector(), Token.WHITESPACE);
         for (String reservedWord : sqlSyntax.getReservedwords()) {
             wordRule.addWord(reservedWord.toLowerCase(), new Token(
-                    new TextAttribute(null, null, SWT.BOLD)));
+                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.RESERVED_WORDS)));
             wordRule.addWord(reservedWord.toUpperCase(), new Token(
-                    new TextAttribute(null, null, SWT.BOLD)));
+                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.RESERVED_WORDS)));
         }
         // TODO render unreserved keywords in the same way with reserved
         // keywords, should let user decide via preference
         for (String unreservedWord : sqlSyntax.getUnreservedwords()) {
             wordRule.addWord(unreservedWord.toLowerCase(), new Token(
-                    new TextAttribute(null, null, SWT.BOLD)));
+                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.UN_RESERVED_WORDS)));
             wordRule.addWord(unreservedWord.toUpperCase(), new Token(
-                    new TextAttribute(null, null, SWT.BOLD)));
+                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.UN_RESERVED_WORDS)));
         }
 
         // Add the SQL datatype names to the word rule.
         for (String datatype : sqlSyntax.getTypes()) {
             wordRule.addWord(datatype.toLowerCase(), new Token(
-                    new TextAttribute(null, null, SWT.BOLD)));
+                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.TYPES)));
             wordRule.addWord(datatype.toUpperCase(), new Token(
-                    new TextAttribute(null, null, SWT.BOLD)));
+                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.TYPES)));
         }
 
         // Add the SQL function names to the word rule.
         for (String function : sqlSyntax.getFunctions()) {
             wordRule.addWord(function.toLowerCase(), new Token(
-                    new TextAttribute(null, null, SWT.BOLD)));
+                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.FUNCTIONS)));
             wordRule.addWord(function.toUpperCase(), new Token(
-                    new TextAttribute(null, null, SWT.BOLD)));
+                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.FUNCTIONS)));
         }
 
         // Add the SQL constants to the word rule.
         for (String constant : sqlSyntax.getConstants()) {
             wordRule.addWord(constant.toLowerCase(), new Token(
-                    new TextAttribute(null, null, SWT.BOLD)));
+                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.CONSTANTS)));
             wordRule.addWord(constant.toUpperCase(), new Token(
-                    new TextAttribute(null, null, SWT.BOLD)));
+                    getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.CONSTANTS)));
         }
 
         return wordRule;
     }
+    
+    private TextAttribute getTextAttribute(IPreferenceStore prefs, SQLEditorSytaxColoring.StatementsTypes type) {
+        SyntaxModel sm = new SyntaxModel(type, prefs).load();
+        int style = 0 | (sm.isBold() ? SWT.BOLD : 0)
+                | (sm.isItalic() ? SWT.ITALIC: 0)
+                | (sm.isUnderline() ? SWT.UNDERLINE_SINGLE: 0)
+                | (sm.isUnderline() ? TextAttribute.UNDERLINE: 0)
+                | (sm.isStrikethrough() ? TextAttribute.STRIKETHROUGH: 0); 
+        return new TextAttribute(fSharedColors.getColor(sm.getColor()), null, style);
+    }
 
     private RuleBasedScanner createCommentScanner() {
-        Color green= fSharedColors.getColor(new RGB(0, 150, 0));
         RuleBasedScanner commentScanner= new RuleBasedScanner();
-        commentScanner.setDefaultReturnToken(new Token(new TextAttribute(green, null, SWT.ITALIC)));
+        commentScanner.setDefaultReturnToken(new Token(getTextAttribute(prefs, SQLEditorSytaxColoring.StatementsTypes.SINGLE_LINE_COMMENTS)));
         return commentScanner;
     }
     
