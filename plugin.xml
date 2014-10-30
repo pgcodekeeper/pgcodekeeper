@@ -167,5 +167,12 @@
          </enabledWhen>
       </page>
    </extension>
+    <extension point="org.eclipse.ui.views">
+      <view id="ru.taximaxim.codekeeper.ui.depcyview"
+         name="Depcy view"
+         class="ru.taximaxim.codekeeper.ui.editors.DepcyGraphView"
+         icon="icons/add_obj.gif"
+      />
+ </extension>
 
 </plugin>
