@@ -1,5 +1,9 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -10,6 +14,7 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
+import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
@@ -179,6 +184,14 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         addDamagerRepairer(reconciler, createRecipeScanner(), SQLEditorDocumentProvider.SQL_CODE);
         
         return reconciler;
+    }
+    
+    @Override
+    public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
+        // TODO Auto-generated method stub
+        List<IHyperlinkDetector> list = new ArrayList<>(Arrays.asList(super.getHyperlinkDetectors(sourceViewer)));
+        list.add(new SQLEditorHyperLinkDetector());
+        return list.toArray(new IHyperlinkDetector[list.size()]);
     }
 
     private void addDamagerRepairer(PresentationReconciler reconciler, RuleBasedScanner commentScanner, String contentType) {
