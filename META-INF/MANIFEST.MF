@@ -11,7 +11,8 @@ Export-Package: cz.startnet.utils.pgdiff,
  ru.taximaxim.codekeeper.apgdiff.model.exporter;uses:="cz.startnet.utils.pgdiff.schema",
  ru.taximaxim.codekeeper.apgdiff.model.graph
 Require-Bundle: org.hamcrest.core;bundle-version="1.3.0",
- org.junit
+ org.junit,
+ org.eclipse.core.runtime;bundle-version="3.4.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: lib/jgrapht-core-0.9.0.jar,
  lib/postgresql-9.3-1102-jdbc41.jar,
