@@ -120,16 +120,16 @@ public class JdbcLoader {
         String [] expectedTokens = {host, String.valueOf(port), dbName, user};
         try (Scanner sc = new Scanner(pgPassFile)){
             sc.useDelimiter(":|\n");
-            while(sc.hasNextLine()) {
+            while (sc.hasNextLine()) {
                 int tokenCounter = 0;
-                 
-                while(sc.hasNext()){
-                    if (tokenCounter > 3){
+
+                while (sc.hasNext()) {
+                    if (tokenCounter > 3) {
                         return sc.skip(":").nextLine();
                     }
-                    
+
                     String token = sc.next();
-                    if (!token.equals(expectedTokens[tokenCounter++]) && !token.equals("*")){
+                    if (!token.equals(expectedTokens[tokenCounter++]) && !token.equals("*")) {
                         break;
                     }
                 }
