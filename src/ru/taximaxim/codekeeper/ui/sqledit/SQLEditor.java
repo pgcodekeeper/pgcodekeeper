@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.ResourceBundle;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.projection.Segment;
 import org.eclipse.jface.viewers.ISelection;
@@ -24,6 +25,8 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class SQLEditor extends AbstractDecoratedTextEditor {
 
+    public static final String ID = "ru.taximaxim.codekeeper.ui.SQLEditor";
+    
     static final String CONTENT_ASSIST= "ContentAssist"; //$NON-NLS-1$
     
     // разобраться с вычислением частей документа и выводить части в аутлайн
@@ -127,6 +130,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
 
     public SQLEditor() {
         super();
+        
         setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(getSharedColors(), getPreferenceStore()));
         setDocumentProvider(new SQLEditorDocumentProvider());
     }

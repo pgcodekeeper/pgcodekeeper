@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -26,10 +27,13 @@ import org.eclipse.jface.text.rules.WordRule;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -48,7 +52,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     
     private final ISharedTextColors fSharedColors;
     private final SqlPostgresSyntax sqlSyntax = new SqlPostgresSyntax();
-    private IPreferenceStore prefs;;
+    private IPreferenceStore prefs;
     
     public SQLEditorSourceViewerConfiguration(ISharedTextColors sharedColors, IPreferenceStore store) {
         super(store);
@@ -190,7 +194,12 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
         // TODO Auto-generated method stub
         List<IHyperlinkDetector> list = new ArrayList<>(Arrays.asList(super.getHyperlinkDetectors(sourceViewer)));
-        list.add(new SQLEditorHyperLinkDetector());
+        ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
+        if (selection instanceof IStructuredSelection) {
+            IStructuredSelection sel = ((IStructuredSelection) selection);
+            IFile file = (IFile) sel.getFirstElement();
+            list.add(new SQLEditorHyperLinkDetector(file.getProject()));
+        }
         return list.toArray(new IHyperlinkDetector[list.size()]);
     }
 

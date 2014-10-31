@@ -1,19 +1,25 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.DBObjectsLocation;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+
 public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
 
-    public SQLEditorHyperLinkDetector() {
+    IProject proj;
+
+    public SQLEditorHyperLinkDetector(IProject proj) {
+        this.proj = proj;
     }
 
     @Override
@@ -23,6 +29,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         String line;
         int offset = region.getOffset();
 
+        PgDbParser parser = PgDbParser.getParserFromStore(proj);
         try {
             IDocument document = textViewer.getDocument();
             lineInfo = document.getLineInformationOfOffset(offset);
@@ -31,23 +38,24 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
             return null;
         }
 
-        Pattern pa = Pattern.compile(
-                "^.+(EXTENSION)[\\s]+([\\S]+).+$",
-                Pattern.CASE_INSENSITIVE);
-        Matcher ma = pa.matcher(line);
-        if (!ma.matches()) {
+        List<IHyperlink> hyperlinks = new ArrayList<>();
+        for (String name : parser.getObjNames()) {
+            int wordBegin = lineInfo.getOffset() + line.indexOf(name);
+            int wordEnd = lineInfo.getOffset() + line.indexOf(name) + name.length();
+            if (line.contains(name)
+                    && (wordBegin < offset && wordEnd > offset)) {
+                for (DBObjectsLocation loc : parser.getObjectsLocations()) {
+                    if (loc.getObjName().equals(name)) {
+                        hyperlinks.add(new SQLEditorHyperLink(loc.getRegion(), "Reference",
+                                loc.getFilePath(), textViewer));
+                    }
+                }
+            }
+        }
+
+        if (hyperlinks.isEmpty()) {
             return null;
         }
-        int begin = line.indexOf(ma.group(2));
-        int end = begin + ma.group(2).length();
-
-        if (end < 0 || begin < 0 || end == begin + 1)
-            return null;
-
-        String text = line.substring(begin, end);
-        IRegion region1 = new Region(lineInfo.getOffset() + begin,
-                text.length());
-        return new IHyperlink[] { new SQLEditorHyperLink(region1, text,
-                textViewer)};
+        return hyperlinks.toArray(new IHyperlink[hyperlinks.size()]);
     }
 }
