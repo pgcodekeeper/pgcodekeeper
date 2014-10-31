@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -74,6 +75,10 @@ public abstract class DiffPresentationPane extends Composite {
         }
     }
     
+    public DiffTableViewer getDiffTable() {
+        return diffTable;
+    }
+    
     public DiffPresentationPane(Composite parent, boolean projIsSrc,
             final IPreferenceStore mainPrefs, final PgDbProject proj) {
         super(parent, SWT.NONE);
@@ -106,11 +111,11 @@ public abstract class DiffPresentationPane extends Composite {
 
         diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs, false);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        diffTable.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+        diffTable.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
 
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                StructuredSelection selection = ((StructuredSelection) event
+                IStructuredSelection selection = ((IStructuredSelection) event
                         .getSelection());
 
                 if (selection.size() != 1) {
