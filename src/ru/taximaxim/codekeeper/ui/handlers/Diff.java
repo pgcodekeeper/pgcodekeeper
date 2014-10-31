@@ -18,7 +18,7 @@ public class Diff extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        PgDbProject proj = OpenEditor.getProject(event);
+        PgDbProject proj = OpenProjectUtils.getProject(event);
         Shell shell = HandlerUtil.getActiveShell(event);
         IPreferenceStore prefStore = Activator.getDefault().getPreferenceStore();  
         if(proj != null) {
