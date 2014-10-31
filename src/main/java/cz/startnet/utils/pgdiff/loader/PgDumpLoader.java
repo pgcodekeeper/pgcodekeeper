@@ -302,7 +302,6 @@ public class PgDumpLoader { //NOPMD
         // read out schemas names, and work in loop on each
         for (File schemaFolder : new File(dir, "SCHEMA").listFiles()) {
             if (schemaFolder.isDirectory()) {
-                System.err.println(schemaFolder);
                 walkSubdirsRunCore(schemaFolder, charsetName, outputIgnoredStatements,
                         ignoreSlonyTriggers, walkOrder, db);
             }
