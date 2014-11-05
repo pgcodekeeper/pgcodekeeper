@@ -203,5 +203,22 @@
          </enabledWhen>
       </page>
    </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
+      <hyperlinkDetector
+            activate="true"
+            class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorHyperLinkDetector"
+            id="ru.taximaxim.codekeeper.ui.pgcodekeeperhyperlinkDetector"
+            name="PgCodeKeeper HyperLink Detector"
+            targetId="ru.taximaxim.codekeeper.ui.SQLEditorTarget">
+      </hyperlinkDetector>
+   </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectorTargets">
+      <target
+            id="ru.taximaxim.codekeeper.ui.SQLEditorTarget"
+            name="SQL Editor Target">
+      </target>
+   </extension>
 
 </plugin>

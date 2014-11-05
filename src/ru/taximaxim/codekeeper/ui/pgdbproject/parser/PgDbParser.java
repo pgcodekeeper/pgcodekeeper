@@ -37,7 +37,7 @@ public class PgDbParser {
 
     public static final String PATH_TO_OBJ_SCHEMA = ".settings/schema";
     private static final String SERIALIZATIONFILE = "objects";
-    private List<PgStatement> names;
+    private List<PgStatement> objects;
     private Set<String> objNames = new HashSet<>();
     private List<DBObjectsLocation> objLocations;
     private final IProject proj;
@@ -45,7 +45,7 @@ public class PgDbParser {
     public PgDbParser(IProject proj) {
         this.proj = proj;
         objLocations = new ArrayList<>();
-        names = new ArrayList<>();
+        objects = new ArrayList<>();
     }
 
     public PgDbParser getObjFromProject() {
@@ -117,19 +117,25 @@ public class PgDbParser {
     public Set<String> getObjNames() {
         return objNames;
     }
-
-    public List<DBObjectsLocation> getObjectsLocations() {
-        return objLocations;
+    
+    public List<DBObjectsLocation> getObjectLocations(String objName) {
+        List<DBObjectsLocation> locations = new ArrayList<>();
+        for (DBObjectsLocation loc : objLocations) {
+            if (loc.getObjName().equals(objName)) {
+                locations.add(loc);
+            }
+        }
+        return locations;
     }
 
     private void getObjectsFromDB(PgDatabase db) {
         for (PgStatement statement : db.getExtensions()) {
-            names.add(statement);
+            objects.add(statement);
         }
         for (PgSchema schema : db.getSchemas()) {
-            names.add(schema);
+            objects.add(schema);
             for (PgStatement func : schema.getFunctions()) {
-                names.add(func);
+                objects.add(func);
             }
         }
     }
@@ -174,7 +180,7 @@ public class PgDbParser {
         if (Files.exists(children, LinkOption.NOFOLLOW_LINKS)) {
             List<String> lines = Files.readAllLines(children,
                     Charset.forName("UTF-8"));
-            for (PgStatement obj : names) {
+            for (PgStatement obj : objects) {
                 int offset = 0;
                 String name = obj.getName();
                 Pattern pt = Pattern.compile("^.+[^\\w]+(" + name + ")[^\\w]+.+$", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
