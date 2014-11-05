@@ -50,7 +50,8 @@ public class TreeDiffer implements IRunnableWithProgress {
     
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException{
-        SubMonitor pm = SubMonitor.convert(monitor, Messages.calculating_diff, 100); // 0
+        SubMonitor pm = SubMonitor.convert(monitor, 
+                Messages.diffPresentationPane_getting_changes_for_diff, 100); // 0
         
         PgDatabase dbSource, dbTarget;
         dbSource = dbTarget = null;

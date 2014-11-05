@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -42,6 +43,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -164,8 +166,16 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     
     private void handleChangeProject(IResourceChangeEvent event) {
         IResourceDelta rootDelta = event.getDelta();
-        IResourceDelta thisproj = rootDelta.findMember(proj.getProject().getFullPath());
-        if (thisproj != null) {
+        IPath projPath = proj.getProject().getFullPath();
+        
+        boolean schemaChanged = false;
+        for (ApgdiffConsts.WORK_DIR_NAMES dir : ApgdiffConsts.WORK_DIR_NAMES.values()) {
+            if (rootDelta.findMember(projPath.append(dir.toString())) != null) {
+                schemaChanged = true;
+                break;
+            }
+        }
+        if (schemaChanged) {
             Display.getDefault().asyncExec(new Runnable() {
                 
                 @Override

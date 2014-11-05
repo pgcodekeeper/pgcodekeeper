@@ -229,8 +229,36 @@ public class Messages extends NLS {
     public static String NewProjWizard_error_adding_nature;
     public static String NewProjWizard_error_creating_project;
     public static String NewProjWizard_error_saving_projprefs;
+    public static String NormalizeProject_error_while_updating_project;
+
+    public static String NormalizeProject_exporting_project;
+
+    public static String NormalizeProject_normalizing_project;
+
+    public static String NormalizeProject_project_normalized;
+
+    public static String NormalizeProject_project_normalized_success;
+
     public static String OpenEditor_error_open_project;
     public static String OpenEditor_error_open_project_editor;
+    public static String OpenProjectUtils_file;
+
+    public static String OpenProjectUtils_high_proj_version;
+
+    public static String OpenProjectUtils_is_missing;
+
+    public static String OpenProjectUtils_low_proj_version;
+
+    public static String OpenProjectUtils_proj_version_unsupported;
+
+    public static String OpenProjectUtils_proj_version_warn;
+
+    public static String OpenProjectUtils_unexpected_version_error;
+
+    public static String OpenProjectUtils_unknown_proj_version;
+
+    public static String OpenProjectUtils_version_error;
+
     public static String PgDbProject_error_creating_project;
     public static String PgDbProject_error_deleting_project;
     public static String PgDbProject_error_opening_project;
