@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
@@ -108,8 +107,9 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         iDiff = ImageDescriptor.createFromURL(Activator.getContext().getBundle()
                 .getResource(FILE.ICONBALLRED)).createImage();
         setPageImage(i, iDiff);
-//        getSite().setSelectionProvider(commit.getDiffTable().getViewer());
-        getSite().setSelectionProvider(diff.getDiffTable().getViewer());
+        
+        // only work on commit page for now
+        getSite().setSelectionProvider(commit.getDiffTable().getViewer());
     }
 
     @Override
@@ -182,16 +182,18 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
             });
         }
     }
-    
-    @Override
+      
+/*    @Override
     protected void pageChange(int newPageIndex) {
         super.pageChange(newPageIndex);
         if (getSelectedPage() == commit){
             getSite().setSelectionProvider(commit.getDiffTable().getViewer());
+            System.err.println("Switched selection provider to COMMIT");
         }else if (getSelectedPage() == diff){
             getSite().setSelectionProvider(diff.getDiffTable().getViewer());
+            System.err.println("Switched selection provider to DIFF");
         }
-    }
+    }*/
 }
 
 class CommitPage extends DiffPresentationPane {
