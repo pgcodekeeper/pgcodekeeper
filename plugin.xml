@@ -22,10 +22,6 @@
                value="pgCodeKeeper">
          </property>
          <property
-               name="clearPersistedState"
-               value="true">
-         </property>
-         <property
                name="aboutImage"
                value="icons/product.png">
          </property>
