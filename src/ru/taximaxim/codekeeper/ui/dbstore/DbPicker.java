@@ -94,6 +94,9 @@ public class DbPicker extends Group {
 
             @Override
             public void modifyText(ModifyEvent e) {
+                if (dbStorePicker == null) {
+                    return;
+                }
                 DbInfo dbInfo = dbStorePicker.getDbInfo();
                 if (dbInfo != null && (!txtDbName.getText().equals(dbInfo.dbname) ||
                         !txtDbUser.getText().equals(dbInfo.dbuser) ||
