@@ -33,8 +33,7 @@ public class SQLEditorHyperLink implements IHyperlink {
 
     @Override
     public String getTypeLabel() {
-        // TODO Auto-generated method stub
-        return null;
+        return label;
     }
 
     @Override

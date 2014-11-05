@@ -14,15 +14,14 @@ public class DBObjectsLocation implements Serializable {
     private static final long serialVersionUID = -7110926210150404390L;
     private String objName;
     private String filePath;
-    private Integer offset;
-    private transient int length;
+    private int offset;
     
     public String getObjName() {
         return objName;
     }
     
     public IRegion getRegion() {
-        return new Region(offset, length);
+        return new Region(offset, objName.length());
     }
 
     public Path getFilePath() {
@@ -34,10 +33,9 @@ public class DBObjectsLocation implements Serializable {
         this.objName = objName;
         this.offset = offset;
         this.filePath = filePath.toString();
-        length = objName.length();
     }
     @Override
     public String toString() {
-        return objName + " " + filePath + " " + offset + length;
+        return objName + " " + filePath + " " + offset + objName.length();
     }
 }
