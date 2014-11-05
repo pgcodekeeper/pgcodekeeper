@@ -229,9 +229,13 @@ public class Messages extends NLS {
     public static String NewProjWizard_error_adding_nature;
     public static String NewProjWizard_error_creating_project;
     public static String NewProjWizard_error_saving_projprefs;
+    public static String NormalizeProject_are_you_sure;
+
     public static String NormalizeProject_error_while_updating_project;
 
     public static String NormalizeProject_exporting_project;
+
+    public static String NormalizeProject_normalize_project;
 
     public static String NormalizeProject_normalizing_project;
 

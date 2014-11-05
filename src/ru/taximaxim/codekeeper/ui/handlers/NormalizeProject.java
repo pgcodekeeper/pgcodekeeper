@@ -40,6 +40,13 @@ public class NormalizeProject extends AbstractHandler {
             return null;
         }
         
+        MessageBox mbSure = new MessageBox(shell,SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+        mbSure.setText(Messages.NormalizeProject_normalize_project);
+        mbSure.setMessage(Messages.NormalizeProject_are_you_sure);
+        if (mbSure.open() != SWT.YES) {
+            return null;
+        }
+        
         Log.log(Log.LOG_INFO, "Normalizing project " + proj.getProjectName()); //$NON-NLS-1$
         Job job = new Job(Messages.NormalizeProject_normalizing_project) {
             
