@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IProject;
 
@@ -175,17 +177,17 @@ public class PgDbParser {
             for (PgStatement obj : names) {
                 int offset = 0;
                 String name = obj.getName();
+                Pattern pt = Pattern.compile("^.+[^\\w]+(" + name + ")[^\\w]+.+$", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
                 for (String line : lines) {
                     int index = -1;
                     int internalOffset = 0;
-                    do {
-                        index = line.indexOf(name, internalOffset);
-                        if (index != -1) {
-                            internalOffset += index + name.length();
-                            objLocations.add(new DBObjectsLocation(name, offset
-                                    + index, children));
-                        }
-                    } while (index != -1);
+                    Matcher ma = pt.matcher(line);
+                    while (ma.find(internalOffset)) {
+                        index = ma.start(1);
+                        objLocations.add(new DBObjectsLocation(name, offset
+                                + index, children));
+                        internalOffset += index + name.length();
+                    }
                     offset += line.length() + 1;
                 }
             }
