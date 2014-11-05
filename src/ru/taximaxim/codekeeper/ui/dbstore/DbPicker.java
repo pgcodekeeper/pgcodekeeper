@@ -94,9 +94,6 @@ public class DbPicker extends Group {
 
             @Override
             public void modifyText(ModifyEvent e) {
-                if (dbStorePicker == null) {
-                    return;
-                }
                 DbInfo dbInfo = dbStorePicker.getDbInfo();
                 if (dbInfo != null && (!txtDbName.getText().equals(dbInfo.dbname) ||
                         !txtDbUser.getText().equals(dbInfo.dbuser) ||
@@ -115,14 +112,11 @@ public class DbPicker extends Group {
         
         txtDbName = new Text(this, SWT.BORDER);
         txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
-        txtDbName.addModifyListener(ml);
-        
         
         new Label(this, SWT.NONE).setText(Messages.dB_user);
         
         txtDbUser = new Text(this, SWT.BORDER);
         txtDbUser.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
-        txtDbUser.addModifyListener(ml);
         
         new Label(this, SWT.NONE).setText(Messages.dB_password);
         
@@ -143,12 +137,10 @@ public class DbPicker extends Group {
                 }
             }
         });
-        txtDbPass.addModifyListener(ml);
         
         lblWarnDbPass = new CLabel(this, SWT.NONE);
         lblWarnDbPass.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(
-                        FILE.ICONWARNING))));
+                Activator.getContext().getBundle().getResource(FILE.ICONWARNING))));
         lblWarnDbPass.setText(Messages.warning
                 // TODO concat l10n msgs
                 + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
@@ -164,14 +156,12 @@ public class DbPicker extends Group {
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 80;
         txtDbHost.setLayoutData(gd);
-        txtDbHost.addModifyListener(ml);
         
         new Label(this, SWT.NONE).setText(Messages.dbPicker_port);
         
         txtDbPort = new Text(this, SWT.BORDER);
         gd = new GridData(60, SWT.DEFAULT);
         txtDbPort.setLayoutData(gd);
-        txtDbPort.addModifyListener(ml);
         txtDbPort.addVerifyListener(new VerifyListener() {
             
             @Override
@@ -189,6 +179,11 @@ public class DbPicker extends Group {
         });
 
         if (dbStorePicker != null) {
+            txtDbName.addModifyListener(ml);
+            txtDbUser.addModifyListener(ml);
+            txtDbPass.addModifyListener(ml);
+            txtDbHost.addModifyListener(ml);
+            txtDbPort.addModifyListener(ml);
             fillDbFieldsFromDbInfo();
         }
     }
