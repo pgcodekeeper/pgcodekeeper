@@ -9,6 +9,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IEditorPart;
@@ -30,12 +31,13 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         String line;
         int offset = region.getOffset();
         IProject proj = null;
+        IFile file = null;
         try {
             IDocument document = textViewer.getDocument();
             IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
             if (page instanceof SQLEditor) {
                 SQLEditor edit = (SQLEditor)page;
-                IFile file = ((FileEditorInput)((edit).getEditorInput())).getFile();
+                file = ((FileEditorInput)((edit).getEditorInput())).getFile();
                 if (file != null) {
                     proj = file.getProject();
                 }
@@ -59,7 +61,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
             if (line.contains(name)
                     && (wordBegin < offset && wordEnd > offset)) {
                 for (DBObjectsLocation loc : parser.getObjectLocations(name)) {
-                    hyperlinks.add(new SQLEditorHyperLink(loc.getRegion(),
+                    hyperlinks.add(new SQLEditorHyperLink(loc.getRegion(), new Region(wordBegin, name.length()),
                             "Reference", loc.getFilePath(), textViewer));
                 }
             }
