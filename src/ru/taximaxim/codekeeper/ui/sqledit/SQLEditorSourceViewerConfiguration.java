@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -195,11 +196,11 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     }
     
     @Override
-    protected Map getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
+    protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
         // TODO Auto-generated method stub
-        Map map = super.getHyperlinkDetectorTargets(sourceViewer);
-        map.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", null);
-        return map;
+        Map<String, IAdaptable> targets = super.getHyperlinkDetectorTargets(sourceViewer);
+        targets.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", null);
+        return targets;
     }
 
     private void addDamagerRepairer(PresentationReconciler reconciler, RuleBasedScanner commentScanner, String contentType) {
