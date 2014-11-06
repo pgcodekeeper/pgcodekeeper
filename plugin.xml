@@ -172,13 +172,16 @@
             name="%page.name.keeperPropPage">
          <enabledWhen>
             <and>
+               <instanceof
+                     value="org.eclipse.core.resources.IProject">
+               </instanceof>
+               <adapt
+                     type="org.eclipse.core.resources.IProject">
+               </adapt>
                <test
                      property="org.eclipse.core.resources.projectNature"
                      value="ru.taximaxim.codekeeper.ui.nature">
                </test>
-               <adapt
-                     type="org.eclipse.core.resources.IProject">
-               </adapt>
             </and>
          </enabledWhen>
       </page>
