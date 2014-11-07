@@ -10,7 +10,6 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -21,8 +20,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IProject;
 
@@ -30,16 +27,11 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.CustomSQLParserListener;
 import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SqlParserMain;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class PgDbParser {
 
     public static final String PATH_TO_OBJ_SCHEMA = ".settings/schema";
     private static final String SERIALIZATIONFILE = "objects";
-    private List<PgStatement> objects;
     private Set<String> objNames = new HashSet<>();
     private List<DBObjectsLocation> objLocations;
     private final IProject proj;
@@ -47,13 +39,9 @@ public class PgDbParser {
     public PgDbParser(IProject proj) {
         this.proj = proj;
         objLocations = new ArrayList<>();
-        objects = new ArrayList<>();
     }
 
     public PgDbParser getObjFromProject() {
-        PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(proj
-                .getLocation().toString(), "UTF-8", false, false);
-        getObjectsFromDB(db);
         fillObjectLocations(proj.getLocationURI());
         return this;
     }
@@ -61,19 +49,17 @@ public class PgDbParser {
     public void saveToProject() {
         Path path = Paths.get(proj.getLocationURI())
                 .resolve(PATH_TO_OBJ_SCHEMA);
-        try {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutput out = new ObjectOutputStream(bos);) {
             Files.createDirectories(path);
 
-            try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    ObjectOutput out = new ObjectOutputStream(bos);) {
-                out.writeObject(objLocations);
-                byte[] myByte = bos.toByteArray();
-                Path filePath = path.resolve(SERIALIZATIONFILE);
-                Files.deleteIfExists(filePath);
-                try (OutputStream fout = new BufferedOutputStream(
-                        Files.newOutputStream(Files.createFile(filePath)))) {
-                    fout.write(myByte);
-                }
+            out.writeObject(objLocations);
+            byte[] myByte = bos.toByteArray();
+            Path filePath = path.resolve(SERIALIZATIONFILE);
+            Files.deleteIfExists(filePath);
+            try (OutputStream fout = new BufferedOutputStream(
+                    Files.newOutputStream(Files.createFile(filePath)))) {
+                fout.write(myByte);
             }
 
         } catch (IOException e) {
@@ -130,18 +116,6 @@ public class PgDbParser {
         return locations;
     }
 
-    private void getObjectsFromDB(PgDatabase db) {
-        for (PgStatement statement : db.getExtensions()) {
-            objects.add(statement);
-        }
-        for (PgSchema schema : db.getSchemas()) {
-            objects.add(schema);
-            for (PgStatement func : schema.getFunctions()) {
-                objects.add(func);
-            }
-        }
-    }
-
     private void fillObjectLocations(URI locationURI) {
         Path root = Paths.get(locationURI);
         try {
@@ -181,25 +155,6 @@ public class PgDbParser {
     private void parseFile(Path children) throws IOException {
         if (Files.exists(children, LinkOption.NOFOLLOW_LINKS)) {
             new SqlParserMain().testSampleInputs(children.toAbsolutePath().toString(), new CustomSQLParserListener(objLocations, children));
-            /*List<String> lines = Files.readAllLines(children,
-                    Charset.forName("UTF-8"));
-            for (PgStatement obj : objects) {
-                int offset = 0;
-                String name = obj.getName();
-                Pattern pt = Pattern.compile("^.+[^\\w]+(" + name + ")[^\\w]+.+$", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-                for (String line : lines) {
-                    int index = -1;
-                    int internalOffset = 0;
-                    Matcher ma = pt.matcher(line);
-                    while (ma.find(internalOffset)) {
-                        index = ma.start(1);
-                        objLocations.add(new DBObjectsLocation(name, offset
-                                + index, children));
-                        internalOffset += index + name.length();
-                    }
-                    offset += line.length() + 1;
-                }
-            }*/
         }
     }
 }
