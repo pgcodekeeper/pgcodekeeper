@@ -29,5 +29,6 @@ Require-Bundle: com.jcraft.jsch,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: org.osgi.framework;version="1.3.0"
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: .
+Bundle-ClassPath: .,
+ lib/antlr-4.4-complete.jar
 Bundle-Vendor: %Bundle-Vendor

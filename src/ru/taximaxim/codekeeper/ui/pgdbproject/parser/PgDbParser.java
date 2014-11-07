@@ -28,6 +28,8 @@ import org.eclipse.core.resources.IProject;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
+import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.CustomSQLParserListener;
+import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SqlParserMain;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -178,7 +180,8 @@ public class PgDbParser {
 
     private void parseFile(Path children) throws IOException {
         if (Files.exists(children, LinkOption.NOFOLLOW_LINKS)) {
-            List<String> lines = Files.readAllLines(children,
+            new SqlParserMain().testSampleInputs(children.toAbsolutePath().toString(), new CustomSQLParserListener(objLocations, children));
+            /*List<String> lines = Files.readAllLines(children,
                     Charset.forName("UTF-8"));
             for (PgStatement obj : objects) {
                 int offset = 0;
@@ -196,7 +199,7 @@ public class PgDbParser {
                     }
                     offset += line.length() + 1;
                 }
-            }
+            }*/
         }
     }
 }
