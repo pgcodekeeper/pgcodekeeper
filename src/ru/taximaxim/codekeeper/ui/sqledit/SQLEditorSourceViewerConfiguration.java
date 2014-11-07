@@ -189,13 +189,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     }
     
     @Override
-    public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
-        List<IHyperlinkDetector> list = new ArrayList<>(Arrays.asList(super.getHyperlinkDetectors(sourceViewer)));
-        list.add(new SQLEditorHyperLinkDetector());
-        return list.toArray(new IHyperlinkDetector[list.size()]);
-    }
-    
-    @Override
     protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
         // TODO Auto-generated method stub
         Map<String, IAdaptable> targets = super.getHyperlinkDetectorTargets(sourceViewer);
