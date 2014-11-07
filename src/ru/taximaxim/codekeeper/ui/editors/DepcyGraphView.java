@@ -1,68 +1,44 @@
 package ru.taximaxim.codekeeper.ui.editors;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
-import org.eclipse.draw2d.ColorConstants;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.MarginBorder;
-import org.eclipse.draw2d.StackLayout;
+import org.eclipse.core.commands.IStateListener;
+import org.eclipse.core.commands.State;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.viewers.AbstractZoomableViewer;
-import org.eclipse.zest.core.viewers.EntityConnectionData;
 import org.eclipse.zest.core.viewers.GraphViewer;
-import org.eclipse.zest.core.viewers.IFigureProvider;
 import org.eclipse.zest.core.viewers.IGraphEntityContentProvider;
 import org.eclipse.zest.core.viewers.IZoomableWorkbenchPart;
 import org.eclipse.zest.core.widgets.ZestStyles;
-import org.eclipse.zest.core.widgets.internal.GraphLabel;
 import org.eclipse.zest.layouts.LayoutStyles;
 import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
+import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgForeignKey;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
-import cz.startnet.utils.pgdiff.schema.PgView;
 
-public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart{
-    static DirectedGraph<PgStatement, DefaultEdge> depcyGraph = null;
-    private GraphViewer gv;
+public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, ISelectionListener, IStateListener{
     
-    private ISelectionListener listener = new ISelectionListener() {
-        public void selectionChanged(IWorkbenchPart sourcepart, ISelection selection) {
-            if (sourcepart instanceof ProjectEditorDiffer && selection instanceof DepcyStructuredSelection) {
-                DepcyStructuredSelection dss = (DepcyStructuredSelection) selection;
-                ArrayList<PgStatement> pgStatSele = new ArrayList<PgStatement>();
-                for(Object o : dss.toArray()){
-                    if (o instanceof TreeElement){
-                        pgStatSele.add(((TreeElement)o).getPgStatement(dss.getDepcyGraph().getDb()));
-                    }
-                }
-                depcyGraph = dss.getDepcyGraph() == null ? null : dss.getDepcyGraph().getGraph();
-                gv.setInput(pgStatSele);
-            }
-        }
-    };
-        
+    DepcyGraph currentSource;
+    private GraphViewer gv;
+    private Boolean isSource = true;
+    
     @Override
     public void createPartControl(Composite parent) {
         gv = new GraphViewer(parent, SWT.NONE);
@@ -72,7 +48,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart{
         /*
          * Setting own lable/figure provider
          */
-        gv.setLabelProvider(new MyLabelProvider());
+        gv.setLabelProvider(new DepcyGraphLabelProvider(isSource));
         
         gv.setContentProvider(new DepcyGraphViewContentProvider());
         
@@ -91,9 +67,13 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart{
         });
 
         // register listener to pages post selection 
-        getSite().getPage().addPostSelectionListener(listener);
+        getSite().getPage().addPostSelectionListener(this);
 //         In order to listen to window changes
 //         getSite().getWorkbenchWindow().getSelectionService().addPostSelectionListener(listener);
+        
+        // register this as listener to command state
+        ICommandService service = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
+        service.getCommand("ru.taximaxim.codekeeper.ui.toggle1").getState("ru.taximaxim.codekeeper.ui.toggle1state").addListener(this);
     }
 
     @Override
@@ -108,7 +88,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart{
         if (gv != null){
             gv.getControl().dispose();
         }
-        getSite().getPage().removePostSelectionListener(listener);
+        getSite().getPage().removePostSelectionListener(this);
 //        getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(listener);
     }
 
@@ -116,78 +96,72 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart{
     public AbstractZoomableViewer getZoomableViewer() {
         return gv;
     }
-}
 
-// LABEL PROVIDER
-class MyLabelProvider extends LabelProvider implements IFigureProvider{
     @Override
-    public String getText(Object element) {
-        if (element instanceof PgStatement){
-            PgStatement st = (PgStatement) element;
-            if (st instanceof PgSchema){
-                return "Schema " + st.getBareName();
-            }else if (st instanceof PgDatabase){
-                return "DB";
-            }else if (st instanceof PgFunction){
-                return "FUNC " + st.getBareName();
-            }else if (st instanceof PgTable){
-                return "TBL " + st.getBareName();
-            }else if (st instanceof PgForeignKey){
-                return "FK " + st.getBareName();
-            }else if (st instanceof PgConstraint){
-                return "CONSTR " + st.getBareName();
-            }else if (st instanceof PgIndex){
-                return "IDX " + st.getBareName();
-            }else if (st instanceof PgView){
-                return "VIEW " + st.getBareName();
-            }else if (st instanceof PgTrigger){
-                return "TRG " + st.getBareName();
-            }else{
-                return st.getClass() + " " + st.getBareName();
+    public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+
+        if (!(part instanceof ProjectEditorDiffer) || 
+                !(selection instanceof DepcyStructuredSelection)) {
+            return;
+        }
+        
+        DepcyStructuredSelection dss = (DepcyStructuredSelection) selection;
+        
+        if (isSource){
+            currentSource = dss.getSourceDepcyGraph(); 
+        }else{
+            currentSource = dss.getTargetDepcyGraph();
+        }
+        
+        HashSet<PgStatement> pgStatSele = new HashSet<PgStatement>();
+        
+        for(Object o : dss.toArray()){
+            if (!(o instanceof TreeElement)){
+                continue;
             }
-        }else if (element instanceof EntityConnectionData){
-            return "";
-        }else{
-            return "error";
-        }
-    }
-
-    @Override
-    public IFigure getFigure(Object element) {
-        if (element instanceof PgSchema){
-            GraphLabel l = new GraphLabel(false);
-            l.setArcWidth(0);
-            l.setFont(Display.getDefault().getSystemFont());
-            l.setBorderColor(ColorConstants.black);
-            l.setBorderWidth(2);
-            l.setLayoutManager(new StackLayout());
-            l.setBorder(new MarginBorder(1));
-            l.setText(((PgSchema)element).getName());
-            return l;
-        }else{
-            return null;
-        }
-    }
-} // END LABEL PROVIDER
-
-
-class DepcyGraphViewContentProvider extends ArrayContentProvider  implements IGraphEntityContentProvider {
-
-    @Override
-    public Object[] getConnectedTo(Object entity) {
-        if (entity instanceof PgStatement){
-            if (DepcyGraphView.depcyGraph != null){
-                ArrayList<PgStatement> connected = new ArrayList<PgStatement>(5);
-                for (DefaultEdge e : DepcyGraphView.depcyGraph.outgoingEdgesOf((PgStatement)entity)){
-                    PgStatement connectedVertex = DepcyGraphView.depcyGraph.getEdgeTarget(e);
-                    if (!(connectedVertex instanceof PgColumn)){
-                        connected.add(connectedVertex);                        
-                    }
+            
+            TreeElement el = (TreeElement)o;
+            if (el.getSide() == DiffSide.RIGHT && isSource || el.getSide() == DiffSide.LEFT && !isSource){
+                continue;
+            }
+            PgStatement dbObject = (el).getPgStatement(currentSource.getDb());                     
+            pgStatSele.add(dbObject);
+            
+            for(PgStatement stat : PgDiff.getDependantsSet(dbObject, new HashSet<PgStatement>(), currentSource)){
+                if (!(stat instanceof PgColumn)){
+                    pgStatSele.add(stat);
                 }
-                return connected.toArray();
             }
         }
-        return null;
-        //throw new IllegalStateException("Input type is not supported");
+        gv.setInput(pgStatSele);
+    }
+    
+    @Override
+    public void handleStateChange(State state, Object oldValue) {
+        this.isSource = (boolean) state.getValue();
+        ((DepcyGraphLabelProvider)gv.getLabelProvider()).setIsSource(isSource);
+    }
+    
+    class DepcyGraphViewContentProvider extends ArrayContentProvider  implements IGraphEntityContentProvider {
+        
+        @Override
+        public Object[] getConnectedTo(Object entity) {
+            if (entity instanceof PgStatement){
+                DirectedGraph<PgStatement, DefaultEdge> graph = DepcyGraphView.this.currentSource.getGraph();
+                if (graph != null){
+                    ArrayList<PgStatement> connected = new ArrayList<PgStatement>(5);
+                    for (DefaultEdge e : graph.outgoingEdgesOf((PgStatement)entity)){
+                        PgStatement connectedVertex = graph.getEdgeTarget(e);
+                        if (!(connectedVertex instanceof PgColumn)){
+                            connected.add(connectedVertex);                        
+                        }
+                    }
+                    return connected.toArray();
+                }
+            }
+            return null;
+            // throw new IllegalStateException("Input type is not supported");
+        }
     }
 }
+

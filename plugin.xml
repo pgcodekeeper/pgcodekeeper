@@ -35,6 +35,25 @@
             id="ru.taximaxim.codekeeper.ui.openeditor"
             name="%command.name.openProjectEditor">
       </command>
+      
+      <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ToggleSourceHandler"
+            id="ru.taximaxim.codekeeper.ui.toggle1"
+            name="Source">
+            <state class="org.eclipse.jface.commands.ToggleState"
+                            id="ru.taximaxim.codekeeper.ui.toggle1state"/>
+      </command>
+
+      <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ToggleSourceHandler"
+            id="ru.taximaxim.codekeeper.ui.toggle2"
+            name="Target">
+            <state class="org.eclipse.jface.commands.ToggleState"
+                            id="ru.taximaxim.codekeeper.ui.toggle2state"/>
+      </command>
+
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -74,6 +93,26 @@
                   style="push">
             </command>
          </menu>
+      </menuContribution>
+      <menuContribution
+            locationURI="toolbar:ru.taximaxim.codekeeper.ui.depcyview">
+         <command
+               commandId="ru.taximaxim.codekeeper.ui.toggle1"
+               icon="icons/ball_blue.png"
+               label="Source"
+               mode="FORCE_TEXT"
+               style="toggle">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="toolbar:ru.taximaxim.codekeeper.ui.depcyview">
+         <command
+               commandId="ru.taximaxim.codekeeper.ui.toggle2"
+               icon="icons/ball_green.png"
+               label="Target"
+               mode="FORCE_TEXT"
+               style="toggle">
+         </command>
       </menuContribution>
    </extension>
    <extension

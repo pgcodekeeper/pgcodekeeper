@@ -122,6 +122,7 @@ public class DiffTableViewer extends Composite {
     private DbSource dbTarget;
     
     private DepcyGraph depcyGraphSource;
+    private DepcyGraph depcyGraphTarget;
 
     private Map<String, LinkedList<String>> prevChecked; 
     private XmlHistory prevCheckedHistory;
@@ -192,7 +193,7 @@ public class DiffTableViewer extends Composite {
         viewer = new CheckboxTableViewer(new Table(this, viewerStyle)){
             @Override
             public ISelection getSelection() {
-                return new DepcyStructuredSelection(depcyGraphSource, ((IStructuredSelection) super.getSelection()).toArray());
+                return new DepcyStructuredSelection(depcyGraphSource, depcyGraphTarget, ((IStructuredSelection) super.getSelection()).toArray());
             }
         };
         
@@ -625,14 +626,16 @@ public class DiffTableViewer extends Composite {
             this.treeRoot = (differ == null) ? null : differ.getDiffTree();
             this.dbSource = (differ == null) ? null : 
                 reverseDiffSide ? differ.getDbTarget() : differ.getDbSource();
-            this.depcyGraphSource = (dbSource == null) ? null : new DepcyGraph(dbSource.getDbObject()); 
+            this.depcyGraphSource = (dbSource == null) ? null : new DepcyGraph(dbSource.getDbObject());
             this.dbTarget = (differ == null) ? null : 
                 reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
+            this.depcyGraphTarget = (dbTarget == null) ? null : new DepcyGraph(dbTarget.getDbObject());
         } catch (PgCodekeeperUIException e) {
             ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_setting_input, e);
             this.treeRoot = null;
             this.dbSource = null;
             this.depcyGraphSource = null;
+            this.depcyGraphTarget = null;
             this.dbTarget = null;
         }
     }
