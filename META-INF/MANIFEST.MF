@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: MainApp
+Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: ru.taximaxim.codekeeper.mainapp;singleton:=true
 Bundle-Version: 1.1.0.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.mainapp.Activator
@@ -9,4 +9,4 @@ Require-Bundle: org.eclipse.core.runtime,
  apgdiff
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Bundle-Vendor: Technology, LLC
+Bundle-Vendor: %Bundle-Vendor

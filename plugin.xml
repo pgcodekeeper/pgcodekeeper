@@ -16,7 +16,7 @@
          point="org.eclipse.core.runtime.products">
       <product
             application="ru.taximaxim.codekeeper.mainapp.application"
-            name="pgCodeKeeper">
+            name="%product.name">
          <property
                name="appName"
                value="pgCodeKeeper">
