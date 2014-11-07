@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.DirectoryNotEmptyException;
@@ -11,11 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.osgi.framework.Version;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
@@ -265,20 +261,9 @@ public class ModelExporter {
     }
     
     private void writeProjVersion(File f) throws IOException {
-        Properties prop = new Properties();
-        Version progVersion = Version.parseVersion(ApgdiffConsts.EXPORT_CURRENT_VERSION);
-        if (f.exists()) {
-            try(FileInputStream fStream = new FileInputStream(f)){
-                prop.load(fStream);
-            }
-            String oldVersion = prop.getProperty(ApgdiffConsts.VERSION_PROP_NAME);
-            if (progVersion.equals(Version.parseVersion(oldVersion))) {
-                return;
-            }
-        }
-        
         try (PrintWriter pw = new UnixPrintWriter(f, "UTF-8")) {
-            pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = " + progVersion.toString());
+            pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = "
+                    + ApgdiffConsts.EXPORT_CURRENT_VERSION);
         }
     }
 }
