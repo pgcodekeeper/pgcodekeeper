@@ -79,7 +79,6 @@ import ru.taximaxim.codekeeper.ui.editors.DepcyStructuredSelection;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 /*
  * Call CheckStateListener.updateCountLabels() when programmatically changing 

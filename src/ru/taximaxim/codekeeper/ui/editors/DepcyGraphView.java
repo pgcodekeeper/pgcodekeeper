@@ -11,6 +11,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
@@ -68,8 +69,6 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
         // register listener to pages post selection 
         getSite().getPage().addPostSelectionListener(this);
-//         In order to listen to window changes
-//         getSite().getWorkbenchWindow().getSelectionService().addPostSelectionListener(listener);
         
         // register this as listener to command state
         ICommandService service = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
@@ -89,7 +88,6 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             gv.getControl().dispose();
         }
         getSite().getPage().removePostSelectionListener(this);
-//        getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(listener);
     }
 
     @Override
@@ -105,12 +103,19 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             return;
         }
         
+        IEditorPart editor = getSite().getPage().getActiveEditor();
+        if (editor == null || !(editor instanceof ProjectEditorDiffer)){
+            return;
+        }
+        
+        boolean isCommit = ((ProjectEditorDiffer)editor).getActivePage() == 0;
+        
         DepcyStructuredSelection dss = (DepcyStructuredSelection) selection;
         
         if (isSource){
-            currentSource = dss.getSourceDepcyGraph(); 
+            currentSource = isCommit ? dss.getSourceDepcyGraph() : dss.getTargetDepcyGraph(); 
         }else{
-            currentSource = dss.getTargetDepcyGraph();
+            currentSource = isCommit ? dss.getTargetDepcyGraph() : dss.getSourceDepcyGraph();
         }
         
         HashSet<PgStatement> pgStatSele = new HashSet<PgStatement>();
@@ -160,8 +165,6 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                 }
             }
             return null;
-            // throw new IllegalStateException("Input type is not supported");
         }
     }
 }
-

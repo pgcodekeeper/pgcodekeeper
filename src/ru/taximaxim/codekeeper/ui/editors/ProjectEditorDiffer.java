@@ -24,6 +24,8 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -41,6 +43,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.part.MultiPageSelectionProvider;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -108,8 +111,20 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
                 .getResource(FILE.ICONBALLRED)).createImage();
         setPageImage(i, iDiff);
         
-        // only work on commit page for now
-        getSite().setSelectionProvider(commit.getDiffTable().getViewer());
+        final MultiPageSelectionProvider mpsp = new MultiPageSelectionProvider(this);
+        
+        ISelectionChangedListener selectionChangedListener = new ISelectionChangedListener() {
+            
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                mpsp.firePostSelectionChanged(event);
+            }
+        };
+        
+        diff.getDiffTable().getViewer().addPostSelectionChangedListener(selectionChangedListener);
+        commit.getDiffTable().getViewer().addPostSelectionChangedListener(selectionChangedListener);
+        
+        getSite().setSelectionProvider(mpsp);
     }
 
     @Override
@@ -182,18 +197,6 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
             });
         }
     }
-      
-/*    @Override
-    protected void pageChange(int newPageIndex) {
-        super.pageChange(newPageIndex);
-        if (getSelectedPage() == commit){
-            getSite().setSelectionProvider(commit.getDiffTable().getViewer());
-            System.err.println("Switched selection provider to COMMIT");
-        }else if (getSelectedPage() == diff){
-            getSite().setSelectionProvider(diff.getDiffTable().getViewer());
-            System.err.println("Switched selection provider to DIFF");
-        }
-    }*/
 }
 
 class CommitPage extends DiffPresentationPane {
