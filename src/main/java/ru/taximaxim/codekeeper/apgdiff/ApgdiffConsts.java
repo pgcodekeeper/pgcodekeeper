@@ -11,7 +11,7 @@ public interface ApgdiffConsts {
     
     String FILENAME_WORKING_DIR_MARKER = ".pgcodekeeper";
     String VERSION_PROP_NAME = "version"; //$NON-NLS-1$
-    String EXPORT_CURRENT_VERSION = "0.3.0"; //$NON-NLS-1$
+    String EXPORT_CURRENT_VERSION = "0.4.0"; //$NON-NLS-1$
     String EXPORT_MIN_VERSION = "0.2.9"; //$NON-NLS-1$
     
     enum WORK_DIR_NAMES {
