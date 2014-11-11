@@ -7,9 +7,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.Main;
@@ -21,29 +18,13 @@ public class Application implements IApplication {
 
     private static final String APGDIFF_TO_CONSOLE_MODE = "--apgdiff";
     
-    /* (non-Javadoc)
-     * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
-     */
     @Override
     public Object start(IApplicationContext context) throws Exception {
         String[] pgCommands = getApgdiffArguments();
         if (pgCommands != null) {
             callApgdiffMain(pgCommands);
-            return IApplication.EXIT_OK;
         }
-        
-        Display display = PlatformUI.createDisplay();
-        try {
-            int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
-
-            if (returnCode == PlatformUI.RETURN_RESTART)
-                return IApplication.EXIT_RESTART;
-            else
-                return IApplication.EXIT_OK;
-        } finally {
-            display.dispose();
-        }
-
+        return IApplication.EXIT_OK;
     }
 
     private void callApgdiffMain(String[] pgCommands) {
@@ -52,8 +33,7 @@ public class Application implements IApplication {
         } catch (Exception e) {
             Status error = new Status(IStatus.ERROR, ApgdiffConsts.APGDIFF_PLUGIN_ID,
                     "Calling apgdiff error", e);
-            Platform.getLog(Platform.getBundle(Activator.PLUGIN_ID)).log(
-                    error);
+            Platform.getLog(Platform.getBundle(Activator.PLUGIN_ID)).log(error);
         }
     }
 
@@ -70,21 +50,7 @@ public class Application implements IApplication {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.equinox.app.IApplication#stop()
-     */
     @Override
     public void stop() {
-        if (!PlatformUI.isWorkbenchRunning())
-            return;
-        final IWorkbench workbench = PlatformUI.getWorkbench();
-        final Display display = workbench.getDisplay();
-        display.syncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (!display.isDisposed())
-                    workbench.close();
-            }
-        });
     }
 }

@@ -1,16 +1,12 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: MainApp
+Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: ru.taximaxim.codekeeper.mainapp;singleton:=true
-Bundle-Version: 0.6.0.qualifier
+Bundle-Version: 1.1.0.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.mainapp.Activator
 Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.equinox.event,
- org.eclipse.equinox.launcher,
- org.eclipse.pde.runtime,
  org.eclipse.ui,
- org.eclipse.ui.net,
- apgdiff,
- ru.taximaxim.codekeeper.ui
+ apgdiff
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
+Bundle-Vendor: %Bundle-Vendor

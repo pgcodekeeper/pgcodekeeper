@@ -16,14 +16,10 @@
          point="org.eclipse.core.runtime.products">
       <product
             application="ru.taximaxim.codekeeper.mainapp.application"
-            name="pgCodeKeeper">
+            name="%product.name">
          <property
                name="appName"
                value="pgCodeKeeper">
-         </property>
-         <property
-               name="clearPersistedState"
-               value="true">
          </property>
          <property
                name="aboutImage"
