@@ -9,6 +9,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -57,17 +58,17 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         SubMonitor taskpm = pm.newChild(25); // 50
 
         PgDatabase db;
-        switch (props.getPrefs().get(PROJ_PREF.SOURCE, "")) { //$NON-NLS-1$
-        case PROJ_PREF.SOURCE_TYPE_DB:
+        switch (DBSources.getEnum(props.getPrefs().get(PROJ_PREF.SOURCE, ""))) { //$NON-NLS-1$
+        case SOURCE_TYPE_DB:
             db = DbSource.fromDb(exePgdump, pgdumpCustom, props).get(taskpm);
             break;
 
-        case PROJ_PREF.SOURCE_TYPE_DUMP:
+        case SOURCE_TYPE_DUMP:
             db = DbSource.fromFile(dumpPath,
                     props.getPrefs().get(PROJ_PREF.ENCODING, "")).get(taskpm); //$NON-NLS-1$
             break;
 
-        case PROJ_PREF.SOURCE_TYPE_JDBC:
+        case SOURCE_TYPE_JDBC:
             db = DbSource.fromJdbc(props).get(taskpm);
             break;
             

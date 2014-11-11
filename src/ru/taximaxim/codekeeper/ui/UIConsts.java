@@ -50,6 +50,10 @@ public interface UIConsts {
             return sourceName;
         }
         public static DBSources getEnum(String value) {
+            // Возвращать Дамп если тип соурса был none
+            if (value.equalsIgnoreCase("none")) {
+                return SOURCE_TYPE_DUMP;
+            }
             for (DBSources v : values()) {
                 if (v.sourceName.equalsIgnoreCase(value)) {
                     return v;
@@ -62,9 +66,6 @@ public interface UIConsts {
     interface PROJ_PREF {
         String ENCODING = "prefGeneralEncoding"; //$NON-NLS-1$
         String SOURCE = "prefGeneralSource"; //$NON-NLS-1$
-        String SOURCE_TYPE_JDBC = "jdbc"; //$NON-NLS-1$
-        String SOURCE_TYPE_DB = "db"; //$NON-NLS-1$
-        String SOURCE_TYPE_DUMP = "dump"; //$NON-NLS-1$
         String DB_NAME = "prefDbName"; //$NON-NLS-1$
         String DB_HOST = "prefDbHost"; //$NON-NLS-1$
         String DB_PORT = "prefDbPort"; //$NON-NLS-1$
