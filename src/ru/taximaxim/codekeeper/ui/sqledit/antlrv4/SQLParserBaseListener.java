@@ -160,6 +160,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterFunction_definition(@NotNull SQLParser.Function_definitionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFunction_definition(@NotNull SQLParser.Function_definitionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterRow_value_special_case(@NotNull SQLParser.Row_value_special_caseContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -179,6 +191,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitBinary_type(@NotNull SQLParser.Binary_typeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterFunctions_definition_schema(@NotNull SQLParser.Functions_definition_schemaContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFunctions_definition_schema(@NotNull SQLParser.Functions_definition_schemaContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1588,18 +1612,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSet_function_specification(@NotNull SQLParser.Set_function_specificationContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSet_function_specification(@NotNull SQLParser.Set_function_specificationContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterSome(@NotNull SQLParser.SomeContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1607,6 +1619,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSome(@NotNull SQLParser.SomeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSet_function_specification(@NotNull SQLParser.Set_function_specificationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSet_function_specification(@NotNull SQLParser.Set_function_specificationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2248,18 +2272,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExtract_field(@NotNull SQLParser.Extract_fieldContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitExtract_field(@NotNull SQLParser.Extract_fieldContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterHash_partitions(@NotNull SQLParser.Hash_partitionsContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2272,6 +2284,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterExtract_field(@NotNull SQLParser.Extract_fieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExtract_field(@NotNull SQLParser.Extract_fieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterCreate_table_statement(@NotNull SQLParser.Create_table_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2279,6 +2303,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitCreate_table_statement(@NotNull SQLParser.Create_table_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterRevoke_statement(@NotNull SQLParser.Revoke_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitRevoke_statement(@NotNull SQLParser.Revoke_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

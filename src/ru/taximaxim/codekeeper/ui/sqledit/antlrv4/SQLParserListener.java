@@ -129,6 +129,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitSchema_statement(@NotNull SQLParser.Schema_statementContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#function_definition}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunction_definition(@NotNull SQLParser.Function_definitionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#function_definition}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunction_definition(@NotNull SQLParser.Function_definitionContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#row_value_special_case}.
 	 * @param ctx the parse tree
 	 */
@@ -148,6 +158,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitBinary_type(@NotNull SQLParser.Binary_typeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#functions_definition_schema}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunctions_definition_schema(@NotNull SQLParser.Functions_definition_schemaContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#functions_definition_schema}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunctions_definition_schema(@NotNull SQLParser.Functions_definition_schemaContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#explicit_row_value_constructor}.
 	 * @param ctx the parse tree
@@ -1319,16 +1339,6 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitNonreserved_keywords(@NotNull SQLParser.Nonreserved_keywordsContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SQLParser#set_function_specification}.
-	 * @param ctx the parse tree
-	 */
-	void enterSet_function_specification(@NotNull SQLParser.Set_function_specificationContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SQLParser#set_function_specification}.
-	 * @param ctx the parse tree
-	 */
-	void exitSet_function_specification(@NotNull SQLParser.Set_function_specificationContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SQLParser#some}.
 	 * @param ctx the parse tree
 	 */
@@ -1338,6 +1348,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitSome(@NotNull SQLParser.SomeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#set_function_specification}.
+	 * @param ctx the parse tree
+	 */
+	void enterSet_function_specification(@NotNull SQLParser.Set_function_specificationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#set_function_specification}.
+	 * @param ctx the parse tree
+	 */
+	void exitSet_function_specification(@NotNull SQLParser.Set_function_specificationContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#truth_value}.
 	 * @param ctx the parse tree
@@ -1869,16 +1889,6 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitList_partitions(@NotNull SQLParser.List_partitionsContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SQLParser#extract_field}.
-	 * @param ctx the parse tree
-	 */
-	void enterExtract_field(@NotNull SQLParser.Extract_fieldContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SQLParser#extract_field}.
-	 * @param ctx the parse tree
-	 */
-	void exitExtract_field(@NotNull SQLParser.Extract_fieldContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SQLParser#hash_partitions}.
 	 * @param ctx the parse tree
 	 */
@@ -1889,6 +1899,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitHash_partitions(@NotNull SQLParser.Hash_partitionsContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#extract_field}.
+	 * @param ctx the parse tree
+	 */
+	void enterExtract_field(@NotNull SQLParser.Extract_fieldContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#extract_field}.
+	 * @param ctx the parse tree
+	 */
+	void exitExtract_field(@NotNull SQLParser.Extract_fieldContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#create_table_statement}.
 	 * @param ctx the parse tree
 	 */
@@ -1898,6 +1918,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitCreate_table_statement(@NotNull SQLParser.Create_table_statementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#revoke_statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterRevoke_statement(@NotNull SQLParser.Revoke_statementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#revoke_statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitRevoke_statement(@NotNull SQLParser.Revoke_statementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#cast_specification}.
 	 * @param ctx the parse tree

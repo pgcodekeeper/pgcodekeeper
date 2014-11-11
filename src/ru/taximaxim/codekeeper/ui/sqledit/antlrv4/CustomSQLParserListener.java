@@ -41,7 +41,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     
     @Override
     public void exitGrant_statement(Grant_statementContext ctx) {
-        objLocation.add(new DBObjectsLocation(ctx.schema_name.Identifier().toString(), ctx.schema_name.getStart().getStartIndex(), filePath));
+//        objLocation.add(new DBObjectsLocation(ctx.schema_name.Identifier().toString(), ctx.schema_name.getStart().getStartIndex(), filePath));
     }
     
     @Override

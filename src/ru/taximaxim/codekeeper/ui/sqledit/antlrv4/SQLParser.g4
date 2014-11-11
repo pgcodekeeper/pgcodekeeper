@@ -47,6 +47,7 @@ statement
   | set_statement
   | create_trigger_statement
   | grant_statement
+  | revoke_statement
   ;
 
 data_statement
@@ -88,6 +89,21 @@ create_trigger_statement
     EXECUTE PROCEDURE func_name=identifier LEFT_PAREN (arguments=identifier(COMMA)?)? RIGHT_PAREN
     ;
     
+revoke_statement
+    : REVOKE (GRANT OPTION FOR)?
+    (EXECUTE | ALL (PRIVILEGES)?) 
+    ON (function_definition| functions_definition_schema)
+    FROM (( ((GROUP)? role_name=identifier) | PUBLIC)(COMMA)?)+
+    (CASCADE | RESTRICT)?
+    
+    | REVOKE (GRANT OPTION FOR)?
+    ( ((CREATE | USAGE)(COMMA)?)+ | ALL (PRIVILEGES)?) 
+    ON SCHEMA (schema_name=identifier(COMMA)?)+
+    FROM (( ((GROUP)? role_name=identifier) | PUBLIC )(COMMA)?)+
+    (CASCADE | RESTRICT)?
+    
+    ;
+    
 grant_statement
     : 
     GRANT ((SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER)+
@@ -120,9 +136,7 @@ grant_statement
     grant_to_rule
     
     | GRANT (EXECUTE | ALL (PRIVILEGES)?) 
-    ON (FUNCTION func_name=identifier 
-        LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? argtype=data_type (COMMA)? )* RIGHT_PAREN
-         | ALL FUNCTIONS IN SCHEMA (schema_name=identifier(COMMA)?)+)
+    ON (function_definition | functions_definition_schema)
     grant_to_rule
     
     | GRANT (USAGE | ALL (PRIVILEGES)?)
@@ -168,6 +182,15 @@ argmode
       IN | OUT | INOUT | VARIADIC
     ;
 
+function_definition
+    : FUNCTION func_name=identifier 
+        LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? argtype=data_type (COMMA)? )* RIGHT_PAREN
+    ;
+    
+functions_definition_schema
+    : ALL FUNCTIONS IN SCHEMA (schema_name=identifier(COMMA)?)+
+    ;
+    
 create_table_statement
   : CREATE EXTERNAL TABLE n=table_name table_elements USING file_type=identifier
     (param_clause)? (table_partitioning_clauses)? (LOCATION path=Character_String_Literal)
