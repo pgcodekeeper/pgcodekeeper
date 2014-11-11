@@ -22,7 +22,6 @@ public class Messages extends NLS {
     public static String create_marker_file_named;
     public static String manually_and_try_again;
     public static String missing_marker_file_in_working_directory;
-    public static String bad_port;
     public static String choose_dump_file_with_changes;
     public static String db;
     public static String db_source;
@@ -32,10 +31,10 @@ public class Messages extends NLS {
     public static String error_in_differ_thread;
     public static String error_in_the_project_modifier_thread;
     public static String get_changes;
-    public static String none;
     public static String jdbc;
+    public static String pg_dump;
+    public static String source;
     public static String please_check_at_least_one_row;
-    public static String port_must_be_a_number;
     public static String projectEditorDiffer_save_project;
     public static String projectProperties_encoding_for_all_operation_with_project;
     public static String projectProperties_error_occurs_while_saving_properties;
@@ -45,6 +44,9 @@ public class Messages extends NLS {
     public static String select_readable_db_dump_file;
     public static String dump_file;
     public static String miscellaneous;
+    public static String unknown_db;
+    public static String unknown_host;
+    public static String connection_details;
     
     // ui
     public static String exceptionNotifier_copy_stack_trace;
@@ -127,7 +129,6 @@ public class Messages extends NLS {
     public static String pgDumper_bad_pg_dump_version_output;
     
     // ui.handlers
-    public static String loadProj_open_project;
     public static String database;
 
     // ui.parts
@@ -139,6 +140,7 @@ public class Messages extends NLS {
     public static String commitPartDescr_modifying_db_model;
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
+    public static String commitPartDescr_used_connection_template;
     public static String ConsoleFactory_error_opening_console;
     public static String to;
     public static String diffPaneDialog_diff_to_selected_object;
@@ -183,17 +185,13 @@ public class Messages extends NLS {
     public static String newProjWizard_dump_file_source_settings;
     public static String newProjWizard_error_in_initializing_repo_from_source;
     public static String newProjWizard_init_project_subdir_from_schema_source;
-    public static String newProjWizard_location_is_the_current_location;
     public static String newProjWizard_new_pg_db_project;
     public static String newProjWizard_no_schema_source_selected;
     public static String newProjWizard_project_encoding;
     public static String newProjWizard_project_initializer_thread_interrupted;
-    public static String newProjWizard_project_with_that_name_already_exist;
     public static String newProjWizard_repository_settings;
     public static String newProjWizard_schema_source;
     public static String newProjWizard_schema_source_settings;
-    public static String newProjWizard_select_project_working_directory;
-    public static String newProjWizard_select_repo_root_directory;
     public static String newProjWizard_this_will_delete_contents_and_recreate_them;
     
     // ui.prefs
@@ -205,6 +203,7 @@ public class Messages extends NLS {
     public static String dBUpdatePrefPage_drop_table;
     public static String dBUpdatePrefPage_set_warning_when_next_statements_present;
     public static String DiffPaneViewer_project;
+    public static String DiffPresentationPane_cannotSaveDbPropToProjProps;
     public static String DiffPresentationPane_error_loading_changes;
     public static String DiffTableViewer_error_load_checked_set;
     public static String DiffTableViewer_error_reading_ignored_objects;
@@ -227,14 +226,43 @@ public class Messages extends NLS {
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
     public static String ManualDepciesDialog_set_add_depcies;
     public static String NewProjWizard_demand_init_project;
-    public static String NewProjWizard_enter_project_name;
     public static String NewProjWizard_error_adding_nature;
     public static String NewProjWizard_error_creating_project;
-    public static String NewProjWizard_error_loading_old_proj;
     public static String NewProjWizard_error_saving_projprefs;
-    public static String NewProjWizard_project_name;
+    public static String NormalizeProject_are_you_sure;
+
+    public static String NormalizeProject_error_while_updating_project;
+
+    public static String NormalizeProject_exporting_project;
+
+    public static String NormalizeProject_normalize_project;
+
+    public static String NormalizeProject_normalizing_project;
+
+    public static String NormalizeProject_project_normalized;
+
+    public static String NormalizeProject_project_normalized_success;
+
     public static String OpenEditor_error_open_project;
     public static String OpenEditor_error_open_project_editor;
+    public static String OpenProjectUtils_file;
+
+    public static String OpenProjectUtils_high_proj_version;
+
+    public static String OpenProjectUtils_is_missing;
+
+    public static String OpenProjectUtils_low_proj_version;
+
+    public static String OpenProjectUtils_proj_version_unsupported;
+
+    public static String OpenProjectUtils_proj_version_warn;
+
+    public static String OpenProjectUtils_unexpected_version_error;
+
+    public static String OpenProjectUtils_unknown_proj_version;
+
+    public static String OpenProjectUtils_version_error;
+
     public static String PgDbProject_error_creating_project;
     public static String PgDbProject_error_deleting_project;
     public static String PgDbProject_error_opening_project;

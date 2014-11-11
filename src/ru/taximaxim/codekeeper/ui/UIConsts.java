@@ -20,6 +20,7 @@ public interface UIConsts {
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
+        String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
     }
     
     interface COMMIT_PREF {
@@ -34,12 +35,37 @@ public interface UIConsts {
         String DROP_COLUMN_STATEMENT = "prefDropColumnStatement"; //$NON-NLS-1$
     }
     
+    public enum DBSources {
+        SOURCE_TYPE_JDBC("jdbc"), //$NON-NLS-1$
+        SOURCE_TYPE_DB("db"), //$NON-NLS-1$
+        SOURCE_TYPE_DUMP("dump"); //$NON-NLS-1$
+        
+        private String sourceName;
+        private DBSources(String sourceName) {
+            this.sourceName = sourceName;
+        }
+        
+        @Override
+        public String toString() {
+            return sourceName;
+        }
+        public static DBSources getEnum(String value) {
+            // Возвращать Дамп если тип соурса был none
+            if (value.equalsIgnoreCase("none")) {
+                return SOURCE_TYPE_DUMP;
+            }
+            for (DBSources v : values()) {
+                if (v.sourceName.equalsIgnoreCase(value)) {
+                    return v;
+                }
+            }
+            throw new IllegalArgumentException("No such DBSource in enum"); //$NON-NLS-1$
+        }
+    }
+    
     interface PROJ_PREF {
         String ENCODING = "prefGeneralEncoding"; //$NON-NLS-1$
         String SOURCE = "prefGeneralSource"; //$NON-NLS-1$
-        String SOURCE_TYPE_JDBC = "jdbc"; //$NON-NLS-1$
-        String SOURCE_TYPE_DB = "db"; //$NON-NLS-1$
-        String SOURCE_TYPE_DUMP = "dump"; //$NON-NLS-1$
         String DB_NAME = "prefDbName"; //$NON-NLS-1$
         String DB_HOST = "prefDbHost"; //$NON-NLS-1$
         String DB_PORT = "prefDbPort"; //$NON-NLS-1$

@@ -482,23 +482,8 @@ class PageDiff extends WizardPage implements Listener {
         try {
             switch (getTargetType()) {
             case DB:
-                if (!grpDb.txtDbPort.getText().isEmpty()) {
-                    try {
-                        Integer.parseInt(grpDb.txtDbPort.getText());
-                    } catch (NumberFormatException ex) {
-                        errMsg = Messages.port_must_be_a_number;
-                    }
-                }
                 break;
-
             case JDBC:
-                if (!grpDb.txtDbPort.getText().isEmpty()) {
-                    try {
-                        Integer.parseInt(grpDb.txtDbPort.getText());
-                    } catch (NumberFormatException ex) {
-                        errMsg = Messages.port_must_be_a_number;
-                    }
-                }
                 break;
 
             case DUMP:

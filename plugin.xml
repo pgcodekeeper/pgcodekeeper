@@ -35,7 +35,6 @@
             id="ru.taximaxim.codekeeper.ui.openeditor"
             name="%command.name.openProjectEditor">
       </command>
-      
       <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ToggleSourceHandler"
@@ -44,7 +43,6 @@
             <state class="org.eclipse.jface.commands.ToggleState"
                             id="ru.taximaxim.codekeeper.ui.toggle1state"/>
       </command>
-
       <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ToggleSourceHandler"
@@ -53,7 +51,12 @@
             <state class="org.eclipse.jface.commands.ToggleState"
                             id="ru.taximaxim.codekeeper.ui.toggle2state"/>
       </command>
-
+      <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.NormalizeProject"
+            id="ru.taximaxim.codekeeper.ui.command.normalizeProject"
+            name="%command.name.normalizeProject">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -90,6 +93,16 @@
                   icon="icons/compare_view.gif"
                   label="%handledmenuitem.label.Diff"
                   mnemonic="%command.mnemonic.Diff"
+                  style="push">
+            </command>
+            <separator
+                  name="ru.taximaxim.codekeeper.ui.separator1"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.command.normalizeProject"
+                  label="%command.label.normalizeProject"
+                  mnemonic="%command.mnemonic.normalizeProject"
                   style="push">
             </command>
          </menu>
@@ -192,16 +205,19 @@
       <page
             class="ru.taximaxim.codekeeper.ui.properties.ProjectProperties"
             id="ru.taximaxim.codekeeper.ui.proj_properties"
-            name="pgCodeKeeper">
+            name="%page.name.keeperPropPage">
          <enabledWhen>
             <and>
+               <instanceof
+                     value="org.eclipse.core.resources.IProject">
+               </instanceof>
+               <adapt
+                     type="org.eclipse.core.resources.IProject">
+               </adapt>
                <test
                      property="org.eclipse.core.resources.projectNature"
                      value="ru.taximaxim.codekeeper.ui.nature">
                </test>
-               <adapt
-                     type="org.eclipse.core.resources.IProject">
-               </adapt>
             </and>
          </enabledWhen>
       </page>
