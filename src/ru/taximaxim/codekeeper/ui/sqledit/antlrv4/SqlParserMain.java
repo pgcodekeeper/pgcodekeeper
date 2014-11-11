@@ -5,17 +5,24 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.DBObjectsLocation;
+
 public class SqlParserMain {
     public static void main(String[] args) throws IOException {
+        String pathToFile = "/home/botov_av/workspace/codekeeper/ru.taximaxim.codekeeper.ui/src/ru/taximaxim/codekeeper/ui/sqledit/antlrv4/information_schema.sql";
+        List<DBObjectsLocation> objLocation = new ArrayList<>();
         new SqlParserMain().testSampleInputs(
-                        "/home/botov_av/workspace/AntLrTest/src/org/antlr/v4/runtime/information_schema.sql",
-                        new CustomSQLParserListener());
+                        pathToFile,
+                        new CustomSQLParserListener(objLocation, Paths.get("/")));
+        System.err.println(objLocation);
     }
     public void testSampleInputs(String pathToFile, ParseTreeListener listener) throws IOException {
         String input = loadSample(pathToFile, "UTF-8");

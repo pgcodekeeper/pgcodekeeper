@@ -44,6 +44,9 @@ statement
   | schema_statement
   | index_statement
   | create_extension_statement
+  | set_statement
+  | create_trigger_statement
+  | grant_statement
   ;
 
 data_statement
@@ -68,10 +71,15 @@ index_statement
     : CREATE EXTENSION (IF NOT EXISTS)? name=identifier (WITH)?
          (SCHEMA schema_name=identifier)? (VERSION version=identifier)? (FROM old_version=identifier)?
     ;
+    
+set_statement
+    : SET (SESSION | LOCAL)? config_param=identifier (TO |EQUAL) ((value=identifier | QUOTE value=identifier QUOTE | DEFAULT)(COMMA)?)+
+    | SET (SESSION | LOCAL)? TIME ZONE ((timezone=identifier | LOCAL | DEFAULT)(COMMA)?)+
+    ;
    
 create_trigger_statement
     : CREATE (CONSTRAINT)? TRIGGER name=identifier (BEFORE | (INSTEAD OF) | AFTER)
-    (INSERT | DELETE | TRUNCATE | UPDATE (OF (columnName=identifier(COMMA)?)+)?)
+    (INSERT | DELETE | TRUNCATE | (UPDATE (OF (columnName=identifier(COMMA)?)+)?))
     ON tabl_name=table_name 
     (FROM referenced_table_name=table_name)?
     (NOT DEFERRABLE | (DEFERRABLE)? (INITIALLY IMMEDIATE) | (INITIALLY DEFERRED))?
@@ -80,6 +88,67 @@ create_trigger_statement
     EXECUTE PROCEDURE func_name=identifier LEFT_PAREN (arguments=identifier(COMMA)?)? RIGHT_PAREN
     ;
     
+grant_statement
+    : 
+    GRANT ((SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER)+
+    | ALL (PRIVILEGES)?)
+    ON  (((TABLE)? (tabl_name=table_name (COMMA)?)+)
+         | (ALL TABLES IN SCHEMA (schem_name=identifier (COMMA)?)+))
+    grant_to_rule
+    
+    | GRANT ( ((SELECT | INSERT | UPDATE | REFERENCES) (column=identifier (COMMA)?)+)+
+    | ALL (PRIVILEGES)? (column=identifier (COMMA)?)+)
+    ON ((TABLE)? tabl_name=table_name (COMMA)?)+
+    grant_to_rule
+    
+    | GRANT ( (( USAGE | SELECT | UPDATE )(COMMA)?)+
+        | ALL ( PRIVILEGES)? )
+    ON ( (SEQUENCE sequence_name=identifier(COMMA)?)+
+         | ALL SEQUENCES IN SCHEMA (schema_name=identifier(COMMA)?)+ )
+    grant_to_rule
+    
+    | GRANT ( ((CREATE | CONNECT | TEMPORARY | TEMP)(COMMA)?)+ | ALL (PRIVILEGES)? )
+    ON DATABASE (database_name=identifier(COMMA)?)+
+    grant_to_rule
+    
+    | GRANT (USAGE | ALL (PRIVILEGES)?)
+    ON FOREIGN DATA WRAPPER (fdw_name=identifier(COMMA)?)+
+    grant_to_rule
+    
+    | GRANT (USAGE | ALL (PRIVILEGES)?) 
+    ON FOREIGN SERVER (server_name=identifier(COMMA)?)+
+    grant_to_rule
+    
+    | GRANT (EXECUTE | ALL (PRIVILEGES)?) 
+    ON (FUNCTION func_name=identifier 
+        LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? argtype=data_type (COMMA)? )* RIGHT_PAREN
+         | ALL FUNCTIONS IN SCHEMA (schema_name=identifier(COMMA)?)+)
+    grant_to_rule
+    
+    | GRANT (USAGE | ALL (PRIVILEGES)?)
+    ON LANGUAGE (lang_name=identifier(COMMA)?)+
+    grant_to_rule
+    
+    | GRANT ( ((SELECT | UPDATE)(COMMA)?)+ | ALL (PRIVILEGES)?)
+    ON LARGE OBJECT (loid=identifier(COMMA)?)+
+    grant_to_rule
+    
+    | GRANT ( ((CREATE | USAGE)(COMMA)?)+ | ALL (PRIVILEGES)?)
+    ON SCHEMA (schema_name=identifier(COMMA)?)+
+    grant_to_rule
+    
+    | GRANT (CREATE | ALL (PRIVILEGES)?) 
+    ON TABLESPACE (tablespace_name=identifier(COMMA)?)+
+    grant_to_rule
+    
+    GRANT (role_name=identifier(COMMA)?)+ TO (role_name=identifier(COMMA)?)+ (WITH ADMIN OPTION)?
+    ;
+    
+grant_to_rule
+    :
+    TO ((GROUP)? ((role_name=identifier) | PUBLIC) (COMMA)?)+ (WITH GRANT OPTION)?
+    ;
+
 /*
 ===============================================================================
   Function Definition
@@ -221,7 +290,8 @@ identifier
   ;
 
 nonreserved_keywords
-  : AVG
+  : ADMIN 
+  | AVG
   | BETWEEN
   | BY
   | CENTURY
@@ -231,6 +301,7 @@ nonreserved_keywords
   | COLUMN
   | COUNT
   | CUBE
+  | DATA
   | DAY
   | DEC
   | DECADE
@@ -253,6 +324,8 @@ nonreserved_keywords
   | INTERSECTION
   | ISODOW
   | ISOYEAR
+  | LANGUAGE
+  | LARGE
   | LAST
   | LESS
   | LIST
@@ -267,10 +340,13 @@ nonreserved_keywords
   | MONTH
   | NATIONAL
   | NULLIF
+  | OBJECT
+  | OPTION
   | OVERWRITE
   | PARTITION
   | PARTITIONS
   | PRECISION
+  | PUBLIC
   | PURGE
   | QUARTER
   | RANGE
@@ -278,6 +354,7 @@ nonreserved_keywords
   | RLIKE
   | ROLLUP
   | SECOND
+  | SERVER
   | SET
   | SIMILAR
   | STDDEV_POP
@@ -297,6 +374,7 @@ nonreserved_keywords
   | VAR_SAMP
   | VARYING
   | WEEK
+  | WRAPPER
   | YEAR
   | ZONE
 

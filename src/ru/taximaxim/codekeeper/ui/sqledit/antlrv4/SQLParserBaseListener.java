@@ -604,6 +604,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterSet_statement(@NotNull SQLParser.Set_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSet_statement(@NotNull SQLParser.Set_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterSort_specifier_list(@NotNull SQLParser.Sort_specifier_listContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1444,18 +1456,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterBetween_predicate(@NotNull SQLParser.Between_predicateContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitBetween_predicate(@NotNull SQLParser.Between_predicateContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterPrimary_datetime_field(@NotNull SQLParser.Primary_datetime_fieldContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1463,6 +1463,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitPrimary_datetime_field(@NotNull SQLParser.Primary_datetime_fieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterBetween_predicate(@NotNull SQLParser.Between_predicateContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitBetween_predicate(@NotNull SQLParser.Between_predicateContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1660,6 +1672,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterGrant_to_rule(@NotNull SQLParser.Grant_to_ruleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitGrant_to_rule(@NotNull SQLParser.Grant_to_ruleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterUnsigned_numeric_literal(@NotNull SQLParser.Unsigned_numeric_literalContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1811,6 +1835,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSql(@NotNull SQLParser.SqlContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterGrant_statement(@NotNull SQLParser.Grant_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitGrant_statement(@NotNull SQLParser.Grant_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
