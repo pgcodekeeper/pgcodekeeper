@@ -114,6 +114,7 @@ fragment Z
 ===============================================================================
 */
 
+AFTER: A F T E R;
 AS : A S;
 ALL : A L L;
 AND : A N D;
@@ -121,23 +122,33 @@ ANY : A N Y;
 ASYMMETRIC : A S Y M M E T R I C;
 ASC : A S C;
 
+BEFORE: B E F O R E;
 BOTH : B O T H;
 
 CASE : C A S E;
 CAST : C A S T;
+CONSTRAINT: C O N S T R A I N T;
 CREATE : C R E A T E;
 CROSS : C R O S S;
 
+DEFAULT: D E F A U L T;
+DEFERRABLE: D E F E R R A B L E;
+DEFERRED: D E F E R R E D;
+DELETE: D E L E T E;
 DESC : D E S C;
 DISTINCT : D I S T I N C T;
 
+EACH: E A C H;
 END : E N D;
 ELSE : E L S E;
 EXCEPT : E X C E P T;
+EXECUTE: E X E C U T E;
 EXTENSION : E X T E N S I O N;
 
 FALSE : F A L S E;
+FOR: F O R;
 FULL : F U L L;
+FUNCTION: F U N C T I O N;
 FROM : F R O M;
 
 GROUP : G R O U P;
@@ -146,10 +157,14 @@ HAVING : H A V I N G;
 
 IF: I F;
 ILIKE : I L I K E;
+IMMEDIATE: I M M E D I A T E;
 IN : I N;
+INITIALLY: I N I T I A L L Y;
 INNER : I N N E R;
 INTERSECT : I N T E R S E C T;
 INTO : I N T O;
+INOUT: I N O U T;
+INSTEAD: I N S T E A D;
 IS : I S;
 
 JOIN : J O I N;
@@ -163,25 +178,38 @@ NATURAL : N A T U R A L;
 NOT : N O T;
 NULL : N U L L;
 
+OF: O F;
 ON : O N;
 OUTER : O U T E R;
+OUT: O U T;
 OR : O R;
 ORDER : O R D E R;
+
+PROCEDURE: P R O C E D U R E;
+
+ROW: R O W;
+REPLACE: R E P L A C E;
 RIGHT : R I G H T;
+
 SCHEMA: S C H E M A;
 SELECT : S E L E C T;
 SOME : S O M E;
+STATEMENT: S T A T E M E N T;
 SYMMETRIC : S Y M M E T R I C;
 
 TABLE : T A B L E;
 THEN : T H E N;
 TRAILING : T R A I L I N G;
+TRIGGER: T R I G G E R;
 TRUE : T R U E;
+TRUNCATE: T R U N C A T E;
 
 UNION : U N I O N;
 UNIQUE : U N I Q U E;
+UPDATE: U P D A T E;
 USING : U S I N G;
 
+VARIADIC: V A R I A D I C;
 WHEN : W H E N;
 WHERE : W H E R E;
 WITH : W I T H;

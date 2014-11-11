@@ -409,6 +409,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitSet_function_type(@NotNull SQLParser.Set_function_typeContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#argmode}.
+	 * @param ctx the parse tree
+	 */
+	void enterArgmode(@NotNull SQLParser.ArgmodeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#argmode}.
+	 * @param ctx the parse tree
+	 */
+	void exitArgmode(@NotNull SQLParser.ArgmodeContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#parenthesized_boolean_value_expression}.
 	 * @param ctx the parse tree
 	 */
@@ -719,6 +729,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitQuery_primary(@NotNull SQLParser.Query_primaryContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#routine_invocation}.
+	 * @param ctx the parse tree
+	 */
+	void enterRoutine_invocation(@NotNull SQLParser.Routine_invocationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#routine_invocation}.
+	 * @param ctx the parse tree
+	 */
+	void exitRoutine_invocation(@NotNull SQLParser.Routine_invocationContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#numeric_value_expression}.
 	 * @param ctx the parse tree
 	 */
@@ -738,16 +758,6 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitJoined_table_primary(@NotNull SQLParser.Joined_table_primaryContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link SQLParser#routine_invocation}.
-	 * @param ctx the parse tree
-	 */
-	void enterRoutine_invocation(@NotNull SQLParser.Routine_invocationContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SQLParser#routine_invocation}.
-	 * @param ctx the parse tree
-	 */
-	void exitRoutine_invocation(@NotNull SQLParser.Routine_invocationContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#non_join_query_expression}.
 	 * @param ctx the parse tree
@@ -788,6 +798,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitValue_expression_primary(@NotNull SQLParser.Value_expression_primaryContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#create_trigger_statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterCreate_trigger_statement(@NotNull SQLParser.Create_trigger_statementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#create_trigger_statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitCreate_trigger_statement(@NotNull SQLParser.Create_trigger_statementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#range_partitions}.
 	 * @param ctx the parse tree
@@ -1419,16 +1439,6 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitDate_literal(@NotNull SQLParser.Date_literalContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SQLParser#character_primary}.
-	 * @param ctx the parse tree
-	 */
-	void enterCharacter_primary(@NotNull SQLParser.Character_primaryContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SQLParser#character_primary}.
-	 * @param ctx the parse tree
-	 */
-	void exitCharacter_primary(@NotNull SQLParser.Character_primaryContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SQLParser#simple_case}.
 	 * @param ctx the parse tree
 	 */
@@ -1438,6 +1448,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitSimple_case(@NotNull SQLParser.Simple_caseContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#character_primary}.
+	 * @param ctx the parse tree
+	 */
+	void enterCharacter_primary(@NotNull SQLParser.Character_primaryContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#character_primary}.
+	 * @param ctx the parse tree
+	 */
+	void exitCharacter_primary(@NotNull SQLParser.Character_primaryContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#range_value_clause}.
 	 * @param ctx the parse tree

@@ -67,7 +67,37 @@ index_statement
  create_extension_statement
     : CREATE EXTENSION (IF NOT EXISTS)? name=identifier (WITH)?
          (SCHEMA schema_name=identifier)? (VERSION version=identifier)? (FROM old_version=identifier)?
-?    ;
+    ;
+   
+create_trigger_statement
+    : CREATE (CONSTRAINT)? TRIGGER name=identifier (BEFORE | (INSTEAD OF) | AFTER)
+    (INSERT | DELETE | TRUNCATE | UPDATE (OF (columnName=identifier(COMMA)?)+)?)
+    ON tabl_name=table_name 
+    (FROM referenced_table_name=table_name)?
+    (NOT DEFERRABLE | (DEFERRABLE)? (INITIALLY IMMEDIATE) | (INITIALLY DEFERRED))?
+    (FOR (EACH)? ROW | STATEMENT)?
+    (WHEN (boolean_value_expression))?
+    EXECUTE PROCEDURE func_name=identifier LEFT_PAREN (arguments=identifier(COMMA)?)? RIGHT_PAREN
+    ;
+    
+/*
+===============================================================================
+  Function Definition
+===============================================================================
+
+create_function_statement
+    : CREATE (OR REPLACE)? FUNCTION name=identifier 
+        LEFT_PAREN ( (argmode=argmode)? (argname=identifier)? argtype=data_type 
+            ( DEFAULT | EQUAL )?
+        )? RIGHT_PAREN
+    ;
+    
+*/
+    
+argmode
+    : 
+      IN | OUT | INOUT | VARIADIC
+    ;
 
 create_table_statement
   : CREATE EXTERNAL TABLE n=table_name table_elements USING file_type=identifier

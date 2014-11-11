@@ -496,6 +496,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterArgmode(@NotNull SQLParser.ArgmodeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitArgmode(@NotNull SQLParser.ArgmodeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterParenthesized_boolean_value_expression(@NotNull SQLParser.Parenthesized_boolean_value_expressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -868,6 +880,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterRoutine_invocation(@NotNull SQLParser.Routine_invocationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitRoutine_invocation(@NotNull SQLParser.Routine_invocationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterNumeric_value_expression(@NotNull SQLParser.Numeric_value_expressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -887,18 +911,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitJoined_table_primary(@NotNull SQLParser.Joined_table_primaryContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterRoutine_invocation(@NotNull SQLParser.Routine_invocationContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitRoutine_invocation(@NotNull SQLParser.Routine_invocationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -947,6 +959,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitValue_expression_primary(@NotNull SQLParser.Value_expression_primaryContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCreate_trigger_statement(@NotNull SQLParser.Create_trigger_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCreate_trigger_statement(@NotNull SQLParser.Create_trigger_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1708,18 +1732,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCharacter_primary(@NotNull SQLParser.Character_primaryContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitCharacter_primary(@NotNull SQLParser.Character_primaryContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterSimple_case(@NotNull SQLParser.Simple_caseContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1727,6 +1739,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSimple_case(@NotNull SQLParser.Simple_caseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCharacter_primary(@NotNull SQLParser.Character_primaryContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCharacter_primary(@NotNull SQLParser.Character_primaryContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
