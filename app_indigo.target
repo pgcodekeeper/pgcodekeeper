@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.8"?><target name="app_indigo" sequenceNumber="5">
+<locations>
+<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.egit.feature.group" version="1.3.0.201202151440-r"/>
+<unit id="org.eclipse.jgit.feature.group" version="1.3.0.201202151440-r"/>
+<unit id="org.eclipse.datatools.sdk.feature.feature.group" version="1.9.2.v201109161655-7PA37eFEpPYv5_Ae3-6EjC5ZX4e5"/>
+<repository location="http://download.eclipse.org/releases/indigo"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.equinox.sdk.feature.group" version="3.7.1.R37x_v20110907-7M7W8i8eNV4WsRkue-4Vq4J6pCyW"/>
+<unit id="org.eclipse.platform.ide" version="3.7.2.M20120208-0800"/>
+<repository location="http://download.eclipse.org/eclipse/updates/3.7"/>
+</location>
+</locations>
+</target>
