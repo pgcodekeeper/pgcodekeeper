@@ -32,8 +32,7 @@
       <import plugin="org.eclipse.ui" version="3.0.0" match="compatible"/>
       <import plugin="org.eclipse.ui.console" version="3.5.0" match="compatible"/>
       <import plugin="org.eclipse.ui.ide" version="3.7.0" match="compatible"/>
-      <import feature="org.eclipse.egit" version="2.2.0" match="greaterOrEqual"/>
-      <import feature="org.eclipse.jdt" version="3.8.0" match="compatible"/>
+      <import feature="org.eclipse.egit" version="1.0.0" match="greaterOrEqual"/>
       <import feature="org.eclipse.datatools.sdk.feature" version="1.9.0" match="compatible"/>
    </requires>
 
