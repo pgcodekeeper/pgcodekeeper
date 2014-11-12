@@ -55,6 +55,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterSchema_qualified_name(@NotNull SQLParser.Schema_qualified_nameContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSchema_qualified_name(@NotNull SQLParser.Schema_qualified_nameContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterPredicate(@NotNull SQLParser.PredicateContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -518,6 +530,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitIndex_parameters(@NotNull SQLParser.Index_parametersContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterRevoke_from_cascade_restrict(@NotNull SQLParser.Revoke_from_cascade_restrictContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitRevoke_from_cascade_restrict(@NotNull SQLParser.Revoke_from_cascade_restrictContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2467,18 +2491,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterTable_name(@NotNull SQLParser.Table_nameContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitTable_name(@NotNull SQLParser.Table_nameContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterAs_clause(@NotNull SQLParser.As_clauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2546,6 +2558,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitIs_clause(@NotNull SQLParser.Is_clauseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterComment_on_statement(@NotNull SQLParser.Comment_on_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitComment_on_statement(@NotNull SQLParser.Comment_on_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

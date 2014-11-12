@@ -41,6 +41,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitScalar_subquery(@NotNull SQLParser.Scalar_subqueryContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#schema_qualified_name}.
+	 * @param ctx the parse tree
+	 */
+	void enterSchema_qualified_name(@NotNull SQLParser.Schema_qualified_nameContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#schema_qualified_name}.
+	 * @param ctx the parse tree
+	 */
+	void exitSchema_qualified_name(@NotNull SQLParser.Schema_qualified_nameContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#predicate}.
 	 * @param ctx the parse tree
 	 */
@@ -430,6 +440,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitIndex_parameters(@NotNull SQLParser.Index_parametersContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#revoke_from_cascade_restrict}.
+	 * @param ctx the parse tree
+	 */
+	void enterRevoke_from_cascade_restrict(@NotNull SQLParser.Revoke_from_cascade_restrictContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#revoke_from_cascade_restrict}.
+	 * @param ctx the parse tree
+	 */
+	void exitRevoke_from_cascade_restrict(@NotNull SQLParser.Revoke_from_cascade_restrictContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#derived_table}.
 	 * @param ctx the parse tree
@@ -2051,16 +2071,6 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitCast_specification(@NotNull SQLParser.Cast_specificationContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SQLParser#table_name}.
-	 * @param ctx the parse tree
-	 */
-	void enterTable_name(@NotNull SQLParser.Table_nameContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SQLParser#table_name}.
-	 * @param ctx the parse tree
-	 */
-	void exitTable_name(@NotNull SQLParser.Table_nameContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SQLParser#as_clause}.
 	 * @param ctx the parse tree
 	 */
@@ -2120,6 +2130,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitIs_clause(@NotNull SQLParser.Is_clauseContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#comment_on_statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterComment_on_statement(@NotNull SQLParser.Comment_on_statementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#comment_on_statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitComment_on_statement(@NotNull SQLParser.Comment_on_statementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#between_predicate_part_2}.
 	 * @param ctx the parse tree
