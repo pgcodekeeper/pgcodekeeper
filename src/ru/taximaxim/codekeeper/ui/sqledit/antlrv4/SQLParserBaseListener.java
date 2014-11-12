@@ -1,4 +1,7 @@
+// Generated from SQLParser.g4 by ANTLR 4.4
 package ru.taximaxim.codekeeper.ui.sqledit.antlrv4;
+
+
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
@@ -568,6 +571,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterRegclass(@NotNull SQLParser.RegclassContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitRegclass(@NotNull SQLParser.RegclassContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterArgmode(@NotNull SQLParser.ArgmodeContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -736,18 +751,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCast_target(@NotNull SQLParser.Cast_targetContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitCast_target(@NotNull SQLParser.Cast_targetContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterIndividual_hash_partitions(@NotNull SQLParser.Individual_hash_partitionsContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -755,6 +758,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitIndividual_hash_partitions(@NotNull SQLParser.Individual_hash_partitionsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCast_target(@NotNull SQLParser.Cast_targetContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCast_target(@NotNull SQLParser.Cast_targetContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2536,18 +2551,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMethod_specifier(@NotNull SQLParser.Method_specifierContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitMethod_specifier(@NotNull SQLParser.Method_specifierContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterBetween_predicate_part_2(@NotNull SQLParser.Between_predicate_part_2Context ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2555,6 +2558,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitBetween_predicate_part_2(@NotNull SQLParser.Between_predicate_part_2Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterMethod_specifier(@NotNull SQLParser.Method_specifierContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMethod_specifier(@NotNull SQLParser.Method_specifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

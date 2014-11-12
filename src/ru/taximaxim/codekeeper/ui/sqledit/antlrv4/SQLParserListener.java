@@ -1,4 +1,6 @@
+// Generated from SQLParser.g4 by ANTLR 4.4
 package ru.taximaxim.codekeeper.ui.sqledit.antlrv4;
+
 
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
@@ -469,6 +471,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitSet_function_type(@NotNull SQLParser.Set_function_typeContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#regclass}.
+	 * @param ctx the parse tree
+	 */
+	void enterRegclass(@NotNull SQLParser.RegclassContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#regclass}.
+	 * @param ctx the parse tree
+	 */
+	void exitRegclass(@NotNull SQLParser.RegclassContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#argmode}.
 	 * @param ctx the parse tree
 	 */
@@ -609,16 +621,6 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitTime_zone_field(@NotNull SQLParser.Time_zone_fieldContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SQLParser#cast_target}.
-	 * @param ctx the parse tree
-	 */
-	void enterCast_target(@NotNull SQLParser.Cast_targetContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SQLParser#cast_target}.
-	 * @param ctx the parse tree
-	 */
-	void exitCast_target(@NotNull SQLParser.Cast_targetContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SQLParser#individual_hash_partitions}.
 	 * @param ctx the parse tree
 	 */
@@ -628,6 +630,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitIndividual_hash_partitions(@NotNull SQLParser.Individual_hash_partitionsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#cast_target}.
+	 * @param ctx the parse tree
+	 */
+	void enterCast_target(@NotNull SQLParser.Cast_targetContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#cast_target}.
+	 * @param ctx the parse tree
+	 */
+	void exitCast_target(@NotNull SQLParser.Cast_targetContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#column_reference_list}.
 	 * @param ctx the parse tree
@@ -2109,16 +2121,6 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitIs_clause(@NotNull SQLParser.Is_clauseContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SQLParser#method_specifier}.
-	 * @param ctx the parse tree
-	 */
-	void enterMethod_specifier(@NotNull SQLParser.Method_specifierContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SQLParser#method_specifier}.
-	 * @param ctx the parse tree
-	 */
-	void exitMethod_specifier(@NotNull SQLParser.Method_specifierContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SQLParser#between_predicate_part_2}.
 	 * @param ctx the parse tree
 	 */
@@ -2128,6 +2130,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitBetween_predicate_part_2(@NotNull SQLParser.Between_predicate_part_2Context ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#method_specifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterMethod_specifier(@NotNull SQLParser.Method_specifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#method_specifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitMethod_specifier(@NotNull SQLParser.Method_specifierContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#subquery}.
 	 * @param ctx the parse tree

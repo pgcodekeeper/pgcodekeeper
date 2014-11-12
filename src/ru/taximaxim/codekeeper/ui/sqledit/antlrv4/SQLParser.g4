@@ -201,11 +201,11 @@ create_table_statement
     
   | CREATE ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? n=table_name 
         LEFT_PAREN (
-            (
+            ((
                 (column_name=identifier datatype=data_type (COLLATE collation=identifier)?  (colmn_constraint=column_constraint)*)
                 | tabl_constraint=table_constraint
                 | (LIKE parent_table=identifier (like_opt=like_option)*)
-            )+
+                )(COMMA)?)+
         )? RIGHT_PAREN
         (INHERITS 
             LEFT_PAREN 
@@ -218,8 +218,9 @@ create_table_statement
     
    | CREATE ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? n=table_name OF type_name=identifier 
         (LEFT_PAREN
-            ((column_name=identifier WITH OPTIONS (col_constraint=column_constraint)*) 
-            | table_constraint(COMMA)?)+
+            (((column_name=identifier WITH OPTIONS (col_constraint=column_constraint)*) 
+            | table_constraint)
+            (COMMA)?)+
         RIGHT_PAREN)?
         storage_parameter_oid
         on_commit
@@ -256,7 +257,7 @@ column_constraint
         ((NOT NULL) 
         | NULL
         | check_boolean_expression 
-        | (DEFAULT default_expr=identifier) 
+        | (DEFAULT default_expr=routine_invocation) 
         | (UNIQUE index_params_unique=index_parameters) 
         | (PRIMARY KEY index_params_pr_key=index_parameters) 
         | (REFERENCES reftable=table_name (( refcolumn=identifier ))  (MATCH FULL | MATCH PARTIAL | MATCH SIMPLE)? 
@@ -404,7 +405,7 @@ drop_table_statement
 */
 
 identifier
-  : Identifier
+  : (QUOTE)? Identifier (QUOTE)?
   | nonreserved_keywords
   ;
 
@@ -602,8 +603,13 @@ predefined_type
   | bit_type
   | binary_type
   | network_type
+  | regclass
   ;
 
+regclass
+    : REGCLASS
+    ;
+    
 network_type
   : INET4
   ;
@@ -855,7 +861,7 @@ value_expression
   | row_value_expression
   | boolean_value_expression
   ;
-
+  
 common_value_expression
   : numeric_value_expression
   | string_value_expression

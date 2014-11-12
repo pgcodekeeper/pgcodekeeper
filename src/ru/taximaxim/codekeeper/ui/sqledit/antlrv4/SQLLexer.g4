@@ -403,6 +403,7 @@ FLOAT4 : F L O A T '4';
 FLOAT8 : F L O A T '8';
 
 REAL : R E A L; // alias for FLOAT4
+REGCLASS: R E G C L A S S;
 FLOAT : F L O A T; // alias for FLOAT8
 DOUBLE : D O U B L E; // alias for FLOAT8
 
