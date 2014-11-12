@@ -198,8 +198,104 @@ create_table_statement
     (param_clause)? (table_partitioning_clauses)? (AS query_expression)?
   | CREATE TABLE n=table_name (USING file_type=identifier)?
     (param_clause)? (table_partitioning_clauses)? AS query_expression
+    
+  | CREATE ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? n=table_name 
+        LEFT_PAREN (
+            (
+                (column_name=identifier datatype=data_type (COLLATE collation=identifier)?  (colmn_constraint=column_constraint)*)
+                | tabl_constraint=table_constraint
+                | (LIKE parent_table=identifier (like_opt=like_option)*)
+            )+
+        )? RIGHT_PAREN
+        (INHERITS 
+            LEFT_PAREN 
+                (parent_table=identifier(COMMA)?)+ 
+            RIGHT_PAREN
+        )?
+        storage_parameter_oid
+        on_commit
+        table_space
+    
+   | CREATE ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? n=table_name OF type_name=identifier 
+        (LEFT_PAREN
+            ((column_name=identifier WITH OPTIONS (col_constraint=column_constraint)*) 
+            | table_constraint(COMMA)?)+
+        RIGHT_PAREN)?
+        storage_parameter_oid
+        on_commit
+        table_space
   ;
+  
+like_option
+    : (INCLUDING | EXCLUDING) (DEFAULTS | CONSTRAINTS | INDEXES | STORAGE | COMMENTS | ALL)
+    ;
+    
+table_constraint
+    : (CONSTRAINT constraint_name=identifier)?
+        ( check_boolean_expression
+        | (UNIQUE LEFT_PAREN 
+            (column_name_unique=identifier(COMMA)?)+ 
+          RIGHT_PAREN index_parameters_unique=index_parameters) 
+        | (PRIMARY KEY LEFT_PAREN 
+            (column_name_pr_key=identifier(COMMA)?)+ 
+          RIGHT_PAREN index_parameters_pr_key=index_parameters) 
+        | (EXCLUDE (USING index_method=identifier)? 
+            LEFT_PAREN exclude_element=identifier WITH (operator=identifier(COMMA)?)+ RIGHT_PAREN 
+            index_parameters (WHERE LEFT_PAREN predicat=identifier RIGHT_PAREN)?) 
+        | (FOREIGN KEY LEFT_PAREN 
+            (column_name_for_key=identifier(COMMA)?)+ 
+          RIGHT_PAREN 
+          REFERENCES reftable=identifier ( LEFT_PAREN (refcolumn=identifier(COMMA)?)+ RIGHT_PAREN )?
+            ((MATCH FULL) | (MATCH PARTIAL) | (MATCH SIMPLE))? 
+            (ON DELETE action_on_delete=action)? (ON UPDATE action_on_update=action)?))
+        (DEFERRABLE | (NOT DEFERRABLE))? ((INITIALLY DEFERRED) | (INITIALLY IMMEDIATE))?
+    ;
+    
+column_constraint
+    : (CONSTRAINT constraint_name=identifier)? 
+        ((NOT NULL) 
+        | NULL
+        | check_boolean_expression 
+        | (DEFAULT default_expr=identifier) 
+        | (UNIQUE index_params_unique=index_parameters) 
+        | (PRIMARY KEY index_params_pr_key=index_parameters) 
+        | (REFERENCES reftable=table_name (( refcolumn=identifier ))  (MATCH FULL | MATCH PARTIAL | MATCH SIMPLE)? 
+        (ON DELETE action_on_delete=action)? (ON UPDATE action_on_update=action)?))
+        (DEFERRABLE | (NOT DEFERRABLE))? ((INITIALLY DEFERRED) | (INITIALLY IMMEDIATE))?
+    ;
 
+check_boolean_expression
+    : CHECK LEFT_PAREN expression=boolean_value_expression RIGHT_PAREN
+    ;
+    
+storage_parameter
+    : WITH
+        LEFT_PAREN
+            (storage_param=identifier (EQUAL value=identifier)?(COMMA)?)+ 
+        RIGHT_PAREN 
+    ;
+    
+storage_parameter_oid
+    : (storage_parameter | (WITH OIDS) | (WITHOUT OIDS))?
+    ;
+
+on_commit
+    : (ON COMMIT ((PRESERVE ROWS) | (DELETE ROWS) | DROP))?
+    ;
+    
+table_space
+    :(TABLESPACE tablespace=identifier)?
+    ;
+    
+action
+    : (RESTRICT | CASCADE | SET NULL | SET DEFAULT)
+    ;
+    
+index_parameters
+    : (storage_parameter)? 
+        (USING INDEX TABLESPACE tablespace=identifier)?
+    ;
+    
 table_elements
   : LEFT_PAREN field_element (COMMA field_element)* RIGHT_PAREN
   ;
@@ -319,9 +415,13 @@ nonreserved_keywords
   | BY
   | CENTURY
   | CHARACTER
+  | CHECK
   | COALESCE
   | COLLECT
   | COLUMN
+  | COMMENT
+  | COMMENTS
+  | COMMIT
   | COUNT
   | CUBE
   | DATA
@@ -353,6 +453,7 @@ nonreserved_keywords
   | LESS
   | LIST
   | LOCATION
+  | MATCH
   | MAX
   | MAXVALUE
   | MICROSECONDS
@@ -365,7 +466,9 @@ nonreserved_keywords
   | NULLIF
   | OBJECT
   | OPTION
+  | OPTIONS
   | OVERWRITE
+  | PARTIAL
   | PARTITION
   | PARTITIONS
   | PRECISION
@@ -380,6 +483,8 @@ nonreserved_keywords
   | SERVER
   | SET
   | SIMILAR
+  | SIMPLE
+  | STORAGE
   | STDDEV_POP
   | STDDEV_SAMP
   | SUBPARTITION
@@ -392,6 +497,7 @@ nonreserved_keywords
   | TRIM
   | TO
   | UNKNOWN
+  | UNLOGGED
   | VALUES
   | VAR_POP
   | VAR_SAMP

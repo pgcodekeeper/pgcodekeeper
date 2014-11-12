@@ -22,10 +22,14 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitCreate_table_statement(Create_table_statementContext ctx) {
         int i = 0;
+        if (ctx.n == null) {
+            return;
+        }
         while (ctx.n.identifier(i + 1) != null) {
             i++;
         }
         objLocation.add(new DBObjectsLocation(ctx.n.identifier(i).Identifier().toString(), ctx.n.identifier(i).getStart().getStartIndex(), filePath));
+        
     }
     
     @Override
