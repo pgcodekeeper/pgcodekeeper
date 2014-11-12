@@ -35,7 +35,7 @@ options {
 ===============================================================================
 */
 sql
-  : (statement (SEMI_COLON)?)+ EOF
+  : (statement (SEMI_COLON)?)* EOF
   ;
 
 statement
@@ -49,6 +49,8 @@ statement
   | grant_statement
   | revoke_statement
   | comment_on_statement
+  | create_function_statement
+  | create_sequence_statement
   ;
 
 data_statement
@@ -253,23 +255,44 @@ comment_on_statement
         | TRIGGER trigger_name=schema_qualified_name ON table_name=schema_qualified_name 
         | TYPE object_name=schema_qualified_name 
         | VIEW object_name=schema_qualified_name
-        ) IS QUOTE Character_String_Literal QUOTE
+        ) IS Character_String_Literal
     ;
 
 /*
 ===============================================================================
   Function Definition
 ===============================================================================
-
+*/
 create_function_statement
     : CREATE (OR REPLACE)? FUNCTION name=identifier 
-        LEFT_PAREN ( (argmode=argmode)? (argname=identifier)? argtype=data_type 
-            ( DEFAULT | EQUAL )?
+        LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? argtype=data_type 
+            ( (DEFAULT | EQUAL routine_invocation(COMMA)?)+ )?
         )? RIGHT_PAREN
+        (RETURNS rettype=data_type 
+            | RETURNS TABLE LEFT_PAREN (column_name=identifier column_type=data_type(COMMA)?)+ RIGHT_PAREN
+        )?
+          (LANGUAGE lang_name=identifier
+            | WINDOW
+            | IMMUTABLE | STABLE | VOLATILE
+            | CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT
+            | (EXTERNAL)? SECURITY INVOKER | (EXTERNAL)? SECURITY DEFINER
+            | COST execution_cost=NUMBER
+            | ROWS result_rows=NUMBER
+            | SET configuration_parameter=identifier (TO value=Character_String_Literal | EQUAL value=Character_String_Literal | FROM CURRENT)
+            | AS function_body
+            | AS Character_String_Literal COMMA Character_String_Literal
+          )+
+            (WITH LEFT_PAREN (attribute=function_attribute(COMMA)?)+ RIGHT_PAREN)?
     ;
-    
-*/
-    
+
+function_body
+    :DOUBLE_DOLLAR ( ~(DOUBLE_DOLLAR) )* DOUBLE_DOLLAR
+    ;
+
+function_attribute
+    : ISSTRICT | ISCACHABLE
+    ;
+        
 argmode
     : 
       IN | OUT | INOUT | VARIADIC
@@ -282,6 +305,17 @@ function_definition
     
 functions_definition_schema
     : ALL FUNCTIONS IN SCHEMA (schema_name=identifier(COMMA)?)+
+    ;
+    
+create_sequence_statement
+    : CREATE (TEMPORARY | TEMP)? SEQUENCE name=schema_qualified_name 
+        (INCREMENT (BY)? incr=NUMBER)?
+         (MINVALUE minval=NUMBER | NO MINVALUE)? 
+         (MAXVALUE maxval=numeric_type | NO MAXVALUE)?
+         (START (WITH)? start_val=NUMBER)? 
+         (CACHE cache_val=NUMBER)?
+         ((NO)? CYCLE)?
+         (OWNED BY (col_name=schema_qualified_name | NONE))?
     ;
     
 create_table_statement
@@ -507,6 +541,8 @@ nonreserved_keywords
   | AVG
   | BETWEEN
   | BY
+  | CACHE
+  | CALLED
   | CENTURY
   | CHARACTER
   | CHECK
@@ -518,12 +554,16 @@ nonreserved_keywords
   | COMMENTS
   | COMMIT
   | CONFIGURATION
+  | COST
   | COUNT
   | CUBE
+  | CURRENT
+  | CYCLE
   | DATA
   | DAY
   | DEC
   | DECADE
+  | DEFINER
   | DICTIONARY
   | DOW
   | DOY
@@ -541,10 +581,14 @@ nonreserved_keywords
   | GROUPING
   | HASH
   | INDEX
+  | INCREMENT
+  | INPUT
   | INSERT
   | INTERSECTION
+  | ISCACHABLE
   | ISODOW
   | ISOYEAR
+  | ISSTRICT
   | LANGUAGE
   | LARGE
   | LAST
@@ -558,9 +602,12 @@ nonreserved_keywords
   | MILLENNIUM
   | MILLISECONDS
   | MIN
+  | MINVALUE
   | MINUTE
   | MONTH
   | NATIONAL
+  | NO
+  | NONE
   | NULLIF
   | OBJECT
   | OPTION
@@ -580,10 +627,13 @@ nonreserved_keywords
   | ROLLUP
   | SEARCH
   | SECOND
+  | SECURITY
   | SERVER
   | SET
   | SIMILAR
   | SIMPLE
+  | STABLE
+  | START
   | STORAGE
   | STDDEV_POP
   | STDDEV_SAMP
@@ -603,7 +653,9 @@ nonreserved_keywords
   | VAR_POP
   | VAR_SAMP
   | VARYING
+  | VOLATILE
   | WEEK
+  | WINDOW
   | WRAPPER
   | YEAR
   | ZONE

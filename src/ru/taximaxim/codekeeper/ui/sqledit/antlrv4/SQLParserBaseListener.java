@@ -55,18 +55,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSchema_qualified_name(@NotNull SQLParser.Schema_qualified_nameContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSchema_qualified_name(@NotNull SQLParser.Schema_qualified_nameContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterPredicate(@NotNull SQLParser.PredicateContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -74,6 +62,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitPredicate(@NotNull SQLParser.PredicateContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSchema_qualified_name(@NotNull SQLParser.Schema_qualified_nameContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSchema_qualified_name(@NotNull SQLParser.Schema_qualified_nameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -355,18 +355,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterIndividual_hash_partition(@NotNull SQLParser.Individual_hash_partitionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitIndividual_hash_partition(@NotNull SQLParser.Individual_hash_partitionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterColumn_partitions(@NotNull SQLParser.Column_partitionsContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -374,6 +362,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitColumn_partitions(@NotNull SQLParser.Column_partitionsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterIndividual_hash_partition(@NotNull SQLParser.Individual_hash_partitionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIndividual_hash_partition(@NotNull SQLParser.Individual_hash_partitionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1471,6 +1471,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterCreate_sequence_statement(@NotNull SQLParser.Create_sequence_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCreate_sequence_statement(@NotNull SQLParser.Create_sequence_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterOn_commit(@NotNull SQLParser.On_commitContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1759,6 +1771,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterFunction_body(@NotNull SQLParser.Function_bodyContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFunction_body(@NotNull SQLParser.Function_bodyContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterTruth_value(@NotNull SQLParser.Truth_valueContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1879,18 +1903,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSearched_when_clause(@NotNull SQLParser.Searched_when_clauseContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSearched_when_clause(@NotNull SQLParser.Searched_when_clauseContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterDate_literal(@NotNull SQLParser.Date_literalContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1898,6 +1910,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitDate_literal(@NotNull SQLParser.Date_literalContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSearched_when_clause(@NotNull SQLParser.Searched_when_clauseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSearched_when_clause(@NotNull SQLParser.Searched_when_clauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1963,6 +1987,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterFunction_attribute(@NotNull SQLParser.Function_attributeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFunction_attribute(@NotNull SQLParser.Function_attributeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterTrim_operands(@NotNull SQLParser.Trim_operandsContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1970,6 +2006,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitTrim_operands(@NotNull SQLParser.Trim_operandsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterTable_subquery(@NotNull SQLParser.Table_subqueryContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitTable_subquery(@NotNull SQLParser.Table_subqueryContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1994,18 +2042,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitGrant_statement(@NotNull SQLParser.Grant_statementContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterTable_subquery(@NotNull SQLParser.Table_subqueryContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitTable_subquery(@NotNull SQLParser.Table_subqueryContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2203,6 +2239,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterCreate_function_statement(@NotNull SQLParser.Create_function_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCreate_function_statement(@NotNull SQLParser.Create_function_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterNational_character_string_type(@NotNull SQLParser.National_character_string_typeContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2263,18 +2311,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterElse_clause(@NotNull SQLParser.Else_clauseContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitElse_clause(@NotNull SQLParser.Else_clauseContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterStatement(@NotNull SQLParser.StatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2282,6 +2318,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitStatement(@NotNull SQLParser.StatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterElse_clause(@NotNull SQLParser.Else_clauseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitElse_clause(@NotNull SQLParser.Else_clauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
