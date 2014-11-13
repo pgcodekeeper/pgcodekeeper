@@ -52,6 +52,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -227,19 +228,19 @@ public class NewProjWizard extends Wizard
     }
 
     private void setDbSource(IEclipsePreferences newPrefs) {
-        String src;
+        DBSources src;
         if (pageDb.isSourceDb()) {
-            src = PROJ_PREF.SOURCE_TYPE_DB;
+            src = DBSources.SOURCE_TYPE_DB;
         } else if (pageDb.isSourceDump()) {
-            src = PROJ_PREF.SOURCE_TYPE_DUMP;
+            src = DBSources.SOURCE_TYPE_DUMP;
         } else if (pageDb.isSourceJdbc()) {
-            src = PROJ_PREF.SOURCE_TYPE_JDBC;
+            src = DBSources.SOURCE_TYPE_JDBC;
         } else {
             ExceptionNotifier.showErrorDialog(
                     Messages.newProjWizard_no_schema_source_selected, null);
             return;
         }
-        newPrefs.put(PROJ_PREF.SOURCE, src);
+        newPrefs.put(PROJ_PREF.SOURCE, src.toString());
     }
 
     @Override
