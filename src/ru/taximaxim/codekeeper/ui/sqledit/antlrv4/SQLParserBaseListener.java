@@ -1747,6 +1747,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterCreate_schema_statement(@NotNull SQLParser.Create_schema_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCreate_schema_statement(@NotNull SQLParser.Create_schema_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterSome(@NotNull SQLParser.SomeContext ctx) { }
 	/**
 	 * {@inheritDoc}

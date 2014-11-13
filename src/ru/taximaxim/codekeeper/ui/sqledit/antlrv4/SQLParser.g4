@@ -51,6 +51,7 @@ statement
   | comment_on_statement
   | create_function_statement
   | create_sequence_statement
+  | create_schema_statement
   ;
 
 data_statement
@@ -309,15 +310,21 @@ functions_definition_schema
     
 create_sequence_statement
     : CREATE (TEMPORARY | TEMP)? SEQUENCE name=schema_qualified_name 
-        (INCREMENT (BY)? incr=NUMBER)?
-         (MINVALUE minval=NUMBER | NO MINVALUE)? 
-         (MAXVALUE maxval=numeric_type | NO MAXVALUE)?
-         (START (WITH)? start_val=NUMBER)? 
-         (CACHE cache_val=NUMBER)?
-         ((NO)? CYCLE)?
-         (OWNED BY (col_name=schema_qualified_name | NONE))?
+        ((INCREMENT (BY)? incr=NUMBER)
+        | (MINVALUE minval=NUMBER | NO MINVALUE) 
+        | (MAXVALUE maxval=numeric_type | NO MAXVALUE)
+        | (START (WITH)? start_val=NUMBER) 
+        | (CACHE cache_val=NUMBER)
+        | ((NO)? CYCLE)
+        | (OWNED BY (col_name=schema_qualified_name | NONE)))*
     ;
     
+create_schema_statement
+    : CREATE SCHEMA schema_name=identifier (AUTHORIZATION user_name=identifier)? (schema_element=sql)*
+      | CREATE SCHEMA AUTHORIZATION user_name=identifier (schema_element=sql)*
+      | CREATE SCHEMA IF NOT EXISTS schema_name=identifier (AUTHORIZATION user_name=identifier)?
+      | CREATE SCHEMA IF NOT EXISTS AUTHORIZATION user_name=identifier
+    ;
 create_table_statement
   : CREATE EXTERNAL TABLE n=schema_qualified_name table_elements USING file_type=identifier
     (param_clause)? (table_partitioning_clauses)? (LOCATION path=Character_String_Literal)
@@ -756,6 +763,7 @@ predefined_type
   | binary_type
   | network_type
   | regclass
+  | TRIGGER
   ;
 
 regclass

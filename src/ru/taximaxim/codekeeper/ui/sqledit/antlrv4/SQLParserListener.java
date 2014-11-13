@@ -1451,6 +1451,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitNonreserved_keywords(@NotNull SQLParser.Nonreserved_keywordsContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#create_schema_statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterCreate_schema_statement(@NotNull SQLParser.Create_schema_statementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#create_schema_statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitCreate_schema_statement(@NotNull SQLParser.Create_schema_statementContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#some}.
 	 * @param ctx the parse tree
 	 */
