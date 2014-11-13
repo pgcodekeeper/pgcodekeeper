@@ -655,6 +655,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterFunction_parameters(@NotNull SQLParser.Function_parametersContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFunction_parameters(@NotNull SQLParser.Function_parametersContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterJoined_table(@NotNull SQLParser.Joined_tableContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1015,6 +1027,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterSchema_alter(@NotNull SQLParser.Schema_alterContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSchema_alter(@NotNull SQLParser.Schema_alterContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterRoutine_invocation(@NotNull SQLParser.Routine_invocationContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1190,6 +1214,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitString_value_expression(@NotNull SQLParser.String_value_expressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterFunction_action(@NotNull SQLParser.Function_actionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFunction_action(@NotNull SQLParser.Function_actionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1675,6 +1711,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterSchema_create(@NotNull SQLParser.Schema_createContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSchema_create(@NotNull SQLParser.Schema_createContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterStorage_parameter(@NotNull SQLParser.Storage_parameterContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2071,18 +2119,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSql(@NotNull SQLParser.SqlContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSql(@NotNull SQLParser.SqlContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterGrant_statement(@NotNull SQLParser.Grant_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2090,6 +2126,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitGrant_statement(@NotNull SQLParser.Grant_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSql(@NotNull SQLParser.SqlContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSql(@NotNull SQLParser.SqlContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2143,6 +2191,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterSelect_sublist(@NotNull SQLParser.Select_sublistContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSelect_sublist(@NotNull SQLParser.Select_sublistContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterPredefined_type(@NotNull SQLParser.Predefined_typeContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2162,18 +2222,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitNumeric_value_function(@NotNull SQLParser.Numeric_value_functionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterSelect_sublist(@NotNull SQLParser.Select_sublistContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSelect_sublist(@NotNull SQLParser.Select_sublistContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2222,6 +2270,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExact_numeric_type(@NotNull SQLParser.Exact_numeric_typeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAlter_function_statement(@NotNull SQLParser.Alter_function_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAlter_function_statement(@NotNull SQLParser.Alter_function_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

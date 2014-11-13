@@ -17,7 +17,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.DBObjectsLocation;
 
 public class SqlParserMain {
     public static void main(String[] args) throws IOException {
-        String pathToFile = "/home/botov_av/workspace/codekeeper/ru.taximaxim.codekeeper.ui/src/ru/taximaxim/codekeeper/ui/sqledit/antlrv4/information_schema.sql";
+        String pathToFile = "/home/botov_av/workspace/pg_dump_folder/maindb_dev3.sql";
         List<DBObjectsLocation> objLocation = new ArrayList<>();
         new SqlParserMain().testSampleInputs(
                         pathToFile,

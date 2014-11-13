@@ -39,20 +39,10 @@ sql
   ;
 
 statement
-  : data_statement
-  /*| data_change_statement */
-  | schema_statement
-  | index_statement
-  | create_extension_statement
-  | set_statement
-  | create_trigger_statement
-  | grant_statement
-  | revoke_statement
-  | comment_on_statement
-  | create_function_statement
-  | create_sequence_statement
-  | create_schema_statement
-  | create_view_statement
+  :/* data_statement
+   | data_change_statement
+  |*/ schema_statement
+  
   ;
 
 data_statement
@@ -64,9 +54,55 @@ data_change_statement
   ;
 
 schema_statement
-  : create_table_statement
-  | drop_table_statement
+  : schema_create
+    | schema_alter
+    | drop_table_statement 
   ;
+  
+schema_create
+    :create_table_statement
+      | index_statement
+      | create_extension_statement
+      | create_trigger_statement
+      | create_function_statement
+      | create_sequence_statement
+      | create_schema_statement
+      | create_view_statement
+      | comment_on_statement
+      | revoke_statement
+      | set_statement
+      | grant_statement
+    ;
+    
+schema_alter
+    : alter_function_statement
+    ;
+    
+alter_function_statement
+    : ALTER FUNCTION name=schema_qualified_name function_parameters
+        function_action+ (RESTRICT)?
+    | ALTER FUNCTION name=schema_qualified_name function_parameters
+        RENAME TO new_name=schema_qualified_name
+    | ALTER FUNCTION name=schema_qualified_name function_parameters
+        OWNER TO new_owner=identifier
+    | ALTER FUNCTION name=schema_qualified_name function_parameters
+        SET SCHEMA new_schema=schema_qualified_name
+    ;
+    
+function_action
+    : CALLED ON NULL INPUT 
+        | RETURNS NULL ON NULL INPUT 
+        | STRICT IMMUTABLE 
+        | STABLE 
+        | VOLATILE (EXTERNAL)? SECURITY INVOKER 
+        | (EXTERNAL)? SECURITY DEFINER
+        COST execution_cost=NUMBER
+        ROWS result_rows=NUMBER
+        SET configuration_parameter=identifier  (TO value=identifier | EQUAL value=identifier | DEFAULT)
+        SET configuration_parameter=identifier FROM CURRENT
+        RESET configuration_parameter=identifier
+        RESET ALL 
+    ;
 
 index_statement
   : CREATE (u=UNIQUE)? INDEX n=identifier ON t=schema_qualified_name (m=method_specifier)?
@@ -79,7 +115,7 @@ index_statement
     ;
     
 set_statement
-    : SET (SESSION | LOCAL)? config_param=identifier (TO |EQUAL) ((value=identifier | QUOTE value=identifier QUOTE | DEFAULT)(COMMA)?)+
+    : SET (SESSION | LOCAL)? config_param=identifier (TO |EQUAL) ((value=value_expression | QUOTE value=value_expression QUOTE | DEFAULT)(COMMA)?)+
     | SET (SESSION | LOCAL)? TIME ZONE ((timezone=identifier | LOCAL | DEFAULT)(COMMA)?)+
     ;
    
@@ -267,9 +303,7 @@ comment_on_statement
 */
 create_function_statement
     : CREATE (OR REPLACE)? FUNCTION name=schema_qualified_name 
-        LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? argtype=data_type 
-            (DEFAULT | EQUAL def_value=value_expression)?(COMMA)?
-        )* RIGHT_PAREN 
+        function_parameters
         (RETURNS rettype=data_type 
             | RETURNS TABLE LEFT_PAREN (column_name=identifier column_type=data_type(COMMA)?)+ RIGHT_PAREN
         )?
@@ -287,6 +321,11 @@ create_function_statement
             (WITH LEFT_PAREN (attribute=function_attribute(COMMA)?)+ RIGHT_PAREN)?
     ;
 
+function_parameters
+    : LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? argtype=data_type 
+            (DEFAULT | EQUAL def_value=value_expression)?(COMMA)?
+        )* RIGHT_PAREN 
+    ;
 function_body
     :function_body_separator | function_body_separator_dollar_under
     ;
@@ -637,6 +676,7 @@ nonreserved_keywords
   | NONE
   | NULLIF
   | OBJECT
+  | ON
   | OPTION
   | OPTIONS
   | OVERWRITE
@@ -650,6 +690,8 @@ nonreserved_keywords
   | QUARTER
   | RANGE
   | REGEXP
+  | RENAME
+  | RESET
   | RLIKE
   | ROLLUP
   | SEARCH
@@ -873,6 +915,7 @@ datetime_type
   | TIMETZ
   | TIMESTAMP
   | TIMESTAMP WITH TIME ZONE
+  | TIMESTAMP WITHOUT TIME ZONE
   | TIMESTAMPTZ
   ;
 
