@@ -279,7 +279,7 @@ create_function_statement
             | (EXTERNAL)? SECURITY INVOKER | (EXTERNAL)? SECURITY DEFINER
             | COST execution_cost=NUMBER
             | ROWS result_rows=NUMBER
-            | SET configuration_parameter=identifier (TO value=Character_String_Literal | EQUAL value=Character_String_Literal | FROM CURRENT)
+            | SET configuration_parameter=identifier (TO value=identifier | EQUAL value=identifier | FROM CURRENT)(COMMA value=identifier)*
             | AS function_body
             | AS Character_String_Literal COMMA Character_String_Literal
           )+
