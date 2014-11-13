@@ -266,10 +266,10 @@ comment_on_statement
 ===============================================================================
 */
 create_function_statement
-    : CREATE (OR REPLACE)? FUNCTION name=identifier 
+    : CREATE (OR REPLACE)? FUNCTION name=schema_qualified_name 
         LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? argtype=data_type 
-            (DEFAULT | EQUAL routine_invocation)?(COMMA)?
-        )* RIGHT_PAREN
+            (DEFAULT | EQUAL def_value=value_expression)?(COMMA)?
+        )* RIGHT_PAREN 
         (RETURNS rettype=data_type 
             | RETURNS TABLE LEFT_PAREN (column_name=identifier column_type=data_type(COMMA)?)+ RIGHT_PAREN
         )?
@@ -288,7 +288,15 @@ create_function_statement
     ;
 
 function_body
-    :DOUBLE_DOLLAR ( ~(DOUBLE_DOLLAR) )* DOUBLE_DOLLAR
+    :function_body_separator | function_body_separator_dollar_under
+    ;
+    
+function_body_separator
+    : DOUBLE_DOLLAR (~DOUBLE_DOLLAR)* DOUBLE_DOLLAR
+    ;
+    
+function_body_separator_dollar_under
+    : DOUBLE_UNDER_DOLLAR (~DOUBLE_UNDER_DOLLAR)* DOUBLE_UNDER_DOLLAR
     ;
 
 function_attribute
@@ -302,7 +310,7 @@ argmode
 
 function_definition
     : FUNCTION func_name=identifier 
-        LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? argtype=value_expression (COMMA)? )* RIGHT_PAREN
+        LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? (argtype_data=data_type | argtype_expres=value_expression) (COMMA)? )* RIGHT_PAREN
     ;
     
 functions_definition_schema
@@ -338,14 +346,14 @@ query
     ;
     
 create_table_statement
-  : CREATE EXTERNAL TABLE n=schema_qualified_name table_elements USING file_type=identifier
+  : /*CREATE EXTERNAL TABLE n=schema_qualified_name table_elements USING file_type=identifier
     (param_clause)? (table_partitioning_clauses)? (LOCATION path=Character_String_Literal)
   | CREATE TABLE n=schema_qualified_name table_elements (USING file_type=identifier)?
     (param_clause)? (table_partitioning_clauses)? (AS query_expression)?
   | CREATE TABLE n=schema_qualified_name (USING file_type=identifier)?
     (param_clause)? (table_partitioning_clauses)? AS query_expression
     
-  | CREATE ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? n=schema_qualified_name 
+  |*/ CREATE ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? n=schema_qualified_name 
         LEFT_PAREN (
             ((
                 (column_name=identifier datatype=data_type (COLLATE collation=identifier)?  (colmn_constraint=column_constraint)*)
@@ -400,10 +408,10 @@ table_constraint
     
 column_constraint
     : (CONSTRAINT constraint_name=identifier)? 
-        ((NOT NULL) 
+        (NOT NULL
         | NULL
         | check_boolean_expression 
-        | (DEFAULT default_expr=routine_invocation) 
+        | DEFAULT (default_expr_data=data_type | default_expr=value_expression)
         | (UNIQUE index_params_unique=index_parameters) 
         | (PRIMARY KEY index_params_pr_key=index_parameters) 
         | (REFERENCES reftable=schema_qualified_name (( refcolumn=identifier ))  (MATCH FULL | MATCH PARTIAL | MATCH SIMPLE)? 
@@ -715,6 +723,7 @@ nonreserved_keywords
   | VARBIT
   | VARCHAR
   | UUID
+  | VOID
   ;
 
 /*
@@ -764,6 +773,7 @@ boolean_literal
 
 data_type
   : predefined_type
+  | SETOF value=identifier
   ;
 
 predefined_type
@@ -779,6 +789,7 @@ predefined_type
   | regclass
   | TRIGGER
   | UUID
+  | VOID
   ;
 
 regclass

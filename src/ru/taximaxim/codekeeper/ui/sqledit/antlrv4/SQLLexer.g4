@@ -234,6 +234,7 @@ SEQUENCE: S E Q U E N C E;
 SEQUENCES: SEQUENCE S;
 SELECT : S E L E C T;
 SESSION: S E S S I O N;
+SETOF: SET OF;
 SOME : S O M E;
 STATEMENT: S T A T E M E N T;
 STRICT: S T R I C T;
@@ -473,6 +474,8 @@ BYTEA : B Y T E A; // alias for BLOB
 
 INET4 : I N E T '4';
 
+VOID: V O I D;
+
 // Operators
 Similar_To : '~';
 Not_Similar_To : '!~';
@@ -509,6 +512,7 @@ QUOTE : '\'';
 DOUBLE_QUOTE : '"';
 DOLLAR: '$';
 DOUBLE_DOLLAR: '$$';
+DOUBLE_UNDER_DOLLAR: '$_$';
 
 NUMBER : Digit+;
 

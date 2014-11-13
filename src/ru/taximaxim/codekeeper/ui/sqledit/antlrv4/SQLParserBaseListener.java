@@ -1555,6 +1555,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterFunction_body_separator_dollar_under(@NotNull SQLParser.Function_body_separator_dollar_underContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFunction_body_separator_dollar_under(@NotNull SQLParser.Function_body_separator_dollar_underContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterQualified_asterisk(@NotNull SQLParser.Qualified_asteriskContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2251,6 +2263,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterFunction_body_separator(@NotNull SQLParser.Function_body_separatorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFunction_body_separator(@NotNull SQLParser.Function_body_separatorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterGroupby_clause(@NotNull SQLParser.Groupby_clauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2563,18 +2587,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCast_specification(@NotNull SQLParser.Cast_specificationContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitCast_specification(@NotNull SQLParser.Cast_specificationContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterAs_clause(@NotNull SQLParser.As_clauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2582,6 +2594,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitAs_clause(@NotNull SQLParser.As_clauseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCast_specification(@NotNull SQLParser.Cast_specificationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCast_specification(@NotNull SQLParser.Cast_specificationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
