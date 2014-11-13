@@ -679,6 +679,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterCreate_view_statement(@NotNull SQLParser.Create_view_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCreate_view_statement(@NotNull SQLParser.Create_view_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterCase_expression(@NotNull SQLParser.Case_expressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1790,6 +1802,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitFunction_body(@NotNull SQLParser.Function_bodyContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterQuery(@NotNull SQLParser.QueryContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitQuery(@NotNull SQLParser.QueryContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

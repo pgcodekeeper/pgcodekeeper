@@ -561,6 +561,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitFactor(@NotNull SQLParser.FactorContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#create_view_statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterCreate_view_statement(@NotNull SQLParser.Create_view_statementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#create_view_statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitCreate_view_statement(@NotNull SQLParser.Create_view_statementContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#case_expression}.
 	 * @param ctx the parse tree
 	 */
@@ -1490,6 +1500,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitFunction_body(@NotNull SQLParser.Function_bodyContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#query}.
+	 * @param ctx the parse tree
+	 */
+	void enterQuery(@NotNull SQLParser.QueryContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#query}.
+	 * @param ctx the parse tree
+	 */
+	void exitQuery(@NotNull SQLParser.QueryContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#truth_value}.
 	 * @param ctx the parse tree

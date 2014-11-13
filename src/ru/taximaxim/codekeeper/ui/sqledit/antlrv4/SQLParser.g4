@@ -40,7 +40,7 @@ sql
 
 statement
   : data_statement
-  | data_change_statement
+  /*| data_change_statement */
   | schema_statement
   | index_statement
   | create_extension_statement
@@ -52,6 +52,7 @@ statement
   | create_function_statement
   | create_sequence_statement
   | create_schema_statement
+  | create_view_statement
   ;
 
 data_statement
@@ -235,7 +236,7 @@ comment_on_statement
         | EXTENSION object_name=schema_qualified_name 
         | FOREIGN DATA WRAPPER object_name=schema_qualified_name 
         | FOREIGN TABLE object_name=schema_qualified_name 
-        | FUNCTION routine_invocation 
+        | function_definition 
         | INDEX object_name=schema_qualified_name 
         | LARGE OBJECT large_object_oid=identifier 
         | OPERATOR operator_name=schema_qualified_name LEFT_PAREN left_type=data_type COMMA right_type=data_type RIGHT_PAREN 
@@ -267,8 +268,8 @@ comment_on_statement
 create_function_statement
     : CREATE (OR REPLACE)? FUNCTION name=identifier 
         LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? argtype=data_type 
-            ( (DEFAULT | EQUAL routine_invocation(COMMA)?)+ )?
-        )? RIGHT_PAREN
+            (DEFAULT | EQUAL routine_invocation)?(COMMA)?
+        )* RIGHT_PAREN
         (RETURNS rettype=data_type 
             | RETURNS TABLE LEFT_PAREN (column_name=identifier column_type=data_type(COMMA)?)+ RIGHT_PAREN
         )?
@@ -301,7 +302,7 @@ argmode
 
 function_definition
     : FUNCTION func_name=identifier 
-        LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? argtype=data_type (COMMA)? )* RIGHT_PAREN
+        LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? argtype=value_expression (COMMA)? )* RIGHT_PAREN
     ;
     
 functions_definition_schema
@@ -325,6 +326,17 @@ create_schema_statement
       | CREATE SCHEMA IF NOT EXISTS schema_name=identifier (AUTHORIZATION user_name=identifier)?
       | CREATE SCHEMA IF NOT EXISTS AUTHORIZATION user_name=identifier
     ;
+    
+create_view_statement
+    : CREATE (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name (column_name=identifier (COMMA)?)*
+    (WITH LEFT_PAREN (view_option_name=identifier (EQUAL view_option_value=identifier)?)+ RIGHT_PAREN)?
+    AS query_specification
+    ;
+    
+query
+    : 
+    ;
+    
 create_table_statement
   : CREATE EXTERNAL TABLE n=schema_qualified_name table_elements USING file_type=identifier
     (param_clause)? (table_partitioning_clauses)? (LOCATION path=Character_String_Literal)
@@ -654,6 +666,7 @@ nonreserved_keywords
   | TIMEZONE_MINUTE
   | TRIM
   | TO
+  | TYPE
   | UNKNOWN
   | UNLOGGED
   | VALUES
@@ -701,6 +714,7 @@ nonreserved_keywords
   | VARBINARY
   | VARBIT
   | VARCHAR
+  | UUID
   ;
 
 /*
@@ -764,6 +778,7 @@ predefined_type
   | network_type
   | regclass
   | TRIGGER
+  | UUID
   ;
 
 regclass
