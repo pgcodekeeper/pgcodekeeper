@@ -1,39 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-
    <extension
-         id="application"
+         id="application-standalone"
          point="org.eclipse.core.runtime.applications">
       <application>
          <run
-               class="ru.taximaxim.codekeeper.mainapp.Application">
+               class="ru.taximaxim.codekeeper.mainapp.ApplicationStandalone">
          </run>
       </application>
    </extension>
    <extension
-         id="product_codekeeper"
+         id="product-codekeeper-standalone"
          point="org.eclipse.core.runtime.products">
       <product
-            application="ru.taximaxim.codekeeper.mainapp.application"
+            application="ru.taximaxim.codekeeper.mainapp.application-standalone"
             name="%product.name">
-         <property
-               name="appName"
-               value="pgCodeKeeper">
-         </property>
-         <property
-               name="aboutImage"
-               value="icons/product.png">
-         </property>
-         <property
-               name="aboutText"
-               value="pgCodeKeeper">
-         </property>
-         <property
-               name="windowImages"
-               value="icons/product.png">
-         </property>
       </product>
    </extension>
-
 </plugin>

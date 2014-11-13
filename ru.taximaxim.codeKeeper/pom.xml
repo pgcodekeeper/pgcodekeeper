@@ -12,7 +12,7 @@
     META-INF/MANIFEST.MF
     pom.xml
     
-    product (сейчас не используется):
+    product (стендэлон апгдифф):
     product/*.product
     product/pom.xml
  -->
@@ -24,7 +24,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>..</module>
-<!--         <module>../product</module> -->
+        <module>../product</module>
         <module>../../apgdiff/pom_tycho.xml</module>
         <module>../../ru.taximaxim.codekeeper.ui</module>
         <module>../../ru.taximaxim.codekeeper.ui.tests</module>
@@ -44,7 +44,6 @@
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
         <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
         <sonar.junit.reportPath>${project.basedir}/target/surefire-reports/</sonar.junit.reportPath>
-
     </properties>
 
     <profiles>

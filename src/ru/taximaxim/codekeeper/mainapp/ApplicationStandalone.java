@@ -14,7 +14,7 @@ import cz.startnet.utils.pgdiff.Main;
 /**
  * This class controls all aspects of the application's execution
  */
-public class Application implements IApplication {
+public class ApplicationStandalone implements IApplication {
 
     private static final String APGDIFF_TO_CONSOLE_MODE = "--apgdiff";
     
