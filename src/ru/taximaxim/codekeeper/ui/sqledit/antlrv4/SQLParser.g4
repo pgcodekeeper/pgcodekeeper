@@ -539,8 +539,8 @@ drop_table_statement
 */
 
 identifier
-  : (QUOTE)? Identifier (QUOTE)?
-  | nonreserved_keywords
+  : (DOUBLE_QUOTE)? Identifier (DOUBLE_QUOTE)?
+  | (DOUBLE_QUOTE)? nonreserved_keywords (DOUBLE_QUOTE)? 
   ;
 
 nonreserved_keywords

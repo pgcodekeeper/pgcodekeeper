@@ -5,9 +5,9 @@ import java.util.List;
 
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.DBObjectsLocation;
 import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Create_extension_statementContext;
+import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Create_sequence_statementContext;
 import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Create_table_statementContext;
 import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Create_trigger_statementContext;
-import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Grant_statementContext;
 import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Set_statementContext;
 
 public class CustomSQLParserListener extends SQLParserBaseListener {
@@ -44,12 +44,13 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     }
     
     @Override
-    public void exitGrant_statement(Grant_statementContext ctx) {
-//        objLocation.add(new DBObjectsLocation(ctx.schema_name.Identifier().toString(), ctx.schema_name.getStart().getStartIndex(), filePath));
+    public void exitSet_statement(Set_statementContext ctx) {
+        objLocation.add(new DBObjectsLocation(ctx.config_param.Identifier().toString(), ctx.config_param.getStart().getStartIndex(), filePath));
     }
     
     @Override
-    public void exitSet_statement(Set_statementContext ctx) {
-        objLocation.add(new DBObjectsLocation(ctx.config_param.Identifier().toString(), ctx.config_param.getStart().getStartIndex(), filePath));
+    public void exitCreate_sequence_statement(
+            Create_sequence_statementContext ctx) {
+        objLocation.add(new DBObjectsLocation(ctx.name.identifier(0).Identifier().toString(), ctx.name.getStart().getStartIndex(), filePath));
     }
 }
