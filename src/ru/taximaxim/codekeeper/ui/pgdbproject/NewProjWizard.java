@@ -342,13 +342,6 @@ class PageDb extends WizardPage implements Listener {
         return radioDb.getSelection();
     }
 
-    private void setSourceDb() {
-        radioDump.setSelection(false);
-        radioJdbc.setSelection(false);
-        radioDb.setSelection(true);
-        radioDb.notifyListeners(SWT.Selection, new Event());
-    }
-
     public boolean isSourceDump() {
         return radioDump.getSelection();
     }
