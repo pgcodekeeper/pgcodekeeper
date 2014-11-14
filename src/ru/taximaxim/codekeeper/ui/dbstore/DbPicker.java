@@ -154,6 +154,7 @@ public class DbPicker extends Group {
         
         txtDbHost = new Text(this, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 3;
         gd.widthHint = 80;
         txtDbHost.setLayoutData(gd);
         
