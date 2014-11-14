@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.loader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,7 +14,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -302,7 +302,7 @@ public class JdbcLoader {
         }
     }
     
-    private PgSchema getSchema(ResultSet res) throws SQLException{
+    private PgSchema getSchema(ResultSet res) throws SQLException, UnsupportedEncodingException{
         String schemaName = res.getString("nspname");
         Long schemaOid = res.getLong("oid");
         PgSchema s = new PgSchema(schemaName, "");
@@ -310,7 +310,7 @@ public class JdbcLoader {
         if (!schemaName.equals("public")){
             s.setOwner(res.getString("owner"));
         }
-        setPrivileges(s, schemaName, res.getString("nspacl"), res.getString("owner"));
+        setPrivileges(s, schemaName, res.getString("nspacl"), res.getString("owner"), null);
         
         String comment = res.getString("comment");
         if (!schemaName.equals("public") && comment != null && !comment.isEmpty()){
@@ -580,7 +580,7 @@ public class JdbcLoader {
         v.setOwner(getRoleNameByOid(res.getLong("relowner")));
         
         // Query view privileges
-        setPrivileges(v, viewName, res.getString("relacl"), v.getOwner());
+        setPrivileges(v, viewName, res.getString("relacl"), v.getOwner(), null);
         
         // COMMENT
         String comment = res.getString("comment");
@@ -598,22 +598,23 @@ public class JdbcLoader {
             }
         }
         String tableName = res.getString("relname");
+        String tableOwner = getRoleNameByOid(res.getLong("relowner"));
         StringBuilder tableDef = new StringBuilder(); 
         tableDef.append("CREATE TABLE ".concat(tableName).concat(" (\n"));
         
         List<PgColumn> columns = new ArrayList<PgColumn>(5);
         
         Integer[] colNumbers = (Integer[])res.getArray("col_numbers").getArray();
+        String[] colNames = (String[])res.getArray("col_names").getArray();
+        Long[] colTypes = (Long[])res.getArray("col_types").getArray();
+        String[] colDefaults = (String[])res.getArray("col_defaults").getArray();
+        String[] colComments = (String[])res.getArray("col_comments").getArray();
+        Integer[] colTypeMod = (Integer[])res.getArray("col_typemod").getArray();
+        Boolean[] colNotNull = (Boolean[])res.getArray("col_notnull").getArray();
         for (int i = 0; i < colNumbers.length; i++) {
             if (colNumbers[i] < 1){
                 continue;
             }
-            String[] colNames = (String[])res.getArray("col_names").getArray();
-            Long[] colTypes = (Long[])res.getArray("col_types").getArray();
-            String[] colDefaults = (String[])res.getArray("col_defaults").getArray();
-            String[] colComments = (String[])res.getArray("col_comments").getArray();
-            Integer[] colTypeMod = (Integer[])res.getArray("col_typemod").getArray();
-            Boolean[] colNotNull = (Boolean[])res.getArray("col_notnull").getArray();
             
             String columnName = colNames[i];
             PgColumn column = new PgColumn(columnName);
@@ -735,9 +736,18 @@ public class JdbcLoader {
         }
         
         // PRIVILEGES, OWNER
-        t.setOwner(getRoleNameByOid(res.getLong("relowner")));
-        setPrivileges(t, t.getName(), res.getString("aclarray"), t.getOwner());
-
+        t.setOwner(tableOwner);
+        setPrivileges(t, t.getName(), res.getString("aclarray"), t.getOwner(), null);
+        
+        // COLUMNS PRIVILEGES
+        String[] colAcl = (String[])res.getArray("col_acl").getArray();
+        for (int i = 0; i < colNumbers.length; i++) {
+            String columnPrivileges = colAcl[i];
+            if (columnPrivileges != null && !columnPrivileges.isEmpty()){
+                setPrivileges(t, tableName, columnPrivileges, tableOwner, colNames[i]);
+            }
+        }
+        
         return t;
     }
 
@@ -754,8 +764,9 @@ public class JdbcLoader {
      *      boolean before;
      * @param schemaName 
      */
-    private PgTrigger getTrigger(ResultSet res, String schemaName) throws SQLException{
-        
+    private PgTrigger getTrigger(ResultSet res, String schemaName)
+            throws SQLException, UnsupportedEncodingException {
+  
         String triggerName = res.getString("tgname");
         PgTrigger t = new PgTrigger(triggerName, "", getSearchPath(schemaName));
         
@@ -784,7 +795,34 @@ public class JdbcLoader {
         String tableName = res.getString("tgrelid");
         t.setTableName(tableName);
         
-        String functionName = res.getString("proname").concat("()");
+        String functionName = res.getString("proname").concat("(");
+        byte[] args = res.getBytes("tgargs");
+        if (res.getBytes("tgargs").length > 0){
+            ArrayList<Byte> target = new ArrayList<Byte>(args.length);
+            for(int i = 0; i < args.length; i++){
+                byte b = args[i];
+                if (b == 0 && i < args.length - 1){
+                    target.add((byte) 39); // APOSTROPHE
+                    target.add((byte) 44); // COMMA
+                    target.add((byte) 32); // SPACE
+                    target.add((byte) 39); // APOSTROPHE
+                }else if (b != 0){
+                    target.add(b);
+                }
+            }
+            
+            target.add(0, (byte) 39);
+            target.add((byte) 39);
+            
+            args = new byte[target.size()];
+            
+            for(int i = 0; i < target.size(); i++){
+                args[i] = target.get(i);
+            }
+            
+            functionName = functionName.concat(new String(args, encoding));
+        }
+        functionName = functionName.concat(")");
         if (!res.getString("nspname").equals(schemaName)){
             functionName = res.getString("nspname").concat(".").concat(functionName);
         }
@@ -881,7 +919,7 @@ public class JdbcLoader {
         // PRIVILEGES
         String signatureWithoutDefaults = functionName + "(" + 
                 res.getString("proarguments_without_default") + ")";
-        setPrivileges(f, signatureWithoutDefaults, res.getString("aclArray"), f.getOwner());
+        setPrivileges(f, signatureWithoutDefaults, res.getString("aclArray"), f.getOwner(), null);
         
         // COMMENT
         String comment = res.getString("comment");
@@ -988,13 +1026,28 @@ public class JdbcLoader {
         setOwner(s, res.getLong("relowner"));
         
         // PRIVILEGES
-        setPrivileges(s, sequenceName, res.getString("aclArray"), s.getOwner());
+        setPrivileges(s, sequenceName, res.getString("aclArray"), s.getOwner(), null);
         
         return s;
     }
     
+    /**
+     * Parses <code>aclItemsArrayAsString</code> and adds parsed privileges to 
+     * <code>PgStatement</code> object. Owner privileges go first.
+     * <br>
+     * Currently supports only adding privileges to PgFunction, PgSequence, 
+     * PgTable, PgView, PgSchema
+     * 
+     * @param st    PgStatement object where privileges to be added
+     * @param stSignature   PgStatement signature (differs in different PgStatement instances)
+     * @param aclItemsArrayAsString     Input acl string in the 
+     *                                  form of "{grantee=grant_chars/grantor[, ...]}"
+     * @param owner the owner of PgStatement object (why separate?)
+     * @param columnName    column name, if this aclItemsArrayAsString is column 
+     *                      privilege string; otherwise null
+     */
     private void setPrivileges(PgStatement st, String stSignature, 
-            String aclItemsArrayAsString, String owner){
+            String aclItemsArrayAsString, String owner, String columnName){
         if (aclItemsArrayAsString == null){
             return;
         }
@@ -1020,17 +1073,44 @@ public class JdbcLoader {
         }else{
             throw new IllegalStateException("Not supported PgStatement class");
         }
-        String revokePublic = "ALL ON " + stType + " " + stSignature + " FROM PUBLIC";
-        String revokeMaindb = "ALL ON " + stType + " " + stSignature + " FROM " + 
+        
+        columnName = (columnName != null && !columnName.isEmpty()) ? "(" + columnName + ")" : "";
+        String revokePublic = "ALL" + columnName + " ON " + stType + " " + stSignature + " FROM PUBLIC";
+        String revokeOwner = "ALL" + columnName + " ON " + stType + " " + stSignature + " FROM " + 
                 PgDiffUtils.getQuotedName(owner);
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
-        st.addPrivilege(new PgPrivilege(true, revokeMaindb, "REVOKE " + revokeMaindb));
         
-        LinkedHashMap<String, String> grants = new JdbcAclParser().parse(
+        ArrayList<Privilege> grants = new JdbcAclParser().parse(
                 aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
-        for(String granteeName : grants.keySet()){
-            String privDefinition = grants.get(granteeName) + " ON " + stType + " " + 
-                    stSignature + " TO " + granteeName;
+        
+        boolean metDefaultOwnersGrants = false;
+        for (Privilege p : grants){            
+            if (p.isDefaultGrant()){
+                metDefaultOwnersGrants = true;
+            }
+        }
+        
+        if (!metDefaultOwnersGrants){
+            st.addPrivilege(new PgPrivilege(true, revokeOwner, "REVOKE " + revokeOwner));
+        }
+        
+        for(Privilege grant : grants){
+            // skip if default owner's privileges
+            if (grant.isDefaultGrant()){
+                continue;
+            }
+            ArrayList<String> grantValues = grant.grantValues;
+            if (columnName != null && !columnName.isEmpty()){
+                grantValues = new ArrayList<String>(grant.grantValues.size());
+                for (String plainGrant : grant.grantValues){
+                    grantValues.add(plainGrant + columnName);
+                }
+            }
+            String privDefinition = getStringListAsString(grantValues, ",") + " ON " + stType + " " + 
+                    stSignature + " TO " + grant.grantee;
+            if (grant.isGo){
+                privDefinition = privDefinition.concat(" WITH GRANT OPTION");
+            }
             st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
         }
     }

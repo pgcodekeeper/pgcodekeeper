@@ -24,6 +24,7 @@ public class PgType{
             put("serial","integer");
             put("timetz","time with time zone");
             put("timestamptz","timestamp with time zone");
+            put("bpchar","character");
         }
     };
     
