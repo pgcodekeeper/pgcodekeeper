@@ -79,6 +79,7 @@ schema_alter
     : alter_function_statement
         | alter_schema_statement
         | alter_language_statement
+        | alter_table_statement
     ;
     
 alter_function_statement
@@ -100,6 +101,65 @@ alter_schema_statement
 alter_language_statement
     : ALTER (PROCEDURAL)? LANGUAGE name=identifier RENAME TO new_name=identifier
     | ALTER (PROCEDURAL)? LANGUAGE name=identifier OWNER TO new_owner=identifier
+    ;
+
+alter_table_statement
+    : ALTER TABLE (ONLY)? (name=schema_qualified_name)+
+        (table_action(COMMA)?)+
+    | ALTER TABLE (ONLY)? (name=schema_qualified_name)+
+        RENAME (COLUMN)? column=schema_qualified_name TO new_column=schema_qualified_name
+    | ALTER TABLE name=schema_qualified_name
+        RENAME TO new_name=schema_qualified_name
+    | ALTER TABLE name=schema_qualified_name
+        SET SCHEMA new_schema=schema_qualified_name
+    ;
+
+table_action
+    : ADD (COLUMN)? table_column_definition
+    | DROP (COLUMN)? (IF EXISTS)? column=schema_qualified_name (RESTRICT | CASCADE)?
+    | ALTER (COLUMN)? column=schema_qualified_name (SET DATA)? TYPE datatype=data_type (COLLATE collation=identifier)? (USING expression=value_expression)?
+    | ALTER (COLUMN)? column=schema_qualified_name SET DEFAULT expression=value_expression
+    | ALTER (COLUMN)? column=schema_qualified_name DROP DEFAULT
+    | ALTER (COLUMN)? column=schema_qualified_name SET | DROP NOT NULL
+    | ALTER (COLUMN)? column=schema_qualified_name SET STATISTICS integer=NUMBER
+    | ALTER (COLUMN)? column=schema_qualified_name 
+      SET LEFT_PAREN (attribute_option=table_attribute_option EQUAL value=signed_numerical_literal(COMMA)?)+ RIGHT_PAREN
+    | ALTER (COLUMN)? column=schema_qualified_name RESET LEFT_PAREN (attribute_option=table_attribute_option(COMMA)?)+ RIGHT_PAREN
+    | ALTER (COLUMN)? column=schema_qualified_name SET STORAGE PLAIN | EXTERNAL | EXTENDED | MAIN
+    | ADD tabl_constraint=table_constraint (NOT VALID)?
+    | ADD tabl_constraint_using_index=table_constraint_using_index
+    | VALIDATE CONSTRAINT constraint_name=schema_qualified_name
+    | DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name (RESTRICT | CASCADE)
+    | DISABLE TRIGGER (trigger_name=schema_qualified_name | ALL | USER)?
+    | ENABLE TRIGGER (trigger_name=schema_qualified_name | ALL | USER)?
+    | ENABLE REPLICA TRIGGER trigger_name=schema_qualified_name 
+    | ENABLE ALWAYS TRIGGER trigger_name=schema_qualified_name 
+    | DISABLE RULE rewrite_rule_name=schema_qualified_name 
+    | ENABLE RULE rewrite_rule_name=schema_qualified_name 
+    | ENABLE REPLICA RULE rewrite_rule_name=schema_qualified_name 
+    | ENABLE ALWAYS RULE rewrite_rule_name=schema_qualified_name 
+    | CLUSTER ON index_name=schema_qualified_name 
+    | SET WITHOUT CLUSTER
+    | SET WITH OIDS
+    | SET WITHOUT OIDS
+    | SET storage_parameter
+    | RESET LEFT_PAREN (with_storage_parameter(COMMA)?)+ RIGHT_PAREN
+    | INHERIT parent_table=schema_qualified_name 
+    | NO INHERIT parent_table=schema_qualified_name 
+    | OF type_name=schema_qualified_name 
+    | NOT OF
+    | OWNER TO new_owner=schema_qualified_name 
+    | SET TABLESPACE new_tablespace=schema_qualified_name 
+    ;
+
+table_constraint_using_index
+    : (CONSTRAINT constraint_name=schema_qualified_name)?
+     UNIQUE | PRIMARY KEY USING INDEX index_name=schema_qualified_name
+     (DEFERRABLE | NOT DEFERRABLE)? (INITIALLY DEFERRED | INITIALLY IMMEDIATE)?
+    ;
+
+table_attribute_option
+    :N_DISTINCT | N_DISTINCT_INHERITED
     ;
     
 function_action
@@ -323,7 +383,7 @@ comment_on_statement
 create_function_statement
     : CREATE (OR REPLACE)? FUNCTION name=schema_qualified_name 
         function_parameters
-        (RETURNS rettype=data_type 
+        (RETURNS (rettype=value_expression | rettype_data=data_type)
             | RETURNS TABLE LEFT_PAREN (column_name=identifier column_type=data_type(COMMA)?)+ RIGHT_PAREN
         )?
           (LANGUAGE lang_name=identifier
@@ -341,8 +401,8 @@ create_function_statement
     ;
 
 function_parameters
-    : LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? argtype=data_type 
-            (DEFAULT | EQUAL def_value=value_expression)?(COMMA)?
+    : LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? (argtype=data_type | argtype_string=identifier)
+            ((DEFAULT | EQUAL) (LEFT_PAREN)? def_value=value_expression (LEFT_PAREN)?)?(COMMA)?
         )* RIGHT_PAREN 
     ;
 function_body
@@ -414,7 +474,7 @@ create_table_statement
   |*/ CREATE ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? n=schema_qualified_name 
         LEFT_PAREN (
             ((
-                (column_name=identifier datatype=data_type (COLLATE collation=identifier)?  (colmn_constraint=column_constraint)*)
+                (table_column_definition)
                 | tabl_constraint=table_constraint
                 | (LIKE parent_table=identifier (like_opt=like_option)*)
                 )(COMMA)?)+
@@ -438,6 +498,10 @@ create_table_statement
         on_commit
         table_space
   ;
+
+table_column_definition
+    : column_name=identifier datatype=data_type (COLLATE collation=identifier)?  (colmn_constraint=column_constraint)*
+    ;
   
 like_option
     : (INCLUDING | EXCLUDING) (DEFAULTS | CONSTRAINTS | INDEXES | STORAGE | COMMENTS | ALL)
@@ -482,14 +546,17 @@ check_boolean_expression
     ;
     
 storage_parameter
-    : WITH
-        LEFT_PAREN
+    : LEFT_PAREN
             (storage_param=identifier (EQUAL value=identifier)?(COMMA)?)+ 
         RIGHT_PAREN 
     ;
     
+with_storage_parameter
+    : WITH storage_parameter
+    ;
+    
 storage_parameter_oid
-    : (storage_parameter | (WITH OIDS) | (WITHOUT OIDS))?
+    : (with_storage_parameter | (WITH OIDS) | (WITHOUT OIDS))?
     ;
 
 on_commit
@@ -505,7 +572,7 @@ action
     ;
     
 index_parameters
-    : (storage_parameter)? 
+    : (with_storage_parameter)? 
         (USING INDEX TABLESPACE tablespace=identifier)?
     ;
     
@@ -623,7 +690,8 @@ identifier
   ;
 
 nonreserved_keywords
-  : ADMIN 
+  : ADMIN
+  | ALWAYS
   | AVG
   | BETWEEN
   | BY
@@ -633,6 +701,7 @@ nonreserved_keywords
   | CHARACTER
   | CHECK
   | CLASS
+  | CLUSTER
   | COALESCE
   | COLLECT
   | COLUMN
@@ -651,12 +720,15 @@ nonreserved_keywords
   | DECADE
   | DEFINER
   | DICTIONARY
+  | DISABLE
   | DOW
   | DOY
   | DROP
+  | ENABLE
   | EPOCH
   | EVERY
   | EXISTS
+  | EXTENDED
   | EXTERNAL
   | EXTRACT
   | FAMILY
@@ -666,6 +738,7 @@ nonreserved_keywords
   | FUSION
   | GROUPING
   | HASH
+  | INHERIT
   | INDEX
   | INCREMENT
   | INPUT
@@ -681,6 +754,7 @@ nonreserved_keywords
   | LESS
   | LIST
   | LOCATION
+  | MAIN
   | MATCH
   | MAX
   | MAXVALUE
@@ -697,6 +771,7 @@ nonreserved_keywords
   | NULLIF
   | OBJECT
   | ON
+  | ONLY
   | OPTION
   | OPTIONS
   | OVERWRITE
@@ -704,6 +779,7 @@ nonreserved_keywords
   | PARTIAL
   | PARTITION
   | PARTITIONS
+  | PLAIN
   | PRECISION
   | PUBLIC
   | PURGE
@@ -711,6 +787,7 @@ nonreserved_keywords
   | RANGE
   | REGEXP
   | RENAME
+  | REPLICA
   | RESET
   | RLIKE
   | ROLLUP
@@ -723,6 +800,7 @@ nonreserved_keywords
   | SIMPLE
   | STABLE
   | START
+  | STATISTICS
   | STORAGE
   | STDDEV_POP
   | STDDEV_SAMP
@@ -739,10 +817,14 @@ nonreserved_keywords
   | TYPE
   | UNKNOWN
   | UNLOGGED
+  | USER
+  | VALID
+  | VALIDATE
   | VALUES
   | VAR_POP
   | VAR_SAMP
   | VARYING
+  | VERSION
   | VOLATILE
   | WEEK
   | WINDOW
@@ -770,6 +852,7 @@ nonreserved_keywords
   | INT4
   | INT8
   | INTEGER
+  | INTERVAL
   | NCHAR
   | NUMERIC
   | NVARCHAR
@@ -869,6 +952,7 @@ character_string_type
   | CHAR VARYING type_length?
   | VARCHAR type_length?
   | TEXT
+  | INTERVAL
   ;
 
 type_length
@@ -973,6 +1057,7 @@ nonparenthesized_value_expression_primary
   | case_expression
   | cast_specification
   | routine_invocation
+  | NULL
   ;
 
 /*

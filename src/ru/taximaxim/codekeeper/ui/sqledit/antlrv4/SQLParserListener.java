@@ -241,16 +241,6 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitRow_value_constructor_predicand(@NotNull SQLParser.Row_value_constructor_predicandContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SQLParser#bit_type}.
-	 * @param ctx the parse tree
-	 */
-	void enterBit_type(@NotNull SQLParser.Bit_typeContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SQLParser#bit_type}.
-	 * @param ctx the parse tree
-	 */
-	void exitBit_type(@NotNull SQLParser.Bit_typeContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SQLParser#precision_param}.
 	 * @param ctx the parse tree
 	 */
@@ -260,6 +250,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitPrecision_param(@NotNull SQLParser.Precision_paramContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#bit_type}.
+	 * @param ctx the parse tree
+	 */
+	void enterBit_type(@NotNull SQLParser.Bit_typeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#bit_type}.
+	 * @param ctx the parse tree
+	 */
+	void exitBit_type(@NotNull SQLParser.Bit_typeContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#drop_table_statement}.
 	 * @param ctx the parse tree
@@ -321,6 +321,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitIndividual_hash_partition(@NotNull SQLParser.Individual_hash_partitionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#with_storage_parameter}.
+	 * @param ctx the parse tree
+	 */
+	void enterWith_storage_parameter(@NotNull SQLParser.With_storage_parameterContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#with_storage_parameter}.
+	 * @param ctx the parse tree
+	 */
+	void exitWith_storage_parameter(@NotNull SQLParser.With_storage_parameterContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#boolean_test}.
 	 * @param ctx the parse tree
 	 */
@@ -381,16 +391,6 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitArray(@NotNull SQLParser.ArrayContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SQLParser#unsigned_value_specification}.
-	 * @param ctx the parse tree
-	 */
-	void enterUnsigned_value_specification(@NotNull SQLParser.Unsigned_value_specificationContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SQLParser#unsigned_value_specification}.
-	 * @param ctx the parse tree
-	 */
-	void exitUnsigned_value_specification(@NotNull SQLParser.Unsigned_value_specificationContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SQLParser#table_constraint}.
 	 * @param ctx the parse tree
 	 */
@@ -400,6 +400,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitTable_constraint(@NotNull SQLParser.Table_constraintContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#unsigned_value_specification}.
+	 * @param ctx the parse tree
+	 */
+	void enterUnsigned_value_specification(@NotNull SQLParser.Unsigned_value_specificationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#unsigned_value_specification}.
+	 * @param ctx the parse tree
+	 */
+	void exitUnsigned_value_specification(@NotNull SQLParser.Unsigned_value_specificationContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#network_type}.
 	 * @param ctx the parse tree
@@ -861,6 +871,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitQuery_primary(@NotNull SQLParser.Query_primaryContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#table_column_definition}.
+	 * @param ctx the parse tree
+	 */
+	void enterTable_column_definition(@NotNull SQLParser.Table_column_definitionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#table_column_definition}.
+	 * @param ctx the parse tree
+	 */
+	void exitTable_column_definition(@NotNull SQLParser.Table_column_definitionContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#schema_alter}.
 	 * @param ctx the parse tree
 	 */
@@ -1111,6 +1131,26 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitTable_reference(@NotNull SQLParser.Table_referenceContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#table_action}.
+	 * @param ctx the parse tree
+	 */
+	void enterTable_action(@NotNull SQLParser.Table_actionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#table_action}.
+	 * @param ctx the parse tree
+	 */
+	void exitTable_action(@NotNull SQLParser.Table_actionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#table_attribute_option}.
+	 * @param ctx the parse tree
+	 */
+	void enterTable_attribute_option(@NotNull SQLParser.Table_attribute_optionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#table_attribute_option}.
+	 * @param ctx the parse tree
+	 */
+	void exitTable_attribute_option(@NotNull SQLParser.Table_attribute_optionContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#case_abbreviation}.
 	 * @param ctx the parse tree
 	 */
@@ -1231,16 +1271,6 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitWhere_clause(@NotNull SQLParser.Where_clauseContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SQLParser#field_element}.
-	 * @param ctx the parse tree
-	 */
-	void enterField_element(@NotNull SQLParser.Field_elementContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SQLParser#field_element}.
-	 * @param ctx the parse tree
-	 */
-	void exitField_element(@NotNull SQLParser.Field_elementContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SQLParser#non_join_query_term}.
 	 * @param ctx the parse tree
 	 */
@@ -1250,6 +1280,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitNon_join_query_term(@NotNull SQLParser.Non_join_query_termContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#field_element}.
+	 * @param ctx the parse tree
+	 */
+	void enterField_element(@NotNull SQLParser.Field_elementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#field_element}.
+	 * @param ctx the parse tree
+	 */
+	void exitField_element(@NotNull SQLParser.Field_elementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#null_ordering}.
 	 * @param ctx the parse tree
@@ -1390,6 +1430,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitIndex_statement(@NotNull SQLParser.Index_statementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#alter_table_statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterAlter_table_statement(@NotNull SQLParser.Alter_table_statementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#alter_table_statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitAlter_table_statement(@NotNull SQLParser.Alter_table_statementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#primary_datetime_field}.
 	 * @param ctx the parse tree
@@ -1840,6 +1890,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitRow_subquery(@NotNull SQLParser.Row_subqueryContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#table_constraint_using_index}.
+	 * @param ctx the parse tree
+	 */
+	void enterTable_constraint_using_index(@NotNull SQLParser.Table_constraint_using_indexContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#table_constraint_using_index}.
+	 * @param ctx the parse tree
+	 */
+	void exitTable_constraint_using_index(@NotNull SQLParser.Table_constraint_using_indexContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#select_sublist}.
 	 * @param ctx the parse tree

@@ -3,8 +3,6 @@ package ru.taximaxim.codekeeper.ui.sqledit.antlrv4;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.antlr.v4.parse.ANTLRParser.parserRule_return;
-
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.DBObjectsLocation;
 import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Create_extension_statementContext;
 import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Create_function_statementContext;
