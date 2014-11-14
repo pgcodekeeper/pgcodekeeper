@@ -17,12 +17,17 @@ import cz.startnet.utils.pgdiff.Main;
 public class ApplicationStandalone implements IApplication {
 
     private static final String APGDIFF_TO_CONSOLE_MODE = "--apgdiff";
+    private static final String EXECUTABLE_NAME = "pgcodekeeper-standalone";
     
     @Override
     public Object start(IApplicationContext context) throws Exception {
         String[] pgCommands = getApgdiffArguments();
         if (pgCommands != null) {
             callApgdiffMain(pgCommands);
+        } else {
+            System.err.println("Usage: " + 
+                    EXECUTABLE_NAME + ' ' + APGDIFF_TO_CONSOLE_MODE +
+                    " apgdiff_arguments");
         }
         return IApplication.EXIT_OK;
     }

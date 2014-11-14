@@ -79,9 +79,10 @@
                 </plugins>
             </build>
         </profile>
+
         <profile>
-            <id>jenkins</id>
-            <!-- disable product materialization -->
+            <id>deploy-standalone</id>
+            <!-- disable updatesite deployment when deploying standalone -->
         </profile>
     </profiles>
 </project>
