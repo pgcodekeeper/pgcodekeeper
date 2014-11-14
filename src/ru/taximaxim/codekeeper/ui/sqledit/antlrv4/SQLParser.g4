@@ -72,10 +72,13 @@ schema_create
       | revoke_statement
       | set_statement
       | grant_statement
+    | create_language_statement
     ;
     
 schema_alter
     : alter_function_statement
+        | alter_schema_statement
+        | alter_language_statement
     ;
     
 alter_function_statement
@@ -87,6 +90,16 @@ alter_function_statement
         OWNER TO new_owner=identifier
     | ALTER FUNCTION name=schema_qualified_name function_parameters
         SET SCHEMA new_schema=schema_qualified_name
+    ;
+    
+alter_schema_statement
+    : ALTER SCHEMA name=identifier RENAME TO new_name=identifier
+    | ALTER SCHEMA name=identifier OWNER TO new_owner=identifier
+    ;
+
+alter_language_statement
+    : ALTER (PROCEDURAL)? LANGUAGE name=identifier RENAME TO new_name=identifier
+    | ALTER (PROCEDURAL)? LANGUAGE name=identifier OWNER TO new_owner=identifier
     ;
     
 function_action
@@ -112,6 +125,12 @@ index_statement
  create_extension_statement
     : CREATE EXTENSION (IF NOT EXISTS)? name=identifier (WITH)?
          (SCHEMA schema_name=identifier)? (VERSION version=identifier)? (FROM old_version=identifier)?
+    ;
+    
+create_language_statement
+    : CREATE (OR REPLACE)? (PROCEDURAL)? LANGUAGE name=identifier
+    | CREATE (OR REPLACE)? (TRUSTED)? (PROCEDURAL)? LANGUAGE name=identifier
+        HANDLER call_handler=schema_qualified_name (INLINE inline_handler=schema_qualified_name)? (VALIDATOR valfunction=schema_qualified_name)?
     ;
     
 set_statement
@@ -598,7 +617,8 @@ drop_table_statement
 */
 
 identifier
-  : (DOUBLE_QUOTE)? Identifier (DOUBLE_QUOTE)?
+  : Identifier
+  | QuotedIdentifier
   | (DOUBLE_QUOTE)? nonreserved_keywords (DOUBLE_QUOTE)? 
   ;
 

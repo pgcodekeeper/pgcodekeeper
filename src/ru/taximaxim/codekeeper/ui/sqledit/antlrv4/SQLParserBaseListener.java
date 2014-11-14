@@ -187,6 +187,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterCreate_language_statement(@NotNull SQLParser.Create_language_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCreate_language_statement(@NotNull SQLParser.Create_language_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterLike_option(@NotNull SQLParser.Like_optionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1303,18 +1315,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterTable_reference(@NotNull SQLParser.Table_referenceContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitTable_reference(@NotNull SQLParser.Table_referenceContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterTable_or_query_name(@NotNull SQLParser.Table_or_query_nameContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1322,6 +1322,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitTable_or_query_name(@NotNull SQLParser.Table_or_query_nameContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterTable_reference(@NotNull SQLParser.Table_referenceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitTable_reference(@NotNull SQLParser.Table_referenceContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1759,18 +1771,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAnd_predicate(@NotNull SQLParser.And_predicateContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAnd_predicate(@NotNull SQLParser.And_predicateContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterQuery_specification(@NotNull SQLParser.Query_specificationContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1778,6 +1778,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitQuery_specification(@NotNull SQLParser.Query_specificationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAnd_predicate(@NotNull SQLParser.And_predicateContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAnd_predicate(@NotNull SQLParser.And_predicateContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1826,6 +1838,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitCreate_schema_statement(@NotNull SQLParser.Create_schema_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAlter_schema_statement(@NotNull SQLParser.Alter_schema_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAlter_schema_statement(@NotNull SQLParser.Alter_schema_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2762,6 +2786,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitMethod_specifier(@NotNull SQLParser.Method_specifierContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAlter_language_statement(@NotNull SQLParser.Alter_language_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAlter_language_statement(@NotNull SQLParser.Alter_language_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -172,6 +172,7 @@ GRANT: G R A N T;
 GROUP : G R O U P;
 
 HAVING : H A V I N G;
+HANDLER: H A N D L E R;
 
 IF: I F;
 ILIKE : I L I K E;
@@ -181,6 +182,7 @@ IN : I N;
 INCLUDING: I N C L U D I N G;
 INHERITS: I N H E R I T S;
 INITIALLY: I N I T I A L L Y;
+INLINE: I N L I N E;
 INNER : I N N E R;
 INTERSECT : I N T E R S E C T;
 INTO : I N T O;
@@ -246,6 +248,7 @@ TEMP: T E M P;
 TEMPORARY: T E M P O R A R Y;
 THEN : T H E N;
 TRAILING : T R A I L I N G;
+TRUSTED: T R U S T E D;
 TRIGGER: T R I G G E R;
 TRUE : T R U E;
 TRUNCATE: T R U N C A T E;
@@ -256,6 +259,7 @@ UPDATE: U P D A T E;
 USAGE: U S A G E;
 USING : U S I N G;
 
+VALIDATOR: V A L I D A T O R;
 VARIADIC: V A R I A D I C;
 VIEW: V I E W;
 
@@ -544,14 +548,45 @@ LineComment
 */
 
 Identifier
-  : Regular_Identifier
-  ;
-
+    : IdentifierStartChar IdentifierChar*
+    ;
 fragment
-Regular_Identifier
-  : ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|Digit|'_')*
-  ;
+IdentifierStartChar
+    : // these are the valid identifier start characters below 0x7F
+    [a-zA-Z_]
+    | // these are the valid characters from 0x80 to 0xFF
+    [\u00AA\u00B5\u00BA\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]
+    | // these are the letters above 0xFF which only need a single UTF-16 code unit
+    [\u0100-\uD7FF\uE000-\uFFFF] {Character.isLetter((char)_input.LA(-1))}?
+    | // letters which require multiple UTF-16 code units
+    [\uD800-\uDBFF] [\uDC00-\uDFFF] {Character.isLetter(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}?
+    ;
+fragment
+IdentifierChar
+    : StrictIdentifierChar
+    | '$'
+    ;
+fragment
+StrictIdentifierChar
+    : IdentifierStartChar
+    | [0-9]
+    ;
 
+/* Quoted Identifiers
+*
+* These are divided into four separate tokens, allowing distinction of valid quoted identifiers from invalid quoted
+* identifiers without sacrificing the ability of the lexer to reliably recover from lexical errors in the input.
+*/
+QuotedIdentifier
+    : UnterminatedQuotedIdentifier '"'
+    ;
+// This is a quoted identifier which only contains valid characters but is not terminated
+UnterminatedQuotedIdentifier
+    : '"'
+    ( '""'
+    | ~[\u0000"]
+    )*
+    ;
 /*
 ===============================================================================
  Literal
