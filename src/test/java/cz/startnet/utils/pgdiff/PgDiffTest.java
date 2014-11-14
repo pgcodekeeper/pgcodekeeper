@@ -263,7 +263,6 @@ public class PgDiffTest {
     /**
      * Value for the same named command line argument.
      */
-    private final boolean addTransaction;
     /**
      * Value for the same named command line argument.
      */
@@ -278,7 +277,6 @@ public class PgDiffTest {
      *
      * @param fileNameTemplate         {@link #fileNameTemplate}
      * @param addDefaults              {@link #addDefaults}
-     * @param addTransaction           {@link #addTransaction}
      * @param ignoreFunctionWhitespace {@link #ignoreFunctionWhitespace}
      * @param ignoreStartWith          {@link #ignoreStartWith}
      */
@@ -289,7 +287,6 @@ public class PgDiffTest {
         super();
         this.fileNameTemplate = fileNameTemplate;
         this.addDefaults = addDefaults;
-        this.addTransaction = addTransaction;
         this.ignoreFunctionWhitespace = ignoreFunctionWhitespace;
         this.ignoreStartWith = ignoreStartWith;
         Locale.setDefault(Locale.ENGLISH);

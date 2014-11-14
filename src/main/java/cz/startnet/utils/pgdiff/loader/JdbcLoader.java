@@ -49,15 +49,15 @@ public class JdbcLoader {
     /*
      * Trigger firing conditions
      */
-    private final int TRIGGER_TYPE_ROW = 1 << 0;
-    private final int TRIGGER_TYPE_BEFORE = 1 << 1;
-    private final int TRIGGER_TYPE_INSERT = 1 << 2;
-    private final int TRIGGER_TYPE_DELETE = 1 << 3;
-    private final int TRIGGER_TYPE_UPDATE = 1 << 4;
-    private final int TRIGGER_TYPE_TRUNCATE = 1 << 5;
-    private final int TRIGGER_TYPE_INSTEAD = 1 << 6;
+    public static final int TRIGGER_TYPE_ROW = 1 << 0;
+    public static final int TRIGGER_TYPE_BEFORE = 1 << 1;
+    public static final int TRIGGER_TYPE_INSERT = 1 << 2;
+    public static final int TRIGGER_TYPE_DELETE = 1 << 3;
+    public static final int TRIGGER_TYPE_UPDATE = 1 << 4;
+    public static final int TRIGGER_TYPE_TRUNCATE = 1 << 5;
+    public static final int TRIGGER_TYPE_INSTEAD = 1 << 6;
     
-    private final int DEFAULT_OBJECTS_COUNT = 100;
+    private static final int DEFAULT_OBJECTS_COUNT = 100;
     /*
      * Prepared statements to be executed
      */

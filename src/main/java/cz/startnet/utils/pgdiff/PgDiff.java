@@ -39,8 +39,6 @@ import cz.startnet.utils.pgdiff.schema.PgView;
  */
 public class PgDiff {
 
-    private static DirectedGraph<PgStatement, DefaultEdge> oldDepcyGraph;
-    private static DirectedGraph<PgStatement, DefaultEdge> newDepcyGraph;
     private static DepcyGraph depcyOld;
     private static DepcyGraph depcyNew;
     
@@ -142,7 +140,6 @@ public class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
         // since we cannot into OOP here - null the global vars at least
-        oldDepcyGraph = newDepcyGraph = null;
         depcyOld = depcyNew = null;
         
         PgDiffScript script = new PgDiffScript();
@@ -168,8 +165,6 @@ public class PgDiff {
             depcyOld = new DepcyGraph(new PgDatabase());
             depcyNew = new DepcyGraph(new PgDatabase());
         }
-        oldDepcyGraph = depcyOld.getGraph();
-        newDepcyGraph = depcyNew.getGraph();
         
         if (oldDatabase.getComment() == null
                 && newDatabase.getComment() != null
@@ -286,7 +281,7 @@ public class PgDiff {
      */
     public static Set<PgStatement> getDependenciesSet(PgStatement child,
             Set<PgStatement> result, boolean firstLevelSearchOnly){
-        return getDependencies(child, result, firstLevelSearchOnly, newDepcyGraph);
+        return getDependencies(child, result, firstLevelSearchOnly, depcyNew.getGraph());
     }
     
     /**

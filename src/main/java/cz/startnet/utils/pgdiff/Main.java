@@ -33,7 +33,6 @@ public class Main {
      */
     public static void main(final String[] args)
             throws UnsupportedEncodingException, IOException {
-        @SuppressWarnings("resource")
         final PrintWriter writer = new PrintWriter(System.out, true);
         final PgDiffArguments arguments = new PgDiffArguments();
 

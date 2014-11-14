@@ -5,27 +5,26 @@ import java.util.Map;
 
 public class PgType{
     
-    final private static Map<String, String> DATA_TYPE_ALIASES = new HashMap<String, String>(){
-        {
-            put("int8","bigint");
-            put("serial8","bigserial");
-            put("varbit","bit varying");
-            put("bool","boolean");
-            put("char","character");
-            put("varchar","character varying");
-            put("float8","double precision");
-            put("int","integer");
-            put("int4","integer");
-            put("float4","real");
-            put("int2","smallint");
-            put("serial2","smallserial");
-            put("serial4","serial");
-            put("bigserial","bigint");
-            put("serial","integer");
-            put("timetz","time with time zone");
-            put("timestamptz","timestamp with time zone");
-        }
-    };
+    private static final Map<String, String> DATA_TYPE_ALIASES = new HashMap<>();
+    static {
+        DATA_TYPE_ALIASES.put("int8","bigint");
+        DATA_TYPE_ALIASES.put("serial8","bigserial");
+        DATA_TYPE_ALIASES.put("varbit","bit varying");
+        DATA_TYPE_ALIASES.put("bool","boolean");
+        DATA_TYPE_ALIASES.put("char","character");
+        DATA_TYPE_ALIASES.put("varchar","character varying");
+        DATA_TYPE_ALIASES.put("float8","double precision");
+        DATA_TYPE_ALIASES.put("int","integer");
+        DATA_TYPE_ALIASES.put("int4","integer");
+        DATA_TYPE_ALIASES.put("float4","real");
+        DATA_TYPE_ALIASES.put("int2","smallint");
+        DATA_TYPE_ALIASES.put("serial2","smallserial");
+        DATA_TYPE_ALIASES.put("serial4","serial");
+        DATA_TYPE_ALIASES.put("bigserial","bigint");
+        DATA_TYPE_ALIASES.put("serial","integer");
+        DATA_TYPE_ALIASES.put("timetz","time with time zone");
+        DATA_TYPE_ALIASES.put("timestamptz","timestamp with time zone");
+    }
     
     private String typmodout;
     private String typeName;
