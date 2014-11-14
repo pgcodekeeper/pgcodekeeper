@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -192,8 +193,7 @@ public abstract class DiffPresentationPane extends Composite {
         containerSrc.setLayout(gl);
 
         gd = new GridData(SWT.FILL, SWT.FILL, false, true);
-        gd.minimumWidth = 300;
-        gd.widthHint = 300;
+        gd.widthHint = new PixelConverter(parent).convertWidthInCharsToPixels(45);
         containerSrc.setLayoutData(gd);
 
         Group grpSrc = new Group(containerSrc, SWT.NONE);
