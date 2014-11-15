@@ -70,7 +70,6 @@ public interface UIConsts {
         String DB_HOST = "prefDbHost"; //$NON-NLS-1$
         String DB_PORT = "prefDbPort"; //$NON-NLS-1$
         String DB_USER = "prefDbUser"; //$NON-NLS-1$
-        String DB_PASS = "prefDbPass"; //$NON-NLS-1$
         String REPO_SUBDIR_PATH = "prefWorkingDirPath"; //$NON-NLS-1$
         String REPO_ROOT_PATH = "prefRepoPath"; //$NON-NLS-1$
     }
