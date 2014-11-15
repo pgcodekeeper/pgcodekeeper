@@ -307,7 +307,7 @@ public abstract class DiffPresentationPane extends Composite {
         });
     }
 
-    public void openElementInEditor(TreeElement el, PgDbProject proj){
+    private void openElementInEditor(TreeElement el, PgDbProject proj){
         if (el != null && el.getSide() != (isProjSrc ? DiffSide.RIGHT : DiffSide.LEFT)){
             PgDatabase projectDb = isProjSrc ? dbSource.getDbObject() : dbTarget.getDbObject();
             File projectDir = proj.getPathToProject().toFile();

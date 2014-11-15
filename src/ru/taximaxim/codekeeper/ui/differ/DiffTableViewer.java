@@ -731,6 +731,28 @@ public class DiffTableViewer extends Composite {
                     }
                 }
             });
+            menuMgr.add(new Action(Messages.diffTableViewer_mark_selected_elements) {
+
+                @Override
+                public void run() {
+                    @SuppressWarnings("unchecked")
+                    List<TreeElement> selected = (List<TreeElement>) 
+                                ((IStructuredSelection) viewer.getSelection()).toList();
+                    HashSet<TreeElement> selectedSet = new HashSet<TreeElement>(selected);
+                    setCheckedElements(selectedSet, true);
+                }
+            });
+            menuMgr.add(new Action(Messages.diffTableViewer_unmark_selected_elements) {
+
+                @Override
+                public void run() {
+                    @SuppressWarnings("unchecked")
+                    List<TreeElement> selected = (List<TreeElement>) 
+                                ((IStructuredSelection) viewer.getSelection()).toList();
+                    HashSet<TreeElement> selectedSet = new HashSet<TreeElement>(selected);
+                    setCheckedElements(selectedSet, false);
+                }
+            });
             menuMgr.add(new Separator());
         }
         menuMgr.add(new Action(Messages.diffTableViewer_open_diff_in_new_window) {
