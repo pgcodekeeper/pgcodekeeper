@@ -1,7 +1,10 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -10,7 +13,10 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -27,9 +33,16 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
 import org.osgi.service.prefs.BackingStoreException;
 
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -283,8 +296,77 @@ public abstract class DiffPresentationPane extends Composite {
 
         diffPane = new DiffPaneViewer(sashOuter, SWT.NONE, isProjSrc ? dbSource
                 : dbTarget, isProjSrc ? dbTarget : dbSource, !isProjSrc);
+        
+        diffTable.viewer.addDoubleClickListener(new IDoubleClickListener() {
+
+            @Override
+            public void doubleClick(DoubleClickEvent e) {
+                TreeElement el = (TreeElement) ((IStructuredSelection) e.getSelection()).getFirstElement();
+                openElementInEditor(el, proj);
+            }
+        });
     }
 
+    public void openElementInEditor(TreeElement el, PgDbProject proj){
+        if (el != null && el.getSide() != (isProjSrc ? DiffSide.RIGHT : DiffSide.LEFT)){
+            PgDatabase projectDb = isProjSrc ? dbSource.getDbObject() : dbTarget.getDbObject();
+            File projectDir = proj.getPathToProject().toFile();
+            File file = new File(projectDir, "SCHEMA");
+            
+            TreeElement parentEl = el.getParent().getParent();
+            String parentExportedFileName = parentEl == null ? 
+                    null : ModelExporter.getExportedFilename(parentEl.getPgStatement(projectDb));
+                    
+            switch(el.getType()){
+                case EXTENSION:
+                    file = new File(projectDir, "EXTENSION");
+                    break;
+                case SEQUENCE:
+                    file = new File(new File(file, parentExportedFileName), "SEQUENCE");
+                    break;
+                case VIEW:
+                    file = new File(new File(file, parentExportedFileName), "VIEW");
+                    break;
+                case TABLE:
+                    file = new File(new File(file, parentExportedFileName), "TABLE");
+                    break;
+                case FUNCTION:
+                    file = new File(new File(file, parentExportedFileName), "FUNCTION");
+                    break;
+                case CONSTRAINT:
+                case INDEX:
+                case TRIGGER:
+                    el = parentEl;
+                    String schemaName = ModelExporter.getExportedFilename(
+                            parentEl.getParent().getParent().getPgStatement(projectDb));
+                    file = new File(new File(file, schemaName), "TABLE");
+                    break;
+                default:
+                    break;
+            }
+            
+            file = new File(file, 
+                    ModelExporter.getExportedFilename(el.getPgStatement(projectDb)) + ".sql");
+            
+            if (file.exists() && file.isFile()) {
+                Log.log(Log.LOG_WARNING, "Opening editor for file " + file.getAbsolutePath());
+                
+                IFileStore fileStore = EFS.getLocalFileSystem().getStore(file.toURI());
+                IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+             
+                try {
+                    IDE.openEditorOnFileStore( page, fileStore );
+                } catch (PartInitException e) {
+                    throw new IllegalStateException(Messages.could_not_open_editor_for_file + 
+                            file.getAbsolutePath(), e);
+                }
+            } else {
+                Log.log(Log.LOG_WARNING, "Editor will not be opened for file " + 
+                        file.getAbsolutePath() + " because it is either nonexistent or not a file.");
+            }
+        }
+    }
+    
     private void saveDBPrefs(IEclipsePreferences projProps) throws BackingStoreException {
         projProps.put(PROJ_PREF.SOURCE, selectedDBSource.toString());
         switch (selectedDBSource) {

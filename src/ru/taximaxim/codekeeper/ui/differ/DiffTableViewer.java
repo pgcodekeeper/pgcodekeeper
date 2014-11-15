@@ -31,10 +31,8 @@ import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckStateProvider;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -193,20 +191,6 @@ public class DiffTableViewer extends Composite {
                 getViewerMenu().createContextMenu(viewer.getControl()));
         
         if (!viewOnly) {
-            viewer.addDoubleClickListener(new IDoubleClickListener() {
-
-                @Override
-                public void doubleClick(DoubleClickEvent e) {
-                    TreeElement el = (TreeElement) ((IStructuredSelection) e
-                            .getSelection()).getFirstElement();
-                    if (el != null) {
-                        boolean newChecked = !elements.get(el);
-                        viewer.setChecked(el, newChecked);
-                        checkListener.setElementChecked(el, newChecked);
-                    }
-                }
-            });
-
             viewer.addCheckStateListener(checkListener);
 
             viewer.setCheckStateProvider(new ICheckStateProvider() {

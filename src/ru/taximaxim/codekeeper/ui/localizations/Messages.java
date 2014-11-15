@@ -124,6 +124,7 @@ public class Messages extends NLS {
     public static String diffTreeViewer_select_subtree;
     public static String treeDiffer_building_diff_tree;
     public static String reading_db_from_jdbc;
+    public static String could_not_open_editor_for_file;
 
     // ui.externalcalls
     public static String pgDumper_bad_pg_dump_version_output;
