@@ -351,7 +351,6 @@ public class DiffTreeViewer extends Composite {
         return filterDiffTree(tree);
     }
     
-    // TODO move away from using GUI logic and use TreeElement.getFilteredCopy instead
     private TreeElement filterDiffTree(TreeElement tree) {
         if(tree.getType() != DbObjType.CONTAINER 
                 && !viewer.getChecked(tree)
