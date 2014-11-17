@@ -79,6 +79,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterAbbreviated_grant_or_revoke(@NotNull SQLParser.Abbreviated_grant_or_revokeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAbbreviated_grant_or_revoke(@NotNull SQLParser.Abbreviated_grant_or_revokeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterAggregate_function(@NotNull SQLParser.Aggregate_functionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -542,6 +554,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitParam_clause(@NotNull SQLParser.Param_clauseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAlter_default_privileges(@NotNull SQLParser.Alter_default_privilegesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAlter_default_privileges(@NotNull SQLParser.Alter_default_privilegesContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1339,6 +1363,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterTable_reference_list_paren(@NotNull SQLParser.Table_reference_list_parenContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitTable_reference_list_paren(@NotNull SQLParser.Table_reference_list_parenContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterTable_or_query_name(@NotNull SQLParser.Table_or_query_nameContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1999,6 +2035,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterCreate_event_trigger(@NotNull SQLParser.Create_event_triggerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCreate_event_trigger(@NotNull SQLParser.Create_event_triggerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterSet_qualifier(@NotNull SQLParser.Set_qualifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2203,18 +2251,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterGrant_statement(@NotNull SQLParser.Grant_statementContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitGrant_statement(@NotNull SQLParser.Grant_statementContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterSql(@NotNull SQLParser.SqlContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2222,6 +2258,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSql(@NotNull SQLParser.SqlContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterGrant_statement(@NotNull SQLParser.Grant_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitGrant_statement(@NotNull SQLParser.Grant_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

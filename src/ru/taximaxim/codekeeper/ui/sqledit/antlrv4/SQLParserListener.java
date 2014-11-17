@@ -61,6 +61,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitSchema_qualified_name(@NotNull SQLParser.Schema_qualified_nameContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#abbreviated_grant_or_revoke}.
+	 * @param ctx the parse tree
+	 */
+	void enterAbbreviated_grant_or_revoke(@NotNull SQLParser.Abbreviated_grant_or_revokeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#abbreviated_grant_or_revoke}.
+	 * @param ctx the parse tree
+	 */
+	void exitAbbreviated_grant_or_revoke(@NotNull SQLParser.Abbreviated_grant_or_revokeContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#aggregate_function}.
 	 * @param ctx the parse tree
 	 */
@@ -450,6 +460,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitParam_clause(@NotNull SQLParser.Param_clauseContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#alter_default_privileges}.
+	 * @param ctx the parse tree
+	 */
+	void enterAlter_default_privileges(@NotNull SQLParser.Alter_default_privilegesContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#alter_default_privileges}.
+	 * @param ctx the parse tree
+	 */
+	void exitAlter_default_privileges(@NotNull SQLParser.Alter_default_privilegesContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#index_parameters}.
 	 * @param ctx the parse tree
@@ -1111,6 +1131,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitCommon_value_expression(@NotNull SQLParser.Common_value_expressionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#table_reference_list_paren}.
+	 * @param ctx the parse tree
+	 */
+	void enterTable_reference_list_paren(@NotNull SQLParser.Table_reference_list_parenContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#table_reference_list_paren}.
+	 * @param ctx the parse tree
+	 */
+	void exitTable_reference_list_paren(@NotNull SQLParser.Table_reference_list_parenContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#table_or_query_name}.
 	 * @param ctx the parse tree
 	 */
@@ -1661,6 +1691,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitCreate_extension_statement(@NotNull SQLParser.Create_extension_statementContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#create_event_trigger}.
+	 * @param ctx the parse tree
+	 */
+	void enterCreate_event_trigger(@NotNull SQLParser.Create_event_triggerContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#create_event_trigger}.
+	 * @param ctx the parse tree
+	 */
+	void exitCreate_event_trigger(@NotNull SQLParser.Create_event_triggerContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#set_qualifier}.
 	 * @param ctx the parse tree
 	 */
@@ -1831,16 +1871,6 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitTable_subquery(@NotNull SQLParser.Table_subqueryContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SQLParser#grant_statement}.
-	 * @param ctx the parse tree
-	 */
-	void enterGrant_statement(@NotNull SQLParser.Grant_statementContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SQLParser#grant_statement}.
-	 * @param ctx the parse tree
-	 */
-	void exitGrant_statement(@NotNull SQLParser.Grant_statementContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SQLParser#sql}.
 	 * @param ctx the parse tree
 	 */
@@ -1850,6 +1880,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitSql(@NotNull SQLParser.SqlContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#grant_statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterGrant_statement(@NotNull SQLParser.Grant_statementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#grant_statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitGrant_statement(@NotNull SQLParser.Grant_statementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#outer_join_type_part2}.
 	 * @param ctx the parse tree

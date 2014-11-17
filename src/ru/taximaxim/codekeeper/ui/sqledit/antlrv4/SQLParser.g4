@@ -73,6 +73,7 @@ schema_create
       | set_statement
       | grant_statement
     | create_language_statement
+    | create_event_trigger
     ;
     
 schema_alter
@@ -80,6 +81,7 @@ schema_alter
         | alter_schema_statement
         | alter_language_statement
         | alter_table_statement
+        | alter_default_privileges
     ;
     
 alter_function_statement
@@ -177,6 +179,53 @@ function_action
         RESET ALL 
     ;
 
+alter_default_privileges
+    : ALTER DEFAULT PRIVILEGES
+    (FOR (ROLE | USER) (target_role=identifier(COMMA)?)+)?
+    (IN SCHEMA (schema_name=identifier(COMMA)?)+)?
+    abbreviated_grant_or_revoke
+    ;
+
+abbreviated_grant_or_revoke
+    : GRANT (((SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER)(COMMA)?)+
+        | ALL (PRIVILEGES)?)
+        ON TABLES
+        grant_to_rule
+
+    | GRANT (((USAGE | SELECT | UPDATE)(COMMA)?)+ | ALL (PRIVILEGES)?)
+        ON SEQUENCES
+        grant_to_rule
+
+    | GRANT (EXECUTE | ALL (PRIVILEGES)?)
+        ON FUNCTIONS
+        grant_to_rule
+
+    | GRANT (USAGE | ALL (PRIVILEGES)?)
+        ON TYPES
+        grant_to_rule
+        
+    | REVOKE (GRANT OPTION FOR)?
+        (((SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER) (COMMA)?)+
+        | ALL (PRIVILEGES)?)
+        ON TABLES
+        revoke_from_cascade_restrict
+
+    | REVOKE (GRANT OPTION FOR)?
+        (((USAGE | SELECT | UPDATE)(COMMA)?)+ | ALL (PRIVILEGES)?)
+        ON SEQUENCES
+        revoke_from_cascade_restrict
+
+    | REVOKE (GRANT OPTION FOR)?
+        (EXECUTE | ALL (PRIVILEGES)?)
+        ON FUNCTIONS
+        revoke_from_cascade_restrict
+        
+    | REVOKE (GRANT OPTION FOR)?
+        (USAGE | ALL (PRIVILEGES)?)
+        ON TYPES
+        revoke_from_cascade_restrict
+    ;
+
 index_statement
   : CREATE (u=UNIQUE)? INDEX n=identifier ON t=schema_qualified_name (m=method_specifier)?
     LEFT_PAREN s=sort_specifier_list RIGHT_PAREN p=param_clause?
@@ -191,6 +240,13 @@ create_language_statement
     : CREATE (OR REPLACE)? (PROCEDURAL)? LANGUAGE name=identifier
     | CREATE (OR REPLACE)? (TRUSTED)? (PROCEDURAL)? LANGUAGE name=identifier
         HANDLER call_handler=schema_qualified_name (INLINE inline_handler=schema_qualified_name)? (VALIDATOR valfunction=schema_qualified_name)?
+    ;
+
+create_event_trigger
+    : CREATE EVENT TRIGGER name=schema_qualified_name
+        ON event=schema_qualified_name
+        (WHEN filter_variable=schema_qualified_name (IN LEFT_PAREN (filter_value=Character_String_Literal(COMMA)?)+ RIGHT_PAREN(AND)?)+ )?
+        EXECUTE PROCEDURE funct_name=value_expression
     ;
     
 set_statement
@@ -282,7 +338,7 @@ revoke_from_cascade_restrict
     
 grant_statement
     : 
-    GRANT ((SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER)+
+    GRANT (((SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER)(COMMA)?)+
     | ALL (PRIVILEGES)?)
     ON  (((TABLE)? (tabl_name=schema_qualified_name (COMMA)?)+)
          | (ALL TABLES IN SCHEMA (schem_name=identifier (COMMA)?)+))
@@ -299,7 +355,7 @@ grant_statement
          | ALL SEQUENCES IN SCHEMA (schema_name=identifier(COMMA)?)+ )
     grant_to_rule
     
-    | GRANT ( ((CREATE | CONNECT | TEMPORARY | TEMP)(COMMA)?)+ | ALL (PRIVILEGES)? )
+    | GRANT (((CREATE | CONNECT | TEMPORARY | TEMP)(COMMA)?)+ | ALL (PRIVILEGES)? )
     ON DATABASE (database_name=identifier(COMMA)?)+
     grant_to_rule
     
@@ -522,9 +578,9 @@ table_constraint
         | (FOREIGN KEY LEFT_PAREN 
             (column_name_for_key=identifier(COMMA)?)+ 
           RIGHT_PAREN 
-          REFERENCES reftable=identifier ( LEFT_PAREN (refcolumn=identifier(COMMA)?)+ RIGHT_PAREN )?
-            ((MATCH FULL) | (MATCH PARTIAL) | (MATCH SIMPLE))? 
-            (ON DELETE action_on_delete=action)? (ON UPDATE action_on_update=action)?))
+          REFERENCES reftable=schema_qualified_name ( LEFT_PAREN (refcolumn=identifier(COMMA)?)+ RIGHT_PAREN )?
+            (((MATCH FULL) | (MATCH PARTIAL) | (MATCH SIMPLE)) | 
+            (ON DELETE action_on_delete=action) | (ON UPDATE action_on_update=action))*))
         (DEFERRABLE | (NOT DEFERRABLE))? ((INITIALLY DEFERRED) | (INITIALLY IMMEDIATE))?
     ;
     
@@ -726,6 +782,7 @@ nonreserved_keywords
   | DROP
   | ENABLE
   | EPOCH
+  | EVENT
   | EVERY
   | EXISTS
   | EXTENDED
@@ -815,6 +872,7 @@ nonreserved_keywords
   | TRIM
   | TO
   | TYPE
+  | TYPES
   | UNKNOWN
   | UNLOGGED
   | USER
@@ -1410,9 +1468,14 @@ table_expression
 */
 
 from_clause
-  : FROM table_reference_list
+  : FROM table_reference_list_paren
   ;
 
+
+table_reference_list_paren
+    : LEFT_PAREN table_reference_list_paren RIGHT_PAREN
+    | table_reference_list
+    ;
 table_reference_list
   :table_reference (COMMA table_reference)*
   ;
@@ -1880,7 +1943,7 @@ function_names_for_reserved_words
   ;
 
 function_name
-  : identifier
+  : schema_qualified_name
   | function_names_for_reserved_words
   ;
 
