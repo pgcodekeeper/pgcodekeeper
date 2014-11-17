@@ -8,11 +8,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
-
-import ru.taximaxim.codekeeper.apgdiff.Log;
 
 public class SelectParser {
     
@@ -117,9 +116,6 @@ public class SelectParser {
                 }
             } while (p.expectOptional(","));
             
-            // TODO FROM SELECT вьюха public.v_i18n_resources
-            // FROM JOIN тоже не парсится
-            // FROM {regex}: [(]+
             if (p.expectOptional("FROM")) {
                 do {
                     String withoutParens = removeExcessParens(
@@ -294,9 +290,6 @@ public class SelectParser {
                         // SELECT t1.c1 FROM s1.t1;
                         // thus an alias t1 = s1.t1 is required
                         tableAliases.put(ParserUtils.getObjectName(table), table);
-                        
-                        // TODO существует ли необходиомсть деалиасить таблицы?
-                        // они уже кладутся в селект как table.column
                         
                         // FIXME данный код не детектит случай JOIN table ON | USING ...
                         // данная ветка - для обработки отсутствующего джойн кондишена

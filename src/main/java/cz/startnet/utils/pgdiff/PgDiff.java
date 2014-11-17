@@ -18,7 +18,6 @@ import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -309,41 +308,12 @@ public class PgDiff {
     }
     
     /**
-     * Checks, whether the child is in a subtree of the parent.
-     * <br>
-     * (as trigger would be a child of a table)
-     * 
-     * TODO add more class checking for parent
-     */
-    public static boolean containsChild(PgStatement parent, PgStatement child) {
-        String name = child.getName();
-        if (parent instanceof PgTable){
-            PgTable t = (PgTable)parent;
-            return t.containsConstraint(name) ||
-                   t.containsColumn(name) || 
-                   t.containsIndex(name) || 
-                   t.containsTrigger(name);
-        }else if (parent instanceof PgSchema){
-            PgSchema s = (PgSchema) parent;
-            return s.containsFunction(name) ||
-                   s.containsSequence(name) || 
-                   s.containsTable(name) || 
-                   s.containsView(name);
-        }else{
-            Log.log(Log.LOG_DEBUG, "Error in PgDiff.containsChild: parent is neither "
-                    + "a table nor a schema.\nParent's creation SQL:\n" + parent.getCreationSQL());
-            return true;
-        }
-    }
-
-    /**
      * Creates new extensions.
      * 
      * @param writer      writer the output should be written to
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
-    
     private static void createNewExtensions(final PgDiffScript script, 
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension newExt : newDatabase.getExtensions()) {

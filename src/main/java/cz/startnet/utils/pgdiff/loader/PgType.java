@@ -38,14 +38,16 @@ public class PgType{
      * we do not convert those to simple arrays
      */
     public PgType(String typeName, String typelem, Long typarray, int typlen, String typmodout, String parentSchema) {
-        this.typeName = DATA_TYPE_ALIASES.containsKey(typeName) ? DATA_TYPE_ALIASES.get(typeName) : typeName;
+        if (typlen == -1 && typarray == 0L && !typelem.equals("-")){
+            this.typeName = DATA_TYPE_ALIASES.containsKey(typelem) ? 
+                    DATA_TYPE_ALIASES.get(typelem) : typelem 
+                    + "[]";
+        }else{
+            this.typeName = DATA_TYPE_ALIASES.containsKey(typeName) ? 
+                    DATA_TYPE_ALIASES.get(typeName) : typeName;
+        }
         this.typmodout = typmodout;
         this.parentSchema = parentSchema;
-        
-        if (typlen == -1 && typarray == 0L && !typelem.equals("-")){
-            // TODO should we check whether typelem is in DATA_TYPE_ALIASES?
-            this.typeName = typelem + "[]";
-        }
     }
     
     /**

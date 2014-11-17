@@ -533,11 +533,7 @@ public class JdbcLoader {
         String viewName = res.getString("relname");
         
         String viewDef = res.getString("definition").trim();
-        if (viewDef == null){
-            // TODO throw exception, log, output to console?
-            System.err.println("View without definition (locked): " + viewName);
-            viewDef = "";
-        }else if (viewDef.charAt(viewDef.length() - 1) == ';'){
+        if (viewDef.charAt(viewDef.length() - 1) == ';'){
             viewDef = viewDef.substring(0, viewDef.length() - 1);
         }
         
@@ -937,8 +933,7 @@ public class JdbcLoader {
             }
         }
         
-        // TODO is it correct behaviour on all OS?
-        String definition = res.getString("prosrc").replaceAll("\r\n", "\n");
+        String definition = res.getString("prosrc").replace("\r", "");
         String quote = getStringLiteralDollarQuote(definition);
         body.append("\n    AS ").append(quote).append(definition).append(quote);
         return body.toString();
@@ -977,7 +972,6 @@ public class JdbcLoader {
         
         s.setStartWith(res.getString("start_value"));
 
-        // TODO SELECT cache_value FROM tableName;
         s.setCache(String.valueOf(1));
         
         Integer referenced_column = res.getInt("referenced_column");

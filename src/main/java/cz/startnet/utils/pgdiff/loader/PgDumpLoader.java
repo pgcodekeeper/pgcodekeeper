@@ -61,7 +61,6 @@ public class PgDumpLoader { //NOPMD
     /**
      * Pattern for parsing default schema (search_path).
      */
-    // TODO doesn't satisfy all quoted identifiers (can contain any symbol) 
     private static final Pattern PATTERN_DEFAULT_SCHEMA = Pattern.compile(
             "^SET[\\s]+search_path[\\s]*=[\\s]*\"?([^,\\s\"]+)\"?(?:,[\\s]+.*)?;$",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);

@@ -22,7 +22,6 @@ public class SearchPathHelper {
      */
     public SearchPathHelper(final String unquotedSchemaName) {
         this.schemaName = unquotedSchemaName;
-        // TODO is this search_path setting sufficient ?
         this.searchPath = "SET search_path = "
                 + PgDiffUtils.getQuotedName(unquotedSchemaName, true)
                 + ", pg_catalog;";

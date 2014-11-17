@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
@@ -48,9 +49,10 @@ public class JdbcAclParser {
      * @param owner     Owner name (owner's privileges go first)
      * @return
      */
-    public LinkedHashMap <String, String> parse(String aclArrayAsString, int maxTypes, String order, String owner){
+    public LinkedHashMap<String, String> parse(String aclArrayAsString, int maxTypes, String order, String owner){
         LinkedHashMap<String, String> privileges = new LinkedHashMap<String, String>();
-        ArrayList<String>  acls = new ArrayList<String>(Arrays.asList(aclArrayAsString.replace("{", "").replace("}", "").split(",")));
+        ArrayList<String>  acls = new ArrayList<>(Arrays.asList(
+                aclArrayAsString.replaceAll("[{}]", "").split(Pattern.quote(","))));
         
         // move owner's grants to front
         for (String s : acls){
