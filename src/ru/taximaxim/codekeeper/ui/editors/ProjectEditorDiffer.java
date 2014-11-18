@@ -460,7 +460,7 @@ class DiffPage extends DiffPresentationPane {
                 MessageDialog.INFORMATION, Messages.diffPartDescr_diff_script,
                 Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
                 differ, dbSource.getDbObject().flatten(), mainPrefs);
-        if (selectedDBSource == DBSources.SOURCE_TYPE_DUMP || 
+        if (selectedDBSource == DBSources.SOURCE_TYPE_DB || 
                 selectedDBSource == DBSources.SOURCE_TYPE_JDBC) {
             dialog.setDbParams(dbSrc.txtDbHost.getText(),
                     dbSrc.txtDbPort.getText(), dbSrc.txtDbName.getText(),
