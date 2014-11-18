@@ -1119,7 +1119,7 @@ value_expression_primary
   ;
 
 parenthesized_value_expression
-  : LEFT_PAREN value_expression RIGHT_PAREN
+  : LEFT_PAREN (~(LEFT_PAREN | RIGHT_PAREN) | value_expression)+ RIGHT_PAREN
   ;
 
 nonparenthesized_value_expression_primary
@@ -1722,7 +1722,7 @@ select_sublist
   ;
 
 derived_column
-  : value_expression as_clause?
+  : LEFT_PAREN* value_expression RIGHT_PAREN* as_clause?
   ;
 
 qualified_asterisk
