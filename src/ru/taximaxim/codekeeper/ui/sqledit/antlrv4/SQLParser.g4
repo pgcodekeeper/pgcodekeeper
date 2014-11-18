@@ -606,7 +606,7 @@ column_constraint
     ;
 
 check_boolean_expression
-    : CHECK LEFT_PAREN expression=boolean_value_expression RIGHT_PAREN
+    : CHECK LEFT_PAREN+ expression=value_expression RIGHT_PAREN+
     ;
     
 storage_parameter
@@ -756,6 +756,7 @@ identifier
 nonreserved_keywords
   : ADMIN
   | ALWAYS
+  | ARRAY
   | AVG
   | BETWEEN
   | BY
@@ -1266,7 +1267,12 @@ value_expression
   : common_value_expression
   | row_value_expression
   | boolean_value_expression
+  | array_expression
   ;
+
+array_expression
+    : ARRAY LEFT_BRACKET (value_expression (COMMA)?)+ RIGHT_BRACKET
+    ;
   
 common_value_expression
   : numeric_value_expression

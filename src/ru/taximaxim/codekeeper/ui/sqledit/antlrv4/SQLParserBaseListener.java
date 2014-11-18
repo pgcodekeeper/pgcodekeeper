@@ -1891,6 +1891,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterArray_expression(@NotNull SQLParser.Array_expressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitArray_expression(@NotNull SQLParser.Array_expressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExtract_expression(@NotNull SQLParser.Extract_expressionContext ctx) { }
 	/**
 	 * {@inheritDoc}

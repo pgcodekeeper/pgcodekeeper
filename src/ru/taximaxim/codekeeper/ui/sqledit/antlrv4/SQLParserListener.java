@@ -1571,6 +1571,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitAnd_predicate(@NotNull SQLParser.And_predicateContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#array_expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterArray_expression(@NotNull SQLParser.Array_expressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#array_expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitArray_expression(@NotNull SQLParser.Array_expressionContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#extract_expression}.
 	 * @param ctx the parse tree
 	 */

@@ -282,6 +282,7 @@ WITHOUT: W I T H O U T;
 
 ADMIN: A D M I N;
 ALWAYS: A L W A Y S;
+ARRAY: A R R A Y;
 AVG : A V G;
 
 BETWEEN : B E T W E E N;
@@ -549,6 +550,8 @@ QUOTE : '\'';
 DOUBLE_QUOTE : '"';
 DOLLAR: '$';
 DOUBLE_DOLLAR: '$$';
+LEFT_BRACKET: '[';
+RIGHT_BRACKET: ']';
 
 NUMBER : Digit+;
 
