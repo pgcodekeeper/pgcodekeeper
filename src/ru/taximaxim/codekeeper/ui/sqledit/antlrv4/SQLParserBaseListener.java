@@ -1759,6 +1759,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterAlter_sequence_statement(@NotNull SQLParser.Alter_sequence_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAlter_sequence_statement(@NotNull SQLParser.Alter_sequence_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterPrimary_datetime_field(@NotNull SQLParser.Primary_datetime_fieldContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2450,6 +2462,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitTrim_function(@NotNull SQLParser.Trim_functionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSequence_body(@NotNull SQLParser.Sequence_bodyContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSequence_body(@NotNull SQLParser.Sequence_bodyContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

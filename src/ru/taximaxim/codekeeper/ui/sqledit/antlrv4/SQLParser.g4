@@ -82,6 +82,7 @@ schema_alter
     | alter_language_statement
     | alter_table_statement
     | alter_default_privileges
+    | alter_sequence_statement
     ;
     
 alter_function_statement
@@ -224,6 +225,15 @@ abbreviated_grant_or_revoke
         (USAGE | ALL (PRIVILEGES)?)
         ON TYPES
         revoke_from_cascade_restrict
+    ;
+
+alter_sequence_statement
+    : ALTER SEQUENCE (IF EXISTS)? name=schema_qualified_name 
+      (sequence_body
+    | RESTART ((WITH)? restart=identifier)?)*
+    |ALTER SEQUENCE (IF EXISTS)? name=schema_qualified_name  OWNER TO new_owner=schema_qualified_name
+    |ALTER SEQUENCE (IF EXISTS)? name=schema_qualified_name  RENAME TO new_name=schema_qualified_name
+    |ALTER SEQUENCE (IF EXISTS)? name=schema_qualified_name  SET SCHEMA new_schema=schema_qualified_name
     ;
 
 index_statement
@@ -491,13 +501,17 @@ functions_definition_schema
     
 create_sequence_statement
     : CREATE (TEMPORARY | TEMP)? SEQUENCE name=schema_qualified_name 
-        ((INCREMENT (BY)? incr=NUMBER)
+        (sequence_body)*
+    ;
+
+sequence_body
+    : INCREMENT (BY)? incr=NUMBER
         | (MINVALUE minval=NUMBER | NO MINVALUE) 
         | (MAXVALUE maxval=numeric_type | NO MAXVALUE)
-        | (START (WITH)? start_val=NUMBER) 
-        | (CACHE cache_val=NUMBER)
-        | ((NO)? CYCLE)
-        | (OWNED BY (col_name=schema_qualified_name | NONE)))*
+        | START (WITH)? start_val=NUMBER
+        | CACHE cache_val=NUMBER
+        | (NO)? CYCLE
+        | OWNED BY (col_name=schema_qualified_name | NONE)
     ;
     
 create_schema_statement
@@ -842,6 +856,7 @@ nonreserved_keywords
   | RENAME
   | REPLICA
   | RESET
+  | RESTART
   | RLIKE
   | ROLLUP
   | SEARCH

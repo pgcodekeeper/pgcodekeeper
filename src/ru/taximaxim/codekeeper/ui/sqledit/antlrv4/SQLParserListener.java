@@ -1461,6 +1461,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitAlter_table_statement(@NotNull SQLParser.Alter_table_statementContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#alter_sequence_statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterAlter_sequence_statement(@NotNull SQLParser.Alter_sequence_statementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#alter_sequence_statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitAlter_sequence_statement(@NotNull SQLParser.Alter_sequence_statementContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#primary_datetime_field}.
 	 * @param ctx the parse tree
 	 */
@@ -2040,6 +2050,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitTrim_function(@NotNull SQLParser.Trim_functionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#sequence_body}.
+	 * @param ctx the parse tree
+	 */
+	void enterSequence_body(@NotNull SQLParser.Sequence_bodyContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#sequence_body}.
+	 * @param ctx the parse tree
+	 */
+	void exitSequence_body(@NotNull SQLParser.Sequence_bodyContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#groupby_clause}.
 	 * @param ctx the parse tree
