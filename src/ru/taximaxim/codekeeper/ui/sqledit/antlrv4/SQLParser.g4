@@ -611,7 +611,7 @@ check_boolean_expression
     
 storage_parameter
     : LEFT_PAREN
-            (storage_param=identifier (EQUAL value=identifier)?(COMMA)?)+ 
+            (storage_param=identifier (EQUAL value=value_expression)?(COMMA)?)+ 
         RIGHT_PAREN 
     ;
     

@@ -10777,9 +10777,15 @@ public class SQLParser extends Parser {
 
 	public static class Storage_parameterContext extends ParserRuleContext {
 		public IdentifierContext storage_param;
-		public IdentifierContext value;
+		public Value_expressionContext value;
+		public Value_expressionContext value_expression(int i) {
+			return getRuleContext(Value_expressionContext.class,i);
+		}
 		public TerminalNode EQUAL(int i) {
 			return getToken(SQLParser.EQUAL, i);
+		}
+		public List<Value_expressionContext> value_expression() {
+			return getRuleContexts(Value_expressionContext.class);
 		}
 		public List<TerminalNode> COMMA() { return getTokens(SQLParser.COMMA); }
 		public List<TerminalNode> EQUAL() { return getTokens(SQLParser.EQUAL); }
@@ -10828,7 +10834,7 @@ public class SQLParser extends Parser {
 				if (_la==EQUAL) {
 					{
 					setState(2905); match(EQUAL);
-					setState(2906); ((Storage_parameterContext)_localctx).value = identifier();
+					setState(2906); ((Storage_parameterContext)_localctx).value = value_expression();
 					}
 				}
 
@@ -24721,7 +24727,7 @@ public class SQLParser extends Parser {
 		"\u0b53\3\2\2\2\u0b53\u0b55\5\u00fa~\2\u0b54\u0b56\7\u015a\2\2\u0b55\u0b54"+
 		"\3\2\2\2\u0b56\u0b57\3\2\2\2\u0b57\u0b55\3\2\2\2\u0b57\u0b58\3\2\2\2\u0b58"+
 		"]\3\2\2\2\u0b59\u0b62\7\u0159\2\2\u0b5a\u0b5d\5\u0098M\2\u0b5b\u0b5c\7"+
-		"\u014f\2\2\u0b5c\u0b5e\5\u0098M\2\u0b5d\u0b5b\3\2\2\2\u0b5d\u0b5e\3\2"+
+		"\u014f\2\2\u0b5c\u0b5e\5\u00fa~\2\u0b5d\u0b5b\3\2\2\2\u0b5d\u0b5e\3\2"+
 		"\2\2\u0b5e\u0b60\3\2\2\2\u0b5f\u0b61\7\u0152\2\2\u0b60\u0b5f\3\2\2\2\u0b60"+
 		"\u0b61\3\2\2\2\u0b61\u0b63\3\2\2\2\u0b62\u0b5a\3\2\2\2\u0b63\u0b64\3\2"+
 		"\2\2\u0b64\u0b62\3\2\2\2\u0b64\u0b65\3\2\2\2\u0b65\u0b66\3\2\2\2\u0b66"+
