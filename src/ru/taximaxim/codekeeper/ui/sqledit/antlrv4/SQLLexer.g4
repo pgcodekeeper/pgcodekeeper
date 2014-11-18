@@ -19,9 +19,14 @@
 lexer grammar SQLLexer;
 
 @header {
+    import java.util.ArrayDeque;
+    import java.util.Deque;
 }
 
 @members {
+/* This field stores the tags which are used to detect the end of a dollar-quoted string literal.
+*/
+private final Deque<String> _tags = new ArrayDeque<String>();
 }
 
 
@@ -295,6 +300,7 @@ COLUMN : C O L U M N;
 COMMENT: C O M M E N T;
 COMMENTS: COMMENT S;
 COMMIT: C O M M I T;
+CONCURRENTLY: C O N C U R R E N T L Y;
 CONFIGURATION: C O N F I G U R A T I O N;
 COST: C O S T;
 COUNT : C O U N T;
@@ -390,6 +396,7 @@ PURGE : P U R G E;
 QUARTER : Q U A R T E R;
 
 RANGE : R A N G E;
+REGCONFIG: R E G C O N F I G;
 REGEXP : R E G E X P;
 RENAME: R E N A M E;
 REPLICA: R E P L I C A;
@@ -500,6 +507,7 @@ BLOB : B L O B;
 BYTEA : B Y T E A; // alias for BLOB
 
 INET4 : I N E T '4';
+INET: I N E T;
 
 INTERVAL: I N T E R V A L;
 VOID: V O I D;
@@ -540,7 +548,6 @@ QUOTE : '\'';
 DOUBLE_QUOTE : '"';
 DOLLAR: '$';
 DOUBLE_DOLLAR: '$$';
-DOUBLE_UNDER_DOLLAR: '$_$';
 
 NUMBER : Digit+;
 
@@ -651,6 +658,20 @@ UNICODE_ESC
     :   '\\' 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT
     ;
 
+// Dollar-quoted String Constants (§4.1.2.4)
+DOLLAR_FIELD
+    : BeginDollarStringConstant Text_between_Dollar EndDollarStringConstant
+    ;
+
+BeginDollarStringConstant
+    : '$' Tag? '$' {String text = getText(); if (text==null && text.isEmpty()) text="empty";_tags.push(getText());} -> pushMode(DollarQuotedStringMode)
+    ;
+
+fragment
+Tag
+    : IdentifierStartChar StrictIdentifierChar*
+    ;
+
 
 /*
 ===============================================================================
@@ -670,3 +691,16 @@ White_Space
 BAD
   : . -> skip
   ;
+
+mode DollarQuotedStringMode;
+Text_between_Dollar
+    : ~'$'+
+    | // this alternative improves the efficiency of handling $ characters within a dollar-quoted string which are
+    // not part of the ending tag.
+    '$' ~'$'*
+    ;
+EndDollarStringConstant
+    : '$' Tag? '$' {(getText()==null && getText().isEmpty())? "empty".equals(_tags.peek()) : getText().equals(_tags.peek())}?
+    {_tags.pop();}
+    -> popMode
+    ;

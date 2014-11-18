@@ -1687,18 +1687,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFunction_body_separator_dollar_under(@NotNull SQLParser.Function_body_separator_dollar_underContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitFunction_body_separator_dollar_under(@NotNull SQLParser.Function_body_separator_dollar_underContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterQualified_asterisk(@NotNull SQLParser.Qualified_asteriskContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1987,18 +1975,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterQuery(@NotNull SQLParser.QueryContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitQuery(@NotNull SQLParser.QueryContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterTruth_value(@NotNull SQLParser.Truth_valueContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2018,6 +1994,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitDatetime_type(@NotNull SQLParser.Datetime_typeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSort_specifier_paren(@NotNull SQLParser.Sort_specifier_parenContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSort_specifier_paren(@NotNull SQLParser.Sort_specifier_parenContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2462,18 +2450,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitTrim_function(@NotNull SQLParser.Trim_functionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterFunction_body_separator(@NotNull SQLParser.Function_body_separatorContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitFunction_body_separator(@NotNull SQLParser.Function_body_separatorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -61,27 +61,27 @@ schema_statement
   
 schema_create
     :create_table_statement
-      | index_statement
-      | create_extension_statement
-      | create_trigger_statement
-      | create_function_statement
-      | create_sequence_statement
-      | create_schema_statement
-      | create_view_statement
-      | comment_on_statement
-      | revoke_statement
-      | set_statement
-      | grant_statement
+    | index_statement
+    | create_extension_statement
+    | create_trigger_statement
+    | create_function_statement
+    | create_sequence_statement
+    | create_schema_statement
+    | create_view_statement
+    | comment_on_statement
+    | revoke_statement
+    | set_statement
+    | grant_statement
     | create_language_statement
     | create_event_trigger
     ;
     
 schema_alter
     : alter_function_statement
-        | alter_schema_statement
-        | alter_language_statement
-        | alter_table_statement
-        | alter_default_privileges
+    | alter_schema_statement
+    | alter_language_statement
+    | alter_table_statement
+    | alter_default_privileges
     ;
     
 alter_function_statement
@@ -166,17 +166,17 @@ table_attribute_option
     
 function_action
     : CALLED ON NULL INPUT 
-        | RETURNS NULL ON NULL INPUT 
-        | STRICT IMMUTABLE 
-        | STABLE 
-        | VOLATILE (EXTERNAL)? SECURITY INVOKER 
-        | (EXTERNAL)? SECURITY DEFINER
-        COST execution_cost=NUMBER
-        ROWS result_rows=NUMBER
-        SET configuration_parameter=identifier  (TO value=identifier | EQUAL value=identifier | DEFAULT)
-        SET configuration_parameter=identifier FROM CURRENT
-        RESET configuration_parameter=identifier
-        RESET ALL 
+    | RETURNS NULL ON NULL INPUT 
+    | STRICT IMMUTABLE 
+    | STABLE 
+    | VOLATILE (EXTERNAL)? SECURITY INVOKER 
+    | (EXTERNAL)? SECURITY DEFINER
+    COST execution_cost=NUMBER
+    ROWS result_rows=NUMBER
+    SET configuration_parameter=identifier  (TO value=identifier | EQUAL value=identifier | DEFAULT)
+    SET configuration_parameter=identifier FROM CURRENT
+    RESET configuration_parameter=identifier
+    RESET ALL 
     ;
 
 alter_default_privileges
@@ -227,8 +227,15 @@ abbreviated_grant_or_revoke
     ;
 
 index_statement
-  : CREATE (u=UNIQUE)? INDEX n=identifier ON t=schema_qualified_name (m=method_specifier)?
+  : /*CREATE (u=UNIQUE)? INDEX n=identifier ON t=schema_qualified_name (m=method_specifier)?
     LEFT_PAREN s=sort_specifier_list RIGHT_PAREN p=param_clause?
+    
+  |*/ CREATE (UNIQUE)? INDEX (CONCURRENTLY)? (name=schema_qualified_name)? ON table_name=schema_qualified_name 
+    (USING method=schema_qualified_name)?
+    sort_specifier_paren
+    param_clause?
+    (TABLESPACE tablespace_name=schema_qualified_name)?
+    (WHERE predic=boolean_value_expression)?
   ;
   
  create_extension_statement
@@ -256,13 +263,13 @@ set_statement
    
 create_trigger_statement
     : CREATE (CONSTRAINT)? TRIGGER name=identifier (BEFORE | (INSTEAD OF) | AFTER)
-    (INSERT | DELETE | TRUNCATE | (UPDATE (OF (columnName=identifier(COMMA)?)+)?))
+    ((INSERT | DELETE | TRUNCATE | (UPDATE (OF (columnName=identifier(COMMA)?)+)?))(OR)?)+
     ON tabl_name=schema_qualified_name 
     (FROM referenced_table_name=schema_qualified_name)?
     (NOT DEFERRABLE | (DEFERRABLE)? (INITIALLY IMMEDIATE) | (INITIALLY DEFERRED))?
     (FOR (EACH)? ROW | STATEMENT)?
     (WHEN (boolean_value_expression))?
-    EXECUTE PROCEDURE func_name=identifier LEFT_PAREN (arguments=identifier(COMMA)?)? RIGHT_PAREN
+    EXECUTE PROCEDURE func_name=schema_qualified_name LEFT_PAREN (arguments=identifier(COMMA)?)* RIGHT_PAREN
     ;
     
 revoke_statement
@@ -391,8 +398,7 @@ grant_statement
     ;
     
 grant_to_rule
-    :
-    TO ((GROUP)? ((role_name=identifier) | PUBLIC) (COMMA)?)+ (WITH GRANT OPTION)?
+    : TO ((GROUP)? ((role_name=identifier) | PUBLIC) (COMMA)?)+ (WITH GRANT OPTION)?
     ;
     
 comment_on_statement
@@ -462,15 +468,7 @@ function_parameters
         )* RIGHT_PAREN 
     ;
 function_body
-    :function_body_separator | function_body_separator_dollar_under
-    ;
-    
-function_body_separator
-    : DOUBLE_DOLLAR (~DOUBLE_DOLLAR)* DOUBLE_DOLLAR
-    ;
-    
-function_body_separator_dollar_under
-    : DOUBLE_UNDER_DOLLAR (~DOUBLE_UNDER_DOLLAR)* DOUBLE_UNDER_DOLLAR
+    : BeginDollarStringConstant Text_between_Dollar EndDollarStringConstant
     ;
 
 function_attribute
@@ -515,10 +513,6 @@ create_view_statement
     AS query_specification
     ;
     
-query
-    : 
-    ;
-    
 create_table_statement
   : /*CREATE EXTERNAL TABLE n=schema_qualified_name table_elements USING file_type=identifier
     (param_clause)? (table_partitioning_clauses)? (LOCATION path=Character_String_Literal)
@@ -537,7 +531,7 @@ create_table_statement
         )? RIGHT_PAREN
         (INHERITS 
             LEFT_PAREN 
-                (parent_table=identifier(COMMA)?)+ 
+                (paret_table=schema_qualified_name(COMMA)?)+ 
             RIGHT_PAREN
         )?
         storage_parameter_oid
@@ -649,7 +643,7 @@ param_clause
   ;
 
 param
-  : key=Character_String_Literal EQUAL value=numeric_value_expression
+  : key=identifier EQUAL value=numeric_value_expression
   ;
 
 method_specifier
@@ -764,6 +758,7 @@ nonreserved_keywords
   | COMMENT
   | COMMENTS
   | COMMIT
+  | CONCURRENTLY
   | CONFIGURATION
   | COST
   | COUNT
@@ -842,6 +837,7 @@ nonreserved_keywords
   | PURGE
   | QUARTER
   | RANGE
+  | REGCONFIG
   | REGEXP
   | RENAME
   | REPLICA
@@ -904,6 +900,7 @@ nonreserved_keywords
   | FLOAT4
   | FLOAT8
   | INET4
+  | INET
   | INT
   | INT1
   | INT2
@@ -990,9 +987,11 @@ predefined_type
   | binary_type
   | network_type
   | regclass
+  | REGCONFIG
   | TRIGGER
   | UUID
   | VOID
+  | INET
   ;
 
 regclass
@@ -1473,11 +1472,13 @@ from_clause
 
 
 table_reference_list_paren
-    : LEFT_PAREN table_reference_list_paren RIGHT_PAREN
-    | table_reference_list
+    : table_reference_list |
+    LEFT_PAREN ( ~(LEFT_PAREN | RIGHT_PAREN)
+    | table_reference_list_paren
+    )+ RIGHT_PAREN
     ;
 table_reference_list
-  :table_reference (COMMA table_reference)*
+  : table_reference (COMMA table_reference)*
   ;
 
 /*
@@ -1960,6 +1961,11 @@ sql_argument_list
 orderby_clause
   : ORDER BY sort_specifier_list
   ;
+
+sort_specifier_paren
+    : sort_specifier_list | 
+      LEFT_PAREN (~(LEFT_PAREN | RIGHT_PAREN ) | sort_specifier_paren)+ RIGHT_PAREN
+    ;
 
 sort_specifier_list
   : sort_specifier (COMMA sort_specifier)*

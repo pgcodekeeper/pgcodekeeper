@@ -37,7 +37,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitCreate_extension_statement(
             Create_extension_statementContext ctx) {
-        objLocation.add(new DBObjectsLocation(ctx.name.Identifier().toString(), ctx.name.getStart().getStartIndex(), filePath));
+//        objLocation.add(new DBObjectsLocation(ctx.name.Identifier().toString(), ctx.name.getStart().getStartIndex(), filePath));
     }
     
     @Override
