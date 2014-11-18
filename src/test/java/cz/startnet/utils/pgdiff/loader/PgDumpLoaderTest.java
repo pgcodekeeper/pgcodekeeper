@@ -51,10 +51,8 @@ abstract class PgDatabaseObjectCreator {
     
     /**
      * The method makes up a PgDatabase object specific to the test needs.
-     * 
-     * @return PgDatabase
      */
-    abstract public PgDatabase getDatabase();
+    public abstract PgDatabase getDatabase();
 }
 
 /**
@@ -76,6 +74,7 @@ public class PgDumpLoaderTest {
     public static Collection<?> parameters() {
         return Arrays.asList(
                 new Object[][]{
+// SONAR-OFF
                     {1},
                     {2},
                     {3},
@@ -93,6 +92,7 @@ public class PgDumpLoaderTest {
                     {15},
                     {16},
                     {17}
+// SONAR-ON
                 });
     }
     /**
@@ -104,7 +104,7 @@ public class PgDumpLoaderTest {
      * Array of implementations of {@link PgDatabaseObjectCreator}
      * each returning a specific {@link PgDatabase} for a test-case.
      */
-    private static final PgDatabaseObjectCreator[] dbCreators = {
+    private static final PgDatabaseObjectCreator[] DB_OBJS = {
         new PgDB1(),
         new PgDB2(),
         new PgDB3(), 
@@ -143,11 +143,11 @@ public class PgDumpLoaderTest {
                 encoding, false, false);
         
         // then check result's validity against handmade DB object
-        if(fileIndex > dbCreators.length) {        
+        if(fileIndex > DB_OBJS.length) {        
             Assert.fail("No predefined object for file: " + filename);
         }
         
-        PgDatabase dbPredefined = dbCreators[fileIndex - 1].getDatabase();
+        PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
         Assert.assertEquals("PgDumpLoader: predefined object is not equal to file "
                 + filename, dbPredefined, d);
         
@@ -184,10 +184,9 @@ public class PgDumpLoaderTest {
 
     /**
      * Tests ModelExporter export() method
-     * @throws Exception 
      */
     @Test
-    public void exportDb() throws Exception {
+    public void exportDb() throws IOException {
         // skip cases with illegal object names (with file-system reserved chars)
         Assume.assumeFalse(skipForExport.contains(fileIndex));
 
@@ -197,7 +196,7 @@ public class PgDumpLoaderTest {
                 PgDumpLoaderTest.class.getResourceAsStream(filename),
                 encoding, false, false);
         
-        PgDatabase dbPredefined = dbCreators[fileIndex - 1].getDatabase();
+        PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
         Path exportDir = null;
         try{
             exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
@@ -221,11 +220,8 @@ public class PgDumpLoaderTest {
     
     /**
      * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
-     * 
-     * @param f Directory
-     * @throws IOException
      */
-    public static void deleteRecursive(File f) throws IOException {
+    private static void deleteRecursive(File f) throws IOException {
         if (f.isDirectory()) {
             for (File sub : f.listFiles()) {
                 deleteRecursive(sub);
@@ -234,6 +230,8 @@ public class PgDumpLoaderTest {
         Files.delete(f.toPath());
     }
 }
+
+// SONAR-OFF
 
 class PgDB1 extends PgDatabaseObjectCreator {
     @Override
@@ -1107,3 +1105,5 @@ class PgDB17 extends PgDatabaseObjectCreator {
     return d;
     }
 }
+
+// SONAR-ON
