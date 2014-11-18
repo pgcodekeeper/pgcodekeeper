@@ -564,7 +564,7 @@ create_table_statement
   ;
 
 table_column_definition
-    : column_name=identifier datatype=data_type (COLLATE collation=identifier)?  (colmn_constraint=column_constraint)*
+    : column_name=identifier (datatype=data_type| datatype_iden = schema_qualified_name) (COLLATE collation=identifier)?  (colmn_constraint=column_constraint)*
     ;
   
 like_option
