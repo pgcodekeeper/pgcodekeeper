@@ -5,7 +5,9 @@ import org.eclipse.osgi.util.NLS;
 @javax.annotation.Generated("externalized-strings")
 public final class Messages extends NLS {
     private static final String BUNDLE_NAME = "ru.taximaxim.codekeeper.ui.localizations.messages"; //$NON-NLS-1$
-    
+
+// SONAR-OFF
+
     // common phrases
     public static String unexpected_error_while_saving_preferences;
     public static String consider_using_pgpass_file_instead;
@@ -297,6 +299,8 @@ public final class Messages extends NLS {
     public static String XmlHistory_read_error;
     public static String XmlHistory_write_error;
     public static String XmlStringList_root_name_invalid;
+
+// SONAR-ON
 
     static {
         // initialize resource bundle
