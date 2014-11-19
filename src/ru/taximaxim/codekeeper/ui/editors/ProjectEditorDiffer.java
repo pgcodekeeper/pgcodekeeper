@@ -462,9 +462,9 @@ class DiffPage extends DiffPresentationPane {
                 differ, dbSource.getDbObject().flatten(), mainPrefs);
         if (selectedDBSource == DBSources.SOURCE_TYPE_DB || 
                 selectedDBSource == DBSources.SOURCE_TYPE_JDBC) {
-            dialog.setDbParams(dbSrc.txtDbHost.getText(),
-                    dbSrc.txtDbPort.getText(), dbSrc.txtDbName.getText(),
-                    dbSrc.txtDbUser.getText(), dbSrc.txtDbPass.getText());
+            dialog.setDbParams(dbSrc.getTxtDbHost().getText(),
+                    dbSrc.getTxtDbPort().getText(), dbSrc.getTxtDbName().getText(),
+                    dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText());
         }
         dialog.open();
     }

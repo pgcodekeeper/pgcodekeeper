@@ -268,11 +268,11 @@ public abstract class DiffPresentationPane extends Composite {
         }
         showDbPicker(useDbPicker);
 
-        dbSrc.txtDbName.setText(projProps.get(PROJ_PREF.DB_NAME, "")); //$NON-NLS-1$
-        dbSrc.txtDbUser.setText(projProps.get(PROJ_PREF.DB_USER, "")); //$NON-NLS-1$
-        dbSrc.txtDbPass.setText(projProps.get(PROJ_PREF.DB_PASS, "")); //$NON-NLS-1$
-        dbSrc.txtDbHost.setText(projProps.get(PROJ_PREF.DB_HOST, "")); //$NON-NLS-1$
-        dbSrc.txtDbPort.setText(String.valueOf(projProps.getInt(PROJ_PREF.DB_PORT, 0)));
+        dbSrc.getTxtDbName().setText(projProps.get(PROJ_PREF.DB_NAME, "")); //$NON-NLS-1$
+        dbSrc.getTxtDbUser().setText(projProps.get(PROJ_PREF.DB_USER, "")); //$NON-NLS-1$
+        dbSrc.getTxtDbPass().setText(projProps.get(PROJ_PREF.DB_PASS, "")); //$NON-NLS-1$
+        dbSrc.getTxtDbHost().setText(projProps.get(PROJ_PREF.DB_HOST, "")); //$NON-NLS-1$
+        dbSrc.getTxtDbPort().setText(String.valueOf(projProps.getInt(PROJ_PREF.DB_PORT, 0)));
         // end middle right container
         
         // read flip position from preferences
@@ -293,10 +293,10 @@ public abstract class DiffPresentationPane extends Composite {
             break;
         case SOURCE_TYPE_DB:
         case SOURCE_TYPE_JDBC:
-            projProps.put(PROJ_PREF.DB_NAME, dbSrc.txtDbName.getText());
-            projProps.put(PROJ_PREF.DB_USER, dbSrc.txtDbUser.getText());
-            projProps.put(PROJ_PREF.DB_HOST, dbSrc.txtDbHost.getText());
-            projProps.putInt(PROJ_PREF.DB_PORT, Integer.valueOf(dbSrc.txtDbPort.getText()));
+            projProps.put(PROJ_PREF.DB_NAME, dbSrc.getTxtDbName().getText());
+            projProps.put(PROJ_PREF.DB_USER, dbSrc.getTxtDbUser().getText());
+            projProps.put(PROJ_PREF.DB_HOST, dbSrc.getTxtDbHost().getText());
+            projProps.putInt(PROJ_PREF.DB_PORT, Integer.valueOf(dbSrc.getTxtDbPort().getText()));
             break;
         }
         projProps.flush();
@@ -328,11 +328,11 @@ public abstract class DiffPresentationPane extends Composite {
         String preset = dbSrc.getSelectedDbPresetName();
         if (preset.isEmpty()){
             value.append("     " + Messages.connection_details); //$NON-NLS-1$
-            value.append(dbSrc.txtDbUser.getText().isEmpty() ? "" : dbSrc.txtDbUser.getText() + '@'); //$NON-NLS-1$
-            value.append(dbSrc.txtDbHost.getText().isEmpty() ? Messages.unknown_host : dbSrc.txtDbHost.getText());
-            value.append(dbSrc.txtDbPort.getText().isEmpty() ? "" : ':' + dbSrc.txtDbPort.getText()); //$NON-NLS-1$ 
+            value.append(dbSrc.getTxtDbUser().getText().isEmpty() ? "" : dbSrc.getTxtDbUser().getText() + '@'); //$NON-NLS-1$
+            value.append(dbSrc.getTxtDbHost().getText().isEmpty() ? Messages.unknown_host : dbSrc.getTxtDbHost().getText());
+            value.append(dbSrc.getTxtDbPort().getText().isEmpty() ? "" : ':' + dbSrc.getTxtDbPort().getText()); //$NON-NLS-1$ 
             value.append('/'); 
-            value.append(dbSrc.txtDbName.getText().isEmpty() ? Messages.unknown_db : dbSrc.txtDbName.getText());
+            value.append(dbSrc.getTxtDbName().getText().isEmpty() ? Messages.unknown_db : dbSrc.getTxtDbName().getText());
         }else{
             value.append("     ") //$NON-NLS-1$
                     .append(Messages.commitPartDescr_used_connection_template)
@@ -364,22 +364,22 @@ public abstract class DiffPresentationPane extends Composite {
                     .fromFile(dumpfile, projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
             break;
         case SOURCE_TYPE_DB:
-            String sPort = dbSrc.txtDbPort.getText();
+            String sPort = dbSrc.getTxtDbPort().getText();
             int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
             dbsRemote = DbSource.fromDb(mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
-                    dbSrc.txtDbHost.getText(), port, dbSrc.txtDbUser.getText(),
-                    dbSrc.txtDbPass.getText(), dbSrc.txtDbName.getText(),
+                    dbSrc.getTxtDbHost().getText(), port, dbSrc.getTxtDbUser().getText(),
+                    dbSrc.getTxtDbPass().getText(), dbSrc.getTxtDbName().getText(),
                     projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
             break;
         case SOURCE_TYPE_JDBC:
-            sPort = dbSrc.txtDbPort.getText();
+            sPort = dbSrc.getTxtDbPort().getText();
             port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
-            dbsRemote = DbSource.fromJdbc(dbSrc.txtDbHost.getText(), port, dbSrc.txtDbUser.getText(),
-                    dbSrc.txtDbPass.getText(), dbSrc.txtDbName.getText(),
-                    projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
+            dbsRemote = DbSource.fromJdbc(dbSrc.getTxtDbHost().getText(), port,
+                    dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText(),
+                    dbSrc.getTxtDbName().getText(), projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
             break;
         default:
             throw new PgCodekeeperUIException(Messages.undefined_source_for_db_changes);

@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbPicker extends Group {
 
-    final private boolean allowShellResize;
+    private final boolean allowShellResize;
     
     private Label lblFieldName;
     private CLabel lblWarnDbPass;
@@ -35,11 +35,35 @@ public class DbPicker extends Group {
     private LocalResourceManager lrm;
     private DbStorePicker dbStorePicker;
     
-    public Label lblName;
-    public Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort;
+    private final Label lblName;
+    private final Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort;
     
     private final ModifyListener ml;
     
+    public Label getLblName() {
+        return lblName;
+    }
+
+    public Text getTxtDbName() {
+        return txtDbName;
+    }
+
+    public Text getTxtDbUser() {
+        return txtDbUser;
+    }
+
+    public Text getTxtDbPass() {
+        return txtDbPass;
+    }
+
+    public Text getTxtDbHost() {
+        return txtDbHost;
+    }
+
+    public Text getTxtDbPort() {
+        return txtDbPort;
+    }
+
     /**
      * Constructs a control that is allowed to modify its shell size.
      */

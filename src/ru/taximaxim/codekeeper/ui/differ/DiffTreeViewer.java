@@ -46,10 +46,10 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DiffTreeViewer extends Composite {
 
-    public TreeElement tree;
-    final public CheckedTreeViewer viewer;
+    private TreeElement tree;
+    private final CheckedTreeViewer viewer;
     
-    final private Button btnDebugView;
+    private final Button btnDebugView;
     
     private LocalResourceManager lrm;
     

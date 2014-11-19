@@ -213,24 +213,24 @@ class PageDiff extends WizardPage implements Listener {
     }
 
     public String getDbName() {
-        return grpDb.txtDbName.getText();
+        return grpDb.getTxtDbName().getText();
     }
 
     public String getDbUser() {
-        return grpDb.txtDbUser.getText();
+        return grpDb.getTxtDbUser().getText();
     }
 
     public String getDbPass() {
-        return grpDb.txtDbPass.getText();
+        return grpDb.getTxtDbPass().getText();
     }
 
     public String getDbHost() {
-        return grpDb.txtDbHost.getText();
+        return grpDb.getTxtDbHost().getText();
     }
 
     public int getDbPort() {
         try {
-            return Integer.parseInt(grpDb.txtDbPort.getText());
+            return Integer.parseInt(grpDb.getTxtDbPort().getText());
         } catch (NumberFormatException ex) {
             return 0;
         }
@@ -344,9 +344,7 @@ class PageDiff extends WizardPage implements Listener {
         grpDb.setLayoutData(gd);
 
         currentTargetGrp = grpDb;
-
-        grpDb.txtDbPort.addListener(SWT.Modify, this);
-
+        
         grpDump = new Group(container, SWT.NONE);
         grpDump.setText(Messages.diffWizard_dump_taget);
         gd = new GridData(GridData.FILL_HORIZONTAL);

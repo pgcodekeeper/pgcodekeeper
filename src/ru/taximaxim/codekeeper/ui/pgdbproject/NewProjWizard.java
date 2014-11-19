@@ -351,24 +351,24 @@ class PageDb extends WizardPage implements Listener {
     }
 
     public String getDbName() {
-        return grpDb.txtDbName.getText();
+        return grpDb.getTxtDbName().getText();
     }
 
     public String getDbUser() {
-        return grpDb.txtDbUser.getText();
+        return grpDb.getTxtDbUser().getText();
     }
     
     public String getDbPass() {
-        return grpDb.txtDbPass.getText();
+        return grpDb.getTxtDbPass().getText();
     }
     
     public String getDbHost() {
-        return grpDb.txtDbHost.getText();
+        return grpDb.getTxtDbHost().getText();
     }
     
     public int getDbPort() {
         try {
-            return Integer.parseInt(grpDb.txtDbPort.getText());
+            return Integer.parseInt(grpDb.getTxtDbPort().getText());
         } catch (NumberFormatException ex) {
             return 0;
         }
@@ -457,8 +457,6 @@ class PageDb extends WizardPage implements Listener {
         gd.verticalIndent = 12;
         grpDb.setLayoutData(gd);
         grpDb.setVisible(true);
-
-        grpDb.txtDbPort.addListener(SWT.Modify, this);
 
         grpDump = new Group(container, SWT.NONE);
         grpDump.setText(Messages.newProjWizard_dump_file_source_settings);

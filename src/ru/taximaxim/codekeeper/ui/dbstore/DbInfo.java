@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class DbInfo {
+class DbInfo {
     
     /**
      * Delimiter for spacing parts of the coordinates.
@@ -21,13 +21,13 @@ public class DbInfo {
      */
     private final static char d_entries = '\n';
     
-    public final String name;
+    final String name;
     
-    public String dbname;
-    public String dbuser;
-    public String dbpass;
-    public String dbhost;
-    public int dbport;
+    String dbname;
+    String dbuser;
+    String dbpass;
+    String dbhost;
+    int dbport;
     
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport) {
