@@ -72,7 +72,7 @@ public class SqlScriptDialog extends TrayDialog {
     private static final Pattern PATTERN_ERROR = Pattern.compile(
             "^.*(ERROR|ОШИБКА):.+$"); //$NON-NLS-1$
     private static final Pattern PATTERN_DROP_CASCADE = Pattern.compile(
-            "^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$"); //$NON-NLS-1$
+            "^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$", Pattern.CASE_INSENSITIVE); //$NON-NLS-1$
     
     private static final String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
     private static final String DB_HOST_PLACEHOLDER = "%host"; //$NON-NLS-1$
@@ -637,9 +637,12 @@ public class SqlScriptDialog extends TrayDialog {
         int begin, end;
         begin = end = -1;
         
+        // replacing all multiple spaces by single one, replacing CRLF by LF, 
+        // replacing all leading spaces for every line in the string 
         String replaced = output.replaceAll("[ ]{2,}", " ") //$NON-NLS-1$ //$NON-NLS-2$
-                .replaceAll("(" + LINE_SEP + "[ ]+)", LINE_SEP); //$NON-NLS-1$ //$NON-NLS-2$
-        String[] lines = replaced.split(Pattern.quote(LINE_SEP));
+                .replaceAll("\r\n", "\n") //$NON-NLS-1$ //$NON-NLS-2$
+                .replaceAll("(\n[ ]+)", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        String[] lines = replaced.split(Pattern.quote("\n"));
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             if (PATTERN_ERROR.matcher(line).matches()) {
