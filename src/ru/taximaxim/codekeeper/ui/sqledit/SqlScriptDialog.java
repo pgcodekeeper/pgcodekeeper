@@ -72,7 +72,8 @@ public class SqlScriptDialog extends TrayDialog {
     private static final Pattern PATTERN_ERROR = Pattern.compile(
             "^.*(ERROR|ОШИБКА):.+$"); //$NON-NLS-1$
     private static final Pattern PATTERN_DROP_CASCADE = Pattern.compile(
-            "^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$", Pattern.CASE_INSENSITIVE); //$NON-NLS-1$
+            "^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$", 
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE); //$NON-NLS-1$
     
     private static final String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
     private static final String DB_HOST_PLACEHOLDER = "%host"; //$NON-NLS-1$
