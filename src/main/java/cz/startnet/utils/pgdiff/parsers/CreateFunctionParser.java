@@ -17,7 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
  *
  * @author fordfrog
  */
-public class CreateFunctionParser {
+public final class CreateFunctionParser {
     
     private static String[] RETURNS_TERMINATORS = {
         "LANGUAGE",

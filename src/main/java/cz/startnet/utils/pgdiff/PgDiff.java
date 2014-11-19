@@ -36,7 +36,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
  *
  * @author fordfrog
  */
-public class PgDiff {
+public final class PgDiff {
 
     private static DepcyGraph depcyOld;
     private static DepcyGraph depcyNew;

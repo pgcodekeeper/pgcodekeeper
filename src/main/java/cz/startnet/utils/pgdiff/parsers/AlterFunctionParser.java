@@ -7,7 +7,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 
-public class AlterFunctionParser {
+public final class AlterFunctionParser {
     
     public static void parse(final PgDatabase database, final String statement,
             final boolean outputIgnoredStatements) {

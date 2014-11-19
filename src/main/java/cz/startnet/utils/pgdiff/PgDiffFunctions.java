@@ -21,7 +21,7 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
  *
  * @author fordfrog
  */
-public class PgDiffFunctions {
+public final class PgDiffFunctions {
 
     /**
      * Outputs statements for new or modified functions.

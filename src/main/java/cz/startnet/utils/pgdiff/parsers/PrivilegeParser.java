@@ -18,7 +18,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
  * 
  * @author Alexander Levsha
  */
-public class PrivilegeParser {
+public final class PrivilegeParser {
     
     private final static String ROLE_ALL = "ALL";
     

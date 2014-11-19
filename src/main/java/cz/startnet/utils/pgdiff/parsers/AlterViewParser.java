@@ -17,7 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
  *
  * @author fordfrog
  */
-public class AlterViewParser {
+public final class AlterViewParser {
 
     /**
      * Parses ALTER VIEW statement.

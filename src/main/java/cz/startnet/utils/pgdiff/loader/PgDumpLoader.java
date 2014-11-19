@@ -42,7 +42,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
  *
  * @author fordfrog
  */
-public class PgDumpLoader { //NOPMD
+public final class PgDumpLoader { //NOPMD
     
     /**
      * Loading order and directory names of the objects in exported DB schemas.

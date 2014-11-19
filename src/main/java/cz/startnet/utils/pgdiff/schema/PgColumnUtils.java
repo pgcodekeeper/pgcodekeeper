@@ -12,7 +12,7 @@ import java.util.Locale;
  *
  * @author fordfrog
  */
-public class PgColumnUtils {
+public final class PgColumnUtils {
 
     /**
      * Returns default value for given column type. If no default value is

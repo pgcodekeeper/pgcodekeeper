@@ -16,7 +16,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
  *
  * @author fordfrog
  */
-public class ParserUtils {
+public final class ParserUtils {
 
     /**
      * Returns object name from optionally schema qualified name.

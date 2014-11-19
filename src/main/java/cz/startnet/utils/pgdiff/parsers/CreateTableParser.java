@@ -18,7 +18,7 @@ import java.text.MessageFormat;
  *
  * @author fordfrog
  */
-public class CreateTableParser {
+public final class CreateTableParser {
 
     /**
      * Parses CREATE TABLE statement.

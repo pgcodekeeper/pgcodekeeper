@@ -17,7 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
  *
  * @author mix86
  */
-public class AlterSequenceParser {
+public final class AlterSequenceParser {
 
     /**
      * Parses ALTER SEQUENCE statement.

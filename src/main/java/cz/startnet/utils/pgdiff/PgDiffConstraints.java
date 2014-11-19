@@ -17,7 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
  *
  * @author fordfrog
  */
-public class PgDiffConstraints {
+public final class PgDiffConstraints {
 
     /**
      * Outputs statements for creation of new constraints.

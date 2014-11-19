@@ -15,7 +15,7 @@ import java.util.Locale;
  *
  * @author fordfrog
  */
-public class PgDiffUtils {
+public final class PgDiffUtils {
 
     /**
      * Array of reserved keywords. Non-reserved keywords are excluded. Source

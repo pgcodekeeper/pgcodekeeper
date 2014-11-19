@@ -30,7 +30,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
  *
  * @author fordfrog
  */
-public class PgDiffTables {
+public final class PgDiffTables {
 
     /**
      * Outputs statements for creation of clusters.

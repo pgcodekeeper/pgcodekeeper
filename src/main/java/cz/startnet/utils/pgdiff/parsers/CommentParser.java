@@ -3,10 +3,13 @@
  */
 package cz.startnet.utils.pgdiff.parsers;
 
+import java.text.MessageFormat;
+
 import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -14,15 +17,13 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import cz.startnet.utils.pgdiff.schema.PgExtension;
-import java.text.MessageFormat;
 
 /**
  * COMMENT parser.
  *
  * @author fordfrog
  */
-public class CommentParser {
+public final class CommentParser {
 
     /**
      * Parses COMMENT statements.

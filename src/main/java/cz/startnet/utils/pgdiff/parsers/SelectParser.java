@@ -13,7 +13,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
 
-public class SelectParser {
+public final class SelectParser {
     
     private static final String[] CLAUSES = {
         "FROM", "WHERE", "GROUP", "HAVING", "WINDOW",

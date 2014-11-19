@@ -13,7 +13,7 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
  *
  * @author fordfrog
  */
-public class CreateSchemaParser {
+public final class CreateSchemaParser {
 
     /**
      * Parses CREATE SCHEMA statement.

@@ -21,7 +21,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
  *
  * @author fordfrog
  */
-public class Main {
+public final class Main {
 
     /**
      * APgDiff main method.

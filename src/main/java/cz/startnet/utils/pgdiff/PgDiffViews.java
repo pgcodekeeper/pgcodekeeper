@@ -20,7 +20,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
  *
  * @author fordfrog
  */
-public class PgDiffViews {
+public final class PgDiffViews {
 
     /**
      * Outputs statements for creation of views.

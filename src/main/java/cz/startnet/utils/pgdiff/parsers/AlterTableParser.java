@@ -25,7 +25,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
  *
  * @author fordfrog
  */
-public class AlterTableParser {
+public final class AlterTableParser {
 
     /**
      * Parses ALTER TABLE statement.
