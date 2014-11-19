@@ -522,7 +522,7 @@ create_schema_statement
     ;
     
 create_view_statement
-    : CREATE (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name (column_name=identifier (COMMA)?)*
+    : CREATE (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name (column_name+=identifier (COMMA)?)*
     (WITH LEFT_PAREN (view_option_name=identifier (EQUAL view_option_value=identifier)?)+ RIGHT_PAREN)?
     AS query_specification
     ;
@@ -988,7 +988,7 @@ boolean_literal
 */
 
 data_type
-  : predefined_type
+  : predefined_type (LEFT_BRACKET RIGHT_BRACKET)?
   | SETOF value=identifier
   ;
 
