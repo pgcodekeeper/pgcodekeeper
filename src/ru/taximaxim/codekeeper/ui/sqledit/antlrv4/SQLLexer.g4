@@ -549,7 +549,6 @@ VERTICAL_BAR : '|';
 QUOTE : '\'';
 DOUBLE_QUOTE : '"';
 DOLLAR: '$';
-DOUBLE_DOLLAR: '$$';
 LEFT_BRACKET: '[';
 RIGHT_BRACKET: ']';
 
@@ -668,7 +667,7 @@ DOLLAR_FIELD
     ;
 
 BeginDollarStringConstant
-    : '$' Tag? '$' {String text = getText(); if (text==null && text.isEmpty()) text="empty";_tags.push(getText());} -> pushMode(DollarQuotedStringMode)
+    : '$' Tag? '$' {_tags.push(getText());} -> pushMode(DollarQuotedStringMode)
     ;
 
 fragment
@@ -704,7 +703,5 @@ Text_between_Dollar
     '$' ~'$'*
     ;
 EndDollarStringConstant
-    : '$' Tag? '$' {(getText()==null && getText().isEmpty())? "empty".equals(_tags.peek()) : getText().equals(_tags.peek())}?
-    {_tags.pop();}
-    -> popMode
+    : '$' Tag? '$' {getText().equals(_tags.peek())}? {_tags.pop();} -> popMode
     ;
