@@ -383,7 +383,8 @@ ON : O N;
 ONLY: O N L Y;
 OPTION: O P T I O N;
 OPTIONS: OPTION S;
-OVERWRITE : O V E R W R I T E;
+OVER: O V E R;
+OVERWRITE : OVER W R I T E;
 
 PARSER: P A R S E R;
 PARTIAL: P A R T I A L;
@@ -665,7 +666,7 @@ UNICODE_ESC
 DOLLAR_FIELD
     : BeginDollarStringConstant Text_between_Dollar EndDollarStringConstant
     ;
-
+// может встречаться $_$$ как начало функции 
 BeginDollarStringConstant
     : '$' Tag? '$' {_tags.push(getText());} -> pushMode(DollarQuotedStringMode)
     ;

@@ -401,6 +401,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitArray(@NotNull SQLParser.ArrayContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#partition_by_columns}.
+	 * @param ctx the parse tree
+	 */
+	void enterPartition_by_columns(@NotNull SQLParser.Partition_by_columnsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#partition_by_columns}.
+	 * @param ctx the parse tree
+	 */
+	void exitPartition_by_columns(@NotNull SQLParser.Partition_by_columnsContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#table_constraint}.
 	 * @param ctx the parse tree
 	 */
@@ -1131,16 +1141,6 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitCommon_value_expression(@NotNull SQLParser.Common_value_expressionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SQLParser#table_reference_list_paren}.
-	 * @param ctx the parse tree
-	 */
-	void enterTable_reference_list_paren(@NotNull SQLParser.Table_reference_list_parenContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SQLParser#table_reference_list_paren}.
-	 * @param ctx the parse tree
-	 */
-	void exitTable_reference_list_paren(@NotNull SQLParser.Table_reference_list_parenContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SQLParser#table_or_query_name}.
 	 * @param ctx the parse tree
 	 */
@@ -1570,6 +1570,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAnd_predicate(@NotNull SQLParser.And_predicateContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#over_clause}.
+	 * @param ctx the parse tree
+	 */
+	void enterOver_clause(@NotNull SQLParser.Over_clauseContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#over_clause}.
+	 * @param ctx the parse tree
+	 */
+	void exitOver_clause(@NotNull SQLParser.Over_clauseContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#array_expression}.
 	 * @param ctx the parse tree

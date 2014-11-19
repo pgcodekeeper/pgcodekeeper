@@ -487,6 +487,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterPartition_by_columns(@NotNull SQLParser.Partition_by_columnsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPartition_by_columns(@NotNull SQLParser.Partition_by_columnsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterTable_constraint(@NotNull SQLParser.Table_constraintContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1363,18 +1375,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterTable_reference_list_paren(@NotNull SQLParser.Table_reference_list_parenContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitTable_reference_list_paren(@NotNull SQLParser.Table_reference_list_parenContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterTable_or_query_name(@NotNull SQLParser.Table_or_query_nameContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1886,6 +1886,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitAnd_predicate(@NotNull SQLParser.And_predicateContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterOver_clause(@NotNull SQLParser.Over_clauseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitOver_clause(@NotNull SQLParser.Over_clauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

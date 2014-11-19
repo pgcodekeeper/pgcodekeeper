@@ -725,6 +725,10 @@ column_partitions
   : PARTITION BY COLUMN table_elements
   ;
 
+partition_by_columns
+    : PARTITION BY (schema_qualified_name(COMMA)?)+
+    ;
+
 partition_name
   : identifier
   ;
@@ -841,6 +845,7 @@ nonreserved_keywords
   | ONLY
   | OPTION
   | OPTIONS
+  | OVER
   | OVERWRITE
   | PARSER
   | PARTIAL
@@ -1488,16 +1493,9 @@ table_expression
 */
 
 from_clause
-  : FROM table_reference_list_paren
+  : FROM LEFT_PAREN+ (table_reference_list | query_specification) RIGHT_PAREN+ as_clause? 
   ;
 
-
-table_reference_list_paren
-    : table_reference_list |
-    LEFT_PAREN ( ~(LEFT_PAREN | RIGHT_PAREN)
-    | table_reference_list_paren
-    )+ RIGHT_PAREN
-    ;
 table_reference_list
   : table_reference (COMMA table_reference)*
   ;
@@ -1722,7 +1720,7 @@ select_sublist
   ;
 
 derived_column
-  : LEFT_PAREN* value_expression RIGHT_PAREN* as_clause?
+  : LEFT_PAREN* value_expression RIGHT_PAREN* (as_clause | over_clause)*
   ;
 
 qualified_asterisk
@@ -1741,6 +1739,10 @@ column_reference
 as_clause
   : (AS)? identifier
   ;
+
+over_clause
+    : OVER LEFT_PAREN ((partition_by_columns | orderby_clause | order_specification)(COMMA)?)* RIGHT_PAREN
+    ;
 
 column_reference_list
   : column_reference (COMMA column_reference)*
