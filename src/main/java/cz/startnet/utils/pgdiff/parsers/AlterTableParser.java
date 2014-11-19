@@ -26,6 +26,8 @@ import cz.startnet.utils.pgdiff.schema.PgView;
  * @author fordfrog
  */
 public final class AlterTableParser {
+    
+    private static final String ALTER_TABLE = "ALTER TABLE ";
 
     /**
      * Parses ALTER TABLE statement.
@@ -128,7 +130,7 @@ public final class AlterTableParser {
         if (parser.expectOptional("REPLICA")) {
             if (parser.expectOptional("TRIGGER")) {
                 if (outputIgnoredStatements) {
-                    database.addIgnoredStatement("ALTER TABLE " + tableName
+                    database.addIgnoredStatement(ALTER_TABLE + tableName
                             + " ENABLE REPLICA TRIGGER "
                             + parser.parseIdentifier() + ';');
                 } else {
@@ -136,7 +138,7 @@ public final class AlterTableParser {
                 }
             } else if (parser.expectOptional("RULE")) {
                 if (outputIgnoredStatements) {
-                    database.addIgnoredStatement("ALTER TABLE " + tableName
+                    database.addIgnoredStatement(ALTER_TABLE + tableName
                             + " ENABLE REPLICA RULE "
                             + parser.parseIdentifier() + ';');
                 } else {
@@ -148,7 +150,7 @@ public final class AlterTableParser {
         } else if (parser.expectOptional("ALWAYS")) {
             if (parser.expectOptional("TRIGGER")) {
                 if (outputIgnoredStatements) {
-                    database.addIgnoredStatement("ALTER TABLE " + tableName
+                    database.addIgnoredStatement(ALTER_TABLE + tableName
                             + " ENABLE ALWAYS TRIGGER "
                             + parser.parseIdentifier() + ';');
                 } else {
@@ -156,7 +158,7 @@ public final class AlterTableParser {
                 }
             } else if (parser.expectOptional("RULE")) {
                 if (outputIgnoredStatements) {
-                    database.addIgnoredStatement("ALTER TABLE " + tableName
+                    database.addIgnoredStatement(ALTER_TABLE + tableName
                             + " ENABLE RULE " + parser.parseIdentifier() + ';');
                 } else {
                     parser.parseIdentifier();
@@ -182,14 +184,14 @@ public final class AlterTableParser {
             final PgDatabase database) {
         if (parser.expectOptional("TRIGGER")) {
             if (outputIgnoredStatements) {
-                database.addIgnoredStatement("ALTER TABLE " + tableName
+                database.addIgnoredStatement(ALTER_TABLE + tableName
                         + " DISABLE TRIGGER " + parser.parseIdentifier() + ';');
             } else {
                 parser.parseIdentifier();
             }
         } else if (parser.expectOptional("RULE")) {
             if (outputIgnoredStatements) {
-                database.addIgnoredStatement("ALTER TABLE " + tableName
+                database.addIgnoredStatement(ALTER_TABLE + tableName
                         + " DISABLE RULE " + parser.parseIdentifier() + ';');
             } else {
                 parser.parseIdentifier();

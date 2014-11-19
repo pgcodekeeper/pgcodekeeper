@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
@@ -178,9 +179,9 @@ public class DepcyTreeExtender {
                 DiffSide side = elementInEmptyTree.getSide();
                 List<TreeElement> children = elementInEmptyTree.getChildren();
                 
-                // special case: default "public" schema
+                // special case: default public schema
                 if (elementInEmptyTree.getType() == DbObjType.SCHEMA
-                        && elementInEmptyTree.getName().equals("public") &&
+                        && elementInEmptyTree.getName().equals(ApgdiffConsts.PUBLIC) &&
                         !children.isEmpty()) {
                     side = DiffSide.BOTH;
                 }
@@ -234,8 +235,8 @@ public class DepcyTreeExtender {
         }else if (copy instanceof PgSequence){
             ((PgSchema)parent).addSequence((PgSequence)copy);
         }else if (copy instanceof PgSchema){
-            if (copy.getName().equals("public")){
-                copy = ((PgDatabase)parent).getSchema("public");
+            if (copy.getName().equals(ApgdiffConsts.PUBLIC)){
+                copy = ((PgDatabase)parent).getSchema(ApgdiffConsts.PUBLIC);
             }else{
                 ((PgDatabase)parent).addSchema((PgSchema)copy);
             }

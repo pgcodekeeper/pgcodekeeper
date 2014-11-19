@@ -261,7 +261,7 @@ public class ModelExporter {
     }
     
     private void writeProjVersion(File f) throws IOException {
-        try (PrintWriter pw = new UnixPrintWriter(f, "UTF-8")) {
+        try (PrintWriter pw = new UnixPrintWriter(f, ApgdiffConsts.UTF_8)) {
             pw.println(ApgdiffConsts.VERSION_PROP_NAME + " = "
                     + ApgdiffConsts.EXPORT_CURRENT_VERSION);
         }

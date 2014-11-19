@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.loader;
 
 public interface JdbcQueries {
+// SONAR-OFF
     String QUERY_TABLES_PER_SCHEMA = 
           "SELECT " 
         + "        subselectColumns.oid::bigint, "
@@ -412,4 +413,5 @@ public interface JdbcQueries {
             + "                             nsp.nspname NOT LIKE ('pg_%') "
             + "                             AND nsp.nspname != 'information_schema') "
             + "     AND c.relkind IN ('r', 'i', 'S', 'v')";
+// SONAR-ON
 }

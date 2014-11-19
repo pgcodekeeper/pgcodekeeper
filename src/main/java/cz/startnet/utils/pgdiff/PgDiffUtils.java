@@ -10,6 +10,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+
 /**
  * Utilities for creation of diffs.
  *
@@ -598,7 +600,7 @@ public final class PgDiffUtils {
      */
     public static String md5(String s) {
         try {
-            byte[] bytesOfMessage = s.getBytes("UTF-8");
+            byte[] bytesOfMessage = s.getBytes(ApgdiffConsts.UTF_8);
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] hash = md.digest(bytesOfMessage);
             StringBuilder sb = new StringBuilder(2 * hash.length);

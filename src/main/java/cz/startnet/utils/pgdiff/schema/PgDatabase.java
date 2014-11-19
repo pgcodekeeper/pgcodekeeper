@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+
 /**
  * Stores database information.
  *
@@ -32,7 +34,7 @@ public class PgDatabase extends PgStatement {
     public PgDatabase() {
         super("DB_name_placeholder", null);
         
-        addSchema(new PgSchema("public", null));
+        addSchema(new PgSchema(ApgdiffConsts.PUBLIC, null));
         defaultSchema = schemas.get(0);
     }
 
@@ -128,8 +130,8 @@ public class PgDatabase extends PgStatement {
      * {@link PgDatabase#PgDatabase()} constructor.
      */
     public void tryReplacePublicDef(PgSchema newPublic) {
-        if (newPublic.getName().equals("public")) {
-            PgSchema oldPublic = getSchema("public");
+        if (newPublic.getName().equals(ApgdiffConsts.PUBLIC)) {
+            PgSchema oldPublic = getSchema(ApgdiffConsts.PUBLIC);
         
             if (oldPublic.compare(new PgDatabase().getDefaultSchema()) 
                     && !newPublic.compare(oldPublic)) {

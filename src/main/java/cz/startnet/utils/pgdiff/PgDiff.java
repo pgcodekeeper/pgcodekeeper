@@ -18,6 +18,7 @@ import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -434,7 +435,7 @@ public final class PgDiff {
             final PgDiffArguments arguments, final PgDatabase oldDatabase,
             final PgDatabase newDatabase) {
         final boolean setSearchPath = newDatabase.getSchemas().size() > 1
-                || !newDatabase.getSchemas().get(0).getName().equals("public");
+                || !newDatabase.getSchemas().get(0).getName().equals(ApgdiffConsts.PUBLIC);
 
         for (final PgSchema newSchema : newDatabase.getSchemas()) {
             final SearchPathHelper searchPathHelper =

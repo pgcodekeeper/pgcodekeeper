@@ -45,7 +45,7 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
-public class JdbcLoader {
+public class JdbcLoader implements PgCatalogStrings {
     /*
      * Trigger firing conditions
      */
@@ -176,12 +176,12 @@ public class JdbcLoader {
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_SCHEMAS)){
                 
                 while (res.next()) {
-                    Log.log(Log.LOG_INFO, "Quering objects for schema " + res.getString("nspname"));
+                    Log.log(Log.LOG_INFO, "Quering objects for schema " + res.getString(NAMESPACE_NSPNAME));
                     prepareDataForSchema(res.getLong("oid"));
                     
                     PgSchema schema = getSchema(res);
-                    if (res.getString("nspname").equals("public")){
-                        d.replaceSchema(d.getSchema("public"), schema);                    
+                    if (res.getString(NAMESPACE_NSPNAME).equals(ApgdiffConsts.PUBLIC)){
+                        d.replaceSchema(d.getSchema(ApgdiffConsts.PUBLIC), schema);                    
                     }else{
                         d.addSchema(schema);
                     }
@@ -236,7 +236,7 @@ public class JdbcLoader {
                 while (res.next()){
                     PgType type = new PgType(res.getString("typname"), res.getString("castedType"), 
                             res.getLong("typarray"), res.getInt("typlen"), res.getString("proname"),
-                            res.getString("nspname"));
+                            res.getString(NAMESPACE_NSPNAME));
                     cachedTypeNamesByOid.put(res.getLong("oid"), type);
                 }
             }
@@ -303,17 +303,17 @@ public class JdbcLoader {
     }
     
     private PgSchema getSchema(ResultSet res) throws SQLException{
-        String schemaName = res.getString("nspname");
+        String schemaName = res.getString(NAMESPACE_NSPNAME);
         Long schemaOid = res.getLong("oid");
         PgSchema s = new PgSchema(schemaName, "");
 
-        if (!schemaName.equals("public")){
+        if (!schemaName.equals(ApgdiffConsts.PUBLIC)){
             s.setOwner(res.getString("owner"));
         }
         setPrivileges(s, schemaName, res.getString("nspacl"), res.getString("owner"));
         
         String comment = res.getString("comment");
-        if (!schemaName.equals("public") && comment != null && !comment.isEmpty()){
+        if (!schemaName.equals(ApgdiffConsts.PUBLIC) && comment != null && !comment.isEmpty()){
             s.setComment(ParserUtils.quoteString(comment));
         }
         
@@ -339,7 +339,7 @@ public class JdbcLoader {
         prepStatConstraints.setLong(1, schemaOid);
         try(ResultSet resConstraints = prepStatConstraints.executeQuery()){
             while (resConstraints.next()){
-                table = s.getTable(resConstraints.getString("relname"));
+                table = s.getTable(resConstraints.getString(CLASS_RELNAME));
                 if (table != null){
                     PgConstraint constraint = getConstraint(resConstraints, schemaName, table.getName());
                     if (constraint != null){
@@ -369,7 +369,7 @@ public class JdbcLoader {
         prepStatTriggers.setLong(1, schemaOid);
         try(ResultSet resTriggers = prepStatTriggers.executeQuery()){
             while(resTriggers.next()){
-                table = s.getTable(resTriggers.getString("relname"));
+                table = s.getTable(resTriggers.getString(CLASS_RELNAME));
                 if (table != null){
                     PgTrigger trigger = getTrigger(resTriggers, schemaName);
                     if (trigger != null){
@@ -530,7 +530,7 @@ public class JdbcLoader {
                 return null;
             }
         }
-        String viewName = res.getString("relname");
+        String viewName = res.getString(CLASS_RELNAME);
         
         String viewDef = res.getString("definition").trim();
         if (viewDef.charAt(viewDef.length() - 1) == ';'){
@@ -546,7 +546,7 @@ public class JdbcLoader {
         // мы компилируем из JDBC) не имеет смысла - текущая схема туда еще не 
         // добавлена, так как находится в работе.
         PgDatabase fakeDb = new PgDatabase();
-        if (!schemaName.equals("public")){
+        if (!schemaName.equals(ApgdiffConsts.PUBLIC)){
             fakeDb.addSchema(new PgSchema(schemaName, ""));
         }
         fakeDb.setDefaultSchema(schemaName);
@@ -573,7 +573,7 @@ public class JdbcLoader {
         }
         
         // OWNER
-        v.setOwner(getRoleNameByOid(res.getLong("relowner")));
+        v.setOwner(getRoleNameByOid(res.getLong(CLASS_RELOWNER)));
         
         // Query view privileges
         setPrivileges(v, viewName, res.getString("relacl"), v.getOwner());
@@ -593,7 +593,7 @@ public class JdbcLoader {
                 return null;
             }
         }
-        String tableName = res.getString("relname");
+        String tableName = res.getString(CLASS_RELNAME);
         StringBuilder tableDef = new StringBuilder(); 
         tableDef.append("CREATE TABLE ".concat(tableName).concat(" (\n"));
         
@@ -731,7 +731,7 @@ public class JdbcLoader {
         }
         
         // PRIVILEGES, OWNER
-        t.setOwner(getRoleNameByOid(res.getLong("relowner")));
+        t.setOwner(getRoleNameByOid(res.getLong(CLASS_RELOWNER)));
         setPrivileges(t, t.getName(), res.getString("aclarray"), t.getOwner());
 
         return t;
@@ -781,8 +781,8 @@ public class JdbcLoader {
         t.setTableName(tableName);
         
         String functionName = res.getString("proname").concat("()");
-        if (!res.getString("nspname").equals(schemaName)){
-            functionName = res.getString("nspname").concat(".").concat(functionName);
+        if (!res.getString(NAMESPACE_NSPNAME).equals(schemaName)){
+            functionName = res.getString(NAMESPACE_NSPNAME).concat(".").concat(functionName);
         }
         
         t.setFunction(functionName);
@@ -792,7 +792,7 @@ public class JdbcLoader {
     private PgIndex getIndex(ResultSet res, String tableName) throws SQLException {
         String schemaName = res.getString("namespace");
         
-        String indexName = res.getString("relname");
+        String indexName = res.getString(CLASS_RELNAME);
         PgIndex i = new PgIndex(indexName, "", getSearchPath(schemaName));
         i.setTableName(tableName);
 
@@ -800,7 +800,7 @@ public class JdbcLoader {
         i.setDefinition(definition.substring(definition.indexOf("USING ")));
         
         i.setUnique(res.getBoolean("indisunique"));
-        setOwner(i, res.getLong("relowner"));
+        setOwner(i, res.getLong(CLASS_RELOWNER));
         
         return i;
     }
@@ -959,7 +959,7 @@ public class JdbcLoader {
     }
 
     private PgSequence getSequence(ResultSet res, String schemaName) throws SQLException {
-        String sequenceName = res.getString("relname");
+        String sequenceName = res.getString(CLASS_RELNAME);
         PgSequence s = new PgSequence(sequenceName, "", getSearchPath(schemaName));
         s.setCycle(res.getBoolean("cycle_option"));
         s.setIncrement(res.getString("increment"));
@@ -979,7 +979,7 @@ public class JdbcLoader {
             s.setOwnedBy(res.getString("referenced_table_name") + "." + res.getString("ref_col_name"));
         }
         
-        setOwner(s, res.getLong("relowner"));
+        setOwner(s, res.getLong(CLASS_RELOWNER));
         
         // PRIVILEGES
         setPrivileges(s, sequenceName, res.getString("aclArray"), s.getOwner());
