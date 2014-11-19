@@ -3,9 +3,11 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 
 public final class GenericColumn {
+// SONAR-OFF
     public final String schema;
     public final String table;
     public final String column;
+// SONAR-ON
     
     public GenericColumn(String schema, String table, String column) {
         this.schema = schema;

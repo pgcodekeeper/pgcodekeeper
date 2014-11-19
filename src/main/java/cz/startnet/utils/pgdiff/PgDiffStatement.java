@@ -11,11 +11,11 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
  * 
  * @author Alexander Levsha
  */
-public class PgDiffStatement {
+class PgDiffStatement {
 
-    public final DiffStatementType type;
-    public final String objname;
-    public final String statement;
+    final DiffStatementType type;
+    final String objname;
+    final String statement;
     
     public enum DiffStatementType {
         DROP, CREATE, OTHER

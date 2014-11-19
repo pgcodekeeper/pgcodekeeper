@@ -175,8 +175,8 @@ public class PgDbFilter2 {
 }
 
 class ProcessResult {
-    final public PgStatement src;
-    final public PgStatement dst;
+    final PgStatement src;
+    final PgStatement dst;
     
     public ProcessResult(PgStatement src, PgStatement dst) {
         this.src = src;
