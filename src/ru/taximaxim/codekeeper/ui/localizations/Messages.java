@@ -52,7 +52,7 @@ public class Messages extends NLS {
     public static String exceptionNotifier_copy_stack_trace;
     public static String exceptionNotifier_string_reader_ioexception_world_ends;
     public static String exceptionNotifier_unhandled_exception;
-    public static String sqlScriptDialog_Enter_cmd_to_roll_on_sql_script;
+    public static String sqlScriptDialog_Enter_cmd_to_update_ddl_with_sql_script;
     public static String sqlScriptDialog_error_saving_script_to_file;
     public static String sqlScriptDialog_exception_during_script_execution;
     public static String sqlScriptDialog_psql_dependencies;
@@ -67,6 +67,7 @@ public class Messages extends NLS {
     public static String sqlScriptDialog_stop_script_before_closing_dialog;
     public static String sqlScriptDialog_this_dependencies_have_been_added_already_check_order;
     public static String sqlScriptDialog_warning;
+    public static String sqlScriptDialog_use_jdbc_for_ddl_update;
     public static String stdStreamRedirector_completed_with_code;
     public static String manualDepciesDialog_dependant_dependency;
     public static String manualDepciesDialog_depends_on;
@@ -287,6 +288,7 @@ public class Messages extends NLS {
     public static String SqlScriptDialog_error_get_script;
     public static String SqlScriptDialog_error_loading_command_history;
     public static String SqlScriptDialog_will_be_replaced;
+    public static String sqlScriptDialog_script_has_not_been_run_yet;
     public static String StdStreamRedirector_error_reading_std;
     public static String StdStreamRedirector_error_reading_std_external;
     public static String StdStreamRedirector_error_returncode_see_for_details;

@@ -26,6 +26,8 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
@@ -58,12 +60,14 @@ import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import cz.startnet.utils.pgdiff.loader.JdbcConnector;
+import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class SqlScriptDialog extends TrayDialog {
 
     private static final Pattern PATTERN_ERROR = Pattern.compile(
-            "^.+(ERROR|ОШИБКА):.+$"); //$NON-NLS-1$
+            "^.*(ERROR|ОШИБКА):.+$"); //$NON-NLS-1$
     private static final Pattern PATTERN_DROP_CASCADE = Pattern.compile(
             "^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$"); //$NON-NLS-1$
     
@@ -84,6 +88,8 @@ public class SqlScriptDialog extends TrayDialog {
     private static final String SCRIPTS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
     private static final int SCRIPTS_HIST_MAX_STORED = 20;
 
+    private static final String LINE_SEP = System.lineSeparator();
+    
     private final XmlHistory history;
     private final Differ differ;
     private List<Entry<String, String>> addDepcy;
@@ -101,6 +107,7 @@ public class SqlScriptDialog extends TrayDialog {
     private SqlSourceViewerExtender sqlEditor;
     private Text txtCommand;
     private Combo cmbScript;
+    private Button btnJdbcToggle;
     
     private volatile boolean isRunning;
     private Thread scriptThread;
@@ -204,30 +211,39 @@ public class SqlScriptDialog extends TrayDialog {
     }
     
     @Override
-    protected Control createDialogArea(Composite parent) {
+    protected Control createDialogArea(final Composite parent) {
         GridLayout lay = new GridLayout();
         parent.setLayout(lay);
         
         createMessageArea(parent);
         createSQLViewer(parent);
         
-        Label l = new Label(parent, SWT.NONE);
-        l.setText(Messages.sqlScriptDialog_Enter_cmd_to_roll_on_sql_script
+        btnJdbcToggle = new Button(parent, SWT.CHECK);
+        btnJdbcToggle.setText(Messages.sqlScriptDialog_use_jdbc_for_ddl_update);
+        btnJdbcToggle.setSelection(false);
+        
+        final Composite notJdbc = new Composite(parent, SWT.NONE);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.exclude = false;
+        notJdbc.setLayoutData(gd);
+        notJdbc.setLayout(new GridLayout());
+        
+        Label l = new Label(notJdbc, SWT.NONE);
+        l.setText(Messages.sqlScriptDialog_Enter_cmd_to_update_ddl_with_sql_script
                 + SCRIPT_PLACEHOLDER + ' '
                 + DB_NAME_PLACEHOLDER + ' '
                 + DB_HOST_PLACEHOLDER + ' ' + DB_PORT_PLACEHOLDER + ' '
                 + DB_USER_PLACEHOLDER + ' ' + DB_PASS_PLACEHOLDER + ')' + ':');
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         l.setLayoutData(gd);
         
-        cmbScript = new Combo(parent, SWT.DROP_DOWN);
+        cmbScript = new Combo(notJdbc, SWT.DROP_DOWN);
         cmbScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        String n = System.lineSeparator();
-        cmbScript.setToolTipText(DB_NAME_PLACEHOLDER + '=' +dbName + n +
-                DB_HOST_PLACEHOLDER + '=' + dbHost + n + 
-                DB_PORT_PLACEHOLDER + '=' + dbPort + n + 
-                DB_USER_PLACEHOLDER + '=' + dbUser + n + 
+        cmbScript.setToolTipText(DB_NAME_PLACEHOLDER + '=' +dbName + LINE_SEP +
+                DB_HOST_PLACEHOLDER + '=' + dbHost + LINE_SEP + 
+                DB_PORT_PLACEHOLDER + '=' + dbPort + LINE_SEP + 
+                DB_USER_PLACEHOLDER + '=' + dbUser + LINE_SEP + 
                 DB_PASS_PLACEHOLDER + '=' + dbPass);
 
         List<String> prev;
@@ -252,14 +268,14 @@ public class SqlScriptDialog extends TrayDialog {
             }
         });
         
-        l = new Label(parent, SWT.NONE);
+        l = new Label(notJdbc, SWT.NONE);
         l.setText(Messages.SqlScriptDialog_command_to_execute + SCRIPT_PLACEHOLDER
                 + Messages.SqlScriptDialog_will_be_replaced);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 12;
         l.setLayoutData(gd);
         
-        txtCommand = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
+        txtCommand = new Text(notJdbc, SWT.BORDER | SWT.READ_ONLY);
         txtCommand.setText(getReplacedString());
         txtCommand.setBackground(getShell().getDisplay()
                 .getSystemColor(SWT.COLOR_LIST_BACKGROUND));
@@ -294,6 +310,23 @@ public class SqlScriptDialog extends TrayDialog {
             @Override
             public void widgetDisposed(DisposeEvent e) {
                 colorPink.dispose();
+            }
+        });
+        
+        btnJdbcToggle.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean isJdbc = btnJdbcToggle.getSelection();
+                notJdbc.setVisible(!isJdbc);
+                ((GridData)notJdbc.getLayoutData()).exclude = isJdbc;
+                
+                parent.layout();
+                parent.redraw();
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
             }
         });
         
@@ -333,75 +366,81 @@ public class SqlScriptDialog extends TrayDialog {
         
         // case Run script
         if (buttonId == 0 && !isRunning) {
-            final Button runScriptBtn = getButton(0);
             final List<String> command = new ArrayList<>(Arrays.asList(
                     getReplacedString().split(Pattern.quote(" ")))); //$NON-NLS-1$
             
             // new runnable to unlock the UI thread
-            Runnable launcher = new Runnable() {
-
-                @Override
-                public void run() {
-                    final StdStreamRedirector sr = new StdStreamRedirector();
-                    try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
-                        File outFile = tempFile.get();
-                        try (PrintWriter writer = new PrintWriter(outFile, UIConsts.UTF_8)) {
-                            writer.write(textRetrieved);
-                        }
-
-                        String filepath = outFile.getAbsolutePath();
-                        ListIterator<String> it = command.listIterator();
-                        while (it.hasNext()) {
-                            it.set(it.next().replace(SCRIPT_PLACEHOLDER, filepath));
-                        }
-                        
-                        ProcessBuilder pb = new ProcessBuilder(command);
-                        sr.launchAndRedirect(pb);
-                        if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
-                            addDepcy = getDependenciesFromOutput(sr.getStorage());
-                        }
-                    } catch (IOException ex) {
-                        if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
-                            addDepcy = getDependenciesFromOutput(sr.getStorage());
-                            if (!addDepcy.isEmpty()) {
-                                // actually parsed some depcies, do not rethrow
-                                return;
-                            }
-                        }
-                        throw new IllegalStateException(ex);
-                    } finally {
-                        // request UI change: button label changed
-                        SqlScriptDialog.this.getShell().getDisplay().syncExec(
-                                new Runnable() {
-
-                                    @Override
-                                    public void run() {
-                                        if (!runScriptBtn.isDisposed()) {
-                                            if (mainPrefs.getBoolean(
-                                                    DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
-                                                new ScriptRunResultDialog(
-                                                        getShell(), sr.getStorage()).open();
-                                            }
-                                            runScriptBtn.setText(RUN_SCRIPT_LABEL);
-                                            showAddDepcyDialog();
-                                        }
-                                        isRunning = false;
-                                    }
-                                });
-                    }
-                }
-            };
+            Runnable launcher;
             
+            if (btnJdbcToggle.getSelection()){
+                launcher = new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        String output = Messages.sqlScriptDialog_script_has_not_been_run_yet;
+                        try{
+                            JdbcConnector connector = new JdbcConnector(dbHost, Integer.valueOf(dbPort), dbUser, dbPass, dbName, "UTF8");
+                            output = new JdbcRunner(connector).runScript(textRetrieved);
+                            if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
+                                addDepcy = getDependenciesFromOutput(output);
+                            }
+                        } catch (IOException e) {
+                            throw new IllegalStateException(e);
+                        } finally {
+                            // request UI change: button label changed
+                            SqlScriptDialog.this.afterScriptFinished(output);
+                        }
+                    }
+                };
+            }else{
+                launcher = new Runnable() {
+    
+                    @Override
+                    public void run() {
+                        final StdStreamRedirector sr = new StdStreamRedirector();
+                        try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
+                            File outFile = tempFile.get();
+                            try (PrintWriter writer = new PrintWriter(outFile, UIConsts.UTF_8)) {
+                                writer.write(textRetrieved);
+                            }
+    
+                            String filepath = outFile.getAbsolutePath();
+                            ListIterator<String> it = command.listIterator();
+                            while (it.hasNext()) {
+                                it.set(it.next().replace(SCRIPT_PLACEHOLDER, filepath));
+                            }
+                            
+                            ProcessBuilder pb = new ProcessBuilder(command);
+                            sr.launchAndRedirect(pb);
+                            if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
+                                addDepcy = getDependenciesFromOutput(sr.getStorage());
+                            }
+                        } catch (IOException ex) {
+                            if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
+                                addDepcy = getDependenciesFromOutput(sr.getStorage());
+                                if (!addDepcy.isEmpty()) {
+                                    // actually parsed some depcies, do not rethrow
+                                    return;
+                                }
+                            }
+                            throw new IllegalStateException(ex);
+                        } finally {
+                            // request UI change: button label changed
+                            SqlScriptDialog.this.afterScriptFinished(sr.getStorage());
+                        }
+                    }
+                };
+            }
             // run thread that calls StdStreamRedirector.launchAndRedirect()
             scriptThread = new Thread(launcher);
             scriptThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
                 
-                        @Override
-                        public void uncaughtException(Thread t, Throwable e) {
-                            ExceptionNotifier.showErrorDialog(
-                                    Messages.sqlScriptDialog_exception_during_script_execution,e);
-                        }
-                    });
+                @Override
+                public void uncaughtException(Thread t, Throwable e) {
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.sqlScriptDialog_exception_during_script_execution,e);
+                }
+            });
             scriptThread.start();
             
             isRunning = true;
@@ -443,13 +482,34 @@ public class SqlScriptDialog extends TrayDialog {
         }
     }
     
+    private void afterScriptFinished(final String scriptOutput){
+        final Button runScriptBtn = getButton(0);
+        this.getShell().getDisplay().syncExec(
+                new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (!runScriptBtn.isDisposed()) {
+                            if (mainPrefs.getBoolean(
+                                    DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY)) {
+                                new ScriptRunResultDialog(
+                                        getShell(), scriptOutput).open();
+                            }
+                            runScriptBtn.setText(RUN_SCRIPT_LABEL);
+                            showAddDepcyDialog();
+                        }
+                        isRunning = false;
+                    }
+                });
+    }
+    
     private void showAddDepcyDialog() {
         if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY) && addDepcy != null && !addDepcy.isEmpty()) {
             MessageBox mb = new MessageBox(getShell(), 
                     SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
             mb.setText(Messages.sqlScriptDialog_psql_dependencies);
             mb.setMessage(Messages.SqlScriptDialog__results_of_script_revealed_dependent_objects +
-                    depcyToString() + System.lineSeparator());
+                    depcyToString() + LINE_SEP);
             List<Entry<PgStatement, PgStatement>> depcyToAdd = 
                     getAdditionalDepcyFromNames(addDepcy);
             String repeats = getRepeatedDepcy(depcyToAdd);
@@ -457,7 +517,7 @@ public class SqlScriptDialog extends TrayDialog {
                 mb.setMessage(mb.getMessage() + 
                         Messages.sqlScriptDialog_this_dependencies_have_been_added_already_check_order + repeats);  
             }
-            mb.setMessage(mb.getMessage() + System.lineSeparator() +
+            mb.setMessage(mb.getMessage() + LINE_SEP +
                     Messages.SqlScriptDialog_add_it_to_script);
             if (mb.open() == SWT.OK) {
                 final List<Entry<PgStatement, PgStatement>> saveToRestore = new ArrayList<>(
@@ -519,7 +579,7 @@ public class SqlScriptDialog extends TrayDialog {
                 sb.append(entry.getKey().getName())
                     .append(" -> ") //$NON-NLS-1$
                     .append(entry.getValue().getName())
-                    .append(System.lineSeparator());
+                    .append(LINE_SEP);
             }
         }
         return sb.toString();
@@ -555,7 +615,7 @@ public class SqlScriptDialog extends TrayDialog {
             sb.append(entry.getKey());
             sb.append(" -> "); //$NON-NLS-1$
             sb.append(entry.getValue());
-            sb.append(System.lineSeparator()); 
+            sb.append(LINE_SEP); 
         }
         return sb.toString();
     }
@@ -568,8 +628,10 @@ public class SqlScriptDialog extends TrayDialog {
         
         int begin, end;
         begin = end = -1;
-        String[] lines = output.replaceAll("\\s{2,}", " ").split( //$NON-NLS-1$ //$NON-NLS-2$
-                Pattern.quote(System.lineSeparator()));
+        
+        String replaced = output.replaceAll("[ ]{2,}", " ") //$NON-NLS-1$ //$NON-NLS-2$
+                .replaceAll("(" + LINE_SEP + "[ ]+)", LINE_SEP); //$NON-NLS-1$ //$NON-NLS-2$
+        String[] lines = replaced.split(Pattern.quote(LINE_SEP));
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             if (PATTERN_ERROR.matcher(line).matches()) {
@@ -583,8 +645,10 @@ public class SqlScriptDialog extends TrayDialog {
         
         if (begin != -1 && end != -1 && (end - begin) >= 2) {
             String words[] = lines[begin + 1].split(Pattern.quote(" ")); //$NON-NLS-1$
+            // parse first case separately, as it starts from extra word "details"
             depciesList.add(new AbstractMap.SimpleEntry<>(
                     words[2], words[words.length - 1]));
+            // parse rest of dependencies
             parseDependencies(lines, begin + 2, end, depciesList);
         }
         
