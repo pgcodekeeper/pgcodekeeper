@@ -478,7 +478,7 @@ function_parameters
         )* RIGHT_PAREN 
     ;
 function_body
-    : BeginDollarStringConstant Text_between_Dollar EndDollarStringConstant
+    : BeginDollarStringConstant Text_between_Dollar+ EndDollarStringConstant
     ;
 
 function_attribute

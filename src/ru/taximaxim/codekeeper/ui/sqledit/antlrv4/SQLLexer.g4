@@ -697,11 +697,12 @@ BAD
 
 mode DollarQuotedStringMode;
 Text_between_Dollar
-    : ~'$'+
+   : ~'$'+
     | // this alternative improves the efficiency of handling $ characters within a dollar-quoted string which are
     // not part of the ending tag.
     '$' ~'$'*
     ;
+
 EndDollarStringConstant
     : '$' Tag? '$' {getText().equals(_tags.peek())}? {_tags.pop();} -> popMode
     ;
