@@ -1181,16 +1181,6 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitTable_attribute_option(@NotNull SQLParser.Table_attribute_optionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SQLParser#case_abbreviation}.
-	 * @param ctx the parse tree
-	 */
-	void enterCase_abbreviation(@NotNull SQLParser.Case_abbreviationContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SQLParser#case_abbreviation}.
-	 * @param ctx the parse tree
-	 */
-	void exitCase_abbreviation(@NotNull SQLParser.Case_abbreviationContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SQLParser#empty_grouping_set}.
 	 * @param ctx the parse tree
 	 */
@@ -1200,6 +1190,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitEmpty_grouping_set(@NotNull SQLParser.Empty_grouping_setContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#case_abbreviation}.
+	 * @param ctx the parse tree
+	 */
+	void enterCase_abbreviation(@NotNull SQLParser.Case_abbreviationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#case_abbreviation}.
+	 * @param ctx the parse tree
+	 */
+	void exitCase_abbreviation(@NotNull SQLParser.Case_abbreviationContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#null_predicate}.
 	 * @param ctx the parse tree
@@ -2121,6 +2121,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitNational_character_string_type(@NotNull SQLParser.National_character_string_typeContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#alias_table}.
+	 * @param ctx the parse tree
+	 */
+	void enterAlias_table(@NotNull SQLParser.Alias_tableContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#alias_table}.
+	 * @param ctx the parse tree
+	 */
+	void exitAlias_table(@NotNull SQLParser.Alias_tableContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#trim_specification}.
 	 * @param ctx the parse tree
 	 */
@@ -2290,6 +2300,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitList_value_partition(@NotNull SQLParser.List_value_partitionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#alias_def}.
+	 * @param ctx the parse tree
+	 */
+	void enterAlias_def(@NotNull SQLParser.Alias_defContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#alias_def}.
+	 * @param ctx the parse tree
+	 */
+	void exitAlias_def(@NotNull SQLParser.Alias_defContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#list_partitions}.
 	 * @param ctx the parse tree

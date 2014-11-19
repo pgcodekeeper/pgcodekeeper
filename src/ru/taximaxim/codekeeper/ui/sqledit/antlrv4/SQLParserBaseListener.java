@@ -1423,18 +1423,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCase_abbreviation(@NotNull SQLParser.Case_abbreviationContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitCase_abbreviation(@NotNull SQLParser.Case_abbreviationContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterEmpty_grouping_set(@NotNull SQLParser.Empty_grouping_setContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1442,6 +1430,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitEmpty_grouping_set(@NotNull SQLParser.Empty_grouping_setContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCase_abbreviation(@NotNull SQLParser.Case_abbreviationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCase_abbreviation(@NotNull SQLParser.Case_abbreviationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2551,6 +2551,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterAlias_table(@NotNull SQLParser.Alias_tableContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAlias_table(@NotNull SQLParser.Alias_tableContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterTrim_specification(@NotNull SQLParser.Trim_specificationContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2750,6 +2762,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitList_value_partition(@NotNull SQLParser.List_value_partitionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAlias_def(@NotNull SQLParser.Alias_defContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAlias_def(@NotNull SQLParser.Alias_defContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

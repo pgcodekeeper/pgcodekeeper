@@ -473,7 +473,7 @@ create_function_statement
     ;
 
 function_parameters
-    : LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? (argtype=data_type | argtype_string=identifier)
+    : LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? (argtype=data_type | argtype_string=schema_qualified_name)
             ((DEFAULT | EQUAL) (LEFT_PAREN)? def_value=value_expression (LEFT_PAREN)?)?(COMMA)?
         )* RIGHT_PAREN 
     ;
@@ -491,7 +491,7 @@ argmode
     ;
 
 function_definition
-    : FUNCTION func_name=identifier 
+    : FUNCTION func_name=schema_qualified_name 
         LEFT_PAREN ( (arg_mode=argmode)? (argname=identifier)? (argtype_data=data_type | argtype_expres=value_expression) (COMMA)? )* RIGHT_PAREN
     ;
     
@@ -1493,7 +1493,7 @@ table_expression
 */
 
 from_clause
-  : FROM LEFT_PAREN+ (table_reference_list | query_specification) RIGHT_PAREN+ as_clause? 
+  : FROM LEFT_PAREN (table_reference_list | query_specification) RIGHT_PAREN as_clause? 
   ;
 
 table_reference_list
@@ -1573,13 +1573,22 @@ named_columns_join
   ;
 
 table_primary
-  : table_or_query_name ((AS)? alias=identifier)? (LEFT_PAREN column_name_list RIGHT_PAREN)?
+  : (alias_table | table_or_query_name) ((AS)? alias=alias_def)? (LEFT_PAREN column_name_list RIGHT_PAREN)?
   | derived_table (AS)? name=identifier (LEFT_PAREN column_name_list RIGHT_PAREN)?
   ;
 
 column_name_list
-  :  identifier  ( COMMA identifier  )*
+  :  identifier ( COMMA identifier  )*
   ;
+
+alias_def
+    : schema_qualified_name 
+    | alias_table
+    ;
+
+alias_table
+    : schema_qualified_name LEFT_PAREN (identifier (COMMA)?)* RIGHT_PAREN
+    ;
 
 derived_table
   : table_subquery
@@ -1595,7 +1604,7 @@ where_clause
   ;
 
 search_condition
-  : value_expression // instead of boolean_value_expression, we use value_expression for more flexibility.
+  : LEFT_PAREN* value_expression RIGHT_PAREN* // instead of boolean_value_expression, we use value_expression for more flexibility.
   ;
 
 /*
