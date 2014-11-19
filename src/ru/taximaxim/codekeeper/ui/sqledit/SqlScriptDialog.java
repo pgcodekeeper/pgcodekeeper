@@ -48,11 +48,13 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -60,6 +62,7 @@ import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -220,11 +223,13 @@ public class SqlScriptDialog extends TrayDialog {
         
         btnJdbcToggle = new Button(parent, SWT.CHECK);
         btnJdbcToggle.setText(Messages.sqlScriptDialog_use_jdbc_for_ddl_update);
-        btnJdbcToggle.setSelection(false);
+        boolean isDdlUpdateOverJdbc = 
+                Activator.getDefault().getPreferenceStore().getBoolean(PREF.IS_DDL_UPDATE_OVER_JDBC);
+        btnJdbcToggle.setSelection(isDdlUpdateOverJdbc);
         
         final Composite notJdbc = new Composite(parent, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.exclude = false;
+        gd.exclude = isDdlUpdateOverJdbc;
         notJdbc.setLayoutData(gd);
         notJdbc.setLayout(new GridLayout());
         
@@ -323,6 +328,9 @@ public class SqlScriptDialog extends TrayDialog {
                 
                 parent.layout();
                 parent.redraw();
+                
+                PreferenceInitializer.savePreference(Activator.getDefault().getPreferenceStore(), 
+                        PREF.IS_DDL_UPDATE_OVER_JDBC, String.valueOf(btnJdbcToggle.getSelection()));
             }
             
             @Override
