@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
-public class Dir {
+public final class Dir {
 
     /**
      * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!

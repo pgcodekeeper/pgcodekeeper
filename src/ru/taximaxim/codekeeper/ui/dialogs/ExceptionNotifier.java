@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  * 
  * @author ryabinin_av
  */
-public class ExceptionNotifier {
+public final class ExceptionNotifier {
     
     private static void notifyDefault(String message, Throwable ex) {
         Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS, 

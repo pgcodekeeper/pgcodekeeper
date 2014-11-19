@@ -3,7 +3,7 @@ package ru.taximaxim.codekeeper.ui;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
-public class Log {
+public final class Log {
 
     public static final int LOG_ERROR = IStatus.ERROR;
     public static final int LOG_WARNING = IStatus.WARNING;
