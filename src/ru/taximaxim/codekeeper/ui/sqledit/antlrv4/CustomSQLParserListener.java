@@ -61,15 +61,4 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     public void exitCreate_view_statement(Create_view_statementContext ctx) {
         objLocation.add(new DBObjectsLocation(ctx.name.identifier(0).Identifier().toString(), ctx.name.getStart().getStartIndex(), filePath));
     }
-    
-    @Override
-    public void exitCreate_function_statement(
-            Create_function_statementContext ctx) {
-        objLocation.add(new DBObjectsLocation(ctx.name.identifier(0).Identifier().toString(), ctx.name.getStart().getStartIndex(), filePath));
-    }
-    
-    @Override
-    public void exitAlter_function_statement(Alter_function_statementContext ctx) {
-        objLocation.add(new DBObjectsLocation(ctx.name.identifier(0).Identifier().toString(), ctx.name.getStart().getStartIndex(), filePath));
-    }
 }
