@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.DBObjectsLocation;
+import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Alter_function_statementContext;
 import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Create_extension_statementContext;
 import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Create_function_statementContext;
 import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Create_sequence_statementContext;
@@ -64,6 +65,11 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitCreate_function_statement(
             Create_function_statementContext ctx) {
+        objLocation.add(new DBObjectsLocation(ctx.name.identifier(0).Identifier().toString(), ctx.name.getStart().getStartIndex(), filePath));
+    }
+    
+    @Override
+    public void exitAlter_function_statement(Alter_function_statementContext ctx) {
         objLocation.add(new DBObjectsLocation(ctx.name.identifier(0).Identifier().toString(), ctx.name.getStart().getStartIndex(), filePath));
     }
 }

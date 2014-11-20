@@ -25,7 +25,6 @@ public class SqlParserMain {
                         new CustomSQLParserListener(objLocation, Paths.get("/")));
         System.err.println(objLocation);
         System.err.println(objLocation.size());
-        System.out.println("Удивление для Антона! =)");
     }
     public void testSampleInputs(String pathToFile, ParseTreeListener listener) throws IOException {
         String input = loadSample(pathToFile, "UTF-8");

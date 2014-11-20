@@ -1712,7 +1712,7 @@ table_or_query_name
   ;
 
 schema_qualified_name
-  : LEFT_PAREN? identifier  ( DOT  identifier (  DOT identifier )? )? RIGHT_PAREN?
+  : identifier  ( DOT  identifier (  DOT identifier )? )?
   ;
 
 query_specification
