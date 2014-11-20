@@ -1604,7 +1604,7 @@ where_clause
   ;
 
 search_condition
-  : LEFT_PAREN* value_expression RIGHT_PAREN* // instead of boolean_value_expression, we use value_expression for more flexibility.
+  : LEFT_PAREN? value_expression RIGHT_PAREN? // instead of boolean_value_expression, we use value_expression for more flexibility.
   ;
 
 /*
@@ -1712,7 +1712,7 @@ table_or_query_name
   ;
 
 schema_qualified_name
-  : identifier  ( DOT  identifier (  DOT identifier )? )?
+  : LEFT_PAREN? identifier  ( DOT  identifier (  DOT identifier )? )? RIGHT_PAREN?
   ;
 
 query_specification
