@@ -149,12 +149,12 @@ public class PgDiffFunctions {
                     || oldfunction.getComment() != null
                     && newFunction.getComment() != null
                     && !oldfunction.getComment().equals(
-                    newFunction.getComment())) {
+                            newFunction.getComment())) {
                 searchPathHelper.outputSearchPath(script);
                 
                 StringBuilder sb = new StringBuilder();
                 sb.append("COMMENT ON FUNCTION ");
-                newFunction.appendFunctionSignature(sb, false);
+                newFunction.appendFunctionSignature(sb, false, true);
                 sb.append(" IS ");
                 sb.append(newFunction.getComment());
                 sb.append(';');
@@ -165,7 +165,7 @@ public class PgDiffFunctions {
                 
                 StringBuilder sb = new StringBuilder();
                 sb.append("COMMENT ON FUNCTION ");
-                newFunction.appendFunctionSignature(sb, false);
+                newFunction.appendFunctionSignature(sb, false, true);
                 sb.append(" IS NULL;");
                 script.addStatement(sb.toString());
             }

@@ -8,7 +8,6 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -41,7 +40,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder(500);
         sbSQL.append("CREATE OR REPLACE FUNCTION ");
-        appendFunctionSignature(sbSQL, true);
+        appendFunctionSignature(sbSQL, true, true);
         sbSQL.append(' ');
         sbSQL.append("RETURNS ");
         sbSQL.append(returns);
@@ -54,7 +53,7 @@ public class PgFunction extends PgStatementWithSearchPath {
 
         if (comment != null && !comment.isEmpty()) {
             sbSQL.append("\n\nCOMMENT ON FUNCTION ");
-            appendFunctionSignature(sbSQL, false);
+            appendFunctionSignature(sbSQL, false, true);
             sbSQL.append(" IS ");
             sbSQL.append(comment);
             sbSQL.append(';');
@@ -70,7 +69,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         }
         
         sb.append("\n\nALTER FUNCTION ");
-        appendFunctionSignature(sb, false)
+        appendFunctionSignature(sb, false, true)
             .append(" OWNER TO ")
             .append(owner)
             .append(';');
@@ -79,7 +78,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     }
     
     public StringBuilder appendFunctionSignature(StringBuilder sb,
-            boolean includeDefaulValues) {
+            boolean includeDefaulValues, boolean includeArgNames) {
         sb.append(PgDiffUtils.getQuotedName(name));
         
         sb.append('(');
@@ -88,7 +87,7 @@ public class PgFunction extends PgStatementWithSearchPath {
             if (addComma) {
                 sb.append(", ");
             }
-            sb.append(argument.getDeclaration(includeDefaulValues));
+            sb.append(argument.getDeclaration(includeDefaulValues, includeArgNames));
             addComma = true;
         }
         sb.append(')');
@@ -124,26 +123,8 @@ public class PgFunction extends PgStatementWithSearchPath {
     public String getDropSQL() {
         final StringBuilder sbString = new StringBuilder(100);
         sbString.append("DROP FUNCTION ");
-        sbString.append(name);
-        sbString.append('(');
-
-        boolean addComma = false;
-
-        for (final Argument argument : arguments) {
-            if ("OUT".equalsIgnoreCase(argument.getMode())) {
-                continue;
-            }
-
-            if (addComma) {
-                sbString.append(", ");
-            }
-
-            sbString.append(argument.getDeclaration(false));
-
-            addComma = true;
-        }
-
-        sbString.append(");");
+        appendFunctionSignature(sbString, false, true);
+        sbString.append(';');
 
         return sbString.toString();
     }
@@ -179,29 +160,7 @@ public class PgFunction extends PgStatementWithSearchPath {
      * @return function signature
      */
     public String getSignature() {
-        final StringBuilder sbString = new StringBuilder(100);
-        sbString.append(name);
-        sbString.append('(');
-
-        boolean addComma = false;
-
-        for (final Argument argument : arguments) {
-            if ("OUT".equalsIgnoreCase(argument.getMode())) {
-                continue;
-            }
-
-            if (addComma) {
-                sbString.append(',');
-            }
-
-            sbString.append(argument.getDataType().toLowerCase(Locale.ENGLISH));
-
-            addComma = true;
-        }
-
-        sbString.append(')');
-
-        return sbString.toString();
+        return appendFunctionSignature(new StringBuilder(), false, false).toString();
     }
 
     /**
@@ -311,7 +270,7 @@ public class PgFunction extends PgStatementWithSearchPath {
             this.name = name;
         }
 
-        public String getDeclaration(final boolean includeDefaultValue) {
+        public String getDeclaration(boolean includeDefaultValue, boolean includeArgName) {
             final StringBuilder sbString = new StringBuilder(50);
 
             if (mode != null && !"IN".equalsIgnoreCase(mode)) {
@@ -319,7 +278,7 @@ public class PgFunction extends PgStatementWithSearchPath {
                 sbString.append(' ');
             }
 
-            if (name != null && !name.isEmpty()) {
+            if (name != null && !name.isEmpty() && includeArgName) {
                 sbString.append(PgDiffUtils.getQuotedName(name));
                 sbString.append(' ');
             }
