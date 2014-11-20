@@ -295,7 +295,6 @@ public abstract class DiffPresentationPane extends Composite {
         case SOURCE_TYPE_JDBC:
             projProps.put(PROJ_PREF.DB_NAME, dbSrc.txtDbName.getText());
             projProps.put(PROJ_PREF.DB_USER, dbSrc.txtDbUser.getText());
-//            projProps.put(PROJ_PREF.DB_PASS, dbSrc.txtDbPass.getText());
             projProps.put(PROJ_PREF.DB_HOST, dbSrc.txtDbHost.getText());
             projProps.putInt(PROJ_PREF.DB_PORT, Integer.valueOf(dbSrc.txtDbPort.getText()));
             break;

@@ -37,8 +37,6 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.ResourceAction;
 
-// FIXME избавиться от костылей по возможности
-// типа getResourceBundle()
 /**
  * Используется для создания самостоятельного объекта SqlSourceViewerExtender
  * имеет менюшку и поддержку клавиш ctrl+z
@@ -168,9 +166,6 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
                 .getBundle("org.eclipse.compare.contentmergeviewer.TextMergeViewerResources"); //$NON-NLS-1$
     }
 
-    /**
-     * TODO Переход на линию, кодировка нужно реализовать интерфейс IAdaptable
-     */
     /*
      * private void contributeGotoLineAction(SqlSourceViewerExtender viewer) {
      * IAction action = new GotoLineAction((ITextEditor)

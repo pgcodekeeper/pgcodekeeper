@@ -2541,8 +2541,6 @@ public class SqlPostgresSyntax implements ISQLSyntax {
             "xpath_exists" //$NON-NLS-1$
     };
 
-    
-    // TODO спросить у андрея: вычеркнуть из идентов киворды и типы, из типов киворды, наоборот??
     @Override
     public String[] getFunctions() {
         return functions;

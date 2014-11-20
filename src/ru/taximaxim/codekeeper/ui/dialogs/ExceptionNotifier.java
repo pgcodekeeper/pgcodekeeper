@@ -34,8 +34,13 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  */
 public class ExceptionNotifier {
     
+    private static void notifyDefault(String message, Throwable ex) {
+        Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS, 
+                message, ex);
+        StatusManager.getManager().handle(status, StatusManager.BLOCK);
+    }
+    
     public static void showErrorDialog(final String message, Throwable source) {
-        // TODO use default StatusHandler?
         notify(source, message, true, true);
     }
     /**
@@ -45,10 +50,10 @@ public class ExceptionNotifier {
      * 
      * @param shell dialog parent. Can be null if showInDialog is false
      */
-    public static void notify(Throwable source, final String message, 
+    private static void notify(Throwable source, final String message, 
             boolean outputToConsole, boolean showInDialog) {
         if (source == null) {
-            source = new Throwable("Throwable is null at this point!"); //$NON-NLS-1$
+            source = new Throwable("Null throwable reported!"); //$NON-NLS-1$
         }
         Log.log(Log.LOG_ERROR, source.getMessage(), source);
         
@@ -81,12 +86,6 @@ public class ExceptionNotifier {
                 }
             });
         }
-    }
-    
-    public static void notify(String message, Throwable ex) {
-        Status status = new Status(IStatus.ERROR, PLUGIN_ID.THIS, 
-                message, ex);
-        StatusManager.getManager().handle(status, StatusManager.BLOCK);
     }
     
     private ExceptionNotifier() {}
