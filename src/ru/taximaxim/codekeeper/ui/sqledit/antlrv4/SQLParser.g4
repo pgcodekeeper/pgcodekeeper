@@ -1774,8 +1774,7 @@ as_clause
   ;
 
 over_clause
-    : OVER LEFT_PAREN ((partition_by_columns | orderby_clause | order_specification)
-                       (COMMA (partition_by_columns | orderby_clause | order_specification))*)? RIGHT_PAREN
+    : OVER LEFT_PAREN (partition_by_columns | orderby_clause | order_specification)* RIGHT_PAREN
     ;
 
 column_reference_list
