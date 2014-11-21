@@ -10,6 +10,10 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.FontDescriptor;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -34,6 +38,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -48,6 +53,7 @@ public abstract class DiffPresentationPane extends Composite {
     // should be true for commit, false for diff script
     private final boolean isProjSrc;
 
+    private final Composite contNotifications;
     protected final DiffTableViewer diffTable;
     private final Composite containerSrc;
     private final Composite containerDb;
@@ -57,13 +63,14 @@ public abstract class DiffPresentationPane extends Composite {
     protected final DbPicker dbSrc;
     private final DiffPaneViewer diffPane;
     private final Label lblSourceInfo;
-    protected DBSources selectedDBSource;
 
+    protected DBSources selectedDBSource;
     protected DbSource dbSource;
     protected DbSource dbTarget;
     protected TreeDiffer treeDiffer;
 
     private IPreferenceStore mainPrefs;
+    private LocalResourceManager lrm;
 
     private void setDbSource(DbSource dbSource) {
         this.dbSource = dbSource;
@@ -87,16 +94,82 @@ public abstract class DiffPresentationPane extends Composite {
     public DiffPresentationPane(Composite parent, boolean projIsSrc,
             final IPreferenceStore mainPrefs, final PgDbProject proj) {
         super(parent, SWT.NONE);
-        setLayout(new GridLayout());
-
+        
+        this.setLayout(new GridLayout());
+        this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         this.isProjSrc = projIsSrc;
         this.mainPrefs = mainPrefs;
         final IEclipsePreferences projProps = proj.getPrefs();
+        
+        // notifications container
+        // simplified for 1 static notification
+        // refactor into multiple child composites w/ description class
+        // for multiple dynamic notifications if necessary
+        contNotifications = new Group(this, SWT.BORDER | SWT.SHADOW_ETCHED_IN);
+        contNotifications.setLayout(new GridLayout(5, false));
+        
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.exclude = true;
+        contNotifications.setVisible(false);
+        contNotifications.setLayoutData(gd);
+        
+        Label lblWarnIcon = new Label(contNotifications, SWT.NONE);
+        lblWarnIcon.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONWARNING))));
+        lblWarnIcon.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
+        
+        Label lblNotification = new Label(contNotifications, SWT.NONE);
+        lblNotification.setText("Attention");
+        lblNotification.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
+        lblNotification.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
+        lblNotification.setFont(lrm.createFont(FontDescriptor.createFrom(
+                lblNotification.getFont()).withStyle(SWT.BOLD).increaseHeight(2)));
+        
+        Label l = new Label(contNotifications, SWT.NONE);
+        l.setText("Project files have been modified!");
+        l.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
+        
+        Button btnUpdateRefreshed = new Button(contNotifications, SWT.PUSH);
+        btnUpdateRefreshed.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONREFRESH))));
+        btnUpdateRefreshed.setToolTipText("Update Editor");
+        btnUpdateRefreshed.setLayoutData(new GridData(SWT.RIGHT, SWT.BOTTOM, false, true));
+        
+        btnUpdateRefreshed.addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (isProjSrc) {
+                    setDbTarget(DbSource.fromDbObject(dbTarget.getDbObject(), 
+                            dbTarget.getOrigin()));
+                } else {
+                    setDbSource(DbSource.fromDbObject(dbSource.getDbObject(), 
+                            dbSource.getOrigin()));
+                }
+                loadChanges();
+                
+                showNotificationArea(false);
+            }
+        });
+        
+        Button btnDismissRefresh = new Button(contNotifications, SWT.PUSH | SWT.FLAT);
+        btnDismissRefresh.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONCLOSE))));
+        btnDismissRefresh.setToolTipText("Dismiss");
+        btnDismissRefresh.setLayoutData(new GridData(SWT.RIGHT, SWT.BOTTOM, true, true));
+        
+        btnDismissRefresh.addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showNotificationArea(false);
+            }
+        });
+        // end notifications container
 
         // upper container
         final Composite containerUpper = new Composite(this, SWT.NONE);
         containerUpper.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        // initialize default layout for customizable container
         GridLayout gl = new GridLayout(3, false);
         gl.marginHeight = gl.marginWidth = 0;
         containerUpper.setLayout(gl);
@@ -104,6 +177,7 @@ public abstract class DiffPresentationPane extends Composite {
         // upper left part
         Composite contUpperLeft = new Composite(containerUpper, SWT.NONE);
         contUpperLeft.setLayoutData(new GridData(GridData.FILL_BOTH));
+        // initialize default layout for customizable container
         gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
         contUpperLeft.setLayout(gl);
@@ -136,7 +210,7 @@ public abstract class DiffPresentationPane extends Composite {
             }
         });
 
-        GridData gd = new GridData(SWT.RIGHT, SWT.FILL, false, true, 1, 1);
+        gd = new GridData(SWT.RIGHT, SWT.FILL, false, true, 1, 1);
         gd.widthHint = btnGetChanges.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         gd.minimumWidth = btnGetChanges.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         gd.horizontalIndent = 20;
@@ -459,18 +533,13 @@ public abstract class DiffPresentationPane extends Composite {
     public void reset() {
         clearInputs();
         if (dbTarget != null && dbSource != null) {
-            try {
-                if (isProjSrc) {
-                    setDbTarget(DbSource.fromDbObject(dbTarget.getDbObject(), 
-                            dbTarget.getOrigin()));
-                } else {
-                    setDbSource(DbSource.fromDbObject(dbSource.getDbObject(), 
-                            dbSource.getOrigin()));
-                }
-                loadChanges();
-            } catch (Exception ex) {
-                Log.log(Log.LOG_ERROR, "Error while autodiffing on project update", ex); //$NON-NLS-1$
-            }
+            showNotificationArea(true);
         }
+    }
+    
+    private void showNotificationArea(boolean visible) {
+        ((GridData) contNotifications.getLayoutData()).exclude = !visible;
+        contNotifications.setVisible(visible);
+        this.layout();
     }
 }

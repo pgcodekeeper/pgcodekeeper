@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbPicker extends Group {
 
-    final private boolean allowShellResize;
+    private final boolean allowShellResize;
     
     private Label lblFieldName;
     private CLabel lblWarnDbPass;
