@@ -1039,18 +1039,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFunction_name(@NotNull SQLParser.Function_nameContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitFunction_name(@NotNull SQLParser.Function_nameContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterQuery_expression_body(@NotNull SQLParser.Query_expression_bodyContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1118,18 +1106,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSchema_alter(@NotNull SQLParser.Schema_alterContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterRoutine_invocation(@NotNull SQLParser.Routine_invocationContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitRoutine_invocation(@NotNull SQLParser.Routine_invocationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1363,18 +1339,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterBoolean_literal(@NotNull SQLParser.Boolean_literalContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitBoolean_literal(@NotNull SQLParser.Boolean_literalContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterBoolean_type(@NotNull SQLParser.Boolean_typeContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1435,6 +1399,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterValue_expression_primary_cast(@NotNull SQLParser.Value_expression_primary_castContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitValue_expression_primary_cast(@NotNull SQLParser.Value_expression_primary_castContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterTable_attribute_option(@NotNull SQLParser.Table_attribute_optionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1478,6 +1454,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitNull_predicate(@NotNull SQLParser.Null_predicateContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterFunction_definition_name_paren(@NotNull SQLParser.Function_definition_name_parenContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFunction_definition_name_paren(@NotNull SQLParser.Function_definition_name_parenContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1850,18 +1838,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitStorage_parameter(@NotNull SQLParser.Storage_parameterContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterSql_argument_list(@NotNull SQLParser.Sql_argument_listContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSql_argument_list(@NotNull SQLParser.Sql_argument_listContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -3014,18 +2990,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSubquery(@NotNull SQLParser.SubqueryContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterFunction_names_for_reserved_words(@NotNull SQLParser.Function_names_for_reserved_wordsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitFunction_names_for_reserved_words(@NotNull SQLParser.Function_names_for_reserved_wordsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

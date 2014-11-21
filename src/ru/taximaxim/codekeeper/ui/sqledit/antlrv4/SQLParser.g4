@@ -131,18 +131,13 @@ table_action
     | ADD tabl_constraint_using_index=table_constraint_using_index
     | VALIDATE CONSTRAINT constraint_name=schema_qualified_name
     | DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name (RESTRICT | CASCADE)
-    | DISABLE TRIGGER (trigger_name=schema_qualified_name | ALL | USER)?
-    | ENABLE TRIGGER (trigger_name=schema_qualified_name | ALL | USER)?
-    | ENABLE REPLICA TRIGGER trigger_name=schema_qualified_name 
-    | ENABLE ALWAYS TRIGGER trigger_name=schema_qualified_name 
-    | DISABLE RULE rewrite_rule_name=schema_qualified_name 
-    | ENABLE RULE rewrite_rule_name=schema_qualified_name 
-    | ENABLE REPLICA RULE rewrite_rule_name=schema_qualified_name 
-    | ENABLE ALWAYS RULE rewrite_rule_name=schema_qualified_name 
+    | (DISABLE | ENABLE) TRIGGER (trigger_name=schema_qualified_name | ALL | USER)?
+    | ENABLE (REPLICA | ALWAYS) TRIGGER trigger_name=schema_qualified_name 
+    | (DISABLE | ENABLE) RULE rewrite_rule_name=schema_qualified_name 
+    | ENABLE (REPLICA | ALWAYS) RULE rewrite_rule_name=schema_qualified_name 
     | CLUSTER ON index_name=schema_qualified_name 
-    | SET WITHOUT CLUSTER
+    | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
-    | SET WITHOUT OIDS
     | SET storage_parameter
     | RESET LEFT_PAREN with_storage_parameter (COMMA with_storage_parameter)* RIGHT_PAREN
     | INHERIT parent_table=schema_qualified_name 
@@ -476,10 +471,11 @@ create_function_statement
             | RETURNS TABLE LEFT_PAREN function_column_name_type(COMMA function_column_name_type)* RIGHT_PAREN
         )?
           (LANGUAGE lang_name=identifier
-            | WINDOW
-            | IMMUTABLE | STABLE | VOLATILE
-            | CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT
-            | (EXTERNAL)? SECURITY INVOKER | (EXTERNAL)? SECURITY DEFINER
+            | (WINDOW | IMMUTABLE | STABLE | VOLATILE | STRICT)
+            | CALLED ON NULL INPUT 
+            | RETURNS NULL ON NULL INPUT 
+            | (EXTERNAL)? SECURITY INVOKER 
+            | (EXTERNAL)? SECURITY DEFINER
             | COST execution_cost=NUMBER
             | ROWS result_rows=NUMBER
             | SET configuration_parameter=identifier (TO value=identifier | EQUAL value=identifier | FROM CURRENT)(COMMA value=identifier)*
@@ -496,8 +492,8 @@ function_column_name_type
 function_parameters
     : name=schema_qualified_name 
       LEFT_PAREN ( function_arguments
-            (function_def_value)? (COMMA function_arguments (function_def_value)?)*
-      )* RIGHT_PAREN 
+            function_def_value? (COMMA function_arguments function_def_value?)*
+      )? RIGHT_PAREN 
     ;
 
 function_def_value
@@ -522,8 +518,12 @@ argmode
     ;
 
 function_definition
-    : FUNCTION func_name=schema_qualified_name 
-        LEFT_PAREN ( function_arguments (COMMA function_arguments)* )* RIGHT_PAREN
+    : FUNCTION function_definition_name_paren
+    ;
+
+function_definition_name_paren
+    : func_name=schema_qualified_name 
+        LEFT_PAREN ( function_arguments (COMMA function_arguments)* )? RIGHT_PAREN
     ;
     
 functions_definition_schema
@@ -985,7 +985,7 @@ unsigned_literal
 general_literal
   : Character_String_Literal
   | datetime_literal
-  | boolean_literal
+  | truth_value
   ;
 
 datetime_literal
@@ -1006,9 +1006,9 @@ date_literal
   : DATE date_string=Character_String_Literal
   ;
 
-boolean_literal
-  : TRUE | FALSE | UNKNOWN
-  ;
+//boolean_literal
+//  : TRUE | FALSE | UNKNOWN
+//  ;
 
 /*
 ===============================================================================
@@ -1115,14 +1115,11 @@ boolean_type
   ;
 
 datetime_type
-  : DATE
-  | TIME
-  | TIME WITH TIME ZONE
+  : (DATE
+  | TIME (WITH TIME ZONE)?
   | TIMETZ
-  | TIMESTAMP
-  | TIMESTAMP WITH TIME ZONE
-  | TIMESTAMP WITHOUT TIME ZONE
-  | TIMESTAMPTZ
+  | TIMESTAMP ((WITH | WITHOUT) TIME ZONE)?
+  | TIMESTAMPTZ)
   ;
 
 bit_type
@@ -1148,7 +1145,7 @@ value_expression_primary
   ;
 
 parenthesized_value_expression
-  : LEFT_PAREN (~(LEFT_PAREN | RIGHT_PAREN) | value_expression)+ RIGHT_PAREN
+  : LEFT_PAREN value_expression RIGHT_PAREN
   ;
 
 nonparenthesized_value_expression_primary
@@ -1158,7 +1155,7 @@ nonparenthesized_value_expression_primary
   | scalar_subquery
   | case_expression
   | cast_specification
-  | routine_invocation
+  | function_definition_name_paren
   | NULL
   ;
 
@@ -1169,7 +1166,7 @@ nonparenthesized_value_expression_primary
 */
 
 unsigned_value_specification
-  : unsigned_literal
+    : unsigned_literal
   ;
 
 unsigned_numeric_literal
@@ -1220,7 +1217,7 @@ set_function_type
   ;
 
 filter_clause
-  : FILTER LEFT_PAREN WHERE search_condition RIGHT_PAREN
+  : FILTER LEFT_PAREN where_clause RIGHT_PAREN
   ;
 
 grouping_operation
@@ -1334,10 +1331,13 @@ array
   ;
 
 numeric_primary
-  : value_expression_primary (CAST_EXPRESSION cast_target)*
+  : value_expression_primary_cast
   | numeric_value_function
   ;
 
+value_expression_primary_cast
+    : value_expression_primary (CAST_EXPRESSION cast_target)*
+    ;
 sign
   : PLUS | MINUS
   ;
@@ -1390,7 +1390,7 @@ character_factor
   ;
 
 character_primary
-  : value_expression_primary
+  : value_expression_primary_cast
   | string_value_function
   ;
 
@@ -1517,7 +1517,7 @@ table_expression
 */
 
 from_clause
-  : FROM LEFT_PAREN (table_reference_list | query_specification) RIGHT_PAREN as_clause? 
+  : FROM LEFT_PAREN? (table_reference_list | query_specification) RIGHT_PAREN? as_clause?
   ;
 
 table_reference_list
@@ -1542,7 +1542,7 @@ table_reference
 */
 
 joined_table
-  : table_primary joined_table_primary+
+  : LEFT_PAREN? table_primary RIGHT_PAREN? joined_table_primary+
   ;
 
 joined_table_primary
@@ -1753,7 +1753,7 @@ select_sublist
   ;
 
 derived_column
-  : LEFT_PAREN* value_expression RIGHT_PAREN* (as_clause | over_clause)*
+  : value_expression (as_clause | over_clause)*
   ;
 
 qualified_asterisk
@@ -1990,23 +1990,23 @@ extended_datetime_field
 ===============================================================================
 */
 
-routine_invocation
-  : function_name LEFT_PAREN sql_argument_list? RIGHT_PAREN
-  ;
+//routine_invocation
+//  : function_name LEFT_PAREN sql_argument_list? RIGHT_PAREN
+//  ;
 
-function_names_for_reserved_words
-  : LEFT
-  | RIGHT
-  ;
+//function_names_for_reserved_words
+//  : LEFT
+//  | RIGHT
+//  ;
 
-function_name
-  : schema_qualified_name
-  | function_names_for_reserved_words
-  ;
+//function_name
+//  : schema_qualified_name
+//  | function_names_for_reserved_words
+//  ;
 
-sql_argument_list
-  : value_expression (COMMA value_expression)*
-  ;
+//sql_argument_list
+//  : value_expression (COMMA value_expression)*
+//  ;
 
 /*
 ===============================================================================

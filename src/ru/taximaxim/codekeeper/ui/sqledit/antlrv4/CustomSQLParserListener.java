@@ -12,6 +12,7 @@ import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Create_table_stateme
 import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Create_trigger_statementContext;
 import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Create_view_statementContext;
 import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.Set_statementContext;
+import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SQLParser.StatementContext;
 
 public class CustomSQLParserListener extends SQLParserBaseListener {
     
@@ -60,5 +61,14 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitCreate_view_statement(Create_view_statementContext ctx) {
         objLocation.add(new DBObjectsLocation(ctx.name.identifier(0).Identifier().toString(), ctx.name.getStart().getStartIndex(), filePath));
+    }
+    
+    @Override
+    public void exitCreate_function_statement(
+            Create_function_statementContext ctx) {
+        objLocation.add(new DBObjectsLocation(ctx.function_parameters().name.identifier(0).Identifier().toString(), ctx.function_parameters().getStart().getStartIndex(), filePath));
+    }
+    @Override
+    public void enterStatement(StatementContext ctx) {
     }
 }

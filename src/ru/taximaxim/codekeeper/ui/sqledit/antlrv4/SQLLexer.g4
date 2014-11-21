@@ -663,10 +663,6 @@ UNICODE_ESC
     ;
 
 // Dollar-quoted String Constants (§4.1.2.4)
-DOLLAR_FIELD
-    : BeginDollarStringConstant Text_between_Dollar EndDollarStringConstant
-    ;
-// может встречаться $_$$ как начало функции 
 BeginDollarStringConstant
     : '$' Tag? '$' {_tags.push(getText());} -> pushMode(DollarQuotedStringMode)
     ;
