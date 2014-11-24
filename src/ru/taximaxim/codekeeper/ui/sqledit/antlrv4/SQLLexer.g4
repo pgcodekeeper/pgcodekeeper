@@ -552,6 +552,7 @@ DOUBLE_QUOTE : '"';
 DOLLAR: '$';
 LEFT_BRACKET: '[';
 RIGHT_BRACKET: ']';
+BIT_AND: '&';
 
 NUMBER : Digit+;
 
@@ -631,7 +632,7 @@ fragment
 Extended_Control_Characters         :   '\u0080' .. '\u009F';
 
 Character_String_Literal
-  : QUOTE ( ESC_SEQ | ~('\\'|'\'') )* QUOTE
+  : QUOTE ( ESC_SEQ | ~('\'') )* QUOTE
   ;
 
 ESC_SEQUENCES
@@ -645,7 +646,7 @@ HEX_DIGIT : ('0'..'9'|'a'..'f'|'A'..'F') ;
 
 fragment
 ESC_SEQ
-    :   '\\' ('b'|'t'|'n'|'f'|'r'|'\"'|'\''|'\\')
+    :   '\\' ('b'|'t'|'n'|'f'|'r'|'\"'|'\\')
     |   UNICODE_ESC
     |   OCTAL_ESC
     ;

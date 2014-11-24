@@ -555,7 +555,7 @@ create_schema_statement
 create_view_statement
     : CREATE (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name (column_name+=identifier (COMMA)?)*
     (WITH LEFT_PAREN (view_option_name=identifier (EQUAL view_option_value=identifier)?)+ RIGHT_PAREN)?
-    AS query_specification (UNION query_specification)* 
+    AS query_specification (UNION (ALL)? query_specification)* 
     ;
     
 create_table_statement
@@ -884,6 +884,7 @@ nonreserved_keywords
   | REGCONFIG
   | REGEXP
   | RENAME
+  | REPLACE
   | REPLICA
   | RESET
   | RESTART
@@ -1031,17 +1032,14 @@ predefined_type
   | bit_type
   | binary_type
   | network_type
-  | regclass
+  | REGCLASS
   | REGCONFIG
   | TRIGGER
   | UUID
   | VOID
   | INET
+  | schema_qualified_name
   ;
-
-regclass
-    : REGCLASS
-    ;
     
 network_type
   : INET4
@@ -1239,7 +1237,7 @@ case_expression
 
 case_abbreviation
   : NULLIF LEFT_PAREN numeric_value_expression COMMA value_expression  RIGHT_PAREN
-  | COALESCE LEFT_PAREN numeric_value_expression ( COMMA value_expression  )+ RIGHT_PAREN
+  | COALESCE LEFT_PAREN numeric_value_expression (COMMA value_expression)+ RIGHT_PAREN
   ;
 
 case_specification
@@ -1307,9 +1305,13 @@ all_array
     : ALL LEFT_PAREN array_expression RIGHT_PAREN
     ;
   
+bit_operation
+    : character_value_expression BIT_AND character_value_expression
+    ;
 common_value_expression
   : numeric_value_expression
   | string_value_expression
+  | bit_operation
   | NULL
   ;
 
@@ -1390,6 +1392,7 @@ string_value_expression
 
 character_value_expression
   : character_factor (CONCATENATION_OPERATOR character_factor)*
+  | LEFT_PAREN character_value_expression RIGHT_PAREN
   ;
 
 character_factor

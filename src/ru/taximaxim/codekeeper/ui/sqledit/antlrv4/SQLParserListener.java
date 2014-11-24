@@ -571,16 +571,6 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitSet_function_type(@NotNull SQLParser.Set_function_typeContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SQLParser#regclass}.
-	 * @param ctx the parse tree
-	 */
-	void enterRegclass(@NotNull SQLParser.RegclassContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link SQLParser#regclass}.
-	 * @param ctx the parse tree
-	 */
-	void exitRegclass(@NotNull SQLParser.RegclassContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link SQLParser#argmode}.
 	 * @param ctx the parse tree
 	 */
@@ -1060,6 +1050,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitBinary_large_object_string_type(@NotNull SQLParser.Binary_large_object_string_typeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SQLParser#bit_operation}.
+	 * @param ctx the parse tree
+	 */
+	void enterBit_operation(@NotNull SQLParser.Bit_operationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#bit_operation}.
+	 * @param ctx the parse tree
+	 */
+	void exitBit_operation(@NotNull SQLParser.Bit_operationContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#outer_join_type}.
 	 * @param ctx the parse tree

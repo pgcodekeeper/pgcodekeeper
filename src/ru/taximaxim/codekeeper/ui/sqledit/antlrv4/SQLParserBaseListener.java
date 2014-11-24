@@ -691,18 +691,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterRegclass(@NotNull SQLParser.RegclassContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitRegclass(@NotNull SQLParser.RegclassContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterArgmode(@NotNull SQLParser.ArgmodeContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1274,6 +1262,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitBinary_large_object_string_type(@NotNull SQLParser.Binary_large_object_string_typeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterBit_operation(@NotNull SQLParser.Bit_operationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitBit_operation(@NotNull SQLParser.Bit_operationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
