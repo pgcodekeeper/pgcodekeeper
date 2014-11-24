@@ -291,6 +291,16 @@ public interface SQLParserListener extends ParseTreeListener {
 	 */
 	void exitFunction_def_value(@NotNull SQLParser.Function_def_valueContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#all_array}.
+	 * @param ctx the parse tree
+	 */
+	void enterAll_array(@NotNull SQLParser.All_arrayContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#all_array}.
+	 * @param ctx the parse tree
+	 */
+	void exitAll_array(@NotNull SQLParser.All_arrayContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#drop_table_statement}.
 	 * @param ctx the parse tree
 	 */

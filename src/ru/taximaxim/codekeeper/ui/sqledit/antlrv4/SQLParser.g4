@@ -555,7 +555,7 @@ create_schema_statement
 create_view_statement
     : CREATE (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name (column_name+=identifier (COMMA)?)*
     (WITH LEFT_PAREN (view_option_name=identifier (EQUAL view_option_value=identifier)?)+ RIGHT_PAREN)?
-    AS query_specification
+    AS query_specification (UNION query_specification)* 
     ;
     
 create_table_statement
@@ -1157,6 +1157,9 @@ nonparenthesized_value_expression_primary
   | cast_specification
   | function_definition_name_paren
   | NULL
+  | query_specification
+  | all_array
+  | case_abbreviation
   ;
 
 /*
@@ -1235,8 +1238,8 @@ case_expression
   ;
 
 case_abbreviation
-  : NULLIF LEFT_PAREN numeric_value_expression COMMA boolean_value_expression  RIGHT_PAREN
-  | COALESCE LEFT_PAREN numeric_value_expression ( COMMA boolean_value_expression  )+ RIGHT_PAREN
+  : NULLIF LEFT_PAREN numeric_value_expression COMMA value_expression  RIGHT_PAREN
+  | COALESCE LEFT_PAREN numeric_value_expression ( COMMA value_expression  )+ RIGHT_PAREN
   ;
 
 case_specification
@@ -1245,7 +1248,7 @@ case_specification
   ;
 
 simple_case
-  : CASE boolean_value_expression ( simple_when_clause )+ ( else_clause  )? END
+  : CASE value_expression ( simple_when_clause )+ ( else_clause  )? END
   ;
 
 searched_case
@@ -1298,6 +1301,10 @@ value_expression
 
 array_expression
     : ARRAY LEFT_BRACKET value_expression (COMMA value_expression)* RIGHT_BRACKET
+    ;
+
+all_array
+    : ALL LEFT_PAREN array_expression RIGHT_PAREN
     ;
   
 common_value_expression
@@ -1542,7 +1549,7 @@ table_reference
 */
 
 joined_table
-  : LEFT_PAREN? table_primary RIGHT_PAREN? joined_table_primary+
+  : table_primary joined_table_primary+
   ;
 
 joined_table_primary
@@ -1599,6 +1606,7 @@ named_columns_join
 table_primary
   : (alias_table | table_or_query_name) ((AS)? alias=alias_def)? (LEFT_PAREN column_name_list RIGHT_PAREN)?
   | derived_table (AS)? name=identifier (LEFT_PAREN column_name_list RIGHT_PAREN)?
+  | LEFT_PAREN table_reference RIGHT_PAREN
   ;
 
 column_name_list
@@ -1628,7 +1636,8 @@ where_clause
   ;
 
 search_condition
-  : LEFT_PAREN? value_expression RIGHT_PAREN? // instead of boolean_value_expression, we use value_expression for more flexibility.
+  : LEFT_PAREN search_condition RIGHT_PAREN // instead of boolean_value_expression, we use value_expression for more flexibility.
+  | value_expression
   ;
 
 /*

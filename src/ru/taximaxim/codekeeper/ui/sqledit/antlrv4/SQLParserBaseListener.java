@@ -355,6 +355,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterAll_array(@NotNull SQLParser.All_arrayContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAll_array(@NotNull SQLParser.All_arrayContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterDrop_table_statement(@NotNull SQLParser.Drop_table_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
