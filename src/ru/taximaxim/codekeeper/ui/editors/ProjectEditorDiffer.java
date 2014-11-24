@@ -65,6 +65,7 @@ import ru.taximaxim.codekeeper.ui.differ.DiffPresentationPane;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
@@ -229,6 +230,9 @@ class CommitPage extends DiffPresentationPane {
     }
     
     private void commit() {
+        if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
+            return;
+        }
         if (diffTable.getCheckedElementsCount() < 1){
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_INFORMATION);
             mb.setMessage(Messages.please_check_at_least_one_row);
@@ -356,6 +360,7 @@ class CommitPage extends DiffPresentationPane {
 
 class DiffPage extends DiffPresentationPane {
     
+    private final PgDbProject proj;
     private final IPreferenceStore mainPrefs;
     
     private Button btnGetLatest, btnAddDepcy;
@@ -371,6 +376,7 @@ class DiffPage extends DiffPresentationPane {
             PgDbProject proj) {
         super(parent, false, mainPrefs, proj);
         this.mainPrefs = mainPrefs;
+        this.proj = proj;
     }
     
     @Override
@@ -415,6 +421,9 @@ class DiffPage extends DiffPresentationPane {
     }
     
     private void diff() throws PgCodekeeperUIException {
+        if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
+            return;
+        }
         if (diffTable.getCheckedElementsCount() < 1){
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_INFORMATION);
             mb.setMessage(Messages.please_check_at_least_one_row);
@@ -426,7 +435,7 @@ class DiffPage extends DiffPresentationPane {
 
         final Differ differ = new Differ(
                 DbSource.fromFilter(dbSource, filtered, DiffSide.LEFT),
-                DbSource.fromFilter(dbTarget,filtered, DiffSide.RIGHT),
+                DbSource.fromFilter(dbTarget, filtered, DiffSide.RIGHT),
                 false);
         differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
         differ.setAdditionalDepciesSource(manualDepciesSource);
