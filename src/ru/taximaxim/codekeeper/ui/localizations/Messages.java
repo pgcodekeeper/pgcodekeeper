@@ -203,8 +203,16 @@ public class Messages extends NLS {
     public static String dBUpdatePrefPage_drop_table;
     public static String dBUpdatePrefPage_set_warning_when_next_statements_present;
     public static String DiffPaneViewer_project;
+    public static String DiffPresentationPane_attention;
+
     public static String DiffPresentationPane_cannotSaveDbPropToProjProps;
+
+    public static String DiffPresentationPane_dismiss;
     public static String DiffPresentationPane_error_loading_changes;
+
+    public static String DiffPresentationPane_project_modified;
+
+    public static String DiffPresentationPane_refresh_editor;
     public static String DiffTableViewer_error_load_checked_set;
     public static String DiffTableViewer_error_reading_ignored_objects;
     public static String DiffTableViewer_error_save_checked_set;

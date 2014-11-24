@@ -51,7 +51,7 @@ public interface UIConsts {
         }
         public static DBSources getEnum(String value) {
             // Возвращать Дамп если тип соурса был none
-            if (value.equalsIgnoreCase("none")) {
+            if (value.equalsIgnoreCase("none")) { //$NON-NLS-1$
                 return SOURCE_TYPE_DUMP;
             }
             for (DBSources v : values()) {

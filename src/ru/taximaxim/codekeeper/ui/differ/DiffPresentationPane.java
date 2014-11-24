@@ -54,6 +54,7 @@ public abstract class DiffPresentationPane extends Composite {
     private final boolean isProjSrc;
 
     private final Composite contNotifications;
+    private final Button btnUpdateRefreshed;
     protected final DiffTableViewer diffTable;
     private final Composite containerSrc;
     private final Composite containerDb;
@@ -119,20 +120,20 @@ public abstract class DiffPresentationPane extends Composite {
         lblWarnIcon.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
         
         Label lblNotification = new Label(contNotifications, SWT.NONE);
-        lblNotification.setText("Attention");
+        lblNotification.setText(Messages.DiffPresentationPane_attention);
         lblNotification.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
         lblNotification.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
         lblNotification.setFont(lrm.createFont(FontDescriptor.createFrom(
                 lblNotification.getFont()).withStyle(SWT.BOLD).increaseHeight(2)));
         
         Label l = new Label(contNotifications, SWT.NONE);
-        l.setText("Project files have been modified!");
+        l.setText(Messages.DiffPresentationPane_project_modified);
         l.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
         
-        Button btnUpdateRefreshed = new Button(contNotifications, SWT.PUSH);
+        btnUpdateRefreshed = new Button(contNotifications, SWT.PUSH);
         btnUpdateRefreshed.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONREFRESH))));
-        btnUpdateRefreshed.setToolTipText("Update Editor");
+        btnUpdateRefreshed.setToolTipText(Messages.DiffPresentationPane_refresh_editor);
         btnUpdateRefreshed.setLayoutData(new GridData(SWT.RIGHT, SWT.BOTTOM, false, true));
         
         btnUpdateRefreshed.addSelectionListener(new SelectionAdapter() {
@@ -155,8 +156,8 @@ public abstract class DiffPresentationPane extends Composite {
         Button btnDismissRefresh = new Button(contNotifications, SWT.PUSH | SWT.FLAT);
         btnDismissRefresh.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONCLOSE))));
-        btnDismissRefresh.setToolTipText("Dismiss");
-        btnDismissRefresh.setLayoutData(new GridData(SWT.RIGHT, SWT.BOTTOM, true, true));
+        btnDismissRefresh.setToolTipText(Messages.DiffPresentationPane_dismiss);
+        btnDismissRefresh.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
         
         btnDismissRefresh.addSelectionListener(new SelectionAdapter() {
             
@@ -185,7 +186,7 @@ public abstract class DiffPresentationPane extends Composite {
         
         // upper middle part
         lblSourceInfo = new Label(containerUpper, SWT.NONE);
-        lblSourceInfo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, true, 1, 1));
+        lblSourceInfo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, true));
 
         // upper right part
         btnGetChanges = new Button(containerUpper, SWT.PUSH);
@@ -195,6 +196,7 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
+                    showNotificationArea(false);
                     if (fillDbSources(proj, projProps)) {
                         clearInputs();
                         loadChanges();
@@ -210,7 +212,7 @@ public abstract class DiffPresentationPane extends Composite {
             }
         });
 
-        gd = new GridData(SWT.RIGHT, SWT.FILL, false, true, 1, 1);
+        gd = new GridData(SWT.RIGHT, SWT.FILL, false, true);
         gd.widthHint = btnGetChanges.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         gd.minimumWidth = btnGetChanges.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         gd.horizontalIndent = 20;
@@ -541,5 +543,8 @@ public abstract class DiffPresentationPane extends Composite {
         ((GridData) contNotifications.getLayoutData()).exclude = !visible;
         contNotifications.setVisible(visible);
         this.layout();
+        if (visible) {
+            btnUpdateRefreshed.setFocus();
+        }
     }
 }
