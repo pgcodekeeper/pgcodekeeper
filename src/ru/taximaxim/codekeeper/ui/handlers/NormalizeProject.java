@@ -57,7 +57,7 @@ public class NormalizeProject extends AbstractHandler {
                     PgDatabase db = DbSource.fromProject(proj).get(mon.newChild(1));
                     
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
-                    new ProjectUpdater(db, proj).update();
+                    new ProjectUpdater(db, null, null, proj).updateFull();
                 } catch (IOException ex) {
                     return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                             Messages.NormalizeProject_error_while_updating_project, ex);

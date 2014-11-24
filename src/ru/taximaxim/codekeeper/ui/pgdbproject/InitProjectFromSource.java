@@ -78,6 +78,6 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         }
 
         pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model); // 75
-        new ProjectUpdater(db, props).update();
+        new ProjectUpdater(db, null, null, props).updateFull();
     }
 }

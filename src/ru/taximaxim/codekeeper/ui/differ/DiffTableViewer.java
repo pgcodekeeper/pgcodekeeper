@@ -64,7 +64,6 @@ import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -658,24 +657,14 @@ public class DiffTableViewer extends Composite {
     }
     
     private void generateFlatElementsMap(TreeElement subtree) {
-        if (subtree.hasChildren()) {
-            for (TreeElement child : subtree.getChildren()) {
-                generateFlatElementsMap(child);
-            }
-        }
+        List<TreeElement> elementsList = subtree.generateElementsList(
+                new ArrayList<TreeElement>(), dbSource.getDbObject(), dbTarget.getDbObject());
         
-        if ((subtree.getSide() == DiffSide.BOTH && subtree.getParent() != null 
-                && subtree.getParent().getSide() != DiffSide.BOTH)
-                || subtree.getType() == DbObjType.CONTAINER
-                || subtree.getType() == DbObjType.DATABASE 
-                ||(subtree.getSide() == DiffSide.BOTH && 
-                subtree.getPgStatement(dbSource.getDbObject()).compare(
-                        subtree.getPgStatement(dbTarget.getDbObject())))) {
-            return;
-        }
-        // Do not add elements, that are in ignore list
-        if (!ignoredElements.contains(subtree.getName())) {
-            elements.put(subtree, false);
+        for(TreeElement e : elementsList){
+            // Do not add elements, that are in ignore list
+            if (!ignoredElements.contains(e.getName())) {
+                elements.put(e, false);
+            }
         }
     }
     
