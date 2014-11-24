@@ -312,9 +312,13 @@ class CommitPage extends DiffPresentationPane {
 
                 pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
                 try {
-                    List<TreeElement> checked = resultingTree.generateElementsList(
-                            new ArrayList<TreeElement>(), dbSource.getDbObject(), dbTarget.getDbObject());
-                    new ProjectUpdater(dbNew, dbSource.getDbObject(), checked, proj).updatePartial();
+                    if (mainPrefs.getBoolean(COMMIT_PREF.USE_PARTIAL_EXPORT_ON_COMMIT)){
+                        List<TreeElement> checked = resultingTree.generateElementsList(
+                                new ArrayList<TreeElement>(), dbSource.getDbObject(), dbTarget.getDbObject());
+                        new ProjectUpdater(dbNew, dbSource.getDbObject(), checked, proj).updatePartial();
+                    }else{
+                        new ProjectUpdater(dbNew, null, null, proj).updateFull();
+                    }
                     pm.done();
                 } catch (IOException e) {
                     return new Status(Status.ERROR, PLUGIN_ID.THIS, 

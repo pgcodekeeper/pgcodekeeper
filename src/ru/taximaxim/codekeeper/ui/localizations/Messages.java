@@ -218,6 +218,7 @@ public class Messages extends NLS {
     public static String generalPrefPage_pg_dump_executable;
     public static String generalPrefPage_show_console_when_program_write_to_console;
     public static String generalPrefPage_use_depcy_on_commit_page;
+    public static String generalPrefPage_use_partial_project_update;
     public static String generalPrefPage_use_psql_depcy_on_generating_script;
     public static String ignoreObjectsPrefPage_add_ignore;
     public static String ignoreObjectsPrefPage_delete_ignore;
