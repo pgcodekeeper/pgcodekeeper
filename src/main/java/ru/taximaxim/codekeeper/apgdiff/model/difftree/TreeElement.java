@@ -243,6 +243,24 @@ public class TreeElement {
         throw new IllegalStateException("Unknown element type: " + type);
     }
 
+    public List<TreeElement> generateElementsList(List<TreeElement> result, 
+            PgDatabase dbSource, PgDatabase dbTarget) {
+        for (TreeElement child : getChildren()) {
+            child.generateElementsList(result, dbSource, dbTarget);
+        }
+        
+        boolean shouldCompareEdits = side == DiffSide.BOTH && dbSource != null && dbTarget != null;
+        if ((side == DiffSide.BOTH && parent != null && parent.getSide() != DiffSide.BOTH)
+                || type == DbObjType.CONTAINER
+                || type == DbObjType.DATABASE 
+                || shouldCompareEdits && getPgStatement(dbSource).compare(getPgStatement(dbTarget))) {
+            return result;
+        }
+        
+        result.add(this);
+        return result;
+    }
+    
     /**
      * Recursively walk a tree, copying nodes that exist in filterSubset to returned tree.
      * Important: filterSubset should be a subset of this tree

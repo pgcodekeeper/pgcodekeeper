@@ -201,7 +201,7 @@ public class PgDumpLoaderTest {
         Path exportDir = null;
         try{
             exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
-            new ModelExporter(exportDir.toFile(), dbPredefined, encoding).export();
+            new ModelExporter(exportDir.toFile(), dbPredefined, encoding).exportFull();
             
             PgDatabase dbAfterExport = PgDumpLoader.loadDatabaseSchemaFromDirTree(
                     exportDir.toString(), encoding, true, true);
