@@ -96,13 +96,13 @@ public abstract class DiffPresentationPane extends Composite {
     public DiffPresentationPane(Composite parent, boolean projIsSrc,
             final IPreferenceStore mainPrefs, final PgDbProject proj) {
         super(parent, SWT.NONE);
-        
+
         this.setLayout(new GridLayout());
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         this.isProjSrc = projIsSrc;
         this.mainPrefs = mainPrefs;
         final IEclipsePreferences projProps = proj.getPrefs();
-        
+
         // notifications container
         // simplified for 1 static notification
         // refactor into multiple child composites w/ description class
@@ -347,7 +347,6 @@ public abstract class DiffPresentationPane extends Composite {
 
         dbSrc.getTxtDbName().setText(projProps.get(PROJ_PREF.DB_NAME, "")); //$NON-NLS-1$
         dbSrc.getTxtDbUser().setText(projProps.get(PROJ_PREF.DB_USER, "")); //$NON-NLS-1$
-        dbSrc.getTxtDbPass().setText(projProps.get(PROJ_PREF.DB_PASS, "")); //$NON-NLS-1$
         dbSrc.getTxtDbHost().setText(projProps.get(PROJ_PREF.DB_HOST, "")); //$NON-NLS-1$
         dbSrc.getTxtDbPort().setText(String.valueOf(projProps.getInt(PROJ_PREF.DB_PORT, 0)));
         // end middle right container

@@ -154,7 +154,7 @@ public class NewProjWizard extends Wizard
                 try {
                     getContainer().run(false, false,
                             new InitProjectFromSource(mainPrefStore, props,
-                                    pageDb.getDumpPath()));
+                                    pageDb.getDumpPath(), pageDb.getDbPass()));
                 } catch (InvocationTargetException ex) {
                     props.deleteFromWorkspace();
                     ExceptionNotifier.showErrorDialog(
@@ -222,7 +222,6 @@ public class NewProjWizard extends Wizard
         newPrefs.put(PROJ_PREF.ENCODING, pageMisc.getEncoding());
         newPrefs.put(PROJ_PREF.DB_NAME, pageDb.getDbName());
         newPrefs.put(PROJ_PREF.DB_USER, pageDb.getDbUser());
-        newPrefs.put(PROJ_PREF.DB_PASS, pageDb.getDbPass());
         newPrefs.put(PROJ_PREF.DB_HOST, pageDb.getDbHost());
         newPrefs.putInt(PROJ_PREF.DB_PORT, pageDb.getDbPort());
     }
