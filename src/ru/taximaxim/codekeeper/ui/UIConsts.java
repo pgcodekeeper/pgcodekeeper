@@ -51,7 +51,7 @@ public interface UIConsts {
         }
         public static DBSources getEnum(String value) {
             // Возвращать Дамп если тип соурса был none
-            if (value.equalsIgnoreCase("none")) {
+            if (value.equalsIgnoreCase("none")) { //$NON-NLS-1$
                 return SOURCE_TYPE_DUMP;
             }
             for (DBSources v : values()) {
@@ -101,5 +101,7 @@ public interface UIConsts {
         String ICONINVERTSELECTION = "/icons/loop_obj.gif"; //$NON-NLS-1$
         String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
         String ICONBALLRED = "/icons/ball_red.png"; //$NON-NLS-1$
+        String ICONREFRESH = "/icons/refresh.gif"; //$NON-NLS-1$
+        String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
     }
 }
