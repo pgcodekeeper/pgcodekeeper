@@ -43,7 +43,7 @@ public final class OpenProjectUtils {
         return null;
     }
 
-    static boolean checkVersionAndWarn(IProject proj, Shell parent,
+    public static boolean checkVersionAndWarn(IProject proj, Shell parent,
             boolean warnNonBlockers) {
         StringBuilder err = new StringBuilder();
         boolean canContinue = checkVersion(proj, err);

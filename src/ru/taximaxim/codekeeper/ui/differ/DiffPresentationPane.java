@@ -39,6 +39,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
@@ -350,6 +351,10 @@ public abstract class DiffPresentationPane extends Composite {
 
     private boolean fillDbSources(PgDbProject proj, IEclipsePreferences projProps)
             throws PgCodekeeperUIException {
+        if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
+            return false;
+        }
+        
         DbSource dbsProj, dbsRemote;
         dbsProj = DbSource.fromProject(proj);
         switch (selectedDBSource) {
