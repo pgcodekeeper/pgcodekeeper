@@ -14,6 +14,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -250,7 +251,7 @@ class DbSourceJdbc extends DbSource {
     
     DbSourceJdbc(String host, int port, String user, String pass, String dbName, String encoding) {
         super(dbName);
-        jdbcLoader = new JdbcLoader(host, port, user, pass, dbName, encoding);
+        jdbcLoader = new JdbcLoader(new JdbcConnector(host, port, user, pass, dbName, encoding));
     }
     
     @Override

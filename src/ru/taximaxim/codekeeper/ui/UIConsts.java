@@ -21,6 +21,7 @@ public interface UIConsts {
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
+        String IS_DDL_UPDATE_OVER_JDBC = "isDdlUpdateOverJdbc";
     }
     
     interface COMMIT_PREF {
