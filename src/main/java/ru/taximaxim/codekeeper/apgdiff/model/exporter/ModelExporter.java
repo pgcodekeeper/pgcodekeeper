@@ -95,6 +95,17 @@ public class ModelExporter {
     }
     
     /**
+     * Removes file if it exists.
+     */
+    private void deleteFileIfExists(File parentDir, File relativeFile, TreeElement el) 
+            throws IOException{
+        Path toDelete = Paths.get(parentDir.getCanonicalPath(), relativeFile.toString());
+        Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() + 
+                " for object " + el.getType() + " " + el.getName());
+        Files.deleteIfExists(toDelete);
+    }
+    
+    /**
      * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
      */
     public void deleteRecursive(File f) throws IOException {
@@ -130,26 +141,29 @@ public class ModelExporter {
         }
     }
     
+    /**
+     * Deletes the file corresponding to <code>el</code>.<br>
+     * If <code>el</code> is of type Schema, deletes schema folder as well.<br>
+     * If <code>el</code> is of type Function, dumps other same-named functions back.<br>
+     * If <code>el</code> is of type Trigger/Index/Constraint, updates parent table content.<br>
+     * If <code>el</code> is of type Table, deletes its Triggers, Indexes, Constraints, too.
+     */
     private void deleteObject(TreeElement el) throws IOException{
         PgStatement st = el.getPgStatement(oldDb);
-        if (st == null){
-            st = el.getPgStatement(newDb);
-        }
+
         TreeElement elParent = el.getParent().getParent();
         if (st instanceof PgSchema){
             // delete schema sql file
-            Path toDelete = Paths.get(outDir.getCanonicalPath(), getRelativeFilePath(st, true).toString());
-            Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() + " for object " + el.getType() + " " + el.getName());
-            Files.deleteIfExists(toDelete);
+            deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
+            
             
             // delete schema's folder content
+            Log.log(Log.LOG_INFO, "Deleting schema folder for schema " + el.getName());
             deleteRecursive(new File(outDir, getRelativeFilePath(st, false).toString()));
         }else if (st instanceof PgFunction){
             if (!(elParent.getSide() == DiffSide.LEFT && changedObjects.contains(elParent))){
                 // delete function sql file
-                Path toDelete = Paths.get(outDir.getCanonicalPath(), getRelativeFilePath(st, true).toString());
-                Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() + " for object " + el.getType() + " " + el.getName());
-                Files.deleteIfExists(toDelete);
+                deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
                 
                 PgSchema newParentSchema = newDb.getSchema(st.getParent().getName());
                 List<PgFunction> funcsToExport = new ArrayList<PgFunction>();
@@ -163,37 +177,42 @@ public class ModelExporter {
                 }
                 
                 // dump rest of same-named functions back
-                dumpFunctions(funcsToExport, new File (outDir, getRelativeFilePath(newParentSchema, false).toString()));
+                dumpFunctions(funcsToExport, 
+                        new File (outDir, getRelativeFilePath(newParentSchema, false).toString()));
             }
-        }else if ((st instanceof PgConstraint || st instanceof PgIndex || st instanceof PgTrigger)){
+        }else if (st instanceof PgConstraint 
+                || st instanceof PgIndex 
+                || st instanceof PgTrigger){
             if (!changedObjects.contains(elParent)){
                 editObject(elParent);
             }
         }else{
-            Path toDelete = Paths.get(outDir.getCanonicalPath(), getRelativeFilePath(st, true).toString());
-            Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() + " for object " + el.getType() + " " + el.getName());
-            Files.deleteIfExists(toDelete);
+            deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
         }
     }
     
+    /**
+     * Updates the file corresponding to <code>el</code>.<br>
+     * If <code>el</code> is of type Schema, only schema file is updated.<br>
+     * If <code>el</code> is of type Function, updates other same-named functions too.<br>
+     * If <code>el</code> is of type Trigger/Index/Constraint, updates parent table content.<br>
+     * If <code>el</code> is of type Table, updates its Triggers, Indexes, Constraints, too.
+     */
     private void editObject(TreeElement el) throws IOException{
         PgStatement stInNew = el.getPgStatement(newDb);
         TreeElement elParent = el.getParent().getParent();
 
         if (stInNew instanceof PgSchema || stInNew instanceof PgExtension){
             // delete sql file
-            Path toDelete = Paths.get(outDir.getCanonicalPath(), getRelativeFilePath(stInNew, true).toString());
-            Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() + " for object " + el.getType() + " " + el.getName());
-            Files.deleteIfExists(toDelete);
+            deleteFileIfExists(outDir, getRelativeFilePath(stInNew, true), el);
             
             // dump new version
-            dumpSQL(stInNew.getFullSQL(), new File(outDir, getRelativeFilePath(stInNew, true).toString()));
+            dumpSQL(stInNew.getFullSQL(), 
+                    new File(outDir, getRelativeFilePath(stInNew, true).toString()));
         }else if (stInNew instanceof PgFunction){
             if ((elParent.getSide() != DiffSide.LEFT) || !changedObjects.contains(elParent)){
                 // delete function sql file
-                Path toDelete = Paths.get(outDir.getCanonicalPath(), getRelativeFilePath(stInNew, true).toString());
-                Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() + " for object " + el.getType() + " " + el.getName());
-                Files.deleteIfExists(toDelete);
+                deleteFileIfExists(outDir, getRelativeFilePath(stInNew, true), el);
                 
                 PgSchema newParentSchema = newDb.getSchema(stInNew.getParent().getName());
                 List<PgFunction> funcsToExport = new ArrayList<PgFunction>();
@@ -207,79 +226,93 @@ public class ModelExporter {
                 }
                 
                 // dump rest of same-named functions back
-                dumpFunctions(funcsToExport, new File (outDir, getRelativeFilePath(newParentSchema, false).toString()));
+                dumpFunctions(funcsToExport, 
+                        new File (outDir, getRelativeFilePath(newParentSchema, false).toString()));
             }
-        }else if (stInNew instanceof PgConstraint || stInNew instanceof PgIndex || stInNew instanceof PgTrigger){
+        }else if (stInNew instanceof PgConstraint 
+                || stInNew instanceof PgIndex 
+                || stInNew instanceof PgTrigger){
             if (!changedObjects.contains(elParent)){
                 editObject(elParent);
             }
         }else if (stInNew instanceof PgTable){
             // remove old version
-            Path toDelete = Paths.get(outDir.getCanonicalPath(), getRelativeFilePath(stInNew, true).toString());
-            Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() + " for object " + el.getType() + " " + el.getName());
-            Files.deleteIfExists(toDelete);
+            deleteFileIfExists(outDir, getRelativeFilePath(stInNew, true), el);
 
             PgTable newTable = (PgTable)el.getPgStatement(newDb);
             if (newTable == null){
                 throw new IOException("New table should not be null since it is not in edit/delete lists");
             }
             
-            File parentSchemaDir = new File (outDir, getRelativeFilePath(stInNew.getParent(), false).toString());
-            dumpTables(Arrays.asList(newTable), parentSchemaDir);
+            dumpTables(Arrays.asList(newTable), 
+                    new File (outDir, getRelativeFilePath(stInNew.getParent(), false).toString()));
         }else{
             // remove old version
-            Path toDelete = Paths.get(outDir.getCanonicalPath(), getRelativeFilePath(stInNew, true).toString());
-            Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() + " for object " + el.getType() + " " + el.getName());
-            Files.deleteIfExists(toDelete);
+            deleteFileIfExists(outDir, getRelativeFilePath(stInNew, true), el);
             
             // dump new version
-            dumpSQL(getDumpSql((PgStatementWithSearchPath)stInNew), new File(outDir, getRelativeFilePath(stInNew, true).toString()));
+            dumpSQL(getDumpSql((PgStatementWithSearchPath)stInNew), 
+                    new File(outDir, getRelativeFilePath(stInNew, true).toString()));
         }
     }
     
+    /**
+     * Creates the file corresponding to <code>el</code> and dumps its content.<br>
+     * If <code>el</code> is of type Schema, only schema file is created.<br>
+     * If <code>el</code> is of type Function, creates/updates other same-named functions too.<br>
+     * If <code>el</code> is of type Trigger/Index/Constraint, updates parent table content.<br>
+     * If <code>el</code> is of type Table, updates its Triggers, Indexes, Constraints, too.
+     */
     private void createObject(TreeElement el) throws IOException{
         PgStatement stInNew = el.getPgStatement(newDb);
         TreeElement elParent = el.getParent().getParent();
         
         if (stInNew instanceof PgSchema || stInNew instanceof PgExtension){
             // export schema/extension sql file
-            dumpSQL(stInNew.getFullSQL(), new File (outDir, getRelativeFilePath(stInNew, true).toString()));
-            
-            // do not create schema folder, as it will be created by dumpObject
+            dumpSQL(stInNew.getFullSQL(), 
+                    new File (outDir, getRelativeFilePath(stInNew, true).toString()));
         }else if (stInNew instanceof PgFunction){
             testParentSchema(elParent);
             
             editObject(el);
-        }else if (stInNew instanceof PgConstraint || stInNew instanceof PgIndex || stInNew instanceof PgTrigger){
+        }else if (stInNew instanceof PgConstraint 
+                || stInNew instanceof PgIndex 
+                || stInNew instanceof PgTrigger){
             if(!changedObjects.contains(elParent)){
                 editObject(elParent);
             }
         }else if (stInNew instanceof PgSequence){
             testParentSchema(elParent);
 
-            dumpObjects(new ArrayList<PgStatementWithSearchPath>(Arrays.asList((PgStatementWithSearchPath)stInNew)), 
-                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())), "SEQUENCE");
+            dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew), 
+                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
+                    "SEQUENCE");
         }else if (stInNew instanceof PgView){
             testParentSchema(elParent);
 
-            dumpObjects(new ArrayList<PgStatementWithSearchPath>(Arrays.asList((PgStatementWithSearchPath)stInNew)), 
-                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())), "VIEW");
+            dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew), 
+                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())), 
+                    "VIEW");
         }else if (stInNew instanceof PgTable){
             testParentSchema(elParent);
 
             editObject(el);
         }else{
-            throw new IOException("Wrong TreeItem type: " + el.getType());
+            throw new IOException("Wrong TreeElement type: " + el.getType());
         }
     }
     
-    private boolean testParentSchema(TreeElement el) throws IOException{
+    /**
+     * Tests whether this object is either selected for creation or not selected for deletion.
+     * 
+     * @throws IOException  if this object is not to be created or is to be deleted 
+     */
+    private void testParentSchema(TreeElement el) throws IOException{
         if (el.getSide() == DiffSide.RIGHT && !changedObjects.contains(el) 
                 || el.getSide() == DiffSide.LEFT && changedObjects.contains(el)){
             throw new IOException("Parent schema either will not be created (NEW) "
                     + "or is deleted already along with its schema folder");
         }
-        return true;
     }
     
     /**
