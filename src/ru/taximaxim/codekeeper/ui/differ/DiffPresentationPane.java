@@ -9,7 +9,12 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.FontDescriptor;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -34,11 +39,13 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
@@ -48,6 +55,8 @@ public abstract class DiffPresentationPane extends Composite {
     // should be true for commit, false for diff script
     private final boolean isProjSrc;
 
+    private final Composite contNotifications;
+    private final Button btnUpdateRefreshed;
     protected final DiffTableViewer diffTable;
     private final Composite containerSrc;
     private final Composite containerDb;
@@ -57,13 +66,14 @@ public abstract class DiffPresentationPane extends Composite {
     protected final DbPicker dbSrc;
     private final DiffPaneViewer diffPane;
     private final Label lblSourceInfo;
-    protected DBSources selectedDBSource;
 
+    protected DBSources selectedDBSource;
     protected DbSource dbSource;
     protected DbSource dbTarget;
     protected TreeDiffer treeDiffer;
 
     private IPreferenceStore mainPrefs;
+    private LocalResourceManager lrm;
 
     private void setDbSource(DbSource dbSource) {
         this.dbSource = dbSource;
@@ -87,16 +97,82 @@ public abstract class DiffPresentationPane extends Composite {
     public DiffPresentationPane(Composite parent, boolean projIsSrc,
             final IPreferenceStore mainPrefs, final PgDbProject proj) {
         super(parent, SWT.NONE);
-        setLayout(new GridLayout());
 
+        this.setLayout(new GridLayout());
+        this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         this.isProjSrc = projIsSrc;
         this.mainPrefs = mainPrefs;
         final IEclipsePreferences projProps = proj.getPrefs();
 
+        // notifications container
+        // simplified for 1 static notification
+        // refactor into multiple child composites w/ description class
+        // for multiple dynamic notifications if necessary
+        contNotifications = new Group(this, SWT.BORDER | SWT.SHADOW_ETCHED_IN);
+        contNotifications.setLayout(new GridLayout(5, false));
+        
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.exclude = true;
+        contNotifications.setVisible(false);
+        contNotifications.setLayoutData(gd);
+        
+        Label lblWarnIcon = new Label(contNotifications, SWT.NONE);
+        lblWarnIcon.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONWARNING))));
+        lblWarnIcon.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
+        
+        Label lblNotification = new Label(contNotifications, SWT.NONE);
+        lblNotification.setText(Messages.DiffPresentationPane_attention);
+        lblNotification.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
+        lblNotification.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
+        lblNotification.setFont(lrm.createFont(FontDescriptor.createFrom(
+                lblNotification.getFont()).withStyle(SWT.BOLD).increaseHeight(2)));
+        
+        Label l = new Label(contNotifications, SWT.NONE);
+        l.setText(Messages.DiffPresentationPane_project_modified);
+        l.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
+        
+        btnUpdateRefreshed = new Button(contNotifications, SWT.PUSH);
+        btnUpdateRefreshed.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONREFRESH))));
+        btnUpdateRefreshed.setToolTipText(Messages.DiffPresentationPane_refresh_editor);
+        btnUpdateRefreshed.setLayoutData(new GridData(SWT.RIGHT, SWT.BOTTOM, false, true));
+        
+        btnUpdateRefreshed.addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (isProjSrc) {
+                    setDbTarget(DbSource.fromDbObject(dbTarget.getDbObject(), 
+                            dbTarget.getOrigin()));
+                } else {
+                    setDbSource(DbSource.fromDbObject(dbSource.getDbObject(), 
+                            dbSource.getOrigin()));
+                }
+                loadChanges();
+                
+                showNotificationArea(false);
+            }
+        });
+        
+        Button btnDismissRefresh = new Button(contNotifications, SWT.PUSH | SWT.FLAT);
+        btnDismissRefresh.setImage(lrm.createImage(ImageDescriptor.createFromURL(
+                Activator.getContext().getBundle().getResource(FILE.ICONCLOSE))));
+        btnDismissRefresh.setToolTipText(Messages.DiffPresentationPane_dismiss);
+        btnDismissRefresh.setLayoutData(new GridData(SWT.DEFAULT, SWT.BOTTOM, false, true));
+        
+        btnDismissRefresh.addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showNotificationArea(false);
+            }
+        });
+        // end notifications container
+
         // upper container
         final Composite containerUpper = new Composite(this, SWT.NONE);
         containerUpper.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        // initialize default layout for customizable container
         GridLayout gl = new GridLayout(3, false);
         gl.marginHeight = gl.marginWidth = 0;
         containerUpper.setLayout(gl);
@@ -104,6 +180,7 @@ public abstract class DiffPresentationPane extends Composite {
         // upper left part
         Composite contUpperLeft = new Composite(containerUpper, SWT.NONE);
         contUpperLeft.setLayoutData(new GridData(GridData.FILL_BOTH));
+        // initialize default layout for customizable container
         gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
         contUpperLeft.setLayout(gl);
@@ -111,7 +188,7 @@ public abstract class DiffPresentationPane extends Composite {
         
         // upper middle part
         lblSourceInfo = new Label(containerUpper, SWT.NONE);
-        lblSourceInfo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, true, 1, 1));
+        lblSourceInfo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, true));
 
         // upper right part
         btnGetChanges = new Button(containerUpper, SWT.PUSH);
@@ -121,6 +198,7 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
+                    showNotificationArea(false);
                     if (fillDbSources(proj, projProps)) {
                         clearInputs();
                         loadChanges();
@@ -136,7 +214,7 @@ public abstract class DiffPresentationPane extends Composite {
             }
         });
 
-        GridData gd = new GridData(SWT.RIGHT, SWT.FILL, false, true, 1, 1);
+        gd = new GridData(SWT.RIGHT, SWT.FILL, false, true);
         gd.widthHint = btnGetChanges.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         gd.minimumWidth = btnGetChanges.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         gd.horizontalIndent = 20;
@@ -192,8 +270,7 @@ public abstract class DiffPresentationPane extends Composite {
         containerSrc.setLayout(gl);
 
         gd = new GridData(SWT.FILL, SWT.FILL, false, true);
-        gd.minimumWidth = 300;
-        gd.widthHint = 300;
+        gd.widthHint = new PixelConverter(parent).convertWidthInCharsToPixels(45);
         containerSrc.setLayoutData(gd);
 
         Group grpSrc = new Group(containerSrc, SWT.NONE);
@@ -268,11 +345,10 @@ public abstract class DiffPresentationPane extends Composite {
         }
         showDbPicker(useDbPicker);
 
-        dbSrc.txtDbName.setText(projProps.get(PROJ_PREF.DB_NAME, "")); //$NON-NLS-1$
-        dbSrc.txtDbUser.setText(projProps.get(PROJ_PREF.DB_USER, "")); //$NON-NLS-1$
-        dbSrc.txtDbPass.setText(projProps.get(PROJ_PREF.DB_PASS, "")); //$NON-NLS-1$
-        dbSrc.txtDbHost.setText(projProps.get(PROJ_PREF.DB_HOST, "")); //$NON-NLS-1$
-        dbSrc.txtDbPort.setText(String.valueOf(projProps.getInt(PROJ_PREF.DB_PORT, 0)));
+        dbSrc.getTxtDbName().setText(projProps.get(PROJ_PREF.DB_NAME, "")); //$NON-NLS-1$
+        dbSrc.getTxtDbUser().setText(projProps.get(PROJ_PREF.DB_USER, "")); //$NON-NLS-1$
+        dbSrc.getTxtDbHost().setText(projProps.get(PROJ_PREF.DB_HOST, "")); //$NON-NLS-1$
+        dbSrc.getTxtDbPort().setText(String.valueOf(projProps.getInt(PROJ_PREF.DB_PORT, 0)));
         // end middle right container
         
         // read flip position from preferences
@@ -293,10 +369,10 @@ public abstract class DiffPresentationPane extends Composite {
             break;
         case SOURCE_TYPE_DB:
         case SOURCE_TYPE_JDBC:
-            projProps.put(PROJ_PREF.DB_NAME, dbSrc.txtDbName.getText());
-            projProps.put(PROJ_PREF.DB_USER, dbSrc.txtDbUser.getText());
-            projProps.put(PROJ_PREF.DB_HOST, dbSrc.txtDbHost.getText());
-            projProps.putInt(PROJ_PREF.DB_PORT, Integer.valueOf(dbSrc.txtDbPort.getText()));
+            projProps.put(PROJ_PREF.DB_NAME, dbSrc.getTxtDbName().getText());
+            projProps.put(PROJ_PREF.DB_USER, dbSrc.getTxtDbUser().getText());
+            projProps.put(PROJ_PREF.DB_HOST, dbSrc.getTxtDbHost().getText());
+            projProps.putInt(PROJ_PREF.DB_PORT, Integer.valueOf(dbSrc.getTxtDbPort().getText()));
             break;
         }
         projProps.flush();
@@ -328,11 +404,11 @@ public abstract class DiffPresentationPane extends Composite {
         String preset = dbSrc.getSelectedDbPresetName();
         if (preset.isEmpty()){
             value.append("     " + Messages.connection_details); //$NON-NLS-1$
-            value.append(dbSrc.txtDbUser.getText().isEmpty() ? "" : dbSrc.txtDbUser.getText() + '@'); //$NON-NLS-1$
-            value.append(dbSrc.txtDbHost.getText().isEmpty() ? Messages.unknown_host : dbSrc.txtDbHost.getText());
-            value.append(dbSrc.txtDbPort.getText().isEmpty() ? "" : ':' + dbSrc.txtDbPort.getText()); //$NON-NLS-1$ 
+            value.append(dbSrc.getTxtDbUser().getText().isEmpty() ? "" : dbSrc.getTxtDbUser().getText() + '@'); //$NON-NLS-1$
+            value.append(dbSrc.getTxtDbHost().getText().isEmpty() ? Messages.unknown_host : dbSrc.getTxtDbHost().getText());
+            value.append(dbSrc.getTxtDbPort().getText().isEmpty() ? "" : ':' + dbSrc.getTxtDbPort().getText()); //$NON-NLS-1$ 
             value.append('/'); 
-            value.append(dbSrc.txtDbName.getText().isEmpty() ? Messages.unknown_db : dbSrc.txtDbName.getText());
+            value.append(dbSrc.getTxtDbName().getText().isEmpty() ? Messages.unknown_db : dbSrc.getTxtDbName().getText());
         }else{
             value.append("     ") //$NON-NLS-1$
                     .append(Messages.commitPartDescr_used_connection_template)
@@ -350,6 +426,10 @@ public abstract class DiffPresentationPane extends Composite {
 
     private boolean fillDbSources(PgDbProject proj, IEclipsePreferences projProps)
             throws PgCodekeeperUIException {
+        if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
+            return false;
+        }
+        
         DbSource dbsProj, dbsRemote;
         dbsProj = DbSource.fromProject(proj);
         switch (selectedDBSource) {
@@ -364,22 +444,22 @@ public abstract class DiffPresentationPane extends Composite {
                     .fromFile(dumpfile, projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
             break;
         case SOURCE_TYPE_DB:
-            String sPort = dbSrc.txtDbPort.getText();
+            String sPort = dbSrc.getTxtDbPort().getText();
             int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
             dbsRemote = DbSource.fromDb(mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
-                    dbSrc.txtDbHost.getText(), port, dbSrc.txtDbUser.getText(),
-                    dbSrc.txtDbPass.getText(), dbSrc.txtDbName.getText(),
+                    dbSrc.getTxtDbHost().getText(), port, dbSrc.getTxtDbUser().getText(),
+                    dbSrc.getTxtDbPass().getText(), dbSrc.getTxtDbName().getText(),
                     projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
             break;
         case SOURCE_TYPE_JDBC:
-            sPort = dbSrc.txtDbPort.getText();
+            sPort = dbSrc.getTxtDbPort().getText();
             port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
-            dbsRemote = DbSource.fromJdbc(dbSrc.txtDbHost.getText(), port, dbSrc.txtDbUser.getText(),
-                    dbSrc.txtDbPass.getText(), dbSrc.txtDbName.getText(),
-                    projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
+            dbsRemote = DbSource.fromJdbc(dbSrc.getTxtDbHost().getText(), port,
+                    dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText(),
+                    dbSrc.getTxtDbName().getText(), projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
             break;
         default:
             throw new PgCodekeeperUIException(Messages.undefined_source_for_db_changes);
@@ -459,18 +539,16 @@ public abstract class DiffPresentationPane extends Composite {
     public void reset() {
         clearInputs();
         if (dbTarget != null && dbSource != null) {
-            try {
-                if (isProjSrc) {
-                    setDbTarget(DbSource.fromDbObject(dbTarget.getDbObject(), 
-                            dbTarget.getOrigin()));
-                } else {
-                    setDbSource(DbSource.fromDbObject(dbSource.getDbObject(), 
-                            dbSource.getOrigin()));
-                }
-                loadChanges();
-            } catch (Exception ex) {
-                Log.log(Log.LOG_ERROR, "Error while autodiffing on project update", ex); //$NON-NLS-1$
-            }
+            showNotificationArea(true);
+        }
+    }
+    
+    private void showNotificationArea(boolean visible) {
+        ((GridData) contNotifications.getLayoutData()).exclude = !visible;
+        contNotifications.setVisible(visible);
+        this.layout();
+        if (visible) {
+            btnUpdateRefreshed.setFocus();
         }
     }
 }

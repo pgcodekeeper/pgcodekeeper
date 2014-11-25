@@ -868,8 +868,8 @@ public class DiffTableViewer extends Composite {
         
         private class SortingColumn {
             
-            public final Columns col;
-            public final boolean desc;
+            private final Columns col;
+            private final boolean desc;
             
             public SortingColumn(Columns col, boolean desc) {
                 this.col = col;

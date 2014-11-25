@@ -25,6 +25,8 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -34,6 +36,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
@@ -65,6 +68,7 @@ import ru.taximaxim.codekeeper.ui.differ.DiffPresentationPane;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
@@ -93,22 +97,21 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
     @Override
     protected void createPages() {
         int i;
+        
+        iCommit = ImageDescriptor.createFromURL(Activator.getContext().
+                getBundle().getResource(FILE.ICONBALLBLUE)).createImage();
         commit = new CommitPage(getContainer(), 
                 Activator.getDefault().getPreferenceStore(), proj);
         i = addPage(commit);
-        
         setPageText(i, Messages.ProjectEditorDiffer_page_text_commit);
-        iCommit = ImageDescriptor.createFromURL(Activator.getContext().getBundle()
-                .getResource(FILE.ICONBALLBLUE)).createImage();
         setPageImage(i, iCommit);
-        
+
+        iDiff = ImageDescriptor.createFromURL(Activator.getContext().
+                getBundle().getResource(FILE.ICONBALLRED)).createImage();
         diff = new DiffPage(getContainer(), 
                 Activator.getDefault().getPreferenceStore(), proj);
         i = addPage(diff);
-        
         setPageText(i, Messages.ProjectEditorDiffer_page_text_diff);
-        iDiff = ImageDescriptor.createFromURL(Activator.getContext().getBundle()
-                .getResource(FILE.ICONBALLRED)).createImage();
         setPageImage(i, iDiff);
     }
 
@@ -194,6 +197,8 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 
 class CommitPage extends DiffPresentationPane {
 
+    private LocalResourceManager lrm;
+    
     private final IPreferenceStore mainPrefs;
     private final PgDbProject proj;
     
@@ -210,7 +215,15 @@ class CommitPage extends DiffPresentationPane {
     }
     
     @Override
-    protected void createUpperContainer(final Composite container, GridLayout gl) {
+    protected void createUpperContainer(Composite container, GridLayout gl) {
+        gl.numColumns = 2;
+        container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        
+        lrm = new LocalResourceManager(JFaceResources.getResources(), container);
+        new Label(container, SWT.NONE).setImage(lrm.createImage(
+                ImageDescriptor.createFromURL(Activator.getContext().getBundle()
+                        .getResource(FILE.ICONBALLBLUE))));
+        
         btnSave = new Button(container, SWT.PUSH);
         btnSave.setText(Messages.commitPartDescr_commit);
         btnSave.setEnabled(false);
@@ -221,14 +234,12 @@ class CommitPage extends DiffPresentationPane {
                 commit();
             }
         });
-        
-        GridData gd = new GridData(SWT.DEFAULT, SWT.FILL, false, false);
-        gd.widthHint = btnSave.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
-        gd.minimumWidth = gd.widthHint;
-        container.setLayoutData(gd);
     }
     
     private void commit() {
+        if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
+            return;
+        }
         if (diffTable.getCheckedElementsCount() < 1){
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_INFORMATION);
             mb.setMessage(Messages.please_check_at_least_one_row);
@@ -356,6 +367,9 @@ class CommitPage extends DiffPresentationPane {
 
 class DiffPage extends DiffPresentationPane {
     
+    private LocalResourceManager lrm;
+    
+    private final PgDbProject proj;
     private final IPreferenceStore mainPrefs;
     
     private Button btnGetLatest, btnAddDepcy;
@@ -371,12 +385,18 @@ class DiffPage extends DiffPresentationPane {
             PgDbProject proj) {
         super(parent, false, mainPrefs, proj);
         this.mainPrefs = mainPrefs;
+        this.proj = proj;
     }
     
     @Override
     protected void createUpperContainer(Composite container, GridLayout gl) {
-        gl.numColumns = 2;
+        gl.numColumns = 3;
         container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        lrm = new LocalResourceManager(JFaceResources.getResources(), container);
+        new Label(container, SWT.NONE).setImage(lrm.createImage(
+                ImageDescriptor.createFromURL(Activator.getContext().getBundle()
+                        .getResource(FILE.ICONBALLRED))));
 
         btnGetLatest = new Button(container, SWT.PUSH);
         btnGetLatest.setText(Messages.diffPartDescr_get_latest);
@@ -415,6 +435,9 @@ class DiffPage extends DiffPresentationPane {
     }
     
     private void diff() throws PgCodekeeperUIException {
+        if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
+            return;
+        }
         if (diffTable.getCheckedElementsCount() < 1){
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_INFORMATION);
             mb.setMessage(Messages.please_check_at_least_one_row);
@@ -426,7 +449,7 @@ class DiffPage extends DiffPresentationPane {
 
         final Differ differ = new Differ(
                 DbSource.fromFilter(dbSource, filtered, DiffSide.LEFT),
-                DbSource.fromFilter(dbTarget,filtered, DiffSide.RIGHT),
+                DbSource.fromFilter(dbTarget, filtered, DiffSide.RIGHT),
                 false);
         differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
         differ.setAdditionalDepciesSource(manualDepciesSource);
@@ -462,9 +485,9 @@ class DiffPage extends DiffPresentationPane {
                 differ, dbSource.getDbObject().flatten(), mainPrefs);
         if (selectedDBSource == DBSources.SOURCE_TYPE_DB || 
                 selectedDBSource == DBSources.SOURCE_TYPE_JDBC) {
-            dialog.setDbParams(dbSrc.txtDbHost.getText(),
-                    dbSrc.txtDbPort.getText(), dbSrc.txtDbName.getText(),
-                    dbSrc.txtDbUser.getText(), dbSrc.txtDbPass.getText());
+            dialog.setDbParams(dbSrc.getTxtDbHost().getText(),
+                    dbSrc.getTxtDbPort().getText(), dbSrc.getTxtDbName().getText(),
+                    dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText());
         }
         dialog.open();
     }

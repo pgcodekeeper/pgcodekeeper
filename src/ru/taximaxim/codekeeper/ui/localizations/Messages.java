@@ -2,9 +2,12 @@ package ru.taximaxim.codekeeper.ui.localizations;
 
 import org.eclipse.osgi.util.NLS;
 
-public class Messages extends NLS {
+@javax.annotation.Generated("externalized-strings")
+public final class Messages extends NLS {
     public static final String BUNDLE_NAME = "ru.taximaxim.codekeeper.ui.localizations.messages"; //$NON-NLS-1$
-    
+
+// SONAR-OFF
+
     // common phrases
     public static String unexpected_error_while_saving_preferences;
     public static String consider_using_pgpass_file_instead;
@@ -203,8 +206,16 @@ public class Messages extends NLS {
     public static String dBUpdatePrefPage_drop_table;
     public static String dBUpdatePrefPage_set_warning_when_next_statements_present;
     public static String DiffPaneViewer_project;
+    public static String DiffPresentationPane_attention;
+
     public static String DiffPresentationPane_cannotSaveDbPropToProjProps;
+
+    public static String DiffPresentationPane_dismiss;
     public static String DiffPresentationPane_error_loading_changes;
+
+    public static String DiffPresentationPane_project_modified;
+
+    public static String DiffPresentationPane_refresh_editor;
     public static String DiffTableViewer_error_load_checked_set;
     public static String DiffTableViewer_error_reading_ignored_objects;
     public static String DiffTableViewer_error_save_checked_set;
@@ -296,6 +307,8 @@ public class Messages extends NLS {
     public static String XmlHistory_read_error;
     public static String XmlHistory_write_error;
     public static String XmlStringList_root_name_invalid;
+
+// SONAR-ON
 
     static {
         // initialize resource bundle

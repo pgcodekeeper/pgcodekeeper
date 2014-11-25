@@ -63,8 +63,8 @@ public abstract class DbSource {
     }
 
     public static DbSource fromDb(String exePgdump, String customParams,
-            PgDbProject proj) {
-        return new DbSourceDb(exePgdump, customParams, proj);
+            PgDbProject proj, String password) {
+        return new DbSourceDb(exePgdump, customParams, proj, password);
     }
 
     public static DbSource fromDb(String exePgdump, String customParams,
@@ -79,11 +79,11 @@ public abstract class DbSource {
         return new DbSourceFilter(src, filter, side);
     }
     
-    public static DbSource fromJdbc(PgDbProject proj){
+    public static DbSource fromJdbc(PgDbProject proj, String password){
         return fromJdbc(proj.getPrefs().get(PROJ_PREF.DB_HOST, ""),  //$NON-NLS-1$
                 proj.getPrefs().getInt(PROJ_PREF.DB_PORT, 0),
                 proj.getPrefs().get(PROJ_PREF.DB_USER, ""),  //$NON-NLS-1$
-                proj.getPrefs().get(PROJ_PREF.DB_PASS, ""),  //$NON-NLS-1$
+                password,
                 proj.getPrefs().get(PROJ_PREF.DB_NAME, ""),  //$NON-NLS-1$
                 proj.getPrefs().get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
     }
@@ -170,12 +170,12 @@ class DbSourceDb extends DbSource {
     private final String host, user, pass, dbname, encoding;
     private final int port;
 
-    DbSourceDb(String exePgdump, String customParams, PgDbProject props) {
+    DbSourceDb(String exePgdump, String customParams, PgDbProject props, String password) {
         this(exePgdump, customParams,
                 props.getPrefs().get(PROJ_PREF.DB_HOST, ""), //$NON-NLS-1$
                 props.getPrefs().getInt(PROJ_PREF.DB_PORT, 0),
                 props.getPrefs().get(PROJ_PREF.DB_USER, ""), //$NON-NLS-1$
-                props.getPrefs().get(PROJ_PREF.DB_PASS, ""), //$NON-NLS-1$
+                password,
                 props.getPrefs().get(PROJ_PREF.DB_NAME, ""), //$NON-NLS-1$
                 props.getPrefs().get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
     }

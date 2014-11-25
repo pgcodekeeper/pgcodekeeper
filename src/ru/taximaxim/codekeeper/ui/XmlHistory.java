@@ -22,7 +22,7 @@ import org.xml.sax.SAXException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class XmlHistory {
+public final class XmlHistory {
     
     private final int maxEntries;
     private final String fileName;

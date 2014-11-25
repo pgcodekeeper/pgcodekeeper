@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DbPicker extends Group {
 
-    final private boolean allowShellResize;
+    private final boolean allowShellResize;
     
     private Label lblFieldName;
     private CLabel lblWarnDbPass;
@@ -35,11 +35,35 @@ public class DbPicker extends Group {
     private LocalResourceManager lrm;
     private DbStorePicker dbStorePicker;
     
-    public Label lblName;
-    public Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort;
+    private final Label lblName;
+    private final Text txtDbName, txtDbUser, txtDbPass, txtDbHost, txtDbPort;
     
     private final ModifyListener ml;
     
+    public Label getLblName() {
+        return lblName;
+    }
+
+    public Text getTxtDbName() {
+        return txtDbName;
+    }
+
+    public Text getTxtDbUser() {
+        return txtDbUser;
+    }
+
+    public Text getTxtDbPass() {
+        return txtDbPass;
+    }
+
+    public Text getTxtDbHost() {
+        return txtDbHost;
+    }
+
+    public Text getTxtDbPort() {
+        return txtDbPort;
+    }
+
     /**
      * Constructs a control that is allowed to modify its shell size.
      */
@@ -50,7 +74,7 @@ public class DbPicker extends Group {
     public DbPicker(Composite parent, int style, final IPreferenceStore prefStore,
             boolean allowShellResize) {
         super(parent, style);
-        setLayout(new GridLayout(4, false));
+        setLayout(new GridLayout(2, false));
         
         this.allowShellResize = allowShellResize;
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
@@ -63,7 +87,7 @@ public class DbPicker extends Group {
         lblFieldName.setVisible(false);
         
         lblName = new Label(this, SWT.BORDER);
-        gd = new GridData(SWT.FILL, SWT.DEFAULT, true, false, 3, 1);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.exclude = true;
         lblName.setLayoutData(gd);
         lblName.setVisible(false);
@@ -71,7 +95,7 @@ public class DbPicker extends Group {
         if (prefStore != null) {
             dbStorePicker = new DbStorePicker(this, SWT.NONE, false, prefStore);
             dbStorePicker.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
-                    false, 4, 1));
+                    false, 2, 1));
             final SelectionAdapter sa = new SelectionAdapter() {
                 
                 @Override
@@ -111,17 +135,17 @@ public class DbPicker extends Group {
         new Label(this, SWT.NONE).setText(Messages.dB_name);
         
         txtDbName = new Text(this, SWT.BORDER);
-        txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        txtDbName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
         new Label(this, SWT.NONE).setText(Messages.dB_user);
         
         txtDbUser = new Text(this, SWT.BORDER);
-        txtDbUser.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        txtDbUser.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
         new Label(this, SWT.NONE).setText(Messages.dB_password);
         
         txtDbPass = new Text(this, SWT.BORDER | SWT.PASSWORD);
-        txtDbPass.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        txtDbPass.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtDbPass.addModifyListener(new ModifyListener() {
             
             @Override
@@ -144,7 +168,7 @@ public class DbPicker extends Group {
         lblWarnDbPass.setText(Messages.warning
                 + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
                 + Messages.consider_using_pgpass_file_instead);
-        gd = new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1);
+        gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
         gd.exclude = true;
         lblWarnDbPass.setLayoutData(gd);
         lblWarnDbPass.setVisible(false);
@@ -152,9 +176,7 @@ public class DbPicker extends Group {
         new Label(this, SWT.NONE).setText(Messages.dB_host);
         
         txtDbHost = new Text(this, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.widthHint = 80;
-        txtDbHost.setLayoutData(gd);
+        txtDbHost.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
         new Label(this, SWT.NONE).setText(Messages.dbPicker_port);
         
@@ -229,7 +251,7 @@ public class DbPicker extends Group {
             dbStorePicker.setVisible(false);
         }
         
-        txtDbName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        txtDbName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
         layout();
     }

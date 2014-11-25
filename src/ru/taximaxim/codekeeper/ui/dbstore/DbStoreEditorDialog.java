@@ -135,14 +135,14 @@ public class DbStoreEditorDialog extends TrayDialog {
                 if(db == null) {
                     db = DbInfo.getEmpty(""); //$NON-NLS-1$
                 }
-                grpDbData.lblName.setText(db.name);
-                grpDbData.txtDbName.setText(db.dbname);
-                grpDbData.txtDbName.selectAll();
-                grpDbData.txtDbName.setFocus();
-                grpDbData.txtDbUser.setText(db.dbuser);
-                grpDbData.txtDbPass.setText(db.dbpass);
-                grpDbData.txtDbHost.setText(db.dbhost);
-                grpDbData.txtDbPort.setText(String.valueOf(db.dbport));
+                grpDbData.getLblName().setText(db.name);
+                grpDbData.getTxtDbName().setText(db.dbname);
+                grpDbData.getTxtDbName().selectAll();
+                grpDbData.getTxtDbName().setFocus();
+                grpDbData.getTxtDbUser().setText(db.dbuser);
+                grpDbData.getTxtDbPass().setText(db.dbpass);
+                grpDbData.getTxtDbHost().setText(db.dbhost);
+                grpDbData.getTxtDbPort().setText(String.valueOf(db.dbport));
                 
                 btnSave.setEnabled(false);
                 btnDel.setEnabled(!cmbDbNames.getText().isEmpty());
@@ -231,11 +231,11 @@ public class DbStoreEditorDialog extends TrayDialog {
         grpDbData.setLayoutData(gd);
         grpDbData.setText(Messages.dbStoreEditorDialog_db_info);
         
-        grpDbData.txtDbName.addModifyListener(dbModified);
-        grpDbData.txtDbUser.addModifyListener(dbModified);
-        grpDbData.txtDbPass.addModifyListener(dbModified);
-        grpDbData.txtDbHost.addModifyListener(dbModified);
-        grpDbData.txtDbPort.addModifyListener(dbModified);
+        grpDbData.getTxtDbName().addModifyListener(dbModified);
+        grpDbData.getTxtDbUser().addModifyListener(dbModified);
+        grpDbData.getTxtDbPass().addModifyListener(dbModified);
+        grpDbData.getTxtDbHost().addModifyListener(dbModified);
+        grpDbData.getTxtDbPort().addModifyListener(dbModified);
         
         return parent;
     }
@@ -243,26 +243,26 @@ public class DbStoreEditorDialog extends TrayDialog {
     private void saveEntry() {
         int dbport;
         try {
-            if(grpDbData.txtDbPort.getText().isEmpty()) {
+            if(grpDbData.getTxtDbPort().getText().isEmpty()) {
                 dbport = 0;
             } else {
-                dbport = Integer.parseInt(grpDbData.txtDbPort.getText());
+                dbport = Integer.parseInt(grpDbData.getTxtDbPort().getText());
             }
         } catch (NumberFormatException ex) {
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
             mb.setText(Messages.dbStoreEditorDialog_cannot_save_entry);
             mb.setMessage(Messages.dbStoreEditorDialog_not_valid_port_number + 
-                    grpDbData.txtDbPort.getText());
+                    grpDbData.getTxtDbPort().getText());
             mb.open();
             return;
         }
         
         DbInfo db = store.get(cmbDbNames.getText());
         
-        db.dbname = grpDbData.txtDbName.getText();
-        db.dbuser = grpDbData.txtDbUser.getText();
-        db.dbpass = grpDbData.txtDbPass.getText();
-        db.dbhost = grpDbData.txtDbHost.getText();
+        db.dbname = grpDbData.getTxtDbName().getText();
+        db.dbuser = grpDbData.getTxtDbUser().getText();
+        db.dbpass = grpDbData.getTxtDbPass().getText();
+        db.dbhost = grpDbData.getTxtDbHost().getText();
         db.dbport = dbport;
         
         btnSave.setEnabled(false);

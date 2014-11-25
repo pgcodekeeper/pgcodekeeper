@@ -51,7 +51,7 @@ public interface UIConsts {
         }
         public static DBSources getEnum(String value) {
             // Возвращать Дамп если тип соурса был none
-            if (value.equalsIgnoreCase("none")) {
+            if (value.equalsIgnoreCase("none")) { //$NON-NLS-1$
                 return SOURCE_TYPE_DUMP;
             }
             for (DBSources v : values()) {
@@ -70,7 +70,6 @@ public interface UIConsts {
         String DB_HOST = "prefDbHost"; //$NON-NLS-1$
         String DB_PORT = "prefDbPort"; //$NON-NLS-1$
         String DB_USER = "prefDbUser"; //$NON-NLS-1$
-        String DB_PASS = "prefDbPass"; //$NON-NLS-1$
         String REPO_SUBDIR_PATH = "prefWorkingDirPath"; //$NON-NLS-1$
         String REPO_ROOT_PATH = "prefRepoPath"; //$NON-NLS-1$
     }
@@ -101,5 +100,7 @@ public interface UIConsts {
         String ICONINVERTSELECTION = "/icons/loop_obj.gif"; //$NON-NLS-1$
         String ICONBALLBLUE = "/icons/ball_blue.png"; //$NON-NLS-1$
         String ICONBALLRED = "/icons/ball_red.png"; //$NON-NLS-1$
+        String ICONREFRESH = "/icons/refresh.gif"; //$NON-NLS-1$
+        String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
     }
 }

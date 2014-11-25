@@ -624,7 +624,7 @@ public class SqlScriptDialog extends TrayDialog {
         
         private final String text;
 
-        private ScriptRunResultDialog(Shell shell, String text) {
+        ScriptRunResultDialog(Shell shell, String text) {
             super(shell);
             this.text = text;
             setShellStyle(getShellStyle() | SWT.RESIZE);
@@ -655,5 +655,4 @@ public class SqlScriptDialog extends TrayDialog {
                         true);
         }
     }
-
 }
