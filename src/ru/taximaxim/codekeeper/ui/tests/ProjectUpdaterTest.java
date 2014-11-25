@@ -53,16 +53,16 @@ public class ProjectUpdaterTest {
         workingDir = new TempDir("test_new"); //$NON-NLS-1$
         referenceDir = new TempDir("test_old"); //$NON-NLS-1$
         
-        new ModelExporter(workingDir.get(), dbOld, ENCODING).export();
+        new ModelExporter(workingDir.get(), dbOld, ENCODING).exportFull();
     }
     
     @Test
     public void updateSuccessTest() throws IOException, PgCodekeeperUIException{
         PgDbProject proj = PgDbProject.getProjFromFile(workingDir.get().getAbsolutePath());
         proj.getPrefs().put(UIConsts.PROJ_PREF.ENCODING, ENCODING);
-        new ProjectUpdater(dbNew, proj).update();
+        new ProjectUpdater(dbNew, null, null, proj).updateFull();
 
-        new ModelExporter(referenceDir.get(), dbOld, ENCODING).export();
+        new ModelExporter(referenceDir.get(), dbOld, ENCODING).exportFull();
         if (compareFilesInPaths(workingDir.get().toPath(), referenceDir.get().toPath())){
             fail("ProjectUpdate fail: expected bases to differ");
         }
@@ -73,14 +73,14 @@ public class ProjectUpdaterTest {
         try{
             PgDbProject proj = PgDbProject.getProjFromFile(workingDir.get().getAbsolutePath());
             proj.getPrefs().put(UIConsts.PROJ_PREF.ENCODING, "");
-            new ProjectUpdater(dbNew, proj).update();
+            new ProjectUpdater(dbNew, null, null, proj).updateFull();
         }catch(IOException ex){
             if (!ex.getMessage().equals(Messages.ProjectUpdater_error_no_tempdir)){
                 fail("ProjectUpdater failed with not expected exception: " + ex.getMessage());
             }
         }
             
-        new ModelExporter(referenceDir.get(), dbOld, ENCODING).export();
+        new ModelExporter(referenceDir.get(), dbOld, ENCODING).exportFull();
         if (!compareFilesInPaths(workingDir.get().toPath(), referenceDir.get().toPath())){
             fail("ProjectUpdate fail: expected bases to be the same");
         }
