@@ -21,12 +21,12 @@ public interface UIConsts {
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
-        String IS_DDL_UPDATE_OVER_JDBC = "isDdlUpdateOverJdbc";
+        String IS_DDL_UPDATE_OVER_JDBC = "isDdlUpdateOverJdbc"; //$NON-NLS-1$
     }
     
     interface COMMIT_PREF {
         String CONSIDER_DEPCY_IN_COMMIT = "considerDepcyInCommit"; //$NON-NLS-1$
-        String USE_PARTIAL_EXPORT_ON_COMMIT = "usePartialExportOnCommit";
+        String USE_PARTIAL_EXPORT_ON_COMMIT = "usePartialExportOnCommit"; //$NON-NLS-1$
     }
     
     interface DB_UPDATE_PREF {

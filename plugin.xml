@@ -39,7 +39,7 @@
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ToggleSourceHandler"
             id="ru.taximaxim.codekeeper.ui.toggle1"
-            name="Source">
+            name="%command.name.SourceDepcies">
             <state class="org.eclipse.jface.commands.ToggleState"
                             id="ru.taximaxim.codekeeper.ui.toggle1state"/>
       </command>
@@ -47,7 +47,7 @@
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ToggleSourceHandler"
             id="ru.taximaxim.codekeeper.ui.toggle2"
-            name="Target">
+            name="%command.name.TargetDepcies">
             <state class="org.eclipse.jface.commands.ToggleState"
                             id="ru.taximaxim.codekeeper.ui.toggle2state"/>
       </command>
@@ -112,17 +112,14 @@
          <command
                commandId="ru.taximaxim.codekeeper.ui.toggle1"
                icon="icons/ball_blue.png"
-               label="Source"
+               label="%command.label.SourceDepcies"
                mode="FORCE_TEXT"
                style="toggle">
          </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="toolbar:ru.taximaxim.codekeeper.ui.depcyview">
          <command
                commandId="ru.taximaxim.codekeeper.ui.toggle2"
                icon="icons/ball_green.png"
-               label="Target"
+               label="%command.label.TargetDepcies"
                mode="FORCE_TEXT"
                style="toggle">
          </command>
@@ -224,8 +221,8 @@
    </extension>
     <extension point="org.eclipse.ui.views">
       <view id="ru.taximaxim.codekeeper.ui.depcyview"
-         name="Depcy view"
-         class="ru.taximaxim.codekeeper.ui.editors.DepcyGraphView"
+         name="%view.name.DepcyView"
+         class="ru.taximaxim.codekeeper.ui.views.DepcyGraphView"
          icon="icons/add_obj.gif"
       />
  </extension>
@@ -235,7 +232,7 @@
              class="ru.taximaxim.codekeeper.ui.MainPerspective"
              icon="icons/app_icon16.png"
              id="ru.taximaxim.codekeeper.ui.mainperspective"
-             name="pgCodeKeeper">
+             name="%perspective.name.keeper">
        </perspective>
     </extension>
     <extension

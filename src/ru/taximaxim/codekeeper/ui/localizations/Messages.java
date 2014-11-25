@@ -295,6 +295,8 @@ public final class Messages extends NLS {
     public static String ProjectUpdater_error_backup_restore;
     public static String ProjectUpdater_error_no_tempdir;
     public static String ProjectUpdater_error_update;
+
+    public static String ProjectUpdater_old_db_null;
     public static String SqlScriptDialog_add_it_to_script;
     public static String SqlScriptDialog_command_to_execute;
     public static String SqlScriptDialog__results_of_script_revealed_dependent_objects;

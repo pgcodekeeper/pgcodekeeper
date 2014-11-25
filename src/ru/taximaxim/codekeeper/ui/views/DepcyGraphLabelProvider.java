@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.editors;
+package ru.taximaxim.codekeeper.ui.views;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.IFigure;
@@ -46,30 +46,30 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
             if (st instanceof PgSchema){
                 return st.getBareName();
             }else if (st instanceof PgDatabase){
-                return "DB";
+                return "DB"; //$NON-NLS-1$
             }else if (st instanceof PgFunction){
-                return "FUNC " + st.getBareName();
+                return "FUNC " + st.getBareName(); //$NON-NLS-1$
             }else if (st instanceof PgTable){
-                return "TBL " + st.getBareName();
+                return "TBL " + st.getBareName(); //$NON-NLS-1$
             }else if (st instanceof PgForeignKey){
-                return "FK " + st.getBareName();
+                return "FK " + st.getBareName(); //$NON-NLS-1$
             }else if (st instanceof PgConstraint){
-                return "CONSTR " + st.getBareName();
+                return "CONSTR " + st.getBareName(); //$NON-NLS-1$
             }else if (st instanceof PgIndex){
-                return "IDX " + st.getBareName();
+                return "IDX " + st.getBareName(); //$NON-NLS-1$
             }else if (st instanceof PgView){
-                return "VIEW " + st.getBareName();
+                return "VIEW " + st.getBareName(); //$NON-NLS-1$
             }else if (st instanceof PgTrigger){
-                return "TRG " + st.getBareName();
+                return "TRG " + st.getBareName(); //$NON-NLS-1$
             }else if (st instanceof PgSequence){
-                return "SEQ " + st.getBareName();
+                return "SEQ " + st.getBareName(); //$NON-NLS-1$
             }else{
-                return st.getClass() + " " + st.getBareName();
+                return st.getClass() + " " + st.getBareName(); //$NON-NLS-1$
             }
         }else if (element instanceof EntityConnectionData){
-            return "";
+            return ""; //$NON-NLS-1$
         }else{
-            return "error";
+            return "error"; //$NON-NLS-1$
         }
     }
 

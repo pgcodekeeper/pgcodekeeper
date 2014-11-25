@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.editors;
+package ru.taximaxim.codekeeper.ui.views;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,6 +30,7 @@ import org.jgrapht.graph.DefaultEdge;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
+import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -77,8 +78,6 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
     @Override
     public void setFocus() {
-        // TODO Auto-generated method stub
-        
     }
 
     @Override

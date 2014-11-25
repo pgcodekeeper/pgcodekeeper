@@ -72,7 +72,7 @@ public class SqlScriptDialog extends TrayDialog {
     private static final Pattern PATTERN_ERROR = Pattern.compile(
             "^.*(ERROR|ОШИБКА):.+$"); //$NON-NLS-1$
     private static final Pattern PATTERN_DROP_CASCADE = Pattern.compile(
-            "^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$", 
+            "^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$",  //$NON-NLS-1$
             Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE); 
     
     private static final String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
@@ -648,7 +648,7 @@ public class SqlScriptDialog extends TrayDialog {
         String replaced = output.replaceAll("[ ]{2,}", " ") //$NON-NLS-1$ //$NON-NLS-2$
                 .replaceAll("\r\n", "\n") //$NON-NLS-1$ //$NON-NLS-2$
                 .replaceAll("(\n[ ]+)", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
-        String[] lines = replaced.split(Pattern.quote("\n"));
+        String[] lines = replaced.split(Pattern.quote("\n")); //$NON-NLS-1$
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             if (PATTERN_ERROR.matcher(line).matches()) {
