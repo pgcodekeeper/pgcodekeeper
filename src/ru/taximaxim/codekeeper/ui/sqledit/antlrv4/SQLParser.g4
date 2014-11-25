@@ -106,47 +106,41 @@ schema_alter
     ;
     
 alter_function_statement
-    : ALTER FUNCTION function_parameters function_action+ (RESTRICT)?
-    | ALTER FUNCTION function_parameters RENAME TO new_name=schema_qualified_name
-    | ALTER FUNCTION function_parameters OWNER TO new_owner=identifier
-    | ALTER FUNCTION function_parameters SET SCHEMA new_schema=schema_qualified_name
+    : ALTER FUNCTION function_parameters 
+      (function_action+ (RESTRICT)?
+    | RENAME TO new_name=schema_qualified_name
+    | OWNER TO new_owner=identifier
+    | SET SCHEMA new_schema=schema_qualified_name)
     ;
     
 alter_schema_statement
-    : ALTER SCHEMA name=identifier RENAME TO new_name=identifier
-    | ALTER SCHEMA name=identifier OWNER TO new_owner=identifier
+    : ALTER SCHEMA name=identifier (OWNER | RENAME) TO new_name=identifier
     ;
 
 alter_language_statement
-    : ALTER (PROCEDURAL)? LANGUAGE name=identifier RENAME TO new_name=identifier
-    | ALTER (PROCEDURAL)? LANGUAGE name=identifier OWNER TO new_owner=identifier
+    : ALTER (PROCEDURAL)? LANGUAGE name=identifier (OWNER | RENAME) TO new_name=identifier
     ;
 
 alter_table_statement
-    : ALTER TABLE (ONLY)? (name=schema_qualified_name)+
-        table_action ((COMMA)table_action)*
-    | ALTER TABLE (ONLY)? (name=schema_qualified_name)+
-        RENAME (COLUMN)? column=schema_qualified_name TO new_column=schema_qualified_name
-    | ALTER TABLE name=schema_qualified_name
-        RENAME TO new_name=schema_qualified_name
-    | ALTER TABLE name=schema_qualified_name
-        SET SCHEMA new_schema=schema_qualified_name
+    : ALTER TABLE (ONLY)? (name+=schema_qualified_name)+
+        (table_action ((COMMA)table_action)*
+        | RENAME (COLUMN)? column=schema_qualified_name TO new_column=schema_qualified_name)
+    | ALTER TABLE name+=schema_qualified_name
+        (RENAME TO | SET SCHEMA) new_name=schema_qualified_name
     ;
 
 table_action
     : ADD (COLUMN)? table_column_definition
     | DROP (COLUMN)? (IF EXISTS)? column=schema_qualified_name (RESTRICT | CASCADE)?
     | ALTER (COLUMN)? column=schema_qualified_name (SET DATA)? TYPE datatype=data_type (COLLATE collation=identifier)? (USING expression=value_expression)?
-    | ALTER (COLUMN)? column=schema_qualified_name SET DEFAULT expression=value_expression
-    | ALTER (COLUMN)? column=schema_qualified_name DROP DEFAULT
-    | ALTER (COLUMN)? column=schema_qualified_name SET | DROP NOT NULL
-    | ALTER (COLUMN)? column=schema_qualified_name SET STATISTICS integer=NUMBER
     | ALTER (COLUMN)? column=schema_qualified_name 
-      SET LEFT_PAREN 
-        attribute_option_value (COMMA attribute_option_value)* 
-      RIGHT_PAREN
-    | ALTER (COLUMN)? column=schema_qualified_name RESET LEFT_PAREN attribute_option+=table_attribute_option (COMMA attribute_option+=table_attribute_option)* RIGHT_PAREN
-    | ALTER (COLUMN)? column=schema_qualified_name SET STORAGE PLAIN | EXTERNAL | EXTENDED | MAIN
+      (SET DEFAULT expression=value_expression 
+      | DROP DEFAULT 
+      | ((SET | DROP) NOT NULL) 
+      | SET STATISTICS integer=NUMBER
+      | SET LEFT_PAREN attribute_option_value (COMMA attribute_option_value)* RIGHT_PAREN
+      | RESET LEFT_PAREN attribute_option+=table_attribute_option (COMMA attribute_option+=table_attribute_option)* RIGHT_PAREN
+      | (SET STORAGE PLAIN | EXTERNAL | EXTENDED | MAIN))
     | ADD tabl_constraint=table_constraint (NOT VALID)?
     | ADD tabl_constraint_using_index=table_constraint_using_index
     | VALIDATE CONSTRAINT constraint_name=schema_qualified_name
@@ -174,8 +168,8 @@ attribute_option_value
 
 table_constraint_using_index
     : (CONSTRAINT constraint_name=schema_qualified_name)?
-     UNIQUE | PRIMARY KEY USING INDEX index_name=schema_qualified_name
-     (DEFERRABLE | NOT DEFERRABLE)? (INITIALLY DEFERRED | INITIALLY IMMEDIATE)?
+     (UNIQUE | PRIMARY KEY) USING INDEX index_name=schema_qualified_name
+     ((NOT)? DEFERRABLE)? (INITIALLY (DEFERRED | IMMEDIATE))?
     ;
 
 table_attribute_option
@@ -183,7 +177,7 @@ table_attribute_option
     ;
     
 function_action
-    : CALLED ON NULL INPUT 
+    : CALLED ON NULL INPUT
     | RETURNS NULL ON NULL INPUT 
     | STRICT IMMUTABLE 
     | STABLE 
@@ -191,10 +185,8 @@ function_action
     | (EXTERNAL)? SECURITY DEFINER
     | COST execution_cost=NUMBER
     | ROWS result_rows=NUMBER
-    | SET configuration_parameter=identifier  (TO value=identifier | EQUAL value=identifier | DEFAULT)
-    | SET configuration_parameter=identifier FROM CURRENT
-    | RESET configuration_parameter=identifier
-    | RESET ALL 
+    | SET configuration_parameter=identifier  ((TO value=identifier | EQUAL value=identifier | DEFAULT) | FROM CURRENT)
+    | RESET (configuration_parameter=identifier | ALL)
     ;
 
 alter_default_privileges
@@ -254,16 +246,13 @@ abbreviated_grant_or_revoke
 
 alter_sequence_statement
     : ALTER SEQUENCE (IF EXISTS)? name=schema_qualified_name 
-      (sequence_body
-    | RESTART ((WITH)? restart=identifier)?)*
-    |ALTER SEQUENCE (IF EXISTS)? name=schema_qualified_name  OWNER TO new_owner=schema_qualified_name
-    |ALTER SEQUENCE (IF EXISTS)? name=schema_qualified_name  RENAME TO new_name=schema_qualified_name
-    |ALTER SEQUENCE (IF EXISTS)? name=schema_qualified_name  SET SCHEMA new_schema=schema_qualified_name
+     ( (sequence_body | RESTART ((WITH)? restart=identifier)?)*
+    | ((OWNER | RENAME) TO | SET SCHEMA) new_name=schema_qualified_name)
     ;
 
 alter_view_statement
     : ALTER VIEW (IF EXISTS)? name=schema_qualified_name 
-    (ALTER (COLUMN)? column_name=schema_qualified_name  (SET DEFAULT expression=value_expression | DROP DEFAULT)
+     (ALTER (COLUMN)? column_name=schema_qualified_name  (SET DEFAULT expression=value_expression | DROP DEFAULT)
     | (((OWNER | RENAME) TO) | SET SCHEMA) new_owner=schema_qualified_name 
     | SET LEFT_PAREN view_option_name=identifier (EQUAL view_option_value=value_expression)?(COMMA view_option_name=identifier (EQUAL view_option_value=value_expression)?)*  RIGHT_PAREN
     | RESET LEFT_PAREN view_option_name=identifier (COMMA view_option_name=identifier)*  RIGHT_PAREN)
@@ -272,8 +261,7 @@ alter_view_statement
 index_statement
   : CREATE (UNIQUE)? INDEX (CONCURRENTLY)? (name=schema_qualified_name)? ON table_name=schema_qualified_name 
     (USING method=schema_qualified_name)?
-    sort_specifier_paren
-    param_clause?
+    sort_specifier_paren param_clause?
     (TABLESPACE tablespace_name=schema_qualified_name)?
     (WHERE predic=boolean_value_expression)?
   ;
@@ -284,9 +272,8 @@ index_statement
     ;
     
 create_language_statement
-    : CREATE (OR REPLACE)? (PROCEDURAL)? LANGUAGE name=identifier
-    | CREATE (OR REPLACE)? (TRUSTED)? (PROCEDURAL)? LANGUAGE name=identifier
-        HANDLER call_handler=schema_qualified_name (INLINE inline_handler=schema_qualified_name)? (VALIDATOR valfunction=schema_qualified_name)?
+    : CREATE (OR REPLACE)? (TRUSTED)? (PROCEDURAL)? LANGUAGE name=identifier
+        (HANDLER call_handler=schema_qualified_name (INLINE inline_handler=schema_qualified_name)? (VALIDATOR valfunction=schema_qualified_name)?)?
     ;
 
 create_event_trigger
@@ -300,9 +287,9 @@ create_event_trigger
     ;
     
 set_statement
-    : SET (SESSION | LOCAL)? config_param=identifier (TO |EQUAL) 
-        set_statement_value (COMMA set_statement_value)*
-    | SET (SESSION | LOCAL)? TIME ZONE (timezone=identifier | LOCAL | DEFAULT)(COMMA (timezone=identifier | LOCAL | DEFAULT))*
+    : SET (SESSION | LOCAL)? 
+      (config_param=identifier (TO |EQUAL) set_statement_value (COMMA set_statement_value)*
+    | TIME ZONE (timezone=identifier | LOCAL | DEFAULT)(COMMA (timezone=identifier | LOCAL | DEFAULT))*)
     ;
 
 set_statement_value
@@ -311,7 +298,7 @@ set_statement_value
    
 create_trigger_statement
     : CREATE (CONSTRAINT)? TRIGGER name=identifier (BEFORE | (INSTEAD OF) | AFTER)
-    ((INSERT | DELETE | TRUNCATE | (UPDATE (OF columnName+=identifier(COMMA columnName+=identifier)* )?))(OR)?)+
+    ((INSERT | DELETE | TRUNCATE | UPDATE (OF columnName+=identifier(COMMA columnName+=identifier)* )?)OR?)+
     ON tabl_name=schema_qualified_name 
     (FROM referenced_table_name=schema_qualified_name)?
     (NOT DEFERRABLE | (DEFERRABLE)? (INITIALLY IMMEDIATE) | (INITIALLY DEFERRED))?
@@ -453,38 +440,21 @@ grant_to_rule
     ;
     
 comment_on_statement
-    : COMMENT ON( AGGREGATE agg_name=schema_qualified_name LEFT_PAREN (agg_type+=data_type(COMMA agg_type+=data_type)*)? RIGHT_PAREN 
+    : COMMENT ON( 
+        AGGREGATE agg_name=schema_qualified_name LEFT_PAREN (agg_type+=data_type(COMMA agg_type+=data_type)*)? RIGHT_PAREN 
         | CAST LEFT_PAREN source_type=data_type AS target_type=data_type RIGHT_PAREN 
-        | COLLATION object_name=schema_qualified_name
-        | COLUMN column_name=schema_qualified_name 
-        | CONSTRAINT constraint_name=schema_qualified_name ON table_name=schema_qualified_name 
-        | CONVERSION object_name=schema_qualified_name 
-        | DATABASE object_name=schema_qualified_name 
-        | DOMAIN object_name=schema_qualified_name 
-        | EXTENSION object_name=schema_qualified_name 
-        | FOREIGN DATA WRAPPER object_name=schema_qualified_name 
-        | FOREIGN TABLE object_name=schema_qualified_name 
+        | (CONSTRAINT | RULE | TRIGGER) object_name=schema_qualified_name ON table_name=schema_qualified_name
         | function_definition 
-        | INDEX object_name=schema_qualified_name 
-        | LARGE OBJECT large_object_oid=identifier 
         | OPERATOR operator_name=schema_qualified_name LEFT_PAREN left_type=data_type COMMA right_type=data_type RIGHT_PAREN 
-        | OPERATOR CLASS object_name=schema_qualified_name USING index_method=identifier 
-        | OPERATOR FAMILY object_name=schema_qualified_name  USING index_method=identifier 
-        | (PROCEDURAL)? LANGUAGE object_name=schema_qualified_name
-        | ROLE object_name=schema_qualified_name 
-        | RULE rule_name=schema_qualified_name ON table_name=schema_qualified_name 
-        | SCHEMA object_name=schema_qualified_name 
-        | SEQUENCE object_name=schema_qualified_name 
-        | SERVER object_name=schema_qualified_name 
-        | TABLE object_name=schema_qualified_name 
-        | TABLESPACE object_name=schema_qualified_name 
-        | TEXT SEARCH CONFIGURATION object_name=schema_qualified_name 
-        | TEXT SEARCH DICTIONARY object_name=schema_qualified_name 
-        | TEXT SEARCH PARSER object_name=schema_qualified_name 
-        | TEXT SEARCH TEMPLATE object_name=schema_qualified_name 
-        | TRIGGER trigger_name=schema_qualified_name ON table_name=schema_qualified_name 
-        | TYPE object_name=schema_qualified_name 
-        | VIEW object_name=schema_qualified_name
+        | OPERATOR (FAMILY| CLASS) object_name=schema_qualified_name USING index_method=identifier
+        | (TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE )
+        | (PROCEDURAL)? LANGUAGE 
+        | LARGE OBJECT 
+        | FOREIGN (DATA WRAPPER | TABLE)
+        | (COLUMN | CONVERSION | DATABASE| DOMAIN| EXTENSION| INDEX | ROLE 
+            | COLLATION| SCHEMA| SEQUENCE| SERVER| TABLE | TABLESPACE 
+            | TYPE | VIEW)
+          ) object_name=schema_qualified_name
         ) IS Character_String_Literal
     ;
 
@@ -502,8 +472,7 @@ create_function_statement
             | (WINDOW | IMMUTABLE | STABLE | VOLATILE | STRICT)
             | CALLED ON NULL INPUT 
             | RETURNS NULL ON NULL INPUT 
-            | (EXTERNAL)? SECURITY INVOKER 
-            | (EXTERNAL)? SECURITY DEFINER
+            | (EXTERNAL)? SECURITY (INVOKER | DEFINER)
             | COST execution_cost=NUMBER
             | ROWS result_rows=NUMBER
             | SET configuration_parameter=identifier (TO value=identifier | EQUAL value=identifier | FROM CURRENT)(COMMA value=identifier)*
@@ -574,10 +543,11 @@ sequence_body
     ;
     
 create_schema_statement
-    : CREATE SCHEMA schema_name=identifier (AUTHORIZATION user_name=identifier)? (schema_element=sql)*
-      | CREATE SCHEMA AUTHORIZATION user_name=identifier (schema_element=sql)*
-      | CREATE SCHEMA IF NOT EXISTS schema_name=identifier (AUTHORIZATION user_name=identifier)?
-      | CREATE SCHEMA IF NOT EXISTS AUTHORIZATION user_name=identifier
+    : CREATE SCHEMA (schema_name=identifier (AUTHORIZATION user_name=identifier)? (schema_element=sql)*
+      | AUTHORIZATION user_name=identifier (schema_element=sql)*
+      | IF NOT EXISTS 
+        (schema_name=identifier (AUTHORIZATION user_name=identifier)?
+      | AUTHORIZATION user_name=identifier))
     ;
     
 create_view_statement
@@ -588,7 +558,7 @@ create_view_statement
     
 create_table_statement
   : CREATE ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? n=schema_qualified_name 
-        LEFT_PAREN (table_body (COMMA table_body)*)? RIGHT_PAREN
+        (LEFT_PAREN (table_body (COMMA table_body)*)? RIGHT_PAREN
         (INHERITS 
             LEFT_PAREN 
                 (paret_table=schema_qualified_name(COMMA)?)+ 
@@ -598,7 +568,7 @@ create_table_statement
         on_commit
         table_space
     
-   | CREATE ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? n=schema_qualified_name OF type_name=identifier 
+   | OF type_name=identifier 
         (LEFT_PAREN
             ((column_name=identifier WITH OPTIONS (col_constraint+=column_constraint)*) 
             | table_constraint)
@@ -607,7 +577,7 @@ create_table_statement
         RIGHT_PAREN)?
         storage_parameter_oid
         on_commit
-        table_space
+        table_space)
   ;
 
 table_body
@@ -617,7 +587,7 @@ table_body
     ;
 
 table_column_definition
-    : column_name=identifier (datatype=data_type| datatype_iden = schema_qualified_name) (COLLATE collation=identifier)?  (colmn_constraint+=column_constraint)*
+    : column_name=identifier (datatype=data_type) (COLLATE collation=identifier)?  (colmn_constraint+=column_constraint)*
     ;
   
 like_option
@@ -804,8 +774,8 @@ drop_table_statement
 */
 
 identifier
-  : Identifier
-  | QuotedIdentifier
+  : (Identifier
+  | QuotedIdentifier)
   | (DOUBLE_QUOTE)? nonreserved_keywords (DOUBLE_QUOTE)? 
   ;
 
@@ -1061,12 +1031,12 @@ predefined_type
   | bit_type
   | binary_type
   | network_type
-  | REGCLASS
+  | (REGCLASS
   | REGCONFIG
   | TRIGGER
   | UUID
   | VOID
-  | INET
+  | INET)
   | schema_qualified_name
   ;
     
@@ -1080,8 +1050,8 @@ character_string_type
   | CHARACTER VARYING type_length?
   | CHAR VARYING type_length?
   | VARCHAR type_length?
-  | TEXT
-  | INTERVAL
+  | (TEXT
+  | INTERVAL)
   ;
 
 type_length
@@ -1111,7 +1081,7 @@ exact_numeric_type
   : NUMERIC (precision_param)?
   | DECIMAL (precision_param)?
   | DEC (precision_param)?
-  | INT1
+  | (INT1
   | TINYINT
   | INT2
   | SMALLINT
@@ -1119,16 +1089,15 @@ exact_numeric_type
   | INT
   | INTEGER
   | INT8
-  | BIGINT
+  | BIGINT)
   ;
 
 approximate_numeric_type
   : FLOAT (precision_param)?
-  | FLOAT4
+  | (FLOAT4
   | REAL
-  | FLOAT8
-  | DOUBLE
-  | DOUBLE PRECISION
+  | FLOAT8)
+  | DOUBLE (PRECISION)?
   ;
 
 precision_param
@@ -1933,11 +1902,11 @@ pattern_matcher
   ;
 
 negativable_matcher
-  : LIKE
+  : (LIKE
   | ILIKE
-  | SIMILAR TO
   | REGEXP
-  | RLIKE
+  | RLIKE)
+  | SIMILAR TO
   ;
 
 regex_matcher
