@@ -28,6 +28,9 @@ public class ProjectUpdater {
     private final String encoding;
     private final File dirExport;
 
+    /**
+     * dbOld, changedObjects are necessary only for partial update
+     */
     public ProjectUpdater(PgDatabase dbNew, PgDatabase dbOld, List<TreeElement> changedObjects, PgDbProject proj) {
         this.dbNew = dbNew;
         this.dbOld = dbOld;
@@ -40,15 +43,12 @@ public class ProjectUpdater {
 
     public void updatePartial() throws IOException {
         if (dbOld == null){
-            throw new IllegalStateException("Old database should not be null for "
-                    + "partial update.");
+            throw new IOException("Old database should not be null for partial update.");
         }
         try (TempDir tmp = new TempDir(dirExport.toPath(), "tmp-export")) { //$NON-NLS-1$
             File dirTmp = tmp.get();
             
             try {
-
-                
                 for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
                     final Path sourcePath = Paths.get(dirExport.getCanonicalPath(), subdirName.toString());
                     final Path targetPath = Paths.get(dirTmp.getCanonicalPath(), subdirName.toString());
