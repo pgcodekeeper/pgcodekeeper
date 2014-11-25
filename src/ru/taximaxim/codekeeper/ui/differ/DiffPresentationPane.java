@@ -39,7 +39,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.osgi.service.prefs.BackingStoreException;
 
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -55,6 +54,7 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public abstract class DiffPresentationPane extends Composite {
 
@@ -357,7 +357,8 @@ public abstract class DiffPresentationPane extends Composite {
                 try {
                     IDE.openEditorOnFileStore( page, fileStore );
                 } catch (PartInitException e) {
-                    throw new IllegalStateException(Messages.could_not_open_editor_for_file + 
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.could_not_open_editor_for_file + 
                             file.getAbsolutePath(), e);
                 }
             } else {

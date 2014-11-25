@@ -731,13 +731,13 @@ public class DiffTableViewer extends Composite {
                     }
                 }
             });
+            menuMgr.add(new Separator());
             menuMgr.add(new Action(Messages.diffTableViewer_mark_selected_elements) {
 
                 @Override
                 public void run() {
                     @SuppressWarnings("unchecked")
-                    List<TreeElement> selected = (List<TreeElement>) 
-                                ((IStructuredSelection) viewer.getSelection()).toList();
+                    List<TreeElement> selected = ((IStructuredSelection) viewer.getSelection()).toList();
                     HashSet<TreeElement> selectedSet = new HashSet<TreeElement>(selected);
                     setCheckedElements(selectedSet, true);
                 }
@@ -747,8 +747,7 @@ public class DiffTableViewer extends Composite {
                 @Override
                 public void run() {
                     @SuppressWarnings("unchecked")
-                    List<TreeElement> selected = (List<TreeElement>) 
-                                ((IStructuredSelection) viewer.getSelection()).toList();
+                    List<TreeElement> selected = ((IStructuredSelection) viewer.getSelection()).toList();
                     HashSet<TreeElement> selectedSet = new HashSet<TreeElement>(selected);
                     setCheckedElements(selectedSet, false);
                 }
