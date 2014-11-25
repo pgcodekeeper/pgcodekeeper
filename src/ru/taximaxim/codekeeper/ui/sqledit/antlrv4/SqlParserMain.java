@@ -23,7 +23,11 @@ public class SqlParserMain {
 //        String pathToFile = "/home/botov_av/workspace/pg_dump_folder/maindb_dev3.sql";
         String pathToFile = "/home/botov_av/workspace/codekeeper/apgdiff/src/test/resources/cz/startnet/utils/pgdiff";
         List<DBObjectsLocation> objLocation = new ArrayList<>();
-        for (String path : getPathsToFiles(pathToFile)) {
+        List<String> paths = getPathsToFiles(pathToFile);
+        paths.add("/home/botov_av/workspace/codekeeper/ru.taximaxim.codekeeper.ui/src/ru/taximaxim/codekeeper/ui/sqledit/antlrv4/first_part.sql");
+        paths.add("/home/botov_av/workspace/codekeeper/ru.taximaxim.codekeeper.ui/src/ru/taximaxim/codekeeper/ui/sqledit/antlrv4/second_part.sql");
+        paths.add("/home/botov_av/workspace/codekeeper/ru.taximaxim.codekeeper.ui/src/ru/taximaxim/codekeeper/ui/sqledit/antlrv4/third_part.sql");
+        for (String path : paths) {
             if (path.endsWith("diff.sql")) {
                 continue;
             }
@@ -36,12 +40,6 @@ public class SqlParserMain {
             System.out.println(path + "\n" + objLocation);
             System.out.println(objLocation.size());
         }
-        pathToFile = "/home/botov_av/workspace/codekeeper/ru.taximaxim.codekeeper.ui/src/ru/taximaxim/codekeeper/ui/sqledit/antlrv4/information_schema.sql";
-        new SqlParserMain().testSampleInputs(
-                        pathToFile,
-                        new CustomSQLParserListener(objLocation, Paths.get("/")));
-        System.err.println(objLocation);
-        System.err.println(objLocation.size());
     }
     public void testSampleInputs(String pathToFile, ParseTreeListener listener) throws IOException {
         String input = loadSample(pathToFile, "UTF-8");
