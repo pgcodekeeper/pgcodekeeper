@@ -10,7 +10,14 @@ public interface UIConsts {
     }
     
     interface EDITOR {
-        String PROJECT = "ru.taximaxim.codekeeper.ui.projectEditorDiffer"; //$NON-NLS-1$
+        String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
+    }
+    
+    interface COMMAND {
+        String DEPCY_SRC = PLUGIN_ID.THIS + ".toggleDepcySrc"; //$NON-NLS-1$
+        String DEPCY_SRC_STATE = DEPCY_SRC + "state"; //$NON-NLS-1$
+        String DEPCY_TGT = PLUGIN_ID.THIS + ".toggleDepcyTgt"; //$NON-NLS-1$
+        String DEPCY_TGT_STATE = DEPCY_TGT + "state"; //$NON-NLS-1$
     }
     
     interface PREF {
@@ -77,7 +84,7 @@ public interface UIConsts {
     }
     
     interface NATURE {
-        String ID = "ru.taximaxim.codekeeper.ui.nature"; //$NON-NLS-1$
+        String ID = PLUGIN_ID.THIS + ".nature"; //$NON-NLS-1$
     }
     
     interface HELP {

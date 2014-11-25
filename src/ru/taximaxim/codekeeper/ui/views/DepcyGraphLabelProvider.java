@@ -129,4 +129,14 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
     public boolean fisheyeNode(Object entity) {
         return false;
     }
+    
+    @Override
+    public void dispose() {
+        LIGHT_BLUE.dispose();
+        LIGHT_GREEN.dispose();
+        DARK_BLUE.dispose();
+        HIGHLIGHT_COLOR.dispose();
+        
+        super.dispose();
+    }
 }

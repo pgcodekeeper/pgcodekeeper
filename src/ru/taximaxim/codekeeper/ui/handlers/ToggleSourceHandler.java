@@ -11,6 +11,8 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 
+import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
+
 public class ToggleSourceHandler extends AbstractHandler implements IElementUpdater {
     private static Boolean stateOf = new Boolean(true);
     
@@ -19,13 +21,13 @@ public class ToggleSourceHandler extends AbstractHandler implements IElementUpda
         ICommandService service = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
         
         stateOf = !stateOf;
-        Command command = service.getCommand("ru.taximaxim.codekeeper.ui.toggle1");
-        command.getState("ru.taximaxim.codekeeper.ui.toggle1state").setValue(stateOf);
-        service.refreshElements("ru.taximaxim.codekeeper.ui.toggle1", null);
+        Command command = service.getCommand(COMMAND.DEPCY_SRC);
+        command.getState(COMMAND.DEPCY_SRC_STATE).setValue(stateOf);
+        service.refreshElements(COMMAND.DEPCY_SRC, null);
 
-        Command command2 = service.getCommand("ru.taximaxim.codekeeper.ui.toggle2");
-        command2.getState("ru.taximaxim.codekeeper.ui.toggle2state").setValue(stateOf);
-        service.refreshElements("ru.taximaxim.codekeeper.ui.toggle2", null);
+        Command command2 = service.getCommand(COMMAND.DEPCY_TGT);
+        command2.getState(COMMAND.DEPCY_TGT_STATE).setValue(stateOf);
+        service.refreshElements(COMMAND.DEPCY_TGT, null);
 
         return null;
     }

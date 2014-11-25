@@ -38,18 +38,18 @@
       <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ToggleSourceHandler"
-            id="ru.taximaxim.codekeeper.ui.toggle1"
+            id="ru.taximaxim.codekeeper.ui.toggleDepcySrc"
             name="%command.name.SourceDepcies">
             <state class="org.eclipse.jface.commands.ToggleState"
-                            id="ru.taximaxim.codekeeper.ui.toggle1state"/>
+                            id="ru.taximaxim.codekeeper.ui.toggleDepcySrcstate"/>
       </command>
       <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             defaultHandler="ru.taximaxim.codekeeper.ui.handlers.ToggleSourceHandler"
-            id="ru.taximaxim.codekeeper.ui.toggle2"
+            id="ru.taximaxim.codekeeper.ui.toggleDepcyTgt"
             name="%command.name.TargetDepcies">
             <state class="org.eclipse.jface.commands.ToggleState"
-                            id="ru.taximaxim.codekeeper.ui.toggle2state"/>
+                            id="ru.taximaxim.codekeeper.ui.toggleDepcyTgtstate"/>
       </command>
       <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
@@ -110,14 +110,14 @@
       <menuContribution
             locationURI="toolbar:ru.taximaxim.codekeeper.ui.depcyview">
          <command
-               commandId="ru.taximaxim.codekeeper.ui.toggle1"
+               commandId="ru.taximaxim.codekeeper.ui.toggleDepcySrc"
                icon="icons/ball_blue.png"
                label="%command.label.SourceDepcies"
                mode="FORCE_TEXT"
                style="toggle">
          </command>
          <command
-               commandId="ru.taximaxim.codekeeper.ui.toggle2"
+               commandId="ru.taximaxim.codekeeper.ui.toggleDepcyTgt"
                icon="icons/ball_green.png"
                label="%command.label.TargetDepcies"
                mode="FORCE_TEXT"
