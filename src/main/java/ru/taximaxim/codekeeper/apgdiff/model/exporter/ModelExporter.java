@@ -188,15 +188,36 @@ public class ModelExporter {
             
             // dump new version
             dumpSQL(stInNew.getFullSQL(), new File(outDir, getRelativeFilePath(stInNew, true).toString()));
-        }else if (stInNew instanceof PgFunction && (elParent.getSide() != DiffSide.LEFT || !changedObjects.contains(elParent))){
-            deleteObject(el);
+        }else if (stInNew instanceof PgFunction){
+            if ((elParent.getSide() != DiffSide.LEFT) || !changedObjects.contains(elParent)){
+                // delete function sql file
+                Path toDelete = Paths.get(outDir.getCanonicalPath(), getRelativeFilePath(stInNew, true).toString());
+                Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() + " for object " + el.getType() + " " + el.getName());
+                Files.deleteIfExists(toDelete);
+                
+                PgSchema newParentSchema = newDb.getSchema(stInNew.getParent().getName());
+                List<PgFunction> funcsToExport = new ArrayList<PgFunction>();
+                
+                String targetFuncFileName = getExportedFilename(stInNew);
+                
+                for (PgFunction func : newParentSchema.getFunctions()){
+                    if (targetFuncFileName.equals(getExportedFilename(func))){
+                        funcsToExport.add(func);
+                    }
+                }
+                
+                // dump rest of same-named functions back
+                dumpFunctions(funcsToExport, new File (outDir, getRelativeFilePath(newParentSchema, false).toString()));
+            }
         }else if (stInNew instanceof PgConstraint || stInNew instanceof PgIndex || stInNew instanceof PgTrigger){
             if (!changedObjects.contains(elParent)){
                 editObject(elParent);
             }
         }else if (stInNew instanceof PgTable){
             // remove old version
-            deleteObject(el);
+            Path toDelete = Paths.get(outDir.getCanonicalPath(), getRelativeFilePath(stInNew, true).toString());
+            Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() + " for object " + el.getType() + " " + el.getName());
+            Files.deleteIfExists(toDelete);
 
             PgTable newTable = (PgTable)el.getPgStatement(newDb);
             if (newTable == null){
@@ -207,7 +228,9 @@ public class ModelExporter {
             dumpTables(Arrays.asList(newTable), parentSchemaDir);
         }else{
             // remove old version
-            deleteObject(el);
+            Path toDelete = Paths.get(outDir.getCanonicalPath(), getRelativeFilePath(stInNew, true).toString());
+            Log.log(Log.LOG_INFO, "Deleting file " + toDelete.toString() + " for object " + el.getType() + " " + el.getName());
+            Files.deleteIfExists(toDelete);
             
             // dump new version
             dumpSQL(getDumpSql((PgStatementWithSearchPath)stInNew), new File(outDir, getRelativeFilePath(stInNew, true).toString()));
