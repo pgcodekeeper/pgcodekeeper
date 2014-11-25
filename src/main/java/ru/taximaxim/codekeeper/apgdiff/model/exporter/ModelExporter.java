@@ -156,7 +156,6 @@ public class ModelExporter {
             // delete schema sql file
             deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
             
-            
             // delete schema's folder content
             Log.log(Log.LOG_INFO, "Deleting schema folder for schema " + el.getName());
             deleteRecursive(new File(outDir, getRelativeFilePath(st, false).toString()));
@@ -516,7 +515,7 @@ public class ModelExporter {
         }
     }
     
-    public File getRelativeFilePath(PgStatement st, boolean addExtension){
+    private File getRelativeFilePath(PgStatement st, boolean addExtension){
         File file = new File("SCHEMA");
         
         PgStatement parentSt = st.getParent();
