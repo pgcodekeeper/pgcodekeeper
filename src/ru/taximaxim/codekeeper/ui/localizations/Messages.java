@@ -106,6 +106,8 @@ public final class Messages extends NLS {
     public static String diffTableViewer_container;
     public static String diffTableViewer_delete_checked_set;
     public static String diffTableViewer_deselect_child_elements;
+    public static String diffTableViewer_mark_selected_elements;
+    public static String diffTableViewer_unmark_selected_elements;
     public static String diffTableViewer_filtering_diff_tree_based_on_gui_selection;
     public static String diffTableViewer_Input_name_for_save_checked_elements;
     public static String diffTableViewer_invert_selection;
@@ -127,6 +129,7 @@ public final class Messages extends NLS {
     public static String diffTreeViewer_select_subtree;
     public static String treeDiffer_building_diff_tree;
     public static String reading_db_from_jdbc;
+    public static String could_not_open_editor_for_file;
 
     // ui.externalcalls
     public static String pgDumper_bad_pg_dump_version_output;
