@@ -62,7 +62,7 @@ public final class Main {
                         PgDiff.loadDatabaseSchema(arguments.getParseSrcFormat(),
                                 arguments.getParseSrc(), arguments),
                             arguments.getOutCharsetName())
-                    .export();
+                    .exportFull();
             }
         }
     }
