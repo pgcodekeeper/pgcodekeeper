@@ -39,16 +39,35 @@ sql
   ;
 
 statement
-  :/* data_statement
-   | data_change_statement
-  |*/ schema_statement
+  : data_statement
+   /*| data_change_statement*/
+  | schema_statement
   
   ;
 
-//data_statement
-//  : query_expression
-//  ;
-//
+data_statement
+  : query_expression
+  | copy_statement
+  ;
+
+copy_statement
+    : COPY (table_name=schema_qualified_name (LEFT_PAREN column_name=schema_qualified_name(COMMA column_name=schema_qualified_name)* RIGHT_PAREN)? 
+           | ( query=query_specification ))
+        (FROM | TO) (filename=identifier | STDIN)
+        ((WITH)? LEFT_PAREN option=copy_option(COMMA option=copy_option)* RIGHT_PAREN)?
+    ;
+copy_option:
+    FORMAT format_name=identifier
+    | OIDS (boolean_val=truth_value)?
+    | DELIMITER delimiter_character=identifier
+    | NULL null_string=identifier
+    | HEADER (boolean_val=truth_value)?
+    | QUOTE quote_character=identifier
+    | ESCAPE escape_character=identifier
+    | FORCE_QUOTE ((LEFT_PAREN column_name=schema_qualified_name (COMMA column_name=schema_qualified_name)* RIGHT_PAREN) | MULTIPLY)
+    | FORCE_NOT_NULL LEFT_PAREN column_name=schema_qualified_name (COMMA column_name=schema_qualified_name)* RIGHT_PAREN
+    | ENCODING encoding_name=identifier
+    ;
 //data_change_statement
 //  : insert_statement
 //  ;
@@ -83,6 +102,7 @@ schema_alter
     | alter_table_statement
     | alter_default_privileges
     | alter_sequence_statement
+    | alter_view_statement
     ;
     
 alter_function_statement
@@ -241,6 +261,14 @@ alter_sequence_statement
     |ALTER SEQUENCE (IF EXISTS)? name=schema_qualified_name  SET SCHEMA new_schema=schema_qualified_name
     ;
 
+alter_view_statement
+    : ALTER VIEW (IF EXISTS)? name=schema_qualified_name 
+    (ALTER (COLUMN)? column_name=schema_qualified_name  (SET DEFAULT expression=value_expression | DROP DEFAULT)
+    | (((OWNER | RENAME) TO) | SET SCHEMA) new_owner=schema_qualified_name 
+    | SET LEFT_PAREN view_option_name=identifier (EQUAL view_option_value=value_expression)?(COMMA view_option_name=identifier (EQUAL view_option_value=value_expression)?)*  RIGHT_PAREN
+    | RESET LEFT_PAREN view_option_name=identifier (COMMA view_option_name=identifier)*  RIGHT_PAREN)
+    ;
+
 index_statement
   : CREATE (UNIQUE)? INDEX (CONCURRENTLY)? (name=schema_qualified_name)? ON table_name=schema_qualified_name 
     (USING method=schema_qualified_name)?
@@ -252,7 +280,7 @@ index_statement
   
  create_extension_statement
     : CREATE EXTENSION (IF NOT EXISTS)? name=identifier (WITH)?
-         (SCHEMA schema_name=identifier)? (VERSION version=identifier)? (FROM old_version=identifier)?
+         (SCHEMA schema_name=identifier)? (VERSION version=unsigned_literal)? (FROM old_version=unsigned_literal)?
     ;
     
 create_language_statement
@@ -287,7 +315,7 @@ create_trigger_statement
     ON tabl_name=schema_qualified_name 
     (FROM referenced_table_name=schema_qualified_name)?
     (NOT DEFERRABLE | (DEFERRABLE)? (INITIALLY IMMEDIATE) | (INITIALLY DEFERRED))?
-    (FOR (EACH)? ROW | STATEMENT)?
+    (FOR (EACH)? (ROW | STATEMENT))?
     (WHEN (boolean_value_expression))?
     EXECUTE PROCEDURE func_name=schema_qualified_name LEFT_PAREN (arguments+=identifier)? (COMMA arguments+=identifier)* RIGHT_PAREN
     ;
@@ -480,7 +508,7 @@ create_function_statement
             | ROWS result_rows=NUMBER
             | SET configuration_parameter=identifier (TO value=identifier | EQUAL value=identifier | FROM CURRENT)(COMMA value=identifier)*
             | AS function_body
-            | AS Character_String_Literal COMMA Character_String_Literal
+            | AS Character_String_Literal (COMMA Character_String_Literal)*
           )+
             (WITH LEFT_PAREN attribute+=function_attribute(COMMA attribute+=function_attribute)* RIGHT_PAREN)?
     ;
@@ -537,10 +565,10 @@ create_sequence_statement
 
 sequence_body
     : INCREMENT (BY)? incr=NUMBER
-        | (MINVALUE minval=NUMBER | NO MINVALUE) 
-        | (MAXVALUE maxval=numeric_type | NO MAXVALUE)
-        | START (WITH)? start_val=NUMBER
-        | CACHE cache_val=NUMBER
+        | (MINVALUE minval=signed_numerical_literal | NO MINVALUE) 
+        | (MAXVALUE maxval=signed_numerical_literal | NO MAXVALUE)
+        | START (WITH)? start_val=signed_numerical_literal
+        | CACHE cache_val=signed_numerical_literal
         | (NO)? CYCLE
         | OWNED BY (col_name=schema_qualified_name | NONE)
     ;
@@ -900,6 +928,7 @@ nonreserved_keywords
   | STABLE
   | START
   | STATISTICS
+  | STDIN
   | STORAGE
   | STDDEV_POP
   | STDDEV_SAMP

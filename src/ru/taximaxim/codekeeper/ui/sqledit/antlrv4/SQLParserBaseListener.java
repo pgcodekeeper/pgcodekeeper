@@ -199,18 +199,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCreate_language_statement(@NotNull SQLParser.Create_language_statementContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitCreate_language_statement(@NotNull SQLParser.Create_language_statementContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterLike_option(@NotNull SQLParser.Like_optionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -218,6 +206,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitLike_option(@NotNull SQLParser.Like_optionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCreate_language_statement(@NotNull SQLParser.Create_language_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCreate_language_statement(@NotNull SQLParser.Create_language_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -919,6 +919,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterData_statement(@NotNull SQLParser.Data_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitData_statement(@NotNull SQLParser.Data_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterTable_expression(@NotNull SQLParser.Table_expressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -962,6 +974,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitQuery_term(@NotNull SQLParser.Query_termContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCopy_statement(@NotNull SQLParser.Copy_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCopy_statement(@NotNull SQLParser.Copy_statementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2011,6 +2035,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterAlter_view_statement(@NotNull SQLParser.Alter_view_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAlter_view_statement(@NotNull SQLParser.Alter_view_statementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterFunction_body(@NotNull SQLParser.Function_bodyContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2119,6 +2155,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterSearch_condition(@NotNull SQLParser.Search_conditionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSearch_condition(@NotNull SQLParser.Search_conditionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterUnsigned_numeric_literal(@NotNull SQLParser.Unsigned_numeric_literalContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2143,13 +2191,13 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSearch_condition(@NotNull SQLParser.Search_conditionContext ctx) { }
+	@Override public void enterCopy_option(@NotNull SQLParser.Copy_optionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitSearch_condition(@NotNull SQLParser.Search_conditionContext ctx) { }
+	@Override public void exitCopy_option(@NotNull SQLParser.Copy_optionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

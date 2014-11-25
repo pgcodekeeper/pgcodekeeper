@@ -32,7 +32,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         while (ctx.n.identifier(i + 1) != null) {
             i++;
         }
-        objLocation.add(new DBObjectsLocation(ctx.n.identifier(i).Identifier().toString(), ctx.n.identifier(i).getStart().getStartIndex(), filePath));
+        objLocation.add(new DBObjectsLocation(ctx.n.identifier(i).getText(), ctx.n.identifier(i).getStart().getStartIndex(), filePath));
         
     }
     
