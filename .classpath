@@ -24,11 +24,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/jgrapht-core-0.9.0.jar" sourcepath="lib/jgrapht-core-0.9.0-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:platform:/resource/apgdiff/lib/jgrapht-core-0.9.0-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="lib/postgresql-9.3-1102-jdbc41.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jgrapht-core-0.9.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
