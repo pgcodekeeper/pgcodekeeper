@@ -55,7 +55,7 @@ public final class Messages extends NLS {
     public static String exceptionNotifier_copy_stack_trace;
     public static String exceptionNotifier_string_reader_ioexception_world_ends;
     public static String exceptionNotifier_unhandled_exception;
-    public static String sqlScriptDialog_Enter_cmd_to_roll_on_sql_script;
+    public static String sqlScriptDialog_Enter_cmd_to_update_ddl_with_sql_script;
     public static String sqlScriptDialog_error_saving_script_to_file;
     public static String sqlScriptDialog_exception_during_script_execution;
     public static String sqlScriptDialog_psql_dependencies;
@@ -70,6 +70,7 @@ public final class Messages extends NLS {
     public static String sqlScriptDialog_stop_script_before_closing_dialog;
     public static String sqlScriptDialog_this_dependencies_have_been_added_already_check_order;
     public static String sqlScriptDialog_warning;
+    public static String sqlScriptDialog_use_jdbc_for_ddl_update;
     public static String stdStreamRedirector_completed_with_code;
     public static String manualDepciesDialog_dependant_dependency;
     public static String manualDepciesDialog_depends_on;
@@ -106,6 +107,8 @@ public final class Messages extends NLS {
     public static String diffTableViewer_container;
     public static String diffTableViewer_delete_checked_set;
     public static String diffTableViewer_deselect_child_elements;
+    public static String diffTableViewer_mark_selected_elements;
+    public static String diffTableViewer_unmark_selected_elements;
     public static String diffTableViewer_filtering_diff_tree_based_on_gui_selection;
     public static String diffTableViewer_Input_name_for_save_checked_elements;
     public static String diffTableViewer_invert_selection;
@@ -127,6 +130,7 @@ public final class Messages extends NLS {
     public static String diffTreeViewer_select_subtree;
     public static String treeDiffer_building_diff_tree;
     public static String reading_db_from_jdbc;
+    public static String could_not_open_editor_for_file;
 
     // ui.externalcalls
     public static String pgDumper_bad_pg_dump_version_output;
@@ -229,6 +233,7 @@ public final class Messages extends NLS {
     public static String generalPrefPage_pg_dump_executable;
     public static String generalPrefPage_show_console_when_program_write_to_console;
     public static String generalPrefPage_use_depcy_on_commit_page;
+    public static String generalPrefPage_use_partial_project_update;
     public static String generalPrefPage_use_psql_depcy_on_generating_script;
     public static String ignoreObjectsPrefPage_add_ignore;
     public static String ignoreObjectsPrefPage_delete_ignore;
@@ -298,6 +303,7 @@ public final class Messages extends NLS {
     public static String SqlScriptDialog_error_get_script;
     public static String SqlScriptDialog_error_loading_command_history;
     public static String SqlScriptDialog_will_be_replaced;
+    public static String sqlScriptDialog_script_has_not_been_run_yet;
     public static String StdStreamRedirector_error_reading_std;
     public static String StdStreamRedirector_error_reading_std_external;
     public static String StdStreamRedirector_error_returncode_see_for_details;

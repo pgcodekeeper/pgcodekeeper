@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.editors;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,6 +28,8 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -45,6 +48,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.part.MultiPageSelectionProvider;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
@@ -113,6 +117,21 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         i = addPage(diff);
         setPageText(i, Messages.ProjectEditorDiffer_page_text_diff);
         setPageImage(i, iDiff);
+        
+        final MultiPageSelectionProvider mpsp = new MultiPageSelectionProvider(this);
+        
+        ISelectionChangedListener selectionChangedListener = new ISelectionChangedListener() {
+            
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                mpsp.firePostSelectionChanged(event);
+            }
+        };
+        
+        diff.getDiffTable().getViewer().addPostSelectionChangedListener(selectionChangedListener);
+        commit.getDiffTable().getViewer().addPostSelectionChangedListener(selectionChangedListener);
+        
+        getSite().setSelectionProvider(mpsp);
     }
 
     @Override
@@ -198,7 +217,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 class CommitPage extends DiffPresentationPane {
 
     private LocalResourceManager lrm;
-    
+
     private final IPreferenceStore mainPrefs;
     private final PgDbProject proj;
     
@@ -322,7 +341,13 @@ class CommitPage extends DiffPresentationPane {
 
                 pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
                 try {
-                    new ProjectUpdater(dbNew, proj).update();
+                    if (mainPrefs.getBoolean(COMMIT_PREF.USE_PARTIAL_EXPORT_ON_COMMIT)){
+                        List<TreeElement> checked = resultingTree.generateElementsList(
+                                new ArrayList<TreeElement>(), dbSource.getDbObject(), dbTarget.getDbObject());
+                        new ProjectUpdater(dbNew, dbSource.getDbObject(), checked, proj).updatePartial();
+                    }else{
+                        new ProjectUpdater(dbNew, null, null, proj).updateFull();
+                    }
                     pm.done();
                 } catch (IOException e) {
                     return new Status(Status.ERROR, PLUGIN_ID.THIS, 

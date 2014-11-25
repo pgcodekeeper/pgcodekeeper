@@ -31,10 +31,9 @@ import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckStateProvider;
-import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -64,7 +63,7 @@ import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -73,6 +72,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
+import ru.taximaxim.codekeeper.ui.editors.DepcyStructuredSelection;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -106,7 +106,7 @@ public class DiffTableViewer extends Composite {
     
     private Text txtFilterName;
     private Button useRegEx;
-    protected final CheckboxTableViewer viewer;
+    private final CheckboxTableViewer viewer;
     private TableViewerFilter viewerFilter = new TableViewerFilter();
     private TableViewerColumn columnType, columnChange, columnName, columnLocation;
     private Label lblObjectCount;
@@ -117,6 +117,9 @@ public class DiffTableViewer extends Composite {
     private DbSource dbSource;
     private DbSource dbTarget;
     
+    private DepcyGraph depcyGraphSource;
+    private DepcyGraph depcyGraphTarget;
+
     private Map<String, LinkedList<String>> prevChecked; 
     private XmlHistory prevCheckedHistory;
     
@@ -183,7 +186,12 @@ public class DiffTableViewer extends Composite {
         if (!viewOnly) {
             viewerStyle |= SWT.CHECK;
         }
-        viewer = new CheckboxTableViewer(new Table(this, viewerStyle));
+        viewer = new CheckboxTableViewer(new Table(this, viewerStyle)){
+            @Override
+            public ISelection getSelection() {
+                return new DepcyStructuredSelection(depcyGraphSource, depcyGraphTarget, ((IStructuredSelection) super.getSelection()).toArray());
+            }
+        };
         
         viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         viewer.getTable().setLinesVisible(true);  
@@ -193,20 +201,6 @@ public class DiffTableViewer extends Composite {
                 getViewerMenu().createContextMenu(viewer.getControl()));
         
         if (!viewOnly) {
-            viewer.addDoubleClickListener(new IDoubleClickListener() {
-
-                @Override
-                public void doubleClick(DoubleClickEvent e) {
-                    TreeElement el = (TreeElement) ((IStructuredSelection) e
-                            .getSelection()).getFirstElement();
-                    if (el != null) {
-                        boolean newChecked = !elements.get(el);
-                        viewer.setChecked(el, newChecked);
-                        checkListener.setElementChecked(el, newChecked);
-                    }
-                }
-            });
-
             viewer.addCheckStateListener(checkListener);
 
             viewer.setCheckStateProvider(new ICheckStateProvider() {
@@ -614,12 +608,16 @@ public class DiffTableViewer extends Composite {
             this.treeRoot = (differ == null) ? null : differ.getDiffTree();
             this.dbSource = (differ == null) ? null : 
                 reverseDiffSide ? differ.getDbTarget() : differ.getDbSource();
+            this.depcyGraphSource = (dbSource == null) ? null : new DepcyGraph(dbSource.getDbObject());
             this.dbTarget = (differ == null) ? null : 
                 reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
+            this.depcyGraphTarget = (dbTarget == null) ? null : new DepcyGraph(dbTarget.getDbObject());
         } catch (PgCodekeeperUIException e) {
             ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_setting_input, e);
             this.treeRoot = null;
             this.dbSource = null;
+            this.depcyGraphSource = null;
+            this.depcyGraphTarget = null;
             this.dbTarget = null;
         }
     }
@@ -658,24 +656,14 @@ public class DiffTableViewer extends Composite {
     }
     
     private void generateFlatElementsMap(TreeElement subtree) {
-        if (subtree.hasChildren()) {
-            for (TreeElement child : subtree.getChildren()) {
-                generateFlatElementsMap(child);
-            }
-        }
+        List<TreeElement> elementsList = subtree.generateElementsList(
+                new ArrayList<TreeElement>(), dbSource.getDbObject(), dbTarget.getDbObject());
         
-        if ((subtree.getSide() == DiffSide.BOTH && subtree.getParent() != null 
-                && subtree.getParent().getSide() != DiffSide.BOTH)
-                || subtree.getType() == DbObjType.CONTAINER
-                || subtree.getType() == DbObjType.DATABASE 
-                ||(subtree.getSide() == DiffSide.BOTH && 
-                subtree.getPgStatement(dbSource.getDbObject()).compare(
-                        subtree.getPgStatement(dbTarget.getDbObject())))) {
-            return;
-        }
-        // Do not add elements, that are in ignore list
-        if (!ignoredElements.contains(subtree.getName())) {
-            elements.put(subtree, false);
+        for(TreeElement e : elementsList){
+            // Do not add elements, that are in ignore list
+            if (!ignoredElements.contains(e.getName())) {
+                elements.put(e, false);
+            }
         }
     }
     
@@ -699,6 +687,14 @@ public class DiffTableViewer extends Composite {
     
     public int getCheckedElementsCount() {
         return elements.getCheckedElementsCount();
+    }
+    
+    public CheckboxTableViewer getViewer() {
+        return viewer;
+    }
+    
+    public DepcyGraph getDepcyGraphSource() {
+        return depcyGraphSource;
     }
     
     public Set<TreeElement> getCheckedElements(boolean checkedStatus) {
@@ -745,6 +741,27 @@ public class DiffTableViewer extends Composite {
                     if (el != null) {
                         setSubTreeChecked(el, false);
                     }
+                }
+            });
+            menuMgr.add(new Separator());
+            menuMgr.add(new Action(Messages.diffTableViewer_mark_selected_elements) {
+
+                @Override
+                public void run() {
+                    @SuppressWarnings("unchecked")
+                    List<TreeElement> selected = ((IStructuredSelection) viewer.getSelection()).toList();
+                    HashSet<TreeElement> selectedSet = new HashSet<TreeElement>(selected);
+                    setCheckedElements(selectedSet, true);
+                }
+            });
+            menuMgr.add(new Action(Messages.diffTableViewer_unmark_selected_elements) {
+
+                @Override
+                public void run() {
+                    @SuppressWarnings("unchecked")
+                    List<TreeElement> selected = ((IStructuredSelection) viewer.getSelection()).toList();
+                    HashSet<TreeElement> selectedSet = new HashSet<TreeElement>(selected);
+                    setCheckedElements(selectedSet, false);
                 }
             });
             menuMgr.add(new Separator());
