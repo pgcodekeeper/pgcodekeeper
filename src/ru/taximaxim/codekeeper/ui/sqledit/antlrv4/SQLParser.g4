@@ -667,78 +667,78 @@ param
   : key=identifier EQUAL value=numeric_value_expression
   ;
 
-method_specifier
-  : USING m=identifier
-  ;
+//method_specifier
+//  : USING m=identifier
+//  ;
 
-table_space_specifier
-  : TABLESPACE table_space_name
-  ;
+//table_space_specifier
+//  : TABLESPACE table_space_name
+//  ;
 
-table_space_name
-  : identifier
-  ;
+//table_space_name
+//  : identifier
+//  ;
 
-table_partitioning_clauses
-  : range_partitions
-  | hash_partitions
-  | list_partitions
-  | column_partitions
-  ;
+//table_partitioning_clauses
+//  : range_partitions
+//  | hash_partitions
+//  | list_partitions
+//  | column_partitions
+//  ;
 
-range_partitions
-  : PARTITION BY RANGE LEFT_PAREN column_reference_list RIGHT_PAREN
-    LEFT_PAREN range_value_clause_list RIGHT_PAREN
-  ;
+//range_partitions
+//  : PARTITION BY RANGE LEFT_PAREN column_reference_list RIGHT_PAREN
+//    LEFT_PAREN range_value_clause_list RIGHT_PAREN
+//  ;
 
-range_value_clause_list
-  : range_value_clause (COMMA range_value_clause)*
-  ;
+//range_value_clause_list
+//  : range_value_clause (COMMA range_value_clause)*
+//  ;
 
-range_value_clause
-  : PARTITION partition_name VALUES LESS THAN (LEFT_PAREN value_expression RIGHT_PAREN | LEFT_PAREN? MAXVALUE RIGHT_PAREN?)
-  ;
+//range_value_clause
+//  : PARTITION partition_name VALUES LESS THAN (LEFT_PAREN value_expression RIGHT_PAREN | LEFT_PAREN? MAXVALUE RIGHT_PAREN?)
+//  ;
 
-hash_partitions
-  : PARTITION BY HASH LEFT_PAREN column_reference_list RIGHT_PAREN
-    (LEFT_PAREN individual_hash_partitions RIGHT_PAREN | hash_partitions_by_quantity)
-  ;
+//hash_partitions
+//  : PARTITION BY HASH LEFT_PAREN column_reference_list RIGHT_PAREN
+//    (LEFT_PAREN individual_hash_partitions RIGHT_PAREN | hash_partitions_by_quantity)
+//  ;
 
-individual_hash_partitions
-  : individual_hash_partition (COMMA individual_hash_partition)*
-  ;
+//individual_hash_partitions
+//  : individual_hash_partition (COMMA individual_hash_partition)*
+//  ;
 
-individual_hash_partition
-  : PARTITION partition_name
-  ;
+//individual_hash_partition
+//  : PARTITION partition_name
+//  ;
 
-hash_partitions_by_quantity
-  : PARTITIONS quantity = numeric_value_expression
-  ;
+//hash_partitions_by_quantity
+//  : PARTITIONS quantity = numeric_value_expression
+//  ;
 
-list_partitions
-  : PARTITION BY LIST LEFT_PAREN column_reference_list RIGHT_PAREN LEFT_PAREN  list_value_clause_list RIGHT_PAREN
-  ;
+//list_partitions
+//  : PARTITION BY LIST LEFT_PAREN column_reference_list RIGHT_PAREN LEFT_PAREN  list_value_clause_list RIGHT_PAREN
+//  ;
 
-list_value_clause_list
-  : list_value_partition (COMMA list_value_partition)*
-  ;
+//list_value_clause_list
+//  : list_value_partition (COMMA list_value_partition)*
+//  ;
 
-list_value_partition
-  : PARTITION partition_name VALUES (IN)? LEFT_PAREN in_value_list RIGHT_PAREN
-  ;
+//list_value_partition
+//  : PARTITION partition_name VALUES (IN)? LEFT_PAREN in_value_list RIGHT_PAREN
+//  ;
 
-column_partitions
-  : PARTITION BY COLUMN table_elements
-  ;
+//column_partitions
+//  : PARTITION BY COLUMN table_elements
+//  ;
 
 partition_by_columns
     : PARTITION BY schema_qualified_name (COMMA schema_qualified_name)*
     ;
 
-partition_name
-  : identifier
-  ;
+//partition_name
+//  : identifier
+//  ;
 
 /*
 ===============================================================================

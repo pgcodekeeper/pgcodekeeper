@@ -103,18 +103,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterRollup_list(@NotNull SQLParser.Rollup_listContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitRollup_list(@NotNull SQLParser.Rollup_listContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterTable_reference_list(@NotNull SQLParser.Table_reference_listContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -122,6 +110,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitTable_reference_list(@NotNull SQLParser.Table_reference_listContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterRollup_list(@NotNull SQLParser.Rollup_listContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitRollup_list(@NotNull SQLParser.Rollup_listContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -151,18 +151,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCube_list(@NotNull SQLParser.Cube_listContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitCube_list(@NotNull SQLParser.Cube_listContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterStorage_parameter_oid(@NotNull SQLParser.Storage_parameter_oidContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -170,6 +158,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitStorage_parameter_oid(@NotNull SQLParser.Storage_parameter_oidContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCube_list(@NotNull SQLParser.Cube_listContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCube_list(@NotNull SQLParser.Cube_listContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -319,18 +319,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPrecision_param(@NotNull SQLParser.Precision_paramContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitPrecision_param(@NotNull SQLParser.Precision_paramContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterBit_type(@NotNull SQLParser.Bit_typeContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -338,6 +326,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitBit_type(@NotNull SQLParser.Bit_typeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterPrecision_param(@NotNull SQLParser.Precision_paramContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPrecision_param(@NotNull SQLParser.Precision_paramContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -410,30 +410,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitFrom_clause(@NotNull SQLParser.From_clauseContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterColumn_partitions(@NotNull SQLParser.Column_partitionsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitColumn_partitions(@NotNull SQLParser.Column_partitionsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterIndividual_hash_partition(@NotNull SQLParser.Individual_hash_partitionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitIndividual_hash_partition(@NotNull SQLParser.Individual_hash_partitionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -535,18 +511,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterTable_constraint(@NotNull SQLParser.Table_constraintContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitTable_constraint(@NotNull SQLParser.Table_constraintContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterUnsigned_value_specification(@NotNull SQLParser.Unsigned_value_specificationContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -554,6 +518,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitUnsigned_value_specification(@NotNull SQLParser.Unsigned_value_specificationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterTable_constraint(@NotNull SQLParser.Table_constraintContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitTable_constraint(@NotNull SQLParser.Table_constraintContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -847,18 +823,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterOrdinary_grouping_set(@NotNull SQLParser.Ordinary_grouping_setContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitOrdinary_grouping_set(@NotNull SQLParser.Ordinary_grouping_setContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterGeneral_literal(@NotNull SQLParser.General_literalContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -871,6 +835,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterOrdinary_grouping_set(@NotNull SQLParser.Ordinary_grouping_setContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitOrdinary_grouping_set(@NotNull SQLParser.Ordinary_grouping_setContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterTime_zone_field(@NotNull SQLParser.Time_zone_fieldContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -878,18 +854,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitTime_zone_field(@NotNull SQLParser.Time_zone_fieldContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterIndividual_hash_partitions(@NotNull SQLParser.Individual_hash_partitionsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitIndividual_hash_partitions(@NotNull SQLParser.Individual_hash_partitionsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1231,18 +1195,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterRange_partitions(@NotNull SQLParser.Range_partitionsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitRange_partitions(@NotNull SQLParser.Range_partitionsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterComparison_predicate(@NotNull SQLParser.Comparison_predicateContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1459,18 +1411,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterEmpty_grouping_set(@NotNull SQLParser.Empty_grouping_setContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitEmpty_grouping_set(@NotNull SQLParser.Empty_grouping_setContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterCase_abbreviation(@NotNull SQLParser.Case_abbreviationContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1478,6 +1418,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitCase_abbreviation(@NotNull SQLParser.Case_abbreviationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterEmpty_grouping_set(@NotNull SQLParser.Empty_grouping_setContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitEmpty_grouping_set(@NotNull SQLParser.Empty_grouping_setContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1538,18 +1490,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSimple_when_clause(@NotNull SQLParser.Simple_when_clauseContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterList_value_clause_list(@NotNull SQLParser.List_value_clause_listContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitList_value_clause_list(@NotNull SQLParser.List_value_clause_listContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2155,18 +2095,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSearch_condition(@NotNull SQLParser.Search_conditionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSearch_condition(@NotNull SQLParser.Search_conditionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterUnsigned_numeric_literal(@NotNull SQLParser.Unsigned_numeric_literalContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2186,6 +2114,18 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitBoolean_predicand(@NotNull SQLParser.Boolean_predicandContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSearch_condition(@NotNull SQLParser.Search_conditionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSearch_condition(@NotNull SQLParser.Search_conditionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2258,18 +2198,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitCharacter_primary(@NotNull SQLParser.Character_primaryContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterRange_value_clause(@NotNull SQLParser.Range_value_clauseContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitRange_value_clause(@NotNull SQLParser.Range_value_clauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2462,18 +2390,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitQuantified_comparison_predicate(@NotNull SQLParser.Quantified_comparison_predicateContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterTable_partitioning_clauses(@NotNull SQLParser.Table_partitioning_clausesContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitTable_partitioning_clauses(@NotNull SQLParser.Table_partitioning_clausesContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2743,18 +2659,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPartition_name(@NotNull SQLParser.Partition_nameContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitPartition_name(@NotNull SQLParser.Partition_nameContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterColumn_constraint(@NotNull SQLParser.Column_constraintContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2779,18 +2683,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterHash_partitions_by_quantity(@NotNull SQLParser.Hash_partitions_by_quantityContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitHash_partitions_by_quantity(@NotNull SQLParser.Hash_partitions_by_quantityContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterExtract_source(@NotNull SQLParser.Extract_sourceContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2803,30 +2695,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterTable_space_name(@NotNull SQLParser.Table_space_nameContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitTable_space_name(@NotNull SQLParser.Table_space_nameContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterList_value_partition(@NotNull SQLParser.List_value_partitionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitList_value_partition(@NotNull SQLParser.List_value_partitionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterAlias_def(@NotNull SQLParser.Alias_defContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2834,30 +2702,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitAlias_def(@NotNull SQLParser.Alias_defContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterList_partitions(@NotNull SQLParser.List_partitionsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitList_partitions(@NotNull SQLParser.List_partitionsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterHash_partitions(@NotNull SQLParser.Hash_partitionsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitHash_partitions(@NotNull SQLParser.Hash_partitionsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -2959,18 +2803,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterRange_value_clause_list(@NotNull SQLParser.Range_value_clause_listContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitRange_value_clause_list(@NotNull SQLParser.Range_value_clause_listContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterIs_clause(@NotNull SQLParser.Is_clauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -3002,18 +2834,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitBetween_predicate_part_2(@NotNull SQLParser.Between_predicate_part_2Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterMethod_specifier(@NotNull SQLParser.Method_specifierContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitMethod_specifier(@NotNull SQLParser.Method_specifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -3098,18 +2918,6 @@ public class SQLParserBaseListener implements SQLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitTerm(@NotNull SQLParser.TermContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterTable_space_specifier(@NotNull SQLParser.Table_space_specifierContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitTable_space_specifier(@NotNull SQLParser.Table_space_specifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
