@@ -73,7 +73,7 @@ public class SqlScriptDialog extends TrayDialog {
             "^.*(ERROR|ОШИБКА):.+$"); //$NON-NLS-1$
     private static final Pattern PATTERN_DROP_CASCADE = Pattern.compile(
             "^(HINT|ПОДСКАЗКА):.+(DROP \\.\\.\\. CASCADE).+$", 
-            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE); //$NON-NLS-1$
+            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE); 
     
     private static final String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
     private static final String DB_HOST_PLACEHOLDER = "%host"; //$NON-NLS-1$
@@ -232,7 +232,11 @@ public class SqlScriptDialog extends TrayDialog {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.exclude = isDdlUpdateOverJdbc;
         notJdbc.setLayoutData(gd);
-        notJdbc.setLayout(new GridLayout());
+        notJdbc.setVisible(!isDdlUpdateOverJdbc);
+        
+        GridLayout gl = new GridLayout();
+        gl.marginHeight = gl.marginWidth = 0;
+        notJdbc.setLayout(gl);
         
         Label l = new Label(notJdbc, SWT.NONE);
         l.setText(Messages.sqlScriptDialog_Enter_cmd_to_update_ddl_with_sql_script
@@ -375,9 +379,6 @@ public class SqlScriptDialog extends TrayDialog {
         
         // case Run script
         if (buttonId == 0 && !isRunning) {
-            final List<String> command = new ArrayList<>(Arrays.asList(
-                    getReplacedString().split(Pattern.quote(" ")))); //$NON-NLS-1$
-            
             // new runnable to unlock the UI thread
             Runnable launcher;
             
@@ -388,7 +389,8 @@ public class SqlScriptDialog extends TrayDialog {
                     public void run() {
                         String output = Messages.sqlScriptDialog_script_has_not_been_run_yet;
                         try{
-                            JdbcConnector connector = new JdbcConnector(dbHost, Integer.valueOf(dbPort), dbUser, dbPass, dbName, "UTF8");
+                            JdbcConnector connector = new JdbcConnector(
+                                    dbHost, Integer.valueOf(dbPort), dbUser, dbPass, dbName, UIConsts.UTF_8);
                             output = new JdbcRunner(connector).runScript(textRetrieved);
                             if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                                 addDepcy = getDependenciesFromOutput(output);
@@ -402,6 +404,9 @@ public class SqlScriptDialog extends TrayDialog {
                     }
                 };
             }else{
+                final List<String> command = new ArrayList<>(Arrays.asList(
+                        getReplacedString().split(Pattern.quote(" ")))); //$NON-NLS-1$
+                
                 launcher = new Runnable() {
     
                     @Override
