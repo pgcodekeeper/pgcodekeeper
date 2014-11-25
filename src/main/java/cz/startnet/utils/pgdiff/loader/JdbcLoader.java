@@ -1,11 +1,8 @@
 package cz.startnet.utils.pgdiff.loader;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Array;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,15 +12,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Scanner;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
@@ -82,78 +76,20 @@ public class JdbcLoader implements PgCatalogStrings {
     private Map<Long, Map<Integer, String>> cachedColumnNamesByTableOid = 
             new HashMap<Long, Map<Integer,String>>();
     
-    private String host;
-    private int port;
-    private String user;
-    private String pass;
-    private String dbName;
-    private String encoding;
-    
     private Connection connection;
+    private JdbcConnector connector;
     private IProgressMonitor monitor;
     
-    public JdbcLoader(String host, int port, String user, String pass, String dbName, String encoding) {
-        this.host = host;
-        this.port = port == 0 ? ApgdiffConsts.JDBC_CONSTS.JDBC_DEFAULT_PORT : port;
-        this.user = user.isEmpty() ? System.getProperty("user.name") : user;
-        this.dbName = dbName;
-        this.encoding = encoding;
-        this.pass = pass.isEmpty() ? getPgPassPassword() : pass;
+    public JdbcLoader(JdbcConnector connector){
+        this.connector = connector;
     }
 
-    private String getPgPassPassword(){
-        Log.log(Log.LOG_INFO, "User provided an empty password. Reading password from pgpass file.");
-        File pgPassFile;
-        if (System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH).contains("win")){
-            pgPassFile = new File(System.getenv("APPDATA"),"\\postgresql\\pgpass.conf");
-        }else{
-            pgPassFile = new File(System.getProperty("user.home"), "/.pgpass");
-        }
-        Log.log(Log.LOG_INFO, "pgpass file will be read at " + pgPassFile.getAbsolutePath());
-
-        if (!pgPassFile.isFile() || !pgPassFile.exists()){
-            Log.log(Log.LOG_INFO, "Using empty password, because pgpass file either "
-                    + "does not exist or is not a file: " + pgPassFile.getAbsolutePath());
-            return "";
-        }
-        
-        String [] expectedTokens = {host, String.valueOf(port), dbName, user};
-        try (Scanner sc = new Scanner(pgPassFile)){
-            sc.useDelimiter(":|\n");
-            while (sc.hasNextLine()) {
-                int tokenCounter = 0;
-
-                while (sc.hasNext()) {
-                    if (tokenCounter > 3) {
-                        return sc.skip(":").nextLine();
-                    }
-
-                    String token = sc.next();
-                    if (!token.equals(expectedTokens[tokenCounter++]) && !token.equals("*")) {
-                        break;
-                    }
-                }
-                sc.nextLine();
-            }
-        } catch (FileNotFoundException e) {
-            throw new IllegalStateException("Error reading pgpass file", e);
-        }
-        Log.log(Log.LOG_INFO, "Using empty password, because no password has been found "
-                + "in pgpass file for " + host + ":" + port + ":" + dbName + ":" + user);
-        return "";
-    }
-    
     public PgDatabase getDbFromJdbc(IProgressMonitor mon) throws IOException{
         monitor = mon == null ? new NullProgressMonitor() : SubMonitor.convert(mon, 1);
         PgDatabase d = new PgDatabase();
         try {
             Log.log(Log.LOG_INFO, "Reading db using JDBC.");
-            Class.forName(ApgdiffConsts.JDBC_CONSTS.JDBC_DRIVER);
-            Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " + 
-                    host + ":" + port + ", db name " + dbName + ", username " + user);
-            connection = DriverManager.getConnection(
-                   "jdbc:postgresql://" + host + ":" + port + "/" + dbName, user, pass);
-            Log.log(Log.LOG_INFO, "JDBC connection has been established successfully");
+            connection = connector.getConnection();
             
             setTimeZone("'UTC'");
             prepareStatements();
@@ -202,9 +138,7 @@ public class JdbcLoader implements PgCatalogStrings {
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (SQLException e) {
             throw new IOException("Database JDBC access error occured", e);
-        } catch (ClassNotFoundException e) {
-            throw new IOException("JDBC driver class not found", e);
-        }finally{
+        } finally{
             Log.log(Log.LOG_INFO, "Closing used JDBC resources");
             closeResources();
         }
