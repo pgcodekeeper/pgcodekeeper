@@ -45,9 +45,13 @@ public class SqlParserMain {
         String input = loadSample(pathToFile, "UTF-8");
 
         SQLLexer lexer = new SQLLexer(new ANTLRInputStream(input));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(CustomErrorListener.INSTATANCE);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         
         SQLParser parser = new SQLParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(CustomErrorListener.INSTATANCE);
         ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk(listener, parser.sql());
     }
