@@ -25,6 +25,7 @@ public interface UIConsts {
     
     interface COMMIT_PREF {
         String CONSIDER_DEPCY_IN_COMMIT = "considerDepcyInCommit"; //$NON-NLS-1$
+        String USE_PARTIAL_EXPORT_ON_COMMIT = "usePartialExportOnCommit";
     }
     
     interface DB_UPDATE_PREF {
