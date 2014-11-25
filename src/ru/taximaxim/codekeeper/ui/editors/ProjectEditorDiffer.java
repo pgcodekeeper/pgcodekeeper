@@ -28,6 +28,8 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -46,6 +48,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.part.MultiPageSelectionProvider;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
@@ -114,6 +117,21 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         i = addPage(diff);
         setPageText(i, Messages.ProjectEditorDiffer_page_text_diff);
         setPageImage(i, iDiff);
+        
+        final MultiPageSelectionProvider mpsp = new MultiPageSelectionProvider(this);
+        
+        ISelectionChangedListener selectionChangedListener = new ISelectionChangedListener() {
+            
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                mpsp.firePostSelectionChanged(event);
+            }
+        };
+        
+        diff.getDiffTable().getViewer().addPostSelectionChangedListener(selectionChangedListener);
+        commit.getDiffTable().getViewer().addPostSelectionChangedListener(selectionChangedListener);
+        
+        getSite().setSelectionProvider(mpsp);
     }
 
     @Override
@@ -199,7 +217,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 class CommitPage extends DiffPresentationPane {
 
     private LocalResourceManager lrm;
-    
+
     private final IPreferenceStore mainPrefs;
     private final PgDbProject proj;
     

@@ -23,7 +23,6 @@ import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -105,6 +104,10 @@ public abstract class DiffPresentationPane extends Composite {
             else 
                 diffPane.setDbTarget(db);    
         }
+    }
+    
+    public DiffTableViewer getDiffTable() {
+        return diffTable;
     }
     
     public DiffPresentationPane(Composite parent, boolean projIsSrc,
@@ -246,11 +249,11 @@ public abstract class DiffPresentationPane extends Composite {
 
         diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs, false);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        diffTable.viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+        diffTable.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
 
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                StructuredSelection selection = ((StructuredSelection) event
+                IStructuredSelection selection = ((IStructuredSelection) event
                         .getSelection());
 
                 if (selection.size() != 1) {
@@ -373,7 +376,7 @@ public abstract class DiffPresentationPane extends Composite {
         diffPane = new DiffPaneViewer(sashOuter, SWT.NONE, isProjSrc ? dbSource
                 : dbTarget, isProjSrc ? dbTarget : dbSource, !isProjSrc);
         
-        diffTable.viewer.addDoubleClickListener(new IDoubleClickListener() {
+        diffTable.getViewer().addDoubleClickListener(new IDoubleClickListener() {
 
             @Override
             public void doubleClick(DoubleClickEvent e) {
