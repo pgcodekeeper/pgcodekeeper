@@ -25,6 +25,5 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: org.jgrapht,
  org.osgi.framework;version="[1.6.0,2.0.0)"
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: .,
- lib/antlr-4.4-complete.jar
+Bundle-ClassPath: .
 Bundle-Vendor: %Bundle-Vendor

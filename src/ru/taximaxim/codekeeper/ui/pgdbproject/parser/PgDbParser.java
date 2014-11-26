@@ -23,17 +23,18 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.SqlParserMain;
+import cz.startnet.utils.pgdiff.schema.PGObjLocation;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
-import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.CustomSQLParserListener;
-import ru.taximaxim.codekeeper.ui.sqledit.antlrv4.SqlParserMain;
 
 public class PgDbParser {
 
     public static final String PATH_TO_OBJ_SCHEMA = ".settings/schema";
     private static final String SERIALIZATIONFILE = "objects";
     private Set<String> objNames = new HashSet<>();
-    private List<DBObjectsLocation> objLocations;
+    private List<PGObjLocation> objLocations;
     private final IProject proj;
 
     public PgDbParser(IProject proj) {
@@ -84,7 +85,7 @@ public class PgDbParser {
                     ObjectInput in = new ObjectInputStream(bis);) {
                 Object o = in.readObject();
                 if (o instanceof List<?>) {
-                    objLocations = (List<DBObjectsLocation>) o;
+                    objLocations = (List<PGObjLocation>) o;
                 }
             } catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block
@@ -97,7 +98,7 @@ public class PgDbParser {
     }
 
     private void fillNamesFromStore() {
-        for (DBObjectsLocation obj : objLocations) {
+        for (PGObjLocation obj : objLocations) {
             objNames.add(obj.getObjName());
         }
     }
@@ -106,9 +107,9 @@ public class PgDbParser {
         return objNames;
     }
     
-    public List<DBObjectsLocation> getObjectLocations(String objName) {
-        List<DBObjectsLocation> locations = new ArrayList<>();
-        for (DBObjectsLocation loc : objLocations) {
+    public List<PGObjLocation> getObjectLocations(String objName) {
+        List<PGObjLocation> locations = new ArrayList<>();
+        for (PGObjLocation loc : objLocations) {
             if (loc.getObjName().equals(objName)) {
                 locations.add(loc);
             }
