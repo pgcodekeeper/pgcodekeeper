@@ -72,9 +72,9 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.editors.DepcyStructuredSelection;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage;
+import ru.taximaxim.codekeeper.ui.views.DepcyStructuredSelection;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /*

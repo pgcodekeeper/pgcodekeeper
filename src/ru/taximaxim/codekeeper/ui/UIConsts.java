@@ -10,7 +10,14 @@ public interface UIConsts {
     }
     
     interface EDITOR {
-        String PROJECT = "ru.taximaxim.codekeeper.ui.projectEditorDiffer"; //$NON-NLS-1$
+        String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
+    }
+    
+    interface COMMAND {
+        String DEPCY_SRC = PLUGIN_ID.THIS + ".toggleDepcySrc"; //$NON-NLS-1$
+        String DEPCY_SRC_STATE = DEPCY_SRC + "state"; //$NON-NLS-1$
+        String DEPCY_TGT = PLUGIN_ID.THIS + ".toggleDepcyTgt"; //$NON-NLS-1$
+        String DEPCY_TGT_STATE = DEPCY_TGT + "state"; //$NON-NLS-1$
     }
     
     interface PREF {
@@ -21,12 +28,12 @@ public interface UIConsts {
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
-        String IS_DDL_UPDATE_OVER_JDBC = "isDdlUpdateOverJdbc";
+        String IS_DDL_UPDATE_OVER_JDBC = "isDdlUpdateOverJdbc"; //$NON-NLS-1$
     }
     
     interface COMMIT_PREF {
         String CONSIDER_DEPCY_IN_COMMIT = "considerDepcyInCommit"; //$NON-NLS-1$
-        String USE_PARTIAL_EXPORT_ON_COMMIT = "usePartialExportOnCommit";
+        String USE_PARTIAL_EXPORT_ON_COMMIT = "usePartialExportOnCommit"; //$NON-NLS-1$
     }
     
     interface DB_UPDATE_PREF {
@@ -77,7 +84,7 @@ public interface UIConsts {
     }
     
     interface NATURE {
-        String ID = "ru.taximaxim.codekeeper.ui.nature"; //$NON-NLS-1$
+        String ID = PLUGIN_ID.THIS + ".nature"; //$NON-NLS-1$
     }
     
     interface HELP {

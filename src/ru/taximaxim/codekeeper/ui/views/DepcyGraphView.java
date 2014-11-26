@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.editors;
+package ru.taximaxim.codekeeper.ui.views;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,13 +30,15 @@ import org.jgrapht.graph.DefaultEdge;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
+import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
+import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, ISelectionListener, IStateListener{
     
-    DepcyGraph currentSource;
+    private DepcyGraph currentSource;
     private GraphViewer gv;
     private Boolean isSource = true;
     
@@ -72,13 +74,11 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         
         // register this as listener to command state
         ICommandService service = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
-        service.getCommand("ru.taximaxim.codekeeper.ui.toggle1").getState("ru.taximaxim.codekeeper.ui.toggle1state").addListener(this);
+        service.getCommand(COMMAND.DEPCY_SRC).getState(COMMAND.DEPCY_SRC_STATE).addListener(this);
     }
 
     @Override
     public void setFocus() {
-        // TODO Auto-generated method stub
-        
     }
 
     @Override

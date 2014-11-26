@@ -43,7 +43,7 @@ public class ProjectUpdater {
 
     public void updatePartial() throws IOException {
         if (dbOld == null){
-            throw new IOException("Old database should not be null for partial update.");
+            throw new IOException(Messages.ProjectUpdater_old_db_null);
         }
         try (TempDir tmp = new TempDir(dirExport.toPath(), "tmp-export")) { //$NON-NLS-1$
             File dirTmp = tmp.get();
@@ -74,7 +74,7 @@ public class ProjectUpdater {
                 
                 new ModelExporter(dirExport, dbNew, dbOld, changedObjects, encoding).exportPartial();
             } catch (Exception ex) {
-                Log.log(Log.LOG_ERROR, "Error while updating project!" , ex);
+                Log.log(Log.LOG_ERROR, "Error while updating project!" , ex); //$NON-NLS-1$
             
                 try {
                     restoreProjectDir(dirTmp);

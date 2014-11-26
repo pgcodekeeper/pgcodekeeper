@@ -390,7 +390,7 @@ public abstract class DiffPresentationPane extends Composite {
         if (el != null && el.getSide() != (isProjSrc ? DiffSide.RIGHT : DiffSide.LEFT)){
             PgDatabase projectDb = isProjSrc ? dbSource.getDbObject() : dbTarget.getDbObject();
             File projectDir = proj.getPathToProject().toFile();
-            File file = new File(projectDir, "SCHEMA");
+            File file = new File(projectDir, "SCHEMA"); //$NON-NLS-1$
             
             TreeElement parentEl = el.getParent().getParent();
             String parentExportedFileName = parentEl == null ? 
@@ -398,19 +398,19 @@ public abstract class DiffPresentationPane extends Composite {
                     
             switch(el.getType()){
                 case EXTENSION:
-                    file = new File(projectDir, "EXTENSION");
+                    file = new File(projectDir, "EXTENSION"); //$NON-NLS-1$
                     break;
                 case SEQUENCE:
-                    file = new File(new File(file, parentExportedFileName), "SEQUENCE");
+                    file = new File(new File(file, parentExportedFileName), "SEQUENCE"); //$NON-NLS-1$
                     break;
                 case VIEW:
-                    file = new File(new File(file, parentExportedFileName), "VIEW");
+                    file = new File(new File(file, parentExportedFileName), "VIEW"); //$NON-NLS-1$
                     break;
                 case TABLE:
-                    file = new File(new File(file, parentExportedFileName), "TABLE");
+                    file = new File(new File(file, parentExportedFileName), "TABLE"); //$NON-NLS-1$
                     break;
                 case FUNCTION:
-                    file = new File(new File(file, parentExportedFileName), "FUNCTION");
+                    file = new File(new File(file, parentExportedFileName), "FUNCTION"); //$NON-NLS-1$
                     break;
                 case CONSTRAINT:
                 case INDEX:
@@ -418,17 +418,17 @@ public abstract class DiffPresentationPane extends Composite {
                     el = parentEl;
                     String schemaName = ModelExporter.getExportedFilename(
                             parentEl.getParent().getParent().getPgStatement(projectDb));
-                    file = new File(new File(file, schemaName), "TABLE");
+                    file = new File(new File(file, schemaName), "TABLE"); //$NON-NLS-1$
                     break;
                 default:
                     break;
             }
             
             file = new File(file, 
-                    ModelExporter.getExportedFilename(el.getPgStatement(projectDb)) + ".sql");
+                    ModelExporter.getExportedFilename(el.getPgStatement(projectDb)) + ".sql"); //$NON-NLS-1$
             
             if (file.exists() && file.isFile()) {
-                Log.log(Log.LOG_WARNING, "Opening editor for file " + file.getAbsolutePath());
+                Log.log(Log.LOG_WARNING, "Opening editor for file " + file.getAbsolutePath()); //$NON-NLS-1$
                 
                 IFileStore fileStore = EFS.getLocalFileSystem().getStore(file.toURI());
                 IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -441,8 +441,8 @@ public abstract class DiffPresentationPane extends Composite {
                             file.getAbsolutePath(), e);
                 }
             } else {
-                Log.log(Log.LOG_WARNING, "Editor will not be opened for file " + 
-                        file.getAbsolutePath() + " because it is either nonexistent or not a file.");
+                Log.log(Log.LOG_WARNING, "Editor will not be opened for file " +  //$NON-NLS-1$
+                        file.getAbsolutePath() + " because it is either nonexistent or not a file."); //$NON-NLS-1$
             }
         }
     }
