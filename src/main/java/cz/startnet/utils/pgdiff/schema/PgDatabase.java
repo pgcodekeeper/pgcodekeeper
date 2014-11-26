@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 
@@ -28,6 +29,8 @@ public class PgDatabase extends PgStatement {
     
     private final List<String> ignoredStatements = new ArrayList<String>();
     private final List<String> ignoredDataStatements = new ArrayList<String>();
+    
+    private final Set<PGObjLocation> objLocations = new HashSet<>(); 
     
     private String comment;
 
@@ -68,6 +71,23 @@ public class PgDatabase extends PgStatement {
 
     public void addIgnoredDataStatement(final String ignoredDataStatement) {
         ignoredDataStatements.add(ignoredDataStatement);
+    }
+    
+    public boolean addObjLocation(PGObjLocation objLocation) {
+        return objLocations.add(objLocation);
+    }
+    /**
+     * May return NULL if objects doesn't determines location
+     * @param objName object name
+     * @return location or null 
+     */
+    public PGObjLocation getObjLocation(String objName) {
+        for (PGObjLocation location : objLocations) {
+            if (location.getObjName().equals(objName)) {
+                return location;
+            }
+        }
+        return null;
     }
 
     /**

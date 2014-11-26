@@ -574,11 +574,11 @@ REAL_NUMBER
     ;
 
 BlockComment
-    :   '/*' .*? '*/' -> skip
+    :   '/*' .*? '*/' -> channel(HIDDEN)
     ;
 
 LineComment
-    :   '--' ~[\r\n]* -> skip
+    :   '--' ~[\r\n]* -> channel(HIDDEN)
     ;
 
 /*
@@ -690,16 +690,16 @@ Tag
 */
 
 Space
-  : ' ' -> skip
+  : ' ' -> channel(HIDDEN)
   ;
 
 White_Space
-  :	( Control_Characters  | Extended_Control_Characters )+ -> skip
+  :	( Control_Characters  | Extended_Control_Characters )+ -> channel(HIDDEN)
   ;
 
 
 BAD
-  : . -> skip
+  : . -> channel(HIDDEN)
   ;
 
 mode DollarQuotedStringMode;

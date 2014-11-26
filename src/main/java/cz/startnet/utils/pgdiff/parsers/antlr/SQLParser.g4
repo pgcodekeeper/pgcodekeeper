@@ -542,37 +542,31 @@ create_view_statement
     ;
     
 create_table_statement
-  : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? n=schema_qualified_name 
-        (LEFT_PAREN (table_body (COMMA table_body)*)? RIGHT_PAREN
+  : ((GLOBAL | LOCAL)? (TEMPORARY | TEMP) | UNLOGGED)? TABLE (IF NOT EXISTS)? name=schema_qualified_name 
+        (OF type_name=identifier)? 
+        LEFT_PAREN (table_col_def+=table_column_def (COMMA table_col_def+=table_column_def)*)? RIGHT_PAREN
         (INHERITS 
             LEFT_PAREN 
-                (paret_table=schema_qualified_name(COMMA)?)+ 
+                (paret_table+=schema_qualified_name(COMMA)?)+ 
             RIGHT_PAREN
         )?
-        storage_parameter_oid
-        on_commit
-        table_space
-    
-   | OF type_name=identifier 
-        (LEFT_PAREN
-            ((column_name=identifier WITH OPTIONS (col_constraint+=column_constraint)*) 
-            | table_constraint)
-            (COMMA (column_name=identifier WITH OPTIONS (col_constraint+=column_constraint)*) 
-            | table_constraint)*
-        RIGHT_PAREN)?
-        storage_parameter_oid
-        on_commit
-        table_space)
+        storage_parameter_oid?
+        on_commit?
+        table_space?
   ;
 
-table_body
-    : table_column_definition
-    | tabl_constraint=table_constraint
-    | LIKE parent_table=identifier (like_opt+=like_option)*
+table_column_def
+    : table_column_name (datatype=data_type)? (COLLATE collation=identifier)? (WITH OPTIONS)? (colmn_constraint+=column_constraint)* 
+       | tabl_constraint=table_constraint
+       | LIKE parent_table=schema_qualified_name (like_opt+=like_option)*
     ;
 
 table_column_definition
-    : column_name=identifier (datatype=data_type) (COLLATE collation=identifier)?  (colmn_constraint+=column_constraint)*
+    : table_column_name (datatype=data_type) (COLLATE collation=identifier)?  (colmn_constraint+=column_constraint)*
+    ;
+
+table_column_name
+    :column_name+=identifier
     ;
   
 like_option
@@ -628,15 +622,15 @@ with_storage_parameter
     ;
     
 storage_parameter_oid
-    : (with_storage_parameter | (WITH OIDS) | (WITHOUT OIDS))?
+    : with_storage_parameter | (WITH OIDS) | (WITHOUT OIDS)
     ;
 
 on_commit
-    : (ON COMMIT ((PRESERVE ROWS) | (DELETE ROWS) | DROP))?
+    : ON COMMIT ((PRESERVE ROWS) | (DELETE ROWS) | DROP)
     ;
     
 table_space
-    :(TABLESPACE tablespace=identifier)?
+    :TABLESPACE tablespace=identifier
     ;
     
 action

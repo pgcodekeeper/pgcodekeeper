@@ -282,4 +282,8 @@ abstract public class PgStatement {
         
         return name;
     }
+    @Override
+    public String toString() {
+        return name;
+    }
 }
