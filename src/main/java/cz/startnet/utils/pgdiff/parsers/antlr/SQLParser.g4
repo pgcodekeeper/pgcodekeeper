@@ -142,7 +142,7 @@ table_action
       | SET LEFT_PAREN attribute_option_value (COMMA attribute_option_value)* RIGHT_PAREN
       | RESET LEFT_PAREN attribute_option+=table_attribute_option (COMMA attribute_option+=table_attribute_option)* RIGHT_PAREN
       | (SET STORAGE PLAIN | EXTERNAL | EXTENDED | MAIN))
-    | ADD (CONSTRAINT table_column_name)? tabl_constraint=table_constraint_def (NOT VALID)?
+    | ADD tabl_constraint=table_constraint (NOT VALID)?
     | ADD tabl_constraint_using_index=table_constraint_using_index
     | VALIDATE CONSTRAINT constraint_name=schema_qualified_name
     | DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name (RESTRICT | CASCADE)
@@ -557,7 +557,7 @@ create_table_statement
 
 table_column_def
     : table_column_name (datatype=data_type)? (COLLATE collation=identifier)? (WITH OPTIONS)? (colmn_constraint+=column_constraint)* 
-       | (CONSTRAINT table_column_name)? tabl_constraint=table_constraint_def
+       | tabl_constraint=table_constraint
        | LIKE parent_table=schema_qualified_name (like_opt+=like_option)*
     ;
 
@@ -573,8 +573,9 @@ like_option
     : (INCLUDING | EXCLUDING) (DEFAULTS | CONSTRAINTS | INDEXES | STORAGE | COMMENTS | ALL)
     ;
     
-table_constraint_def
-    : ( check_boolean_expression
+table_constraint
+    : (CONSTRAINT constraint_name=identifier)?
+        ( check_boolean_expression
         | (UNIQUE LEFT_PAREN 
             column_name_unique+=identifier (COMMA column_name_unique+=identifier)*
           RIGHT_PAREN index_parameters_unique=index_parameters) 

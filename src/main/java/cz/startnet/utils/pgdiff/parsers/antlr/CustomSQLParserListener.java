@@ -45,9 +45,9 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         PgTable table = new PgTable(ctx.name.identifier(i).getText(), 
                 "CREATE " + ctx.start.getInputStream().getText(interval), "");
         for (Table_column_defContext name : ctx.table_col_def) {
-//            if (name.table_column_name() != null) {
+            if (name.table_column_name() != null) {
                 table.addColumn(new PgColumn(name.table_column_name().getText()));
-//            }
+            }
         }
         objects.add(table);
         db.addObjLocation(new PGObjLocation(ctx.name.identifier(i).getText(), 
