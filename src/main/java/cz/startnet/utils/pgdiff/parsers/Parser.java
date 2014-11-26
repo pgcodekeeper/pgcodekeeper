@@ -317,7 +317,7 @@ public final class Parser {
             try {
                 result = string.substring(position, endPos + 1);
             } catch (final IndexOutOfBoundsException ex) {
-                throw new RuntimeException("Failed to get substring: " + string
+                throw new ParserException("Failed to get substring: " + string
                         + " start pos: " + position + " end pos: "
                         + (endPos + 1), ex);
             }

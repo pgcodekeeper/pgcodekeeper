@@ -50,7 +50,7 @@ public final class AlterTableParser {
         final PgSchema schema = database.getSchema(schemaName);
 
         if (schema == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindSchema"), schemaName,
                     statement));
         }
@@ -75,7 +75,7 @@ public final class AlterTableParser {
                 return;
             }
 
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindObject"), tableName,
                     statement));
         }
@@ -251,7 +251,7 @@ public final class AlterTableParser {
             
             // if table is not inherited throw an error as we're supposed to
             else {
-                throw new RuntimeException(MessageFormat.format(
+                throw new ParserException(MessageFormat.format(
                         Resources.getString("CannotFindTableColumn"),
                         columnName, table.getName(), parser.getString()));
             }

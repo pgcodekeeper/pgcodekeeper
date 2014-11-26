@@ -10,8 +10,9 @@ package cz.startnet.utils.pgdiff.parsers;
  *
  * @author fordfrog
  */
-@SuppressWarnings("serial")
 public class ParserException extends RuntimeException {
+
+    private static final long serialVersionUID = -2081610154955127684L;
 
     /**
      * Creates a new instance of {@code ParserException} without detail message.

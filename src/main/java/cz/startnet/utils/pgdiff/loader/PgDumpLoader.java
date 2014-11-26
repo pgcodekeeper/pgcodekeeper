@@ -34,6 +34,7 @@ import cz.startnet.utils.pgdiff.parsers.CreateSequenceParser;
 import cz.startnet.utils.pgdiff.parsers.CreateTableParser;
 import cz.startnet.utils.pgdiff.parsers.CreateTriggerParser;
 import cz.startnet.utils.pgdiff.parsers.CreateViewParser;
+import cz.startnet.utils.pgdiff.parsers.ParserException;
 import cz.startnet.utils.pgdiff.parsers.PrivilegeParser;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -415,7 +416,7 @@ public final class PgDumpLoader { //NOPMD
                     if (sbStatement.toString().trim().length() == 0) {
                         return null;
                     } else {
-                        throw new RuntimeException(MessageFormat.format(
+                        throw new ParserException(MessageFormat.format(
                                 Resources.getString("EndOfStatementNotFound"),
                                 sbStatement.toString()));
                     }

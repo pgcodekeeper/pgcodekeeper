@@ -107,7 +107,7 @@ public final class PrivilegeParser {
         // throw here if we couldn't find schema
         // other not found objects should throw in getStatementFromSchema()
         if (obj == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindObject"), schemaName, statement));
         }
         
@@ -121,7 +121,7 @@ public final class PrivilegeParser {
         String schemaName = ParserUtils.getSchemaName(id, db);
         PgSchema schema = db.getSchema(schemaName);
         if (schema == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindSchema"), schemaName,
                     statement));
         }
@@ -157,7 +157,7 @@ public final class PrivilegeParser {
         }
         
         if (obj == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindObject"), objName, statement));
         }
         
