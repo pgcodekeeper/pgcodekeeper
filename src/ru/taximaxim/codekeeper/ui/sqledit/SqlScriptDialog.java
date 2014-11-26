@@ -407,43 +407,7 @@ public class SqlScriptDialog extends TrayDialog {
                 final List<String> command = new ArrayList<>(Arrays.asList(
                         getReplacedString().split(Pattern.quote(" ")))); //$NON-NLS-1$
                 
-                launcher = new Runnable() {
-    
-                    @Override
-                    public void run() {
-                        final StdStreamRedirector sr = new StdStreamRedirector();
-                        try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
-                            File outFile = tempFile.get();
-                            try (PrintWriter writer = new PrintWriter(outFile, UIConsts.UTF_8)) {
-                                writer.write(textRetrieved);
-                            }
-    
-                            String filepath = outFile.getAbsolutePath();
-                            ListIterator<String> it = command.listIterator();
-                            while (it.hasNext()) {
-                                it.set(it.next().replace(SCRIPT_PLACEHOLDER, filepath));
-                            }
-                            
-                            ProcessBuilder pb = new ProcessBuilder(command);
-                            sr.launchAndRedirect(pb);
-                            if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
-                                addDepcy = getDependenciesFromOutput(sr.getStorage());
-                            }
-                        } catch (IOException ex) {
-                            if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
-                                addDepcy = getDependenciesFromOutput(sr.getStorage());
-                                if (!addDepcy.isEmpty()) {
-                                    // actually parsed some depcies, do not rethrow
-                                    return;
-                                }
-                            }
-                            throw new IllegalStateException(ex);
-                        } finally {
-                            // request UI change: button label changed
-                            SqlScriptDialog.this.afterScriptFinished(sr.getStorage());
-                        }
-                    }
-                };
+                launcher = new RunScriptExternal(textRetrieved, command);
             }
             // run thread that calls StdStreamRedirector.launchAndRedirect()
             scriptThread = new Thread(launcher);
@@ -539,46 +503,7 @@ public class SqlScriptDialog extends TrayDialog {
                 differ.addAdditionalDepciesSource(depcyToAdd);
                 
                 Job job = differ.getDifferJob();
-                job.addJobChangeListener(new JobChangeAdapter() {
-                    
-                    @Override
-                    public void done(IJobChangeEvent event) {
-                        if (event.getResult().isOK()) {
-                            Display.getDefault().asyncExec(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    if (getShell().isDisposed()) {
-                                        return;
-                                    }
-                                    checkAskDanger(saveToRestore);
-                                }
-                            });
-                        }
-                    }
-                    
-                    private void checkAskDanger(
-                            List<Entry<PgStatement, PgStatement>> saveToRestore) {
-                        try {
-                            if (differ.getScript().isDangerDdl(
-                                    !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
-                                    !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
-                                    !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT))) {
-                                if (showDangerWarning() != SWT.OK) {
-                                    differ.setAdditionalDepciesSource(saveToRestore);
-                                    return;
-                                } else {
-                                    sqlEditor.getTextWidget().setBackground(colorPink);
-                                }
-                            }
-                            sqlEditor.setDocument(new Document(differ.getDiffDirect()));
-                            sqlEditor.refresh();
-                        } catch (PgCodekeeperUIException e) {
-                            ExceptionNotifier.showErrorDialog(
-                                    Messages.SqlScriptDialog_error_add_depcies, e);
-                        }
-                    }
-                });
+                job.addJobChangeListener(new DiffReGenerationListener(saveToRestore));
                 job.setUser(true);
                 job.schedule();
             }
@@ -700,6 +625,98 @@ public class SqlScriptDialog extends TrayDialog {
         }
     }
     
+    private class RunScriptExternal implements Runnable {
+        private final String textRetrieved;
+        private final List<String> command;
+
+        private RunScriptExternal(String textRetrieved, List<String> command) {
+            this.textRetrieved = textRetrieved;
+            this.command = command;
+        }
+
+        @Override
+        public void run() {
+            final StdStreamRedirector sr = new StdStreamRedirector();
+            try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
+                File outFile = tempFile.get();
+                try (PrintWriter writer = new PrintWriter(outFile, UIConsts.UTF_8)) {
+                    writer.write(textRetrieved);
+                }
+   
+                String filepath = outFile.getAbsolutePath();
+                ListIterator<String> it = command.listIterator();
+                while (it.hasNext()) {
+                    it.set(it.next().replace(SCRIPT_PLACEHOLDER, filepath));
+                }
+                
+                ProcessBuilder pb = new ProcessBuilder(command);
+                sr.launchAndRedirect(pb);
+                if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
+                    addDepcy = getDependenciesFromOutput(sr.getStorage());
+                }
+            } catch (IOException ex) {
+                if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
+                    addDepcy = getDependenciesFromOutput(sr.getStorage());
+                    if (!addDepcy.isEmpty()) {
+                        // actually parsed some depcies, do not rethrow
+                        return;
+                    }
+                }
+                throw new IllegalStateException(ex);
+            } finally {
+                // request UI change: button label changed
+                SqlScriptDialog.this.afterScriptFinished(sr.getStorage());
+            }
+        }
+    }
+
+    private class DiffReGenerationListener extends JobChangeAdapter {
+        
+        private final List<Entry<PgStatement, PgStatement>> saveToRestore;
+
+        private DiffReGenerationListener(
+                List<Entry<PgStatement, PgStatement>> saveToRestore) {
+            this.saveToRestore = saveToRestore;
+        }
+
+        @Override
+        public void done(IJobChangeEvent event) {
+            if (event.getResult().isOK()) {
+                Display.getDefault().asyncExec(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (getShell().isDisposed()) {
+                            return;
+                        }
+                        checkAskDanger(saveToRestore);
+                    }
+                });
+            }
+        }
+
+        private void checkAskDanger(
+                List<Entry<PgStatement, PgStatement>> saveToRestore) {
+            try {
+                if (differ.getScript().isDangerDdl(
+                        !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
+                        !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
+                        !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT))) {
+                    if (showDangerWarning() != SWT.OK) {
+                        differ.setAdditionalDepciesSource(saveToRestore);
+                        return;
+                    } else {
+                        sqlEditor.getTextWidget().setBackground(colorPink);
+                    }
+                }
+                sqlEditor.setDocument(new Document(differ.getDiffDirect()));
+                sqlEditor.refresh();
+            } catch (PgCodekeeperUIException e) {
+                ExceptionNotifier.showErrorDialog(
+                        Messages.SqlScriptDialog_error_add_depcies, e);
+            }
+        }
+    }
 
     private static class ScriptRunResultDialog extends TrayDialog {
         

@@ -45,7 +45,12 @@ import ru.taximaxim.codekeeper.ui.copiedclasses.CheckedTreeViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DiffTreeViewer extends Composite {
-
+    
+    private final Map<DbObjType, Image> mapObjIcons =
+            new HashMap<>(DbObjType.values().length);
+    private final Map<DbObjType, Image> mapContIcons = 
+            new HashMap<>(DbObjType.values().length);
+    
     private TreeElement tree;
     private final CheckedTreeViewer viewer;
     
@@ -57,151 +62,40 @@ public class DiffTreeViewer extends Composite {
     
     public DiffTreeViewer(Composite parent, int style) {
         super(parent, style);
+
+        this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
+        for(DbObjType objType : DbObjType.values()) {
+            ImageDescriptor iObj = ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(
+                            FILE.ICONPGADMIN
+                            + objType.toString().toLowerCase()
+                            + ".png")); //$NON-NLS-1$
+            ImageDescriptor iCont = ImageDescriptor.createFromURL(
+                    Activator.getContext().getBundle().getResource(
+                            FILE.ICONPGADMIN
+                            + objType.toString().toLowerCase()
+                            + "s.png")); //$NON-NLS-1$
+            
+            mapObjIcons.put(objType, lrm.createImage(iObj));
+            mapContIcons.put(objType, lrm.createImage(iCont));
+        }
         
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
         setLayout(gl);
         
-        this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
-        
         viewer = new CheckedTreeViewer(this);
         viewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
         
-        viewer.setContentProvider(new ITreeContentProvider() {
-            
-            @Override
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            }
-            
-            @Override
-            public void dispose() {
-            }
-            
-            @Override
-            public boolean hasChildren(Object element) {
-                return ((TreeElement) element).hasChildren();
-            }
-            
-            @Override
-            public Object getParent(Object element) {
-                return ((TreeElement) element).getParent();
-            }
-            
-            @Override
-            public Object[] getElements(Object inputElement) {
-                return ((TreeElement) inputElement).getChildren().toArray();
-            }
-            
-            @Override
-            public Object[] getChildren(Object parentElement) {
-                return getElements(parentElement);
-            }
-        });
+        viewer.setContentProvider(new DiffTreeContentProvider());
         viewer.setLabelProvider(new StyledCellLabelProvider() {
-            
-            private final Map<DbObjType, Image> mapObjIcons =
-                    new HashMap<>(DbObjType.values().length);
-            private final Map<DbObjType, Image> mapContIcons = 
-                    new HashMap<>(DbObjType.values().length);
-            
-            {
-                for(DbObjType objType : DbObjType.values()) {
-                    ImageDescriptor iObj = ImageDescriptor.createFromURL(
-                            Activator.getContext().getBundle().getResource(
-                                    FILE.ICONPGADMIN
-                                    + objType.toString().toLowerCase()
-                                    + ".png")); //$NON-NLS-1$
-                    ImageDescriptor iCont = ImageDescriptor.createFromURL(
-                            Activator.getContext().getBundle().getResource(
-                                    FILE.ICONPGADMIN
-                                    + objType.toString().toLowerCase()
-                                    + "s.png")); //$NON-NLS-1$
-                    
-                    mapObjIcons.put(objType, lrm.createImage(iObj));
-                    mapContIcons.put(objType, lrm.createImage(iCont));
-                }
-            }
             
             @Override
             public void update(ViewerCell cell) {
-                TreeElement el = (TreeElement) cell.getElement();
-                List<StyleRange> styles = new ArrayList<>();
-                
-                Image icon = mapObjIcons.get(el.getType());
-                String name = null;
-                
-                if(el.getType() == DbObjType.CONTAINER
-                        && el.getContainerType() == DbObjType.CONTAINER) {
-                    switch(el.getSide()) {
-                    case LEFT:
-                        name = subTreeLeft;
-                        break;
-                    case RIGHT:
-                        name = subTreeRight;
-                        break;
-                    case BOTH:
-                        name = subTreeBoth;
-                        break;
-                    }
-                }
-                if(name == null) {
-                    name = el.getName();
-                }
-                
-                if(btnDebugView.getSelection()) {
-                    cell.setText(String.format("%s:%s:%s", //$NON-NLS-1$
-                            el.getType(), name, el.getSide()));
-                } else {
-                    StringBuilder label = new StringBuilder(name);
-                    
-                    if(el.getType() == DbObjType.CONTAINER 
-                            || el.getType() == DbObjType.DATABASE
-                            || el.getType() == DbObjType.SCHEMA
-                            || el.getType() == DbObjType.TABLE) {
-                        label.append(" (") //$NON-NLS-1$
-                            .append(el.countChildren())
-                            .append(") [") //$NON-NLS-1$
-                            .append(el.countDescendants())
-                            .append(']');
-                        
-                        TextStyle styleGray = new TextStyle();
-                        styleGray.foreground = getDisplay().getSystemColor(
-                                SWT.COLOR_GRAY);
-                        
-                        StyleRange styleCount = new StyleRange(styleGray);
-                        styleCount.start = name.length();
-                        styleCount.length = label.length() - name.length();
-                        
-                        styles.add(styleCount);
-                        
-                        if(el.getType() == DbObjType.CONTAINER) {
-                            icon = mapContIcons.get(el.getContainerType());
-                        }
-                    }
-                    
-                    if(el.getSide() == DiffSide.BOTH
-                            && el.getParent().getSide() != DiffSide.BOTH) {
-                        TextStyle styleDarkGray = new TextStyle();
-                        styleDarkGray.foreground = getDisplay().getSystemColor(
-                                SWT.COLOR_DARK_GRAY);
-                        
-                        StyleRange styleUnaltered = new StyleRange(styleDarkGray);
-                        styleUnaltered.start = 0;
-                        styleUnaltered.length = name.length();
-                        
-                        styles.add(styleUnaltered);
-                    }
-                    
-                    cell.setText(label.toString());
-                }
-                
-                cell.setStyleRanges(styles.toArray(new StyleRange[styles.size()]));
-                cell.setImage(icon);
-                
+                provideTreeCellLabelDecorations(cell);
                 super.update(cell);
             }
         });
-        
         viewer.addDoubleClickListener(new IDoubleClickListener() {
             
             @Override
@@ -324,6 +218,82 @@ public class DiffTreeViewer extends Composite {
         });
     }
     
+    private void provideTreeCellLabelDecorations(ViewerCell cell) {
+        TreeElement el = (TreeElement) cell.getElement();
+        List<StyleRange> styles = new ArrayList<>();
+        
+        Image icon = mapObjIcons.get(el.getType());
+        String name = null;
+        
+        if(el.getType() == DbObjType.CONTAINER
+                && el.getContainerType() == DbObjType.CONTAINER) {
+            switch(el.getSide()) {
+            case LEFT:
+                name = subTreeLeft;
+                break;
+            case RIGHT:
+                name = subTreeRight;
+                break;
+            case BOTH:
+                name = subTreeBoth;
+                break;
+            }
+        }
+        if(name == null) {
+            name = el.getName();
+        }
+        
+        if(btnDebugView.getSelection()) {
+            cell.setText(String.format("%s:%s:%s", //$NON-NLS-1$
+                    el.getType(), name, el.getSide()));
+        } else {
+            StringBuilder label = new StringBuilder(name);
+            
+            if(el.getType() == DbObjType.CONTAINER 
+                    || el.getType() == DbObjType.DATABASE
+                    || el.getType() == DbObjType.SCHEMA
+                    || el.getType() == DbObjType.TABLE) {
+                label.append(" (") //$NON-NLS-1$
+                    .append(el.countChildren())
+                    .append(") [") //$NON-NLS-1$
+                    .append(el.countDescendants())
+                    .append(']');
+                
+                TextStyle styleGray = new TextStyle();
+                styleGray.foreground = getDisplay().getSystemColor(
+                        SWT.COLOR_GRAY);
+                
+                StyleRange styleCount = new StyleRange(styleGray);
+                styleCount.start = name.length();
+                styleCount.length = label.length() - name.length();
+                
+                styles.add(styleCount);
+                
+                if(el.getType() == DbObjType.CONTAINER) {
+                    icon = mapContIcons.get(el.getContainerType());
+                }
+            }
+            
+            if(el.getSide() == DiffSide.BOTH
+                    && el.getParent().getSide() != DiffSide.BOTH) {
+                TextStyle styleDarkGray = new TextStyle();
+                styleDarkGray.foreground = getDisplay().getSystemColor(
+                        SWT.COLOR_DARK_GRAY);
+                
+                StyleRange styleUnaltered = new StyleRange(styleDarkGray);
+                styleUnaltered.start = 0;
+                styleUnaltered.length = name.length();
+                
+                styles.add(styleUnaltered);
+            }
+            
+            cell.setText(label.toString());
+        }
+        
+        cell.setStyleRanges(styles.toArray(new StyleRange[styles.size()]));
+        cell.setImage(icon);
+    }
+    
     public void setTreeInput(TreeElement tree) {
         this.tree = tree;
         viewer.setInput(tree);
@@ -370,5 +340,36 @@ public class DiffTreeViewer extends Composite {
             }
         }
         return copy;
+    }
+}
+
+class DiffTreeContentProvider implements ITreeContentProvider {
+    
+    @Override
+    public boolean hasChildren(Object element) {
+        return ((TreeElement) element).hasChildren();
+    }
+
+    @Override
+    public Object getParent(Object element) {
+        return ((TreeElement) element).getParent();
+    }
+
+    @Override
+    public Object[] getElements(Object inputElement) {
+        return ((TreeElement) inputElement).getChildren().toArray();
+    }
+
+    @Override
+    public Object[] getChildren(Object parentElement) {
+        return getElements(parentElement);
+    }
+
+    @Override
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+    }
+
+    @Override
+    public void dispose() {
     }
 }
