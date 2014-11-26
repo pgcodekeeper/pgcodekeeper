@@ -40,11 +40,11 @@ public class JdbcAclParser {
      * @param owner     Owner name (owner's privileges go first)
      * @return
      */
-    public ArrayList<Privilege> parse(String aclArrayAsString, int maxTypes, String order, String owner){
-        ArrayList<Privilege> privileges = new ArrayList<Privilege>();
+    public List<Privilege> parse(String aclArrayAsString, int maxTypes, String order, String owner){
+        List<Privilege> privileges = new ArrayList<>();
         
-        ArrayList<String> acls = new ArrayList<String>(
-                Arrays.asList(aclArrayAsString.replaceAll("[{}]", "").split(Pattern.quote(","))));
+        List<String> acls = new ArrayList<>(Arrays.asList(
+                aclArrayAsString.replaceAll("[{}]", "").split(Pattern.quote(","))));
         
         // move owner's grants to front
         for (String s : acls){
@@ -67,8 +67,8 @@ public class JdbcAclParser {
             String grantsString = s.substring(assignmentPos + 1, indexPos);
             
             // reorder chars according to order, split to two lists based on WITH GRANT OPTION
-            List<Character> grantTypeCharsWithoutGo = new ArrayList<Character>(grantsString.length());
-            List<Character> grantTypeCharsWithGo = new ArrayList<Character>(grantsString.length());
+            List<Character> grantTypeCharsWithoutGo = new ArrayList<>(grantsString.length());
+            List<Character> grantTypeCharsWithGo = new ArrayList<>(grantsString.length());
             for(int i = 0; i < order.length(); i++){
                 int index = grantsString.indexOf(String.valueOf(order.charAt(i)));
                 if (index > -1){
@@ -81,15 +81,15 @@ public class JdbcAclParser {
             }
             
             if (grantTypeCharsWithoutGo.size() == maxTypes){
-                privileges.add(new Privilege(grantee, new ArrayList<String>(Arrays.asList("ALL")), 
+                privileges.add(new Privilege(grantee, Arrays.asList("ALL"), 
                         false, false));
                 
             }else if (grantTypeCharsWithGo.size() == maxTypes){
-                privileges.add(new Privilege(grantee, new ArrayList<String>(Arrays.asList("ALL")), 
+                privileges.add(new Privilege(grantee, Arrays.asList("ALL"),
                         true, grantee.equals(owner) && grantor.equals(owner)));
                 
             }else if (grantTypeCharsWithoutGo.size() < maxTypes && grantTypeCharsWithGo.size() < maxTypes){
-                ArrayList<String> grantTypesParsed = new ArrayList<String>();
+                List<String> grantTypesParsed = new ArrayList<>();
                 
                 // add all grants without grant option
                 for(int i = 0; i < grantTypeCharsWithoutGo.size(); i++){
@@ -100,7 +100,7 @@ public class JdbcAclParser {
                     privileges.add(new Privilege(grantee, grantTypesParsed, false, false));
                 }
 
-                grantTypesParsed = new ArrayList<String>();
+                grantTypesParsed = new ArrayList<>();
                 
                 // add all grants with grant option
                 for(int i = 0; i < grantTypeCharsWithGo.size(); i++){
@@ -117,22 +117,18 @@ public class JdbcAclParser {
 }
 
 class Privilege {
-    String grantee;
-    ArrayList<String> grantValues;
-    boolean isGo;
+    final String grantee;
+    final List<String> grantValues;
+    final boolean isGO;
     /**
-     * Default value - if grantor = grantee = owner and isGo is true (WITH GRANT OPTION)
+     * Default value - if grantor = grantee = owner and isGO is true (WITH GRANT OPTION)
      */
-    private boolean isDefault;
+    final boolean isDefault;
     
-    public Privilege(String grantee, ArrayList<String> grantValues, boolean isOG, boolean isDefault) {
+    public Privilege(String grantee, List<String> grantValues, boolean isGO, boolean isDefault) {
         this.grantee = grantee;
         this.grantValues = grantValues;
-        this.isGo = isOG;
+        this.isGO = isGO;
         this.isDefault = isDefault;
-    }
-    
-    public boolean isDefaultGrant(){
-        return this.isDefault;
     }
 }

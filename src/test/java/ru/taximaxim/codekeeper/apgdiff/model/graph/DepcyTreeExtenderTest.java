@@ -100,7 +100,7 @@ public class DepcyTreeExtenderTest {
         
         DepcyTreeExtender dte = new DepcyTreeExtender(dbTarget, dbTarget, filtered);
         
-        HashSet<PgStatement> depcy = dte.getDependenciesOfNew();
+        Set<PgStatement> depcy = dte.getDependenciesOfNew();
         Set<PgStatement> depcyPredefined = treeCreators[fileIndex - 1].getDepcySet(dbTarget);
         assertTrue("List of dependencies is not as expected", depcy.equals(depcyPredefined));
     }
@@ -141,8 +141,8 @@ public class DepcyTreeExtenderTest {
         
         TreeElement extraNotInFiltered = treeCreator.getExtraElement();
         
-        HashSet<TreeElement> sum = dte.sumAllDepcies(
-                new HashSet<TreeElement>(Arrays.asList(extraNotInFiltered)));
+        Set<TreeElement> sum = dte.sumAllDepcies(
+                new HashSet<>(Arrays.asList(extraNotInFiltered)));
         
         Set<TreeElement> extraInFiltered = treeCreator.getExtraElementInTree(filteredCopy);
         
@@ -165,8 +165,8 @@ public class DepcyTreeExtenderTest {
         TreeElement filtered = treeCreator.getFilteredTreeForConflicting();
         DepcyTreeExtender dte = new DepcyTreeExtender(dbGit, dbRemote, filtered);
         TreeElement copy = dte.getTreeCopyWithDepcy();
-        HashSet<TreeElement> conflictingPredefined = treeCreator.getConflicting(copy);
-        HashSet<TreeElement> conflicting = dte.getConflicting();
+        Set<TreeElement> conflictingPredefined = treeCreator.getConflicting(copy);
+        Set<TreeElement> conflicting = dte.getConflicting();
         Assert.assertEquals("Conflicting collections are not same", conflictingPredefined, conflicting);
     }
 

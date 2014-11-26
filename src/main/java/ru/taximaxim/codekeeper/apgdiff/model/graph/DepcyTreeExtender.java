@@ -23,24 +23,23 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class DepcyTreeExtender {
-    private HashSet<PgStatement> dependantsOfDeleted = new HashSet<PgStatement>(5);
+    private final Set<PgStatement> dependantsOfDeleted = new HashSet<>(5);
     /**
      * Набор элементов дерева, которые зависят от удаленных и должны 
      * быть удалены, но не были в первоначальном фильтрованном дереве или были 
      * отмечены как NEW/EDIT
      */
-    private HashSet<TreeElement> newlyDeletedDependants;
+    private final Set<TreeElement> newlyDeletedDependants = new HashSet<>();
+    private final Set<TreeElement> conflictingDeletedElements = new HashSet<>();
     
-    private HashSet<TreeElement> conflictingDeletedElements;
-    
-    private DepcyGraph depcySource;
-    private DepcyGraph depcyTarget;
-    private PgDatabase dbSource;
-    private PgDatabase dbTarget;
+    private final DepcyGraph depcySource;
+    private final DepcyGraph depcyTarget;
+    private final PgDatabase dbSource;
+    private final PgDatabase dbTarget;
     /**
      * Root node of filtered tree (should not be modified)
      */
-    final private TreeElement root;
+    private final TreeElement root;
     /**
      * Copy of root, extended by dependent from DELETED elements
      */
@@ -54,9 +53,6 @@ public class DepcyTreeExtender {
         // depcy graphs
         depcySource = new DepcyGraph(dbSource);
         depcyTarget = new DepcyGraph(dbTarget);
-        
-        newlyDeletedDependants = new HashSet<TreeElement>();
-        conflictingDeletedElements = new HashSet<TreeElement>();
     }
     
     /**
@@ -65,9 +61,9 @@ public class DepcyTreeExtender {
      * 
      * @return
      */
-    public HashSet<PgStatement> getDependenciesOfNew(){
+    public Set<PgStatement> getDependenciesOfNew(){
         // заполнить сет зависимыми элементами, которые надо создать
-        HashSet<PgStatement> depcySet = new HashSet<PgStatement>();
+        Set<PgStatement> depcySet = new HashSet<>();
         fillInDependenciesOfNew(root, depcySet);
         return depcySet;
     }
@@ -99,7 +95,7 @@ public class DepcyTreeExtender {
      * @param filtered
      * @param copy
      */
-    private void fillInDependenciesOfNew(TreeElement filtered, HashSet<PgStatement> depcySet) {
+    private void fillInDependenciesOfNew(TreeElement filtered, Set<PgStatement> depcySet) {
         PgStatement markedToCreate = null;
         
         // if not a Container and is marked for creation/edit
@@ -312,13 +308,13 @@ public class DepcyTreeExtender {
      * @param elementsDepcyNew
      * @return
      */
-    public HashSet<TreeElement> sumAllDepcies(HashSet<TreeElement> elementsDepcyNew) {
+    public Set<TreeElement> sumAllDepcies(Set<TreeElement> elementsDepcyNew) {
         if (copy == null){
             throw new IllegalStateException("Root (filtered) tree has not been "
                     + "copyed yet and no DELETED dependants 've been found! "
                     + "Call getTreeCopyWithDepcy() first.");
         }
-        HashSet<TreeElement> sumNewAndDelete = new HashSet<TreeElement>();
+        Set<TreeElement> sumNewAndDelete = new HashSet<>();
         sumNewAndDelete.addAll(newlyDeletedDependants);
         sumNewAndDelete.addAll(conflictingDeletedElements);
         // переместить объекты (НЕ потомки filtered_with_new_and_delete) из elementsDepcyNEW в 
@@ -330,7 +326,7 @@ public class DepcyTreeExtender {
         return sumNewAndDelete;
     }
     
-    public HashSet<TreeElement> getConflicting(){
+    public Set<TreeElement> getConflicting(){
         return conflictingDeletedElements;
     }
 
@@ -343,9 +339,9 @@ public class DepcyTreeExtender {
      * Ожидается, что <code>db</code> не содержит в себе элементы, которые отмечены 
      * как удаляемые (иными словами, она target).
      */
-    public HashSet<TreeElement> getDepcyElementsContainedInDb(Set<TreeElement> elements,
-            HashSet<PgStatement> dependencies, PgDatabase db) {
-        HashSet<TreeElement> result = new HashSet<TreeElement>(5);
+    public Set<TreeElement> getDepcyElementsContainedInDb(Set<TreeElement> elements,
+            Set<PgStatement> dependencies, PgDatabase db) {
+        Set<TreeElement> result = new HashSet<>(5);
         for (TreeElement element : elements){
             if (element.getSide() == DiffSide.LEFT){
                 continue;

@@ -1009,12 +1009,12 @@ public class JdbcLoader implements PgCatalogStrings {
                 PgDiffUtils.getQuotedName(owner);
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
         
-        ArrayList<Privilege> grants = new JdbcAclParser().parse(
+        List<Privilege> grants = new JdbcAclParser().parse(
                 aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
         
         boolean metDefaultOwnersGrants = false;
         for (Privilege p : grants){            
-            if (p.isDefaultGrant()){
+            if (p.isDefault){
                 metDefaultOwnersGrants = true;
             }
         }
@@ -1025,10 +1025,10 @@ public class JdbcLoader implements PgCatalogStrings {
         
         for(Privilege grant : grants){
             // skip if default owner's privileges
-            if (grant.isDefaultGrant()){
+            if (grant.isDefault){
                 continue;
             }
-            ArrayList<String> grantValues = grant.grantValues;
+            List<String> grantValues = grant.grantValues;
             if (columnName != null && !columnName.isEmpty()){
                 grantValues = new ArrayList<String>(grant.grantValues.size());
                 for (String plainGrant : grant.grantValues){
@@ -1037,7 +1037,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             String privDefinition = getStringListAsString(grantValues, ",") + " ON " + stType + " " + 
                     stSignature + " TO " + grant.grantee;
-            if (grant.isGo){
+            if (grant.isGO){
                 privDefinition = privDefinition.concat(" WITH GRANT OPTION");
             }
             st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
