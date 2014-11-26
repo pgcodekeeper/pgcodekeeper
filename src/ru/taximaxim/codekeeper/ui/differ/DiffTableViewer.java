@@ -120,7 +120,7 @@ public class DiffTableViewer extends Composite {
     private DepcyGraph depcyGraphSource;
     private DepcyGraph depcyGraphTarget;
 
-    private Map<String, LinkedList<String>> prevChecked; 
+    private Map<String, List<String>> prevChecked; 
     private XmlHistory prevCheckedHistory;
     
     private enum Columns {
@@ -376,7 +376,7 @@ public class DiffTableViewer extends Composite {
     private void setCheckedFromPrevCheckedCombo() {
         String comboText = cmbPrevChecked.getCombo().getText();
         if (comboText != null && !comboText.isEmpty()) {
-            LinkedList<String> elementsToCheck = prevChecked.get(comboText);
+            List<String> elementsToCheck = prevChecked.get(comboText);
             if (elementsToCheck != null && !elementsToCheck.isEmpty()) {
                 List<TreeElement> prevCheckedList = new ArrayList<>();
                 for (TreeElement elementKey : elements.keySet()) {
@@ -803,12 +803,12 @@ public class DiffTableViewer extends Composite {
         }
     }
     
-    public void setCheckedElements(HashSet<TreeElement> elementsToCheck, boolean markChecked) {
+    public void setCheckedElements(Set<TreeElement> elementsToCheck, boolean markChecked) {
         checkListener.setElementsChecked(elementsToCheck.toArray(), markChecked);
         viewerRefresh();
     }
     
-    public void setInputCollection(HashSet<TreeElement> shouldBeDeleted, 
+    public void setInputCollection(Set<TreeElement> shouldBeDeleted, 
             TreeDiffer rootDiffer, boolean reverseDiffSide) {
         setDiffer(rootDiffer, reverseDiffSide);
         elements = new ElementsModel<>();

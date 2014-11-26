@@ -14,6 +14,7 @@ package ru.taximaxim.codekeeper.ui.copiedclasses;
  *******************************************************************************/
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
@@ -69,14 +70,17 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
     private void initViewer() {
         setUseHashlookup(true);
         addCheckStateListener(new ICheckStateListener() {
+            @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
                 doCheckStateChanged(event.getElement());
             }
         });
         addTreeListener(new ITreeViewerListener() {
+            @Override
             public void treeCollapsed(TreeExpansionEvent event) {
             }
 
+            @Override
             public void treeExpanded(TreeExpansionEvent event) {
                 Widget item = findItem(event.getElement());
                 if (item instanceof TreeItem) {
@@ -219,7 +223,7 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
      * @param element
      * @param result
      */
-    private void collectChildren(Object element, ArrayList<Object> result) {
+    private void collectChildren(Object element, List<Object> result) {
         Object[] filteredChildren = getFilteredChildren(element);
         for (int i = 0; i < filteredChildren.length; i++) {
             Object curr = filteredChildren[i];

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -72,7 +73,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
 
     private IHandlerActivation contentAssistHandlerActivation;
     private IHandlerService handlerService;
-    private HashMap<String, IAction> fActions = new HashMap<>();
+    private Map<String, IAction> fActions = new HashMap<>();
     private List<IHandlerActivation> fActionHandlers = new ArrayList<>();
 
     public SqlSourceViewerExtender(Composite parent, int style) {

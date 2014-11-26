@@ -2,7 +2,6 @@ package ru.taximaxim.codekeeper.ui.editors;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -271,19 +270,19 @@ class CommitPage extends DiffPresentationPane {
         final TreeElement filtered = diffTable.filterDiffTree();
         
         DepcyTreeExtender dte = null;
-        HashSet<TreeElement> sumNewAndDelete = null;
+        Set<TreeElement> sumNewAndDelete = null;
         TreeElement filteredWithNewAndDelete = null;
         
         if(considerDepcy){
             // Получить список зависимых от NEW/EDIT элементов
             dte = new DepcyTreeExtender(dbSource.getDbObject(), 
                     dbTarget.getDbObject(), filtered);
-            HashSet<PgStatement> dependencies = dte.getDependenciesOfNew();
+            Set<PgStatement> dependencies = dte.getDependenciesOfNew();
             PgDatabase depcyTargetDb = dte.getDepcyTargetDb();
             
             // Дополнительно пометить в таблице зависимости от NEW/EDIT и
             // получить новое фильтрованное дерево с этими зависимостями
-            HashSet<TreeElement> elementsNewEditDependentFrom = 
+            Set<TreeElement> elementsNewEditDependentFrom = 
                     dte.getDepcyElementsContainedInDb(diffTable.getCheckedElements(false),
                             dependencies, depcyTargetDb); 
             

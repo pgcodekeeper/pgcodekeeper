@@ -13,6 +13,8 @@ import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
@@ -61,13 +63,13 @@ public final class XmlHistory {
         }
     }
 
-    public LinkedHashMap<String, LinkedList<String>> getMapHistory() throws IOException {
-        LinkedHashMap<String, LinkedList<String>> history;
+    public Map<String, List<String>> getMapHistory() throws IOException {
+        Map<String, List<String>> history;
         try (Reader xmlReader = new InputStreamReader(new FileInputStream(getHistoryXmlFile()), UIConsts.UTF_8)) {
             XmlStringList xml = new XmlStringList(rootTag, elementTag, elementSetTag);
             history = xml.deserializeMap(xmlReader);
         } catch (FileNotFoundException e) {
-            history = new LinkedHashMap<String, LinkedList<String>>();
+            history = new LinkedHashMap<>();
         } catch (IOException | SAXException e) {
             throw new IOException(Messages.XmlHistory_read_error, e);
         }
@@ -140,17 +142,16 @@ public final class XmlHistory {
      * @throws IOException 
      */
     public void updateCheckedSetHistoryEntries(String checkSetName, 
-            LinkedList<String> values, boolean addEntry) throws IOException {
+            List<String> values, boolean addEntry) throws IOException {
         if (values.isEmpty()) {
             return;
         }
-        LinkedHashMap<String, LinkedList<String>> checkedSets = 
-                new LinkedHashMap<String, LinkedList<String>>();
+        Map<String, List<String>> checkedSets = new LinkedHashMap<>();
         if (addEntry) {
             checkedSets.put(checkSetName, values);
         }
         
-        LinkedHashMap<String, LinkedList<String>> oldCheckedSets = getMapHistory();
+        Map<String, List<String>> oldCheckedSets = getMapHistory();
         oldCheckedSets.remove(checkSetName);
         
         Iterator<String> it = oldCheckedSets.keySet().iterator();

@@ -1,6 +1,6 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
-import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -26,11 +26,11 @@ public class CommitDialog extends TrayDialog {
     private DiffTableViewer dtvTop;
     private DiffTableViewer dtvBottom;
     private TreeDiffer treeDiffer;
-    private HashSet<TreeElement> depcyElementsSet;
-    private HashSet<TreeElement> conflictingElementsSet;
+    private final Set<TreeElement> depcyElementsSet;
+    private Set<TreeElement> conflictingElementsSet;
     
     public CommitDialog(Shell parentShell, TreeElement filtered,
-            HashSet<TreeElement> depcyElementsSet, IPreferenceStore mainPrefs,
+            Set<TreeElement> depcyElementsSet, IPreferenceStore mainPrefs,
             PgDbProject proj, TreeDiffer treeDiffer) {
         super(parentShell);
         
@@ -99,7 +99,7 @@ public class CommitDialog extends TrayDialog {
         return dtvBottom;
     }
 
-    public void setConflictingElements(HashSet<TreeElement> conflictingElementsSet) {
+    public void setConflictingElements(Set<TreeElement> conflictingElementsSet) {
         this.conflictingElementsSet = conflictingElementsSet;
     }
 }
