@@ -306,13 +306,13 @@ set_statement_value
     ;
    
 create_trigger_statement
-    : (CONSTRAINT)? TRIGGER name=identifier (BEFORE | (INSTEAD OF) | AFTER)
-    (((INSERT | DELETE | TRUNCATE) | UPDATE (OF columnName+=identifier(COMMA columnName+=identifier)* )?)OR?)+
+    : (CONSTRAINT)? TRIGGER name=schema_qualified_name (before_true=BEFORE | (INSTEAD OF) | AFTER)
+    (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) | update_true=UPDATE (OF columnName+=schema_qualified_name(COMMA columnName+=schema_qualified_name)* )?)OR?)+
     ON tabl_name=schema_qualified_name 
     (FROM referenced_table_name=schema_qualified_name)?
     table_deferrable? table_initialy_immed?
-    (FOR (EACH)? (ROW | STATEMENT))?
-    (WHEN (boolean_value_expression))?
+    (for_each_true=FOR (EACH)? (ROW | STATEMENT))?
+    (WHEN (when_expr=boolean_value_expression))?
     EXECUTE PROCEDURE func_name=schema_qualified_name LEFT_PAREN (arguments+=identifier)? (COMMA arguments+=identifier)* RIGHT_PAREN
     ;
     
@@ -459,7 +459,7 @@ comment_on_statement
 create_function_statement
     : (OR REPLACE)? FUNCTION function_parameters
         (RETURNS (rettype=value_expression | rettype_data=data_type)
-            | RETURNS TABLE LEFT_PAREN function_column_name_type(COMMA function_column_name_type)* RIGHT_PAREN
+            | RETURNS function_ret_table
         )?
           (LANGUAGE lang_name=identifier
             | (WINDOW | IMMUTABLE | STABLE | VOLATILE | STRICT)
@@ -475,14 +475,16 @@ create_function_statement
             (WITH LEFT_PAREN attribute+=function_attribute(COMMA attribute+=function_attribute)* RIGHT_PAREN)?
     ;
 
+function_ret_table
+    :TABLE LEFT_PAREN function_column_name_type(COMMA function_column_name_type)* RIGHT_PAREN
+    ;
 function_column_name_type
     : column_name=identifier column_type=data_type
     ;
 
 function_parameters
     : name=schema_qualified_name 
-      LEFT_PAREN ( function_arguments
-            function_def_value? (COMMA function_arguments function_def_value?)*
+      LEFT_PAREN ( function_arguments (COMMA function_arguments)*
       )? RIGHT_PAREN 
     ;
 
@@ -495,7 +497,7 @@ function_body
     ;
 
 function_arguments
-    :(arg_mode=argmode)? (argname=identifier)? (argtype_data=data_type | argtype_expres=value_expression | argtype_schema= schema_qualified_name)
+    :(arg_mode=argmode)? (argname=identifier)? (argtype_data=data_type | argtype_expres=value_expression) function_def_value?
     ;
 
 function_attribute
@@ -531,22 +533,22 @@ sequence_body
         | (MAXVALUE maxval=signed_numerical_literal | NO MAXVALUE)
         | START (WITH)? start_val=signed_numerical_literal
         | CACHE cache_val=signed_numerical_literal
-        | (NO)? CYCLE
+        | (cycle_true=NO)? cycle_val=CYCLE
         | OWNED BY (col_name=schema_qualified_name | NONE)
     ;
     
 create_schema_statement
-    : SCHEMA (schema_name=identifier (AUTHORIZATION user_name=identifier)? (schema_element=sql)*
-      | AUTHORIZATION user_name=identifier (schema_element=sql)*
-      | IF NOT EXISTS 
-        (schema_name=identifier (AUTHORIZATION user_name=identifier)?
-      | AUTHORIZATION user_name=identifier))
+    : SCHEMA (IF NOT EXISTS)? (name=schema_qualified_name)? (AUTHORIZATION user_name=identifier)? (schema_element+=sql)*
     ;
     
 create_view_statement
-    : (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name (column_name+=identifier (COMMA)?)*
+    : (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name (column_name+=schema_qualified_name (COMMA)?)*
     (WITH LEFT_PAREN (view_option_name=identifier (EQUAL view_option_value=identifier)?)+ RIGHT_PAREN)?
-    AS query_specification (UNION (ALL)? query_specification)* 
+    AS v_query=view_query
+    ;
+
+view_query
+    :query_specification (UNION (ALL)? query_specification)* 
     ;
     
 create_table_statement

@@ -32,6 +32,11 @@ public class PgView extends PgStatementWithSearchPath {
         super(name, rawStatement, searchPath);
     }
 
+    public void addColumnName(String colName) {
+        columnNames.add(colName);
+        resetHash();
+    }
+    
     public void setColumnNames(final List<String> columnNames) {
         this.columnNames = columnNames;
         resetHash();
