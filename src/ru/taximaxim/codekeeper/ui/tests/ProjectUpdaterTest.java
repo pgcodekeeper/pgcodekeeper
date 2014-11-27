@@ -149,26 +149,25 @@ public class ProjectUpdaterTest {
         }
         
         private byte[] computeChecksum(Path filename) throws IOException {
-            InputStream fis = new FileInputStream(filename.toFile());
+            try(InputStream fis = new FileInputStream(filename.toFile())) {
 
-            byte[] buffer = new byte[1024];
-            MessageDigest complete = null;
-            try {
-                complete = MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException e) {
-                fail("No MD5 checksum method available");
-            }
-            int numRead;
-
-            do {
-                numRead = fis.read(buffer);
-                if (numRead > 0) {
-                    complete.update(buffer, 0, numRead);
+                byte[] buffer = new byte[1024];
+                MessageDigest complete = null;
+                try {
+                    complete = MessageDigest.getInstance("MD5");
+                } catch (NoSuchAlgorithmException e) {
+                    fail("No MD5 checksum method available");
                 }
-            } while (numRead != -1);
-
-            fis.close();
-            return complete.digest();
+                
+                int numRead;
+                do {
+                    numRead = fis.read(buffer);
+                    if (numRead > 0) {
+                        complete.update(buffer, 0, numRead);
+                    }
+                } while (numRead != -1);
+                return complete.digest();
+            }
         }
     }
 }
