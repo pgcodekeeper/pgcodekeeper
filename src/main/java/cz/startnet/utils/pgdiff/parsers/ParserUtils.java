@@ -79,51 +79,6 @@ public final class ParserUtils {
     }
 
     /**
-     * Generates unique name from the prefix, list of names, and postfix.
-     *
-     * @param prefix  prefix
-     * @param names   list of names
-     * @param postfix postfix
-     *
-     * @return generated name
-     */
-    @Deprecated
-    public static String generateName(final String prefix,
-            final List<String> names, final String postfix) {
-        final String adjName;
-
-        if (names.size() == 1) {
-            adjName = names.get(0);
-        } else {
-            final StringBuilder sbString = new StringBuilder(names.size() * 15);
-
-            for (final String name : names) {
-                if (sbString.length() > 0) {
-                    sbString.append(',');
-                }
-
-                sbString.append(name);
-            }
-
-            adjName = Integer.toHexString(sbString.toString().hashCode());
-        }
-
-        final StringBuilder sbResult = new StringBuilder(30);
-
-        if (prefix != null && !prefix.isEmpty()) {
-            sbResult.append(prefix);
-        }
-
-        sbResult.append(adjName);
-
-        if (postfix != null && !postfix.isEmpty()) {
-            sbResult.append(postfix);
-        }
-
-        return sbResult.toString();
-    }
-
-    /**
      * Splits qualified names by dots. If names are quoted then quotes are
      * removed.
      * <br><br>

@@ -324,7 +324,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         table.addColumn(col);
         
         constraint = new PgConstraint("extensions_fax_box_id_fkey", "", "");
-        constraint.setDefinition("REFERENCES fax_boxes\n(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT");
+        constraint.setDefinition("FOREIGN KEY (fax_box_id) REFERENCES fax_boxes\n(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT");
         constraint.setTableName("extensions");
         table.addConstraint(constraint);
         

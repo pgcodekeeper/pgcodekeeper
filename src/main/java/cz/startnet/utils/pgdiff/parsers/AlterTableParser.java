@@ -6,8 +6,6 @@
 package cz.startnet.utils.pgdiff.parsers;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -89,9 +87,7 @@ public final class AlterTableParser {
             } else if (parser.expectOptional("OWNER", "TO")) {
                 table.setOwner(parser.parseIdentifier());
             } else if (parser.expectOptional("ADD")) {
-                if (parser.expectOptional("FOREIGN", "KEY")) {
-                    parseAddForeignKey(parser, table, searchPath);
-                } else if (parser.expectOptional("CONSTRAINT")) {
+                if (parser.expectOptional("CONSTRAINT")) {
                     parseAddConstraint(parser, table, schema, searchPath);
                 } else {
                     parser.throwUnsupportedCommand();
@@ -284,37 +280,6 @@ public final class AlterTableParser {
         } else {
             parser.throwUnsupportedCommand();
         }
-    }
-
-    /**
-     * Parses ADD FOREIGN KEY action.
-     *
-     * FIXME create PgForeignKey instead of PgConstraint, fill in referred columns
-     *
-     * @param parser parser
-     * @param table  pg table
-     */
-    private static void parseAddForeignKey(final Parser parser,
-            final PgTable table, final String searchPath) {
-        final List<String> columnNames = new ArrayList<String>(1);
-        parser.expect("(");
-
-        while (!parser.expectOptional(")")) {
-            columnNames.add(ParserUtils.getObjectName(parser.parseIdentifier()));
-            if (parser.expectOptional(")")) {
-                break;
-            } else {
-                parser.expect(",");
-            }
-        }
-
-        final String constraintName = ParserUtils.generateName(
-                table.getName() + "_", columnNames, "_fkey");
-        final PgConstraint constraint =
-                new PgConstraint(constraintName, null, searchPath);
-        table.addConstraint(constraint);
-        constraint.setDefinition(parser.getExpression());
-        constraint.setTableName(table.getName());
     }
 
     /**

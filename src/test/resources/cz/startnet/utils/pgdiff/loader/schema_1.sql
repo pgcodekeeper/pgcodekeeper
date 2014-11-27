@@ -5,7 +5,7 @@ CREATE TABLE fax_boxes (
 );
 CREATE TABLE extensions (id serial NOT NULL);
 ALTER TABLE fax_boxes OWNER TO postgres;
-ALTER TABLE extensions ADD FOREIGN KEY (fax_box_id) REFERENCES fax_boxes
+ALTER TABLE extensions ADD CONSTRAINT extensions_fax_box_id_fkey FOREIGN KEY (fax_box_id) REFERENCES fax_boxes
 (fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT;              CREATE TABLE faxes (
 
 
