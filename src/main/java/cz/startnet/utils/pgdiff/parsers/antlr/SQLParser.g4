@@ -268,7 +268,7 @@ alter_view_statement
     ;
 
 index_statement
-  : (UNIQUE)? INDEX (CONCURRENTLY)? (name=schema_qualified_name)? ON table_name=schema_qualified_name 
+  : (unique_value=UNIQUE)? INDEX (CONCURRENTLY)? (name=schema_qualified_name)? ON table_name=schema_qualified_name 
     (USING method=schema_qualified_name)?
     sort_specifier_paren param_clause?
     (TABLESPACE tablespace_name=schema_qualified_name)?
@@ -276,7 +276,7 @@ index_statement
   ;
   
  create_extension_statement
-    : EXTENSION (IF NOT EXISTS)? name=identifier (WITH)?
+    : EXTENSION (IF NOT EXISTS)? name=schema_qualified_name (WITH)?
          (SCHEMA schema_name=identifier)? (VERSION version=unsigned_literal)? (FROM old_version=unsigned_literal)?
     ;
     
@@ -310,7 +310,7 @@ create_trigger_statement
     (((INSERT | DELETE | TRUNCATE) | UPDATE (OF columnName+=identifier(COMMA columnName+=identifier)* )?)OR?)+
     ON tabl_name=schema_qualified_name 
     (FROM referenced_table_name=schema_qualified_name)?
-    (NOT DEFERRABLE | (DEFERRABLE)? (INITIALLY IMMEDIATE) | (INITIALLY DEFERRED))?
+    table_deferrable? table_initialy_immed?
     (FOR (EACH)? (ROW | STATEMENT))?
     (WHEN (boolean_value_expression))?
     EXECUTE PROCEDURE func_name=schema_qualified_name LEFT_PAREN (arguments+=identifier)? (COMMA arguments+=identifier)* RIGHT_PAREN
@@ -599,7 +599,7 @@ table_constraint
           REFERENCES reftable=schema_qualified_name ( LEFT_PAREN refcolumn+=identifier(COMMA refcolumn+=identifier)* RIGHT_PAREN )?
             (((MATCH FULL) | (MATCH PARTIAL) | (MATCH SIMPLE)) | 
             (ON DELETE action_on_delete=action) | (ON UPDATE action_on_update=action))*))
-        (DEFERRABLE | (NOT DEFERRABLE))? ((INITIALLY DEFERRED) | (INITIALLY IMMEDIATE))?
+        table_deferrable? table_initialy_immed?
     ;
     
 column_constraint
@@ -611,7 +611,7 @@ column_constraint
         | (PRIMARY KEY index_params_pr_key=index_parameters) 
         | (REFERENCES reftable=schema_qualified_name (( refcolumn=identifier ))  (MATCH FULL | MATCH PARTIAL | MATCH SIMPLE)? 
         (ON DELETE action_on_delete=action)? (ON UPDATE action_on_update=action)?))
-        (DEFERRABLE | (NOT DEFERRABLE))? ((INITIALLY DEFERRED) | (INITIALLY IMMEDIATE))?
+        table_deferrable? table_initialy_immed?
     ;
 
 check_boolean_expression

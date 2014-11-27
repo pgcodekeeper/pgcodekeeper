@@ -30,7 +30,7 @@ public class CreateTable extends ParserAbstract {
         if (name == null) {
             return null;
         }
-        PgTable table = new PgTable(name, "CREATE " + getFullCtxText(ctx), "");
+        PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()), "");
 
         for (Table_column_defContext colCtx : ctx.table_col_def) {
             for (PgConstraint constr : getConstraint(colCtx)) {
