@@ -170,11 +170,19 @@ attribute_option_value
 table_constraint_using_index
     : (CONSTRAINT constraint_name=schema_qualified_name)?
      (UNIQUE | PRIMARY KEY) USING INDEX index_name=schema_qualified_name
-     ((NOT)? DEFERRABLE)? (INITIALLY (DEFERRED | IMMEDIATE))?
+     table_deferrable? table_initialy_immed?
     ;
 
 table_attribute_option
     :N_DISTINCT | N_DISTINCT_INHERITED
+    ;
+
+table_deferrable
+    : (NOT)? DEFERRABLE
+    ;
+
+table_initialy_immed
+    :INITIALLY (DEFERRED | IMMEDIATE)
     ;
     
 function_action
@@ -596,8 +604,7 @@ table_constraint
     
 column_constraint
     : (CONSTRAINT constraint_name=identifier)? 
-        (NOT NULL
-        | NULL
+        ((null_false=NOT)? null_value=NULL
         | check_boolean_expression 
         | DEFAULT (default_expr_data=data_type | default_expr=value_expression)
         | (UNIQUE index_params_unique=index_parameters) 
@@ -630,7 +637,7 @@ on_commit
     ;
     
 table_space
-    :TABLESPACE tablespace=identifier
+    :TABLESPACE tablespace_name=identifier
     ;
     
 action
