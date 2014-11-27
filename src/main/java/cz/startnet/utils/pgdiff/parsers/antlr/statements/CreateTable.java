@@ -9,22 +9,22 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_constraintContext;
-import cz.startnet.utils.pgdiff.schema.PGObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 
 public class CreateTable extends ParserAbstract {
     private final Create_table_statementContext ctx;
-    private final Path filePath;
     
-    public CreateTable(Create_table_statementContext ctx, Path filePath) {
+    public CreateTable(Create_table_statementContext ctx, PgDatabase db, Path filePath) {
+        super(db, filePath);
         this.ctx = ctx;
-        this.filePath = filePath;
     }
+    
     @Override
-    public PgStatement getObject(PGObjLocation loc) {
+    public PgStatement getObject() {
         
         String name = getName(ctx.name);
         if (name == null) {
@@ -51,7 +51,7 @@ public class CreateTable extends ParserAbstract {
             table.setWith(ctx.storage_parameter_oid().getText());
         }
         
-        loc = new PGObjLocation(name, ctx.name.getStart().getStartIndex(), filePath);
+        fillObjLocation(name, ctx.name.getStart().getStartIndex());
         return table;
     }
     

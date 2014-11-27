@@ -5,7 +5,6 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTable;
-import cz.startnet.utils.pgdiff.schema.PGObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -24,9 +23,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
 
     @Override
     public void exitCreate_table_statement(Create_table_statementContext ctx) {
-        PGObjLocation loc = null;
-        objects.add(new CreateTable(ctx, filePath).getObject(loc));
-        db.addObjLocation(loc);
+        objects.add(new CreateTable(ctx, db, filePath).getObject());
     }
 
     
