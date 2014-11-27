@@ -129,6 +129,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         cmbDbNames.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbDbNames.setItems(store.keySet().toArray(new String[store.size()]));
         cmbDbNames.addModifyListener(new ModifyListener() {
+            
             @Override
             public void modifyText(ModifyEvent e) {
                 DbInfo db = store.get(cmbDbNames.getText());
@@ -151,38 +152,16 @@ public class DbStoreEditorDialog extends TrayDialog {
         
         Button btnAdd = new Button(container, SWT.PUSH);
         btnAdd.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(
-                        FILE.ICONADD))));
+                Activator.getContext().getBundle().getResource(FILE.ICONADD))));
         btnAdd.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
                 InputDialog dialog = new InputDialog(
                         getShell(), Messages.dbStoreEditorDialog_new_entry, 
                         Messages.entry_name, null, null);
-                
                 if(dialog.open() == Dialog.OK) {
-                    String newName = dialog.getValue().trim();
-                    
-                    if(newName.isEmpty()) {
-                        MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
-                        mb.setText(Messages.dbStoreEditorDialog_cannot_add_entry);
-                        mb.setMessage(Messages.dbStoreEditorDialog_name_cannot_be_empty_or_whitespace);
-                        mb.open();
-                        return;
-                    }
-                    
-                    if(store.containsKey(newName)) {
-                        MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
-                        mb.setText(Messages.dbStoreEditorDialog_cannot_add_entry);
-                        mb.setMessage(Messages.dbStoreEditorDialog_entry_with_this_name_already_exists
-                                + newName);
-                        mb.open();
-                        return;
-                    }
-                    
-                    store.put(newName, DbInfo.getEmptyNamed(newName));
-                    cmbDbNames.add(newName);
-                    cmbDbNames.select(cmbDbNames.indexOf(newName));
+                    addEntry(dialog.getValue().trim());
                 }
             }
         });
@@ -294,5 +273,28 @@ public class DbStoreEditorDialog extends TrayDialog {
         }
         
         super.okPressed();
+    }
+
+    private void addEntry(String name) {
+        if(name.isEmpty()) {
+            MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
+            mb.setText(Messages.dbStoreEditorDialog_cannot_add_entry);
+            mb.setMessage(Messages.dbStoreEditorDialog_name_cannot_be_empty_or_whitespace);
+            mb.open();
+            return;
+        }
+        
+        if(store.containsKey(name)) {
+            MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
+            mb.setText(Messages.dbStoreEditorDialog_cannot_add_entry);
+            mb.setMessage(Messages.dbStoreEditorDialog_entry_with_this_name_already_exists
+                    + name);
+            mb.open();
+            return;
+        }
+        
+        store.put(name, DbInfo.getEmptyNamed(name));
+        cmbDbNames.add(name);
+        cmbDbNames.select(cmbDbNames.indexOf(name));
     }
 }

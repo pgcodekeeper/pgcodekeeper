@@ -89,6 +89,12 @@ public class DiffTableViewer extends Composite {
     private static final String PREVCHECKED_HIST_FILENAME = "check_sets.xml"; //$NON-NLS-1$
     private static final int PREVCHECKED_HIST_MAX_STORED = 20;
     
+    private final Map<DbObjType, Image> mapObjIcons = new HashMap<>(
+            DbObjType.values().length);
+    private final Image iSideBoth;
+    private final Image iSideLeft;
+    private final Image iSideRight;
+    
     private final boolean viewOnly;
     private boolean reverseDiffSide;
     
@@ -137,6 +143,19 @@ public class DiffTableViewer extends Composite {
         this.viewOnly = viewOnly;
         
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
+        for (DbObjType objType : DbObjType.values()) {
+            ImageDescriptor iObj = ImageDescriptor.createFromURL(Activator.getContext()
+                    .getBundle().getResource(
+                            FILE.ICONPGADMIN + objType.toString().toLowerCase() + ".png")); //$NON-NLS-1$
+            mapObjIcons.put(objType, lrm.createImage(iObj));
+        }
+        iSideBoth = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                .getBundle().getResource(FILE.ICONEDIT)));
+        iSideLeft = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                .getBundle().getResource(FILE.ICONDEL)));
+        iSideRight = lrm.createImage(ImageDescriptor.createFromURL(Activator.getContext()
+                .getBundle().getResource(FILE.ICONADD)));
+        
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
         setLayout(gl);
@@ -455,23 +474,6 @@ public class DiffTableViewer extends Composite {
 
         columnType.setLabelProvider(new ColumnLabelProvider() {
 
-            private final Map<DbObjType, Image> mapObjIcons = new HashMap<>(
-                    DbObjType.values().length);
-
-            {
-                for (DbObjType objType : DbObjType.values()) {
-                    ImageDescriptor iObj = ImageDescriptor
-                            .createFromURL(Activator
-                                    .getContext()
-                                    .getBundle()
-                                    .getResource(
-                                            FILE.ICONPGADMIN
-                                                    + objType.toString().toLowerCase()
-                                                    + ".png")); //$NON-NLS-1$
-                    mapObjIcons.put(objType, lrm.createImage(iObj));
-                }
-            }
-
             @Override
             public String getText(Object element) {
                 return ((TreeElement) element).getType().toString();
@@ -485,19 +487,6 @@ public class DiffTableViewer extends Composite {
 
         columnChange.setLabelProvider(new ColumnLabelProvider() {
             
-            private Image both = 
-                    lrm.createImage(ImageDescriptor.createFromURL(
-                            Activator.getContext().getBundle().getResource(
-                                    FILE.ICONEDIT)));
-            private Image left = 
-                    lrm.createImage(ImageDescriptor.createFromURL(
-                            Activator.getContext().getBundle().getResource(
-                                    FILE.ICONDEL)));
-            private Image right = 
-                    lrm.createImage(ImageDescriptor.createFromURL(
-                            Activator.getContext().getBundle().getResource(
-                                    FILE.ICONADD)));
-            
             @Override
             public String getText(Object element) {
                 return ((TreeElement) element).getSide().toString();
@@ -506,9 +495,9 @@ public class DiffTableViewer extends Composite {
             @Override
             public Image getImage(Object element) {
                 switch (((TreeElement) element).getSide()) {
-                case BOTH: return both;
-                case LEFT: return left;
-                case RIGHT: return right;
+                case BOTH: return iSideBoth;
+                case LEFT: return iSideLeft;
+                case RIGHT: return iSideRight;
                 }
                 return null;
             }

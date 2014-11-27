@@ -588,13 +588,12 @@ class PageResult extends WizardPage {
     final private PgDbProject proj;
 
     private Composite container;
-
+    private TabFolder tabs;
     private Label lblSource, lblTarget;
 
     private Text txtDirect, txtReverse;
 
-    public void setData(String source, String target, String direct,
-            String reverse) {
+    public void setData(String source, String target, String direct, String reverse) {
         lblSource.setText(source);
         lblTarget.setText(target);
         txtDirect.setText(direct);
@@ -634,7 +633,7 @@ class PageResult extends WizardPage {
         gd.widthHint = 600;
         lblTarget.setLayoutData(gd);
 
-        final TabFolder tabs = new TabFolder(container, SWT.NONE);
+        tabs = new TabFolder(container, SWT.NONE);
         gd = new GridData(GridData.FILL_BOTH);
         gd.verticalIndent = 12;
         gd.widthHint = 600;
@@ -669,6 +668,7 @@ class PageResult extends WizardPage {
         gd.verticalIndent = 12;
         btnSave.setLayoutData(gd);
         btnSave.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog saveDialog = new FileDialog(getShell(), SWT.SAVE);
@@ -680,17 +680,7 @@ class PageResult extends WizardPage {
 
                 String saveTo = saveDialog.open();
                 if (saveTo != null) {
-                    try (final PrintWriter encodedWriter = new UnixPrintWriter(
-                            new OutputStreamWriter(
-                                    new FileOutputStream(saveTo),
-                                    proj.getPrefs().get(PROJ_PREF.ENCODING, "")))) { //$NON-NLS-1$
-                        Text txtDiff = (Text) tabs.getSelection()[0]
-                                .getControl();
-                        encodedWriter.println(txtDiff.getText());
-                    } catch (FileNotFoundException | UnsupportedEncodingException ex) {
-                        ExceptionNotifier.showErrorDialog(
-                                Messages.diffWizard_unexpected_error_while_saving_diff, ex);
-                    }
+                    saveScript(saveTo);
                 }
             }
         });
@@ -698,6 +688,18 @@ class PageResult extends WizardPage {
         setControl(container);
     }
 
+    private void saveScript(String saveTo) {
+        try (PrintWriter encodedWriter = new UnixPrintWriter(
+                new OutputStreamWriter(new FileOutputStream(saveTo),
+                        proj.getPrefs().get(PROJ_PREF.ENCODING, "")))) { //$NON-NLS-1$
+            Text txtDiff = (Text) tabs.getSelection()[0].getControl();
+            encodedWriter.println(txtDiff.getText());
+        } catch (FileNotFoundException | UnsupportedEncodingException ex) {
+            ExceptionNotifier.showErrorDialog(
+                    Messages.diffWizard_unexpected_error_while_saving_diff, ex);
+        }
+    }
+    
     @Override
     public IWizardPage getPreviousPage() {
         return null;

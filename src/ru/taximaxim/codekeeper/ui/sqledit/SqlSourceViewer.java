@@ -52,20 +52,7 @@ public class SqlSourceViewer extends SourceViewer {
             @Override
             public IPresentationReconciler getPresentationReconciler(
                     ISourceViewer sourceViewer) {
-                SQLColorProvider colorProvider = new SQLColorProvider();
-                SQLCodeScanner scanner = new SQLCodeScanner(colorProvider);
-                scanner.setSQLSyntax(new SqlPostgresSyntax());
-                
-                PresentationReconciler reconciler = new PresentationReconciler();
-                reconciler.setDocumentPartitioning(SQLPartitionScanner.SQL_PARTITIONING);
-                
-                for(String token : SQLPartitionScanner.SQL_PARTITION_TYPES) {
-                    DefaultDamagerRepairer dr = new DefaultDamagerRepairer(scanner);
-                    reconciler.setDamager(dr, token);
-                    reconciler.setRepairer(dr, token);
-                }
-                
-                return reconciler;
+                return createReconciler();
             }
         });
         
@@ -94,5 +81,21 @@ public class SqlSourceViewer extends SourceViewer {
                     ISQLPartitions.SQL_PARTITIONING, _partitioner);
         }
         super.inputChanged(newInput, oldInput);
+    }
+
+    private PresentationReconciler createReconciler() {
+        SQLColorProvider colorProvider = new SQLColorProvider();
+        SQLCodeScanner scanner = new SQLCodeScanner(colorProvider);
+        scanner.setSQLSyntax(new SqlPostgresSyntax());
+        
+        PresentationReconciler reconciler = new PresentationReconciler();
+        reconciler.setDocumentPartitioning(SQLPartitionScanner.SQL_PARTITIONING);
+        
+        for(String token : SQLPartitionScanner.SQL_PARTITION_TYPES) {
+            DefaultDamagerRepairer dr = new DefaultDamagerRepairer(scanner);
+            reconciler.setDamager(dr, token);
+            reconciler.setRepairer(dr, token);
+        }
+        return reconciler;
     }
 }
