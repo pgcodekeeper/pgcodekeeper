@@ -247,8 +247,7 @@ public class PgDiffTest {
                 });
     }
     
-    private final static List<String> runDiffIgnoredFiles = Arrays.asList(
-            
+    private final static List<String> RUN_DIFF_SKIP_FILES = Arrays.asList(
             );
     /**
      * Template name for file names that should be used for the test. Testing
@@ -348,7 +347,7 @@ public class PgDiffTest {
     @Test(timeout = 5000)
     public void runDiff() throws FileNotFoundException, IOException {
         
-        Assume.assumeThat(runDiffIgnoredFiles, not(hasItem(fileNameTemplate)));
+        Assume.assumeThat(RUN_DIFF_SKIP_FILES, not(hasItem(fileNameTemplate)));
         
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);

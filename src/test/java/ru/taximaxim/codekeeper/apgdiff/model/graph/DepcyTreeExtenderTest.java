@@ -78,7 +78,7 @@ public class DepcyTreeExtenderTest {
     /**
      * Array of implementations of {@link TreeElementCreator}
      */
-    private static final TreeElementCreator[] treeCreators = {
+    private static final TreeElementCreator[] TREES = {
         new Predefined1(),
         new Predefined2(),
         new Predefined3(),
@@ -96,12 +96,12 @@ public class DepcyTreeExtenderTest {
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
                 ApgdiffConsts.UTF_8, false, false);
         
-        TreeElement filtered = treeCreators[fileIndex - 1].getFilteredTree();
+        TreeElement filtered = TREES[fileIndex - 1].getFilteredTree();
         
         DepcyTreeExtender dte = new DepcyTreeExtender(dbTarget, dbTarget, filtered);
         
         Set<PgStatement> depcy = dte.getDependenciesOfNew();
-        Set<PgStatement> depcyPredefined = treeCreators[fileIndex - 1].getDepcySet(dbTarget);
+        Set<PgStatement> depcyPredefined = TREES[fileIndex - 1].getDepcySet(dbTarget);
         assertTrue("List of dependencies is not as expected", depcy.equals(depcyPredefined));
     }
 
@@ -111,7 +111,7 @@ public class DepcyTreeExtenderTest {
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
                 ApgdiffConsts.UTF_8, false, false);
         
-        TreeElementCreator treeCreator = treeCreators[fileIndex - 1];
+        TreeElementCreator treeCreator = TREES[fileIndex - 1];
         
         TreeElement filtered = treeCreator.getFilteredTreeForDeletion();
         
@@ -132,7 +132,7 @@ public class DepcyTreeExtenderTest {
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
                 ApgdiffConsts.UTF_8, false, false);
         
-        TreeElementCreator treeCreator = treeCreators[fileIndex - 1];
+        TreeElementCreator treeCreator = TREES[fileIndex - 1];
         
         TreeElement filtered = treeCreator.getFilteredTree();
         
@@ -160,7 +160,7 @@ public class DepcyTreeExtenderTest {
                 DepcyTreeExtenderTest.class.getResourceAsStream(filenameConflicting), ApgdiffConsts.UTF_8,
                 false, false);
 
-        TreeElementCreator treeCreator = treeCreators[fileIndex - 1];
+        TreeElementCreator treeCreator = TREES[fileIndex - 1];
         
         TreeElement filtered = treeCreator.getFilteredTreeForConflicting();
         DepcyTreeExtender dte = new DepcyTreeExtender(dbGit, dbRemote, filtered);

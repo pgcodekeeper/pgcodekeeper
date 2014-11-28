@@ -16,8 +16,10 @@ public class JdbcAclParser {
     private final String ACL_ASSIGNMENT_SIGN = "=";
     
     public enum PrivilegeTypes {
+// SONAR-OFF
         a("INSERT"), r("SELECT"), w("UPDATE"), d("DELETE"), D("TRUNCATE"), x("REFERENCES"), 
         t("TRIGGER"), X("EXECUTE"), U("USAGE"), C("CREATE"), T("CREATE_TEMP"), c("CONNECT");
+// SONAR-ON
         private String privilegeType;
 
         PrivilegeTypes(String privilegeType) {

@@ -50,7 +50,7 @@ public final class PgDumpLoader { //NOPMD
      */
     // NOTE: constraints, triggers and indexes are now stored in tables,
     // those directories are here for backward compatibility only
-    private static final String[] walkOrder = new String[] { "SEQUENCE",
+    private static final String[] DIR_LOAD_ORDER = new String[] { "SEQUENCE",
         "FUNCTION", "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW" };
 
     /**
@@ -303,7 +303,7 @@ public final class PgDumpLoader { //NOPMD
         for (File schemaFolder : new File(dir, "SCHEMA").listFiles()) {
             if (schemaFolder.isDirectory()) {
                 walkSubdirsRunCore(schemaFolder, charsetName, outputIgnoredStatements,
-                        ignoreSlonyTriggers, walkOrder, db);
+                        ignoreSlonyTriggers, DIR_LOAD_ORDER, db);
             }
         }
         return db;
