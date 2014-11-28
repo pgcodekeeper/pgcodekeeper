@@ -17,6 +17,10 @@ public class CreateExtension extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = getName(ctx.name);
+        String schemaName =getSchemaName(ctx.name);
+        if (schemaName==null) {
+            schemaName = getDefSchemaName();
+        }
         PgExtension ext = new PgExtension(name, getFullCtxText(ctx.getParent()));
         if (ctx.old_version!= null) {
             ext.setOldVersion(ctx.old_version.getText());
@@ -27,7 +31,7 @@ public class CreateExtension extends ParserAbstract {
         if (ctx.version!= null) {
             ext.setVersion(ctx.version.getText());
         }
-        fillObjLocation(name, ctx.name.getStart().getStartIndex());
+        fillObjLocation(ext, ctx.name.getStart().getStartIndex(),schemaName);
         return ext;
     }
 

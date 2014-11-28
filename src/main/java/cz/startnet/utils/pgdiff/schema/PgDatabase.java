@@ -30,7 +30,7 @@ public class PgDatabase extends PgStatement {
     private final List<String> ignoredStatements = new ArrayList<String>();
     private final List<String> ignoredDataStatements = new ArrayList<String>();
     
-    private final Set<PGObjLocation> objLocations = new HashSet<>(); 
+    private final Set<PgObjLocation> objLocations = new HashSet<>(); 
     
     private String comment;
 
@@ -73,7 +73,7 @@ public class PgDatabase extends PgStatement {
         ignoredDataStatements.add(ignoredDataStatement);
     }
     
-    public boolean addObjLocation(PGObjLocation objLocation) {
+    public boolean addObjLocation(PgObjLocation objLocation) {
         return objLocations.add(objLocation);
     }
     /**
@@ -81,13 +81,17 @@ public class PgDatabase extends PgStatement {
      * @param objName object name
      * @return location or null 
      */
-    public PGObjLocation getObjLocation(String objName) {
-        for (PGObjLocation location : objLocations) {
+    public PgObjLocation getObjLocation(String objName) {
+        for (PgObjLocation location : objLocations) {
             if (location.getObjName().equals(objName)) {
                 return location;
             }
         }
         return null;
+    }
+    
+    public Set<PgObjLocation> getObjLocations() {
+        return Collections.unmodifiableSet(objLocations);
     }
 
     /**

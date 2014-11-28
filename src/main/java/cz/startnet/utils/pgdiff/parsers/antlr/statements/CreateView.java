@@ -18,6 +18,10 @@ public class CreateView extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = getName(ctx.name);
+        String schemaName =getSchemaName(ctx.name);
+        if (schemaName==null) {
+            schemaName = getDefSchemaName();
+        }
         PgView view = new PgView(name, getFullCtxText(ctx.getParent()), "");
         if (ctx.v_query!=null) {
             view.setQuery(ctx.v_query.getText());
@@ -25,7 +29,7 @@ public class CreateView extends ParserAbstract {
         for (Schema_qualified_nameContext column : ctx.column_name) {
             view.addColumnName(getName(column));
         }
-        fillObjLocation(name, ctx.name.getStart().getStartIndex());
+        fillObjLocation(view, ctx.name.getStart().getStartIndex(), schemaName);
         return view;
     }
 

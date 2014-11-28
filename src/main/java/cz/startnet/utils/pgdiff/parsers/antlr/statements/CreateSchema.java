@@ -30,7 +30,7 @@ public class CreateSchema extends ParserAbstract {
             elements.append(element.getText());
         }
         schema.setDefinition(elements.toString());
-        fillObjLocation(name, ctx.name.getStart().getStartIndex());
+        fillObjLocation(schema, ctx.name.getStart().getStartIndex(), name);
         return schema;
     }
 

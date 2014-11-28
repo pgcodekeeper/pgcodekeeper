@@ -20,6 +20,10 @@ public class CreateFunction extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = getName(ctx.function_parameters().name);
+        String schemaName =getSchemaName(ctx.function_parameters().name);
+        if (schemaName==null) {
+            schemaName = getDefSchemaName();
+        }
         PgFunction function = new PgFunction(name, getFullCtxText(ctx.getParent()), "");
         fillArguments(ctx.function_parameters(), function);
         for (Function_bodyContext body : ctx.function_body()) {
@@ -33,7 +37,7 @@ public class CreateFunction extends ParserAbstract {
         } else if(ctx.rettype_data != null) {
             function.setReturns(ctx.rettype_data.getText());
         }
-        fillObjLocation(name, ctx.function_parameters().name.getStart().getStartIndex());
+        fillObjLocation(function, ctx.function_parameters().name.getStart().getStartIndex(),schemaName);
         return function;
     }
 

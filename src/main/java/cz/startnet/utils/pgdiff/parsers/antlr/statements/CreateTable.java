@@ -28,6 +28,10 @@ public class CreateTable extends ParserAbstract {
     public PgStatement getObject() {
         
         String name = getName(ctx.name);
+        String schemaName =getSchemaName(ctx.name);
+        if (schemaName==null) {
+            schemaName = getDefSchemaName();
+        }
         if (name == null) {
             return null;
         }
@@ -37,7 +41,9 @@ public class CreateTable extends ParserAbstract {
             for (PgConstraint constr : getConstraint(colCtx)) {
                 table.addConstraint(constr);                
             }
-            table.addColumn(getColumn(colCtx.table_column_definition()));
+            if (colCtx.table_column_definition()!=null) {
+                table.addColumn(getColumn(colCtx.table_column_definition()));
+            }
         }
         
         for (Schema_qualified_nameContext par_table : ctx.paret_table) {
@@ -52,7 +58,7 @@ public class CreateTable extends ParserAbstract {
             table.setWith(ctx.storage_parameter_oid().getText());
         }
         
-        fillObjLocation(name, ctx.name.getStart().getStartIndex());
+        fillObjLocation(table, ctx.name.getStart().getStartIndex(), schemaName);
         return table;
     }
     

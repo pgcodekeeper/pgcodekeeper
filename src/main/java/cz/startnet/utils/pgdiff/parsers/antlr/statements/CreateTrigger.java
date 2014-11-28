@@ -18,6 +18,10 @@ public class CreateTrigger extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = getName(ctx.name);
+        String schemaName =getSchemaName(ctx.name);
+        if (schemaName==null) {
+            schemaName = getDefSchemaName();
+        }
         PgTrigger trigger = new PgTrigger(name, getFullCtxText(ctx.getParent()), "");
         trigger.setTableName(ctx.tabl_name.getText());
         trigger.setBefore(ctx.before_true != null);
@@ -32,7 +36,8 @@ public class CreateTrigger extends ParserAbstract {
         if (ctx.when_expr != null) {
             trigger.setWhen(ctx.when_expr.getText());
         }
-        fillObjLocation(name, ctx.name.getStart().getStartIndex());
+        
+        fillObjLocation(trigger, ctx.name.getStart().getStartIndex(), schemaName);
         return trigger;
     }
 

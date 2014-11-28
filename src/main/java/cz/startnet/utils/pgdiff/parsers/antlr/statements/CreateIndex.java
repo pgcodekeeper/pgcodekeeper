@@ -18,12 +18,16 @@ public class CreateIndex extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = getName(ctx.name);
+        String schemaName =getSchemaName(ctx.name);
+        if (schemaName==null) {
+            schemaName = getDefSchemaName();
+        }
         PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()), "");
         ind.setTableName(getName(ctx.table_name));
         ind.setDefinition(getFullCtxText(ctx));
         ind.setUnique(ctx.UNIQUE() != null);
         if (name != null) {
-            fillObjLocation(name, ctx.name.getStart().getStartIndex());
+            fillObjLocation(ind, ctx.name.getStart().getStartIndex(),schemaName);
         }
         return ind;
     }

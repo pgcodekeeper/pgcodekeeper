@@ -18,6 +18,10 @@ public class CreateSequence extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = getName(ctx.name);
+        String schemaName =getSchemaName(ctx.name);
+        if (schemaName==null) {
+            schemaName = getDefSchemaName();
+        }
         PgSequence sequnce = new PgSequence(name, getFullCtxText(ctx.getParent()), "");
         for (Sequence_bodyContext body : ctx.sequence_body()) {
             if (body.cache_val != null) {
@@ -42,7 +46,7 @@ public class CreateSequence extends ParserAbstract {
                 sequnce.setOwnedBy(body.col_name.getText());
             }
         }
-        fillObjLocation(name, ctx.name.getStart().getStartIndex());
+        fillObjLocation(sequnce, ctx.name.getStart().getStartIndex(), schemaName);
         return sequnce;
     }
 

@@ -4,38 +4,51 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class PGObjLocation implements Serializable {
+public class PgObjLocation implements Serializable {
     /**
      * 
      */
     private static final long serialVersionUID = -7110926210150404390L;
-    private String objName;
+    private PgStatement obj;
+    private String schemaName;
     private String filePath;
     private int offset;
     
+    public String getSchemaName() {
+        return schemaName;
+    }
+
+    public void setSchemaName(String schemaName) {
+        this.schemaName = schemaName;
+    }
+    
+    public PgStatement getObj() {
+        return obj;
+    }
+    
     public String getObjName() {
-        return objName;
+        return obj.getBareName();
     }
     
     public int getOffset() {
         return offset;
     }
     public int getObjLength() {
-        return objName.length();
+        return obj.getBareName().length();
     }
 
     public Path getFilePath() {
         return Paths.get(filePath);
     }
 
-    public PGObjLocation(String objName, int offset,
+    public PgObjLocation(PgStatement obj, int offset,
             Path filePath) {
-        this.objName = objName;
+        this.obj = obj;
         this.offset = offset;
         this.filePath = filePath.toString();
     }
     @Override
     public String toString() {
-        return objName + " " + filePath + " " + offset + objName.length();
+        return obj + " " + filePath + " " + offset + obj.getBareName().length();
     }
 }
