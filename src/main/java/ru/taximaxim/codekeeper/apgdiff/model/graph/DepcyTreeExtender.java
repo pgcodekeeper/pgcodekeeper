@@ -221,31 +221,31 @@ public class DepcyTreeExtender {
         }
 
         PgStatement parent = getDbWithStatement(toBeAdded.getParent());
-        PgStatement copy = toBeAdded.shallowCopy();
-        if (copy instanceof PgFunction){
-            ((PgSchema)parent).addFunction((PgFunction)copy);
-        }else if (copy instanceof PgView){
-            ((PgSchema)parent).addView((PgView)copy);
-        }else if (copy instanceof PgTable){
-            ((PgSchema)parent).addTable((PgTable)copy);
-        }else if (copy instanceof PgSequence){
-            ((PgSchema)parent).addSequence((PgSequence)copy);
-        }else if (copy instanceof PgSchema){
-            if (copy.getName().equals(ApgdiffConsts.PUBLIC)){
-                copy = ((PgDatabase)parent).getSchema(ApgdiffConsts.PUBLIC);
+        PgStatement stCopy = toBeAdded.shallowCopy();
+        if (stCopy instanceof PgFunction){
+            ((PgSchema)parent).addFunction((PgFunction)stCopy);
+        }else if (stCopy instanceof PgView){
+            ((PgSchema)parent).addView((PgView)stCopy);
+        }else if (stCopy instanceof PgTable){
+            ((PgSchema)parent).addTable((PgTable)stCopy);
+        }else if (stCopy instanceof PgSequence){
+            ((PgSchema)parent).addSequence((PgSequence)stCopy);
+        }else if (stCopy instanceof PgSchema){
+            if (stCopy.getName().equals(ApgdiffConsts.PUBLIC)){
+                stCopy = ((PgDatabase)parent).getSchema(ApgdiffConsts.PUBLIC);
             }else{
-                ((PgDatabase)parent).addSchema((PgSchema)copy);
+                ((PgDatabase)parent).addSchema((PgSchema)stCopy);
             }
-        }else if (copy instanceof PgConstraint){
-            ((PgTable)parent).addConstraint((PgConstraint)copy);
-        }else if (copy instanceof PgIndex){
-            ((PgTable)parent).addIndex((PgIndex)copy);
-        }else if (copy instanceof PgTrigger){
-            ((PgTable)parent).addTrigger((PgTrigger)copy);
-        }else if (copy instanceof PgColumn){
-            ((PgTable)parent).addColumn((PgColumn)copy);
+        }else if (stCopy instanceof PgConstraint){
+            ((PgTable)parent).addConstraint((PgConstraint)stCopy);
+        }else if (stCopy instanceof PgIndex){
+            ((PgTable)parent).addIndex((PgIndex)stCopy);
+        }else if (stCopy instanceof PgTrigger){
+            ((PgTable)parent).addTrigger((PgTrigger)stCopy);
+        }else if (stCopy instanceof PgColumn){
+            ((PgTable)parent).addColumn((PgColumn)stCopy);
         } 
-        return copy;
+        return stCopy;
     }
     
     /**

@@ -164,7 +164,7 @@ public class PgDbFilter2 {
      * 
      * @throws IllegalArgumentException
      */
-    static void illegalTreeStructure(TreeElement illegalChild, Throwable cause) {
+    private static void illegalTreeStructure(TreeElement illegalChild, Throwable cause) {
         TreeElement parent = illegalChild.getParent();
         throw new IllegalArgumentException(
                 String.format("Illegal child %s of type %s in the node %s of type %s",

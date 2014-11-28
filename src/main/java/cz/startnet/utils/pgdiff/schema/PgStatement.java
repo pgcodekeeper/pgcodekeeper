@@ -268,18 +268,18 @@ abstract public class PgStatement {
      *          Identifiers are quoted.
      */
     public String getQualifiedName() {
-        String name = PgDiffUtils.getQuotedName(getName());
+        String qname = PgDiffUtils.getQuotedName(getName());
         
-        PgStatement parent = this.parent;
-        while (parent != null) {
-            if (parent instanceof PgDatabase) {
+        PgStatement par = this.parent;
+        while (par != null) {
+            if (par instanceof PgDatabase) {
                 break;
             }
-            name = PgDiffUtils.getQuotedName(parent.getName())
-                    + '.' + name;
-            parent = parent.getParent();
+            qname = PgDiffUtils.getQuotedName(par.getName())
+                    + '.' + qname;
+            par = par.getParent();
         }
         
-        return name;
+        return qname;
     }
 }

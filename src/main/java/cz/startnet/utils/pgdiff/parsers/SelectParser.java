@@ -181,41 +181,41 @@ public final class SelectParser {
      * @return      Query string with excessive parens replaced by spaces
      */
     private StringBuilder removeExcessParens(StringBuilder sb, int startIndex, 
-            int parensCount, int subselectCounter, List<Integer> subselectStartsAt) {
-        int parens = parensCount;
+            int parens, int subselectCounter, List<Integer> subselectStartsAt) {
+        int parensCount = parens;
         int subselects = subselectCounter;
         for(int j = startIndex; j < sb.length(); j++){
             if (sb.charAt(j) == '('){
-                parens++;
+                parensCount++;
                 String next = sb.substring(j + 1).trim();
                 if (next.startsWith("SELECT ")){
                     subselects++;
-                    subselectStartsAt.add(parens);
-                    removeExcessParens(sb, j + 1, parens, subselects, subselectStartsAt);
+                    subselectStartsAt.add(parensCount);
+                    removeExcessParens(sb, j + 1, parensCount, subselects, subselectStartsAt);
                     break;
                 }else{
                     sb.setCharAt(j, ' ');
                 }
             }else if (sb.charAt(j) == ')'){
                 if (subselects > 0){
-                    if (subselectStartsAt.contains(parens)){
-                        subselectStartsAt.remove(subselectStartsAt.indexOf(parens));
-                        parens--;
+                    if (subselectStartsAt.contains(parensCount)){
+                        subselectStartsAt.remove(subselectStartsAt.indexOf(parensCount));
+                        parensCount--;
                         subselects--;
-                    }else if (subselects < parens){
-                        parens--;
+                    }else if (subselects < parensCount){
+                        parensCount--;
                         sb.setCharAt(j, ' ');
                     }else{
                         subselects--;
-                        parens--;
+                        parensCount--;
                     }
                 }else{
-                    parens--;
+                    parensCount--;
                     sb.setCharAt(j, ' ');
                 }
             }else if (sb.charAt(j) == '\''){
                 int nextQuoteIndex = sb.toString().indexOf('\'', j + 1);
-                removeExcessParens(sb, nextQuoteIndex + 1, parens, subselects, subselectStartsAt);
+                removeExcessParens(sb, nextQuoteIndex + 1, parensCount, subselects, subselectStartsAt);
                 break;
             }
         }

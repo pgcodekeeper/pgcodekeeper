@@ -53,11 +53,12 @@ public final class PgDiff {
      */
     public static PgDiffScript createDiff(final PrintWriter writer,
             final PgDiffArguments arguments) {
-        PgDatabase dbOld = loadDatabaseSchema(
+        PgDatabase oldDatabase = loadDatabaseSchema(
                 arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
-        PgDatabase dbNew = loadDatabaseSchema(
+        PgDatabase newDatabase = loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments); 
-        return diffDatabaseSchemas(writer, arguments, dbOld, dbNew, dbOld, dbNew);
+        return diffDatabaseSchemas(writer, arguments,
+                oldDatabase, newDatabase, oldDatabase, newDatabase);
     }
 
     /**
