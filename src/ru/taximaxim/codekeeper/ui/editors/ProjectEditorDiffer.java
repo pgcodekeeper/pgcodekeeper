@@ -302,7 +302,7 @@ class CommitPage extends DiffPresentationPane {
         
         // display commit dialog
         CommitDialog cd = new CommitDialog(getShell(), filtered, sumNewAndDelete,
-                mainPrefs, proj, treeDiffer);
+                mainPrefs, treeDiffer);
         cd.setConflictingElements(considerDepcy ? dte.getConflicting() : null);
         if (cd.open() != CommitDialog.OK) {
             return;

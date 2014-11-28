@@ -81,7 +81,7 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         grpCommandsEdit.setLayoutData(gd);
         grpCommandsEdit.setText(Messages.dbUpdatePrefPage_add_and_delete_ddl_update_commands);
         
-        listEditor = new PrefListEditor(grpCommandsEdit, SWT.NONE, false);
+        listEditor = new PrefListEditor(grpCommandsEdit, false);
         updateList();
         
         return parent;

@@ -24,7 +24,7 @@ public class PrefListEditor extends Composite {
     private List<String> objsList = new LinkedList<>();
     private final boolean doSorting;
     
-    public PrefListEditor(Composite parent, int style, boolean doSorting) {
+    public PrefListEditor(Composite parent, boolean doSorting) {
         super(parent, SWT.NONE);
         
         this.doSorting = doSorting;

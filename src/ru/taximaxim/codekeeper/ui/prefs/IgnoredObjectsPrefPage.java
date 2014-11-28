@@ -69,7 +69,7 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
         
         new Label(parent, SWT.NONE).setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
         
-        listEditor = new PrefListEditor(parent, SWT.NONE, true);
+        listEditor = new PrefListEditor(parent, true);
         
         createFieldEditors();
         

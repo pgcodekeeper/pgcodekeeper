@@ -17,7 +17,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class CommitDialog extends TrayDialog {
     
@@ -31,7 +30,7 @@ public class CommitDialog extends TrayDialog {
     
     public CommitDialog(Shell parentShell, TreeElement filtered,
             Set<TreeElement> depcyElementsSet, IPreferenceStore mainPrefs,
-            PgDbProject proj, TreeDiffer treeDiffer) {
+            TreeDiffer treeDiffer) {
         super(parentShell);
         
         this.filtered = filtered;
