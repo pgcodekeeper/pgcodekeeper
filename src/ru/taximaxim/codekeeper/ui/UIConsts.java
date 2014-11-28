@@ -111,5 +111,15 @@ public interface UIConsts {
         String ICONBALLRED = "/icons/ball_red.png"; //$NON-NLS-1$
         String ICONREFRESH = "/icons/refresh.gif"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
+        String DDL_UPDATE_COMMANDS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
+    }
+    
+    interface XML_TAGS{
+        String DDL_UPDATE_COMMANDS_HIST_ROOT = "scripts"; //$NON-NLS-1$
+        String DDL_UPDATE_COMMANDS_HIST_ELEMENT = "s"; //$NON-NLS-1$
+        int DDL_UPDATE_COMMANDS_MAX_STORED = 20;
+        
+        String IGNORED_OBJS_ROOT = "ignored_objects"; //$NON-NLS-1$
+        String IGNORED_OBJS_ELEMENT = "obj"; //$NON-NLS-1$
     }
 }

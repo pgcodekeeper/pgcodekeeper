@@ -47,7 +47,8 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
-
+import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -87,10 +88,6 @@ public class SqlScriptDialog extends TrayDialog {
     private static final String[] BUTTONS = new String[] {
         RUN_SCRIPT_LABEL, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }; 
     
-    private static final String SCRIPTS_HIST_ROOT = "scripts"; //$NON-NLS-1$
-    private static final String SCRIPTS_HIST_EL = "s"; //$NON-NLS-1$
-    private static final String SCRIPTS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
-    private static final int SCRIPTS_HIST_MAX_STORED = 20;
 
     private static final String LINE_SEP = System.lineSeparator();
     
@@ -159,10 +156,10 @@ public class SqlScriptDialog extends TrayDialog {
         differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
         this.objList = objList;
         this.mainPrefs = mainPrefs;
-        this.history = new XmlHistory.Builder(SCRIPTS_HIST_MAX_STORED, 
-                SCRIPTS_HIST_FILENAME, 
-                SCRIPTS_HIST_ROOT, 
-                SCRIPTS_HIST_EL).build();
+        this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED, 
+                FILE.DDL_UPDATE_COMMANDS_HIST_FILENAME, 
+                XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT, 
+                XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
     }
     
     @Override
