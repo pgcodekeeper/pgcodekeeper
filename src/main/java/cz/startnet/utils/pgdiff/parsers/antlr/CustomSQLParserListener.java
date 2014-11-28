@@ -4,7 +4,9 @@ import java.nio.file.Path;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_language_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_event_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
@@ -21,6 +23,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Revoke_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSchema;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CommentOn;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateExtension;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFunction;
@@ -133,5 +136,15 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitAlter_schema_statement(Alter_schema_statementContext ctx) {
         alterObjects.add(new AlterSchema(ctx, db, filePath).getObject());
+    }
+    
+    @Override
+    public void exitAlter_language_statement(Alter_language_statementContext ctx) {
+//        alterObjects.add(new AlterLanguage(ctx, db, filePath).getObject());
+    }
+    
+    @Override
+    public void exitAlter_table_statement(Alter_table_statementContext ctx) {
+        alterObjects.add(new AlterTable(ctx, db, filePath).getObject());
     }
 }

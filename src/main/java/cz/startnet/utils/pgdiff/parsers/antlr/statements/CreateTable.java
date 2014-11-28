@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Column_constraintContext
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -36,7 +37,7 @@ public class CreateTable extends ParserAbstract {
             for (PgConstraint constr : getConstraint(colCtx)) {
                 table.addConstraint(constr);                
             }
-            table.addColumn(getColumn(colCtx));
+            table.addColumn(getColumn(colCtx.table_column_definition()));
         }
         
         for (Schema_qualified_nameContext par_table : ctx.paret_table) {
@@ -55,7 +56,7 @@ public class CreateTable extends ParserAbstract {
         return table;
     }
     
-    private PgColumn getColumn(Table_column_defContext colCtx) {
+    static PgColumn getColumn(Table_column_definitionContext colCtx) {
         PgColumn col = null;
         if (colCtx.table_column_name() != null) {
             col = new PgColumn(colCtx.table_column_name().getText());
@@ -96,8 +97,7 @@ public class CreateTable extends ParserAbstract {
             constr.setDefinition(getFullCtxText(tablConstr));
             result.add(constr);
         } else {
-            for (Column_constraintContext column_constraint : colCtx
-                    .column_constraint()) {
+            for (Column_constraintContext column_constraint : colCtx.table_column_definition().column_constraint()) {
                 // skip null and def values, it parsed to column def
                 if (column_constraint.null_value != null
                         || column_constraint.default_expr != null

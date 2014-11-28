@@ -123,11 +123,10 @@ alter_language_statement
     ;
 
 alter_table_statement
-    : TABLE (ONLY)? (name+=schema_qualified_name)+
+    : TABLE (ONLY)? name=schema_qualified_name MULTIPLY?(
         (table_action ((COMMA)table_action)*
         | RENAME (COLUMN)? column=schema_qualified_name TO new_column=schema_qualified_name)
-    | ALTER TABLE name+=schema_qualified_name
-        (RENAME TO | SET SCHEMA) new_name=schema_qualified_name
+    | (RENAME TO | SET SCHEMA) new_name=schema_qualified_name)
     ;
 
 table_action
@@ -550,13 +549,13 @@ create_table_statement
   ;
 
 table_column_def
-    : table_column_name (datatype=data_type)? (COLLATE collation=identifier)? (WITH OPTIONS)? (colmn_constraint+=column_constraint)* 
+    : table_column_definition
        | tabl_constraint=table_constraint
        | LIKE parent_table=schema_qualified_name (like_opt+=like_option)*
     ;
 
 table_column_definition
-    : table_column_name (datatype=data_type) (COLLATE collation=identifier)?  (colmn_constraint+=column_constraint)*
+    : table_column_name (datatype=data_type)? (COLLATE collation=identifier)? (WITH OPTIONS)? (colmn_constraint+=column_constraint)*
     ;
 
 table_column_name
