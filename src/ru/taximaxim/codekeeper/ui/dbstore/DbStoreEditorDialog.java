@@ -114,11 +114,11 @@ public class DbStoreEditorDialog extends TrayDialog {
     
     @Override
     protected Control createDialogArea(Composite parent) {
-        parent = (Composite) super.createDialogArea(parent);
+        Composite area = (Composite) super.createDialogArea(parent);
         
-        this.lrm = new LocalResourceManager(JFaceResources.getResources(), parent);
+        this.lrm = new LocalResourceManager(JFaceResources.getResources(), area);
         
-        Composite container = new Composite(parent, SWT.NONE);
+        Composite container = new Composite(area, SWT.NONE);
         GridLayout gridLayout = new GridLayout(4, false);
         gridLayout.marginWidth = 0;
         gridLayout.marginHeight = 0;
@@ -216,7 +216,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         grpDbData.getTxtDbHost().addModifyListener(dbModified);
         grpDbData.getTxtDbPort().addModifyListener(dbModified);
         
-        return parent;
+        return area;
     }
     
     private void saveEntry() {

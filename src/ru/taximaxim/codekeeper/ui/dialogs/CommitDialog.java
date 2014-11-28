@@ -51,9 +51,9 @@ public class CommitDialog extends TrayDialog {
     
     @Override
     protected Control createDialogArea(Composite parent) {
-        parent = (Composite) super.createDialogArea(parent);
+        Composite area = (Composite) super.createDialogArea(parent);
         
-        Composite container = new Composite(parent, SWT.NONE);
+        Composite container = new Composite(area, SWT.NONE);
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
         container.setLayout(gl);
@@ -92,7 +92,7 @@ public class CommitDialog extends TrayDialog {
             dtvBottom.setCheckedElements(conflictingElementsSet, false);
             dtvBottom.redraw();
         }
-        return parent;
+        return area;
     }
     
     public DiffTableViewer getBottomTableViewer(){

@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.differ;
+package ru.taximaxim.codekeeper.ui.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -9,6 +9,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
+import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DiffPaneDialog extends Dialog {
@@ -39,9 +41,9 @@ public class DiffPaneDialog extends Dialog {
 
     @Override
     protected Control createDialogArea(Composite parent) {
-        parent = (Composite) super.createDialogArea(parent);
+        Composite area = (Composite) super.createDialogArea(parent);
 
-        Composite container = new Composite(parent, SWT.NONE);
+        Composite container = new Composite(area, SWT.NONE);
         GridLayout gridLayout = new GridLayout();
         gridLayout.marginWidth = gridLayout.marginHeight = 0;
         container.setLayout(gridLayout);
@@ -53,7 +55,7 @@ public class DiffPaneDialog extends Dialog {
         diffPane = new DiffPaneViewer(container, SWT.NONE, dbSource, dbTarget, reverseSide);
         diffPane.setInput(input);
 
-        return parent;
+        return area;
     }
     
     @Override
