@@ -60,16 +60,14 @@ public final class AlterTableParser {
             final PgView view = schema.getView(objectName);
 
             if (view != null) {
-                parseView(parser, view, outputIgnoredStatements, tableName,
-                        database);
+                parseView(parser, view);
                 return;
             }
 
             final PgSequence sequence = schema.getSequence(objectName);
 
             if (sequence != null) {
-                parseSequence(parser, sequence, outputIgnoredStatements,
-                        tableName, database);
+                parseSequence(parser, sequence);
                 return;
             }
 
@@ -88,7 +86,7 @@ public final class AlterTableParser {
                 table.setOwner(parser.parseIdentifier());
             } else if (parser.expectOptional("ADD")) {
                 if (parser.expectOptional("CONSTRAINT")) {
-                    parseAddConstraint(parser, table, schema, searchPath);
+                    parseAddConstraint(parser, table, searchPath);
                 } else {
                     parser.throwUnsupportedCommand();
                 }
@@ -205,14 +203,14 @@ public final class AlterTableParser {
      * @param schema schema
      */
     private static void parseAddConstraint(final Parser parser,
-            final PgTable table, final PgSchema schema, final String searchPath) {
+            final PgTable table, final String searchPath) {
         final String constraintName =
                 ParserUtils.getObjectName(parser.parseIdentifier());
         final PgConstraint constraint;
         int posBefore = parser.getPosition();
         if (parser.expectOptional("FOREIGN", "KEY")){
             constraint = new PgForeignKey(constraintName, null, searchPath);
-            parseAddConstraintForeignKey(parser, table, searchPath, (PgForeignKey)constraint);
+            parseAddConstraintForeignKey(parser, table, (PgForeignKey)constraint);
         }else{
             constraint = new PgConstraint(constraintName, null, searchPath);
         }
@@ -291,7 +289,7 @@ public final class AlterTableParser {
      * @param constraint 
      */
     private static void parseAddConstraintForeignKey(final Parser parser,
-            final PgTable table, final String searchPath, PgForeignKey constraint) {
+            final PgTable table, PgForeignKey constraint) {
         parser.expect("(");
 
         // parse dependent column names
@@ -339,9 +337,7 @@ public final class AlterTableParser {
      *                                statement
      * @param database                database information
      */
-    private static void parseView(final Parser parser, final PgView view,
-            final boolean outputIgnoredStatements, final String viewName,
-            final PgDatabase database) {
+    private static void parseView(final Parser parser, final PgView view) {
         while (!parser.expectOptional(";")) {
             if (parser.expectOptional("ALTER")) {
                 parser.expectOptional("COLUMN");
@@ -376,9 +372,7 @@ public final class AlterTableParser {
      *                                statement
      * @param database                database information
      */
-    private static void parseSequence(final Parser parser,
-            final PgSequence sequence, final boolean outputIgnoredStatements,
-            final String sequenceName, final PgDatabase database) {
+    private static void parseSequence(Parser parser, PgSequence sequence) {
         while (!parser.expectOptional(";")) {
             if (parser.expectOptional("OWNER", "TO")) {
                 sequence.setOwner(parser.parseIdentifier());

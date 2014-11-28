@@ -318,7 +318,7 @@ public class JdbcLoader implements PgCatalogStrings {
         prepStatViews.setLong(1, schemaOid);
         try(ResultSet resViews = prepStatViews.executeQuery()){
             while (resViews.next()) {
-                PgView view = getView(resViews, schemaName, schemaOid);
+                PgView view = getView(resViews, schemaName);
                 monitor.worked(1);
                 if (view != null){
                     s.addView(view);                    
@@ -459,7 +459,7 @@ public class JdbcLoader implements PgCatalogStrings {
         return resultList.toString();
     }
     
-    private PgView getView(ResultSet res, String schemaName, Long schemaOid) throws SQLException {
+    private PgView getView(ResultSet res, String schemaName) throws SQLException {
         for(String depType : (String[]) res.getArray("deptype").getArray()){
             if (depType.equals("e")){
                 return null;
