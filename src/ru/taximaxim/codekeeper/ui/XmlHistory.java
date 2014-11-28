@@ -121,20 +121,33 @@ public final class XmlHistory {
                 historyEntries.removeLast();
             }
 
-            File histFile = getHistoryXmlFile();
-            try {
-                histFile.getParentFile().mkdirs();
-                histFile.createNewFile();
-                
-                try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(histFile), UIConsts.UTF_8)) {
-                    XmlStringList xml = new XmlStringList(rootTag, elementTag);
-                    xml.serializeList(historyEntries, false, xmlWriter);
-                }
-            } catch (IOException | TransformerException ex) {
-                throw new IOException(
-                        Messages.XmlHistory_write_error, ex);
-            }
+            dumpListToFile(historyEntries);
         }
+    }
+    
+    private void dumpListToFile(List<String> listToDump) throws IOException{
+        File histFile = getHistoryXmlFile();
+        try {
+            histFile.getParentFile().mkdirs();
+            histFile.createNewFile();
+            
+            try (Writer xmlWriter = new OutputStreamWriter(new FileOutputStream(histFile), UIConsts.UTF_8)) {
+                XmlStringList xml = new XmlStringList(rootTag, elementTag);
+                xml.serializeList(listToDump, false, xmlWriter);
+            }
+        } catch (IOException | TransformerException ex) {
+            throw new IOException(
+                    Messages.XmlHistory_write_error, ex);
+        }
+    }
+    
+    public void setHistory(List<String> list) throws IOException{
+        LinkedList<String> linkedList = new LinkedList<String>(list);
+        while (linkedList.size() > maxEntries) {
+            linkedList.removeLast();
+        }
+        
+        dumpListToFile(linkedList);
     }
     
     /**

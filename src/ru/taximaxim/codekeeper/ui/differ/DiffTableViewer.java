@@ -69,12 +69,12 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage;
 import ru.taximaxim.codekeeper.ui.views.DepcyStructuredSelection;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
@@ -830,8 +830,8 @@ public class DiffTableViewer extends Composite {
             if (event.getProperty().equals(PREF.IGNORE_OBJECTS)
                     && !event.getNewValue().equals(event.getOldValue())) {
                 XmlStringList xml = new XmlStringList(
-                        IgnoredObjectsPrefPage.IGNORED_OBJS_TAG,
-                        IgnoredObjectsPrefPage.IGNORED_OBJS_ELEMENT);
+                        XML_TAGS.IGNORED_OBJS_ROOT,
+                        XML_TAGS.IGNORED_OBJS_ELEMENT);
                 try {
                     ignoredElements = xml.deserializeList(
                             new StringReader((String) event.getNewValue()));
