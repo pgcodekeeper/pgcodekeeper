@@ -23,19 +23,19 @@ public class SqlParserMain {
 //        String pathToFile = "/home/botov_av/workspace/pg_dump_folder/maindb_dev3.sql";
         String pathToFile = "/home/botov_av/workspace/codekeeper/apgdiff/src/test/resources/cz/startnet/utils/pgdiff";
         PgDatabase database = new PgDatabase();
-        List<PgStatement> objects = new ArrayList<>();
+        List<PgStatement> objects = new ArrayList<>(), alterObjects = new ArrayList<>();
         List<String> paths = new ArrayList<>();
         paths = getPathsToFiles(pathToFile);
-//        paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/first_part.sql");
-//        paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/second_part.sql");
-//        paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/third_part.sql");
+        paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/first_part.sql");
+        paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/second_part.sql");
+        paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/third_part.sql");
         for (String path : paths) {
             if (path.endsWith("diff.sql")) {
                 continue;
             }
             new SqlParserMain().testSampleInputs(
                     path,
-                    new CustomSQLParserListener(objects, database, Paths.get(path)));
+                    new CustomSQLParserListener(objects,alterObjects, database, Paths.get(path)));
         }
     }
     public void testSampleInputs(String pathToFile, CustomSQLParserListener listener) throws IOException {

@@ -10,6 +10,9 @@ import cz.startnet.utils.pgdiff.schema.PGObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
+/**
+ * Abstract Class contents common operations for parsing
+ */
 public abstract class ParserAbstract {
     private final PgDatabase db;
     private final Path filePath;
@@ -18,13 +21,26 @@ public abstract class ParserAbstract {
         this.db = db;
         this.filePath = filePath;
     }
-    
+    /**
+     * Parse object from context and return it
+     * @return parsed object
+     */
     public abstract PgStatement getObject();
 
+    /**
+     * Add object with start position to db object location List
+     * @param objName 
+     * @param startIndex
+     */
     protected void fillObjLocation(String objName, int startIndex) {
         db.addObjLocation(new PGObjLocation(objName, startIndex, filePath));
     }
     
+    /**
+     * Extracts raw text from context
+     * @param ctx context
+     * @return raw string
+     */
     protected String getFullCtxText(ParserRuleContext ctx) {
         Interval interval = new Interval(ctx.start.getStartIndex(),
                 ctx.stop.getStopIndex());

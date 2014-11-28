@@ -115,7 +115,7 @@ alter_function_statement
     ;
     
 alter_schema_statement
-    : SCHEMA name=identifier (OWNER | RENAME) TO new_name=identifier
+    : SCHEMA name=schema_qualified_name (OWNER | RENAME) TO new_name=schema_qualified_name
     ;
 
 alter_language_statement
@@ -297,7 +297,7 @@ create_event_trigger
     
 set_statement
     : SET (SESSION | LOCAL)? 
-      (config_param=identifier (TO |EQUAL) set_statement_value (COMMA set_statement_value)*
+      (config_param=identifier (TO |EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
     | TIME ZONE (timezone=identifier | LOCAL | DEFAULT)(COMMA (timezone=identifier | LOCAL | DEFAULT))*)
     ;
 
@@ -322,51 +322,51 @@ revoke_statement
         ((SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER)
             (COMMA (SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER))*
          | ALL (PRIVILEGES)?) 
-        ON (((TABLE)? table_name+=schema_qualified_name)+
+        ON ( ((TABLE)? obj_name+=schema_qualified_name (COMMA (TABLE)? obj_name+=schema_qualified_name)*)
              | ALL TABLES IN SCHEMA (schema_name+=identifier)+)
         revoke_from_cascade_restrict
     
     | (((SELECT | INSERT | UPDATE | REFERENCES) LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)+
          | ALL (PRIVILEGES)? LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN )
-        ON (TABLE)? table_name+=schema_qualified_name (COMMA table_name+=schema_qualified_name)*
+        ON (TABLE)? obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
         revoke_from_cascade_restrict
     
     | ( (USAGE | SELECT | UPDATE)+
         | ALL (PRIVILEGES)?)
-        ON (SEQUENCE sequence_name+=schema_qualified_name (COMMA sequence_name+=schema_qualified_name)*
+        ON (SEQUENCE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
              | ALL SEQUENCES IN SCHEMA schema_name+=identifier (COMMA schema_name+=identifier)*)
         revoke_from_cascade_restrict
         
     | ((CREATE | CONNECT | TEMPORARY | TEMP)+ | ALL (PRIVILEGES)?)
-        ON DATABASE database_name+=identifier (COMMA database_name+=identifier)*
+        ON DATABASE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
         revoke_from_cascade_restrict
     
     | (USAGE | ALL (PRIVILEGES)?)(
-        ON FOREIGN DATA WRAPPER fdw_name+=schema_qualified_name (COMMA fdw_name+=schema_qualified_name)*
+        ON FOREIGN DATA WRAPPER obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
         revoke_from_cascade_restrict
-        | ON FOREIGN SERVER server_name+=identifier(COMMA server_name+=identifier)*
+        | ON FOREIGN SERVER obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
             revoke_from_cascade_restrict
-        | ON LANGUAGE lang_name+=identifier(COMMA lang_name+=identifier)*
+        | ON LANGUAGE obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
         revoke_from_cascade_restrict)
         
     | (EXECUTE | ALL (PRIVILEGES)?) 
-        ON (function_definition| functions_definition_schema)
+        ON (FUNCTION obj_name+=schema_qualified_name function_args | ALL FUNCTIONS IN SCHEMA schema_name+=identifier(COMMA schema_name+=identifier)*)
         revoke_from_cascade_restrict
 
     | ((SELECT | UPDATE(COMMA)?)+  | ALL (PRIVILEGES)?) 
-        ON LARGE OBJECT loid+=identifier(COMMA loid+=identifier)*
+        ON LARGE OBJECT obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
         revoke_from_cascade_restrict
     
     | ( ((CREATE | USAGE)(COMMA)?)+ | ALL (PRIVILEGES)?) 
-        ON SCHEMA schema_name+=identifier(COMMA schema_name+=identifier)*
+        ON SCHEMA obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
         revoke_from_cascade_restrict
      
     | (CREATE | ALL (PRIVILEGES)?)
-        ON TABLESPACE tablespace_name+=identifier (COMMA tablespace_name+=identifier)*
+        ON TABLESPACE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
         revoke_from_cascade_restrict)
 
     | (ADMIN OPTION FOR)?
-        role_name+=identifier (COMMA role_name+=identifier)* FROM role_name+=identifier(COMMA role_name+=identifier)*
+        obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)* FROM role_name+=identifier(COMMA role_name+=identifier)*
         (CASCADE | RESTRICT)?)
     ;
     
@@ -380,52 +380,46 @@ grant_statement
     GRANT (((SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER)
            (COMMA (SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER))*
     | ALL (PRIVILEGES)?)
-    ON  (((TABLE)? (tabl_name=schema_qualified_name (COMMA)?)+)
+    ON  (((TABLE)? (obj_name+=schema_qualified_name (COMMA)?)+)
          | (ALL TABLES IN SCHEMA (schem_name=identifier (COMMA)?)+))
     grant_to_rule
     
     | ( ((SELECT | INSERT | UPDATE | REFERENCES) column+=identifier (COMMA column+=identifier)*)+
     | ALL (PRIVILEGES)? column+=identifier (COMMA column+=identifier)*)
-    ON ((TABLE)? tabl_name=schema_qualified_name (COMMA)?)+
+    ON ((TABLE)? obj_name+=schema_qualified_name (COMMA)?)+
     grant_to_rule
     
     | ( (( USAGE | SELECT | UPDATE )(COMMA ( USAGE | SELECT | UPDATE ))*)
         | ALL ( PRIVILEGES)? )
-    ON ( (SEQUENCE sequence_name+=identifier(COMMA sequence_name+=identifier)*)+
+    ON ( (SEQUENCE obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*)+
          | ALL SEQUENCES IN SCHEMA schema_name+=identifier(COMMA schema_name+=identifier)* )
     grant_to_rule
     
     | ((CREATE | CONNECT | TEMPORARY | TEMP)(COMMA (CREATE | CONNECT | TEMPORARY | TEMP))* | ALL (PRIVILEGES)? )
-    ON DATABASE database_name+=identifier(COMMA database_name+=identifier)*
+    ON DATABASE obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
     grant_to_rule
     
-    | (USAGE | ALL (PRIVILEGES)?)(
-    ON FOREIGN DATA WRAPPER fdw_name+=identifier (COMMA fdw_name+=identifier)*
+    | (USAGE | ALL (PRIVILEGES)?)
+    ON (FOREIGN (DATA WRAPPER | SERVER) | LANGUAGE) obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
     grant_to_rule
-    
-    | ON FOREIGN SERVER server_name+=identifier(COMMA server_name+=identifier)*
-    grant_to_rule
-    
-    | ON LANGUAGE lang_name+=identifier(COMMA lang_name+=identifier)*
-    grant_to_rule)
     
     | (EXECUTE | ALL (PRIVILEGES)?) 
-    ON (function_definition | functions_definition_schema)
+    ON (FUNCTION obj_name+=schema_qualified_name function_args | ALL FUNCTIONS IN SCHEMA schema_name+=identifier(COMMA schema_name+=identifier)*)
     grant_to_rule
     
     | (((SELECT | UPDATE)(COMMA)?)+ | ALL (PRIVILEGES)?)
-    ON LARGE OBJECT loid+=identifier(COMMA loid+=identifier)*
+    ON LARGE OBJECT obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
     grant_to_rule
     
     | ( ((CREATE | USAGE)(COMMA)?)+ | ALL (PRIVILEGES)?)
-    ON SCHEMA schema_name+=identifier(COMMA schema_name+=identifier)*
+    ON SCHEMA obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
     grant_to_rule
     
     | (CREATE | ALL (PRIVILEGES)?) 
-    ON TABLESPACE tablespace_name+=identifier(COMMA tablespace_name+=identifier)*
+    ON TABLESPACE obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
     grant_to_rule
     
-    | role_name+=identifier (COMMA role_name+=identifier)* TO role_name+=identifier(COMMA role_name+=identifier)* (WITH ADMIN OPTION)?)
+    | obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)* TO role_name+=identifier(COMMA role_name+=identifier)* (WITH ADMIN OPTION)?)
     ;
     
 grant_to_rule
@@ -433,12 +427,12 @@ grant_to_rule
     ;
     
 comment_on_statement
-    : COMMENT ON( 
-        AGGREGATE agg_name=schema_qualified_name LEFT_PAREN (agg_type+=data_type(COMMA agg_type+=data_type)*)? RIGHT_PAREN 
+    : COMMENT ON(
+        AGGREGATE object_name=schema_qualified_name LEFT_PAREN (agg_type+=data_type(COMMA agg_type+=data_type)*)? RIGHT_PAREN 
         | CAST LEFT_PAREN source_type=data_type AS target_type=data_type RIGHT_PAREN 
         | (CONSTRAINT | RULE | TRIGGER) object_name=schema_qualified_name ON table_name=schema_qualified_name
-        | function_definition 
-        | OPERATOR operator_name=schema_qualified_name LEFT_PAREN left_type=data_type COMMA right_type=data_type RIGHT_PAREN 
+        | FUNCTION object_name=schema_qualified_name function_args
+        | OPERATOR object_name=schema_qualified_name LEFT_PAREN left_type=data_type COMMA right_type=data_type RIGHT_PAREN 
         | OPERATOR (FAMILY| CLASS) object_name=schema_qualified_name USING index_method=identifier
         | (TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE )
         | (PROCEDURAL)? LANGUAGE 
@@ -448,7 +442,7 @@ comment_on_statement
             | COLLATION| SCHEMA| SEQUENCE| SERVER| TABLE | TABLESPACE 
             | TYPE | VIEW)
           ) object_name=schema_qualified_name
-        ) IS Character_String_Literal
+        ) IS comment_text=Character_String_Literal
     ;
 
 /*
@@ -484,8 +478,11 @@ function_column_name_type
 
 function_parameters
     : name=schema_qualified_name 
-      LEFT_PAREN ( function_arguments (COMMA function_arguments)*
-      )? RIGHT_PAREN 
+      function_args
+    ;
+
+function_args
+    : LEFT_PAREN (function_arguments (COMMA function_arguments)*)? RIGHT_PAREN
     ;
 
 function_def_value
@@ -507,19 +504,6 @@ function_attribute
 argmode
     : 
       IN | OUT | INOUT | VARIADIC
-    ;
-
-function_definition
-    : FUNCTION function_definition_name_paren
-    ;
-
-function_definition_name_paren
-    : func_name=schema_qualified_name 
-        LEFT_PAREN ( function_arguments (COMMA function_arguments)* )? RIGHT_PAREN
-    ;
-    
-functions_definition_schema
-    : ALL FUNCTIONS IN SCHEMA schema_name+=identifier(COMMA schema_name+=identifier)*
     ;
     
 create_sequence_statement
@@ -1139,7 +1123,7 @@ nonparenthesized_value_expression_primary
   | scalar_subquery
   | case_expression
   | cast_specification
-  | function_definition_name_paren
+  | function_parameters
   | NULL
   | query_specification
   | all_array
