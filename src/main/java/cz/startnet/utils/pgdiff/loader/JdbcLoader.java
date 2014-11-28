@@ -972,7 +972,7 @@ public class JdbcLoader implements PgCatalogStrings {
      * @param aclItemsArrayAsString     Input acl string in the 
      *                                  form of "{grantee=grant_chars/grantor[, ...]}"
      * @param owner the owner of PgStatement object (why separate?)
-     * @param columnName    column name, if this aclItemsArrayAsString is column 
+     * @param column    column name, if this aclItemsArrayAsString is column 
      *                      privilege string; otherwise null
      */
     private void setPrivileges(PgStatement st, String stSignature, 
@@ -1003,9 +1003,9 @@ public class JdbcLoader implements PgCatalogStrings {
             throw new IllegalStateException("Not supported PgStatement class");
         }
         
-        columnName = (columnName != null && !columnName.isEmpty()) ? "(" + columnName + ")" : "";
-        String revokePublic = "ALL" + columnName + " ON " + stType + " " + stSignature + " FROM PUBLIC";
-        String revokeOwner = "ALL" + columnName + " ON " + stType + " " + stSignature + " FROM " + 
+        String column = (columnName != null && !columnName.isEmpty()) ? "(" + columnName + ")" : "";
+        String revokePublic = "ALL" + column + " ON " + stType + " " + stSignature + " FROM PUBLIC";
+        String revokeOwner = "ALL" + column + " ON " + stType + " " + stSignature + " FROM " + 
                 PgDiffUtils.getQuotedName(owner);
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
         
@@ -1029,10 +1029,10 @@ public class JdbcLoader implements PgCatalogStrings {
                 continue;
             }
             List<String> grantValues = grant.grantValues;
-            if (columnName != null && !columnName.isEmpty()){
+            if (column != null && !column.isEmpty()){
                 grantValues = new ArrayList<String>(grant.grantValues.size());
                 for (String plainGrant : grant.grantValues){
-                    grantValues.add(plainGrant + columnName);
+                    grantValues.add(plainGrant + column);
                 }
             }
             String privDefinition = getStringListAsString(grantValues, ",") + " ON " + stType + " " + 
