@@ -101,7 +101,6 @@ public class DiffTreeViewer extends Composite {
             @Override
             public void doubleClick(DoubleClickEvent event) {
                 TreePath path = ((TreeSelection) event.getSelection()).getPaths()[0];
-                TreeViewer viewer = (TreeViewer) event.getViewer();
                 viewer.setExpandedState(path, !viewer.getExpandedState(path));
                 viewer.refresh();
             }

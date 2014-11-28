@@ -16,7 +16,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class TreeDiffer implements IRunnableWithProgress {
     
-    final private DbSource dbSource, dbTarget;
+    private final DbSource dbSource, dbTarget;
 
     private boolean finished;
     
@@ -53,11 +53,11 @@ public class TreeDiffer implements IRunnableWithProgress {
         SubMonitor pm = SubMonitor.convert(monitor, 
                 Messages.diffPresentationPane_getting_changes_for_diff, 100); // 0
         
-        PgDatabase dbSource, dbTarget;
-        dbSource = dbTarget = null;
+        PgDatabase dbSrc, dbTgt;
+        dbSrc = dbTgt = null;
         try {
-            dbSource = this.dbSource.get(pm.newChild(33)); // 33
-            dbTarget = this.dbTarget.get(pm.newChild(33)); // 66
+            dbSrc = this.dbSource.get(pm.newChild(33)); // 33
+            dbTgt = this.dbTarget.get(pm.newChild(33)); // 66
         } catch(IOException ex) {
             throw new InvocationTargetException(ex);
         }
@@ -66,7 +66,7 @@ public class TreeDiffer implements IRunnableWithProgress {
                 + " tgt: " + this.dbTarget.getOrigin()); //$NON-NLS-1$
         
         pm.newChild(34).subTask(Messages.treeDiffer_building_diff_tree); // 100
-        diffTree = DiffTree.create(dbSource, dbTarget);
+        diffTree = DiffTree.create(dbSrc, dbTgt);
         
         pm.done();
         finished = true;

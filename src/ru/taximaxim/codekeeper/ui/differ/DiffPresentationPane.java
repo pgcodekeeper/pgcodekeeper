@@ -559,14 +559,14 @@ public abstract class DiffPresentationPane extends Composite {
 
     private void loadChanges() {
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
-        final TreeDiffer treeDiffer = new TreeDiffer(dbSource, dbTarget);
+        final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget);
 
         Job job = new Job(Messages.diffPresentationPane_getting_changes_for_diff) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    treeDiffer.run(monitor);
+                    newDiffer.run(monitor);
                 } catch (InvocationTargetException e) {
                     return new Status(Status.ERROR, PLUGIN_ID.THIS,
                             Messages.error_in_differ_thread, e);
@@ -589,9 +589,8 @@ public abstract class DiffPresentationPane extends Composite {
                             if (DiffPresentationPane.this.isDisposed()) {
                                 return;
                             }
-                            DiffPresentationPane.this.treeDiffer = treeDiffer;
-                            diffTable.setInput(
-                                    DiffPresentationPane.this.treeDiffer, !isProjSrc);
+                            treeDiffer = newDiffer;
+                            diffTable.setInput(newDiffer, !isProjSrc);
                             diffPane.setInput(null);
                             diffLoaded();
                         }

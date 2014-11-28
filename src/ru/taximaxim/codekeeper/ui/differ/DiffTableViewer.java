@@ -80,7 +80,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /*
  * Call CheckStateListener.updateCountLabels() when programmatically changing 
- * elements' checked state. 
+ * elements' checkedSet state. 
  */
 public class DiffTableViewer extends Composite {
 
@@ -100,7 +100,7 @@ public class DiffTableViewer extends Composite {
     private boolean reverseDiffSide;
     
     private TreeElement treeRoot;
-    // values are checked states of the elements
+    // values are checkedSet states of the elements
     private ElementsModel<TreeElement> elements = new ElementsModel<>();
     
     private final IgnoresChangeListener ignoresListener = new IgnoresChangeListener();
@@ -1010,7 +1010,7 @@ class ElementsModel<T> {
 
     private boolean updateChecked;
     private int checkedCount;
-    private Set<T> checked = new HashSet<>();
+    private Set<T> checkedSet = new HashSet<>();
 
     public Boolean get(Object el) {
         return elements.get(el);
@@ -1019,9 +1019,9 @@ class ElementsModel<T> {
     public void put(T el, boolean isChecked) {
         elements.put(el, isChecked);
         if (isChecked) {
-            checked.add(el);
+            checkedSet.add(el);
         } else {
-            checked.remove(el);
+            checkedSet.remove(el);
         }
         updateChecked = true;
     }
@@ -1057,10 +1057,10 @@ class ElementsModel<T> {
     
     public Set<T> getCheckedElements(boolean checkedStatus) {
         if (checkedStatus) {
-            return checked;
+            return checkedSet;
         } else {
             Set<T> difference = new HashSet<>(elements.keySet());
-            difference.removeAll(checked);
+            difference.removeAll(checkedSet);
             return difference;
         }
     }
