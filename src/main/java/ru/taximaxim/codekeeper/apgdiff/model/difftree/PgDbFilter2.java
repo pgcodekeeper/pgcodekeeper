@@ -146,7 +146,8 @@ public class PgDbFilter2 {
         }
         
         if(res == null && el.hasChildren()) {
-            illegalTreeStructure(el.getChild(0), new NullPointerException());
+            illegalTreeStructure(el.getChild(0),new IllegalStateException(
+                    "No container generated but el.hasChildren()"));
         }
         
         for(TreeElement sub : el.getChildren()) {

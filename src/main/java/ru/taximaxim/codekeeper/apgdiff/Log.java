@@ -36,22 +36,23 @@ public class Log {
                     = Activator.getLogTracker();
             if (logTracker == null) {
                 failedToGetLog = true;
-                throw new NullPointerException();
+                throw new IllegalStateException();
             }
             
             ExtendedLogService logService = logTracker.getService();
             if (logService == null) {
                 failedToGetLog = true;
-                throw new NullPointerException();
+                throw new IllegalStateException();
             }
             
             Logger logger = logService.getLogger(EQUINOX_LOGGER);
             if (logger == null) {
                 failedToGetLog = true;
-                throw new NullPointerException();
+                throw new IllegalStateException();
             }
             logger.log(level, msg, ex);
         } catch (Exception exLog) {
+// SONAR-OFF
             if (failedToGetLog) {
                 System.out.println("LogService not found! Logging to stdout.");
             } else {
@@ -66,6 +67,7 @@ public class Log {
                 ex.printStackTrace();
             }
             System.out.println();
+// SONAR-ON
         }
     }
 }

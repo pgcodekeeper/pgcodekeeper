@@ -47,7 +47,7 @@ abstract class TreeElementCreator {
 
     abstract public TreeElement getFilteredCopy();
 
-    abstract public HashSet<TreeElement> getConflicting(TreeElement copy);
+    abstract public Set<TreeElement> getConflicting(TreeElement copy);
 }
 
 /**
