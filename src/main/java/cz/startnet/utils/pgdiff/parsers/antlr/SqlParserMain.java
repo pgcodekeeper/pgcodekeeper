@@ -1,7 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,30 +40,33 @@ public class SqlParserMain {
         PgDatabase database = new PgDatabase();
         List<PgStatement> alterObjects = new ArrayList<>();
         List<String> paths = new ArrayList<>();
-//        paths = getPathsToFiles(pathToFile);
+        paths = getPathsToFiles(pathToFile);
+//        paths.add("/home/botov_av/workspace/codekeeper/tmp_dump_9221153347570520215.sql");
          paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/first_part.sql");
          paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/second_part.sql");
-//         paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/third_part.sql");
+         paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/third_part.sql");
         for (String path : paths) {
             if (path.endsWith("diff.sql")) {
                 continue;
             }
             new SqlParserMain().testSampleInputs(
-                    path,
+                    Files.newInputStream(Paths
+                            .get(path)),
                     new CustomSQLParserListener(alterObjects, database, Paths
                             .get(path)));
         }
-        fillDB(alterObjects, database);
+//        fillDB(alterObjects, database);
         System.out.println("2");
     }
 
-    private static void fillDB(List<PgStatement> alterObjects,
+    public static void fillDB(List<PgStatement> alterObjects,
             PgDatabase database) {
         List<PgObjLocation> schemas = new ArrayList<>();
         List<PgObjLocation> extensions = new ArrayList<>();
         List<PgObjLocation> tables = new ArrayList<>();
         List<PgObjLocation> indexes = new ArrayList<>();
         List<PgObjLocation> triggers = new ArrayList<>();
+        List<PgObjLocation> constraint = new ArrayList<>();
         List<PgObjLocation> functions = new ArrayList<>();
         List<PgObjLocation> sequences = new ArrayList<>();
         List<PgObjLocation> views = new ArrayList<>();
@@ -87,8 +90,8 @@ public class SqlParserMain {
             if (object.getObj() instanceof PgTrigger) {
                 triggers.add(object);
             }
-            if (object.getObj() instanceof PgTrigger) {
-                triggers.add(object);
+            if (object.getObj() instanceof PgConstraint) {
+                constraint.add(object);
             }
             if (object.getObj() instanceof PgFunction) {
                 functions.add(object);
@@ -214,12 +217,10 @@ public class SqlParserMain {
         }
     }
 
-    public void testSampleInputs(String pathToFile,
+    public void testSampleInputs(InputStream inputStream,
             CustomSQLParserListener listener) throws IOException {
 
-        SQLLexer lexer = new SQLLexer(new ANTLRInputStream(
-                new InputStreamReader(Files.newInputStream(Paths
-                        .get(pathToFile)), "UTF-8")));
+        SQLLexer lexer = new SQLLexer(new ANTLRInputStream(inputStream));
         lexer.removeErrorListeners();
         lexer.addErrorListener(CustomErrorListener.INSTATANCE);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -227,7 +228,8 @@ public class SqlParserMain {
         SQLParser parser = new SQLParser(tokens);
         parser.removeErrorListeners();
         parser.addErrorListener(CustomErrorListener.INSTATANCE);
-//        parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
+        parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
+//        parser.addErrorListener(new DiagnosticErrorListener());
         ParseTreeWalker walker = new ParseTreeWalker();
         
         walker.walk(listener, parser.sql());

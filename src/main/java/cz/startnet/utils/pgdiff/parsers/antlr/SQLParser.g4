@@ -525,7 +525,7 @@ create_schema_statement
     ;
     
 create_view_statement
-    : (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name (column_name+=schema_qualified_name (COMMA)?)*
+    : (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name (column_name+=schema_qualified_name (COMMA column_name+=schema_qualified_name)*)?
     (WITH LEFT_PAREN (view_option_name=identifier (EQUAL view_option_value=identifier)?)+ RIGHT_PAREN)?
     AS v_query=view_query
     ;
@@ -592,10 +592,11 @@ column_constraint
         ((null_false=NOT)? null_value=NULL
         | check_boolean_expression 
         | DEFAULT (default_expr_data=data_type | default_expr=value_expression)
-        | (UNIQUE index_params_unique=index_parameters) 
-        | (PRIMARY KEY index_params_pr_key=index_parameters) 
-        | (REFERENCES reftable=schema_qualified_name (( refcolumn=identifier ))  (MATCH FULL | MATCH PARTIAL | MATCH SIMPLE)? 
-        (ON DELETE action_on_delete=action)? (ON UPDATE action_on_update=action)?))
+        | UNIQUE index_params_unique=index_parameters
+        | PRIMARY KEY index_params_pr_key=index_parameters
+        | REFERENCES reftable=schema_qualified_name (LEFT_PAREN refcolumn=schema_qualified_name RIGHT_PAREN)?  
+          (MATCH FULL | MATCH PARTIAL | MATCH SIMPLE)? 
+        (ON DELETE action_on_delete=action)? (ON UPDATE action_on_update=action)?)
         table_deferrable? table_initialy_immed?
     ;
 
@@ -1117,7 +1118,6 @@ parenthesized_value_expression
 
 nonparenthesized_value_expression_primary
   : unsigned_value_specification
-  | column_reference
   | set_function_specification
   | scalar_subquery
   | case_expression
@@ -1127,6 +1127,7 @@ nonparenthesized_value_expression_primary
   | query_specification
   | all_array
   | case_abbreviation
+  | schema_qualified_name
   ;
 
 /*
@@ -1345,7 +1346,7 @@ time_zone_field
   ;
 
 extract_source
-  : column_reference
+  : schema_qualified_name
   | datetime_literal
   ;
 
@@ -1734,7 +1735,7 @@ select_sublist
   ;
 
 derived_column
-  : value_expression (as_clause | over_clause)*
+  : value_expression (over_clause | as_clause)*
   ;
 
 qualified_asterisk
@@ -1746,10 +1747,6 @@ set_qualifier
   | ALL
   ;
 
-column_reference
-  : (tb_name=identifier DOT)? name=identifier
-  ;
-
 as_clause
   : (AS)? identifier
   ;
@@ -1759,7 +1756,7 @@ over_clause
     ;
 
 column_reference_list
-  : column_reference (COMMA column_reference)*
+  : schema_qualified_name (COMMA schema_qualified_name)*
   ;
 
 /*
@@ -1864,12 +1861,12 @@ in_value_list
 */
 
 pattern_matching_predicate
-  : f=row_value_predicand pattern_matcher s=Character_String_Literal
+  : f=row_value_predicand pattern_matcher value_expression_primary_cast
   ;
 
 pattern_matcher
   : NOT? negativable_matcher
-  | regex_matcher
+  | regex_matcher+
   ;
 
 negativable_matcher

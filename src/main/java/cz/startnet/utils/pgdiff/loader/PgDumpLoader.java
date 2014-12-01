@@ -13,8 +13,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +38,10 @@ import cz.startnet.utils.pgdiff.parsers.CreateTableParser;
 import cz.startnet.utils.pgdiff.parsers.CreateTriggerParser;
 import cz.startnet.utils.pgdiff.parsers.CreateViewParser;
 import cz.startnet.utils.pgdiff.parsers.PrivilegeParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.SqlParserMain;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -267,6 +273,20 @@ public final class PgDumpLoader { //NOPMD
         }
     }
     
+    private static PgDatabase loadDatabaseSchemaCoreAntLR(final InputStream inputStream,
+            final String charsetName, final boolean outputIgnoredStatements,
+            final boolean ignoreSlonyTriggers, final PgDatabase database) {
+        List<PgStatement> alterObjects = new ArrayList<>();
+        SqlParserMain parser = new SqlParserMain();
+        try {
+            parser.testSampleInputs(inputStream, new CustomSQLParserListener(alterObjects, database, Paths
+                                .get("/")));
+        } catch (IOException e) {
+            throw new FileException("Exception while closing dump file", e);
+        }
+        SqlParserMain.fillDB(alterObjects, database);
+        return database;
+    }
     /**
      * Loads database schema from a ModelExporter directory tree.
      * The root directory must contain a listing.lst file for ordered list of files.
