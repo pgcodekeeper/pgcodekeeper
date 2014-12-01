@@ -31,8 +31,7 @@ public final class Main {
      * @throws UnsupportedEncodingException Thrown if unsupported output
      *                                      encoding has been encountered.
      */
-    public static void main(final String[] args)
-            throws UnsupportedEncodingException, IOException {
+    public static void main(final String[] args) throws IOException {
         final PrintWriter writer = new PrintWriter(System.out, true);
         final PgDiffArguments arguments = new PgDiffArguments();
 

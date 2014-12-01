@@ -299,7 +299,7 @@ public class PgDiffTest {
      *                               expected diff.
      */
     @Test(timeout = 5000)
-    public void runDiffSameOriginal() throws FileNotFoundException, IOException {
+    public void runDiffSameOriginal() throws IOException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();
@@ -322,7 +322,7 @@ public class PgDiffTest {
      *                               expected diff.
      */
     @Test(timeout = 5000)
-    public void runDiffSameNew() throws FileNotFoundException, IOException {
+    public void runDiffSameNew() throws IOException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();
@@ -345,7 +345,7 @@ public class PgDiffTest {
      *                               expected diff.
      */
     @Test(timeout = 5000)
-    public void runDiff() throws FileNotFoundException, IOException {
+    public void runDiff() throws IOException {
         
         Assume.assumeThat(RUN_DIFF_SKIP_FILES, not(hasItem(fileNameTemplate)));
         

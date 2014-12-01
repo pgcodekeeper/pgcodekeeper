@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
@@ -317,11 +316,6 @@ public class ModelExporter {
     /**
      * Starts the {@link #newDb} export process.
      * 
-     * @throws NotDirectoryException
-     * @throws DirectoryNotEmptyException
-     * @throws FileAlreadyExistsException
-     * @throws DirectoryException
-     * @throws FileException
      * @throws IOException
      */
     public void exportFull() throws IOException {
