@@ -114,7 +114,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 
                 while (res.next()) {
                     Log.log(Log.LOG_INFO, "Quering objects for schema " + res.getString(NAMESPACE_NSPNAME));
-                    prepareDataForSchema(res.getLong("oid"));
+                    prepareDataForSchema(res.getLong(OID));
                     
                     PgSchema schema = getSchema(res);
                     if (res.getString(NAMESPACE_NSPNAME).equals(ApgdiffConsts.PUBLIC)){
@@ -158,7 +158,7 @@ public class JdbcLoader implements PgCatalogStrings {
             // fill in rolenames
             try(ResultSet res = stmnt.executeQuery("SELECT oid::bigint, rolname FROM pg_catalog.pg_roles")){
                 while (res.next()){
-                    cachedRolesNamesByOid.put(res.getLong("oid"), res.getString("rolname"));
+                    cachedRolesNamesByOid.put(res.getLong(OID), res.getString("rolname"));
                 }
             }
             
@@ -172,7 +172,7 @@ public class JdbcLoader implements PgCatalogStrings {
                     PgType type = new PgType(res.getString("typname"), res.getString("castedType"), 
                             res.getLong("typarray"), res.getInt("typlen"), res.getString("proname"),
                             res.getString(NAMESPACE_NSPNAME));
-                    cachedTypeNamesByOid.put(res.getLong("oid"), type);
+                    cachedTypeNamesByOid.put(res.getLong(OID), type);
                 }
             }
         }
@@ -239,7 +239,7 @@ public class JdbcLoader implements PgCatalogStrings {
     
     private PgSchema getSchema(ResultSet res) throws SQLException, UnsupportedEncodingException{
         String schemaName = res.getString(NAMESPACE_NSPNAME);
-        Long schemaOid = res.getLong("oid");
+        Long schemaOid = res.getLong(OID);
         PgSchema s = new PgSchema(schemaName, "");
 
         if (!schemaName.equals(ApgdiffConsts.PUBLIC)){
