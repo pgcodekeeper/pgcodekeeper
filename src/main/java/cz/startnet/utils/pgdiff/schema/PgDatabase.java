@@ -245,34 +245,13 @@ public class PgDatabase extends PgStatement {
         return copy;
     }
     
-    /**
-     * @return a flat list of all named {@link PgStatement}s in this database.
-     *          (only views and tables at the moment)
-     */
-    public List<PgStatement> flatten() {
+    public static List<PgStatement> listViewsTables(PgDatabase db) {
         List<PgStatement> statements = new ArrayList<>();
         
-    //    statements.addAll(schemas);
-        for (PgSchema schema : schemas) {
+        for (PgSchema schema : db.getSchemas()) {
             statements.addAll(schema.getViews());
-            
-            List<PgTable> tables = schema.getTables();
-            statements.addAll(tables);
-            /*
-            for (PgTable table : tables) {
-                statements.addAll(table.getColumns());
-                statements.addAll(table.getConstraints());
-                statements.addAll(table.getIndexes());
-                statements.addAll(table.getTriggers());
-            }
-            
-            statements.addAll(schema.getSequences());
-            statements.addAll(schema.getFunctions());
-            */
+            statements.addAll(schema.getTables());
         }
-        
-    //    statements.addAll(extensions);
-        
         return statements;
     }
 }
