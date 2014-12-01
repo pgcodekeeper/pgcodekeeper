@@ -66,14 +66,14 @@ public class TreeElementTest {
             dbPartial.getSchema(ApgdiffConsts.PUBLIC).addFunction(new PgFunction(name, "", ""));
         }
 
-        TreeElement tree_full = DiffTree.create(dbFull, new PgDatabase());
+        TreeElement treeFull = DiffTree.create(dbFull, new PgDatabase());
         
         Set<TreeElement> checked = new HashSet<TreeElement>();
-        visitAndFindNew(tree_full, checked);
+        visitAndFindNew(treeFull, checked);
         
-        TreeElement tree_filtered = tree_full.getFilteredCopy(checked);
+        TreeElement treeFiltered = treeFull.getFilteredCopy(checked);
         
-        PgDatabase dbFiltered = new PgDbFilter2(dbFull, tree_filtered, DiffSide.LEFT).apply();
+        PgDatabase dbFiltered = new PgDbFilter2(dbFull, treeFiltered, DiffSide.LEFT).apply();
         
         assertEquals("filtered database is not equal to the reference one",
                 dbPartial, dbFiltered);

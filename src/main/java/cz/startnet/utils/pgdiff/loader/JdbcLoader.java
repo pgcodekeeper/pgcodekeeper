@@ -947,8 +947,8 @@ public class JdbcLoader implements PgCatalogStrings {
 
         s.setCache(String.valueOf(1));
         
-        Integer referenced_column = res.getInt("referenced_column");
-        if (referenced_column != 0){
+        Integer referencedColumn = res.getInt("referenced_column");
+        if (referencedColumn != 0){
             s.setOwnedBy(res.getString("referenced_table_name") + "." + res.getString("ref_col_name"));
         }
         
