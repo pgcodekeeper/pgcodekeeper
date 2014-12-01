@@ -238,7 +238,7 @@ class DbSourceFilter extends DbSource {
         PgDatabase db;
         try {
             db = src.getDbObject();
-        } catch (NullPointerException ex) {
+        } catch (Exception ex) {
             db = src.get(monitor);
         }
 

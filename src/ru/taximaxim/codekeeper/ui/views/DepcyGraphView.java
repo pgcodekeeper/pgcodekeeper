@@ -104,7 +104,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         }
         
         IEditorPart editor = getSite().getPage().getActiveEditor();
-        if (editor == null || !(editor instanceof ProjectEditorDiffer)){
+        if (!(editor instanceof ProjectEditorDiffer)){
             return;
         }
         

@@ -297,14 +297,9 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         }
     }
 
-    class TextOperationAction extends SqlViewerAction {
+    private class TextOperationAction extends SqlViewerAction {
 
         private int fOperationCode;
-
-        TextOperationAction(int operationCode, boolean mutable,
-                boolean selection, boolean content) {
-            this(operationCode, null, mutable, selection, content);
-        }
 
         public TextOperationAction(int operationCode,
                 String actionDefinitionId, boolean mutable, boolean selection,
@@ -329,7 +324,7 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         }
 
         @Override
-        public void update() {
+        public final void update() {
             setEnabled(isEnabled());
         }
     }
