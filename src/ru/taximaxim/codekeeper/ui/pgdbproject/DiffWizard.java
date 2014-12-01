@@ -304,7 +304,7 @@ class PageDiff extends WizardPage implements Listener {
                 if (cause.getSelection()) {
                     Group to = (Group) cause.getData();
 
-                    if (to != grpProj) {
+                    if (!to.equals(grpProj)) {
                         cmbEncoding.setEnabled(true);
                         cmbEncoding.select(cmbEncoding.indexOf(UIConsts.UTF_8));
                     } else {

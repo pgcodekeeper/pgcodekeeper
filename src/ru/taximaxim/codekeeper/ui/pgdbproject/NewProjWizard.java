@@ -108,7 +108,7 @@ public class NewProjWizard extends Wizard
 
     @Override
     public IWizardPage getNextPage(IWizardPage page) {
-        if(page == pageRepo && !pageRepo.isDoInit()) {
+        if(page.equals(pageRepo) && !pageRepo.isDoInit()) {
             return pageMisc;
         }
         return super.getNextPage(page);
