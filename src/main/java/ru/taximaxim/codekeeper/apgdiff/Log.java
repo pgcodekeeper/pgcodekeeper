@@ -5,7 +5,7 @@ import org.eclipse.equinox.log.Logger;
 import org.osgi.service.log.LogService;
 import org.osgi.util.tracker.ServiceTracker;
 
-public class Log {
+public final class Log {
 
     private static final String EQUINOX_LOGGER = "org.eclipse.equinox.logger";
     
@@ -69,5 +69,8 @@ public class Log {
             System.out.println();
 // SONAR-ON
         }
+    }
+    
+    private Log() {
     }
 }
