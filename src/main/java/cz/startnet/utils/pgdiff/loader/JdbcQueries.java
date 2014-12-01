@@ -251,7 +251,7 @@ public interface JdbcQueries {
             + "     conname,"
             + "     contype,"
             + "     conrelid,"
-            + "     consrc,"
+            + "     pg_get_expr(conbin, ccc.oid) AS consrc_usable,"
             + "     conkey::integer[],"
             + "     confrelid,"
             + "     confrelid::regclass::text AS confrelid_name,"
