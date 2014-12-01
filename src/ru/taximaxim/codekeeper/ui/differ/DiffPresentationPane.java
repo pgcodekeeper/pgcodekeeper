@@ -99,10 +99,11 @@ public abstract class DiffPresentationPane extends Composite {
 
     private void setDiffPaneDb(boolean isDbSrc, DbSource db) {
         if (diffPane != null) {
-            if (isDbSrc)
+            if (isDbSrc) {
                 diffPane.setDbSource(db);
-            else 
+            } else { 
                 diffPane.setDbTarget(db);    
+            }
         }
     }
     

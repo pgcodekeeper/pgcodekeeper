@@ -178,8 +178,9 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
                 for (IWorkbenchPage page : getSite().getWorkbenchWindow().getPages()) {
                     ProjectEditorInput editorInput = 
                             (ProjectEditorInput) ProjectEditorDiffer.this.getEditorInput();
-                    if (editorInput.getName().equals(closingProject.getName()))
+                    if (editorInput.getName().equals(closingProject.getName())) {
                         page.closeEditor(page.findEditor(editorInput), true);
+                    }
                 }
             }
         });

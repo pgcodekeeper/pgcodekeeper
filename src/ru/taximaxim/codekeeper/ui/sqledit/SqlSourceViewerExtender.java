@@ -166,16 +166,18 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
 
     private void addMenu(IMenuManager menu, String actionId) {
         IAction action = getAction(actionId);
-        if (action != null)
+        if (action != null) {
             menu.add(action);
+        }
     }
 
     private IAction getAction(String actionId) {
         IAction action = fActions.get(actionId);
         if (action == null) {
             action = createAction(actionId);
-            if (action == null)
+            if (action == null) {
                 return null;
+            }
             if (action instanceof SqlViewerAction) {
                 initAction(action, getResourceBundle(),
                         "action." + actionId + "."); //$NON-NLS-1$ //$NON-NLS-2$
@@ -185,8 +187,9 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         }
         if (action instanceof SqlViewerAction) {
             SqlViewerAction mva = (SqlViewerAction) action;
-            if (mva.isEditableDependent() && !this.isEditable())
+            if (mva.isEditableDependent() && !this.isEditable()) {
                 return null;
+            }
         }
         return action;
     }
@@ -220,8 +223,9 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
             Object next = e.next();
             if (next instanceof SqlViewerAction) {
                 SqlViewerAction action = (SqlViewerAction) next;
-                if (action.isContentDependent())
+                if (action.isContentDependent()) {
                     action.update();
+                }
             }
         }
     }
@@ -233,8 +237,9 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
             Object next = e.next();
             if (next instanceof SqlViewerAction) {
                 SqlViewerAction action = (SqlViewerAction) next;
-                if (action.isSelectionDependent())
+                if (action.isSelectionDependent()) {
                     action.update();
+                }
             }
         }
     }
@@ -305,16 +310,18 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
                 String actionDefinitionId, boolean mutable, boolean selection,
                 boolean content) {
             super(mutable, selection, content);
-            if (actionDefinitionId != null)
+            if (actionDefinitionId != null) {
                 setActionDefinitionId(actionDefinitionId);
+            }
             fOperationCode = operationCode;
             update();
         }
 
         @Override
         public void run() {
-            if (isEnabled())
+            if (isEnabled()) {
                 getSourceViewer().doOperation(fOperationCode);
+            }
         }
 
         @Override
