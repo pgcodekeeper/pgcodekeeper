@@ -257,7 +257,7 @@ public class NewProjWizard extends Wizard
 
 class PageRepo extends WizardNewProjectCreationPage implements Listener {
     
-    private final static String WORKING_SET_ID = "org.eclipse.ui.resourceWorkingSetPage"; //$NON-NLS-1$
+    private static final String WORKING_SET_ID = "org.eclipse.ui.resourceWorkingSetPage"; //$NON-NLS-1$
 
     private Composite container;
     private Button btnDoInit;

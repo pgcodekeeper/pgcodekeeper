@@ -14,12 +14,12 @@ class DbInfo {
     /**
      * Delimiter for spacing parts of the coordinates.
      */
-    private final static char DELIM = '\t';
+    private static final char DELIM = '\t';
     
     /**
      * Delimiter between coords entries in the preference string.
      */
-    private final static char DELIM_ENTRY = '\n';
+    private static final char DELIM_ENTRY = '\n';
     
     final String name;
     

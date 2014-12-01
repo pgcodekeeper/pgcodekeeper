@@ -585,7 +585,7 @@ class PagePartial extends WizardPage {
 
 class PageResult extends WizardPage {
 
-    final private PgDbProject proj;
+    private final PgDbProject proj;
 
     private Composite container;
     private TabFolder tabs;

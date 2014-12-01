@@ -29,7 +29,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
     private Color colorLGreen = new Color(Display.getDefault(), 204, 255, 204);
     private Color colorDBlue = new Color(Display.getDefault(), 1, 70, 122);
     
-    private final static Color HIGHLIGHT_COLOR = ColorConstants.yellow;
+    private static final Color HIGHLIGHT_COLOR = ColorConstants.yellow;
     
     public DepcyGraphLabelProvider(boolean isSource) {
         this.isSource  = isSource;

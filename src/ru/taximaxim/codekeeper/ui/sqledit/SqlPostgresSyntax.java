@@ -4,7 +4,7 @@ import org.eclipse.datatools.sqltools.sql.ISQLSyntax;
 
 public class SqlPostgresSyntax implements ISQLSyntax {
     
-    private final static String EMPTY[] = {};
+    private static final String EMPTY[] = {};
     
     private final String[] comment = {
             "--" //$NON-NLS-1$

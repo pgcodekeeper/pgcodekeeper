@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 
 public class DbStorePicker extends Group {
     
-    final private boolean allowShellResize;
+    private final boolean allowShellResize;
     
     private final IPreferenceStore prefStore;
     private Map<String, DbInfo> store;
