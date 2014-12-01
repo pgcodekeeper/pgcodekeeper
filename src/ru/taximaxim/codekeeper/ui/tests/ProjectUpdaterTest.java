@@ -35,7 +35,8 @@ import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class ProjectUpdaterTest {
-    private final static String ENCODING = UIConsts.UTF_8;
+    
+    private static final String ENCODING = UIConsts.UTF_8;
     private PgDatabase dbOld, dbNew;
     private TempDir workingDir, referenceDir;
     
@@ -119,7 +120,7 @@ public class ProjectUpdaterTest {
         private Path pathToBeCompared;
         private Path pathToCompareTo;
         private AtomicBoolean differs;
-        private final static String PROJECT_FILE_NAME = ".project";
+        private static final String PROJECT_FILE_NAME = ".project";
         
         public CompareHashFileVisitor(Path pathToBeCompared, Path pathToCompareTo, AtomicBoolean differs) {
             super();
