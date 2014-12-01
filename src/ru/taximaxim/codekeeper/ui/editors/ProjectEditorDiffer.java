@@ -324,41 +324,7 @@ class CommitPage extends DiffPresentationPane {
         final TreeElement resultingTree = considerDepcy ? filteredTwiceWithAllDepcy : filtered;
 
         Log.log(Log.LOG_INFO, "Updating project " + proj.getProjectName()); //$NON-NLS-1$
-        Job job = new Job(Messages.projectEditorDiffer_save_project) {
-
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                SubMonitor pm = SubMonitor.convert(monitor,
-                        Messages.commitPartDescr_commiting, 2);
-
-                pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
-                DiffTreeApplier applier = new DiffTreeApplier(dbSource
-                        .getDbObject(), dbTarget.getDbObject(),
-                        resultingTree);
-                
-                PgDatabase dbNew = applier.apply();
-
-                pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
-                try {
-                    if (mainPrefs.getBoolean(COMMIT_PREF.USE_PARTIAL_EXPORT_ON_COMMIT)){
-                        List<TreeElement> checked = resultingTree.generateElementsList(
-                                new ArrayList<TreeElement>(), dbSource.getDbObject(), dbTarget.getDbObject());
-                        new ProjectUpdater(dbNew, dbSource.getDbObject(), checked, proj).updatePartial();
-                    }else{
-                        new ProjectUpdater(dbNew, null, null, proj).updateFull();
-                    }
-                    pm.done();
-                } catch (IOException e) {
-                    return new Status(Status.ERROR, PLUGIN_ID.THIS, 
-                            Messages.ProjectEditorDiffer_commit_error, e);
-                }
-                if (monitor.isCanceled()) {
-                    return Status.CANCEL_STATUS;
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        
+        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project, resultingTree);
         job.addJobChangeListener(new JobChangeAdapter() {
             
             @Override
@@ -386,6 +352,48 @@ class CommitPage extends DiffPresentationPane {
     @Override
     protected final void diffLoaded() {
         btnSave.setEnabled(true);
+    }
+
+    private class JobProjectUpdater extends Job {
+        private final TreeElement tree;
+
+        private JobProjectUpdater(String name, TreeElement tree) {
+            super(name);
+            this.tree = tree;
+        }
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            SubMonitor pm = SubMonitor.convert(
+                    monitor, Messages.commitPartDescr_commiting, 2);
+
+            pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
+            DiffTreeApplier applier = new DiffTreeApplier(
+                    dbSource.getDbObject(), dbTarget.getDbObject(),tree);
+            
+            PgDatabase dbNew = applier.apply();
+
+            pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
+            try {
+                if (mainPrefs.getBoolean(COMMIT_PREF.USE_PARTIAL_EXPORT_ON_COMMIT)){
+                    List<TreeElement> checked = tree.generateElementsList(
+                            new ArrayList<TreeElement>(),
+                            dbSource.getDbObject(), dbTarget.getDbObject());
+                    new ProjectUpdater(dbNew, dbSource.getDbObject(), checked, proj)
+                            .updatePartial();
+                }else{
+                    new ProjectUpdater(dbNew, null, null, proj).updateFull();
+                }
+                pm.done();
+            } catch (IOException e) {
+                return new Status(Status.ERROR, PLUGIN_ID.THIS, 
+                        Messages.ProjectEditorDiffer_commit_error, e);
+            }
+            if (monitor.isCanceled()) {
+                return Status.CANCEL_STATUS;
+            }
+            return Status.OK_STATUS;
+        }
     }
 }
 

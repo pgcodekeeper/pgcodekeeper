@@ -293,12 +293,8 @@ public class SqlScriptDialog extends TrayDialog {
             @Override
             public void handleEvent(Event event) {
                 getShell().removeListener(SWT.Activate, this);
-                
                 try {
-                    if (differ.getScript().isDangerDdl(
-                            !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
-                            !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
-                            !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT))) {
+                    if (checkDangerDdl()) {
                         if (showDangerWarning() == SWT.OK) {
                             sqlEditor.getTextWidget().setBackground(colorPink);
                         } else {
@@ -604,6 +600,13 @@ public class SqlScriptDialog extends TrayDialog {
         }
     }
 
+    private boolean checkDangerDdl() throws PgCodekeeperUIException {
+        return differ.getScript().isDangerDdl(
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT));
+    }
+    
     @Override
     public boolean close() {
         if (isRunning) {
@@ -695,10 +698,7 @@ public class SqlScriptDialog extends TrayDialog {
         private void checkAskDanger(
                 List<Entry<PgStatement, PgStatement>> saveToRestore) {
             try {
-                if (differ.getScript().isDangerDdl(
-                        !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
-                        !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
-                        !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT))) {
+                if (checkDangerDdl()) {
                     if (showDangerWarning() != SWT.OK) {
                         differ.setAdditionalDepciesSource(saveToRestore);
                         return;
