@@ -555,7 +555,7 @@ public final class PgDiff {
     static void tempSwitchSearchPath(String switchTo, 
             final SearchPathHelper searchPathHelper, final PgDiffScript script){
         
-        if (searchPathHelper.getWasOutput() == false ||
+        if (!searchPathHelper.wasOutput() ||
                 !searchPathHelper.getSchemaName().equals(switchTo)){
             new SearchPathHelper(switchTo).outputSearchPath(script);
             

@@ -57,7 +57,7 @@ public class JdbcAclParser {
         }
         
         for(String s : acls){
-            int indexPos = s.indexOf("/");
+            int indexPos = s.indexOf('/');
             int assignmentPos = s.indexOf('=');
             String grantee = PgDiffUtils.getQuotedName(s.substring(0, assignmentPos));
             if (grantee.isEmpty()){

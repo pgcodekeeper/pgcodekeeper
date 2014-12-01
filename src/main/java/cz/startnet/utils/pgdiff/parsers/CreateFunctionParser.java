@@ -19,7 +19,7 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
  */
 public final class CreateFunctionParser {
     
-    private static String[] RETURNS_TERMINATORS = {
+    private static final String[] RETURNS_TERMINATORS = {
         "LANGUAGE",
         "WINDOW",
         "IMMUTABLE", "STABLE", "VOLATILE", "NOT", "LEAKPROOF",
