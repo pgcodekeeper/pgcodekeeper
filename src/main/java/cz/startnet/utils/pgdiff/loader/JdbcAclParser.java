@@ -13,7 +13,6 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  * @author ryabinin_av
  */
 public class JdbcAclParser {
-    private final String ACL_ASSIGNMENT_SIGN = "=";
     
     public enum PrivilegeTypes {
 // SONAR-OFF
@@ -50,7 +49,7 @@ public class JdbcAclParser {
         
         // move owner's grants to front
         for (String s : acls){
-            if (s.startsWith(owner + ACL_ASSIGNMENT_SIGN)){
+            if (s.startsWith(owner + '=')){
                 acls.remove(s);
                 acls.add(0, s);
                 break;
@@ -59,7 +58,7 @@ public class JdbcAclParser {
         
         for(String s : acls){
             int indexPos = s.indexOf("/");
-            int assignmentPos = s.indexOf(ACL_ASSIGNMENT_SIGN);
+            int assignmentPos = s.indexOf('=');
             String grantee = PgDiffUtils.getQuotedName(s.substring(0, assignmentPos));
             if (grantee.isEmpty()){
                 grantee = "PUBLIC";

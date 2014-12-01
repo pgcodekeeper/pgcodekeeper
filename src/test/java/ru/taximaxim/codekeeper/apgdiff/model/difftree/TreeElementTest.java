@@ -28,7 +28,7 @@ public class TreeElementTest {
 
     private final String dbDumpName;
     
-    final private List<String> FUNC_NAMES = 
+    private final static List<String> FUNC_NAMES = 
             Arrays.asList(new String[]{"abcdefg1()", "abcdefg2()", "abcdefg3()"});
     
     public TreeElementTest(String dbName) {
