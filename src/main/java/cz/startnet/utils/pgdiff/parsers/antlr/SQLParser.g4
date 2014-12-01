@@ -1017,13 +1017,10 @@ network_type
   ;
 
 character_string_type
-  : CHARACTER type_length?
-  | CHAR type_length?
-  | CHARACTER VARYING type_length?
-  | CHAR VARYING type_length?
+  : CHARACTER VARYING? type_length?
+  | CHAR VARYING? type_length?
   | VARCHAR type_length?
-  | (TEXT
-  | INTERVAL)
+  | (TEXT | INTERVAL)
   ;
 
 type_length
