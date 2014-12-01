@@ -79,8 +79,10 @@ public final class OpenProjectUtils {
             }
             Version curVer = new Version(ApgdiffConsts.EXPORT_CURRENT_VERSION);
             if (ver.compareTo(curVer) > 0) {
-                message.append(Messages.OpenProjectUtils_high_proj_version +
-                        verStr + " > " + ApgdiffConsts.EXPORT_CURRENT_VERSION); //$NON-NLS-1$
+                message.append(Messages.OpenProjectUtils_high_proj_version)
+                        .append(verStr)
+                        .append(" > ") //$NON-NLS-1$
+                        .append(ApgdiffConsts.EXPORT_CURRENT_VERSION);
                 return false;
             }
             if (ver.compareTo(curVer) < 0) {

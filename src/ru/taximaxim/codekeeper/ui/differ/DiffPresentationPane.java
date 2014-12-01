@@ -489,7 +489,7 @@ public abstract class DiffPresentationPane extends Composite {
         }
         String preset = dbSrc.getSelectedDbPresetName();
         if (preset.isEmpty()){
-            value.append("     " + Messages.connection_details); //$NON-NLS-1$
+            value.append("     ").append(Messages.connection_details); //$NON-NLS-1$
             value.append(dbSrc.getTxtDbUser().getText().isEmpty() ? "" : dbSrc.getTxtDbUser().getText() + '@'); //$NON-NLS-1$
             value.append(dbSrc.getTxtDbHost().getText().isEmpty() ? Messages.unknown_host : dbSrc.getTxtDbHost().getText());
             value.append(dbSrc.getTxtDbPort().getText().isEmpty() ? "" : ':' + dbSrc.getTxtDbPort().getText()); //$NON-NLS-1$ 
