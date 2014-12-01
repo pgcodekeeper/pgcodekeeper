@@ -130,7 +130,6 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
 
     @Override
     public void menuAboutToShow(IMenuManager menu) {
-
         menu.add(new Separator("undo")); //$NON-NLS-1$
         addMenu(menu, UNDO_ID);
         addMenu(menu, REDO_ID);
@@ -140,8 +139,6 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
         addMenu(menu, PASTE_ID);
         addMenu(menu, DELETE_ID);
         addMenu(menu, SELECT_ALL_ID);
-        // menu.add(new Separator("edit")); //$NON-NLS-1$
-        // addMenu(menu, CHANGE_ENCODING_ID);
         menu.add(new Separator("find")); //$NON-NLS-1$
         addMenu(menu, FIND_ID);
 
@@ -167,18 +164,6 @@ public class SqlSourceViewerExtender extends SqlSourceViewer implements
                 .getBundle("org.eclipse.compare.contentmergeviewer.TextMergeViewerResources"); //$NON-NLS-1$
     }
 
-    /*
-     * private void contributeGotoLineAction(SqlSourceViewerExtender viewer) {
-     * IAction action = new GotoLineAction((ITextEditor)
-     * viewer.getAdapter(ITextEditor.class));
-     * action.setActionDefinitionId(ITextEditorActionDefinitionIds.LINE_GOTO);
-     * viewer.addAction(SqlSourceViewerExtender.GOTO_LINE_ID, action); }
-     * 
-     * private void contributeChangeEncodingAction(SqlSourceViewerExtender
-     * viewer) { IAction action = new
-     * ChangeEncodingAction(getTextEditorAdapter());
-     * viewer.addAction(SqlSourceViewerExtender.CHANGE_ENCODING_ID, action); }
-     */
     private void addMenu(IMenuManager menu, String actionId) {
         IAction action = getAction(actionId);
         if (action != null)

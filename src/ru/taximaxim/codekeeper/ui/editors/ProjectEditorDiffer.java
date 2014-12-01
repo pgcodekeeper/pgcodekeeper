@@ -446,8 +446,8 @@ class DiffPage extends DiffPresentationPane {
             public void widgetSelected(SelectionEvent e) {
                 ManualDepciesDialog dialog = new ManualDepciesDialog(getShell(),
                         manualDepciesSource, manualDepciesTarget,
-                        dbSource.getDbObject().flatten(),
-                        dbTarget.getDbObject().flatten(),
+                        PgDatabase.listViewsTables(dbSource.getDbObject()),
+                        PgDatabase.listViewsTables(dbTarget.getDbObject()),
                         Messages.database, Messages.ProjectEditorDiffer_project);
                 if (dialog.open() == Dialog.OK) {
                     manualDepciesSource = dialog.getDepciesSourceList();
@@ -506,7 +506,7 @@ class DiffPage extends DiffPresentationPane {
         SqlScriptDialog dialog = new SqlScriptDialog(getShell(),
                 MessageDialog.INFORMATION, Messages.diffPartDescr_diff_script,
                 Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
-                differ, dbSource.getDbObject().flatten(), mainPrefs);
+                differ, PgDatabase.listViewsTables(dbSource.getDbObject()), mainPrefs);
         if (selectedDBSource == DBSources.SOURCE_TYPE_DB || 
                 selectedDBSource == DBSources.SOURCE_TYPE_JDBC) {
             dialog.setDbParams(dbSrc.getTxtDbHost().getText(),

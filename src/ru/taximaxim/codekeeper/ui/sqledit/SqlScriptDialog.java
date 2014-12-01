@@ -47,15 +47,16 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
-import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
+
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -187,7 +188,6 @@ public class SqlScriptDialog extends TrayDialog {
             Label imageLabel = new Label(comp, SWT.NULL);
             image.setBackground(imageLabel.getBackground());
             imageLabel.setImage(image);
-//            addAccessibleListeners(imageLabel, image);
             GridDataFactory.fillDefaults().align(SWT.CENTER, SWT.BEGINNING)
                     .applyTo(imageLabel);
         }
@@ -199,9 +199,9 @@ public class SqlScriptDialog extends TrayDialog {
                     .fillDefaults()
                     .align(SWT.FILL, SWT.BEGINNING)
                     .grab(true, false)
-                    .hint(
-                            convertHorizontalDLUsToPixels(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH),
-                            SWT.DEFAULT).applyTo(messageLabel);
+                    .hint(convertHorizontalDLUsToPixels(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH),
+                            SWT.DEFAULT)
+                    .applyTo(messageLabel);
         }
         return composite;
     }
