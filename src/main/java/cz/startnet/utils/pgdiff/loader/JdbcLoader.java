@@ -602,7 +602,7 @@ public class JdbcLoader implements PgCatalogStrings {
             
             String columnDefault = colDefaults[i];
             if (columnDefault != null && !columnDefault.isEmpty()){
-                tableDef.append(" DEFAULT " + columnDefault);
+                tableDef.append(" DEFAULT ").append(columnDefault);
                 column.setDefaultValue(columnDefault);
             }
             
