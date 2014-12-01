@@ -13,7 +13,7 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
 
 public final class DiffTree {
     
-    private final static List<? extends PgStatement> EMPTY_LIST = 
+    private static final List<? extends PgStatement> EMPTY_LIST = 
             Collections.unmodifiableList(new ArrayList<PgStatement>());
 
     public static TreeElement create(PgDatabase left, PgDatabase right) {

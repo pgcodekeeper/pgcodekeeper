@@ -37,7 +37,7 @@ public final class SelectParser {
      * 
      * Quoted identifiers are supported except for ones with escaped (doubled) double quotes.
      */
-    public final static Pattern VALID_SELECT_COLUMN = Pattern.compile(
+    public static final Pattern VALID_SELECT_COLUMN = Pattern.compile(
             "^(?:(?<schema>[\\w&&[^0-9]]\\w*|\"[^\"]+\")\\s*\\.\\s*)??"
             + "(?:(?<table>[\\w&&[^0-9]]\\w*|\"[^\"]+\")\\s*\\.\\s*)?"
             + "(?:(?<column>[\\w&&[^0-9]]\\w*|\"[^\"]+\"))"
@@ -45,10 +45,10 @@ public final class SelectParser {
             Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
     
     // capturing groups' IDs for the column regex
-    public final static String GRP_SCHEMA = "schema";
-    public final static String GRP_TABLE = "table";
-    public final static String GRP_COLUMN = "column";
-    public final static String GRP_ALIAS = "alias";
+    public static final String GRP_SCHEMA = "schema";
+    public static final String GRP_TABLE = "table";
+    public static final String GRP_COLUMN = "column";
+    public static final String GRP_ALIAS = "alias";
     
     public static PgSelect parse(PgDatabase db, String statement, String searchPath) {
         return new SelectParser(db, statement, searchPath).parseSelect(statement);

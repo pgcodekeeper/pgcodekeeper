@@ -20,18 +20,18 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
  */
 public final class PrivilegeParser {
     
-    private final static String ROLE_ALL = "ALL";
+    private static final String ROLE_ALL = "ALL";
     
-    private final static String[] ROLES = {
+    private static final String[] ROLES = {
         "SELECT", "INSERT", "UPDATE", "DELETE", "TRUNCATE", "REFERENCES", "TRIGGER",
         "USAGE", "EXECUTE", "CREATE"
         };
     
-    private final static String[] ROLES_COLUMN = {
+    private static final String[] ROLES_COLUMN = {
         "SELECT", "INSERT", "UPDATE", "REFERENCES"
         };
     
-    private final static String[] OBJECTS = {
+    private static final String[] OBJECTS = {
         "TABLE", "SEQUENCE", "DATABASE", "DOMAIN", "FOREIGN", "FUNCTION", "LANGUAGE",
         "LARGE", "SCHEMA", "TABLESPACE", "TYPE", "ALL"
         };

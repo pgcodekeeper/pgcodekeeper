@@ -33,21 +33,21 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 */
 abstract class TreeElementCreator {
 
-    abstract public TreeElement getFilteredTree();
+    public abstract TreeElement getFilteredTree();
 
-    abstract public TreeElement getFilteredTreeForDeletion();
+    public abstract TreeElement getFilteredTreeForDeletion();
     
-    abstract public TreeElement getFilteredTreeForConflicting();
+    public abstract TreeElement getFilteredTreeForConflicting();
 
-    abstract public Set<PgStatement> getDepcySet(PgDatabase db);
+    public abstract Set<PgStatement> getDepcySet(PgDatabase db);
 
-    abstract public TreeElement getExtraElement();
+    public abstract TreeElement getExtraElement();
 
-    abstract public Set<TreeElement> getExtraElementInTree(TreeElement filtered);
+    public abstract Set<TreeElement> getExtraElementInTree(TreeElement filtered);
 
-    abstract public TreeElement getFilteredCopy();
+    public abstract TreeElement getFilteredCopy();
 
-    abstract public Set<TreeElement> getConflicting(TreeElement copy);
+    public abstract Set<TreeElement> getConflicting(TreeElement copy);
 }
 
 /**

@@ -16,11 +16,11 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class PgDbFilter2 {
 
-    final private PgDatabase db;
+    private final PgDatabase db;
     
-    final private TreeElement root;
+    private final TreeElement root;
     
-    final private DiffSide side;
+    private final DiffSide side;
     
     public PgDbFilter2(PgDatabase db, TreeElement root, DiffSide side) {
         if(side != DiffSide.LEFT && side != DiffSide.RIGHT) {
