@@ -140,12 +140,12 @@ table_action
       | SET STATISTICS integer=NUMBER
       | SET LEFT_PAREN attribute_option_value (COMMA attribute_option_value)* RIGHT_PAREN
       | RESET LEFT_PAREN attribute_option+=table_attribute_option (COMMA attribute_option+=table_attribute_option)* RIGHT_PAREN
-      | (SET STORAGE PLAIN | EXTERNAL | EXTENDED | MAIN))
+      | SET STORAGE (PLAIN | EXTERNAL | EXTENDED | MAIN))
     | ADD tabl_constraint=table_constraint (NOT VALID)?
     | ADD tabl_constraint_using_index=table_constraint_using_index
     | VALIDATE CONSTRAINT constraint_name=schema_qualified_name
     | DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name (RESTRICT | CASCADE)
-    | (DISABLE | ENABLE) TRIGGER (trigger_name=schema_qualified_name | ALL | USER)?
+    | (DISABLE | ENABLE) TRIGGER (trigger_name=schema_qualified_name | (ALL | USER))?
     | ENABLE (REPLICA | ALWAYS) TRIGGER trigger_name=schema_qualified_name 
     | (DISABLE | ENABLE) RULE rewrite_rule_name=schema_qualified_name 
     | ENABLE (REPLICA | ALWAYS) RULE rewrite_rule_name=schema_qualified_name 
@@ -297,11 +297,12 @@ create_event_trigger
 set_statement
     : SET (SESSION | LOCAL)? 
       (config_param=identifier (TO |EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
-    | TIME ZONE (timezone=identifier | LOCAL | DEFAULT)(COMMA (timezone=identifier | LOCAL | DEFAULT))*)
+    | TIME ZONE (timezone=identifier | (LOCAL | DEFAULT))(COMMA (timezone=identifier | (LOCAL | DEFAULT)))*)
     ;
 
 set_statement_value
-    : value=value_expression | QUOTE value=value_expression QUOTE | DEFAULT               
+    : (value=value_expression | DEFAULT)
+    | QUOTE set_statement_value QUOTE
     ;
    
 create_trigger_statement
@@ -627,7 +628,8 @@ table_space
     ;
     
 action
-    : (RESTRICT | CASCADE | SET NULL | SET DEFAULT)
+    : (RESTRICT | CASCADE) 
+      | SET (NULL | DEFAULT)
     ;
     
 index_parameters

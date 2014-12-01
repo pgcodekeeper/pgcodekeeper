@@ -28,8 +28,8 @@ public class CustomErrorListener implements ANTLRErrorListener {
         if (sourceName !=null && !sourceName.isEmpty()) {
             sourceName = String.format("%s:%d:%d: ", sourceName, line, charPositionInLine);
         }
-        System.out.println(msg);
-//        System.err.println(sourceName+"line "+line+":"+charPositionInLine+" "+msg);
+//        System.out.println(msg);
+        System.err.println(sourceName+"line "+line+":"+charPositionInLine+" "+msg);
 //        errors.add(sourceName+"line "+line+":"+charPositionInLine+" "+msg);
     }
 
