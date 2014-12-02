@@ -959,7 +959,6 @@ data_type
 
 predefined_type
   : character_string_type
-  | national_character_string_type
   | binary_large_object_string_type
   | numeric_type
   | boolean_type
@@ -981,24 +980,16 @@ network_type
   ;
 
 character_string_type
-  : CHARACTER VARYING? type_length?
-  | CHAR VARYING? type_length?
+  : NATIONAL? CHARACTER VARYING? type_length?
+  | NATIONAL? CHAR VARYING? type_length?
+  | NCHAR VARYING? type_length?
+  | NVARCHAR type_length?
   | VARCHAR type_length?
   | (TEXT | INTERVAL)
   ;
 
 type_length
   : LEFT_PAREN NUMBER RIGHT_PAREN
-  ;
-
-national_character_string_type
-  : NATIONAL CHARACTER type_length?
-  | NATIONAL CHAR type_length?
-  | NCHAR type_length?
-  | NATIONAL CHARACTER VARYING type_length?
-  | NATIONAL CHAR VARYING type_length?
-  | NCHAR VARYING type_length?
-  | NVARCHAR type_length?
   ;
 
 binary_large_object_string_type
@@ -1152,9 +1143,9 @@ filter_clause
   : FILTER LEFT_PAREN where_clause RIGHT_PAREN
   ;
 
-grouping_operation
-  : GROUPING LEFT_PAREN column_reference_list RIGHT_PAREN
-  ;
+//grouping_operation
+//  : GROUPING LEFT_PAREN column_reference_list RIGHT_PAREN
+//  ;
 
 /*
 ===============================================================================
@@ -1948,8 +1939,8 @@ orderby_clause
   ;
 
 sort_specifier_paren
-    : sort_specifier_list | 
-      LEFT_PAREN (~(LEFT_PAREN | RIGHT_PAREN ) | sort_specifier_paren)+ RIGHT_PAREN
+    : sort_specifier_list 
+    | LEFT_PAREN sort_specifier_list RIGHT_PAREN
     ;
 
 sort_specifier_list

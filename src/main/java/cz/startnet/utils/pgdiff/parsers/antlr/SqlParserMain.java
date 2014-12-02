@@ -40,12 +40,12 @@ public class SqlParserMain {
         PgDatabase database = new PgDatabase();
         List<PgStatement> alterObjects = new ArrayList<>();
         List<String> paths = new ArrayList<>();
-        paths = getPathsToFiles(pathToFile);
+//        paths = getPathsToFiles(pathToFile);
         long timeout= System.currentTimeMillis();
 //        paths.add("/home/botov_av/workspace/codekeeper/tmp_dump_9221153347570520215.sql");
-         paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/first_part.sql");
+//         paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/first_part.sql");
          paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/second_part.sql");
-         paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/third_part.sql");
+//         paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/third_part.sql");
         for (String path : paths) {
             if (path.endsWith("diff.sql")) {
                 continue;
