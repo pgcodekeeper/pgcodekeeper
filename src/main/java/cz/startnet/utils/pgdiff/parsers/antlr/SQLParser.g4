@@ -1189,7 +1189,6 @@ cast_specification
 */
 value_expression
   : common_value_expression
-  | row_value_expression
   | boolean_value_expression
   | array_expression
   ;
@@ -1377,12 +1376,8 @@ parenthesized_boolean_value_expression
   7.2 <row value expression>
 ===============================================================================
 */
-row_value_expression
-  : nonparenthesized_value_expression_primary
-  ;
-
 row_value_predicand
-  : row_value_expression
+  : nonparenthesized_value_expression_primary
   | row_value_constructor_predicand
   ;
 
@@ -1751,7 +1746,7 @@ in_predicate_value
   ;
 
 in_value_list
-  : row_value_expression  ( COMMA row_value_expression )*
+  : nonparenthesized_value_expression_primary  ( COMMA nonparenthesized_value_expression_primary )*
   ;
 
 /*
