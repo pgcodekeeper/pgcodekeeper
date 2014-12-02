@@ -2,13 +2,16 @@ package ru.taximaxim.codekeeper.ui.properties;
 
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.TimeZone;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -26,7 +29,10 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class ProjectProperties extends PropertyPage implements
         IWorkbenchPropertyPage {
 
+    private static String[] availableTimezones;
+    
     private Combo cmbEncoding;
+    private CCombo cmbTimezone;
     private IEclipsePreferences prefs;
 
     @Override
@@ -45,15 +51,21 @@ public class ProjectProperties extends PropertyPage implements
         panel.setLayout(layout);
         
         Label label = new Label(panel, SWT.NONE);
-        label.setLayoutData(new GridData());
         label.setText(Messages.projectProperties_encoding_for_all_operation_with_project);
         
         cmbEncoding = new Combo(panel, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         cmbEncoding.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
-        cmbEncoding.select(cmbEncoding.indexOf(
-                prefs.get(PROJ_PREF.ENCODING,UIConsts.UTF_8)));
+        cmbEncoding.select(cmbEncoding.indexOf(prefs.get(PROJ_PREF.ENCODING, UIConsts.UTF_8)));
+        
+        label = new Label(panel, SWT.NONE);
+        label.setText(Messages.projectProperties_timezone_for_all_db_connections);
+        
+        cmbTimezone = new CCombo(panel, SWT.BORDER | SWT.READ_ONLY);
+        cmbTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        cmbTimezone.setItems(getSortedTimezones());
+        cmbTimezone.select(cmbTimezone.indexOf(prefs.get(PROJ_PREF.TIMEZONE, UIConsts.UTC)));
         
         return panel;
     }
@@ -61,6 +73,7 @@ public class ProjectProperties extends PropertyPage implements
     @Override
     protected void performDefaults() {
         cmbEncoding.select(cmbEncoding.indexOf(UIConsts.UTF_8));
+        cmbTimezone.select(cmbTimezone.indexOf(UIConsts.UTC));
         try {
             fillPrefs();
         } catch (BackingStoreException e) {
@@ -85,8 +98,17 @@ public class ProjectProperties extends PropertyPage implements
     
     private void fillPrefs() throws BackingStoreException {
         prefs.put(PROJ_PREF.ENCODING, cmbEncoding.getText());
+        prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
         prefs.flush();
         setValid(true);
         setErrorMessage(null);
+    }
+    
+    private String[] getSortedTimezones(){
+        if (availableTimezones == null){
+            availableTimezones = TimeZone.getAvailableIDs();
+            Arrays.sort(availableTimezones);
+        }
+        return availableTimezones;
     }
 }

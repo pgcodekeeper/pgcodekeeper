@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui;
 public interface UIConsts {
 
     String UTF_8 = "UTF-8"; //$NON-NLS-1$
+    String UTC = "UTC"; //$NON-NLS-1$
 
     interface PLUGIN_ID {
         String THIS = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
@@ -74,6 +75,7 @@ public interface UIConsts {
     
     interface PROJ_PREF {
         String ENCODING = "prefGeneralEncoding"; //$NON-NLS-1$
+        String TIMEZONE = "prefGeneralTimezone"; //$NON-NLS-1$
         String SOURCE = "prefGeneralSource"; //$NON-NLS-1$
         String DB_NAME = "prefDbName"; //$NON-NLS-1$
         String DB_HOST = "prefDbHost"; //$NON-NLS-1$
