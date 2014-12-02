@@ -51,6 +51,8 @@ public final class Messages extends NLS {
     public static String unknown_db;
     public static String unknown_host;
     public static String connection_details;
+    public static String add;
+    public static String delete;
     
     // ui
     public static String exceptionNotifier_copy_stack_trace;
@@ -210,6 +212,9 @@ public final class Messages extends NLS {
     public static String dBUpdatePrefPage_drop_column_statement;
     public static String dBUpdatePrefPage_drop_table;
     public static String dBUpdatePrefPage_set_warning_when_next_statements_present;
+    public static String dbUpdatePrefPage_add_and_delete_ddl_update_commands;
+    public static String dbUpdatePrefPage_error_getting_commands_list;
+    public static String dbUpdatePrefPage_error_saving_commands_list;
     public static String DiffPaneViewer_project;
     public static String DiffPresentationPane_attention;
 
@@ -236,8 +241,6 @@ public final class Messages extends NLS {
     public static String generalPrefPage_use_depcy_on_commit_page;
     public static String generalPrefPage_use_partial_project_update;
     public static String generalPrefPage_use_psql_depcy_on_generating_script;
-    public static String ignoreObjectsPrefPage_add_ignore;
-    public static String ignoreObjectsPrefPage_delete_ignore;
     public static String IgnoredObjectsPrefPage_error_getting_ignores_list;
     public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;

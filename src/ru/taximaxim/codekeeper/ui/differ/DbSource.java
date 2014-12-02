@@ -21,7 +21,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public abstract class DbSource {
 
-    final private String origin;
+    private final String origin;
 
     private PgDatabase dbObject;
 
@@ -101,9 +101,9 @@ public abstract class DbSource {
 
 class DbSourceDirTree extends DbSource {
 
-    final private String dirTreePath;
+    private final String dirTreePath;
 
-    final private String encoding;
+    private final String encoding;
 
     DbSourceDirTree(String dirTreePath, String encoding) {
         super(dirTreePath);
@@ -123,7 +123,7 @@ class DbSourceDirTree extends DbSource {
 
 class DbSourceProject extends DbSource {
 
-    final private PgDbProject proj;
+    private final PgDbProject proj;
 
     DbSourceProject(PgDbProject proj) {
         super(proj.getPathToProject().toString());
@@ -143,9 +143,9 @@ class DbSourceProject extends DbSource {
 
 class DbSourceFile extends DbSource {
 
-    final private String filename;
+    private final String filename;
 
-    final private String encoding;
+    private final String encoding;
 
     DbSourceFile(String filename, String encoding) {
         super(filename);
@@ -238,7 +238,7 @@ class DbSourceFilter extends DbSource {
         PgDatabase db;
         try {
             db = src.getDbObject();
-        } catch (NullPointerException ex) {
+        } catch (Exception ex) {
             db = src.get(monitor);
         }
 

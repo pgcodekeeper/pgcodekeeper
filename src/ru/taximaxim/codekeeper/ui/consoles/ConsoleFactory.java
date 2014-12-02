@@ -15,7 +15,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ConsoleFactory implements IConsoleFactory {
     
-    private static CodekeeperConsole myConsole;
+    private static CodekeeperConsole console;
     
     @Override
     public void openConsole() {
@@ -34,10 +34,10 @@ public class ConsoleFactory implements IConsoleFactory {
 
     public static void write(String msg) {
         if (PlatformUI.isWorkbenchRunning()) {
-            if (myConsole == null) {
-                myConsole = findConsole();
+            if (console == null) {
+                console = findConsole();
             }
-            myConsole.write(msg);
+            console.write(msg);
         }
     }
     

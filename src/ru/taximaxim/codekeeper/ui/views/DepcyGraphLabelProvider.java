@@ -25,11 +25,11 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
     
     private boolean isSource = true;
     
-    private Color LIGHT_BLUE = new Color(Display.getDefault(), 216, 228, 248);
-    private Color LIGHT_GREEN = new Color(Display.getDefault(), 204, 255, 204);
-    private Color DARK_BLUE = new Color(Display.getDefault(), 1, 70, 122);
+    private Color colorLBlue = new Color(Display.getDefault(), 216, 228, 248);
+    private Color colorLGreen = new Color(Display.getDefault(), 204, 255, 204);
+    private Color colorDBlue = new Color(Display.getDefault(), 1, 70, 122);
     
-    private Color HIGHLIGHT_COLOR = ColorConstants.yellow;
+    private static final Color HIGHLIGHT_COLOR = ColorConstants.yellow;
     
     public DepcyGraphLabelProvider(boolean isSource) {
         this.isSource  = isSource;
@@ -108,7 +108,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
 
     @Override
     public Color getBackgroundColour(Object entity) {
-        return isSource ? LIGHT_BLUE : LIGHT_GREEN;
+        return isSource ? colorLBlue : colorLGreen;
     }
 
     @Override
@@ -116,7 +116,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
         if (entity instanceof PgSchema){
             return ColorConstants.black;
         }else{
-            return DARK_BLUE;
+            return colorDBlue;
         }
     }
 
@@ -132,10 +132,9 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
     
     @Override
     public void dispose() {
-        LIGHT_BLUE.dispose();
-        LIGHT_GREEN.dispose();
-        DARK_BLUE.dispose();
-        HIGHLIGHT_COLOR.dispose();
+        colorLBlue.dispose();
+        colorLGreen.dispose();
+        colorDBlue.dispose();
         
         super.dispose();
     }

@@ -125,11 +125,11 @@ public class Differ implements IRunnableWithProgress {
     public void run(IProgressMonitor monitor) throws InvocationTargetException{
         SubMonitor pm = SubMonitor.convert(monitor, Messages.calculating_diff, 100); // 0
         
-        PgDatabase dbSource, dbTarget;
-        dbSource = dbTarget = null;
+        PgDatabase dbSrc, dbTgt;
+        dbSrc = dbTgt = null;
         try {
-            dbSource = this.dbSource.get(pm.newChild(25)); // 25
-            dbTarget = this.dbTarget.get(pm.newChild(25)); // 50
+            dbSrc = this.dbSource.get(pm.newChild(25)); // 25
+            dbTgt = this.dbTarget.get(pm.newChild(25)); // 50
         } catch(IOException ex) {
             throw new InvocationTargetException(ex);
         }
@@ -145,7 +145,7 @@ public class Differ implements IRunnableWithProgress {
                     new OutputStreamWriter(diffOut, UIConsts.UTF_8), true);
         
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
-                    dbSource, dbTarget, sourceDbFull, targetDbFull, 
+                    dbSrc, dbTgt, sourceDbFull, targetDbFull, 
                     additionalDepciesSource, additionalDepciesTarget);
             writer.flush();
             diffDirect = diffOut.toString(UIConsts.UTF_8).trim();
@@ -156,7 +156,7 @@ public class Differ implements IRunnableWithProgress {
                 
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
                 diffOut.reset();
-                PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource,
+                PgDiff.diffDatabaseSchemas(writer, args, dbTgt, dbSrc,
                         targetDbFull, sourceDbFull);
                 writer.flush();
                 diffReverse = diffOut.toString(UIConsts.UTF_8).trim();

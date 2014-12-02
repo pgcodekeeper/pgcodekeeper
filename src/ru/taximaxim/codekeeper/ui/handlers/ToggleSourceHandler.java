@@ -14,7 +14,7 @@ import org.eclipse.ui.menus.UIElement;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 
 public class ToggleSourceHandler extends AbstractHandler implements IElementUpdater {
-    private static Boolean stateOf = new Boolean(true);
+    private static Boolean stateOf = true;
     
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -38,5 +38,4 @@ public class ToggleSourceHandler extends AbstractHandler implements IElementUpda
         element.setChecked(stateOf);
         stateOf = !stateOf;
     }
-
 }

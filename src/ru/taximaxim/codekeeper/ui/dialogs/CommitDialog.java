@@ -1,6 +1,6 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
-import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -17,7 +17,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class CommitDialog extends TrayDialog {
     
@@ -26,12 +25,12 @@ public class CommitDialog extends TrayDialog {
     private DiffTableViewer dtvTop;
     private DiffTableViewer dtvBottom;
     private TreeDiffer treeDiffer;
-    private HashSet<TreeElement> depcyElementsSet;
-    private HashSet<TreeElement> conflictingElementsSet;
+    private final Set<TreeElement> depcyElementsSet;
+    private Set<TreeElement> conflictingElementsSet;
     
     public CommitDialog(Shell parentShell, TreeElement filtered,
-            HashSet<TreeElement> depcyElementsSet, IPreferenceStore mainPrefs,
-            PgDbProject proj, TreeDiffer treeDiffer) {
+            Set<TreeElement> depcyElementsSet, IPreferenceStore mainPrefs,
+            TreeDiffer treeDiffer) {
         super(parentShell);
         
         this.filtered = filtered;
@@ -51,9 +50,9 @@ public class CommitDialog extends TrayDialog {
     
     @Override
     protected Control createDialogArea(Composite parent) {
-        parent = (Composite) super.createDialogArea(parent);
+        Composite area = (Composite) super.createDialogArea(parent);
         
-        Composite container = new Composite(parent, SWT.NONE);
+        Composite container = new Composite(area, SWT.NONE);
         GridLayout gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
         container.setLayout(gl);
@@ -92,14 +91,14 @@ public class CommitDialog extends TrayDialog {
             dtvBottom.setCheckedElements(conflictingElementsSet, false);
             dtvBottom.redraw();
         }
-        return parent;
+        return area;
     }
     
     public DiffTableViewer getBottomTableViewer(){
         return dtvBottom;
     }
 
-    public void setConflictingElements(HashSet<TreeElement> conflictingElementsSet) {
+    public void setConflictingElements(Set<TreeElement> conflictingElementsSet) {
         this.conflictingElementsSet = conflictingElementsSet;
     }
 }

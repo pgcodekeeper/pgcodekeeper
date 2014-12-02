@@ -99,10 +99,11 @@ public abstract class DiffPresentationPane extends Composite {
 
     private void setDiffPaneDb(boolean isDbSrc, DbSource db) {
         if (diffPane != null) {
-            if (isDbSrc)
+            if (isDbSrc) {
                 diffPane.setDbSource(db);
-            else 
+            } else { 
                 diffPane.setDbTarget(db);    
+            }
         }
     }
     
@@ -489,7 +490,7 @@ public abstract class DiffPresentationPane extends Composite {
         }
         String preset = dbSrc.getSelectedDbPresetName();
         if (preset.isEmpty()){
-            value.append("     " + Messages.connection_details); //$NON-NLS-1$
+            value.append("     ").append(Messages.connection_details); //$NON-NLS-1$
             value.append(dbSrc.getTxtDbUser().getText().isEmpty() ? "" : dbSrc.getTxtDbUser().getText() + '@'); //$NON-NLS-1$
             value.append(dbSrc.getTxtDbHost().getText().isEmpty() ? Messages.unknown_host : dbSrc.getTxtDbHost().getText());
             value.append(dbSrc.getTxtDbPort().getText().isEmpty() ? "" : ':' + dbSrc.getTxtDbPort().getText()); //$NON-NLS-1$ 
@@ -559,14 +560,14 @@ public abstract class DiffPresentationPane extends Composite {
 
     private void loadChanges() {
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
-        final TreeDiffer treeDiffer = new TreeDiffer(dbSource, dbTarget);
+        final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget);
 
         Job job = new Job(Messages.diffPresentationPane_getting_changes_for_diff) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    treeDiffer.run(monitor);
+                    newDiffer.run(monitor);
                 } catch (InvocationTargetException e) {
                     return new Status(Status.ERROR, PLUGIN_ID.THIS,
                             Messages.error_in_differ_thread, e);
@@ -589,9 +590,8 @@ public abstract class DiffPresentationPane extends Composite {
                             if (DiffPresentationPane.this.isDisposed()) {
                                 return;
                             }
-                            DiffPresentationPane.this.treeDiffer = treeDiffer;
-                            diffTable.setInput(
-                                    DiffPresentationPane.this.treeDiffer, !isProjSrc);
+                            treeDiffer = newDiffer;
+                            diffTable.setInput(newDiffer, !isProjSrc);
                             diffPane.setInput(null);
                             diffLoaded();
                         }

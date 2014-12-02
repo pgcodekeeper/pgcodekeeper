@@ -14,7 +14,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PgDumper {
     
-    private final static Pattern PATTERN_VERSION = Pattern.compile(
+    private static final Pattern PATTERN_VERSION = Pattern.compile(
             "^(?:pg_dump[\\s]+\\(PostgreSQL.*\\)[\\s]+)([\\d]+\\.[\\d]+\\.[\\d]+)$"); //$NON-NLS-1$
 
     private final String exePgdump;

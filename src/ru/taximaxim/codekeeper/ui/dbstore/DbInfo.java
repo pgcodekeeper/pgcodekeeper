@@ -14,12 +14,12 @@ class DbInfo {
     /**
      * Delimiter for spacing parts of the coordinates.
      */
-    private final static char d = '\t';
+    private static final char DELIM = '\t';
     
     /**
      * Delimiter between coords entries in the preference string.
      */
-    private final static char d_entries = '\n';
+    private static final char DELIM_ENTRY = '\n';
     
     final String name;
     
@@ -40,7 +40,7 @@ class DbInfo {
     }
     
     private DbInfo(String coords) {
-        String[] parts = coords.split(Pattern.quote(String.valueOf(d)), -1);
+        String[] parts = coords.split(Pattern.quote(String.valueOf(DELIM)), -1);
         
         try {
             if(parts.length > 6) {
@@ -77,15 +77,15 @@ class DbInfo {
                 + dbhost.length()
                 + 6 + 6);
         sb.append(name)
-            .append(d)
+            .append(DELIM)
             .append(dbname)
-            .append(d)
+            .append(DELIM)
             .append(dbuser)
-            .append(d)
+            .append(DELIM)
             .append(dbpass)
-            .append(d)
+            .append(DELIM)
             .append(dbhost)
-            .append(d)
+            .append(DELIM)
             .append(dbport);
         
         return sb.toString();
@@ -93,7 +93,7 @@ class DbInfo {
     
     public static Map<String, DbInfo> preferenceToStore(String preference) {
         String[] coordStrings = preference.split(
-                Pattern.quote(String.valueOf(d_entries)));
+                Pattern.quote(String.valueOf(DELIM_ENTRY)));
         
         // use LinkedHashmap for insertion-order iteration
         Map<String, DbInfo> store = new LinkedHashMap<>(coordStrings.length);
@@ -118,7 +118,7 @@ class DbInfo {
         while(it.hasNext()) {
             sb.append(it.next().getValue());
             if(it.hasNext()) {
-                sb.append(d_entries);
+                sb.append(DELIM_ENTRY);
             }
         }
         
