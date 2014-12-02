@@ -18,7 +18,7 @@ public class Grant extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         PgGrant grant = null;
-        for (Schema_qualified_nameContext objName : ctx.obj_name) {
+        for (Schema_qualified_nameContext objName : ctx.name) {
             grant = new PgGrant(getFullCtxText(ctx));
             grant.setObjName(objName.getText());
         }

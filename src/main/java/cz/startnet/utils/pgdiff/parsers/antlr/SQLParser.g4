@@ -312,109 +312,95 @@ create_trigger_statement
 revoke_statement
     : REVOKE 
       ((GRANT OPTION FOR)?(
-        (common_query_list (COMMA common_query_list)*
-         | ALL (PRIVILEGES)?) 
-        ON ( ((TABLE)? obj_name+=schema_qualified_name (COMMA (TABLE)? obj_name+=schema_qualified_name)*)
-             | ALL TABLES IN SCHEMA (schema_name+=identifier)+)
-        revoke_from_cascade_restrict
-    
-    | (((SELECT | INSERT | UPDATE | REFERENCES) LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)+
-         | ALL (PRIVILEGES)? LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN )
-        ON (TABLE)? obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
-        revoke_from_cascade_restrict
-    
-    | ( usage_select_update+
-        | ALL (PRIVILEGES)?)
-        ON (SEQUENCE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
-             | ALL SEQUENCES IN SCHEMA schema_name+=identifier (COMMA schema_name+=identifier)*)
-        revoke_from_cascade_restrict
-        
-    | (create_connect_temporary_temp+ | ALL (PRIVILEGES)?)
-        ON DATABASE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
-        revoke_from_cascade_restrict
-    
-    | (USAGE | ALL (PRIVILEGES)?)(
-        ON FOREIGN DATA WRAPPER obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
-        revoke_from_cascade_restrict
-        | ON FOREIGN SERVER obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
-            revoke_from_cascade_restrict
-        | ON LANGUAGE obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
-        revoke_from_cascade_restrict)
-        
-    | (EXECUTE | ALL (PRIVILEGES)?) 
-        ON (FUNCTION obj_name+=schema_qualified_name function_args | ALL FUNCTIONS IN SCHEMA schema_name+=identifier(COMMA schema_name+=identifier)*)
-        revoke_from_cascade_restrict
-
-    | ((SELECT | UPDATE(COMMA)?)+  | ALL (PRIVILEGES)?) 
-        ON LARGE OBJECT obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
-        revoke_from_cascade_restrict
-    
-    | ( ((CREATE | USAGE)(COMMA)?)+ | ALL (PRIVILEGES)?) 
-        ON SCHEMA obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
-        revoke_from_cascade_restrict
-     
-    | (CREATE | ALL (PRIVILEGES)?)
-        ON TABLESPACE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
-        revoke_from_cascade_restrict)
-
+        on_table revoke_from_cascade_restrict
+        | on_column revoke_from_cascade_restrict
+        | on_sequence revoke_from_cascade_restrict    
+        | on_database revoke_from_cascade_restrict
+        | on_datawrapper_server_lang revoke_from_cascade_restrict
+        | on_function revoke_from_cascade_restrict
+        | on_large_object revoke_from_cascade_restrict
+        | on_schema revoke_from_cascade_restrict
+        | on_tablespace revoke_from_cascade_restrict)
     | (ADMIN OPTION FOR)?
         obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)* FROM role_name+=identifier(COMMA role_name+=identifier)*
         (CASCADE | RESTRICT)?)
     ;
     
 revoke_from_cascade_restrict
-    : FROM ((GROUP)? role_name+=identifier | PUBLIC)(COMMA ((GROUP)? role_name+=identifier | PUBLIC))*
-        (CASCADE | RESTRICT)?
+    : FROM roles_names (CASCADE | RESTRICT)?
+    ;
+
+on_table
+    : (common_query_list (COMMA common_query_list)* | ALL (PRIVILEGES)?) 
+        ON ( ((TABLE)? obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*)
+             | ALL TABLES IN SCHEMA (schema_name+=identifier)+)
+    ;
+
+on_column
+    : (((SELECT | INSERT | UPDATE | REFERENCES) LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)+
+         | ALL (PRIVILEGES)? LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN )
+        ON (TABLE)? obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
+    ;
+
+on_sequence
+    : (usage_select_update(COMMA usage_select_update)*
+        | ALL (PRIVILEGES)?)
+        ON (SEQUENCE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
+             | ALL SEQUENCES IN SCHEMA schema_name+=identifier (COMMA schema_name+=identifier)*)
+    ;
+
+on_database
+    : (create_connect_temporary_temp(COMMA create_connect_temporary_temp)* | ALL (PRIVILEGES)? )
+        ON DATABASE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
+    ;
+
+on_datawrapper_server_lang
+    : (USAGE | ALL (PRIVILEGES)?)
+        ON (FOREIGN (DATA WRAPPER | SERVER) | LANGUAGE) obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
+    ;
+
+on_function
+    : (EXECUTE | ALL (PRIVILEGES)?) 
+        ON (FUNCTION obj_name+=schema_qualified_name funct_args=function_args (COMMA obj_name+=schema_qualified_name funct_args=function_args)* 
+           | ALL FUNCTIONS IN SCHEMA schema_name+=identifier(COMMA schema_name+=identifier)*)
+    ;
+
+on_large_object
+    : ((SELECT | UPDATE(COMMA)?)+  | ALL (PRIVILEGES)?) 
+        ON LARGE OBJECT obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
+    ;
+on_schema
+    : (((CREATE | USAGE)(COMMA)?)+ | ALL (PRIVILEGES)?) 
+        ON SCHEMA obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
     ;
     
+on_tablespace
+    : (CREATE | ALL (PRIVILEGES)?)
+        ON TABLESPACE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
+    ;
+
 grant_statement
     : 
-    GRANT ((common_query_list (COMMA common_query_list)*
-    | ALL (PRIVILEGES)?)
-    ON  (((TABLE)? (name+=schema_qualified_name (COMMA)?)+)
-         | (ALL TABLES IN SCHEMA schem_name+=identifier (COMMA schem_name+=identifier)*))
-    grant_to_rule
-    
-    | ( ((SELECT | INSERT | UPDATE | REFERENCES) column+=identifier (COMMA column+=identifier)*)+
-    | ALL (PRIVILEGES)? column+=identifier (COMMA column+=identifier)*)
-    ON ((TABLE)? name+=schema_qualified_name (COMMA)?)+
-    grant_to_rule
-    
-    | ( (usage_select_update(COMMA usage_select_update)*)
-        | ALL ( PRIVILEGES)? )
-    ON ( (SEQUENCE obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*)+
-         | ALL SEQUENCES IN SCHEMA schema_name+=identifier(COMMA schema_name+=identifier)* )
-    grant_to_rule
-    
-    | (create_connect_temporary_temp(COMMA create_connect_temporary_temp)* | ALL (PRIVILEGES)? )
-    ON DATABASE name+=schema_qualified_name(COMMA name+=schema_qualified_name)*
-    grant_to_rule
-    
-    | (USAGE | ALL (PRIVILEGES)?)
-    ON (FOREIGN (DATA WRAPPER | SERVER) | LANGUAGE) name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
-    grant_to_rule
-    
-    | (EXECUTE | ALL (PRIVILEGES)?) 
-    ON (FUNCTION obj_name+=schema_qualified_name function_args | ALL FUNCTIONS IN SCHEMA schema_name+=identifier(COMMA schema_name+=identifier)*)
-    grant_to_rule
-    
-    | (((SELECT | UPDATE)(COMMA)?)+ | ALL (PRIVILEGES)?)
-    ON LARGE OBJECT name+=schema_qualified_name(COMMA name+=schema_qualified_name)*
-    grant_to_rule
-    
-    | ( ((CREATE | USAGE)(COMMA)?)+ | ALL (PRIVILEGES)?)
-    ON SCHEMA name+=schema_qualified_name(COMMA name+=schema_qualified_name)*
-    grant_to_rule
-    
-    | (CREATE | ALL (PRIVILEGES)?) 
-    ON TABLESPACE name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
-    grant_to_rule
+    GRANT ( 
+        on_table grant_to_rule
+    | on_column grant_to_rule
+    | on_sequence grant_to_rule
+    | on_database grant_to_rule
+    | on_datawrapper_server_lang grant_to_rule
+    | on_function grant_to_rule
+    | on_large_object grant_to_rule
+    | on_schema grant_to_rule
+    | on_tablespace grant_to_rule
     
     | name+=schema_qualified_name (COMMA name+=schema_qualified_name)* TO role_name+=identifier(COMMA role_name+=identifier)* (WITH ADMIN OPTION)?)
     ;
     
 grant_to_rule
-    : TO ((GROUP)?(role_name+=identifier) | PUBLIC) (COMMA ((GROUP)?(role_name+=identifier) | PUBLIC))* (WITH GRANT OPTION)?
+    : TO roles_names (WITH GRANT OPTION)?
+    ;
+
+roles_names
+    :((GROUP)? role_name+=identifier | PUBLIC)(COMMA ((GROUP)? role_name+=identifier | PUBLIC))*
     ;
     
 comment_on_statement
