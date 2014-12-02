@@ -80,10 +80,11 @@ public class NormalizeProject extends AbstractHandler {
     }
 
     private static class RunRefreshAfterNorm implements Runnable {
+
         private final PgDbProject proj;
         private final Shell shell;
 
-        private RunRefreshAfterNorm(PgDbProject proj, Shell shell) {
+        RunRefreshAfterNorm(PgDbProject proj, Shell shell) {
             this.proj = proj;
             this.shell = shell;
         }

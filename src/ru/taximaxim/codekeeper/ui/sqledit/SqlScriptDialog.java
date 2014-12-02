@@ -626,10 +626,11 @@ public class SqlScriptDialog extends TrayDialog {
     }
     
     private class RunScriptExternal implements Runnable {
+
         private final String textRetrieved;
         private final List<String> command;
 
-        private RunScriptExternal(String textRetrieved, List<String> command) {
+        RunScriptExternal(String textRetrieved, List<String> command) {
             this.textRetrieved = textRetrieved;
             this.command = command;
         }
@@ -671,10 +672,10 @@ public class SqlScriptDialog extends TrayDialog {
     }
 
     private class DiffReGenerationListener extends JobChangeAdapter {
-        
+
         private final List<Entry<PgStatement, PgStatement>> saveToRestore;
 
-        private DiffReGenerationListener(
+        DiffReGenerationListener(
                 List<Entry<PgStatement, PgStatement>> saveToRestore) {
             this.saveToRestore = saveToRestore;
         }

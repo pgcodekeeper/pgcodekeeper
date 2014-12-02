@@ -356,9 +356,10 @@ class CommitPage extends DiffPresentationPane {
     }
 
     private class JobProjectUpdater extends Job {
+
         private final TreeElement tree;
 
-        private JobProjectUpdater(String name, TreeElement tree) {
+        JobProjectUpdater(String name, TreeElement tree) {
             super(name);
             this.tree = tree;
         }
