@@ -10,7 +10,6 @@ import static org.hamcrest.CoreMatchers.not;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -293,10 +292,6 @@ public class PgDiffTest {
 
     /**
      * Runs single test on original schema.
-     *
-     * @throws FileNotFoundException Thrown if expected diff file was not found.
-     * @throws IOException           Thrown if problem occurred while reading
-     *                               expected diff.
      */
     @Test(timeout = 5000)
     public void runDiffSameOriginal() throws IOException {
@@ -316,10 +311,6 @@ public class PgDiffTest {
 
     /**
      * Runs single test on new schema.
-     *
-     * @throws FileNotFoundException Thrown if expected diff file was not found.
-     * @throws IOException           Thrown if problem occurred while reading
-     *                               expected diff.
      */
     @Test(timeout = 5000)
     public void runDiffSameNew() throws IOException {
@@ -339,10 +330,6 @@ public class PgDiffTest {
 
     /**
      * Runs single test using class member variables.
-     *
-     * @throws FileNotFoundException Thrown if expected diff file was not found.
-     * @throws IOException           Thrown if problem occurred while reading
-     *                               expected diff.
      */
     @Test(timeout = 5000)
     public void runDiff() throws IOException {

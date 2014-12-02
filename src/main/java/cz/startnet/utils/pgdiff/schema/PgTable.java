@@ -445,11 +445,6 @@ public class PgTable extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-    
-    @Override
     public PgTable shallowCopy() {
         PgTable tableDst = new PgTable(getName(), getRawStatement(), getSearchPath());
         tableDst.setClusterIndexName(getClusterIndexName());

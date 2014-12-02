@@ -305,12 +305,7 @@ public class PgSchema extends PgStatement {
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
-    
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-    
+
     @Override
     public PgSchema shallowCopy() {
         PgSchema schemaDst = new PgSchema(getName(), getRawStatement());
