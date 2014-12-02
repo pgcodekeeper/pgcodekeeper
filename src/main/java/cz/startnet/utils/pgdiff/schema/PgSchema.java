@@ -289,6 +289,11 @@ public class PgSchema extends PgStatement {
         
         return eq;
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
     
     @Override
     public int computeHash() {
