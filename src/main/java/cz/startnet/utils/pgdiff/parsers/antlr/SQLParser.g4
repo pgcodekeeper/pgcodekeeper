@@ -239,7 +239,7 @@ alter_view_statement
 index_statement
   : (unique_value=UNIQUE)? INDEX (CONCURRENTLY)? (name=schema_qualified_name)? ON table_name=schema_qualified_name 
     (USING method=schema_qualified_name)?
-    sort_specifier_paren param_clause?
+    LEFT_PAREN sort_specifier_list RIGHT_PAREN param_clause?
     table_space?
     (WHERE predic=boolean_value_expression)?
   ;
@@ -1166,14 +1166,10 @@ case_specification
   : CASE value_expression? simple_when_clause+ else_clause? END
   ;
 
-simple_when_clause: WHEN c=value_expression THEN r=result ;
+simple_when_clause: WHEN c=value_expression THEN r=value_expression ;
 
 else_clause
-  : ELSE r=result
-  ;
-
-result
-  : value_expression | NULL
+  : ELSE r=value_expression
   ;
 
 /*
@@ -1183,15 +1179,7 @@ result
 */
 
 cast_specification
-  : CAST LEFT_PAREN cast_operand AS cast_target RIGHT_PAREN
-  ;
-
-cast_operand
-  : value_expression
-  ;
-
-cast_target
-  : data_type
+  : CAST LEFT_PAREN value_expression AS data_type RIGHT_PAREN
   ;
 
 /*
@@ -1254,7 +1242,7 @@ numeric_primary
   ;
 
 value_expression_primary_cast
-    : value_expression_primary (CAST_EXPRESSION cast_target)*
+    : value_expression_primary (CAST_EXPRESSION data_type)*
     ;
 sign
   : PLUS | MINUS
@@ -1919,11 +1907,6 @@ extended_datetime_field
 orderby_clause
   : ORDER BY sort_specifier_list
   ;
-
-sort_specifier_paren
-    : sort_specifier_list 
-    | LEFT_PAREN sort_specifier_list RIGHT_PAREN
-    ;
 
 sort_specifier_list
   : sort_specifier (COMMA sort_specifier)*
