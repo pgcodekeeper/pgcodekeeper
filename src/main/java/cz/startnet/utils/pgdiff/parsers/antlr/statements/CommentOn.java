@@ -17,8 +17,8 @@ public class CommentOn extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         PgComment comment = new PgComment(getFullCtxText(ctx));
-        if (ctx.object_name != null) {
-            comment.setObjName(ctx.object_name.getText());
+        if (ctx.name != null) {
+            comment.setObjName(ctx.name.getText());
         }
         comment.setComment(ctx.comment_text.getText());
         return comment;

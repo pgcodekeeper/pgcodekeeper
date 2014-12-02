@@ -16,9 +16,9 @@ public class AlterSchema extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        String name = getName(ctx.name);
+        String name = getName(ctx.schema_with_name().name);
         PgSchema schema = new PgSchema(name, getFullCtxText(ctx.getParent()));
-        schema.setOwner(ctx.new_name.getText());
+        schema.setOwner(ctx.schema_with_name().name.getText());
         return schema;
     }
 

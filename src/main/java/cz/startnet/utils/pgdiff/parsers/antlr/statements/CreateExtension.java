@@ -25,8 +25,8 @@ public class CreateExtension extends ParserAbstract {
         if (ctx.old_version!= null) {
             ext.setOldVersion(ctx.old_version.getText());
         }
-        if (ctx.schema_name != null) {
-            ext.setSchema(ctx.schema_name.getText());
+        if (ctx.schema_with_name() != null) {
+            ext.setSchema(getName(ctx.schema_with_name().name));
         }
         if (ctx.version!= null) {
             ext.setVersion(ctx.version.getText());

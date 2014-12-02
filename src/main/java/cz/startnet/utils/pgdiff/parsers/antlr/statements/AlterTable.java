@@ -27,8 +27,8 @@ public class AlterTable extends ParserAbstract {
             if (tablAction.index_name!=null) {
                 table.setClusterIndexName(tablAction.index_name.getText());
             }
-            if (tablAction.new_owner!=null) {
-                table.setOwner(tablAction.new_owner.getText());
+            if (tablAction.owner_to() !=null) {
+                table.setOwner(tablAction.owner_to().name.getText());
             }
             
         }

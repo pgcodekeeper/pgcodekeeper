@@ -109,24 +109,25 @@ schema_alter
 alter_function_statement
     : FUNCTION function_parameters 
       ((function_actions_common | RESET (configuration_parameter=identifier | ALL))+ (RESTRICT)?
-    | RENAME TO new_name=schema_qualified_name
-    | OWNER TO new_owner=identifier
-    | SET SCHEMA new_schema=schema_qualified_name)
+    | rename_to
+    | owner_to
+    | set_schema)
     ;
     
 alter_schema_statement
-    : SCHEMA name=schema_qualified_name (OWNER | RENAME) TO new_name=schema_qualified_name
+    : schema_with_name (rename_to | owner_to)
     ;
 
 alter_language_statement
-    : (PROCEDURAL)? LANGUAGE name=identifier (OWNER | RENAME) TO new_name=identifier
+    : (PROCEDURAL)? LANGUAGE name=identifier (rename_to | owner_to)
     ;
 
 alter_table_statement
     : TABLE (ONLY)? name=schema_qualified_name MULTIPLY?(
         (table_action ((COMMA)table_action)*
         | RENAME (COLUMN)? column=schema_qualified_name TO new_column=schema_qualified_name)
-    | (RENAME TO | SET SCHEMA) new_name=schema_qualified_name)
+    | set_schema
+    | rename_to)
     ;
 
 table_action
@@ -141,7 +142,7 @@ table_action
         | SET LEFT_PAREN attribute_option_value (COMMA attribute_option_value)* RIGHT_PAREN
         | RESET LEFT_PAREN attribute_option+=table_attribute_option (COMMA attribute_option+=table_attribute_option)* RIGHT_PAREN
         | SET STORAGE (PLAIN | EXTERNAL | EXTENDED | MAIN)))
-    | ADD tabl_constraint=table_constraint (NOT VALID)?
+    | ADD tabl_constraint=constraint_common (NOT VALID)?
     | ADD tabl_constraint_using_index=table_constraint_using_index
     | VALIDATE CONSTRAINT constraint_name=schema_qualified_name
     | DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name (RESTRICT | CASCADE)
@@ -158,8 +159,8 @@ table_action
     | NO INHERIT parent_table=schema_qualified_name 
     | OF type_name=schema_qualified_name 
     | NOT OF
-    | OWNER TO new_owner=schema_qualified_name 
-    | SET TABLESPACE new_tablespace=schema_qualified_name 
+    | owner_to
+    | SET table_space
     ;
 
 attribute_option_value
@@ -201,16 +202,12 @@ alter_default_privileges
     ;
 
 abbreviated_grant_or_revoke
-    : GRANT ((
-        (SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER)
-        (COMMA (SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER))*)
+    : GRANT (( common_query_list (COMMA common_query_list)*)
         | ALL (PRIVILEGES)?)
         ON TABLES
         grant_to_rule
 
-    | GRANT (( 
-        (USAGE | SELECT | UPDATE)
-        (COMMA(USAGE | SELECT | UPDATE))*)
+    | GRANT ((usage_select_update(COMMA usage_select_update)*)
         | ALL (PRIVILEGES)?)
         ON SEQUENCES
         grant_to_rule
@@ -224,17 +221,13 @@ abbreviated_grant_or_revoke
         grant_to_rule
         
     | REVOKE (GRANT OPTION FOR)?
-        (
-        ((SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER) 
-            (COMMA (SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER))*)
+        ( (common_query_list (COMMA common_query_list)*)
         | ALL (PRIVILEGES)?)
         ON TABLES
         revoke_from_cascade_restrict
 
     | REVOKE (GRANT OPTION FOR)?
-        ((
-          (USAGE | SELECT | UPDATE)
-          (COMMA (USAGE | SELECT | UPDATE))*)
+        ((usage_select_update (COMMA usage_select_update)*)
         | ALL (PRIVILEGES)?)
         ON SEQUENCES
         revoke_from_cascade_restrict
@@ -251,13 +244,17 @@ abbreviated_grant_or_revoke
 alter_sequence_statement
     : SEQUENCE (IF EXISTS)? name=schema_qualified_name 
      ( (sequence_body | RESTART ((WITH)? restart=identifier)?)*
-    | ((OWNER | RENAME) TO | SET SCHEMA) new_name=schema_qualified_name)
+    | set_schema
+    | owner_to
+    | rename_to)
     ;
 
 alter_view_statement
     : VIEW (IF EXISTS)? name=schema_qualified_name 
      (ALTER (COLUMN)? column_name=schema_qualified_name  (SET DEFAULT expression=value_expression | DROP DEFAULT)
-    | (((OWNER | RENAME) TO) | SET SCHEMA) new_owner=schema_qualified_name 
+    | set_schema
+    | owner_to
+    | rename_to
     | SET LEFT_PAREN view_option_name=identifier (EQUAL view_option_value=value_expression)?(COMMA view_option_name=identifier (EQUAL view_option_value=value_expression)?)*  RIGHT_PAREN
     | RESET LEFT_PAREN view_option_name=identifier (COMMA view_option_name=identifier)*  RIGHT_PAREN)
     ;
@@ -266,13 +263,13 @@ index_statement
   : (unique_value=UNIQUE)? INDEX (CONCURRENTLY)? (name=schema_qualified_name)? ON table_name=schema_qualified_name 
     (USING method=schema_qualified_name)?
     sort_specifier_paren param_clause?
-    (TABLESPACE tablespace_name=schema_qualified_name)?
+    table_space?
     (WHERE predic=boolean_value_expression)?
   ;
   
  create_extension_statement
     : EXTENSION (IF NOT EXISTS)? name=schema_qualified_name (WITH)?
-         (SCHEMA schema_name=identifier)? (VERSION version=unsigned_literal)? (FROM old_version=unsigned_literal)?
+         schema_with_name? (VERSION version=unsigned_literal)? (FROM old_version=unsigned_literal)?
     ;
     
 create_language_statement
@@ -315,8 +312,7 @@ create_trigger_statement
 revoke_statement
     : REVOKE 
       ((GRANT OPTION FOR)?(
-        ((SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER)
-            (COMMA (SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER))*
+        (common_query_list (COMMA common_query_list)*
          | ALL (PRIVILEGES)?) 
         ON ( ((TABLE)? obj_name+=schema_qualified_name (COMMA (TABLE)? obj_name+=schema_qualified_name)*)
              | ALL TABLES IN SCHEMA (schema_name+=identifier)+)
@@ -327,13 +323,13 @@ revoke_statement
         ON (TABLE)? obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
         revoke_from_cascade_restrict
     
-    | ( (USAGE | SELECT | UPDATE)+
+    | ( usage_select_update+
         | ALL (PRIVILEGES)?)
         ON (SEQUENCE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
              | ALL SEQUENCES IN SCHEMA schema_name+=identifier (COMMA schema_name+=identifier)*)
         revoke_from_cascade_restrict
         
-    | ((CREATE | CONNECT | TEMPORARY | TEMP)+ | ALL (PRIVILEGES)?)
+    | (create_connect_temporary_temp+ | ALL (PRIVILEGES)?)
         ON DATABASE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
         revoke_from_cascade_restrict
     
@@ -373,30 +369,29 @@ revoke_from_cascade_restrict
     
 grant_statement
     : 
-    GRANT (((SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER)
-           (COMMA (SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER))*
+    GRANT ((common_query_list (COMMA common_query_list)*
     | ALL (PRIVILEGES)?)
-    ON  (((TABLE)? (obj_name+=schema_qualified_name (COMMA)?)+)
-         | (ALL TABLES IN SCHEMA (schem_name=identifier (COMMA)?)+))
+    ON  (((TABLE)? (name+=schema_qualified_name (COMMA)?)+)
+         | (ALL TABLES IN SCHEMA schem_name+=identifier (COMMA schem_name+=identifier)*))
     grant_to_rule
     
     | ( ((SELECT | INSERT | UPDATE | REFERENCES) column+=identifier (COMMA column+=identifier)*)+
     | ALL (PRIVILEGES)? column+=identifier (COMMA column+=identifier)*)
-    ON ((TABLE)? obj_name+=schema_qualified_name (COMMA)?)+
+    ON ((TABLE)? name+=schema_qualified_name (COMMA)?)+
     grant_to_rule
     
-    | ( (( USAGE | SELECT | UPDATE )(COMMA ( USAGE | SELECT | UPDATE ))*)
+    | ( (usage_select_update(COMMA usage_select_update)*)
         | ALL ( PRIVILEGES)? )
     ON ( (SEQUENCE obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*)+
          | ALL SEQUENCES IN SCHEMA schema_name+=identifier(COMMA schema_name+=identifier)* )
     grant_to_rule
     
-    | ((CREATE | CONNECT | TEMPORARY | TEMP)(COMMA (CREATE | CONNECT | TEMPORARY | TEMP))* | ALL (PRIVILEGES)? )
-    ON DATABASE obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
+    | (create_connect_temporary_temp(COMMA create_connect_temporary_temp)* | ALL (PRIVILEGES)? )
+    ON DATABASE name+=schema_qualified_name(COMMA name+=schema_qualified_name)*
     grant_to_rule
     
     | (USAGE | ALL (PRIVILEGES)?)
-    ON (FOREIGN (DATA WRAPPER | SERVER) | LANGUAGE) obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
+    ON (FOREIGN (DATA WRAPPER | SERVER) | LANGUAGE) name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
     grant_to_rule
     
     | (EXECUTE | ALL (PRIVILEGES)?) 
@@ -404,18 +399,18 @@ grant_statement
     grant_to_rule
     
     | (((SELECT | UPDATE)(COMMA)?)+ | ALL (PRIVILEGES)?)
-    ON LARGE OBJECT obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
+    ON LARGE OBJECT name+=schema_qualified_name(COMMA name+=schema_qualified_name)*
     grant_to_rule
     
     | ( ((CREATE | USAGE)(COMMA)?)+ | ALL (PRIVILEGES)?)
-    ON SCHEMA obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
+    ON SCHEMA name+=schema_qualified_name(COMMA name+=schema_qualified_name)*
     grant_to_rule
     
     | (CREATE | ALL (PRIVILEGES)?) 
-    ON TABLESPACE obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
+    ON TABLESPACE name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
     grant_to_rule
     
-    | obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)* TO role_name+=identifier(COMMA role_name+=identifier)* (WITH ADMIN OPTION)?)
+    | name+=schema_qualified_name (COMMA name+=schema_qualified_name)* TO role_name+=identifier(COMMA role_name+=identifier)* (WITH ADMIN OPTION)?)
     ;
     
 grant_to_rule
@@ -424,12 +419,12 @@ grant_to_rule
     
 comment_on_statement
     : COMMENT ON(
-        AGGREGATE object_name=schema_qualified_name LEFT_PAREN (agg_type+=data_type(COMMA agg_type+=data_type)*)? RIGHT_PAREN 
+        AGGREGATE name=schema_qualified_name LEFT_PAREN (agg_type+=data_type(COMMA agg_type+=data_type)*)? RIGHT_PAREN 
         | CAST LEFT_PAREN source_type=data_type AS target_type=data_type RIGHT_PAREN 
-        | (CONSTRAINT | RULE | TRIGGER) object_name=schema_qualified_name ON table_name=schema_qualified_name
-        | FUNCTION object_name=schema_qualified_name function_args
-        | OPERATOR object_name=schema_qualified_name LEFT_PAREN left_type=data_type COMMA right_type=data_type RIGHT_PAREN 
-        | OPERATOR (FAMILY| CLASS) object_name=schema_qualified_name USING index_method=identifier
+        | (CONSTRAINT | RULE | TRIGGER) name=schema_qualified_name ON table_name=schema_qualified_name
+        | FUNCTION name=schema_qualified_name function_args
+        | OPERATOR name=schema_qualified_name LEFT_PAREN left_type=data_type COMMA right_type=data_type RIGHT_PAREN 
+        | OPERATOR (FAMILY| CLASS) name=schema_qualified_name USING index_method=identifier
         | (TEXT SEARCH (CONFIGURATION | DICTIONARY | PARSER | TEMPLATE )
         | (PROCEDURAL)? LANGUAGE 
         | LARGE OBJECT 
@@ -437,7 +432,7 @@ comment_on_statement
         | (COLUMN | CONVERSION | DATABASE| DOMAIN| EXTENSION| INDEX | ROLE 
             | COLLATION| SCHEMA| SEQUENCE| SERVER| TABLE | TABLESPACE 
             | TYPE | VIEW)
-          ) object_name=schema_qualified_name
+          ) name=schema_qualified_name
         ) IS comment_text=Character_String_Literal
     ;
 
@@ -448,9 +443,7 @@ comment_on_statement
 */
 create_function_statement
     : (OR REPLACE)? FUNCTION function_parameters
-        (RETURNS (rettype=value_expression | rettype_data=data_type)
-            | RETURNS function_ret_table
-        )?
+        (RETURNS (rettype=value_expression | rettype_data=data_type | ret_table=function_ret_table))?
           (LANGUAGE lang_name=identifier
             | WINDOW
             | function_actions_common
@@ -542,54 +535,57 @@ create_table_statement
 
 table_column_def
     : table_column_definition
-       | tabl_constraint=table_constraint
+       | tabl_constraint=constraint_common
        | LIKE parent_table=schema_qualified_name (like_opt+=like_option)*
     ;
 
 table_column_definition
-    : table_column_name (datatype=data_type)? (COLLATE collation=identifier)? (WITH OPTIONS)? (colmn_constraint+=column_constraint)*
-    ;
-
-table_column_name
-    :column_name+=identifier
+    : column_name=identifier (datatype=data_type)? (COLLATE collation=identifier)? (WITH OPTIONS)? (colmn_constraint+=constraint_common)*
     ;
   
 like_option
     : (INCLUDING | EXCLUDING) (DEFAULTS | CONSTRAINTS | INDEXES | STORAGE | COMMENTS | ALL)
     ;
-    
-table_constraint
+/** NULL, DEFAULT - column constraint
+* EXCLUDE, FOREIGN KEY - table_constraint
+*/
+constraint_common
     : (CONSTRAINT constraint_name=identifier)?
-        ( check_boolean_expression
-        | (UNIQUE LEFT_PAREN 
-            column_name_unique+=identifier (COMMA column_name_unique+=identifier)*
-          RIGHT_PAREN index_parameters_unique=index_parameters) 
-        | (PRIMARY KEY LEFT_PAREN 
-            column_name_pr_key+=identifier(COMMA column_name_pr_key+=identifier)*
-          RIGHT_PAREN index_parameters_pr_key=index_parameters) 
-        | (EXCLUDE (USING index_method=identifier)? 
+      ((EXCLUDE (USING index_method=identifier)? 
             LEFT_PAREN exclude_element=identifier WITH operator+=identifier(COMMA operator+=identifier)* RIGHT_PAREN 
             index_parameters (WHERE LEFT_PAREN predicat=identifier RIGHT_PAREN)?) 
-        | (FOREIGN KEY LEFT_PAREN 
-            column_name_for_key+=identifier(COMMA column_name_for_key+=identifier)*
-          RIGHT_PAREN 
-          REFERENCES reftable=schema_qualified_name ( LEFT_PAREN refcolumn+=identifier(COMMA refcolumn+=identifier)* RIGHT_PAREN )?
-            (((MATCH FULL) | (MATCH PARTIAL) | (MATCH SIMPLE)) | 
-            (ON DELETE action_on_delete=action) | (ON UPDATE action_on_update=action))*))
-        table_deferrable? table_initialy_immed?
+       | (FOREIGN KEY column_references)? table_references
+       | common_constraint
+       | null_false=NOT? null_value=NULL
+       | DEFAULT (default_expr_data=data_type | default_expr=value_expression)
+      )
+      table_deferrable? table_initialy_immed?
     ;
-    
-column_constraint
-    : (CONSTRAINT constraint_name=identifier)? 
-        ((null_false=NOT)? null_value=NULL
-        | check_boolean_expression 
-        | DEFAULT (default_expr_data=data_type | default_expr=value_expression)
-        | UNIQUE index_params_unique=index_parameters
-        | PRIMARY KEY index_params_pr_key=index_parameters
-        | REFERENCES reftable=schema_qualified_name (LEFT_PAREN refcolumn=schema_qualified_name RIGHT_PAREN)?  
-          (MATCH FULL | MATCH PARTIAL | MATCH SIMPLE)? 
-        (ON DELETE action_on_delete=action)? (ON UPDATE action_on_update=action)?)
-        table_deferrable? table_initialy_immed?
+
+common_constraint
+    :check_boolean_expression 
+    | table_unique
+    | table_primary_key
+    ;
+
+table_unique
+    : UNIQUE column_references? index_parameters_unique=index_parameters
+    ;
+table_primary_key
+    : PRIMARY KEY column_references? index_parameters_pr_key=index_parameters
+    ;
+
+table_references
+    : REFERENCES reftable=schema_qualified_name column_references?
+            (match_all | (ON DELETE action_on_delete=action) | (ON UPDATE action_on_update=action))*
+    ;
+
+column_references
+    :LEFT_PAREN name+=schema_qualified_name(COMMA name+=schema_qualified_name)* RIGHT_PAREN
+    ;
+
+match_all
+    : MATCH (FULL | PARTIAL | SIMPLE)
     ;
 
 check_boolean_expression
@@ -615,7 +611,7 @@ on_commit
     ;
     
 table_space
-    :TABLESPACE tablespace_name=identifier
+    :TABLESPACE name=schema_qualified_name
     ;
     
 action
@@ -624,12 +620,40 @@ action
     ;
     
 index_parameters
-    : (with_storage_parameter)? (USING INDEX TABLESPACE tablespace=identifier)?
+    : (with_storage_parameter)? (USING INDEX table_space)?
     ;
     
 table_elements
   : LEFT_PAREN field_element (COMMA field_element)* RIGHT_PAREN
   ;
+
+owner_to
+    : OWNER TO name=identifier
+    ;
+
+rename_to
+    : RENAME TO name=schema_qualified_name
+    ;
+
+set_schema
+    : SET schema_with_name
+    ;
+
+schema_with_name
+    : SCHEMA name=schema_qualified_name
+    ;
+
+common_query_list
+    : SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER
+    ;
+
+usage_select_update
+    : USAGE | SELECT | UPDATE
+    ;
+create_connect_temporary_temp
+    :CREATE | CONNECT | TEMPORARY | TEMP
+    ;
+
 
 field_element
   : name=identifier field_type

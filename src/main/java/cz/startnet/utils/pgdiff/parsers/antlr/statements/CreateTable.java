@@ -4,12 +4,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Column_constraintContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_constraintContext;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -51,7 +50,7 @@ public class CreateTable extends ParserAbstract {
         }
         
         if (ctx.table_space()!=null) {
-            table.setTablespace(ctx.table_space().identifier().getText());
+            table.setTablespace(getName(ctx.table_space().name));
         }
         
         if (ctx.storage_parameter_oid() != null) {
@@ -64,10 +63,10 @@ public class CreateTable extends ParserAbstract {
     
     static PgColumn getColumn(Table_column_definitionContext colCtx) {
         PgColumn col = null;
-        if (colCtx.table_column_name() != null) {
-            col = new PgColumn(colCtx.table_column_name().getText());
-            for (Column_constraintContext column_constraint : colCtx
-                    .column_constraint()) {
+        if (colCtx.column_name != null) {
+            col = new PgColumn(colCtx.column_name.getText());
+            for (Constraint_commonContext column_constraint : colCtx
+                    .colmn_constraint) {
                 if (column_constraint.default_expr != null) {
                     col.setDefaultValue(column_constraint.default_expr
                             .getText());
@@ -95,15 +94,15 @@ public class CreateTable extends ParserAbstract {
     private List<PgConstraint> getConstraint(Table_column_defContext colCtx) {
         List<PgConstraint> result = new ArrayList<>();
         PgConstraint constr = null;
-        if (colCtx.table_constraint() != null) {
-            Table_constraintContext tablConstr = colCtx.table_constraint();
+        if (colCtx.tabl_constraint != null) {
+            Constraint_commonContext tablConstr = colCtx.tabl_constraint;
             constr = new PgConstraint(
                     tablConstr.constraint_name != null ? tablConstr.constraint_name.getText()
                             : "", getFullCtxText(tablConstr), "");
             constr.setDefinition(getFullCtxText(tablConstr));
             result.add(constr);
         } else {
-            for (Column_constraintContext column_constraint : colCtx.table_column_definition().column_constraint()) {
+            for (Constraint_commonContext column_constraint : colCtx.table_column_definition().colmn_constraint) {
                 // skip null and def values, it parsed to column def
                 if (column_constraint.null_value != null
                         || column_constraint.default_expr != null
