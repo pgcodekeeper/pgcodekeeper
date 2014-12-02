@@ -44,8 +44,13 @@ public class JdbcAclParser {
     public List<Privilege> parse(String aclArrayAsString, int maxTypes, String order, String owner){
         List<Privilege> privileges = new ArrayList<>();
         
-        List<String> acls = new ArrayList<>(Arrays.asList(
-                aclArrayAsString.replaceAll("[{}]", "").split(Pattern.quote(","))));
+        // skip "empty" acl strings, such as "{}"
+        if (aclArrayAsString.length() < 3){
+            return privileges;
+        }
+        
+        ArrayList<String> acls = new ArrayList<String>(
+                Arrays.asList(aclArrayAsString.replaceAll("[{}]", "").split(Pattern.quote(","))));
         
         // move owner's grants to front
         for (String s : acls){
