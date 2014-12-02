@@ -91,9 +91,8 @@ schema_create
     | create_event_trigger)
      
     | comment_on_statement
-    | revoke_statement
+    | rule_common
     | set_statement
-    | grant_statement
     ;
     
 schema_alter
@@ -202,43 +201,21 @@ alter_default_privileges
     ;
 
 abbreviated_grant_or_revoke
-    : GRANT (( common_query_list (COMMA common_query_list)*)
+    : (GRANT | REVOKE (GRANT OPTION FOR)?) (
+      (( common_query_list (COMMA common_query_list)*)
         | ALL (PRIVILEGES)?)
         ON TABLES
-        grant_to_rule
 
-    | GRANT ((usage_select_update(COMMA usage_select_update)*)
+    | ((usage_select_update(COMMA usage_select_update)*)
         | ALL (PRIVILEGES)?)
         ON SEQUENCES
-        grant_to_rule
 
-    | GRANT (EXECUTE | ALL (PRIVILEGES)?)
+    | (EXECUTE | ALL (PRIVILEGES)?)
         ON FUNCTIONS
-        grant_to_rule
 
-    | GRANT (USAGE | ALL (PRIVILEGES)?)
-        ON TYPES
-        grant_to_rule
-        
-    | REVOKE (GRANT OPTION FOR)?
-        ( (common_query_list (COMMA common_query_list)*)
-        | ALL (PRIVILEGES)?)
-        ON TABLES
-        revoke_from_cascade_restrict
-
-    | REVOKE (GRANT OPTION FOR)?
-        ((usage_select_update (COMMA usage_select_update)*)
-        | ALL (PRIVILEGES)?)
-        ON SEQUENCES
-        revoke_from_cascade_restrict
-
-    | REVOKE (GRANT OPTION FOR)?
-        (EXECUTE | ALL (PRIVILEGES)?)
-        ON FUNCTIONS
-        revoke_from_cascade_restrict
-        
-    | REVOKE (GRANT OPTION FOR)? (USAGE | ALL (PRIVILEGES)?)
-        ON TYPES revoke_from_cascade_restrict
+    | (USAGE | ALL (PRIVILEGES)?)
+        ON TYPES)
+        (grant_to_rule | revoke_from_cascade_restrict)
     ;
 
 alter_sequence_statement
@@ -309,21 +286,25 @@ create_trigger_statement
     EXECUTE PROCEDURE func_name=schema_qualified_name LEFT_PAREN (arguments+=identifier)? (COMMA arguments+=identifier)* RIGHT_PAREN
     ;
     
-revoke_statement
-    : REVOKE 
-      ((GRANT OPTION FOR)?(
-        on_table revoke_from_cascade_restrict
-        | on_column revoke_from_cascade_restrict
-        | on_sequence revoke_from_cascade_restrict    
-        | on_database revoke_from_cascade_restrict
-        | on_datawrapper_server_lang revoke_from_cascade_restrict
-        | on_function revoke_from_cascade_restrict
-        | on_large_object revoke_from_cascade_restrict
-        | on_schema revoke_from_cascade_restrict
-        | on_tablespace revoke_from_cascade_restrict)
-    | (ADMIN OPTION FOR)?
-        obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)* FROM role_name+=identifier(COMMA role_name+=identifier)*
-        (CASCADE | RESTRICT)?)
+rule_common
+    : (GRANT | REVOKE (GRANT OPTION FOR)?) 
+      (on_table 
+        | on_column 
+        | on_sequence
+        | on_database
+        | on_datawrapper_server_lang
+        | on_function
+        | on_large_object
+        | on_schema
+        | on_tablespace)
+      (grant_to_rule | revoke_from_cascade_restrict)
+      | GRANT name+=schema_qualified_name (COMMA name+=schema_qualified_name)* TO role_name+=identifier(COMMA role_name+=identifier)* (WITH ADMIN OPTION)?
+      | REVOKE (ADMIN OPTION FOR)? obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)* FROM role_name+=identifier(COMMA role_name+=identifier)*
+        (CASCADE | RESTRICT)?
+    ;
+    
+grant_to_rule
+    : TO roles_names (WITH GRANT OPTION)?
     ;
     
 revoke_from_cascade_restrict
@@ -377,26 +358,6 @@ on_schema
 on_tablespace
     : (CREATE | ALL (PRIVILEGES)?)
         ON TABLESPACE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
-    ;
-
-grant_statement
-    : 
-    GRANT ( 
-        on_table grant_to_rule
-    | on_column grant_to_rule
-    | on_sequence grant_to_rule
-    | on_database grant_to_rule
-    | on_datawrapper_server_lang grant_to_rule
-    | on_function grant_to_rule
-    | on_large_object grant_to_rule
-    | on_schema grant_to_rule
-    | on_tablespace grant_to_rule
-    
-    | name+=schema_qualified_name (COMMA name+=schema_qualified_name)* TO role_name+=identifier(COMMA role_name+=identifier)* (WITH ADMIN OPTION)?)
-    ;
-    
-grant_to_rule
-    : TO roles_names (WITH GRANT OPTION)?
     ;
 
 roles_names

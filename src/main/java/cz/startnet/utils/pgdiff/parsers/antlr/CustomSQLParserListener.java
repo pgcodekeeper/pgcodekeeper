@@ -17,9 +17,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statemen
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Grant_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Revoke_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSchema;
@@ -33,8 +31,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateSequence;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.Grant;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.Revoke;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.Set;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSet;
@@ -114,11 +110,6 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     }
     
     @Override
-    public void exitRevoke_statement(Revoke_statementContext ctx) {
-        new Revoke(ctx, db, filePath).getObject();
-    }
-    
-    @Override
     public void exitSet_statement(Set_statementContext ctx) {
         PgSet set = (PgSet)new Set(ctx, db, filePath).getObject();
         if (set.getParam().equalsIgnoreCase("search_path")) {
@@ -127,11 +118,6 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
                 break;
             }
         }
-    }
-    
-    @Override
-    public void exitGrant_statement(Grant_statementContext ctx) {
-        new Grant(ctx, db, filePath).getObject();
     }
     
     @Override
