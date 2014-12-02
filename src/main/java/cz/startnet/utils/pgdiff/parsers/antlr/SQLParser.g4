@@ -1163,23 +1163,10 @@ case_abbreviation
   ;
 
 case_specification
-  : simple_case
-  | searched_case
+  : CASE value_expression? simple_when_clause+ else_clause? END
   ;
 
-simple_case
-  : CASE value_expression ( simple_when_clause )+ ( else_clause  )? END
-  ;
-
-searched_case
-  : CASE (searched_when_clause)+ (else_clause)? END
-  ;
-
-simple_when_clause : WHEN search_condition THEN result ;
-
-searched_when_clause
-  : WHEN c=search_condition THEN r=result
-  ;
+simple_when_clause: WHEN c=value_expression THEN r=result ;
 
 else_clause
   : ELSE r=result
@@ -1516,7 +1503,7 @@ join_specification
   ;
 
 join_condition
-  : ON search_condition
+  : ON value_expression
   ;
 
 named_columns_join
@@ -1552,12 +1539,7 @@ derived_table
 ===============================================================================
 */
 where_clause
-  : WHERE search_condition
-  ;
-
-search_condition
-  : LEFT_PAREN search_condition RIGHT_PAREN // instead of boolean_value_expression, we use value_expression for more flexibility.
-  | value_expression
+  : WHERE value_expression
   ;
 
 /*
