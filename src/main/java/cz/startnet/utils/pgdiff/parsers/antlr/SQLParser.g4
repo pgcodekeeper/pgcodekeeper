@@ -1439,10 +1439,9 @@ joined_table
   ;
 
 joined_table_primary
-  : CROSS JOIN right=table_primary
-  | (t=join_type)? JOIN right=table_primary s=join_specification
-  | NATURAL (t=join_type)? JOIN right=table_primary
-  | UNION JOIN right=table_primary
+  : cross_join
+  | qualified_join
+  | natural_join
   ;
 
 cross_join
@@ -1455,10 +1454,6 @@ qualified_join
 
 natural_join
   : NATURAL (t=join_type)? JOIN r=table_primary
-  ;
-
-union_join
-  : UNION JOIN r=table_primary
   ;
 
 join_type
