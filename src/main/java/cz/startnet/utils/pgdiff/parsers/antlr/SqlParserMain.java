@@ -41,6 +41,7 @@ public class SqlParserMain {
         List<PgStatement> alterObjects = new ArrayList<>();
         List<String> paths = new ArrayList<>();
         paths = getPathsToFiles(pathToFile);
+        long timeout= System.currentTimeMillis();
 //        paths.add("/home/botov_av/workspace/codekeeper/tmp_dump_9221153347570520215.sql");
          paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/first_part.sql");
          paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/second_part.sql");
@@ -56,7 +57,7 @@ public class SqlParserMain {
                             .get(path)));
         }
 //        fillDB(alterObjects, database);
-        System.out.println("2");
+        System.out.println((System.currentTimeMillis() - timeout)/1000);
     }
 
     public static void fillDB(List<PgStatement> alterObjects,

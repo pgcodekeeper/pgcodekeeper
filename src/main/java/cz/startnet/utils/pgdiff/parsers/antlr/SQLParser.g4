@@ -108,7 +108,7 @@ schema_alter
     
 alter_function_statement
     : FUNCTION function_parameters 
-      (function_action+ (RESTRICT)?
+      ((function_actions_common | RESET (configuration_parameter=identifier | ALL))+ (RESTRICT)?
     | RENAME TO new_name=schema_qualified_name
     | OWNER TO new_owner=identifier
     | SET SCHEMA new_schema=schema_qualified_name)
@@ -132,15 +132,15 @@ alter_table_statement
 table_action
     : ADD (COLUMN)? table_column_definition
     | DROP (COLUMN)? (IF EXISTS)? column=schema_qualified_name (RESTRICT | CASCADE)?
-    | ALTER (COLUMN)? column=schema_qualified_name (SET DATA)? TYPE datatype=data_type (COLLATE collation=identifier)? (USING expression=value_expression)?
     | ALTER (COLUMN)? column=schema_qualified_name 
-      (SET DEFAULT expression=value_expression 
-      | DROP DEFAULT 
-      | ((SET | DROP) NOT NULL) 
-      | SET STATISTICS integer=NUMBER
-      | SET LEFT_PAREN attribute_option_value (COMMA attribute_option_value)* RIGHT_PAREN
-      | RESET LEFT_PAREN attribute_option+=table_attribute_option (COMMA attribute_option+=table_attribute_option)* RIGHT_PAREN
-      | SET STORAGE (PLAIN | EXTERNAL | EXTENDED | MAIN))
+      ((SET DATA)? TYPE datatype=data_type (COLLATE collation=identifier)? (USING expression=value_expression)?
+      | (SET DEFAULT expression=value_expression 
+        | DROP DEFAULT 
+        | ((SET | DROP) NOT NULL) 
+        | SET STATISTICS integer=NUMBER
+        | SET LEFT_PAREN attribute_option_value (COMMA attribute_option_value)* RIGHT_PAREN
+        | RESET LEFT_PAREN attribute_option+=table_attribute_option (COMMA attribute_option+=table_attribute_option)* RIGHT_PAREN
+        | SET STORAGE (PLAIN | EXTERNAL | EXTENDED | MAIN)))
     | ADD tabl_constraint=table_constraint (NOT VALID)?
     | ADD tabl_constraint_using_index=table_constraint_using_index
     | VALIDATE CONSTRAINT constraint_name=schema_qualified_name
@@ -183,18 +183,14 @@ table_deferrable
 table_initialy_immed
     :INITIALLY (DEFERRED | IMMEDIATE)
     ;
-    
-function_action
-    : CALLED ON NULL INPUT
-    | RETURNS NULL ON NULL INPUT 
-    | STRICT IMMUTABLE 
-    | STABLE 
-    | VOLATILE (EXTERNAL)? SECURITY INVOKER 
-    | (EXTERNAL)? SECURITY DEFINER
-    | COST execution_cost=NUMBER
-    | ROWS result_rows=NUMBER
-    | SET configuration_parameter=identifier  ((TO value=identifier | EQUAL value=identifier | DEFAULT) | FROM CURRENT)
-    | RESET (configuration_parameter=identifier | ALL)
+
+function_actions_common
+    : (CALLED | RETURNS NULL) ON NULL INPUT
+      | (STRICT | IMMUTABLE | VOLATILE | STABLE)
+      | (EXTERNAL)? SECURITY (INVOKER | DEFINER)
+      | COST execution_cost=NUMBER
+      | ROWS result_rows=NUMBER
+      | SET configuration_parameter=identifier  (((TO | EQUAL)? (value+=identifier | DEFAULT)) | FROM CURRENT)(COMMA value+=identifier)*
     ;
 
 alter_default_privileges
@@ -456,13 +452,8 @@ create_function_statement
             | RETURNS function_ret_table
         )?
           (LANGUAGE lang_name=identifier
-            | (WINDOW | IMMUTABLE | STABLE | VOLATILE | STRICT)
-            | CALLED ON NULL INPUT 
-            | RETURNS NULL ON NULL INPUT 
-            | (EXTERNAL)? SECURITY (INVOKER | DEFINER)
-            | COST execution_cost=NUMBER
-            | ROWS result_rows=NUMBER
-            | SET configuration_parameter=identifier (TO value=identifier | EQUAL value=identifier | FROM CURRENT)(COMMA value=identifier)*
+            | WINDOW
+            | function_actions_common
             | AS function_body
             | AS Character_String_Literal (COMMA Character_String_Literal)*
           )+
@@ -1496,7 +1487,8 @@ table_expression
 */
 
 from_clause
-  : FROM LEFT_PAREN? (table_reference_list | query_specification) RIGHT_PAREN? as_clause?
+  : FROM (LEFT_PAREN from_clause RIGHT_PAREN
+         | (table_reference_list | query_specification)) as_clause?
   ;
 
 table_reference_list
@@ -1553,13 +1545,7 @@ join_type
   ;
 
 outer_join_type
-  : outer_join_type_part2 OUTER?
-  ;
-
-outer_join_type_part2
-  : LEFT
-  | RIGHT
-  | FULL
+  :  (LEFT | RIGHT | FULL) OUTER?
   ;
 
 join_specification
@@ -1576,7 +1562,7 @@ named_columns_join
   ;
 
 table_primary
-  : (alias_table | table_or_query_name) ((AS)? alias=alias_def)? (LEFT_PAREN column_name_list RIGHT_PAREN)?
+  : (alias_table | schema_qualified_name) ((AS)? alias=alias_def)? (LEFT_PAREN column_name_list RIGHT_PAREN)?
   | derived_table (AS)? name=identifier (LEFT_PAREN column_name_list RIGHT_PAREN)?
   | LEFT_PAREN table_reference RIGHT_PAREN
   ;
@@ -1708,12 +1694,7 @@ simple_table
   ;
 
 explicit_table
-  : TABLE table_or_query_name
-  ;
-
-table_or_query_name
-  : schema_qualified_name
-  | identifier
+  : TABLE schema_qualified_name
   ;
 
 schema_qualified_name
