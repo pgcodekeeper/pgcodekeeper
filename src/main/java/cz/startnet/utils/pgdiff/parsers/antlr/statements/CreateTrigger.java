@@ -30,9 +30,9 @@ public class CreateTrigger extends ParserAbstract {
         trigger.setOnInsert(ctx.insert_true!= null);
         trigger.setOnUpdate(ctx.update_true != null);
         trigger.setOnTruncate(ctx.truncate_true != null);
-        for (Schema_qualified_nameContext column : ctx.columnName) {
-            trigger.addUpdateColumn(getName(column));
-        }
+//        for (Schema_qualified_nameContext column : ctx.columnName) {
+//            trigger.addUpdateColumn(getName(column));
+//        }
         if (ctx.when_expr != null) {
             trigger.setWhen(ctx.when_expr.getText());
         }

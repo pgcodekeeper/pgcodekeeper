@@ -51,7 +51,7 @@ data_statement
   ;
 
 copy_statement
-    : COPY (table_name=schema_qualified_name (LEFT_PAREN column_name=schema_qualified_name(COMMA column_name=schema_qualified_name)* RIGHT_PAREN)? 
+    : COPY (table_name=schema_qualified_name column_references? 
            | ( query=query_expression ))
         (FROM | TO) (filename=identifier | STDIN)
         ((WITH)? LEFT_PAREN option=copy_option(COMMA option=copy_option)* RIGHT_PAREN)?
@@ -64,8 +64,8 @@ copy_option:
     | HEADER (boolean_val=truth_value)?
     | QUOTE quote_character=identifier
     | ESCAPE escape_character=identifier
-    | FORCE_QUOTE ((LEFT_PAREN column_name=schema_qualified_name (COMMA column_name=schema_qualified_name)* RIGHT_PAREN) | MULTIPLY)
-    | FORCE_NOT_NULL LEFT_PAREN column_name=schema_qualified_name (COMMA column_name=schema_qualified_name)* RIGHT_PAREN
+    | FORCE_QUOTE (column_references | MULTIPLY)
+    | FORCE_NOT_NULL column_references
     | ENCODING encoding_name=identifier
     ;
 //data_change_statement
@@ -277,13 +277,13 @@ set_statement_value
    
 create_trigger_statement
     : (CONSTRAINT)? TRIGGER name=schema_qualified_name (before_true=BEFORE | (INSTEAD OF) | AFTER)
-    (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) | update_true=UPDATE (OF columnName+=schema_qualified_name(COMMA columnName+=schema_qualified_name)* )?)OR?)+
+    (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) | update_true=UPDATE (OF names_references )?)OR?)+
     ON tabl_name=schema_qualified_name 
     (FROM referenced_table_name=schema_qualified_name)?
     table_deferrable? table_initialy_immed?
     (for_each_true=FOR (EACH)? (ROW | STATEMENT))?
     (WHEN (when_expr=boolean_value_expression))?
-    EXECUTE PROCEDURE func_name=schema_qualified_name LEFT_PAREN (arguments+=identifier)? (COMMA arguments+=identifier)* RIGHT_PAREN
+    EXECUTE PROCEDURE func_name=schema_qualified_name function_args
     ;
     
 rule_common
@@ -298,8 +298,8 @@ rule_common
         | on_schema
         | on_tablespace)
       (grant_to_rule | revoke_from_cascade_restrict)
-      | GRANT name+=schema_qualified_name (COMMA name+=schema_qualified_name)* TO role_name+=identifier(COMMA role_name+=identifier)* (WITH ADMIN OPTION)?
-      | REVOKE (ADMIN OPTION FOR)? obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)* FROM role_name+=identifier(COMMA role_name+=identifier)*
+      | GRANT obj_name=names_references TO role_name=names_references (WITH ADMIN OPTION)?
+      | REVOKE (ADMIN OPTION FOR)? obj_name=names_references FROM role_name=names_references
         (CASCADE | RESTRICT)?
     ;
     
@@ -313,51 +313,51 @@ revoke_from_cascade_restrict
 
 on_table
     : (common_query_list (COMMA common_query_list)* | ALL (PRIVILEGES)?) 
-        ON ( ((TABLE)? obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*)
+        ON ( ((TABLE)? obj_name=names_references)
              | ALL TABLES IN SCHEMA (schema_name+=identifier)+)
     ;
 
 on_column
     : (((SELECT | INSERT | UPDATE | REFERENCES) LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)+
          | ALL (PRIVILEGES)? LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN )
-        ON (TABLE)? obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
+        ON (TABLE)? obj_name=names_references
     ;
 
 on_sequence
     : (usage_select_update(COMMA usage_select_update)*
         | ALL (PRIVILEGES)?)
-        ON (SEQUENCE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
+        ON (SEQUENCE obj_name=names_references
              | ALL SEQUENCES IN SCHEMA schema_name+=identifier (COMMA schema_name+=identifier)*)
     ;
 
 on_database
     : (create_connect_temporary_temp(COMMA create_connect_temporary_temp)* | ALL (PRIVILEGES)? )
-        ON DATABASE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
+        ON DATABASE obj_name=names_references
     ;
 
 on_datawrapper_server_lang
     : (USAGE | ALL (PRIVILEGES)?)
-        ON (FOREIGN (DATA WRAPPER | SERVER) | LANGUAGE) obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
+        ON (FOREIGN (DATA WRAPPER | SERVER) | LANGUAGE) obj_name=names_references
     ;
 
 on_function
     : (EXECUTE | ALL (PRIVILEGES)?) 
-        ON (FUNCTION obj_name+=schema_qualified_name funct_args=function_args (COMMA obj_name+=schema_qualified_name funct_args=function_args)* 
-           | ALL FUNCTIONS IN SCHEMA schema_name+=identifier(COMMA schema_name+=identifier)*)
+        ON (FUNCTION obj_name+=function_parameters (COMMA obj_name+=function_parameters)*
+           | ALL FUNCTIONS IN SCHEMA schema_name=names_references)
     ;
 
 on_large_object
     : ((SELECT | UPDATE(COMMA)?)+  | ALL (PRIVILEGES)?) 
-        ON LARGE OBJECT obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
+        ON LARGE OBJECT obj_name=names_references
     ;
 on_schema
     : (((CREATE | USAGE)(COMMA)?)+ | ALL (PRIVILEGES)?) 
-        ON SCHEMA obj_name+=schema_qualified_name(COMMA obj_name+=schema_qualified_name)*
+        ON SCHEMA obj_name=names_references
     ;
     
 on_tablespace
     : (CREATE | ALL (PRIVILEGES)?)
-        ON TABLESPACE obj_name+=schema_qualified_name (COMMA obj_name+=schema_qualified_name)*
+        ON TABLESPACE obj_name=names_references
     ;
 
 roles_names
@@ -457,7 +457,7 @@ create_schema_statement
     ;
     
 create_view_statement
-    : (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name (column_name+=schema_qualified_name (COMMA column_name+=schema_qualified_name)*)?
+    : (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name (column_name=names_references)?
     (WITH LEFT_PAREN (view_option_name=identifier (EQUAL view_option_value=identifier)?)+ RIGHT_PAREN)?
     AS v_query=query_expression
     ;
@@ -468,7 +468,7 @@ create_table_statement
         LEFT_PAREN (table_col_def+=table_column_def (COMMA table_col_def+=table_column_def)*)? RIGHT_PAREN
         (INHERITS 
             LEFT_PAREN 
-                (paret_table+=schema_qualified_name(COMMA)?)+ 
+                (paret_table=names_references)+ 
             RIGHT_PAREN
         )?
         storage_parameter_oid?
@@ -524,7 +524,10 @@ table_references
     ;
 
 column_references
-    :LEFT_PAREN name+=schema_qualified_name(COMMA name+=schema_qualified_name)* RIGHT_PAREN
+    :LEFT_PAREN names_references RIGHT_PAREN
+    ;
+names_references
+    : name+=schema_qualified_name(COMMA name+=schema_qualified_name)*
     ;
 
 match_all
@@ -611,7 +614,7 @@ param
   ;
 
 partition_by_columns
-    : PARTITION BY schema_qualified_name (COMMA schema_qualified_name)*
+    : PARTITION BY names_references
     ;
 
 /*
@@ -621,7 +624,7 @@ partition_by_columns
 */
 
 drop_table_statement
-  : DROP TABLE schema_qualified_name (PURGE)?
+  : DROP explicit_table (PURGE)?
   ;
 
 /*
@@ -1380,12 +1383,12 @@ join_condition
   ;
 
 named_columns_join
-  : USING LEFT_PAREN f=column_reference_list RIGHT_PAREN
+  : USING column_references
   ;
 
 table_primary
-  : schema_qualified_name function_args? as_clause? (LEFT_PAREN column_reference_list RIGHT_PAREN)?
-  | table_subquery as_clause? (LEFT_PAREN column_reference_list RIGHT_PAREN)?
+  : schema_qualified_name function_args? as_clause? column_references?
+  | table_subquery as_clause? column_references?
   ;
 
 /*
@@ -1518,7 +1521,7 @@ derived_column
   ;
 
 qualified_asterisk
-  : (tb_name=Identifier DOT)? MULTIPLY
+  : (tb_name=schema_qualified_name DOT)? MULTIPLY
   ;
 
 set_qualifier
@@ -1533,10 +1536,6 @@ as_clause
 over_clause
     : OVER LEFT_PAREN (partition_by_columns | orderby_clause | order_specification)* RIGHT_PAREN
     ;
-
-column_reference_list
-  : schema_qualified_name (COMMA schema_qualified_name)*
-  ;
 
 /*
 ==============================================================================================

@@ -26,9 +26,9 @@ public class CreateView extends ParserAbstract {
         if (ctx.v_query!=null) {
             view.setQuery(ctx.v_query.getText());
         }
-        for (Schema_qualified_nameContext column : ctx.column_name) {
-            view.addColumnName(getName(column));
-        }
+//        for (Schema_qualified_nameContext column : ctx.column_name) {
+//            view.addColumnName(getName(column));
+//        }
         fillObjLocation(view, ctx.name.getStart().getStartIndex(), schemaName);
         return view;
     }

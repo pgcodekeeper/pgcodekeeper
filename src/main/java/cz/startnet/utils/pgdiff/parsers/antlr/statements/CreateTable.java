@@ -45,9 +45,9 @@ public class CreateTable extends ParserAbstract {
             }
         }
         
-        for (Schema_qualified_nameContext par_table : ctx.paret_table) {
-            table.addInherits(getName(par_table));
-        }
+//        for (Schema_qualified_nameContext par_table : ctx.paret_table) {
+//            table.addInherits(getName(par_table));
+//        }
         
         if (ctx.table_space()!=null) {
             table.setTablespace(getName(ctx.table_space().name));
