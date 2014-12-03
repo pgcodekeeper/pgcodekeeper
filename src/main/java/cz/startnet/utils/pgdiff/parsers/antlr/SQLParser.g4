@@ -599,11 +599,7 @@ create_connect_temporary_temp
 
 
 field_element
-  : name=identifier field_type
-  ;
-
-field_type
-  : data_type
+  : name=identifier data_type
   ;
 
 param_clause
@@ -1067,7 +1063,7 @@ parenthesized_value_expression
 nonparenthesized_value_expression_primary
   : unsigned_value_specification
   | set_function_specification
-  | scalar_subquery
+  | table_subquery
   | case_expression
   | cast_specification
   | function_parameters
@@ -1647,20 +1643,16 @@ column_reference_list
 ==============================================================================================
 */
 
-scalar_subquery
-  :  subquery
-  ;
+//scalar_subquery
+//  :  subquery
+//  ;
 
-row_subquery
-  :  subquery
-  ;
+//row_subquery
+//  :  subquery
+//  ;
 
 table_subquery
-  : subquery
-  ;
-
-subquery
-  :  LEFT_PAREN query_expression RIGHT_PAREN
+  : LEFT_PAREN query_expression RIGHT_PAREN
   ;
 
 /*
@@ -1784,15 +1776,11 @@ null_predicate
 ==============================================================================================
 */
 
-quantified_comparison_predicate
-  : l=numeric_value_expression  c=comp_op q=quantifier s=table_subquery
-  ;
+//quantified_comparison_predicate
+//  : l=numeric_value_expression  c=comp_op q=quantifier s=table_subquery
+//  ;
 
-quantifier : all  | some ;
-
-all : ALL;
-
-some : SOME | ANY;
+//quantifier : ALL  | SOME | ANY;
 
 /*
 ==============================================================================================
@@ -1815,9 +1803,9 @@ exists_predicate
 ==============================================================================================
 */
 
-unique_predicate
-  : UNIQUE s=table_subquery
-  ;
+//unique_predicate
+//  : UNIQUE s=table_subquery
+//  ;
 
 /*
 ===============================================================================
