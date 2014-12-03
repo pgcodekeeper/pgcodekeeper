@@ -46,13 +46,13 @@ statement
   ;
 
 data_statement
-  : query_expression
+  : query_expression 
   | copy_statement
   ;
 
 copy_statement
     : COPY (table_name=schema_qualified_name (LEFT_PAREN column_name=schema_qualified_name(COMMA column_name=schema_qualified_name)* RIGHT_PAREN)? 
-           | ( query=query_specification ))
+           | ( query=query_expression ))
         (FROM | TO) (filename=identifier | STDIN)
         ((WITH)? LEFT_PAREN option=copy_option(COMMA option=copy_option)* RIGHT_PAREN)?
     ;
@@ -459,11 +459,7 @@ create_schema_statement
 create_view_statement
     : (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name (column_name+=schema_qualified_name (COMMA column_name+=schema_qualified_name)*)?
     (WITH LEFT_PAREN (view_option_name=identifier (EQUAL view_option_value=identifier)?)+ RIGHT_PAREN)?
-    AS v_query=view_query
-    ;
-
-view_query
-    :query_specification (UNION (ALL)? query_specification)* 
+    AS v_query=query_expression
     ;
     
 create_table_statement
@@ -1076,7 +1072,6 @@ nonparenthesized_value_expression_primary
   | cast_specification
   | function_parameters
   | NULL
-  | query_specification
   | all_array
   | case_abbreviation
   | schema_qualified_name
@@ -1410,7 +1405,7 @@ table_expression
 
 from_clause
   : FROM (LEFT_PAREN from_clause RIGHT_PAREN
-         | (table_reference_list | query_specification)) as_clause?
+         | (table_reference_list | query_expression)) as_clause?
   ;
 
 table_reference_list
