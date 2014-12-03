@@ -1264,11 +1264,7 @@ truth_value
 
 boolean_primary
   : predicate
-  | boolean_predicand
-  ;
-
-boolean_predicand
-  :value_expression_primary
+  | value_expression_primary
   ;
 
 /*
@@ -1277,14 +1273,7 @@ boolean_predicand
 ===============================================================================
 */
 row_value_predicand
-  : nonparenthesized_value_expression_primary
-  | row_value_constructor_predicand
-  ;
-
-row_value_constructor_predicand
   : common_value_expression
-  | boolean_predicand
-//  | explicit_row_value_constructor
   ;
 
 /*
