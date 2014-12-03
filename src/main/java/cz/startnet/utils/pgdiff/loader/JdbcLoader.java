@@ -92,7 +92,7 @@ public class JdbcLoader implements PgCatalogStrings {
             Log.log(Log.LOG_INFO, "Reading db using JDBC.");
             connection = connector.getConnection();
             
-            setTimeZone("'UTC'");
+            setTimeZone("'" + connector.getTimezone() + "'");
             prepareStatements();
             prepareData();
             
