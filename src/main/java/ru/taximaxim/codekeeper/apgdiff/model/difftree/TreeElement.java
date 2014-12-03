@@ -288,13 +288,13 @@ public class TreeElement {
     @Override
     public int hashCode() {
         if (hashcode == 0) {
-            final int prime = 31;
+            //final int prime = 31;
             int result = 1;
-            result = prime * result + ((containerType == null) ? 0 : containerType.hashCode());
-            result = prime * result + ((name == null) ? 0 : name.hashCode());
-            result = prime * result + ((side == null) ? 0 : side.hashCode());
-            result = prime * result + ((type == null) ? 0 : type.hashCode());
-            result = prime * result + System.identityHashCode(parent);
+            result = 31 * result + ((containerType == null) ? 0 : containerType.hashCode());
+            result = 31 * result + ((name == null) ? 0 : name.hashCode());
+            result = 31 * result + ((side == null) ? 0 : side.hashCode());
+            result = 31 * result + ((type == null) ? 0 : type.hashCode());
+            result = 31 * result + System.identityHashCode(parent);
             
             if (result == 0) {
                 ++result;
