@@ -154,7 +154,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             if (entity instanceof PgStatement){
                 DirectedGraph<PgStatement, DefaultEdge> graph = DepcyGraphView.this.currentSource.getGraph();
                 if (graph != null){
-                    ArrayList<PgStatement> connected = new ArrayList<PgStatement>(5);
+                    ArrayList<PgStatement> connected = new ArrayList<>();
                     for (DefaultEdge e : graph.outgoingEdgesOf((PgStatement)entity)){
                         PgStatement connectedVertex = graph.getEdgeTarget(e);
                         if (!(connectedVertex instanceof PgColumn)){

@@ -11,18 +11,17 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 class DbInfo {
     
+    private static final int DBINFO_LINE_PARTS_COUNT = 6;
     /**
      * Delimiter for spacing parts of the coordinates.
      */
     private static final char DELIM = '\t';
-    
     /**
      * Delimiter between coords entries in the preference string.
      */
     private static final char DELIM_ENTRY = '\n';
     
     final String name;
-    
     String dbname;
     String dbuser;
     String dbpass;
@@ -43,17 +42,18 @@ class DbInfo {
         String[] parts = coords.split(Pattern.quote(String.valueOf(DELIM)), -1);
         
         try {
-            if(parts.length > 6) {
+            if(parts.length > DBINFO_LINE_PARTS_COUNT) {
                 throw new ArrayIndexOutOfBoundsException(
                         Messages.dbInfo_too_many_parts_in_dbinfo_string);
             }
-            
+// SONAR-OFF
             this.name = parts[0];
             this.dbname = parts[1];
             this.dbuser = parts[2];
             this.dbpass = parts[3];
             this.dbhost = parts[4];
             this.dbport = Integer.parseInt(parts[5]);
+// SONAR-ON
         } catch (ArrayIndexOutOfBoundsException | NumberFormatException ex) {
             throw new IllegalArgumentException(Messages.dbInfo_bad_dbinfo_string + coords, ex);
         }
@@ -75,7 +75,7 @@ class DbInfo {
                 + dbuser.length()
                 + dbpass.length()
                 + dbhost.length()
-                + 6 + 6);
+                + DBINFO_LINE_PARTS_COUNT * 2);
         sb.append(name)
             .append(DELIM)
             .append(dbname)

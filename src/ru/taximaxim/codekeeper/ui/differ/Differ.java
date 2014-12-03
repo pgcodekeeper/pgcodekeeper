@@ -30,6 +30,8 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class Differ implements IRunnableWithProgress {
     
+    private static final int INITIAL_BUFFER_CAPACITY = 1024;
+
     private final DbSource dbSource, dbTarget;
 
     private boolean finished;
@@ -139,7 +141,7 @@ public class Differ implements IRunnableWithProgress {
         
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
         PgDiffArguments args = new PgDiffArguments();
-        ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
+        ByteArrayOutputStream diffOut = new ByteArrayOutputStream(INITIAL_BUFFER_CAPACITY);
         try {
             PrintWriter writer = new UnixPrintWriter(
                     new OutputStreamWriter(diffOut, UIConsts.UTF_8), true);
