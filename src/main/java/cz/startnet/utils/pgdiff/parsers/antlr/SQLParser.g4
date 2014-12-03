@@ -54,7 +54,7 @@ copy_statement
     : COPY (table_name=schema_qualified_name column_references? 
            | ( query=query_expression ))
         (FROM | TO) (filename=identifier | STDIN)
-        ((WITH)? LEFT_PAREN option=copy_option(COMMA option=copy_option)* RIGHT_PAREN)?
+        (WITH? LEFT_PAREN option=copy_option(COMMA option=copy_option)* RIGHT_PAREN)?
     ;
 copy_option:
     FORMAT format_name=identifier
@@ -282,7 +282,7 @@ create_trigger_statement
     (FROM referenced_table_name=schema_qualified_name)?
     table_deferrable? table_initialy_immed?
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
-    (WHEN (when_expr=boolean_value_expression))?
+    (WHEN (when_expr=value_expression))?
     EXECUTE PROCEDURE func_name=schema_qualified_name function_args
     ;
     
@@ -491,7 +491,7 @@ like_option
 constraint_common
     : (CONSTRAINT constraint_name=identifier)?
       ((EXCLUDE (USING index_method=identifier)? 
-            LEFT_PAREN exclude_element=identifier WITH operator+=identifier(COMMA operator+=identifier)* RIGHT_PAREN 
+            LEFT_PAREN exclude_element=identifier WITH operator=names_references RIGHT_PAREN 
             index_parameters where_clause?) 
        | (FOREIGN KEY column_references)? table_references
        | common_constraint
