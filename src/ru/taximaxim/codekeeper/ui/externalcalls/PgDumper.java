@@ -20,14 +20,14 @@ public class PgDumper {
     private final String exePgdump;
     private final List<String> customParams;
 
-    private final String host, user, pass, dbname, encoding;
+    private final String host, user, pass, dbname, encoding, timezone;
     private final int port;
     
     private final String dumpFile;
     
     public PgDumper(String exePgdump, String customParams,
             String host, int port, String user, String pass,
-            String dbname, String encoding, String dumpFile) {
+            String dbname, String encoding, String timezone, String dumpFile) {
         this.exePgdump = exePgdump;
         this.host = host;
         this.port = port;
@@ -35,6 +35,7 @@ public class PgDumper {
         this.pass = pass;
         this.dbname = dbname;
         this.encoding = encoding;
+        this.timezone = timezone;
         this.dumpFile = dumpFile;
         
         List<String> listCustom = new ArrayList<>(
@@ -55,7 +56,7 @@ public class PgDumper {
         this.exePgdump = exePgdump;
         
         customParams = Arrays.asList();
-        host = user = pass = dbname = encoding = dumpFile = null;
+        host = user = pass = dbname = encoding = timezone = dumpFile = null;
         port = 0;
     }
     
@@ -74,6 +75,7 @@ public class PgDumper {
         env.addEnv("PGUSER", user); //$NON-NLS-1$
         env.addEnv("PGPASSWORD", pass); //$NON-NLS-1$
         env.addEnv("PGCLIENTENCODING", encoding); //$NON-NLS-1$
+        env.addEnv("PGTZ", timezone); //$NON-NLS-1$
         
         new StdStreamRedirector().launchAndRedirect(pgdump);
     }

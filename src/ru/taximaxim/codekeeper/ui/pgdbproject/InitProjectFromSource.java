@@ -9,6 +9,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -67,7 +68,7 @@ public class InitProjectFromSource implements IRunnableWithProgress {
 
         case SOURCE_TYPE_DUMP:
             db = DbSource.fromFile(dumpPath,
-                    props.getPrefs().get(PROJ_PREF.ENCODING, "")).get(taskpm); //$NON-NLS-1$
+                    props.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8)).get(taskpm);
             break;
 
         case SOURCE_TYPE_JDBC:

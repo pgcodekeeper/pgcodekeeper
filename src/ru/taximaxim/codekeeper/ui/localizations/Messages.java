@@ -182,6 +182,7 @@ public final class Messages extends NLS {
     public static String diffWizard_source_target;
     public static String diffWizard_target;
     public static String diffWizard_target_encoding;
+    public static String diffWizard_target_timezone;
     public static String diffWizard_target_source;
     public static String diffWizard_unexpected_error_while_saving_diff;
     public static String diffWizard_unexpected_target_type_value;

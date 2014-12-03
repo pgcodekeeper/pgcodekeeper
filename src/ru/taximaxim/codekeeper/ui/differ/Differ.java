@@ -36,7 +36,8 @@ public class Differ implements IRunnableWithProgress {
     private final boolean needTwoWay;
     private String diffDirect, diffReverse;
     private PgDiffScript script;
-
+    private String timezone;
+    
     private PgDatabase sourceDbFull;
     private PgDatabase targetDbFull;
     
@@ -71,10 +72,11 @@ public class Differ implements IRunnableWithProgress {
         return additionalDepciesSource;
     } 
 
-    public Differ(DbSource dbSource, DbSource dbTarget, boolean needTwoWay) {
+    public Differ(DbSource dbSource, DbSource dbTarget, boolean needTwoWay, String timezone) {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
         this.needTwoWay = needTwoWay;
+        this.timezone = timezone;
     }
     
     public Job getDifferJob() {
@@ -148,7 +150,7 @@ public class Differ implements IRunnableWithProgress {
                     dbSrc, dbTgt, sourceDbFull, targetDbFull, 
                     additionalDepciesSource, additionalDepciesTarget);
             writer.flush();
-            diffDirect = diffOut.toString(UIConsts.UTF_8).trim();
+            diffDirect = prependTimezone(diffOut.toString(UIConsts.UTF_8).trim());
     
             if (needTwoWay) {
                 Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin() //$NON-NLS-1$
@@ -159,12 +161,16 @@ public class Differ implements IRunnableWithProgress {
                 PgDiff.diffDatabaseSchemas(writer, args, dbTgt, dbSrc,
                         targetDbFull, sourceDbFull);
                 writer.flush();
-                diffReverse = diffOut.toString(UIConsts.UTF_8).trim();
+                diffReverse = prependTimezone(diffOut.toString(UIConsts.UTF_8).trim());
             }
         } catch (UnsupportedEncodingException ex) {
             throw new InvocationTargetException(ex);
         }
         pm.done();
         finished = true;
+    }
+    
+    private String prependTimezone(String diff){
+        return "SET TIMEZONE TO '" + timezone + "';\n\n" + diff;
     }
 }

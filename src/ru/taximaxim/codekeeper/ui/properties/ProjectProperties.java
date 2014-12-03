@@ -14,7 +14,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -31,7 +30,7 @@ public class ProjectProperties extends PropertyPage implements
 
     private static String[] availableTimezones;
     
-    private Combo cmbEncoding;
+    private CCombo cmbEncoding;
     private CCombo cmbTimezone;
     private IEclipsePreferences prefs;
 
@@ -53,7 +52,7 @@ public class ProjectProperties extends PropertyPage implements
         Label label = new Label(panel, SWT.NONE);
         label.setText(Messages.projectProperties_encoding_for_all_operation_with_project);
         
-        cmbEncoding = new Combo(panel, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        cmbEncoding = new CCombo(panel, SWT.BORDER | SWT.READ_ONLY);
         cmbEncoding.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
