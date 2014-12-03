@@ -532,7 +532,7 @@ match_all
     ;
 
 check_boolean_expression
-    : CHECK LEFT_PAREN+ expression=value_expression RIGHT_PAREN+
+    : CHECK LEFT_PAREN+ expression=boolean_value_expression RIGHT_PAREN+
     ;
     
 storage_parameter
