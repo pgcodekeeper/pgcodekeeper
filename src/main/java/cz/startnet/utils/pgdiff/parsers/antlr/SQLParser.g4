@@ -1149,7 +1149,7 @@ filter_clause
 */
 
 case_expression
-  : case_specification
+  : CASE value_expression? simple_when_clause+ else_clause? END
   ;
 
 case_abbreviation
@@ -1157,11 +1157,9 @@ case_abbreviation
   | COALESCE LEFT_PAREN numeric_value_expression (COMMA value_expression)+ RIGHT_PAREN
   ;
 
-case_specification
-  : CASE value_expression? simple_when_clause+ else_clause? END
-  ;
-
-simple_when_clause: WHEN c=value_expression THEN r=value_expression ;
+simple_when_clause
+    : WHEN c=value_expression THEN r=value_expression
+    ;
 
 else_clause
   : ELSE r=value_expression
@@ -1223,10 +1221,6 @@ term
 
 factor
   : (sign)? numeric_primary
-  ;
-
-array
-  : LEFT_PAREN numeric_value_expression (COMMA numeric_value_expression )* RIGHT_PAREN
   ;
 
 numeric_primary
