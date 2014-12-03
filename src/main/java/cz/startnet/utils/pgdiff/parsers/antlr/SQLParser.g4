@@ -1246,8 +1246,7 @@ and_predicate
   ;
 
 boolean_factor
-  : boolean_test
-  | NOT boolean_test
+  : NOT? boolean_test
   ;
 
 boolean_test
