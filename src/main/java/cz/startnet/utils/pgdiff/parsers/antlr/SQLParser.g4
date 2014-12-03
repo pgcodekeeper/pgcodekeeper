@@ -1282,7 +1282,6 @@ string_value_expression
 
 character_value_expression
   : character_factor (CONCATENATION_OPERATOR character_factor)*
-  | LEFT_PAREN character_value_expression RIGHT_PAREN
   ;
 
 character_factor
