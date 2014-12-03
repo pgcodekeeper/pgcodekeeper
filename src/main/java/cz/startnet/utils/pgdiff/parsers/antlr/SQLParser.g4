@@ -531,7 +531,7 @@ match_all
     ;
 
 check_boolean_expression
-    : CHECK LEFT_PAREN expression=boolean_value_expression RIGHT_PAREN
+    : CHECK LEFT_PAREN expression=value_expression RIGHT_PAREN
     ;
     
 storage_parameter
@@ -1268,12 +1268,7 @@ boolean_primary
   ;
 
 boolean_predicand
-  : parenthesized_boolean_value_expression 
-  | nonparenthesized_value_expression_primary
-  ;
-
-parenthesized_boolean_value_expression
-  : LEFT_PAREN boolean_value_expression RIGHT_PAREN
+  :value_expression_primary
   ;
 
 /*
@@ -1438,7 +1433,7 @@ empty_grouping_set
   ;
 
 having_clause
-  : HAVING boolean_value_expression
+  : HAVING value_expression
   ;
 
 row_value_predicand_list
