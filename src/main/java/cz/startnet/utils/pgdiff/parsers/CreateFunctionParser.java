@@ -17,9 +17,9 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
  *
  * @author fordfrog
  */
-public class CreateFunctionParser {
+public final class CreateFunctionParser {
     
-    private static String[] RETURNS_TERMINATORS = {
+    private static final String[] RETURNS_TERMINATORS = {
         "LANGUAGE",
         "WINDOW",
         "IMMUTABLE", "STABLE", "VOLATILE", "NOT", "LEAKPROOF",
@@ -50,7 +50,7 @@ public class CreateFunctionParser {
         final PgSchema schema = database.getSchema(schemaName);
 
         if (schema == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindSchema"), schemaName,
                     statement));
         }

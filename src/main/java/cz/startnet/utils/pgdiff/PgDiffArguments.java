@@ -10,6 +10,7 @@ import java.nio.charset.Charset;
 import java.util.SortedMap;
 import java.util.regex.Pattern;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
 
 /**
@@ -18,6 +19,9 @@ import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
  * @author fordfrog
  */
 public class PgDiffArguments {
+// SONAR-OFF
+    private static final String DEFAULT_FORMAT = "dump";
+// SONAR-ON
     
     /**
      * Is program in diff mode.
@@ -38,11 +42,11 @@ public class PgDiffArguments {
     /**
      * New DB source format.
      */
-    private String newSrcFormat = "dump";
+    private String newSrcFormat = DEFAULT_FORMAT;
     /**
      * Old DB source format.
      */
-    private String oldSrcFormat = "dump";
+    private String oldSrcFormat = DEFAULT_FORMAT;
     /**
      * File to write the diff into.
      */
@@ -54,7 +58,7 @@ public class PgDiffArguments {
     /**
      * Format of the DB to parse.
      */
-    private String parseSrcFormat = "dump";
+    private String parseSrcFormat = DEFAULT_FORMAT;
     /**
      * Directory to parse into.
      */
@@ -62,11 +66,11 @@ public class PgDiffArguments {
     /**
      * Input file charset name.
      */
-    private String inCharsetName = "UTF-8";
+    private String inCharsetName = ApgdiffConsts.UTF_8;
     /**
      * Output file charset name.
      */
-    private String outCharsetName = "UTF-8";
+    private String outCharsetName = ApgdiffConsts.UTF_8;
     /**
      * Whether DEFAULT ... should be added in case new column has NOT NULL
      * constraint. The default value is dropped later.

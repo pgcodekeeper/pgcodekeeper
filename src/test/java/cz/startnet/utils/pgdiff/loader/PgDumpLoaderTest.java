@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
@@ -51,10 +52,8 @@ abstract class PgDatabaseObjectCreator {
     
     /**
      * The method makes up a PgDatabase object specific to the test needs.
-     * 
-     * @return PgDatabase
      */
-    abstract public PgDatabase getDatabase();
+    public abstract PgDatabase getDatabase();
 }
 
 /**
@@ -65,7 +64,7 @@ abstract class PgDatabaseObjectCreator {
 @RunWith(value = Parameterized.class)
 public class PgDumpLoaderTest {
 
-    private final String encoding = "UTF-8";
+    private final String encoding = ApgdiffConsts.UTF_8;
     private final List<Integer> skipForExport = Arrays.asList(8);
     /**
      * Provides parameters for running the tests.
@@ -76,6 +75,7 @@ public class PgDumpLoaderTest {
     public static Collection<?> parameters() {
         return Arrays.asList(
                 new Object[][]{
+// SONAR-OFF
                     {1},
                     {2},
                     {3},
@@ -93,6 +93,7 @@ public class PgDumpLoaderTest {
                     {15},
                     {16},
                     {17}
+// SONAR-ON
                 });
     }
     /**
@@ -104,7 +105,7 @@ public class PgDumpLoaderTest {
      * Array of implementations of {@link PgDatabaseObjectCreator}
      * each returning a specific {@link PgDatabase} for a test-case.
      */
-    private static final PgDatabaseObjectCreator[] dbCreators = {
+    private static final PgDatabaseObjectCreator[] DB_OBJS = {
         new PgDB1(),
         new PgDB2(),
         new PgDB3(), 
@@ -143,11 +144,11 @@ public class PgDumpLoaderTest {
                 encoding, false, false);
         
         // then check result's validity against handmade DB object
-        if(fileIndex > dbCreators.length) {        
+        if(fileIndex > DB_OBJS.length) {        
             Assert.fail("No predefined object for file: " + filename);
         }
         
-        PgDatabase dbPredefined = dbCreators[fileIndex - 1].getDatabase();
+        PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
         Assert.assertEquals("PgDumpLoader: predefined object is not equal to file "
                 + filename, dbPredefined, d);
         
@@ -184,10 +185,9 @@ public class PgDumpLoaderTest {
 
     /**
      * Tests ModelExporter export() method
-     * @throws Exception 
      */
     @Test
-    public void exportDb() throws Exception {
+    public void exportDb() throws IOException {
         // skip cases with illegal object names (with file-system reserved chars)
         Assume.assumeFalse(skipForExport.contains(fileIndex));
 
@@ -197,11 +197,11 @@ public class PgDumpLoaderTest {
                 PgDumpLoaderTest.class.getResourceAsStream(filename),
                 encoding, false, false);
         
-        PgDatabase dbPredefined = dbCreators[fileIndex - 1].getDatabase();
+        PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
         Path exportDir = null;
         try{
             exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
-            new ModelExporter(exportDir.toFile(), dbPredefined, encoding).export();
+            new ModelExporter(exportDir.toFile(), dbPredefined, encoding).exportFull();
             
             PgDatabase dbAfterExport = PgDumpLoader.loadDatabaseSchemaFromDirTree(
                     exportDir.toString(), encoding, true, true);
@@ -221,11 +221,8 @@ public class PgDumpLoaderTest {
     
     /**
      * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
-     * 
-     * @param f Directory
-     * @throws IOException
      */
-    public static void deleteRecursive(File f) throws IOException {
+    private static void deleteRecursive(File f) throws IOException {
         if (f.isDirectory()) {
             for (File sub : f.listFiles()) {
                 deleteRecursive(sub);
@@ -234,6 +231,8 @@ public class PgDumpLoaderTest {
         Files.delete(f.toPath());
     }
 }
+
+// SONAR-OFF
 
 class PgDB1 extends PgDatabaseObjectCreator {
     @Override
@@ -325,7 +324,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         table.addColumn(col);
         
         constraint = new PgConstraint("extensions_fax_box_id_fkey", "", "");
-        constraint.setDefinition("REFERENCES fax_boxes\n(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT");
+        constraint.setDefinition("FOREIGN KEY (fax_box_id) REFERENCES fax_boxes\n(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT");
         constraint.setTableName("extensions");
         table.addConstraint(constraint);
         
@@ -351,7 +350,7 @@ class PgDB2 extends PgDatabaseObjectCreator {
         d.addExtension(ext);
         ext.setComment("'PL/pgSQL procedural language'");
         
-        schema = d.getSchema("public");
+        schema = d.getSchema(ApgdiffConsts.PUBLIC);
         
         PgTable table = new PgTable("contacts", "", "");
         schema.addTable(table);
@@ -725,9 +724,9 @@ class PgDB9 extends PgDatabaseObjectCreator {
     schema.addView(view);
     
     PgSelect select = new PgSelect("", "");
-    select.addColumn(new GenericColumn("public", "user_data", "id"));
-    select.addColumn(new GenericColumn("public", "user_data", "email"));
-    select.addColumn(new GenericColumn("public", "user_data", "created"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "id"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "email"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "created"));
     
     view.setSelect(select);
     
@@ -738,7 +737,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
     schema.addView(view);
     
     select = new PgSelect("", "");
-    select.addColumn(new GenericColumn("public", "user_data", "id"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "id"));
     
     view.setSelect(select);
     
@@ -974,8 +973,8 @@ class PgDB14 extends PgDatabaseObjectCreator {
     view.addColumnComment("id", "'view id col'");
     
     PgSelect select = new PgSelect("", "");
-    select.addColumn(new GenericColumn("public", "test", "id"));
-    select.addColumn(new GenericColumn("public", "test", "text"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "test", "id"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "test", "text"));
     
     view.setSelect(select);
     
@@ -1048,8 +1047,8 @@ class PgDB16 extends PgDatabaseObjectCreator {
     schema.addView(view);
 
     PgSelect select = new PgSelect("", "");
-    select.addColumn(new GenericColumn("public", "t_work", "id"));
-    select.addColumn(new GenericColumn("public", "t_chart", "id"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", "id"));
     
     view.setSelect(select);
     
@@ -1098,12 +1097,14 @@ class PgDB17 extends PgDatabaseObjectCreator {
     schema.addView(view);
 
     PgSelect select = new PgSelect("", "");
-    select.addColumn(new GenericColumn("public", "t_work", "id"));
-    select.addColumn(new GenericColumn("public", "t_memo", "name"));
-    select.addColumn(new GenericColumn("public", "t_chart", "id"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_memo", "name"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", "id"));
     
     view.setSelect(select);
     
     return d;
     }
 }
+
+// SONAR-ON

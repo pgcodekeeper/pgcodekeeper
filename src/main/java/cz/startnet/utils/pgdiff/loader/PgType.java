@@ -24,6 +24,7 @@ public class PgType{
         DATA_TYPE_ALIASES.put("serial","integer");
         DATA_TYPE_ALIASES.put("timetz","time with time zone");
         DATA_TYPE_ALIASES.put("timestamptz","timestamp with time zone");
+        DATA_TYPE_ALIASES.put("bpchar","character");
     }
     
     private String typmodout;

@@ -17,7 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
  *
  * @author fordfrog
  */
-public class PgDiffTriggers {
+public final class PgDiffTriggers {
 
     /**
      * Outputs statements for creation of new triggers.

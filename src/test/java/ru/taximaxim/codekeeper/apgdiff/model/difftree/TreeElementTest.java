@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
@@ -27,7 +28,7 @@ public class TreeElementTest {
 
     private final String dbDumpName;
     
-    final private List<String> FUNC_NAMES = 
+    private static final List<String> FUNC_NAMES = 
             Arrays.asList(new String[]{"abcdefg1()", "abcdefg2()", "abcdefg3()"});
     
     public TreeElementTest(String dbName) {
@@ -61,18 +62,18 @@ public class TreeElementTest {
         
         for (String function : FUNC_NAMES){
             String name = function.substring(0, function.length()-2);
-            dbFull.getSchema("public").addFunction(new PgFunction(name, "", ""));
-            dbPartial.getSchema("public").addFunction(new PgFunction(name, "", ""));
+            dbFull.getSchema(ApgdiffConsts.PUBLIC).addFunction(new PgFunction(name, "", ""));
+            dbPartial.getSchema(ApgdiffConsts.PUBLIC).addFunction(new PgFunction(name, "", ""));
         }
 
-        TreeElement tree_full = DiffTree.create(dbFull, new PgDatabase());
+        TreeElement treeFull = DiffTree.create(dbFull, new PgDatabase());
         
         Set<TreeElement> checked = new HashSet<TreeElement>();
-        visitAndFindNew(tree_full, checked);
+        visitAndFindNew(treeFull, checked);
         
-        TreeElement tree_filtered = tree_full.getFilteredCopy(checked);
+        TreeElement treeFiltered = treeFull.getFilteredCopy(checked);
         
-        PgDatabase dbFiltered = new PgDbFilter2(dbFull, tree_filtered, DiffSide.LEFT).apply();
+        PgDatabase dbFiltered = new PgDbFilter2(dbFull, treeFiltered, DiffSide.LEFT).apply();
         
         assertEquals("filtered database is not equal to the reference one",
                 dbPartial, dbFiltered);

@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
@@ -32,21 +33,21 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 */
 abstract class TreeElementCreator {
 
-    abstract public TreeElement getFilteredTree();
+    public abstract TreeElement getFilteredTree();
 
-    abstract public TreeElement getFilteredTreeForDeletion();
+    public abstract TreeElement getFilteredTreeForDeletion();
     
-    abstract public TreeElement getFilteredTreeForConflicting();
+    public abstract TreeElement getFilteredTreeForConflicting();
 
-    abstract public Set<PgStatement> getDepcySet(PgDatabase db);
+    public abstract Set<PgStatement> getDepcySet(PgDatabase db);
 
-    abstract public TreeElement getExtraElement();
+    public abstract TreeElement getExtraElement();
 
-    abstract public Set<TreeElement> getExtraElementInTree(TreeElement filtered);
+    public abstract Set<TreeElement> getExtraElementInTree(TreeElement filtered);
 
-    abstract public TreeElement getFilteredCopy();
+    public abstract TreeElement getFilteredCopy();
 
-    abstract public HashSet<TreeElement> getConflicting(TreeElement copy);
+    public abstract Set<TreeElement> getConflicting(TreeElement copy);
 }
 
 /**
@@ -58,6 +59,7 @@ abstract class TreeElementCreator {
 public class DepcyTreeExtenderTest {
 
     private final int fileIndex;
+    private final String filename;
 
     /**
      * Provides parameters for running the tests.
@@ -66,17 +68,19 @@ public class DepcyTreeExtenderTest {
     public static Collection<?> parameters() {
         return Arrays.asList(
                 new Object[][]{
+// SONAR-OFF
                     {1},
                     {2},
                     {3},
                     {4}
+// SONAR-ON
                 });
     }
     
     /**
      * Array of implementations of {@link TreeElementCreator}
      */
-    private static final TreeElementCreator[] treeCreators = {
+    private static final TreeElementCreator[] TREES = {
         new Predefined1(),
         new Predefined2(),
         new Predefined3(),
@@ -85,32 +89,31 @@ public class DepcyTreeExtenderTest {
     
     public DepcyTreeExtenderTest(final int fileIndex) {
         this.fileIndex = fileIndex;
+        this.filename = "depcy_schema_" + fileIndex + ".sql";
     }
     
     @Test
     public void testGetDependenciesOfNew() {
-        String filename = "depcy_schema_" + fileIndex + ".sql";
         PgDatabase dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
-                "UTF-8", false, false);
+                ApgdiffConsts.UTF_8, false, false);
         
-        TreeElement filtered = treeCreators[fileIndex - 1].getFilteredTree();
+        TreeElement filtered = TREES[fileIndex - 1].getFilteredTree();
         
         DepcyTreeExtender dte = new DepcyTreeExtender(dbTarget, dbTarget, filtered);
         
-        HashSet<PgStatement> depcy = dte.getDependenciesOfNew();
-        Set<PgStatement> depcyPredefined = treeCreators[fileIndex - 1].getDepcySet(dbTarget);
+        Set<PgStatement> depcy = dte.getDependenciesOfNew();
+        Set<PgStatement> depcyPredefined = TREES[fileIndex - 1].getDepcySet(dbTarget);
         assertTrue("List of dependencies is not as expected", depcy.equals(depcyPredefined));
     }
 
     @Test
     public void testGetTreeCopyWithDepcy() {
-        String filename = "depcy_schema_" + fileIndex + ".sql";
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
-                "UTF-8", false, false);
+                ApgdiffConsts.UTF_8, false, false);
         
-        TreeElementCreator treeCreator = treeCreators[fileIndex - 1];
+        TreeElementCreator treeCreator = TREES[fileIndex - 1];
         
         TreeElement filtered = treeCreator.getFilteredTreeForDeletion();
         
@@ -127,12 +130,11 @@ public class DepcyTreeExtenderTest {
     
     @Test
     public void testSumAllDepcies() {
-        String filename = "depcy_schema_" + fileIndex + ".sql";
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
-                "UTF-8", false, false);
+                ApgdiffConsts.UTF_8, false, false);
         
-        TreeElementCreator treeCreator = treeCreators[fileIndex - 1];
+        TreeElementCreator treeCreator = TREES[fileIndex - 1];
         
         TreeElement filtered = treeCreator.getFilteredTree();
         
@@ -141,8 +143,8 @@ public class DepcyTreeExtenderTest {
         
         TreeElement extraNotInFiltered = treeCreator.getExtraElement();
         
-        HashSet<TreeElement> sum = dte.sumAllDepcies(
-                new HashSet<TreeElement>(Arrays.asList(extraNotInFiltered)));
+        Set<TreeElement> sum = dte.sumAllDepcies(
+                new HashSet<>(Arrays.asList(extraNotInFiltered)));
         
         Set<TreeElement> extraInFiltered = treeCreator.getExtraElementInTree(filteredCopy);
         
@@ -151,23 +153,22 @@ public class DepcyTreeExtenderTest {
     
     @Test
     public void testGetConflicting() {
-        String filename = "depcy_schema_" + fileIndex + ".sql";
         String filenameConflicting = "depcy_schema_conflicting_" + fileIndex + ".sql";
         PgDatabase dbRemote = PgDumpLoader.loadDatabaseSchemaFromDump(
-                DepcyTreeExtenderTest.class.getResourceAsStream(filename), "UTF-8",
+                DepcyTreeExtenderTest.class.getResourceAsStream(filename), ApgdiffConsts.UTF_8,
                 false, false);
 
         PgDatabase dbGit = PgDumpLoader.loadDatabaseSchemaFromDump(
-                DepcyTreeExtenderTest.class.getResourceAsStream(filenameConflicting), "UTF-8",
+                DepcyTreeExtenderTest.class.getResourceAsStream(filenameConflicting), ApgdiffConsts.UTF_8,
                 false, false);
 
-        TreeElementCreator treeCreator = treeCreators[fileIndex - 1];
+        TreeElementCreator treeCreator = TREES[fileIndex - 1];
         
         TreeElement filtered = treeCreator.getFilteredTreeForConflicting();
         DepcyTreeExtender dte = new DepcyTreeExtender(dbGit, dbRemote, filtered);
         TreeElement copy = dte.getTreeCopyWithDepcy();
-        HashSet<TreeElement> conflictingPredefined = treeCreator.getConflicting(copy);
-        HashSet<TreeElement> conflicting = dte.getConflicting();
+        Set<TreeElement> conflictingPredefined = treeCreator.getConflicting(copy);
+        Set<TreeElement> conflicting = dte.getConflicting();
         Assert.assertEquals("Conflicting collections are not same", conflictingPredefined, conflicting);
     }
 
@@ -197,7 +198,8 @@ public class DepcyTreeExtenderTest {
     }
 }
 
- class Predefined1 extends TreeElementCreator{
+// SONAR-OFF
+class Predefined1 extends TreeElementCreator{
 
     @Override
     public TreeElement getFilteredTree() {
@@ -212,7 +214,7 @@ public class DepcyTreeExtenderTest {
         TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.RIGHT);
         sourceOnly.addChild(contSchemas);
         
-        TreeElement publicSchema = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.BOTH);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
         contSchemas.addChild(publicSchema);
         
         TreeElement contViews = new TreeElement("Views", DbObjType.CONTAINER, DbObjType.VIEW, DiffSide.RIGHT);
@@ -226,7 +228,7 @@ public class DepcyTreeExtenderTest {
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        PgSchema schema = db.getSchema("public");
+        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
         PgView view = schema.getView("v2");
         PgTable table = schema.getTable("t1");
         PgColumn column = table.getColumn("c1");
@@ -246,7 +248,7 @@ public class DepcyTreeExtenderTest {
         TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.RIGHT);
         sourceOnly.addChild(contSchemas);
         
-        TreeElement publicSchema = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.BOTH);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
         contSchemas.addChild(publicSchema);
         
         TreeElement contViews = new TreeElement("Views", DbObjType.CONTAINER, DbObjType.VIEW, DiffSide.RIGHT);
@@ -261,7 +263,7 @@ public class DepcyTreeExtenderTest {
     @Override
     public Set<TreeElement> getExtraElementInTree(TreeElement filtered) {
         TreeElement o = filtered.getChild("Database").getChild("Target only").getChild("Schemas").
-                getChild("public").getChild("Views").getChild("v1");
+                getChild(ApgdiffConsts.PUBLIC).getChild("Views").getChild("v1");
         return new HashSet<TreeElement>(Arrays.asList(o));
     }
 
@@ -278,7 +280,7 @@ public class DepcyTreeExtenderTest {
         TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.LEFT);
         sourceOnly.addChild(contSchemas);
         
-        TreeElement publicSchema = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.BOTH);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
         contSchemas.addChild(publicSchema);
         
         TreeElement contViews = new TreeElement("Views", DbObjType.CONTAINER, DbObjType.VIEW, DiffSide.LEFT);
@@ -303,7 +305,7 @@ public class DepcyTreeExtenderTest {
         TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.LEFT);
         sourceOnly.addChild(contSchemas);
         
-        TreeElement publicSchema = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.BOTH);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
         contSchemas.addChild(publicSchema);
         
         TreeElement contViews = new TreeElement("Views", DbObjType.CONTAINER, DbObjType.VIEW, DiffSide.LEFT);
@@ -332,7 +334,7 @@ public class DepcyTreeExtenderTest {
         TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.LEFT);
         sourceOnly.addChild(contSchemas);
         
-        TreeElement publicSchema = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.BOTH);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
         contSchemas.addChild(publicSchema);
         
         TreeElement contTable = new TreeElement("Tables", DbObjType.CONTAINER, DbObjType.TABLE, DiffSide.LEFT);
@@ -348,7 +350,7 @@ public class DepcyTreeExtenderTest {
         TreeElement contSchemasBoth = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.BOTH);
         different.addChild(contSchemasBoth);
         
-        TreeElement publicSchemaBoth = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.BOTH);
+        TreeElement publicSchemaBoth = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
         contSchemasBoth.addChild(publicSchemaBoth);
         
         TreeElement contViews = new TreeElement("Views", DbObjType.CONTAINER, DbObjType.VIEW, DiffSide.BOTH);
@@ -363,7 +365,7 @@ public class DepcyTreeExtenderTest {
     @Override
     public HashSet<TreeElement> getConflicting(TreeElement copy) {
         TreeElement contViews = copy.getChild("Database").getChild("Different").getChild("Schemas").
-                getChild("public").getChild("Views");
+                getChild(ApgdiffConsts.PUBLIC).getChild("Views");
         // КОСТЫЛЬ - конфликтующие объекты копируются в одного парента с разными DiffSide 
         TreeElement view = contViews.getChild(1);
         return new HashSet<TreeElement>(Arrays.asList(view));
@@ -385,7 +387,7 @@ class Predefined2 extends TreeElementCreator{
         TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.RIGHT);
         sourceOnly.addChild(contSchemas);
         
-        TreeElement publicSchema = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.RIGHT);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.RIGHT);
         contSchemas.addChild(publicSchema);
         
         TreeElement contSequences = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.RIGHT);
@@ -399,13 +401,13 @@ class Predefined2 extends TreeElementCreator{
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        return new HashSet<PgStatement>(Arrays.asList(db, db.getSchema("public")));
+        return new HashSet<PgStatement>(Arrays.asList(db, db.getSchema(ApgdiffConsts.PUBLIC)));
     }
 
     @Override
     public Set<TreeElement> getExtraElementInTree(TreeElement filtered) {
         TreeElement o = filtered.getChild("Database").getChild("Target only").getChild("Schemas").
-        getChild("public").getChild("Sequences").getChild("s1");
+        getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
         return new HashSet<TreeElement>(Arrays.asList(o));
     }
 
@@ -413,7 +415,7 @@ class Predefined2 extends TreeElementCreator{
     public TreeElement getExtraElement() {
         TreeElement root = getFilteredTree();
         return root.getChild("Database").getChild("Target only").getChild("Schemas").
-                getChild("public").getChild("Sequences").getChild("s1");
+                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
     }
 
     @Override
@@ -429,7 +431,7 @@ class Predefined2 extends TreeElementCreator{
         TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.LEFT);
         sourceOnly.addChild(contSchemas);
         
-        TreeElement publicSchema = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.BOTH);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
         contSchemas.addChild(publicSchema);
         
         TreeElement contTable = new TreeElement("Tables", DbObjType.CONTAINER, DbObjType.TABLE, DiffSide.LEFT);
@@ -459,7 +461,7 @@ class Predefined2 extends TreeElementCreator{
         TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.LEFT);
         sourceOnly.addChild(contSchemas);
         
-        TreeElement publicSchema = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.BOTH);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
         contSchemas.addChild(publicSchema);
         
         TreeElement contTable = new TreeElement("Tables", DbObjType.CONTAINER, DbObjType.TABLE, DiffSide.LEFT);
@@ -475,7 +477,7 @@ class Predefined2 extends TreeElementCreator{
         TreeElement contSchemasBoth = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.BOTH);
         different.addChild(contSchemasBoth);
         
-        TreeElement publicSchemaBoth = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.BOTH);
+        TreeElement publicSchemaBoth = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
         contSchemasBoth.addChild(publicSchemaBoth);
         
         TreeElement contSequencesBoth = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.BOTH);
@@ -508,7 +510,7 @@ class Predefined3 extends TreeElementCreator{
         TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.RIGHT);
         sourceOnly.addChild(contSchemas);
         
-        TreeElement publicSchema = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.RIGHT);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.RIGHT);
         contSchemas.addChild(publicSchema);
         
         TreeElement contSequences = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.RIGHT);
@@ -522,7 +524,7 @@ class Predefined3 extends TreeElementCreator{
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        PgSchema schema = db.getSchema("public");
+        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
         PgTable table = schema.getTable("t1");
         PgSequence seq = schema.getSequence("s1");
         return new HashSet<PgStatement>(Arrays.asList(db, schema, table, seq));
@@ -531,7 +533,7 @@ class Predefined3 extends TreeElementCreator{
     @Override
     public Set<TreeElement> getExtraElementInTree(TreeElement filtered) {
         TreeElement o = filtered.getChild("Database").getChild("Target only").getChild("Schemas").
-                getChild("public").getChild("Sequences").getChild("s1");
+                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
         return new HashSet<TreeElement>(Arrays.asList(o));
     }
 
@@ -539,7 +541,7 @@ class Predefined3 extends TreeElementCreator{
     public TreeElement getExtraElement() {
         TreeElement root = getFilteredTree();
         return root.getChild("Database").getChild("Target only").getChild("Schemas").
-                getChild("public").getChild("Sequences").getChild("s1");
+                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
     }
 
     @Override
@@ -555,7 +557,7 @@ class Predefined3 extends TreeElementCreator{
         TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.LEFT);
         sourceOnly.addChild(contSchemas);
         
-        TreeElement publicSchema = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.BOTH);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
         contSchemas.addChild(publicSchema);
         
         TreeElement contTable = new TreeElement("Tables", DbObjType.CONTAINER, DbObjType.TABLE, DiffSide.LEFT);
@@ -570,7 +572,7 @@ class Predefined3 extends TreeElementCreator{
     public TreeElement getFilteredCopy() {
         TreeElement root = getFilteredTreeForDeletion();
         TreeElement initialPublicSchema = root.getChild("Database").
-                getChild("Source only").getChild("Schemas").getChild("public");
+                getChild("Source only").getChild("Schemas").getChild(ApgdiffConsts.PUBLIC);
         
         TreeElement contSeq = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.LEFT);
         initialPublicSchema.addChild(contSeq);
@@ -590,7 +592,7 @@ class Predefined3 extends TreeElementCreator{
     @Override
     public HashSet<TreeElement> getConflicting(TreeElement copy) {
         TreeElement contSeq = copy.getChild("Database").getChild("Different").getChild("Schemas").
-                getChild("public").getChild("Sequences");
+                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences");
         // КОСТЫЛЬ - конфликтующие объекты копируются в одного парента с разными DiffSide 
         TreeElement seq = contSeq.getChild(1);
         
@@ -613,7 +615,7 @@ class Predefined4 extends TreeElementCreator{
         TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.RIGHT);
         sourceOnly.addChild(contSchemas);
         
-        TreeElement publicSchema = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.RIGHT);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.RIGHT);
         contSchemas.addChild(publicSchema);
         
         TreeElement contSequences = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.RIGHT);
@@ -627,14 +629,14 @@ class Predefined4 extends TreeElementCreator{
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        PgSchema schema = db.getSchema("public");
+        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
         return new HashSet<PgStatement>(Arrays.asList(db, schema));
     }
 
     @Override
     public Set<TreeElement> getExtraElementInTree(TreeElement filtered) {
         TreeElement o = filtered.getChild("Database").getChild("Target only").getChild("Schemas").
-                getChild("public").getChild("Sequences").getChild("s1");
+                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
         return new HashSet<TreeElement>(Arrays.asList(o));
     }
 
@@ -642,7 +644,7 @@ class Predefined4 extends TreeElementCreator{
     public TreeElement getExtraElement() {
         TreeElement root = getFilteredTree();
         return root.getChild("Database").getChild("Target only").getChild("Schemas").
-                getChild("public").getChild("Sequences").getChild("s1");
+                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
     }
 
     @Override
@@ -658,7 +660,7 @@ class Predefined4 extends TreeElementCreator{
         TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.LEFT);
         sourceOnly.addChild(contSchemas);
         
-        TreeElement publicSchema = new TreeElement("public", DbObjType.SCHEMA, null, DiffSide.BOTH);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
         contSchemas.addChild(publicSchema);
         
         TreeElement contSeq = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.LEFT);
@@ -674,7 +676,7 @@ class Predefined4 extends TreeElementCreator{
     public TreeElement getFilteredCopy() {
         TreeElement root = getFilteredTreeForDeletion();
         TreeElement initialPublicSchema = root.getChild("Database").
-                getChild("Source only").getChild("Schemas").getChild("public");
+                getChild("Source only").getChild("Schemas").getChild(ApgdiffConsts.PUBLIC);
         
         TreeElement contTable = new TreeElement("Tables", DbObjType.CONTAINER, DbObjType.TABLE, DiffSide.LEFT);
         initialPublicSchema.addChild(contTable);
@@ -694,3 +696,4 @@ class Predefined4 extends TreeElementCreator{
         return new Predefined3().getConflicting(copy);
     }
 }
+// SONAR-ON

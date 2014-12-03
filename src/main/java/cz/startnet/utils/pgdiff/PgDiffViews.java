@@ -20,7 +20,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
  *
  * @author fordfrog
  */
-public class PgDiffViews {
+public final class PgDiffViews {
 
     /**
      * Outputs statements for creation of views.
@@ -47,7 +47,7 @@ public class PgDiffViews {
                 
                 if (isModified){
                  // check all dependants, drop them if blocking
-                    Set<PgStatement> dependantsSet = new LinkedHashSet<>(10);
+                    Set<PgStatement> dependantsSet = new LinkedHashSet<>();
                     PgDiff.getDependantsSet(oldSchema.getView(newView.getName()), dependantsSet);
                     
                     for (PgStatement depnt : dependantsSet){
@@ -84,7 +84,7 @@ public class PgDiffViews {
             if (newView == null || isModified) {
                 
                 // check all dependants, drop them if blocking
-                Set<PgStatement> dependantsSet = new LinkedHashSet<>(10);
+                Set<PgStatement> dependantsSet = new LinkedHashSet<>();
                 PgDiff.getDependantsSet(oldView, dependantsSet);
                 // wrap Set into array for reverse iteration
                 PgStatement[] dependants = dependantsSet.toArray(

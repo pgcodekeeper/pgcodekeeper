@@ -5,19 +5,20 @@
  */
 package cz.startnet.utils.pgdiff.parsers;
 
+import java.text.MessageFormat;
+
 import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import java.text.MessageFormat;
 
 /**
  * Parses CREATE INDEX statements.
  *
  * @author fordfrog
  */
-public class CreateIndexParser {
+public final class CreateIndexParser {
 
     /**
      * Parses CREATE INDEX statement.
@@ -47,7 +48,7 @@ public class CreateIndexParser {
         final PgSchema schema = database.getSchema(schemaName);
 
         if (schema == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindSchema"), schemaName,
                     statement));
         }
@@ -56,7 +57,7 @@ public class CreateIndexParser {
         final PgTable table = schema.getTable(objectName);
 
         if (table == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindTable"), tableName,
                     statement));
         }

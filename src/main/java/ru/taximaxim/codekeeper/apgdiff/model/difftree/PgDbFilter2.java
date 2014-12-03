@@ -16,11 +16,11 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class PgDbFilter2 {
 
-    final private PgDatabase db;
+    private final PgDatabase db;
     
-    final private TreeElement root;
+    private final TreeElement root;
     
-    final private DiffSide side;
+    private final DiffSide side;
     
     public PgDbFilter2(PgDatabase db, TreeElement root, DiffSide side) {
         if(side != DiffSide.LEFT && side != DiffSide.RIGHT) {
@@ -146,7 +146,8 @@ public class PgDbFilter2 {
         }
         
         if(res == null && el.hasChildren()) {
-            illegalTreeStructure(el.getChild(0), new NullPointerException());
+            illegalTreeStructure(el.getChild(0),new IllegalStateException(
+                    "No container generated but el.hasChildren()"));
         }
         
         for(TreeElement sub : el.getChildren()) {
@@ -164,7 +165,7 @@ public class PgDbFilter2 {
      * 
      * @throws IllegalArgumentException
      */
-    static void illegalTreeStructure(TreeElement illegalChild, Throwable cause) {
+    private static void illegalTreeStructure(TreeElement illegalChild, Throwable cause) {
         TreeElement parent = illegalChild.getParent();
         throw new IllegalArgumentException(
                 String.format("Illegal child %s of type %s in the node %s of type %s",
@@ -175,8 +176,8 @@ public class PgDbFilter2 {
 }
 
 class ProcessResult {
-    final public PgStatement src;
-    final public PgStatement dst;
+    final PgStatement src;
+    final PgStatement dst;
     
     public ProcessResult(PgStatement src, PgStatement dst) {
         this.src = src;

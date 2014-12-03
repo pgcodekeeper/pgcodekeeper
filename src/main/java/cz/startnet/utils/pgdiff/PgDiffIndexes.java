@@ -17,7 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
  *
  * @author fordfrog
  */
-public class PgDiffIndexes {
+public final class PgDiffIndexes {
 
     /**
      * Outputs statements for creation of new indexes.

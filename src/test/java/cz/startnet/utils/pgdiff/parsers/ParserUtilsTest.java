@@ -3,11 +3,12 @@
  */
 package cz.startnet.utils.pgdiff.parsers;
 
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import org.hamcrest.core.IsEqual;
 import org.junit.Assert;
 import org.junit.Test;
+
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 
 /**
  * Tests {@link #ParserUtils}.
@@ -15,7 +16,7 @@ import org.junit.Test;
  * @author fordfrog
  */
 public class ParserUtilsTest {
-
+// SONAR-OFF
     @Test(timeout = 1000)
     public void testParseSchemaBothQuoted() {
         final PgDatabase database = new PgDatabase();
@@ -105,4 +106,5 @@ public class ParserUtilsTest {
                 "\"juzz_system\".\"f_obj_execute_node_select\".\"test\""),
                 IsEqual.equalTo("test"));
     }
+// SONAR-ON
 }

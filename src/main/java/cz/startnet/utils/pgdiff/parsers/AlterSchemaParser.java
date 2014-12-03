@@ -6,7 +6,7 @@ import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 
-public class AlterSchemaParser {
+public final class AlterSchemaParser {
     
     public static void parse(final PgDatabase database, final String statement,
             final boolean outputIgnoredStatements) {
@@ -16,7 +16,7 @@ public class AlterSchemaParser {
         String schemaName = ParserUtils.getObjectName(p.parseIdentifier());
         PgSchema schema = database.getSchema(schemaName);
         if (schema == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindSchema"), schemaName,
                     statement));
         }

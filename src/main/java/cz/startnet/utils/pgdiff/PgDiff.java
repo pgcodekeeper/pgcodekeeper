@@ -18,6 +18,7 @@ import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -36,7 +37,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
  *
  * @author fordfrog
  */
-public class PgDiff {
+public final class PgDiff {
 
     private static DepcyGraph depcyOld;
     private static DepcyGraph depcyNew;
@@ -52,11 +53,12 @@ public class PgDiff {
      */
     public static PgDiffScript createDiff(final PrintWriter writer,
             final PgDiffArguments arguments) {
-        PgDatabase dbOld = loadDatabaseSchema(
+        PgDatabase oldDatabase = loadDatabaseSchema(
                 arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
-        PgDatabase dbNew = loadDatabaseSchema(
+        PgDatabase newDatabase = loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments); 
-        return diffDatabaseSchemas(writer, arguments, dbOld, dbNew, dbOld, dbNew);
+        return diffDatabaseSchemas(writer, arguments,
+                oldDatabase, newDatabase, oldDatabase, newDatabase);
     }
 
     /**
@@ -434,7 +436,7 @@ public class PgDiff {
             final PgDiffArguments arguments, final PgDatabase oldDatabase,
             final PgDatabase newDatabase) {
         final boolean setSearchPath = newDatabase.getSchemas().size() > 1
-                || !newDatabase.getSchemas().get(0).getName().equals("public");
+                || !newDatabase.getSchemas().get(0).getName().equals(ApgdiffConsts.PUBLIC);
 
         for (final PgSchema newSchema : newDatabase.getSchemas()) {
             final SearchPathHelper searchPathHelper =
@@ -553,7 +555,7 @@ public class PgDiff {
     static void tempSwitchSearchPath(String switchTo, 
             final SearchPathHelper searchPathHelper, final PgDiffScript script){
         
-        if (searchPathHelper.getWasOutput() == false ||
+        if (!searchPathHelper.wasOutput() ||
                 !searchPathHelper.getSchemaName().equals(switchTo)){
             new SearchPathHelper(switchTo).outputSearchPath(script);
             
@@ -572,7 +574,7 @@ public class PgDiff {
     public static List<PgStatement> addUniqueDependenciesOnCreateEdit(PgDiffScript script,
             PgDiffArguments arguments, SearchPathHelper newSearchPathHelper, PgStatement fullStatement){
         
-        List<PgStatement> specialDependencies = new ArrayList<PgStatement>(3);
+        List<PgStatement> specialDependencies = new ArrayList<>();
         addUniqueDependencies(specialDependencies, script, arguments, newSearchPathHelper, fullStatement, null);
         return specialDependencies;
     }

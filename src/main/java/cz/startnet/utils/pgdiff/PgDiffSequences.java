@@ -15,7 +15,7 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
  *
  * @author fordfrog
  */
-public class PgDiffSequences {
+public final class PgDiffSequences {
 
     /**
      * Outputs statements for creation of new sequences.

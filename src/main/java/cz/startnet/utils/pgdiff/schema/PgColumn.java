@@ -209,10 +209,12 @@ public class PgColumn extends PgStatement {
     @Override
     public int computeHash() {
         final int prime = 31;
+        final int itrue = 1231;
+        final int ifalse = 1237;
         int result = 1;
         result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + (nullValue ? 1231 : 1237);
+        result = prime * result + (nullValue ? itrue : ifalse);
         result = prime * result + ((statistics == null) ? 0 : statistics.hashCode());
         result = prime * result + ((storage == null) ? 0 : storage.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());

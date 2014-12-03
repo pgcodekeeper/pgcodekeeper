@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+
 /**
  * Stores database information.
  *
@@ -32,7 +34,7 @@ public class PgDatabase extends PgStatement {
     public PgDatabase() {
         super("DB_name_placeholder", null);
         
-        addSchema(new PgSchema("public", null));
+        addSchema(new PgSchema(ApgdiffConsts.PUBLIC, null));
         defaultSchema = schemas.get(0);
     }
 
@@ -128,8 +130,8 @@ public class PgDatabase extends PgStatement {
      * {@link PgDatabase#PgDatabase()} constructor.
      */
     public void tryReplacePublicDef(PgSchema newPublic) {
-        if (newPublic.getName().equals("public")) {
-            PgSchema oldPublic = getSchema("public");
+        if (newPublic.getName().equals(ApgdiffConsts.PUBLIC)) {
+            PgSchema oldPublic = getSchema(ApgdiffConsts.PUBLIC);
         
             if (oldPublic.compare(new PgDatabase().getDefaultSchema()) 
                     && !newPublic.compare(oldPublic)) {
@@ -204,17 +206,17 @@ public class PgDatabase extends PgStatement {
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+    
+    @Override
     public int computeHash() {
         final int prime = 31;
         int result = 1;
         result = prime * result + new HashSet<>(extensions).hashCode();
         result = prime * result + new HashSet<>(schemas).hashCode();
         return result;
-    }
-    
-    @Override
-    public int hashCode() {
-        return super.hashCode();
     }
 
     @Override
@@ -243,34 +245,13 @@ public class PgDatabase extends PgStatement {
         return copy;
     }
     
-    /**
-     * @return a flat list of all named {@link PgStatement}s in this database.
-     *          (only views and tables at the moment)
-     */
-    public List<PgStatement> flatten() {
+    public static List<PgStatement> listViewsTables(PgDatabase db) {
         List<PgStatement> statements = new ArrayList<>();
         
-    //    statements.addAll(schemas);
-        for (PgSchema schema : schemas) {
+        for (PgSchema schema : db.getSchemas()) {
             statements.addAll(schema.getViews());
-            
-            List<PgTable> tables = schema.getTables();
-            statements.addAll(tables);
-            /*
-            for (PgTable table : tables) {
-                statements.addAll(table.getColumns());
-                statements.addAll(table.getConstraints());
-                statements.addAll(table.getIndexes());
-                statements.addAll(table.getTriggers());
-            }
-            
-            statements.addAll(schema.getSequences());
-            statements.addAll(schema.getFunctions());
-            */
+            statements.addAll(schema.getTables());
         }
-        
-    //    statements.addAll(extensions);
-        
         return statements;
     }
 }

@@ -17,7 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
  *
  * @author fordfrog
  */
-public class AlterViewParser {
+public final class AlterViewParser {
 
     /**
      * Parses ALTER VIEW statement.
@@ -37,7 +37,7 @@ public class AlterViewParser {
         final PgSchema schema = database.getSchema(schemaName);
 
         if (schema == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindSchema"), schemaName,
                     statement));
         }
@@ -46,7 +46,7 @@ public class AlterViewParser {
         final PgView view = schema.getView(objectName);
 
         if (view == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindView"), viewName,
                     statement));
         }

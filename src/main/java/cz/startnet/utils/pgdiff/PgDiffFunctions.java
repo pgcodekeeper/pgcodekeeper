@@ -21,7 +21,7 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
  *
  * @author fordfrog
  */
-public class PgDiffFunctions {
+public final class PgDiffFunctions {
 
     /**
      * Outputs statements for new or modified functions.
@@ -95,7 +95,7 @@ public class PgDiffFunctions {
         // Drop functions that exist no more
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
             if (!newSchema.containsFunction(oldFunction.getSignature())) {
-                Set<PgStatement> dependantsSet = new LinkedHashSet<PgStatement>(10);
+                Set<PgStatement> dependantsSet = new LinkedHashSet<>();
                 PgDiff.getDependantsSet(oldFunction, dependantsSet);
                 PgStatement[] dependants = dependantsSet.toArray(
                         new PgStatement[dependantsSet.size()]);

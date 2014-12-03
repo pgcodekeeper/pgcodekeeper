@@ -10,9 +10,10 @@ package cz.startnet.utils.pgdiff.loader;
  *
  * @author fordfrog
  */
-@SuppressWarnings("serial")
 public class FileException extends RuntimeException {
     
+    private static final long serialVersionUID = 4807456949712767347L;
+
     /**
      * Creates a new instance of {@code FileException} without detail message.
      */

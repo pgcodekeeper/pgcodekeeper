@@ -8,7 +8,7 @@ import cz.startnet.utils.pgdiff.schema.PgExtension;
  *
  * @author Alexander Levsha
  */
-public class CreateExtensionParser {
+public final class CreateExtensionParser {
     
     /**
      * Parses CREATE EXTENSION statement.

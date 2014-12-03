@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
@@ -22,24 +23,23 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class DepcyTreeExtender {
-    private HashSet<PgStatement> dependantsOfDeleted = new HashSet<PgStatement>(5);
+    private final Set<PgStatement> dependantsOfDeleted = new HashSet<>(5);
     /**
      * Набор элементов дерева, которые зависят от удаленных и должны 
      * быть удалены, но не были в первоначальном фильтрованном дереве или были 
      * отмечены как NEW/EDIT
      */
-    private HashSet<TreeElement> newlyDeletedDependants;
+    private final Set<TreeElement> newlyDeletedDependants = new HashSet<>();
+    private final Set<TreeElement> conflictingDeletedElements = new HashSet<>();
     
-    private HashSet<TreeElement> conflictingDeletedElements;
-    
-    private DepcyGraph depcySource;
-    private DepcyGraph depcyTarget;
-    private PgDatabase dbSource;
-    private PgDatabase dbTarget;
+    private final DepcyGraph depcySource;
+    private final DepcyGraph depcyTarget;
+    private final PgDatabase dbSource;
+    private final PgDatabase dbTarget;
     /**
      * Root node of filtered tree (should not be modified)
      */
-    final private TreeElement root;
+    private final TreeElement root;
     /**
      * Copy of root, extended by dependent from DELETED elements
      */
@@ -53,9 +53,6 @@ public class DepcyTreeExtender {
         // depcy graphs
         depcySource = new DepcyGraph(dbSource);
         depcyTarget = new DepcyGraph(dbTarget);
-        
-        newlyDeletedDependants = new HashSet<TreeElement>();
-        conflictingDeletedElements = new HashSet<TreeElement>();
     }
     
     /**
@@ -64,9 +61,9 @@ public class DepcyTreeExtender {
      * 
      * @return
      */
-    public HashSet<PgStatement> getDependenciesOfNew(){
+    public Set<PgStatement> getDependenciesOfNew(){
         // заполнить сет зависимыми элементами, которые надо создать
-        HashSet<PgStatement> depcySet = new HashSet<PgStatement>();
+        Set<PgStatement> depcySet = new HashSet<>();
         fillInDependenciesOfNew(root, depcySet);
         return depcySet;
     }
@@ -98,7 +95,7 @@ public class DepcyTreeExtender {
      * @param filtered
      * @param copy
      */
-    private void fillInDependenciesOfNew(TreeElement filtered, HashSet<PgStatement> depcySet) {
+    private void fillInDependenciesOfNew(TreeElement filtered, Set<PgStatement> depcySet) {
         PgStatement markedToCreate = null;
         
         // if not a Container and is marked for creation/edit
@@ -178,9 +175,9 @@ public class DepcyTreeExtender {
                 DiffSide side = elementInEmptyTree.getSide();
                 List<TreeElement> children = elementInEmptyTree.getChildren();
                 
-                // special case: default "public" schema
+                // special case: default public schema
                 if (elementInEmptyTree.getType() == DbObjType.SCHEMA
-                        && elementInEmptyTree.getName().equals("public") &&
+                        && elementInEmptyTree.getName().equals(ApgdiffConsts.PUBLIC) &&
                         !children.isEmpty()) {
                     side = DiffSide.BOTH;
                 }
@@ -224,31 +221,31 @@ public class DepcyTreeExtender {
         }
 
         PgStatement parent = getDbWithStatement(toBeAdded.getParent());
-        PgStatement copy = toBeAdded.shallowCopy();
-        if (copy instanceof PgFunction){
-            ((PgSchema)parent).addFunction((PgFunction)copy);
-        }else if (copy instanceof PgView){
-            ((PgSchema)parent).addView((PgView)copy);
-        }else if (copy instanceof PgTable){
-            ((PgSchema)parent).addTable((PgTable)copy);
-        }else if (copy instanceof PgSequence){
-            ((PgSchema)parent).addSequence((PgSequence)copy);
-        }else if (copy instanceof PgSchema){
-            if (copy.getName().equals("public")){
-                copy = ((PgDatabase)parent).getSchema("public");
+        PgStatement stCopy = toBeAdded.shallowCopy();
+        if (stCopy instanceof PgFunction){
+            ((PgSchema)parent).addFunction((PgFunction)stCopy);
+        }else if (stCopy instanceof PgView){
+            ((PgSchema)parent).addView((PgView)stCopy);
+        }else if (stCopy instanceof PgTable){
+            ((PgSchema)parent).addTable((PgTable)stCopy);
+        }else if (stCopy instanceof PgSequence){
+            ((PgSchema)parent).addSequence((PgSequence)stCopy);
+        }else if (stCopy instanceof PgSchema){
+            if (stCopy.getName().equals(ApgdiffConsts.PUBLIC)){
+                stCopy = ((PgDatabase)parent).getSchema(ApgdiffConsts.PUBLIC);
             }else{
-                ((PgDatabase)parent).addSchema((PgSchema)copy);
+                ((PgDatabase)parent).addSchema((PgSchema)stCopy);
             }
-        }else if (copy instanceof PgConstraint){
-            ((PgTable)parent).addConstraint((PgConstraint)copy);
-        }else if (copy instanceof PgIndex){
-            ((PgTable)parent).addIndex((PgIndex)copy);
-        }else if (copy instanceof PgTrigger){
-            ((PgTable)parent).addTrigger((PgTrigger)copy);
-        }else if (copy instanceof PgColumn){
-            ((PgTable)parent).addColumn((PgColumn)copy);
+        }else if (stCopy instanceof PgConstraint){
+            ((PgTable)parent).addConstraint((PgConstraint)stCopy);
+        }else if (stCopy instanceof PgIndex){
+            ((PgTable)parent).addIndex((PgIndex)stCopy);
+        }else if (stCopy instanceof PgTrigger){
+            ((PgTable)parent).addTrigger((PgTrigger)stCopy);
+        }else if (stCopy instanceof PgColumn){
+            ((PgTable)parent).addColumn((PgColumn)stCopy);
         } 
-        return copy;
+        return stCopy;
     }
     
     /**
@@ -311,13 +308,13 @@ public class DepcyTreeExtender {
      * @param elementsDepcyNew
      * @return
      */
-    public HashSet<TreeElement> sumAllDepcies(HashSet<TreeElement> elementsDepcyNew) {
+    public Set<TreeElement> sumAllDepcies(Set<TreeElement> elementsDepcyNew) {
         if (copy == null){
             throw new IllegalStateException("Root (filtered) tree has not been "
                     + "copyed yet and no DELETED dependants 've been found! "
                     + "Call getTreeCopyWithDepcy() first.");
         }
-        HashSet<TreeElement> sumNewAndDelete = new HashSet<TreeElement>();
+        Set<TreeElement> sumNewAndDelete = new HashSet<>();
         sumNewAndDelete.addAll(newlyDeletedDependants);
         sumNewAndDelete.addAll(conflictingDeletedElements);
         // переместить объекты (НЕ потомки filtered_with_new_and_delete) из elementsDepcyNEW в 
@@ -329,7 +326,7 @@ public class DepcyTreeExtender {
         return sumNewAndDelete;
     }
     
-    public HashSet<TreeElement> getConflicting(){
+    public Set<TreeElement> getConflicting(){
         return conflictingDeletedElements;
     }
 
@@ -342,9 +339,9 @@ public class DepcyTreeExtender {
      * Ожидается, что <code>db</code> не содержит в себе элементы, которые отмечены 
      * как удаляемые (иными словами, она target).
      */
-    public HashSet<TreeElement> getDepcyElementsContainedInDb(Set<TreeElement> elements,
-            HashSet<PgStatement> dependencies, PgDatabase db) {
-        HashSet<TreeElement> result = new HashSet<TreeElement>(5);
+    public Set<TreeElement> getDepcyElementsContainedInDb(Set<TreeElement> elements,
+            Set<PgStatement> dependencies, PgDatabase db) {
+        Set<TreeElement> result = new HashSet<>();
         for (TreeElement element : elements){
             if (element.getSide() == DiffSide.LEFT){
                 continue;

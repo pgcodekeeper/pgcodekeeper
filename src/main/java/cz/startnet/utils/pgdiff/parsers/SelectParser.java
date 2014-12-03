@@ -13,7 +13,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
 
-public class SelectParser {
+public final class SelectParser {
     
     private static final String[] CLAUSES = {
         "FROM", "WHERE", "GROUP", "HAVING", "WINDOW",
@@ -37,7 +37,7 @@ public class SelectParser {
      * 
      * Quoted identifiers are supported except for ones with escaped (doubled) double quotes.
      */
-    public final static Pattern VALID_SELECT_COLUMN = Pattern.compile(
+    public static final Pattern VALID_SELECT_COLUMN = Pattern.compile(
             "^(?:(?<schema>[\\w&&[^0-9]]\\w*|\"[^\"]+\")\\s*\\.\\s*)??"
             + "(?:(?<table>[\\w&&[^0-9]]\\w*|\"[^\"]+\")\\s*\\.\\s*)?"
             + "(?:(?<column>[\\w&&[^0-9]]\\w*|\"[^\"]+\"))"
@@ -45,10 +45,10 @@ public class SelectParser {
             Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
     
     // capturing groups' IDs for the column regex
-    public final static String GRP_SCHEMA = "schema";
-    public final static String GRP_TABLE = "table";
-    public final static String GRP_COLUMN = "column";
-    public final static String GRP_ALIAS = "alias";
+    public static final String GRP_SCHEMA = "schema";
+    public static final String GRP_TABLE = "table";
+    public static final String GRP_COLUMN = "column";
+    public static final String GRP_ALIAS = "alias";
     
     public static PgSelect parse(PgDatabase db, String statement, String searchPath) {
         return new SelectParser(db, statement, searchPath).parseSelect(statement);
@@ -181,30 +181,32 @@ public class SelectParser {
      * @return      Query string with excessive parens replaced by spaces
      */
     private StringBuilder removeExcessParens(StringBuilder sb, int startIndex, 
-            int parensCount, int subselectCounter, List<Integer> subselectStartsAt) {
+            int parens, int subselectCounter, List<Integer> subselectStartsAt) {
+        int parensCount = parens;
+        int subselects = subselectCounter;
         for(int j = startIndex; j < sb.length(); j++){
             if (sb.charAt(j) == '('){
                 parensCount++;
                 String next = sb.substring(j + 1).trim();
                 if (next.startsWith("SELECT ")){
-                    subselectCounter++;
+                    subselects++;
                     subselectStartsAt.add(parensCount);
-                    removeExcessParens(sb, j + 1, parensCount, subselectCounter, subselectStartsAt);
+                    removeExcessParens(sb, j + 1, parensCount, subselects, subselectStartsAt);
                     break;
                 }else{
                     sb.setCharAt(j, ' ');
                 }
             }else if (sb.charAt(j) == ')'){
-                if (subselectCounter > 0){
+                if (subselects > 0){
                     if (subselectStartsAt.contains(parensCount)){
                         subselectStartsAt.remove(subselectStartsAt.indexOf(parensCount));
                         parensCount--;
-                        subselectCounter--;
-                    }else if (subselectCounter < parensCount){
+                        subselects--;
+                    }else if (subselects < parensCount){
                         parensCount--;
                         sb.setCharAt(j, ' ');
                     }else{
-                        subselectCounter--;
+                        subselects--;
                         parensCount--;
                     }
                 }else{
@@ -213,7 +215,7 @@ public class SelectParser {
                 }
             }else if (sb.charAt(j) == '\''){
                 int nextQuoteIndex = sb.toString().indexOf('\'', j + 1);
-                removeExcessParens(sb, nextQuoteIndex + 1, parensCount, subselectCounter, subselectStartsAt);
+                removeExcessParens(sb, nextQuoteIndex + 1, parensCount, subselects, subselectStartsAt);
                 break;
             }
         }

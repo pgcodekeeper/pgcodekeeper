@@ -15,7 +15,7 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
  *
  * @author fordfrog
  */
-public class CreateTriggerParser {
+public final class CreateTriggerParser {
 
     /**
      * Parses CREATE TRIGGER statement.

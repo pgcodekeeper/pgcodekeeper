@@ -307,6 +307,17 @@ public class PgTable extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(triggers);
     }
 
+    public List<String> getSequences() {
+        return Collections.unmodifiableList(sequences);
+    }
+
+    public void addSequence(final String string) {
+        if (string != null && !sequences.contains(string)) {
+            sequences.add(string);
+            resetHash();
+        }
+    }
+    
     public void setWith(final String with) {
         this.with = with;
         resetHash();
@@ -425,6 +436,11 @@ public class PgTable extends PgStatementWithSearchPath {
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+    
+    @Override
     public int computeHash() {
         final int prime = 31;
         int result = 1;
@@ -444,11 +460,6 @@ public class PgTable extends PgStatementWithSearchPath {
         return result;
     }
 
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-    
     @Override
     public PgTable shallowCopy() {
         PgTable tableDst = new PgTable(getName(), getRawStatement(), getSearchPath());
@@ -487,16 +498,5 @@ public class PgTable extends PgStatementWithSearchPath {
         }
         
         return copy;
-    }
-
-    public List<String> getSequences() {
-        return Collections.unmodifiableList(sequences);
-    }
-
-    public void addSequence(final String string) {
-        if (string != null && !sequences.contains(string)) {
-            sequences.add(string);
-            resetHash();
-        }
     }
 }

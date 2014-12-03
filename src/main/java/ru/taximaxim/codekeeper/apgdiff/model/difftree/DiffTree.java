@@ -11,9 +11,9 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 
-public class DiffTree {
+public final class DiffTree {
     
-    final private static List<? extends PgStatement> EMPTY_LIST = 
+    private static final List<? extends PgStatement> EMPTY_LIST = 
             Collections.unmodifiableList(new ArrayList<PgStatement>());
 
     public static TreeElement create(PgDatabase left, PgDatabase right) {
@@ -320,6 +320,9 @@ public class DiffTree {
         }
         
         return rv;
+    }
+    
+    private DiffTree() {
     }
 }
 

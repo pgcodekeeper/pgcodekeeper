@@ -17,7 +17,7 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
  *
  * @author mix86
  */
-public class AlterSequenceParser {
+public final class AlterSequenceParser {
 
     /**
      * Parses ALTER SEQUENCE statement.
@@ -39,7 +39,7 @@ public class AlterSequenceParser {
         final PgSchema schema = database.getSchema(schemaName);
 
         if (schema == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindSchema"), schemaName,
                     statement));
         }
@@ -48,7 +48,7 @@ public class AlterSequenceParser {
         final PgSequence sequence = schema.getSequence(objectName);
 
         if (sequence == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindSequence"), sequenceName,
                     statement));
         }

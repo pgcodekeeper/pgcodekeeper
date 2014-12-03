@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.loader;
 
 public interface JdbcQueries {
+// SONAR-OFF
     String QUERY_TABLES_PER_SCHEMA = 
           "SELECT " 
         + "        subselectColumns.oid::bigint, "
@@ -15,6 +16,7 @@ public interface JdbcQueries {
         + "        subselectColumns.col_typemod, "
         + "        subselectColumns.col_notnull, "
         + "        subselectColumns.seqs,"
+        + "        subselectColumns.col_acl, "
         + "        comments.description AS table_comment, "
         + "        subselectInherits.inherited, "
         + "        subselectColumns.reloptions, "
@@ -33,6 +35,7 @@ public interface JdbcQueries {
         + "             array_agg(columnsData.atttypmod) AS col_typemod, "
         + "             array_agg(columnsData.attnotnull) AS col_notnull, "
         + "             array_agg(columnsData.col_seq) AS seqs, "
+        + "             array_agg(columnsData.attacl) AS col_acl, "
         + "             columnsData.reloptions "
         + "         FROM "
         + "             (SELECT "
@@ -48,6 +51,7 @@ public interface JdbcQueries {
         + "                 attr.atttypmod, "
         + "                 attr.attnotnull, "
         + "                 (SELECT oid::regclass::text FROM pg_catalog.pg_class c2 WHERE c2.oid = depseq.refobjid AND c2.relkind = 'S') col_seq, "
+        + "                 attr.attacl::text, "
         + "                 c.reloptions "
         + "             FROM "
         + "                 pg_catalog.pg_class c "
@@ -112,6 +116,7 @@ public interface JdbcQueries {
         + "        subselectColumns.col_typemod, "
         + "        subselectColumns.col_notnull, "
         + "        subselectColumns.seqs, "
+        + "        subselectColumns.col_acl, "
         + "        table_comment, "
         + "        inherited, "
         + "        subselectColumns.reloptions";
@@ -323,7 +328,8 @@ public interface JdbcQueries {
             + "     tgname, "
             + "     tgfoid, "
             + "     tgtype, "
-            + "     tgrelid::regclass::text "
+            + "     tgrelid::regclass::text, "
+            + "     tgargs "
             + "FROM "
             + "     pg_catalog.pg_class ccc "
             + "     RIGHT JOIN pg_catalog.pg_trigger t "
@@ -412,4 +418,5 @@ public interface JdbcQueries {
             + "                             nsp.nspname NOT LIKE ('pg_%') "
             + "                             AND nsp.nspname != 'information_schema') "
             + "     AND c.relkind IN ('r', 'i', 'S', 'v')";
+// SONAR-ON
 }

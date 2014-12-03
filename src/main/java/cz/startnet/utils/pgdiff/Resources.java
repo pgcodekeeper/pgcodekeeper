@@ -10,7 +10,7 @@ import java.util.ResourceBundle;
  *
  * @author fordfrog
  */
-public class Resources {
+public final class Resources {
 
     /**
      * Resource bundle.
