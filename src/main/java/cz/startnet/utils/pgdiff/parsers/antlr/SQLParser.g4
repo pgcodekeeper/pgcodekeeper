@@ -610,78 +610,9 @@ param
   : key=identifier EQUAL value=numeric_value_expression
   ;
 
-//method_specifier
-//  : USING m=identifier
-//  ;
-
-//table_space_specifier
-//  : TABLESPACE table_space_name
-//  ;
-
-//table_space_name
-//  : identifier
-//  ;
-
-//table_partitioning_clauses
-//  : range_partitions
-//  | hash_partitions
-//  | list_partitions
-//  | column_partitions
-//  ;
-
-//range_partitions
-//  : PARTITION BY RANGE LEFT_PAREN column_reference_list RIGHT_PAREN
-//    LEFT_PAREN range_value_clause_list RIGHT_PAREN
-//  ;
-
-//range_value_clause_list
-//  : range_value_clause (COMMA range_value_clause)*
-//  ;
-
-//range_value_clause
-//  : PARTITION partition_name VALUES LESS THAN (LEFT_PAREN value_expression RIGHT_PAREN | LEFT_PAREN? MAXVALUE RIGHT_PAREN?)
-//  ;
-
-//hash_partitions
-//  : PARTITION BY HASH LEFT_PAREN column_reference_list RIGHT_PAREN
-//    (LEFT_PAREN individual_hash_partitions RIGHT_PAREN | hash_partitions_by_quantity)
-//  ;
-
-//individual_hash_partitions
-//  : individual_hash_partition (COMMA individual_hash_partition)*
-//  ;
-
-//individual_hash_partition
-//  : PARTITION partition_name
-//  ;
-
-//hash_partitions_by_quantity
-//  : PARTITIONS quantity = numeric_value_expression
-//  ;
-
-//list_partitions
-//  : PARTITION BY LIST LEFT_PAREN column_reference_list RIGHT_PAREN LEFT_PAREN  list_value_clause_list RIGHT_PAREN
-//  ;
-
-//list_value_clause_list
-//  : list_value_partition (COMMA list_value_partition)*
-//  ;
-
-//list_value_partition
-//  : PARTITION partition_name VALUES (IN)? LEFT_PAREN in_value_list RIGHT_PAREN
-//  ;
-
-//column_partitions
-//  : PARTITION BY COLUMN table_elements
-//  ;
-
 partition_by_columns
     : PARTITION BY schema_qualified_name (COMMA schema_qualified_name)*
     ;
-
-//partition_name
-//  : identifier
-//  ;
 
 /*
 ===============================================================================
@@ -934,10 +865,6 @@ date_literal
   : DATE date_string=Character_String_Literal
   ;
 
-//boolean_literal
-//  : TRUE | FALSE | UNKNOWN
-//  ;
-
 /*
 ===============================================================================
   6.1 <data types>
@@ -1133,11 +1060,6 @@ set_function_type
 filter_clause
   : FILTER LEFT_PAREN where_clause RIGHT_PAREN
   ;
-
-//grouping_operation
-//  : GROUPING LEFT_PAREN column_reference_list RIGHT_PAREN
-//  ;
-
 /*
 ===============================================================================
   6.11 <case expression>
@@ -1393,8 +1315,7 @@ table_expression
 */
 
 from_clause
-  : FROM (LEFT_PAREN from_clause RIGHT_PAREN
-         | (table_reference_list | query_expression)) as_clause?
+  : FROM table_reference_list
   ;
 
 table_reference_list
@@ -1463,26 +1384,8 @@ named_columns_join
   ;
 
 table_primary
-  : (alias_table | schema_qualified_name) ((AS)? alias=alias_def)? (LEFT_PAREN column_name_list RIGHT_PAREN)?
-  | derived_table (AS)? name=identifier (LEFT_PAREN column_name_list RIGHT_PAREN)?
-  | LEFT_PAREN table_reference RIGHT_PAREN
-  ;
-
-column_name_list
-  :  identifier ( COMMA identifier  )*
-  ;
-
-alias_def
-    : schema_qualified_name 
-    | alias_table
-    ;
-
-alias_table
-    : schema_qualified_name LEFT_PAREN (identifier (COMMA identifier)*)? RIGHT_PAREN
-    ;
-
-derived_table
-  : table_subquery
+  : schema_qualified_name function_args? as_clause? (LEFT_PAREN column_reference_list RIGHT_PAREN)?
+  | table_subquery as_clause? (LEFT_PAREN column_reference_list RIGHT_PAREN)?
   ;
 
 /*
@@ -1643,14 +1546,6 @@ column_reference_list
 ==============================================================================================
 */
 
-//scalar_subquery
-//  :  subquery
-//  ;
-
-//row_subquery
-//  :  subquery
-//  ;
-
 table_subquery
   : LEFT_PAREN query_expression RIGHT_PAREN
   ;
@@ -1775,13 +1670,6 @@ null_predicate
   Specify a quantified comparison.
 ==============================================================================================
 */
-
-//quantified_comparison_predicate
-//  : l=numeric_value_expression  c=comp_op q=quantifier s=table_subquery
-//  ;
-
-//quantifier : ALL  | SOME | ANY;
-
 /*
 ==============================================================================================
   8.9 <exists predicate>
@@ -1802,10 +1690,6 @@ exists_predicate
   Specify a test for the absence of duplicate rows
 ==============================================================================================
 */
-
-//unique_predicate
-//  : UNIQUE s=table_subquery
-//  ;
 
 /*
 ===============================================================================
@@ -1835,24 +1719,6 @@ extended_datetime_field
   Invoke an SQL-invoked routine.
 ===============================================================================
 */
-
-//routine_invocation
-//  : function_name LEFT_PAREN sql_argument_list? RIGHT_PAREN
-//  ;
-
-//function_names_for_reserved_words
-//  : LEFT
-//  | RIGHT
-//  ;
-
-//function_name
-//  : schema_qualified_name
-//  | function_names_for_reserved_words
-//  ;
-
-//sql_argument_list
-//  : value_expression (COMMA value_expression)*
-//  ;
 
 /*
 ===============================================================================

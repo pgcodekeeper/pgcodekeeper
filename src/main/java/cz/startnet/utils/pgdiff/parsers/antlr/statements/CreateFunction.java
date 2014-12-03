@@ -49,8 +49,8 @@ public class CreateFunction extends ParserAbstract {
             }
             if (argument.argtype_data!= null) {
                 arg.setDataType(argument.argtype_data.getText());
-            } else if (argument.argtype_expres != null) {
-                arg.setDataType(argument.argtype_expres.getText());
+//            } else if (argument.argtype_expres != null) {
+//                arg.setDataType(argument.argtype_expres.getText());
             }
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(argument.function_def_value().def_value.getText());
