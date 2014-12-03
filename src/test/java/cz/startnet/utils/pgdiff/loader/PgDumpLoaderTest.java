@@ -184,10 +184,10 @@ public class PgDumpLoaderTest {
     }
 
     /**
-     * Tests ModelExporter export() method
+     * Tests ModelExporter exportFull() method
      */
     @Test
-    public void exportDb() throws IOException {
+    public void exportFullDb() throws IOException {
         // skip cases with illegal object names (with file-system reserved chars)
         Assume.assumeFalse(skipForExport.contains(fileIndex));
 
