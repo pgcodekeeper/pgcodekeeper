@@ -574,7 +574,7 @@ public final class PgDiff {
     public static List<PgStatement> addUniqueDependenciesOnCreateEdit(PgDiffScript script,
             PgDiffArguments arguments, SearchPathHelper newSearchPathHelper, PgStatement fullStatement){
         
-        List<PgStatement> specialDependencies = new ArrayList<PgStatement>(3);
+        List<PgStatement> specialDependencies = new ArrayList<>();
         addUniqueDependencies(specialDependencies, script, arguments, newSearchPathHelper, fullStatement, null);
         return specialDependencies;
     }

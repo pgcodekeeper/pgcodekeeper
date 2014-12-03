@@ -68,10 +68,12 @@ public class DepcyTreeExtenderTest {
     public static Collection<?> parameters() {
         return Arrays.asList(
                 new Object[][]{
+// SONAR-OFF
                     {1},
                     {2},
                     {3},
                     {4}
+// SONAR-ON
                 });
     }
     

@@ -45,6 +45,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
  */
 public class ModelExporter {
     
+    private static final int HASH_LENGTH = 10;
     private static final Pattern INVALID_FILENAME = Pattern.compile("[\\/:*?\"<>|]");
     private static final String GROUP_DELIMITER = 
             "\n\n--------------------------------------------------------------------------------\n\n";
@@ -486,7 +487,7 @@ public class ModelExporter {
             String hash = PgDiffUtils.md5(
                     bareNameGrouped? statement.getBareName() : statement.getName())
                             // 2^40 variants, should be enough for this purpose
-                            .substring(0, 10);
+                            .substring(0, HASH_LENGTH);
             
             return m.replaceAll("") + '_' + hash;
         } else {

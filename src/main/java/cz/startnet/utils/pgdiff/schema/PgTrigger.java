@@ -269,15 +269,17 @@ public class PgTrigger extends PgStatementWithSearchPath {
     @Override
     public int computeHash() {
         final int prime = 31;
+        final int itrue = 1231;
+        final int ifalse = 1237;
         int result = 1;
-        result = prime * result + (before ? 1231 : 1237);
-        result = prime * result + (forEachRow ? 1231 : 1237);
+        result = prime * result + (before ? itrue : ifalse);
+        result = prime * result + (forEachRow ? itrue : ifalse);
         result = prime * result + ((function == null) ? 0 : function.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + (onDelete ? 1231 : 1237);
-        result = prime * result + (onInsert ? 1231 : 1237);
-        result = prime * result + (onTruncate ? 1231 : 1237);
-        result = prime * result + (onUpdate ? 1231 : 1237);
+        result = prime * result + (onDelete ? itrue : ifalse);
+        result = prime * result + (onInsert ? itrue : ifalse);
+        result = prime * result + (onTruncate ? itrue : ifalse);
+        result = prime * result + (onUpdate ? itrue : ifalse);
         result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
         result = prime * result + ((when == null) ? 0 : when.hashCode());
         result = prime * result + new HashSet<>(updateColumns).hashCode();

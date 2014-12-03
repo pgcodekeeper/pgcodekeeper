@@ -341,7 +341,7 @@ public class DepcyTreeExtender {
      */
     public Set<TreeElement> getDepcyElementsContainedInDb(Set<TreeElement> elements,
             Set<PgStatement> dependencies, PgDatabase db) {
-        Set<TreeElement> result = new HashSet<>(5);
+        Set<TreeElement> result = new HashSet<>();
         for (TreeElement element : elements){
             if (element.getSide() == DiffSide.LEFT){
                 continue;

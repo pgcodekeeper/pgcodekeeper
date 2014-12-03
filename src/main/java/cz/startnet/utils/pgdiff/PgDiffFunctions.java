@@ -95,7 +95,7 @@ public final class PgDiffFunctions {
         // Drop functions that exist no more
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
             if (!newSchema.containsFunction(oldFunction.getSignature())) {
-                Set<PgStatement> dependantsSet = new LinkedHashSet<PgStatement>(10);
+                Set<PgStatement> dependantsSet = new LinkedHashSet<>();
                 PgDiff.getDependantsSet(oldFunction, dependantsSet);
                 PgStatement[] dependants = dependantsSet.toArray(
                         new PgStatement[dependantsSet.size()]);

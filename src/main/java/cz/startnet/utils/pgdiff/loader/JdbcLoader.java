@@ -44,6 +44,7 @@ public class JdbcLoader implements PgCatalogStrings {
     /*
      * Trigger firing conditions
      */
+// SONAR-OFF
     public static final int TRIGGER_TYPE_ROW = 1 << 0;
     public static final int TRIGGER_TYPE_BEFORE = 1 << 1;
     public static final int TRIGGER_TYPE_INSERT = 1 << 2;
@@ -51,8 +52,10 @@ public class JdbcLoader implements PgCatalogStrings {
     public static final int TRIGGER_TYPE_UPDATE = 1 << 4;
     public static final int TRIGGER_TYPE_TRUNCATE = 1 << 5;
     public static final int TRIGGER_TYPE_INSTEAD = 1 << 6;
-    
+// SONAR-ON
     private static final int DEFAULT_OBJECTS_COUNT = 100;
+    private static final float DEFAULT_PROCOST = 100.0f;
+    private static final float DEFAULT_PROROWS = 1000.0f;
     /*
      * Prepared statements to be executed
      */
@@ -533,7 +536,7 @@ public class JdbcLoader implements PgCatalogStrings {
         StringBuilder tableDef = new StringBuilder(); 
         tableDef.append("CREATE TABLE ".concat(tableName).concat(" (\n"));
         
-        List<PgColumn> columns = new ArrayList<PgColumn>(5);
+        List<PgColumn> columns = new ArrayList<>();
         
         Integer[] colNumbers = (Integer[])res.getArray("col_numbers").getArray();
         String[] colNames = (String[])res.getArray("col_names").getArray();
@@ -728,29 +731,27 @@ public class JdbcLoader implements PgCatalogStrings {
         
         String functionName = res.getString("proname").concat("(");
         byte[] args = res.getBytes("tgargs");
-        if (res.getBytes("tgargs").length > 0){
-            ArrayList<Byte> target = new ArrayList<Byte>(args.length);
+        if (args.length > 0){
+            List<Byte> target = new ArrayList<>(args.length);
+            target.add((byte) '\'');
             for(int i = 0; i < args.length; i++){
                 byte b = args[i];
                 if (b == 0 && i < args.length - 1){
-                    target.add((byte) 39); // APOSTROPHE
-                    target.add((byte) 44); // COMMA
-                    target.add((byte) 32); // SPACE
-                    target.add((byte) 39); // APOSTROPHE
+                    target.add((byte) '\''); // APOSTROPHE
+                    target.add((byte) ','); // COMMA
+                    target.add((byte) ' '); // SPACE
+                    target.add((byte) '\''); // APOSTROPHE
                 }else if (b != 0){
                     target.add(b);
                 }
             }
-            
-            target.add(0, (byte) 39);
-            target.add((byte) 39);
+            target.add((byte) '\'');
             
             args = new byte[target.size()];
-            
             for(int i = 0; i < target.size(); i++){
                 args[i] = target.get(i);
             }
-            
+            // FIXME JDBC works in UTF8 (yes/no/maybe)
             functionName = functionName.concat(new String(args, connector.getEncoding()));
         }
         functionName = functionName.concat(")");
@@ -890,12 +891,12 @@ public class JdbcLoader implements PgCatalogStrings {
         }
         
         float cost = res.getFloat("procost");
-        if (cost != 100.0f){
+        if (cost != DEFAULT_PROCOST){
             body.append(" COST ").append((int)cost);
         }
         
         float rows = res.getFloat("prorows");
-        if (rows != 0.0f && rows != 1000.0f){
+        if (rows != 0.0f && rows != DEFAULT_PROROWS){
             body.append(" ROWS ").append((int)rows);
         }
         
@@ -980,28 +981,24 @@ public class JdbcLoader implements PgCatalogStrings {
         if (aclItemsArrayAsString == null){
             return;
         }
-        String stType = "";
+        String stType;
         String order = "arwdDxtXUCTc";
-        int possiblePrivilegeCount = 12;
         if (st instanceof PgSequence){
             stType = "SEQUENCE";
-            possiblePrivilegeCount = 3;
             order = "rUw";
         }else if (st instanceof PgFunction){
             stType = "FUNCTION";
-            possiblePrivilegeCount = 1;
             order = "X";
         }else if (st instanceof PgTable || st instanceof PgView){
             stType = "TABLE";
-            possiblePrivilegeCount = 7;
             order = "raxdtDw";
         }else if (st instanceof PgSchema){
             stType = "SCHEMA";
-            possiblePrivilegeCount = 2;
             order = "CU";
         }else{
             throw new IllegalStateException("Not supported PgStatement class");
         }
+        int possiblePrivilegeCount = order.length();
         
         String column = (columnName != null && !columnName.isEmpty()) ? "(" + columnName + ")" : "";
         String revokePublic = "ALL" + column + " ON " + stType + " " + stSignature + " FROM PUBLIC";
@@ -1096,7 +1093,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 cachedColumnNamesByTableOid.put(tableOid, tableColumns);
             }
         }
-        List<String> result = new ArrayList<String>(5);
+        List<String> result = new ArrayList<>();
         for(Integer n : cols){
             result.add(tableColumns.get(n));
         }
