@@ -54,7 +54,7 @@ public class TreeElement {
     
     private TreeElement parent;
     
-    private List<TreeElement> children = new ArrayList<>(3);
+    private List<TreeElement> children = new ArrayList<>(2);
     
     public String getName() {
         return name;
