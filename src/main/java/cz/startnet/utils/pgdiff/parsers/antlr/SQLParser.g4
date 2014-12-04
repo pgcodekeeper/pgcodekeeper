@@ -269,8 +269,7 @@ set_statement
     ;
 
 set_statement_value
-    : (value=value_expression | DEFAULT)
-    | QUOTE set_statement_value QUOTE
+    : value=value_expression | DEFAULT
     ;
    
 create_trigger_statement
@@ -431,8 +430,7 @@ function_attribute
     ;
         
 argmode
-    : 
-      IN | OUT | INOUT | VARIADIC
+    : IN | OUT | INOUT | VARIADIC
     ;
     
 create_sequence_statement
@@ -455,8 +453,8 @@ create_schema_statement
     
 create_view_statement
     : (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name (column_name=names_references)?
-    (WITH LEFT_PAREN (view_option_name=identifier (EQUAL view_option_value=identifier)?)+ RIGHT_PAREN)?
-    AS v_query=query_expression
+        (WITH LEFT_PAREN (view_option_name=identifier (EQUAL view_option_value=identifier)?)+ RIGHT_PAREN)?
+        AS v_query=query_expression
     ;
     
 create_table_statement
