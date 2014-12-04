@@ -237,11 +237,10 @@ alter_view_statement
     ;
 
 index_statement
-  : unique_value=UNIQUE? INDEX CONCURRENTLY? (name=schema_qualified_name)? ON table_name=schema_qualified_name 
+  : unique_value=UNIQUE? INDEX CONCURRENTLY? name=schema_qualified_name? ON table_name=schema_qualified_name 
     (USING method=schema_qualified_name)?
     LEFT_PAREN sort_specifier_list RIGHT_PAREN param_clause?
-    table_space?
-    (where_clause)?
+    table_space? where_clause?
   ;
   
  create_extension_statement
@@ -255,8 +254,7 @@ create_language_statement
     ;
 
 create_event_trigger
-    : EVENT TRIGGER name=schema_qualified_name
-        ON event=schema_qualified_name
+    : EVENT TRIGGER name=schema_qualified_name ON event=schema_qualified_name
         (WHEN filter_variable=schema_qualified_name (IN 
             LEFT_PAREN 
                 filter_value+=Character_String_Literal(COMMA filter_value+=Character_String_Literal)* 
@@ -416,16 +414,16 @@ function_args
     : LEFT_PAREN (function_arguments (COMMA function_arguments)*)? RIGHT_PAREN
     ;
 
-function_def_value
-    : (DEFAULT | EQUAL) def_value=value_expression
-    ;
-
 function_body
     : BeginDollarStringConstant Text_between_Dollar+ EndDollarStringConstant
     ;
 
 function_arguments
     :arg_mode=argmode? argname=identifier? (argtype_data=data_type | argtype_expres=value_expression) function_def_value?
+    ;
+
+function_def_value
+    : (DEFAULT | EQUAL) def_value=value_expression
     ;
 
 function_attribute
@@ -438,8 +436,7 @@ argmode
     ;
     
 create_sequence_statement
-    : (TEMPORARY | TEMP)? SEQUENCE name=schema_qualified_name 
-        (sequence_body)*
+    : (TEMPORARY | TEMP)? SEQUENCE name=schema_qualified_name (sequence_body)*
     ;
 
 sequence_body
@@ -453,7 +450,7 @@ sequence_body
     ;
     
 create_schema_statement
-    : SCHEMA (IF NOT EXISTS)? name=schema_qualified_name? (AUTHORIZATION user_name=identifier)? (schema_element+=sql)*
+    : SCHEMA (IF NOT EXISTS)? name=schema_qualified_name? (AUTHORIZATION user_name=identifier)? (schema_element+=statement)*
     ;
     
 create_view_statement
@@ -503,15 +500,11 @@ constraint_common
 
 common_constraint
     :check_boolean_expression 
-    | table_unique
-    | table_primary_key
+    | table_unique_prkey
     ;
 
-table_unique
-    : UNIQUE column_references? index_parameters_unique=index_parameters
-    ;
-table_primary_key
-    : PRIMARY KEY column_references? index_parameters_pr_key=index_parameters
+table_unique_prkey
+    : (UNIQUE | PRIMARY KEY) column_references? index_parameters_unique=index_parameters
     ;
 
 table_references
@@ -595,7 +588,6 @@ usage_select_update
 create_connect_temporary_temp
     :CREATE | CONNECT | TEMPORARY | TEMP
     ;
-
 
 field_element
   : name=identifier data_type
