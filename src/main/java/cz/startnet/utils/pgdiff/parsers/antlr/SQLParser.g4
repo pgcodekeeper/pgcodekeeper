@@ -890,11 +890,9 @@ network_type
   ;
 
 character_string_type
-  : NATIONAL? CHARACTER VARYING? type_length?
-  | NATIONAL? CHAR VARYING? type_length?
+  : NATIONAL? (CHARACTER | CHAR) VARYING? type_length?
   | NCHAR VARYING? type_length?
-  | NVARCHAR type_length?
-  | VARCHAR type_length?
+  | (NVARCHAR | VARCHAR) type_length?
   | (TEXT | INTERVAL)
   ;
 
@@ -953,14 +951,12 @@ datetime_type
   ;
 
 bit_type
-  : BIT type_length?
+  : BIT VARYING? type_length?
   | VARBIT type_length?
-  | BIT VARYING type_length?
   ;
 
 binary_type
-  : BINARY type_length?
-  | BINARY VARYING type_length?
+  : BINARY VARYING? type_length?
   | VARBINARY type_length?
   ;
 
@@ -1476,8 +1472,7 @@ qualified_asterisk
   ;
 
 set_qualifier
-  : DISTINCT
-  | ALL
+  : DISTINCT | ALL
   ;
 
 as_clause
@@ -1698,8 +1693,7 @@ limit_clause
   ;
 
 null_ordering
-  : NULL FIRST
-  | NULL LAST
+  : NULL (FIRST | LAST)
   ;
 
 ///*
