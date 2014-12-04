@@ -1257,11 +1257,7 @@ table_expression
 */
 
 from_clause
-  : FROM table_reference_list
-  ;
-
-table_reference_list
-  : table_reference (COMMA table_reference)*
+  : FROM table_reference (COMMA table_reference)*
   ;
 
 /*
