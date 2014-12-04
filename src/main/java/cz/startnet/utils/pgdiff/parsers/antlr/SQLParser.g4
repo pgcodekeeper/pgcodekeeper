@@ -245,7 +245,7 @@ index_statement
   
  create_extension_statement
     : EXTENSION (IF NOT EXISTS)? name=schema_qualified_name WITH?
-         schema_with_name? (VERSION version=unsigned_literal)? (FROM old_version=unsigned_literal)?
+         schema_with_name? (VERSION version=unsigned_value_specification)? (FROM old_version=unsigned_value_specification)?
     ;
     
 create_language_statement
@@ -828,7 +828,7 @@ nonreserved_keywords
 ===============================================================================
 */
 
-unsigned_literal
+unsigned_value_specification
   : unsigned_numeric_literal
   | general_literal
   ;
@@ -980,11 +980,10 @@ nonparenthesized_value_expression_primary
   | table_subquery
   | case_expression
   | cast_specification
-  | function_parameters
   | NULL
   | all_array
   | case_abbreviation
-  | schema_qualified_name
+  | schema_qualified_name function_args?
   ;
 
 /*
@@ -992,10 +991,6 @@ nonparenthesized_value_expression_primary
   6.4 <unsigned value specification>
 ===============================================================================
 */
-
-unsigned_value_specification
-    : unsigned_literal
-  ;
 
 unsigned_numeric_literal
   : NUMBER
@@ -1014,10 +1009,6 @@ signed_numerical_literal
 ===============================================================================
 */
 set_function_specification
-  : aggregate_function
-  ;
-
-aggregate_function
   : COUNT LEFT_PAREN MULTIPLY RIGHT_PAREN
   | general_set_function filter_clause?
   ;
