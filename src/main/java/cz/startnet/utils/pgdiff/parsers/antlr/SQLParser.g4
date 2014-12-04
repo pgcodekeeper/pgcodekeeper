@@ -983,8 +983,12 @@ nonparenthesized_value_expression_primary
   | NULL
   | all_array
   | case_abbreviation
-  | schema_qualified_name function_args?
+  | name_or_func_calls
   ;
+
+name_or_func_calls
+    :schema_qualified_name function_args?
+    ;
 
 /*
 ===============================================================================
@@ -1322,8 +1326,7 @@ named_columns_join
   ;
 
 table_primary
-  : schema_qualified_name function_args? as_clause? column_references?
-  | table_subquery as_clause? column_references?
+  : (name_or_func_calls | table_subquery) as_clause? column_references?
   ;
 
 /*
@@ -1671,11 +1674,11 @@ null_ordering
   : NULL (FIRST | LAST)
   ;
 
-///*
-//===============================================================================
-//  14.8 <insert statement>
-//===============================================================================
-//*/
+/*
+===============================================================================
+  14.8 <insert statement>
+===============================================================================
+*/
 //
 //insert_statement
 //  : INSERT (OVERWRITE)? INTO schema_qualified_name (LEFT_PAREN column_name_list RIGHT_PAREN)? query_expression
