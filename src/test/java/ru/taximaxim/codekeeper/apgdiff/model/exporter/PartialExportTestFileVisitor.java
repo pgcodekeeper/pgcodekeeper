@@ -13,9 +13,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
-
-import org.junit.Assert;
 
 public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
     private Path pathToBeCompared;
@@ -27,7 +26,8 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
     private List<String> deletedFiles; 
     private boolean isInSource;
     
-    public PartialExportTestFileVisitor(Path pathToBeCompared, Path pathToCompareTo, Path pathFullExported, List<String> modifiedFiles, List<String> newFiles, List<String> deletedFiles, 
+    public PartialExportTestFileVisitor(Path pathToBeCompared, Path pathToCompareTo, Path pathFullExported, 
+            LinkedList<String> modifiedFiles, LinkedList<String> newFiles, LinkedList<String> deletedFiles, 
             boolean isInSource) {
         super();
         this.pathToBeCompared = pathToBeCompared;
@@ -41,47 +41,54 @@ public class PartialExportTestFileVisitor extends SimpleFileVisitor<Path>{
     }
     
     @Override
-    public FileVisitResult preVisitDirectory(Path dir,
-            BasicFileAttributes attrs) throws IOException {
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         return FileVisitResult.CONTINUE;
     }
     
     @Override
-    public FileVisitResult visitFile(Path file1, BasicFileAttributes attrs)
-        throws IOException
-    {
+    public FileVisitResult visitFile(Path file1, BasicFileAttributes attrs) throws IOException{
         File file2 = new File(pathToCompareTo.toFile(),pathToBeCompared.relativize(file1).toString());
         
         String relativeFilePath = pathToBeCompared.relativize(file1).toString();
-        if (!file2.exists() && isInSource && !deletedFiles.contains(relativeFilePath)){
-            Assert.assertTrue("file is missing but not in deleted list: " + relativeFilePath, false);
+        if (!file2.exists() && isInSource){
+            if (!deletedFiles.contains(relativeFilePath)){
+                fail(isInSource() + "file is missing but not in deleted list: " + relativeFilePath);
+            }
+            deletedFiles.remove(relativeFilePath);
         }
-        
-        if (!file2.exists() && !isInSource && !newFiles.contains(relativeFilePath)){
-            Assert.assertTrue("file is missing but not in new list: " + relativeFilePath, false);
+        if (!file2.exists() && !isInSource){
+            if (!newFiles.contains(relativeFilePath)){
+                fail(isInSource() + "file is missing but not in new list: " + relativeFilePath);
+            }
+            newFiles.remove(relativeFilePath);
         }
-        
         if (file2.exists() && file2.isDirectory()){
-            Assert.assertTrue("file is a directory: " + relativeFilePath, false);
+            fail(isInSource() + "file is a directory: " + relativeFilePath);
         }
         
         if (file2.exists() && !Arrays.equals(computeChecksum(file1), computeChecksum(file2.toPath()))){
             if (!modifiedFiles.contains(relativeFilePath)){
-                Assert.assertTrue("Source and target files differ, but this file is "
-                        + "not in list of modified objects: " + relativeFilePath, false);
+                fail(isInSource() + "Source and target files differ, but this file is "
+                        + "not in list of modified objects: " + relativeFilePath);
             }
+            modifiedFiles.remove(relativeFilePath);
             File file = (File) (isInSource ? file2 : file1.toFile());
             File fileNewFull = new File(pathFullExported.toFile(), relativeFilePath);
             
             if (!fileNewFull.exists() || fileNewFull.isDirectory()){
-                Assert.assertTrue("Source and target files differ, but same file in newFull "
-                        + "does not exist or a directory: " + relativeFilePath, false);
+                fail(isInSource() + "Source and target files differ, but same file in newFull "
+                        + "does not exist or a directory: " + relativeFilePath);
             }
             if(!Arrays.equals(computeChecksum(file.toPath()), computeChecksum(fileNewFull.toPath()))){
-                Assert.assertTrue("Files differ, and partial file differ with newFull: " + relativeFilePath, false);
+                fail(isInSource() + "Files differ, and partial file differ with newFull: " + 
+                        relativeFilePath);
             }
         }
         return FileVisitResult.CONTINUE;
+    }
+    
+    private String isInSource(){
+        return "Walking " + (isInSource ? "full export" : "partial export") + " directory: ";
     }
     
     private byte[] computeChecksum(Path filename) throws IOException {
