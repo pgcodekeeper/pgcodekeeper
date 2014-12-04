@@ -1434,10 +1434,6 @@ row_value_predicand_list
 ===============================================================================
 */
 query_expression
-  : query_expression_body
-  ;
-
-query_expression_body
   : non_join_query_expression
   | joined_table
   ;
