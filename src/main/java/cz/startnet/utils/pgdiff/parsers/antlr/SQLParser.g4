@@ -529,7 +529,8 @@ check_boolean_expression
     
 storage_parameter
     : LEFT_PAREN
-        (storage_param=identifier (EQUAL value=value_expression)? COMMA?)+ 
+        storage_param=identifier (EQUAL value=value_expression)? 
+        (COMMA storage_param=identifier (EQUAL value=value_expression)?)*
       RIGHT_PAREN 
     ;
     
@@ -933,8 +934,7 @@ approximate_numeric_type
   ;
 
 precision_param
-  : LEFT_PAREN precision=NUMBER RIGHT_PAREN
-  | LEFT_PAREN precision=NUMBER COMMA scale=NUMBER RIGHT_PAREN
+  : LEFT_PAREN precision=NUMBER (COMMA scale=NUMBER)? RIGHT_PAREN
   ;
 
 boolean_type
@@ -943,11 +943,11 @@ boolean_type
   ;
 
 datetime_type
-  : (DATE
+  : DATE
   | TIME (WITH TIME ZONE)?
   | TIMETZ
   | TIMESTAMP ((WITH | WITHOUT) TIME ZONE)?
-  | TIMESTAMPTZ)
+  | TIMESTAMPTZ
   ;
 
 bit_type
@@ -1243,9 +1243,6 @@ boolean_primary
   7.2 <row value expression>
 ===============================================================================
 */
-row_value_predicand
-  : common_value_expression
-  ;
 
 /*
 ===============================================================================
@@ -1372,8 +1369,8 @@ grouping_element
   ;
 
 ordinary_grouping_set
-  : row_value_predicand
-  | LEFT_PAREN row_value_predicand_list RIGHT_PAREN
+  : common_value_expression
+  | row_value_predicand_list
   ;
 
 ordinary_grouping_set_list
@@ -1397,7 +1394,7 @@ having_clause
   ;
 
 row_value_predicand_list
-  : row_value_predicand (COMMA row_value_predicand)*
+  : LEFT_PAREN common_value_expression (COMMA common_value_expression)* RIGHT_PAREN
   ;
 
 /*
@@ -1518,7 +1515,7 @@ predicate
 ===============================================================================
 */
 comparison_predicate
-  : left=row_value_predicand c=comp_op right=row_value_predicand
+  : left=common_value_expression c=comp_op right=common_value_expression
   ;
 
 comp_op
@@ -1537,11 +1534,11 @@ comp_op
 */
 
 between_predicate
-  : predicand=row_value_predicand between_predicate_part_2
+  : predicand=common_value_expression between_predicate_part_2
   ;
 
 between_predicate_part_2
-  : NOT? BETWEEN (ASYMMETRIC | SYMMETRIC)? begin=row_value_predicand AND end=row_value_predicand
+  : NOT? BETWEEN (ASYMMETRIC | SYMMETRIC)? begin=common_value_expression AND end=common_value_expression
   ;
 
 
@@ -1557,11 +1554,7 @@ in_predicate
 
 in_predicate_value
   : table_subquery
-  | LEFT_PAREN in_value_list RIGHT_PAREN
-  ;
-
-in_value_list
-  : nonparenthesized_value_expression_primary  ( COMMA nonparenthesized_value_expression_primary )*
+  | row_value_predicand_list
   ;
 
 /*
@@ -1573,7 +1566,7 @@ in_value_list
 */
 
 pattern_matching_predicate
-  : f=row_value_predicand pattern_matcher value_expression_primary_cast
+  : f=common_value_expression pattern_matcher value_expression_primary_cast
   ;
 
 pattern_matcher
@@ -1605,7 +1598,7 @@ regex_matcher
 */
 
 null_predicate
-  : predicand=row_value_predicand IS n=NOT? NULL
+  : predicand=common_value_expression IS n=NOT? NULL
   ;
 
 /*
@@ -1645,13 +1638,8 @@ exists_predicate
 */
 
 primary_datetime_field
-	:	non_second_primary_datetime_field
-	|	SECOND
-	;
-
-non_second_primary_datetime_field
-  : YEAR | MONTH | DAY | HOUR | MINUTE
-  ;
+    :YEAR | MONTH | DAY | HOUR | MINUTE | SECOND
+    ;
 
 extended_datetime_field
   : CENTURY | DECADE | DOW | DOY | EPOCH | ISODOW | ISOYEAR | MICROSECONDS | MILLENNIUM | MILLISECONDS | QUARTER | WEEK
@@ -1680,7 +1668,7 @@ sort_specifier_list
   ;
 
 sort_specifier
-  : key=row_value_predicand order=order_specification? null_order=null_ordering?
+  : key=common_value_expression order=order_specification? null_order=null_ordering?
   ;
 
 order_specification
