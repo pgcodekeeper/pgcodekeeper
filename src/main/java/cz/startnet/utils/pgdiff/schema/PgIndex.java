@@ -35,7 +35,7 @@ public class PgIndex extends PgStatementWithSearchPath {
 
     @Override
     public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder(100);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ");
 
         if (isUnique()) {

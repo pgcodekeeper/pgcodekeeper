@@ -66,7 +66,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     @Override
     public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder(100);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE TRIGGER ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append("\n\t");

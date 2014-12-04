@@ -61,7 +61,7 @@ public class PgSchema extends PgStatement {
 
     @Override
     public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder(50);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SCHEMA ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
 

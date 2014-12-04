@@ -33,7 +33,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
 
     @Override
     public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder(100);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("ALTER TABLE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
         sbSQL.append("\n\tADD CONSTRAINT ");
@@ -74,7 +74,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
 
     @Override
     public String getDropSQL() {
-        final StringBuilder sbSQL = new StringBuilder(100);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("ALTER TABLE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getTableName()));
         sbSQL.append("\n\tDROP CONSTRAINT ");

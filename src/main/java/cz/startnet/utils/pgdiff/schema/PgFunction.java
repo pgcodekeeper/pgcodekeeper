@@ -38,7 +38,7 @@ public class PgFunction extends PgStatementWithSearchPath {
 
     @Override
     public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder(500);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE OR REPLACE FUNCTION ");
         appendFunctionSignature(sbSQL, true, true);
         sbSQL.append(' ');
@@ -78,7 +78,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     }
     
     public StringBuilder appendFunctionSignature(StringBuilder sb,
-            boolean includeDefaulValues, boolean includeArgNames) {
+            boolean includeDefaultValues, boolean includeArgNames) {
         sb.append(PgDiffUtils.getQuotedName(name));
         
         sb.append('(');
@@ -87,7 +87,7 @@ public class PgFunction extends PgStatementWithSearchPath {
             if (addComma) {
                 sb.append(", ");
             }
-            sb.append(argument.getDeclaration(includeDefaulValues, includeArgNames));
+            sb.append(argument.getDeclaration(includeDefaultValues, includeArgNames));
             addComma = true;
         }
         sb.append(')');
@@ -121,7 +121,7 @@ public class PgFunction extends PgStatementWithSearchPath {
 
     @Override
     public String getDropSQL() {
-        final StringBuilder sbString = new StringBuilder(100);
+        final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP FUNCTION ");
         appendFunctionSignature(sbString, false, true);
         sbString.append(';');
@@ -271,7 +271,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         }
 
         public String getDeclaration(boolean includeDefaultValue, boolean includeArgName) {
-            final StringBuilder sbString = new StringBuilder(50);
+            final StringBuilder sbString = new StringBuilder();
 
             if (mode != null && !"IN".equalsIgnoreCase(mode)) {
                 sbString.append(mode);
