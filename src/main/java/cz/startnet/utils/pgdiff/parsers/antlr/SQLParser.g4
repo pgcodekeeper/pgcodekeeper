@@ -1112,7 +1112,7 @@ all_array
     ;
   
 bit_operation
-    : character_value_expression BIT_AND character_value_expression
+    : string_value_expression BIT_AND string_value_expression
     ;
 common_value_expression
   : numeric_value_expression
@@ -1129,7 +1129,7 @@ common_value_expression
 */
 
 numeric_value_expression
-  : left=term ((PLUS|MINUS) right=term)*
+  : left=term (sign right=term)*
   ;
 
 term
@@ -1159,10 +1159,6 @@ sign
 */
 
 numeric_value_function
-  : extract_expression
-  ;
-
-extract_expression
   : EXTRACT LEFT_PAREN extract_field_string=extract_field FROM extract_source RIGHT_PAREN
   ;
 
@@ -1188,15 +1184,7 @@ extract_source
 */
 
 string_value_expression
-  : character_value_expression
-  ;
-
-character_value_expression
-  : character_factor (CONCATENATION_OPERATOR character_factor)*
-  ;
-
-character_factor
-  : character_primary
+  : character_primary (CONCATENATION_OPERATOR character_primary)*
   ;
 
 character_primary
@@ -1211,16 +1199,12 @@ character_primary
 */
 
 string_value_function
-  : trim_function
-  ;
-
-trim_function
   : TRIM LEFT_PAREN trim_operands RIGHT_PAREN
   ;
 
 trim_operands
-  : ((trim_specification)? (trim_character=character_value_expression)? FROM)? trim_source=character_value_expression
-  | trim_source=character_value_expression COMMA trim_character=character_value_expression
+  : ((trim_specification)? (trim_character=string_value_expression)? FROM)? trim_source=string_value_expression
+  | trim_source=string_value_expression COMMA trim_character=string_value_expression
   ;
 
 trim_specification
