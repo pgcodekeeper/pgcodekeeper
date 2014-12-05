@@ -982,6 +982,7 @@ nonparenthesized_value_expression_primary
   | all_array
   | case_abbreviation
   | name_or_func_calls
+  | array_expression
   ;
 
 name_or_func_calls
@@ -1054,7 +1055,7 @@ filter_clause
 */
 
 case_expression
-  : CASE value_expression? simple_when_clause+ else_clause? END
+  : CASE value_expression_primary_cast? simple_when_clause+ else_clause? END
   ;
 
 case_abbreviation
@@ -1088,11 +1089,10 @@ cast_specification
 value_expression
   : common_value_expression
   | boolean_value_expression
-  | array_expression
   ;
 
 array_expression
-    : ARRAY LEFT_BRACKET value_expression (COMMA value_expression)* RIGHT_BRACKET
+    : ARRAY LEFT_BRACKET value_expression_primary_cast (COMMA value_expression_primary_cast)* RIGHT_BRACKET
     ;
 
 all_array
@@ -1456,7 +1456,7 @@ select_sublist
   ;
 
 derived_column
-  : value_expression (over_clause | as_clause)*
+  : value_expression_primary_cast (over_clause | as_clause)*
   ;
 
 qualified_asterisk
