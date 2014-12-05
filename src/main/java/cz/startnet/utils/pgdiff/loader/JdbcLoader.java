@@ -95,7 +95,7 @@ public class JdbcLoader implements PgCatalogStrings {
             Log.log(Log.LOG_INFO, "Reading db using JDBC.");
             connection = connector.getConnection();
             
-            setTimeZone("'UTC'");
+            setTimeZone("'" + connector.getTimezone() + "'");
             prepareStatements();
             prepareData();
             
@@ -429,7 +429,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 definition.append(getStringListAsString(columnNames, ", ")).append(")");
                 break;
             case "c":
-                definition.append("CHECK (" + res.getString("consrc") + ")");
+                definition.append("CHECK (" + res.getString("consrc_usable") + ")");
                 break;
             case "u":
                 definition.append("UNIQUE (");
