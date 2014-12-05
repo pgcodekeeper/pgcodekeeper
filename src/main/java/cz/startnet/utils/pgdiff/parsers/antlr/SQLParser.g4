@@ -1385,11 +1385,11 @@ empty_grouping_set
   ;
 
 having_clause
-  : HAVING value_expression
+  : HAVING value_expression_primary_cast
   ;
 
 row_value_predicand_list
-  : LEFT_PAREN common_value_expression (COMMA common_value_expression)* RIGHT_PAREN
+  : LEFT_PAREN value_expression_primary_cast (COMMA value_expression_primary_cast)* RIGHT_PAREN
   ;
 
 /*
@@ -1510,7 +1510,7 @@ predicate
 ===============================================================================
 */
 comparison_predicate
-  : left=common_value_expression c=comp_op right=common_value_expression
+  : left=value_expression_primary_cast c=comp_op right=value_expression_primary_cast
   ;
 
 comp_op
@@ -1529,11 +1529,11 @@ comp_op
 */
 
 between_predicate
-  : predicand=common_value_expression between_predicate_part_2
+  : predicand=value_expression_primary_cast between_predicate_part_2
   ;
 
 between_predicate_part_2
-  : NOT? BETWEEN (ASYMMETRIC | SYMMETRIC)? begin=common_value_expression AND end=common_value_expression
+  : NOT? BETWEEN (ASYMMETRIC | SYMMETRIC)? begin=value_expression_primary_cast AND end=value_expression_primary_cast
   ;
 
 
@@ -1544,7 +1544,7 @@ between_predicate_part_2
 */
 
 in_predicate
-  : predicand=numeric_value_expression  NOT? IN in_predicate_value
+  : predicand=value_expression_primary_cast  NOT? IN in_predicate_value
   ;
 
 in_predicate_value
@@ -1561,7 +1561,7 @@ in_predicate_value
 */
 
 pattern_matching_predicate
-  : f=common_value_expression pattern_matcher value_expression_primary_cast
+  : f=value_expression_primary_cast pattern_matcher value_expression_primary_cast
   ;
 
 pattern_matcher
@@ -1593,7 +1593,7 @@ regex_matcher
 */
 
 null_predicate
-  : predicand=common_value_expression IS n=NOT? NULL
+  : predicand=value_expression_primary_cast IS n=NOT? NULL
   ;
 
 /*
