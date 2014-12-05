@@ -45,7 +45,7 @@ public class JdbcAclParser {
         List<Privilege> privileges = new ArrayList<>();
         
         // skip "empty" acl strings, such as "{}"
-        if (aclArrayAsString.length() < 3){
+        if (aclArrayAsString.length() <= "{}".length()){
             return privileges;
         }
         
