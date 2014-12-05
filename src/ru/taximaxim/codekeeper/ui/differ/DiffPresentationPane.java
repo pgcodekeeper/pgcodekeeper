@@ -159,10 +159,10 @@ public abstract class DiffPresentationPane extends Composite {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (isProjSrc) {
+                if (isProjSrc && dbTarget.isLoaded()) {
                     setDbTarget(DbSource.fromDbObject(dbTarget.getDbObject(), 
                             dbTarget.getOrigin()));
-                } else {
+                } else if (!isProjSrc && dbSource.isLoaded()){
                     setDbSource(DbSource.fromDbObject(dbSource.getDbObject(), 
                             dbSource.getOrigin()));
                 }
