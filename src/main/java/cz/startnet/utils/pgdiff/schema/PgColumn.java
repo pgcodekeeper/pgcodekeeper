@@ -67,7 +67,7 @@ public class PgColumn extends PgStatement {
      */
     public String getFullDefinition(final boolean addDefaults, 
             StringBuilder separateDefault) {
-        final StringBuilder sbDefinition = new StringBuilder(100);
+        final StringBuilder sbDefinition = new StringBuilder();
         
         String cName = PgDiffUtils.getQuotedName(name);
         sbDefinition.append(cName);

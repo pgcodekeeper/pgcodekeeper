@@ -102,7 +102,7 @@ public final class PgDiffSequences {
             return;
         }
 
-        final StringBuilder sbSQL = new StringBuilder(100);
+        final StringBuilder sbSQL = new StringBuilder();
 
         for (final PgSequence newSequence : newSchema.getSequences()) {
             final PgSequence oldSequence =

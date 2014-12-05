@@ -48,7 +48,7 @@ public class PgSequence extends PgStatementWithSearchPath {
 
     @Override
     public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder(100);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SEQUENCE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
@@ -109,7 +109,7 @@ public class PgSequence extends PgStatementWithSearchPath {
      * Creates SQL statement for modification "OWNED BY" parameter.
      */
     public String getOwnedBySQL() {
-        final StringBuilder sbSQL = new StringBuilder(100);
+        final StringBuilder sbSQL = new StringBuilder();
 
         sbSQL.append("ALTER SEQUENCE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));

@@ -57,7 +57,7 @@ public class PgExtension extends PgStatement {
     
     @Override
     public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder(50);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE EXTENSION ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         

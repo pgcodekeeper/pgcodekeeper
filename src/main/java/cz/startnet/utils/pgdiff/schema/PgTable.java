@@ -113,7 +113,7 @@ public class PgTable extends PgStatementWithSearchPath {
 
     @Override
     public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder(1000);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE TABLE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
         sbSQL.append(" (\n");
