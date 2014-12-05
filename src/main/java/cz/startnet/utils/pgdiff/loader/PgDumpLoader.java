@@ -298,9 +298,16 @@ public final class PgDumpLoader { //NOPMD
         walkSubdirsRunCore(dir, charsetName, outputIgnoredStatements,
                 ignoreSlonyTriggers, dirs, db);
 
+        File schemasCommonDir = new File(dir, "SCHEMA");
+
+        // skip walking SCHEMA folder if it does not exist
+        if (!schemasCommonDir.exists()){
+            return db;
+        }
+        
         // step 2
         // read out schemas names, and work in loop on each
-        for (File schemaFolder : new File(dir, "SCHEMA").listFiles()) {
+        for (File schemaFolder : schemasCommonDir.listFiles()) {
             if (schemaFolder.isDirectory()) {
                 walkSubdirsRunCore(schemaFolder, charsetName, outputIgnoredStatements,
                         ignoreSlonyTriggers, DIR_LOAD_ORDER, db);
