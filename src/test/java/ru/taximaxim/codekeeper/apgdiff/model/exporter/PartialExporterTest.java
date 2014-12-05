@@ -74,7 +74,9 @@ public class PartialExporterTest {
     @Parameters
     public static Collection<?> parameters() {
         return Arrays.asList(new Object[][]{
+// SONAR-OFF
                     {1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15}
+// SONAR-ON
                 });
     }
     
@@ -136,7 +138,7 @@ public class PartialExporterTest {
             new ModelExporter(exportDirFull.toFile(), dbSource, encoding).exportFull();
             
             // get new db with selected changes
-            Set<TreeElement> selected = new HashSet<TreeElement>(preset.getSelectedList());
+            Set<TreeElement> selected = new HashSet<>(preset.getSelectedList());
             DiffTreeApplier applier = new DiffTreeApplier(dbSource, dbTarget, diffTree.getFilteredCopy(selected));
             PgDatabase dbNew = applier.apply();
             
@@ -207,22 +209,20 @@ public class PartialExporterTest {
  * Helper class that returns list of "user-selected" TreeElements and lists of
  * relative filenames of objects that should have been affected by partial export
  */
-class PartialExportInfo {
+abstract class PartialExportInfo {
     
     TreeElement diffTree;
     
-    public List<TreeElement> getSelectedList(){
-        return new ArrayList<TreeElement>(0);
-    };
+    public abstract List<TreeElement> getSelectedList();
     
     public LinkedList<String> modifiedFiles(){
-        return new LinkedList<String>();
+        return new LinkedList<>();
     };
     public LinkedList<String> newFiles(){
-        return new LinkedList<String>();
+        return new LinkedList<>();
     };
     public LinkedList<String> deletedFiles(){
-        return new LinkedList<String>();
+        return new LinkedList<>();
     };
 }
 
@@ -316,7 +316,7 @@ class PartialExportInfoImpl_5 extends PartialExportInfo{
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
         TreeElement schema = diffTree.getChild("Database").getChild("Source only").getChild("Schemas").getChild("public");
-        selected.add(schema.getChild("Functions").getChild("atsqueuedel(integer,integer,integer)"));
+        selected.add(schema.getChild("Functions").getChild("atsqueuedel(integer, integer, integer)"));
         return selected;
     }
 
@@ -397,7 +397,7 @@ class PartialExportInfoImpl_9 extends PartialExportInfo{
         List<TreeElement> selected = new ArrayList<>();
         TreeElement schema = diffTree.getChild("Database").getChild("Target only").getChild("Schemas").getChild("public");
         selected.add(schema.getChild("Functions").getChild("automarkdel_new_new(integer)"));
-        selected.add(schema.getChild("Functions").getChild("automarkdel_new_new(integer,integer)"));
+        selected.add(schema.getChild("Functions").getChild("automarkdel_new_new(integer, integer)"));
         return selected;
     }
 
