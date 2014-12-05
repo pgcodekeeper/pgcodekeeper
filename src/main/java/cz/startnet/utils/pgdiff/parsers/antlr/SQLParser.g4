@@ -1059,16 +1059,16 @@ case_expression
   ;
 
 case_abbreviation
-  : NULLIF LEFT_PAREN numeric_value_expression COMMA value_expression  RIGHT_PAREN
-  | COALESCE LEFT_PAREN numeric_value_expression (COMMA value_expression)+ RIGHT_PAREN
+  : NULLIF LEFT_PAREN numeric_value_expression COMMA value_expression_primary_cast  RIGHT_PAREN
+  | COALESCE LEFT_PAREN numeric_value_expression (COMMA value_expression_primary_cast)+ RIGHT_PAREN
   ;
 
 simple_when_clause
-    : WHEN c=value_expression THEN r=value_expression
+    : WHEN c=value_expression_primary_cast THEN r=value_expression_primary_cast
     ;
 
 else_clause
-  : ELSE r=value_expression
+  : ELSE r=value_expression_primary_cast
   ;
 
 /*
@@ -1078,7 +1078,7 @@ else_clause
 */
 
 cast_specification
-  : CAST LEFT_PAREN value_expression AS data_type RIGHT_PAREN
+  : CAST LEFT_PAREN value_expression_primary AS data_type RIGHT_PAREN
   ;
 
 /*
@@ -1323,7 +1323,7 @@ join_specification
   ;
 
 join_condition
-  : ON value_expression
+  : ON value_expression_primary_cast
   ;
 
 named_columns_join
@@ -1340,7 +1340,7 @@ table_primary
 ===============================================================================
 */
 where_clause
-  : WHERE value_expression
+  : WHERE value_expression_primary_cast
   ;
 
 /*
@@ -1364,7 +1364,7 @@ grouping_element
   ;
 
 ordinary_grouping_set
-  : common_value_expression
+  : value_expression_primary_cast
   | row_value_predicand_list
   ;
 
@@ -1663,7 +1663,7 @@ sort_specifier_list
   ;
 
 sort_specifier
-  : key=common_value_expression order=order_specification? null_order=null_ordering?
+  : key=value_expression_primary_cast order=order_specification? null_order=null_ordering?
   ;
 
 order_specification
@@ -1672,7 +1672,7 @@ order_specification
   ;
 
 limit_clause
-  : LIMIT e=numeric_value_expression
+  : LIMIT e=value_expression_primary_cast
   ;
 
 null_ordering
