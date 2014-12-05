@@ -298,7 +298,7 @@ public final class PgDumpLoader { //NOPMD
         walkSubdirsRunCore(dir, charsetName, outputIgnoredStatements,
                 ignoreSlonyTriggers, dirs, db);
 
-        File schemasCommonDir = new File(dir, "SCHEMA");
+        File schemasCommonDir = new File(dir, ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
 
         // skip walking SCHEMA folder if it does not exist
         if (!schemasCommonDir.exists()){
