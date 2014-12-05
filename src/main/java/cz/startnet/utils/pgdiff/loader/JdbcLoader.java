@@ -372,7 +372,7 @@ public class JdbcLoader implements PgCatalogStrings {
         StringBuilder definition = new StringBuilder();
         PgConstraint c = new PgConstraint(constraintName, "", getSearchPath(schemaName));
         
-        List<String> columnNames = 
+        List<String> columnNames = res.getArray("conkey") == null ? new ArrayList<String>() : 
                 getColumnNames((Integer[])res.getArray("conkey").getArray(), res.getLong("conrelid"));
         
         switch (res.getString("contype")){
