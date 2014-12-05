@@ -119,6 +119,8 @@ public class ProjectUpdater {
                 throw new IOException(Messages.ProjectUpdater_error_update, ex);
             }
         } catch (IOException ex) {
+            // FIXME catches IOEx from the inside try block
+            // also updatePartial
             throw new IOException(Messages.ProjectUpdater_error_no_tempdir, ex);
         }
     }
