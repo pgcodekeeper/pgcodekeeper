@@ -20,6 +20,7 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -202,7 +203,7 @@ public class DiffTableViewer extends Composite {
             prevChecked = new HashMap<>();
         }
         
-        int viewerStyle = SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER;
+        int viewerStyle = SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER | SWT.VIRTUAL;
         if (!viewOnly) {
             viewerStyle |= SWT.CHECK;
         }
@@ -429,6 +430,7 @@ public class DiffTableViewer extends Composite {
             }
         });
 
+        viewer.getTable().getColumns()[0].setResizable(true);
         columnType = new TableViewerColumn(viewer, SWT.LEFT);
         columnChange = new TableViewerColumn(viewer, SWT.LEFT);
         columnName = new TableViewerColumn(viewer, SWT.LEFT);
@@ -446,7 +448,7 @@ public class DiffTableViewer extends Composite {
         columnChange.getColumn().setResizable(true);
         columnChange.getColumn().setMoveable(true);
         
-        columnLocation.getColumn().setResizable(false);
+        columnLocation.getColumn().setResizable(true);
         columnLocation.getColumn().setText(Messages.diffTableViewer_container);
         columnLocation.getColumn().setMoveable(true);
 
@@ -461,9 +463,7 @@ public class DiffTableViewer extends Composite {
         columnLocation.getColumn().addSelectionListener(
                 getHeaderSelectionAdapter(columnLocation.getColumn(), Columns.LOCATION));
             
-        for (TableColumn c : viewer.getTable().getColumns()){
-            c.pack();
-        }
+        updateColumnsWidth();
         
         columnName.setLabelProvider(new ColumnLabelProvider(){
             
@@ -619,12 +619,7 @@ public class DiffTableViewer extends Composite {
         }
         viewer.setInput(elements.keySet());
         
-        int widthOfColumns = 0;
-        for (TableColumn c : viewer.getTable().getColumns()){
-            c.pack();
-            widthOfColumns += c.getWidth();
-        }
-        columnName.getColumn().setWidth(widthOfColumns - viewer.getTable().getSize().x);
+        updateColumnsWidth();
         
         updateObjectsLabel();
         
@@ -807,12 +802,7 @@ public class DiffTableViewer extends Composite {
         }
         viewer.setInput(elements.keySet());
         
-        int widthOfColumns = 0;
-        for (TableColumn c : viewer.getTable().getColumns()){
-            c.pack();
-            widthOfColumns += c.getWidth();
-        }
-        columnName.getColumn().setWidth(widthOfColumns - viewer.getTable().getSize().x);
+        updateColumnsWidth();
         
         updateObjectsLabel();
         
@@ -821,6 +811,20 @@ public class DiffTableViewer extends Composite {
         }
         
         initialSorting();
+    }
+    
+    private void updateColumnsWidth(){
+        PixelConverter pc = new PixelConverter(viewer.getControl());
+        // set check column size to 4 chars
+        viewer.getTable().getColumns()[0].setWidth(pc.convertWidthInCharsToPixels(4));
+        // name column will take half of the space
+        columnName.getColumn().setWidth((int)(viewer.getTable().getSize().x * 0.5));
+        // set type column size to 19 chars to fit "CONSTRAINT" in
+        columnType.getColumn().setWidth(pc.convertWidthInCharsToPixels(19));
+        // set change type column size to 14 chars
+        columnChange.getColumn().setWidth(pc.convertWidthInCharsToPixels(14));
+        // location takes the rest
+        columnLocation.getColumn().pack();
     }
     
     private class IgnoresChangeListener implements IPropertyChangeListener {
