@@ -985,9 +985,16 @@ nonparenthesized_value_expression_primary
   ;
 
 name_or_func_calls
-    :schema_qualified_name function_args?
+    :schema_qualified_name function_calls_paren?
     ;
 
+function_calls_paren
+    : LEFT_PAREN (function_calls_args (COMMA function_calls_args)*)? RIGHT_PAREN
+    ;
+
+function_calls_args
+    : argname=identifier? argtype_expres=value_expression_primary_cast
+    ;
 /*
 ===============================================================================
   6.4 <unsigned value specification>
