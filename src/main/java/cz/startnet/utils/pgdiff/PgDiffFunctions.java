@@ -118,7 +118,6 @@ public final class PgDiffFunctions {
             Argument argOld = iOld.next();
             Argument argNew = iNew.next();
             
-
             String oldDef = argOld.getDefaultExpression();
             String newDef = argNew.getDefaultExpression();
             // allow creation of defaults (old==null && new!=null)
@@ -126,7 +125,10 @@ public final class PgDiffFunctions {
                 return true;
             }
             
-            if (argOld.getMode().endsWith("OUT") &&
+            // [IN]OUT args that change their names implicitly change the function's
+            // return type due to it being "SETOF record" in case of
+            // multiple [IN]OUT args present
+            if (argOld.getMode() != null && argOld.getMode().endsWith("OUT") &&
                     !Objects.equals(argOld.getName(), argNew.getName())) {
                 return true;
             }

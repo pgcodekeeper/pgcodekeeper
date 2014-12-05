@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,7 +20,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  */
 public class PgFunction extends PgStatementWithSearchPath {
 
-    private final List<Argument> arguments = new ArrayList<Argument>();
+    private final List<Argument> arguments = new ArrayList<>();
     private String body;
     private String comment;
     private String returns;
@@ -161,6 +162,41 @@ public class PgFunction extends PgStatementWithSearchPath {
      */
     public String getSignature() {
         return appendFunctionSignature(new StringBuilder(), false, false).toString();
+    }
+    
+    public boolean compareSignature(PgFunction other) {
+        Iterator<Argument> it1 = this.arguments.iterator();
+        Iterator<Argument> it2 = other.arguments.iterator();
+        
+        do {
+            Argument arg1 = skipOutArgs(it1);
+            Argument arg2 = skipOutArgs(it2);
+            if (arg1 == null || arg2 == null) {
+                // exit into the final hasNext() check
+                break;
+            }
+            if (!Objects.equals(arg1.getDataType(), arg2.getDataType())) {
+                return false;
+            }
+            // all other fields are irrelevant for the purpose if function signature ID
+        } while (it1.hasNext() && it2.hasNext());
+        
+        return !(it1.hasNext() || it2.hasNext());
+    }
+    
+    /**
+     * Increments iterator until a non-OUT argument is found.
+     * 
+     * @return the next non-OUT argument or null if none found.
+     */
+    private Argument skipOutArgs(Iterator<Argument> it) {
+        while (it.hasNext()) {
+            Argument a = it.next();
+            if (!"OUT".equals(a.getMode())) {
+                return a;
+            }
+        }
+        return null;
     }
 
     /**
