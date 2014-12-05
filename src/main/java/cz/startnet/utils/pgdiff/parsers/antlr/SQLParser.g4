@@ -387,7 +387,7 @@ comment_on_statement
 */
 create_function_statement
     : (OR REPLACE)? FUNCTION function_parameters
-        (RETURNS (rettype=value_expression | rettype_data=data_type | ret_table=function_ret_table))?
+        (RETURNS (rettype=value_expression_primary_cast | rettype_data=data_type | ret_table=function_ret_table))?
           (LANGUAGE lang_name=identifier
             | WINDOW
             | function_actions_common
@@ -418,7 +418,7 @@ function_body
     ;
 
 function_arguments
-    :arg_mode=argmode? argname=identifier? (argtype_data=data_type | argtype_expres=value_expression) function_def_value?
+    :arg_mode=argmode? argname=identifier? (argtype_data=data_type | argtype_expres=value_expression_primary_cast) function_def_value?
     ;
 
 function_def_value
