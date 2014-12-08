@@ -24,7 +24,7 @@ public class CreateIndex extends ParserAbstract {
         }
         PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()), "");
         ind.setTableName(getName(ctx.table_name));
-        ind.setDefinition(getFullCtxText(ctx));
+        ind.setDefinition(getFullCtxText(ctx.using_def()));
         ind.setUnique(ctx.UNIQUE() != null);
         if (name != null) {
             fillObjLocation(ind, ctx.name.getStart().getStartIndex(),schemaName);

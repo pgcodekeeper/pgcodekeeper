@@ -12,7 +12,6 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.schema.PgComment;
@@ -20,13 +19,12 @@ import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgGrant;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.PgRevoke;
+import cz.startnet.utils.pgdiff.schema.PgPrivilege;
+import cz.startnet.utils.pgdiff.schema.PgRuleCommon;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -38,10 +36,11 @@ public class SqlParserMain {
         // "/home/botov_av/workspace/pg_dump_folder/maindb_dev3.sql";
         String pathToFile = "/home/botov_av/workspace/codekeeper/apgdiff/src/test/resources/cz/startnet/utils/pgdiff";
         PgDatabase database = new PgDatabase();
-        List<PgStatement> alterObjects = new ArrayList<>();
+        List<PgObjLocation> alterObjects = new ArrayList<>();
         List<String> paths = new ArrayList<>();
         paths = getPathsToFiles(pathToFile);
         long timeout= System.currentTimeMillis();
+//        paths.add("/home/botov_av/workspace/pg_dump_folder/maindb_dev2.sql");
 //        paths.add("/home/botov_av/workspace/codekeeper/tmp_dump_9221153347570520215.sql");
          paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/first_part.sql");
          paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/second_part.sql");
@@ -60,57 +59,66 @@ public class SqlParserMain {
         System.out.println((System.currentTimeMillis() - timeout)/1000);
     }
 
-    public static void fillDB(List<PgStatement> alterObjects,
-            PgDatabase database) {
+    public static void fillDB(PgDatabase database) {
         List<PgObjLocation> schemas = new ArrayList<>();
         List<PgObjLocation> extensions = new ArrayList<>();
         List<PgObjLocation> tables = new ArrayList<>();
         List<PgObjLocation> indexes = new ArrayList<>();
         List<PgObjLocation> triggers = new ArrayList<>();
-        List<PgObjLocation> constraint = new ArrayList<>();
+        List<PgObjLocation> constraints = new ArrayList<>();
         List<PgObjLocation> functions = new ArrayList<>();
         List<PgObjLocation> sequences = new ArrayList<>();
         List<PgObjLocation> views = new ArrayList<>();
         List<PgObjLocation> comments = new ArrayList<>();
         List<PgObjLocation> revokes = new ArrayList<>();
-        List<PgObjLocation> grants = new ArrayList<>();
 
         for (PgObjLocation object : database.getObjLocations()) {
+            if (object.isAddedToDB()) {
+                continue;
+            }
             if (object.getObj() instanceof PgSchema) {
                 schemas.add(object);
+                object.setAddedToDB(true);
             }
             if (object.getObj() instanceof PgExtension) {
                 extensions.add(object);
+                object.setAddedToDB(true);
             }
             if (object.getObj() instanceof PgTable) {
                 tables.add(object);
+                object.setAddedToDB(true);
             }
             if (object.getObj() instanceof PgIndex) {
                 indexes.add(object);
+                object.setAddedToDB(true);
             }
             if (object.getObj() instanceof PgTrigger) {
                 triggers.add(object);
+                object.setAddedToDB(true);
             }
             if (object.getObj() instanceof PgConstraint) {
-                constraint.add(object);
+                constraints.add(object);
+                object.setAddedToDB(true);
             }
             if (object.getObj() instanceof PgFunction) {
                 functions.add(object);
+                object.setAddedToDB(true);
             }
             if (object.getObj() instanceof PgSequence) {
                 sequences.add(object);
+                object.setAddedToDB(true);
             }
             if (object.getObj() instanceof PgView) {
                 views.add(object);
+                object.setAddedToDB(true);
             }
             if (object.getObj() instanceof PgComment) {
                 comments.add(object);
+                object.setAddedToDB(true);
             }
-            if (object.getObj() instanceof PgRevoke) {
+            if (object.getObj() instanceof PgRuleCommon) {
                 revokes.add(object);
-            }
-            if (object.getObj() instanceof PgGrant) {
-                grants.add(object);
+                object.setAddedToDB(true);
             }
         }
 
@@ -142,6 +150,15 @@ public class SqlParserMain {
                 }
             }
         }
+        for (PgObjLocation constraint : constraints) {
+            for (PgTable table : database.getSchema(constraint.getSchemaName())
+                    .getTables()) {
+                if (table.getBareName().equals(
+                        ((PgConstraint) constraint.getObj()).getTableName())) {
+                    table.addConstraint((PgConstraint) constraint.getObj());
+                }
+            }
+        }
         for (PgObjLocation function : functions) {
             database.getSchema(function.getSchemaName()).addFunction(
                     (PgFunction) function.getObj());
@@ -166,49 +183,105 @@ public class SqlParserMain {
             }
 
             if (!found) {
-                lable: for (PgSchema schema : database.getSchemas()) {
+                for (PgSchema schema : database.getSchemas()) {
                     if (schema.getBareName().equals(obj_name)) {
                         schema.setComment(commentText);
-                        break lable;
                     }
                     for (PgFunction function : schema.getFunctions()) {
-                        if (function.getBareName().equals(obj_name)) {
+                        if (function.getName().equals(obj_name)) {
                             function.setComment(commentText);
-                            break lable;
                         }
                     }
                     for (PgSequence sequence : schema.getSequences()) {
                         if (sequence.getBareName().equals(obj_name)) {
                             sequence.setComment(commentText);
-                            break lable;
                         }
                     }
                     for (PgView view : schema.getViews()) {
                         if (view.getBareName().equals(obj_name)) {
                             view.setComment(commentText);
-                            break lable;
                         }
                     }
                     for (PgTable table : schema.getTables()) {
                         if (table.getBareName().equals(obj_name)) {
                             table.setComment(commentText);
-                            break lable;
                         }
                         for (PgIndex index : table.getIndexes()) {
                             if (index.getBareName().equals(obj_name)) {
                                 index.setComment(commentText);
-                                break lable;
                             }
                         }
                         for (PgTrigger trigger : table.getTriggers()) {
                             if (trigger.getBareName().equals(obj_name)) {
                                 trigger.setComment(commentText);
-                                break lable;
                             }
                         }
                         for (PgConstraint constr : table.getConstraints()) {
                             if (constr.getBareName().equals(obj_name)) {
                                 constr.setComment(commentText);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (PgObjLocation revoke : revokes) {
+            PgRuleCommon rule = (PgRuleCommon) revoke.getObj();
+            String obj_name = rule.getObjName();
+            PgPrivilege privilege = new PgPrivilege(rule.isRevoke(), rule.getBody(), rule.getRawStatement());
+            boolean found = false;
+            for (PgExtension ext : database.getExtensions()) {
+                if (ext.getBareName().equals(obj_name)) {
+                    ext.addPrivilege(privilege);
+                    found = true;
+                }
+            }
+
+            if (!found) {
+                lable: for (PgSchema schema : database.getSchemas()) {
+                    if (schema.getBareName().equals(obj_name)) {
+                        schema.addPrivilege(privilege);
+                        break lable;
+                    }
+                    for (PgFunction function : schema.getFunctions()) {
+                        if (function.getSignature().equals(obj_name)) {
+                            function.addPrivilege(privilege);
+                            int a =1;
+                            break lable;
+                        }
+                    }
+                    for (PgSequence sequence : schema.getSequences()) {
+                        if (sequence.getBareName().equals(obj_name)) {
+                            sequence.addPrivilege(privilege);
+                            break lable;
+                        }
+                    }
+                    for (PgView view : schema.getViews()) {
+                        if (view.getBareName().equals(obj_name)) {
+                            view.addPrivilege(privilege);
+                            break lable;
+                        }
+                    }
+                    for (PgTable table : schema.getTables()) {
+                        if (table.getBareName().equals(obj_name)) {
+                            table.addPrivilege(privilege);
+                            break lable;
+                        }
+                        for (PgIndex index : table.getIndexes()) {
+                            if (index.getBareName().equals(obj_name)) {
+                                index.addPrivilege(privilege);
+                                break lable;
+                            }
+                        }
+                        for (PgTrigger trigger : table.getTriggers()) {
+                            if (trigger.getBareName().equals(obj_name)) {
+                                trigger.addPrivilege(privilege);
+                                break lable;
+                            }
+                        }
+                        for (PgConstraint constr : table.getConstraints()) {
+                            if (constr.getBareName().equals(obj_name)) {
+                                constr.addPrivilege(privilege);
                                 break lable;
                             }
                         }
@@ -218,6 +291,31 @@ public class SqlParserMain {
         }
     }
 
+    public static void fillAlterObjects(List<PgObjLocation> alterObjects, PgDatabase database) {
+        for (PgObjLocation obj : alterObjects) {
+            if (obj.getObj() instanceof PgFunction) {
+                PgFunction func = (PgFunction)obj.getObj();
+                PgFunction function = database.getSchema(obj.getSchemaName()).getFunction(func.getSignature());
+                if (function != null) {
+                    function.setOwner(func.getOwner());
+                }
+            } else if (obj.getObj() instanceof PgSchema) {
+                PgSchema sch = (PgSchema) obj.getObj();
+                PgSchema schema = database.getSchema(sch.getName());
+                if (schema != null) {
+                    schema.setOwner(sch.getOwner());
+                }
+            } else if (obj.getObj() instanceof PgTable) {
+                PgTable tabl = (PgTable) obj.getObj();
+                PgTable table = database.getSchema(obj.getSchemaName()).getTable(tabl.getName());
+                if (table != null && tabl.getOwner()!= null) {
+                    table.setOwner(tabl.getOwner());
+                }
+            }
+            
+        }
+    }
+    
     public void testSampleInputs(InputStream inputStream,
             CustomSQLParserListener listener) throws IOException {
 
@@ -234,7 +332,7 @@ public class SqlParserMain {
         ParseTreeWalker walker = new ParseTreeWalker();
         
         walker.walk(listener, parser.sql());
-         System.out.println(CustomErrorListener.INSTATANCE.errors);
+//         System.out.println(CustomErrorListener.INSTATANCE.errors);
     }
 
     private static List<String> getPathsToFiles(String root) throws IOException {

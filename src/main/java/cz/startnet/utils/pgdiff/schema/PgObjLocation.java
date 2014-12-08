@@ -12,6 +12,7 @@ public class PgObjLocation implements Serializable {
     private PgStatement obj;
     private String schemaName;
     private String filePath;
+    private boolean addedToDB = false;
     private int offset;
     
     public String getSchemaName() {
@@ -47,8 +48,27 @@ public class PgObjLocation implements Serializable {
         this.offset = offset;
         this.filePath = filePath.toString();
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof PgObjLocation) {
+            PgObjLocation loc = (PgObjLocation)obj;
+            return loc.getObj().equals(getObj()) 
+                    && loc.getSchemaName().equals(getSchemaName())
+                    && loc.getOffset() == getOffset();
+        }
+        return false;
+    }
     @Override
     public String toString() {
         return obj + " " + filePath + " " + offset + obj.getBareName().length();
+    }
+
+    public boolean isAddedToDB() {
+        return addedToDB;
+    }
+
+    public void setAddedToDB(boolean addedToDB) {
+        this.addedToDB = addedToDB;
     }
 }

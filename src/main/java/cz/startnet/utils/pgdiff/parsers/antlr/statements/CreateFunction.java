@@ -3,9 +3,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.nio.file.Path;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_bodyContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -25,41 +22,20 @@ public class CreateFunction extends ParserAbstract {
             schemaName = getDefSchemaName();
         }
         PgFunction function = new PgFunction(name, getFullCtxText(ctx.getParent()), "");
-        fillArguments(ctx.function_parameters(), function);
-        for (Function_bodyContext body : ctx.function_body()) {
-            function.setBody(body.getText());
-        }
+        fillArguments(ctx.function_parameters().function_args(), function);
+        function.setBody(getFullCtxText(ctx.funct_body));
         
         if (ctx.function_ret_table()!= null) {
-            function.setReturns(ctx.function_ret_table().getText());
+            function.setReturns(getFullCtxText(ctx.function_ret_table()));
         } else if(ctx.rettype != null) {
-            function.setReturns(ctx.rettype.getText());
+            function.setReturns(getFullCtxText(ctx.rettype));
         } else if(ctx.rettype_data != null) {
-            function.setReturns(ctx.rettype_data.getText());
+            function.setReturns(getFullCtxText(ctx.rettype_data));
         }
         fillObjLocation(function, ctx.function_parameters().name.getStart().getStartIndex(),schemaName);
         return function;
     }
 
-    static void fillArguments(Function_parametersContext ctx, PgFunction function) {
-        for (Function_argumentsContext argument : ctx.function_args().function_arguments()) {
-            PgFunction.Argument arg = new PgFunction.Argument();
-            if (argument.argname!=null) {
-                arg.setName(argument.argname.getText());
-            }
-            if (argument.argtype_data!= null) {
-                arg.setDataType(argument.argtype_data.getText());
-//            } else if (argument.argtype_expres != null) {
-//                arg.setDataType(argument.argtype_expres.getText());
-            }
-            if (argument.function_def_value() != null) {
-                arg.setDefaultExpression(argument.function_def_value().def_value.getText());
-            }
-            if (argument.arg_mode!=null) {
-                arg.setMode(argument.arg_mode.getText());
-            }
-            function.addArgument(arg);
-        }
-    }
+    
 
 }

@@ -201,7 +201,7 @@ alter_default_privileges
     ;
 
 abbreviated_grant_or_revoke
-    : (GRANT | REVOKE (GRANT OPTION FOR)?) (
+    : (GRANT | REVOKE grant_option_for?) (
       (( common_query_list (COMMA common_query_list)*)
         | ALL PRIVILEGES?)
         ON TABLES
@@ -216,6 +216,10 @@ abbreviated_grant_or_revoke
     | (USAGE | ALL PRIVILEGES?)
         ON TYPES)
         (grant_to_rule | revoke_from_cascade_restrict)
+    ;
+
+grant_option_for
+    : GRANT OPTION FOR
     ;
 
 alter_sequence_statement
@@ -238,10 +242,13 @@ alter_view_statement
 
 index_statement
   : unique_value=UNIQUE? INDEX CONCURRENTLY? name=schema_qualified_name? ON table_name=schema_qualified_name 
-    (USING method=schema_qualified_name)?
+    using_def
+  ;
+using_def
+    :(USING method=schema_qualified_name)?
     LEFT_PAREN sort_specifier_list RIGHT_PAREN param_clause?
     table_space? where_clause?
-  ;
+    ;
   
  create_extension_statement
     : EXTENSION (IF NOT EXISTS)? name=schema_qualified_name WITH?
@@ -280,12 +287,16 @@ create_trigger_statement
     table_deferrable? table_initialy_immed?
     (for_each_true=FOR EACH? (ROW | STATEMENT))?
     (WHEN (when_expr=value_expression))?
-    EXECUTE PROCEDURE func_name=schema_qualified_name function_args
+    EXECUTE PROCEDURE func_name=function_parameters
     ;
     
 rule_common
-    : (GRANT | REVOKE (GRANT OPTION FOR)?) 
-      (on_table 
+    : (GRANT | REVOKE grant_opt_for=grant_option_for?)
+      body_rule=body_rules
+    ;
+
+body_rules
+    :(on_table 
         | on_column 
         | on_sequence
         | on_database
@@ -388,7 +399,11 @@ comment_on_statement
 create_function_statement
     : (OR REPLACE)? FUNCTION function_parameters
         (RETURNS (rettype=value_expression_primary_cast | rettype_data=data_type | ret_table=function_ret_table))?
-          (LANGUAGE lang_name=identifier
+          funct_body=create_funct_params
+    ;
+
+create_funct_params
+    :(LANGUAGE lang_name=identifier
             | WINDOW
             | function_actions_common
             | AS function_body
@@ -405,8 +420,7 @@ function_column_name_type
     ;
 
 function_parameters
-    : name=schema_qualified_name 
-      function_args
+    : name=schema_qualified_name function_args
     ;
 
 function_args
@@ -453,7 +467,7 @@ create_schema_statement
     
 create_view_statement
     : (OR REPLACE)? (TEMP | TEMPORARY)? VIEW name=schema_qualified_name (column_name=names_references)?
-        (WITH LEFT_PAREN (view_option_name=identifier (EQUAL view_option_value=identifier)?)+ RIGHT_PAREN)?
+        (WITH LEFT_PAREN (view_option_name+=identifier (EQUAL view_option_value+=identifier)?)+ RIGHT_PAREN)?
         AS v_query=query_expression
     ;
     
@@ -714,6 +728,7 @@ nonreserved_keywords
   | OBJECT
   | ON
   | ONLY
+  | OPERATOR
   | OPTION
   | OPTIONS
   | OVER

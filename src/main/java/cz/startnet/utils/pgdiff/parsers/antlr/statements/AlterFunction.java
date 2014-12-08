@@ -19,11 +19,12 @@ public class AlterFunction extends ParserAbstract {
     public PgStatement getObject() {
         String name = getName(ctx.function_parameters().name);
         PgFunction function = new PgFunction(name, getFullCtxText(ctx.getParent()), "");
-        CreateFunction.fillArguments(ctx.function_parameters(), function);
+        fillArguments(ctx.function_parameters().function_args(), function);
         if (ctx.owner_to()!=null) {
             function.setOwner(ctx.owner_to().name.getText());
+            return function;
         }
-        return function;
+        return null;
     }
 
 }

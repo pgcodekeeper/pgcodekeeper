@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
@@ -18,6 +19,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSchema;
@@ -26,6 +28,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CommentOn;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateExtension;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateRule;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateSchema;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateSequence;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTable;
@@ -33,6 +36,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.Set;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgSet;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -40,10 +44,10 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
 
     private PgDatabase db;
     private Path filePath;
-    private List<PgStatement> alterObjects;
+    private List<PgObjLocation> alterObjects;
     private String schemaName = "public";
 
-    public CustomSQLParserListener(List<PgStatement> alterObjects,
+    public CustomSQLParserListener(List<PgObjLocation> alterObjects,
             PgDatabase database, Path filePath) {
         this.db = database;
         this.filePath = filePath;
@@ -121,13 +125,22 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     }
     
     @Override
+    public void exitRule_common(Rule_commonContext ctx) {
+        new CreateRule(ctx, db, filePath).setDefSchemaName(schemaName).getObject();
+    }
+    
+    @Override
     public void exitAlter_function_statement(Alter_function_statementContext ctx) {
-        alterObjects.add(new AlterFunction(ctx, db, filePath).getObject());
+        PgObjLocation loc = new PgObjLocation(new AlterFunction(ctx, db, filePath).getObject(), 0, Paths.get("/"));
+        loc.setSchemaName(schemaName);
+        alterObjects.add(loc);
     }
     
     @Override
     public void exitAlter_schema_statement(Alter_schema_statementContext ctx) {
-        alterObjects.add(new AlterSchema(ctx, db, filePath).getObject());
+        PgObjLocation loc = new PgObjLocation(new AlterSchema(ctx, db, filePath).getObject(), 0, Paths.get("/"));
+        loc.setSchemaName(schemaName);
+        alterObjects.add(loc);
     }
     
     @Override
@@ -137,6 +150,8 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     
     @Override
     public void exitAlter_table_statement(Alter_table_statementContext ctx) {
-        alterObjects.add(new AlterTable(ctx, db, filePath).getObject());
+        PgObjLocation loc = new PgObjLocation(new AlterTable(ctx, db, filePath).getObject(), 0, Paths.get("/"));
+        loc.setSchemaName(schemaName);
+        alterObjects.add(loc);
     }
 }

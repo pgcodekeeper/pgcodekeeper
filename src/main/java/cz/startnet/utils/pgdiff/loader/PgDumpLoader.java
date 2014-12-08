@@ -41,6 +41,7 @@ import cz.startnet.utils.pgdiff.parsers.PrivilegeParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SqlParserMain;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 /**
@@ -276,7 +277,7 @@ public final class PgDumpLoader { //NOPMD
     private static PgDatabase loadDatabaseSchemaCoreAntLR(final InputStream inputStream,
             final String charsetName, final boolean outputIgnoredStatements,
             final boolean ignoreSlonyTriggers, final PgDatabase database) {
-        List<PgStatement> alterObjects = new ArrayList<>();
+        List<PgObjLocation> alterObjects = new ArrayList<>();
         SqlParserMain parser = new SqlParserMain();
         try {
             parser.testSampleInputs(inputStream, new CustomSQLParserListener(alterObjects, database, Paths
@@ -284,7 +285,8 @@ public final class PgDumpLoader { //NOPMD
         } catch (IOException e) {
             throw new FileException("Exception while closing dump file", e);
         }
-        SqlParserMain.fillDB(alterObjects, database);
+        SqlParserMain.fillDB(database);
+        SqlParserMain.fillAlterObjects(alterObjects, database);
         return database;
     }
     /**
@@ -342,7 +344,7 @@ public final class PgDumpLoader { //NOPMD
                     if (f.exists() && !f.isDirectory() && 
                             f.getName().toLowerCase().endsWith(".sql")) {
                         try (FileInputStream inputStream = new FileInputStream(f)) {
-                            loadDatabaseSchemaCore(inputStream, charsetName,
+                            loadDatabaseSchemaCoreAntLR(inputStream, charsetName,
                                     outputIgnoredStatements,
                                     ignoreSlonyTriggers, db);
                         } catch (FileNotFoundException ex) {

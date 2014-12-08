@@ -18,8 +18,11 @@ public class AlterSchema extends ParserAbstract {
     public PgStatement getObject() {
         String name = getName(ctx.schema_with_name().name);
         PgSchema schema = new PgSchema(name, getFullCtxText(ctx.getParent()));
-        schema.setOwner(ctx.schema_with_name().name.getText());
-        return schema;
+        if (ctx.owner_to() != null) {
+            schema.setOwner(removeQuoted(ctx.owner_to().name));
+            return schema;
+        }
+        return null;
     }
 
 }

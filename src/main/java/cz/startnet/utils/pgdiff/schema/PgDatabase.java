@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -30,7 +31,8 @@ public class PgDatabase extends PgStatement {
     private final List<String> ignoredStatements = new ArrayList<String>();
     private final List<String> ignoredDataStatements = new ArrayList<String>();
     
-    private final Set<PgObjLocation> objLocations = new HashSet<>(); 
+    // Exclude duplicate and keep order
+    private final Set<PgObjLocation> objLocations = new LinkedHashSet<>(); 
     
     private String comment;
 

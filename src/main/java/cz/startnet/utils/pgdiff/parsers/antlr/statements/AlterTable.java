@@ -22,7 +22,7 @@ public class AlterTable extends ParserAbstract {
         PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()), "");
         for (Table_actionContext tablAction : ctx.table_action()) {
             if (tablAction.table_column_definition()!=null) {
-                table.addColumn(CreateTable.getColumn(tablAction.table_column_definition()));
+                table.addColumn(getColumn(tablAction.table_column_definition()));
             }
             if (tablAction.index_name!=null) {
                 table.setClusterIndexName(tablAction.index_name.getText());
