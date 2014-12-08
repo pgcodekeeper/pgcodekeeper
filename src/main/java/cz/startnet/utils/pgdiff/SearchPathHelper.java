@@ -43,7 +43,7 @@ public class SearchPathHelper {
         this.wasOutput = wasOutput;
     }
     
-    public boolean getWasOutput(){
+    public boolean wasOutput(){
        return wasOutput;
     }
     

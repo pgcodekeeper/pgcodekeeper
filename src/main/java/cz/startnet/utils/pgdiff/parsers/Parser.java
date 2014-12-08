@@ -17,6 +17,8 @@ import cz.startnet.utils.pgdiff.Resources;
  */
 public final class Parser {
 
+    public static final int ERROR_SUBSTRING_LENGTH = 20;
+    
     /**
      * String to be parsed.
      */
@@ -114,7 +116,7 @@ public final class Parser {
 
         throw new ParserException(MessageFormat.format(
                 Resources.getString("CannotParseStringExpectedWord"), string,
-                word, position + 1, string.substring(position, position + 20))); // FIXME what if length < position+20 ? All occurrences of this
+                word, position + 1, getErrorSubstring()));
     }
 
     /**
@@ -280,8 +282,7 @@ public final class Parser {
         } catch (final NumberFormatException ex) {
             throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotParseStringExpectedInteger"),
-                    string, position + 1,
-                    string.substring(position, position + 20)), ex);
+                    string, position + 1, getErrorSubstring(), ex));
         }
     }
 
@@ -317,7 +318,7 @@ public final class Parser {
             try {
                 result = string.substring(position, endPos + 1);
             } catch (final IndexOutOfBoundsException ex) {
-                throw new RuntimeException("Failed to get substring: " + string
+                throw new ParserException("Failed to get substring: " + string
                         + " start pos: " + position + " end pos: "
                         + (endPos + 1), ex);
             }
@@ -368,8 +369,7 @@ public final class Parser {
         if (position == endPos) {
             throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotParseStringExpectedExpression"),
-                    string, position + 1,
-                    string.substring(position, position + 20)));
+                    string, position + 1, getErrorSubstring()));
         }
 
         final String result = string.substring(position, endPos).trim();
@@ -478,8 +478,7 @@ public final class Parser {
     public void throwUnsupportedCommand() {
         throw new ParserException(MessageFormat.format(
                 Resources.getString("CannotParseStringUnsupportedCommand"),
-                string, position + 1,
-                string.substring(position, position + 20)));
+                string, position + 1, getErrorSubstring()));
     }
 
     /**
@@ -543,8 +542,7 @@ public final class Parser {
         if (endPos == position) {
             throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotParseStringExpectedDataType"),
-                    string, position + 1,
-                    string.substring(position, position + 20)));
+                    string, position + 1, getErrorSubstring()));
         }
 
         String dataType = string.substring(position, endPos);
@@ -602,5 +600,11 @@ public final class Parser {
         return position == string.length()
                 || position + 1 == string.length()
                 && string.charAt(position) == ';';
+    }
+    
+    private String getErrorSubstring() {
+        return position + ERROR_SUBSTRING_LENGTH < string.length() ?
+                string.substring(position, position + ERROR_SUBSTRING_LENGTH) :
+                    string.substring(position);
     }
 }

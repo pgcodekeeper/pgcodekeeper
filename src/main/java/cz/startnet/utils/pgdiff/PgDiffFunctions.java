@@ -50,33 +50,11 @@ public final class PgDiffFunctions {
                 PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newFunction);
                 
                 searchPathHelper.outputSearchPath(script);
-                if (oldFunction != null &&
-                        (!Objects.equals(newFunction.getReturns(), oldFunction.getReturns())
-                                || defaultsModifiedDeleted(newFunction, oldFunction))) {
-                    PgDiff.writeDropSql(script, null, oldFunction);
-                }
                 PgDiff.writeCreationSql(script, null, newFunction);
             }
         }
     }
     
-    private static boolean defaultsModifiedDeleted(PgFunction newFunction, 
-            PgFunction oldFunction) {
-        Iterator<Argument> iOld = oldFunction.getArguments().iterator();
-        Iterator<Argument> iNew = newFunction.getArguments().iterator();
-        while (iOld.hasNext() && iNew.hasNext()) {
-            String oldDef = iOld.next().getDefaultExpression();
-            String newDef = iNew.next().getDefaultExpression();
-
-            // allow creation of defaults (old==null && new!=null)
-            if (oldDef != null && !oldDef.equals(newDef)) {
-                return true;
-            }
-        }
-        // we could check for equal arg count but it's not our job here
-        return false;
-    }
-
     /**
      * Outputs statements for dropping of functions that exist no more.
      *
@@ -94,8 +72,8 @@ public final class PgDiffFunctions {
 
         // Drop functions that exist no more
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
-            if (!newSchema.containsFunction(oldFunction.getSignature())) {
-                Set<PgStatement> dependantsSet = new LinkedHashSet<PgStatement>(10);
+            if (needsDrop(oldFunction, newSchema)) {
+                Set<PgStatement> dependantsSet = new LinkedHashSet<>();
                 PgDiff.getDependantsSet(oldFunction, dependantsSet);
                 PgStatement[] dependants = dependantsSet.toArray(
                         new PgStatement[dependantsSet.size()]);
@@ -117,8 +95,46 @@ public final class PgDiffFunctions {
                 
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeDropSql(script, null, oldFunction);
+                
+                // no re-creation because the only dependants we have so far are triggers
+                // trigger funcs cannot change in a way that will require a drop+create
+                // that is they never have arguments and always have the return type of TRIGGER
+                // add dependants re-creation if necessary at a later point
             }
         }
+    }
+
+    private static boolean needsDrop(PgFunction oldFunction, PgSchema newSchema) {
+        PgFunction newFunction = newSchema.getFunction(oldFunction.getSignature());
+        
+        if (newFunction == null || 
+                !Objects.equals(oldFunction.getReturns(), newFunction.getReturns())) {
+            return true;
+        }
+        
+        Iterator<Argument> iOld = oldFunction.getArguments().iterator();
+        Iterator<Argument> iNew = newFunction.getArguments().iterator();
+        while (iOld.hasNext() && iNew.hasNext()) {
+            Argument argOld = iOld.next();
+            Argument argNew = iNew.next();
+            
+            String oldDef = argOld.getDefaultExpression();
+            String newDef = argNew.getDefaultExpression();
+            // allow creation of defaults (old==null && new!=null)
+            if (oldDef != null && !oldDef.equals(newDef)) {
+                return true;
+            }
+            
+            // [IN]OUT args that change their names implicitly change the function's
+            // return type due to it being "SETOF record" in case of
+            // multiple [IN]OUT args present
+            if (argOld.getMode() != null && argOld.getMode().endsWith("OUT") &&
+                    !Objects.equals(argOld.getName(), argNew.getName())) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     /**
@@ -149,12 +165,12 @@ public final class PgDiffFunctions {
                     || oldfunction.getComment() != null
                     && newFunction.getComment() != null
                     && !oldfunction.getComment().equals(
-                    newFunction.getComment())) {
+                            newFunction.getComment())) {
                 searchPathHelper.outputSearchPath(script);
                 
                 StringBuilder sb = new StringBuilder();
                 sb.append("COMMENT ON FUNCTION ");
-                newFunction.appendFunctionSignature(sb, false);
+                newFunction.appendFunctionSignature(sb, false, true);
                 sb.append(" IS ");
                 sb.append(newFunction.getComment());
                 sb.append(';');
@@ -165,7 +181,7 @@ public final class PgDiffFunctions {
                 
                 StringBuilder sb = new StringBuilder();
                 sb.append("COMMENT ON FUNCTION ");
-                newFunction.appendFunctionSignature(sb, false);
+                newFunction.appendFunctionSignature(sb, false, true);
                 sb.append(" IS NULL;");
                 script.addStatement(sb.toString());
             }

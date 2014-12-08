@@ -44,6 +44,7 @@ public class JdbcLoader implements PgCatalogStrings {
     /*
      * Trigger firing conditions
      */
+// SONAR-OFF
     public static final int TRIGGER_TYPE_ROW = 1 << 0;
     public static final int TRIGGER_TYPE_BEFORE = 1 << 1;
     public static final int TRIGGER_TYPE_INSERT = 1 << 2;
@@ -51,8 +52,10 @@ public class JdbcLoader implements PgCatalogStrings {
     public static final int TRIGGER_TYPE_UPDATE = 1 << 4;
     public static final int TRIGGER_TYPE_TRUNCATE = 1 << 5;
     public static final int TRIGGER_TYPE_INSTEAD = 1 << 6;
-    
+// SONAR-ON
     private static final int DEFAULT_OBJECTS_COUNT = 100;
+    private static final float DEFAULT_PROCOST = 100.0f;
+    private static final float DEFAULT_PROROWS = 1000.0f;
     /*
      * Prepared statements to be executed
      */
@@ -92,7 +95,7 @@ public class JdbcLoader implements PgCatalogStrings {
             Log.log(Log.LOG_INFO, "Reading db using JDBC.");
             connection = connector.getConnection();
             
-            setTimeZone("'UTC'");
+            setTimeZone("'" + connector.getTimezone() + "'");
             prepareStatements();
             prepareData();
             
@@ -114,7 +117,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 
                 while (res.next()) {
                     Log.log(Log.LOG_INFO, "Quering objects for schema " + res.getString(NAMESPACE_NSPNAME));
-                    prepareDataForSchema(res.getLong("oid"));
+                    prepareDataForSchema(res.getLong(OID));
                     
                     PgSchema schema = getSchema(res);
                     if (res.getString(NAMESPACE_NSPNAME).equals(ApgdiffConsts.PUBLIC)){
@@ -158,7 +161,7 @@ public class JdbcLoader implements PgCatalogStrings {
             // fill in rolenames
             try(ResultSet res = stmnt.executeQuery("SELECT oid::bigint, rolname FROM pg_catalog.pg_roles")){
                 while (res.next()){
-                    cachedRolesNamesByOid.put(res.getLong("oid"), res.getString("rolname"));
+                    cachedRolesNamesByOid.put(res.getLong(OID), res.getString("rolname"));
                 }
             }
             
@@ -172,7 +175,7 @@ public class JdbcLoader implements PgCatalogStrings {
                     PgType type = new PgType(res.getString("typname"), res.getString("castedType"), 
                             res.getLong("typarray"), res.getInt("typlen"), res.getString("proname"),
                             res.getString(NAMESPACE_NSPNAME));
-                    cachedTypeNamesByOid.put(res.getLong("oid"), type);
+                    cachedTypeNamesByOid.put(res.getLong(OID), type);
                 }
             }
         }
@@ -239,7 +242,7 @@ public class JdbcLoader implements PgCatalogStrings {
     
     private PgSchema getSchema(ResultSet res) throws SQLException, UnsupportedEncodingException{
         String schemaName = res.getString(NAMESPACE_NSPNAME);
-        Long schemaOid = res.getLong("oid");
+        Long schemaOid = res.getLong(OID);
         PgSchema s = new PgSchema(schemaName, "");
 
         if (!schemaName.equals(ApgdiffConsts.PUBLIC)){
@@ -318,7 +321,7 @@ public class JdbcLoader implements PgCatalogStrings {
         prepStatViews.setLong(1, schemaOid);
         try(ResultSet resViews = prepStatViews.executeQuery()){
             while (resViews.next()) {
-                PgView view = getView(resViews, schemaName, schemaOid);
+                PgView view = getView(resViews, schemaName);
                 monitor.worked(1);
                 if (view != null){
                     s.addView(view);                    
@@ -369,7 +372,7 @@ public class JdbcLoader implements PgCatalogStrings {
         StringBuilder definition = new StringBuilder();
         PgConstraint c = new PgConstraint(constraintName, "", getSearchPath(schemaName));
         
-        List<String> columnNames = 
+        List<String> columnNames = res.getArray("conkey") == null ? new ArrayList<String>() : 
                 getColumnNames((Integer[])res.getArray("conkey").getArray(), res.getLong("conrelid"));
         
         switch (res.getString("contype")){
@@ -426,7 +429,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 definition.append(getStringListAsString(columnNames, ", ")).append(")");
                 break;
             case "c":
-                definition.append("CHECK (" + res.getString("consrc") + ")");
+                definition.append("CHECK (" + res.getString("consrc_usable") + ")");
                 break;
             case "u":
                 definition.append("UNIQUE (");
@@ -459,7 +462,7 @@ public class JdbcLoader implements PgCatalogStrings {
         return resultList.toString();
     }
     
-    private PgView getView(ResultSet res, String schemaName, Long schemaOid) throws SQLException {
+    private PgView getView(ResultSet res, String schemaName) throws SQLException {
         for(String depType : (String[]) res.getArray("deptype").getArray()){
             if (depType.equals("e")){
                 return null;
@@ -533,7 +536,7 @@ public class JdbcLoader implements PgCatalogStrings {
         StringBuilder tableDef = new StringBuilder(); 
         tableDef.append("CREATE TABLE ".concat(tableName).concat(" (\n"));
         
-        List<PgColumn> columns = new ArrayList<PgColumn>(5);
+        List<PgColumn> columns = new ArrayList<>();
         
         Integer[] colNumbers = (Integer[])res.getArray("col_numbers").getArray();
         String[] colNames = (String[])res.getArray("col_names").getArray();
@@ -602,7 +605,7 @@ public class JdbcLoader implements PgCatalogStrings {
             
             String columnDefault = colDefaults[i];
             if (columnDefault != null && !columnDefault.isEmpty()){
-                tableDef.append(" DEFAULT " + columnDefault);
+                tableDef.append(" DEFAULT ").append(columnDefault);
                 column.setDefaultValue(columnDefault);
             }
             
@@ -627,7 +630,8 @@ public class JdbcLoader implements PgCatalogStrings {
         if(arrInherits != null && (inherits = (String[]) arrInherits.getArray()) != null && 
                 inherits.length > 0){
             for (String inherited : inherits){
-                t.addInherits(inherited);
+                t.addInherits(
+                        ParserUtils.getSecondObjectName(inherited), ParserUtils.getObjectName(inherited));
             }
         }else{
             for(PgColumn column : columns){
@@ -728,29 +732,27 @@ public class JdbcLoader implements PgCatalogStrings {
         
         String functionName = res.getString("proname").concat("(");
         byte[] args = res.getBytes("tgargs");
-        if (res.getBytes("tgargs").length > 0){
-            ArrayList<Byte> target = new ArrayList<Byte>(args.length);
+        if (args.length > 0){
+            List<Byte> target = new ArrayList<>(args.length);
+            target.add((byte) '\'');
             for(int i = 0; i < args.length; i++){
                 byte b = args[i];
                 if (b == 0 && i < args.length - 1){
-                    target.add((byte) 39); // APOSTROPHE
-                    target.add((byte) 44); // COMMA
-                    target.add((byte) 32); // SPACE
-                    target.add((byte) 39); // APOSTROPHE
+                    target.add((byte) '\''); // APOSTROPHE
+                    target.add((byte) ','); // COMMA
+                    target.add((byte) ' '); // SPACE
+                    target.add((byte) '\''); // APOSTROPHE
                 }else if (b != 0){
                     target.add(b);
                 }
             }
-            
-            target.add(0, (byte) 39);
-            target.add((byte) 39);
+            target.add((byte) '\'');
             
             args = new byte[target.size()];
-            
             for(int i = 0; i < target.size(); i++){
                 args[i] = target.get(i);
             }
-            
+            // FIXME JDBC works in UTF8 (yes/no/maybe)
             functionName = functionName.concat(new String(args, connector.getEncoding()));
         }
         functionName = functionName.concat(")");
@@ -890,12 +892,12 @@ public class JdbcLoader implements PgCatalogStrings {
         }
         
         float cost = res.getFloat("procost");
-        if (cost != 100.0f){
+        if (cost != DEFAULT_PROCOST){
             body.append(" COST ").append((int)cost);
         }
         
         float rows = res.getFloat("prorows");
-        if (rows != 0.0f && rows != 1000.0f){
+        if (rows != 0.0f && rows != DEFAULT_PROROWS){
             body.append(" ROWS ").append((int)rows);
         }
         
@@ -947,8 +949,8 @@ public class JdbcLoader implements PgCatalogStrings {
 
         s.setCache(String.valueOf(1));
         
-        Integer referenced_column = res.getInt("referenced_column");
-        if (referenced_column != 0){
+        Integer referencedColumn = res.getInt("referenced_column");
+        if (referencedColumn != 0){
             s.setOwnedBy(res.getString("referenced_table_name") + "." + res.getString("ref_col_name"));
         }
         
@@ -972,7 +974,7 @@ public class JdbcLoader implements PgCatalogStrings {
      * @param aclItemsArrayAsString     Input acl string in the 
      *                                  form of "{grantee=grant_chars/grantor[, ...]}"
      * @param owner the owner of PgStatement object (why separate?)
-     * @param columnName    column name, if this aclItemsArrayAsString is column 
+     * @param column    column name, if this aclItemsArrayAsString is column 
      *                      privilege string; otherwise null
      */
     private void setPrivileges(PgStatement st, String stSignature, 
@@ -980,41 +982,37 @@ public class JdbcLoader implements PgCatalogStrings {
         if (aclItemsArrayAsString == null){
             return;
         }
-        String stType = "";
+        String stType;
         String order = "arwdDxtXUCTc";
-        int possiblePrivilegeCount = 12;
         if (st instanceof PgSequence){
             stType = "SEQUENCE";
-            possiblePrivilegeCount = 3;
             order = "rUw";
         }else if (st instanceof PgFunction){
             stType = "FUNCTION";
-            possiblePrivilegeCount = 1;
             order = "X";
         }else if (st instanceof PgTable || st instanceof PgView){
             stType = "TABLE";
-            possiblePrivilegeCount = 7;
             order = "raxdtDw";
         }else if (st instanceof PgSchema){
             stType = "SCHEMA";
-            possiblePrivilegeCount = 2;
             order = "CU";
         }else{
             throw new IllegalStateException("Not supported PgStatement class");
         }
+        int possiblePrivilegeCount = order.length();
         
-        columnName = (columnName != null && !columnName.isEmpty()) ? "(" + columnName + ")" : "";
-        String revokePublic = "ALL" + columnName + " ON " + stType + " " + stSignature + " FROM PUBLIC";
-        String revokeOwner = "ALL" + columnName + " ON " + stType + " " + stSignature + " FROM " + 
+        String column = (columnName != null && !columnName.isEmpty()) ? "(" + columnName + ")" : "";
+        String revokePublic = "ALL" + column + " ON " + stType + " " + stSignature + " FROM PUBLIC";
+        String revokeOwner = "ALL" + column + " ON " + stType + " " + stSignature + " FROM " + 
                 PgDiffUtils.getQuotedName(owner);
         st.addPrivilege(new PgPrivilege(true, revokePublic, "REVOKE " + revokePublic));
         
-        ArrayList<Privilege> grants = new JdbcAclParser().parse(
+        List<Privilege> grants = new JdbcAclParser().parse(
                 aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
         
         boolean metDefaultOwnersGrants = false;
         for (Privilege p : grants){            
-            if (p.isDefaultGrant()){
+            if (p.isDefault){
                 metDefaultOwnersGrants = true;
             }
         }
@@ -1025,19 +1023,19 @@ public class JdbcLoader implements PgCatalogStrings {
         
         for(Privilege grant : grants){
             // skip if default owner's privileges
-            if (grant.isDefaultGrant()){
+            if (grant.isDefault){
                 continue;
             }
-            ArrayList<String> grantValues = grant.grantValues;
-            if (columnName != null && !columnName.isEmpty()){
+            List<String> grantValues = grant.grantValues;
+            if (column != null && !column.isEmpty()){
                 grantValues = new ArrayList<String>(grant.grantValues.size());
                 for (String plainGrant : grant.grantValues){
-                    grantValues.add(plainGrant + columnName);
+                    grantValues.add(plainGrant + column);
                 }
             }
             String privDefinition = getStringListAsString(grantValues, ",") + " ON " + stType + " " + 
                     stSignature + " TO " + grant.grantee;
-            if (grant.isGo){
+            if (grant.isGO){
                 privDefinition = privDefinition.concat(" WITH GRANT OPTION");
             }
             st.addPrivilege(new PgPrivilege(false, privDefinition, "GRANT " + privDefinition));
@@ -1096,7 +1094,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 cachedColumnNamesByTableOid.put(tableOid, tableColumns);
             }
         }
-        List<String> result = new ArrayList<String>(5);
+        List<String> result = new ArrayList<>();
         for(Integer n : cols){
             result.add(tableColumns.get(n));
         }

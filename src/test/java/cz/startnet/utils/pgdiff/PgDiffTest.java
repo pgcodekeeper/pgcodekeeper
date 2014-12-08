@@ -10,7 +10,6 @@ import static org.hamcrest.CoreMatchers.not;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -247,8 +246,7 @@ public class PgDiffTest {
                 });
     }
     
-    private final static List<String> runDiffIgnoredFiles = Arrays.asList(
-            
+    private static final List<String> RUN_DIFF_SKIP_FILES = Arrays.asList(
             );
     /**
      * Template name for file names that should be used for the test. Testing
@@ -294,13 +292,9 @@ public class PgDiffTest {
 
     /**
      * Runs single test on original schema.
-     *
-     * @throws FileNotFoundException Thrown if expected diff file was not found.
-     * @throws IOException           Thrown if problem occurred while reading
-     *                               expected diff.
      */
     @Test(timeout = 5000)
-    public void runDiffSameOriginal() throws FileNotFoundException, IOException {
+    public void runDiffSameOriginal() throws IOException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();
@@ -317,13 +311,9 @@ public class PgDiffTest {
 
     /**
      * Runs single test on new schema.
-     *
-     * @throws FileNotFoundException Thrown if expected diff file was not found.
-     * @throws IOException           Thrown if problem occurred while reading
-     *                               expected diff.
      */
     @Test(timeout = 5000)
-    public void runDiffSameNew() throws FileNotFoundException, IOException {
+    public void runDiffSameNew() throws IOException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         final PgDiffArguments arguments = new PgDiffArguments();
@@ -340,15 +330,11 @@ public class PgDiffTest {
 
     /**
      * Runs single test using class member variables.
-     *
-     * @throws FileNotFoundException Thrown if expected diff file was not found.
-     * @throws IOException           Thrown if problem occurred while reading
-     *                               expected diff.
      */
     @Test(timeout = 5000)
-    public void runDiff() throws FileNotFoundException, IOException {
+    public void runDiff() throws IOException {
         
-        Assume.assumeThat(runDiffIgnoredFiles, not(hasItem(fileNameTemplate)));
+        Assume.assumeThat(RUN_DIFF_SKIP_FILES, not(hasItem(fileNameTemplate)));
         
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);

@@ -59,8 +59,9 @@ public class UnixPrintWriter extends PrintWriter {
         try {
             synchronized (lock) {
                 print('\n');
-                if (autoFlush)
+                if (autoFlush) {
                     out.flush();
+                }
             }
         }
         catch (InterruptedIOException x) {

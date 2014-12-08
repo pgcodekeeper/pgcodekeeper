@@ -7,9 +7,10 @@ import java.io.IOException;
  * 
  * @author Alexander Levsha
  */
-@SuppressWarnings("serial")
 public class DirectoryException extends IOException {
     
+    private static final long serialVersionUID = -8464490751188704816L;
+
     public DirectoryException() {
     }
 

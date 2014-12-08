@@ -28,11 +28,11 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class DepcyGraph {
 
-    private static final List<String> ignoredColumns = Arrays.asList(new String[]{
+    private static final List<String> SYS_COLUMNS = Arrays.asList(new String[]{
             "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
             });
     
-    private static final List<String> ignoredSchemas = Arrays.asList(new String[]{
+    private static final List<String> SYS_SCHEMAS = Arrays.asList(new String[]{
             "information_schema", "pg_catalog"});
     
     private final DirectedGraph<PgStatement, DefaultEdge> graph = 
@@ -167,7 +167,7 @@ public class DepcyGraph {
                     if (scmName == null){
                         scmName = schema.getName();
                     }
-                    if (ignoredSchemas.contains(scmName)){
+                    if (SYS_SCHEMAS.contains(scmName)){
                         continue;
                     }
                     PgSchema scm = db.getSchema(scmName);
@@ -176,7 +176,7 @@ public class DepcyGraph {
                     if (tbl != null) {
                         graph.addEdge(view, tbl);
                         
-                        if (ignoredColumns.contains(clmnName)){
+                        if (SYS_COLUMNS.contains(clmnName)){
                             continue;
                         }
                         

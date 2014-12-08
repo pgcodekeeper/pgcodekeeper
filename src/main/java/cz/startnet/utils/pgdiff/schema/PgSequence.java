@@ -48,7 +48,7 @@ public class PgSequence extends PgStatementWithSearchPath {
 
     @Override
     public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder(100);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SEQUENCE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
 
@@ -109,7 +109,7 @@ public class PgSequence extends PgStatementWithSearchPath {
      * Creates SQL statement for modification "OWNED BY" parameter.
      */
     public String getOwnedBySQL() {
-        final StringBuilder sbSQL = new StringBuilder(100);
+        final StringBuilder sbSQL = new StringBuilder();
 
         sbSQL.append("ALTER SEQUENCE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
@@ -223,10 +223,12 @@ public class PgSequence extends PgStatementWithSearchPath {
     @Override
     public int computeHash() {
         final int prime = 31;
+        final int itrue = 1231;
+        final int ifalse = 1237;
         int result = 1;
         result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
         result = prime * result + ((cache == null) ? 0 : cache.hashCode());
-        result = prime * result + (cycle ? 1231 : 1237);
+        result = prime * result + (cycle ? itrue : ifalse);
         result = prime * result + ((increment == null) ? 0 : increment.hashCode());
         result = prime * result + ((maxValue == null) ? 0 : maxValue.hashCode());
         result = prime * result + ((minValue == null) ? 0 : minValue.hashCode());

@@ -26,11 +26,11 @@ import cz.startnet.utils.pgdiff.schema.PgView;
  */
 public class DiffTreeApplier {
 
-    final private PgDatabase dbSource, dbTarget;
+    private final PgDatabase dbSource, dbTarget;
     /**
      * Tree representation of user selected changes
      */
-    final private TreeElement root;
+    private final TreeElement root;
 
     private List<PgStatement> lstNoCopy = new ArrayList<>();
     

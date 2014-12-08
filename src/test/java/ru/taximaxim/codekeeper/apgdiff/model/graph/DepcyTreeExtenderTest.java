@@ -33,21 +33,21 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 */
 abstract class TreeElementCreator {
 
-    abstract public TreeElement getFilteredTree();
+    public abstract TreeElement getFilteredTree();
 
-    abstract public TreeElement getFilteredTreeForDeletion();
+    public abstract TreeElement getFilteredTreeForDeletion();
     
-    abstract public TreeElement getFilteredTreeForConflicting();
+    public abstract TreeElement getFilteredTreeForConflicting();
 
-    abstract public Set<PgStatement> getDepcySet(PgDatabase db);
+    public abstract Set<PgStatement> getDepcySet(PgDatabase db);
 
-    abstract public TreeElement getExtraElement();
+    public abstract TreeElement getExtraElement();
 
-    abstract public Set<TreeElement> getExtraElementInTree(TreeElement filtered);
+    public abstract Set<TreeElement> getExtraElementInTree(TreeElement filtered);
 
-    abstract public TreeElement getFilteredCopy();
+    public abstract TreeElement getFilteredCopy();
 
-    abstract public HashSet<TreeElement> getConflicting(TreeElement copy);
+    public abstract Set<TreeElement> getConflicting(TreeElement copy);
 }
 
 /**
@@ -68,17 +68,19 @@ public class DepcyTreeExtenderTest {
     public static Collection<?> parameters() {
         return Arrays.asList(
                 new Object[][]{
+// SONAR-OFF
                     {1},
                     {2},
                     {3},
                     {4}
+// SONAR-ON
                 });
     }
     
     /**
      * Array of implementations of {@link TreeElementCreator}
      */
-    private static final TreeElementCreator[] treeCreators = {
+    private static final TreeElementCreator[] TREES = {
         new Predefined1(),
         new Predefined2(),
         new Predefined3(),
@@ -96,12 +98,12 @@ public class DepcyTreeExtenderTest {
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
                 ApgdiffConsts.UTF_8, false, false);
         
-        TreeElement filtered = treeCreators[fileIndex - 1].getFilteredTree();
+        TreeElement filtered = TREES[fileIndex - 1].getFilteredTree();
         
         DepcyTreeExtender dte = new DepcyTreeExtender(dbTarget, dbTarget, filtered);
         
-        HashSet<PgStatement> depcy = dte.getDependenciesOfNew();
-        Set<PgStatement> depcyPredefined = treeCreators[fileIndex - 1].getDepcySet(dbTarget);
+        Set<PgStatement> depcy = dte.getDependenciesOfNew();
+        Set<PgStatement> depcyPredefined = TREES[fileIndex - 1].getDepcySet(dbTarget);
         assertTrue("List of dependencies is not as expected", depcy.equals(depcyPredefined));
     }
 
@@ -111,7 +113,7 @@ public class DepcyTreeExtenderTest {
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
                 ApgdiffConsts.UTF_8, false, false);
         
-        TreeElementCreator treeCreator = treeCreators[fileIndex - 1];
+        TreeElementCreator treeCreator = TREES[fileIndex - 1];
         
         TreeElement filtered = treeCreator.getFilteredTreeForDeletion();
         
@@ -132,7 +134,7 @@ public class DepcyTreeExtenderTest {
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
                 ApgdiffConsts.UTF_8, false, false);
         
-        TreeElementCreator treeCreator = treeCreators[fileIndex - 1];
+        TreeElementCreator treeCreator = TREES[fileIndex - 1];
         
         TreeElement filtered = treeCreator.getFilteredTree();
         
@@ -141,8 +143,8 @@ public class DepcyTreeExtenderTest {
         
         TreeElement extraNotInFiltered = treeCreator.getExtraElement();
         
-        HashSet<TreeElement> sum = dte.sumAllDepcies(
-                new HashSet<TreeElement>(Arrays.asList(extraNotInFiltered)));
+        Set<TreeElement> sum = dte.sumAllDepcies(
+                new HashSet<>(Arrays.asList(extraNotInFiltered)));
         
         Set<TreeElement> extraInFiltered = treeCreator.getExtraElementInTree(filteredCopy);
         
@@ -160,13 +162,13 @@ public class DepcyTreeExtenderTest {
                 DepcyTreeExtenderTest.class.getResourceAsStream(filenameConflicting), ApgdiffConsts.UTF_8,
                 false, false);
 
-        TreeElementCreator treeCreator = treeCreators[fileIndex - 1];
+        TreeElementCreator treeCreator = TREES[fileIndex - 1];
         
         TreeElement filtered = treeCreator.getFilteredTreeForConflicting();
         DepcyTreeExtender dte = new DepcyTreeExtender(dbGit, dbRemote, filtered);
         TreeElement copy = dte.getTreeCopyWithDepcy();
-        HashSet<TreeElement> conflictingPredefined = treeCreator.getConflicting(copy);
-        HashSet<TreeElement> conflicting = dte.getConflicting();
+        Set<TreeElement> conflictingPredefined = treeCreator.getConflicting(copy);
+        Set<TreeElement> conflicting = dte.getConflicting();
         Assert.assertEquals("Conflicting collections are not same", conflictingPredefined, conflicting);
     }
 

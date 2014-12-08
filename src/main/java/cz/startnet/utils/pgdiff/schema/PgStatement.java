@@ -14,7 +14,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  * 
  * @author Alexander Levsha
  */
-abstract public class PgStatement {
+public abstract class PgStatement {
     /**
      * The statement as it's been read from dump before parsing.
      */
@@ -155,33 +155,33 @@ abstract public class PgStatement {
         return appendOwnerSQL(new StringBuilder()).toString();
     }
     
-    abstract public String getCreationSQL();
+    public abstract String getCreationSQL();
     
     public String getFullSQL() {
         return getCreationSQL();
     }
     
-    abstract public String getDropSQL();
+    public abstract String getDropSQL();
     
     /**
      * Copies all object properties into a new object and leaves all its children empty.
      * 
      * @return shallow copy of a DB object.
      */
-    abstract public PgStatement shallowCopy();
+    public abstract PgStatement shallowCopy();
     
     /**
      * Performs {@link #shallowCopy()} on this object and all its children.
      * 
      * @return a fully recursive copy of this statement.
      */
-    abstract public PgStatement deepCopy();
+    public abstract PgStatement deepCopy();
     
     /**
      * This method does not account for nested child PgStatements.
      * Shallow version of {@link #equals(Object)}
      */
-    abstract public boolean compare(PgStatement obj);
+    public abstract boolean compare(PgStatement obj);
     
     /**
      * Compares this object and all its children with another statement.<br>
@@ -261,26 +261,26 @@ abstract public class PgStatement {
     /**
      * @see #hashCode()
      */
-    abstract protected int computeHash();
+    protected abstract int computeHash();
     
     /**
      * @return fully qualified (up to schema) dot-delimited object name.
      *          Identifiers are quoted.
      */
     public String getQualifiedName() {
-        String name = PgDiffUtils.getQuotedName(getName());
+        String qname = PgDiffUtils.getQuotedName(getName());
         
-        PgStatement parent = this.parent;
-        while (parent != null) {
-            if (parent instanceof PgDatabase) {
+        PgStatement par = this.parent;
+        while (par != null) {
+            if (par instanceof PgDatabase) {
                 break;
             }
-            name = PgDiffUtils.getQuotedName(parent.getName())
-                    + '.' + name;
-            parent = parent.getParent();
+            qname = PgDiffUtils.getQuotedName(par.getName())
+                    + '.' + qname;
+            par = par.getParent();
         }
         
-        return name;
+        return qname;
     }
     @Override
     public String toString() {

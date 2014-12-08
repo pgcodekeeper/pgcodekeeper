@@ -6,7 +6,7 @@ package cz.startnet.utils.pgdiff.schema;
  * 
  * @author Alexander Levsha
  */
-abstract public class PgStatementWithSearchPath extends PgStatement {
+public abstract class PgStatementWithSearchPath extends PgStatement {
     /**
      * Last SET search_path preceding this statement
      */

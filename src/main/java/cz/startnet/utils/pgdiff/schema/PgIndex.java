@@ -35,7 +35,7 @@ public class PgIndex extends PgStatementWithSearchPath {
 
     @Override
     public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder(100);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ");
 
         if (isUnique()) {
@@ -119,11 +119,13 @@ public class PgIndex extends PgStatementWithSearchPath {
     @Override
     public int computeHash() {
         final int prime = 31;
+        final int itrue = 1231;
+        final int ifalse = 1237;
         int result = 1;
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
-        result = prime * result + (unique ? 1231 : 1237);
+        result = prime * result + (unique ? itrue : ifalse);
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }

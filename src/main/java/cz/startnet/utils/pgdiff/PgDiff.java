@@ -53,11 +53,12 @@ public final class PgDiff {
      */
     public static PgDiffScript createDiff(final PrintWriter writer,
             final PgDiffArguments arguments) {
-        PgDatabase dbOld = loadDatabaseSchema(
+        PgDatabase oldDatabase = loadDatabaseSchema(
                 arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
-        PgDatabase dbNew = loadDatabaseSchema(
+        PgDatabase newDatabase = loadDatabaseSchema(
                 arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments); 
-        return diffDatabaseSchemas(writer, arguments, dbOld, dbNew, dbOld, dbNew);
+        return diffDatabaseSchemas(writer, arguments,
+                oldDatabase, newDatabase, oldDatabase, newDatabase);
     }
 
     /**
@@ -554,7 +555,7 @@ public final class PgDiff {
     static void tempSwitchSearchPath(String switchTo, 
             final SearchPathHelper searchPathHelper, final PgDiffScript script){
         
-        if (searchPathHelper.getWasOutput() == false ||
+        if (!searchPathHelper.wasOutput() ||
                 !searchPathHelper.getSchemaName().equals(switchTo)){
             new SearchPathHelper(switchTo).outputSearchPath(script);
             
@@ -573,7 +574,7 @@ public final class PgDiff {
     public static List<PgStatement> addUniqueDependenciesOnCreateEdit(PgDiffScript script,
             PgDiffArguments arguments, SearchPathHelper newSearchPathHelper, PgStatement fullStatement){
         
-        List<PgStatement> specialDependencies = new ArrayList<PgStatement>(3);
+        List<PgStatement> specialDependencies = new ArrayList<>();
         addUniqueDependencies(specialDependencies, script, arguments, newSearchPathHelper, fullStatement, null);
         return specialDependencies;
     }

@@ -20,18 +20,18 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
  */
 public final class PrivilegeParser {
     
-    private final static String ROLE_ALL = "ALL";
+    private static final String ROLE_ALL = "ALL";
     
-    private final static String[] ROLES = {
+    private static final String[] ROLES = {
         "SELECT", "INSERT", "UPDATE", "DELETE", "TRUNCATE", "REFERENCES", "TRIGGER",
         "USAGE", "EXECUTE", "CREATE"
         };
     
-    private final static String[] ROLES_COLUMN = {
+    private static final String[] ROLES_COLUMN = {
         "SELECT", "INSERT", "UPDATE", "REFERENCES"
         };
     
-    private final static String[] OBJECTS = {
+    private static final String[] OBJECTS = {
         "TABLE", "SEQUENCE", "DATABASE", "DOMAIN", "FOREIGN", "FUNCTION", "LANGUAGE",
         "LARGE", "SCHEMA", "TABLESPACE", "TYPE", "ALL"
         };
@@ -107,7 +107,7 @@ public final class PrivilegeParser {
         // throw here if we couldn't find schema
         // other not found objects should throw in getStatementFromSchema()
         if (obj == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindObject"), schemaName, statement));
         }
         
@@ -121,7 +121,7 @@ public final class PrivilegeParser {
         String schemaName = ParserUtils.getSchemaName(id, db);
         PgSchema schema = db.getSchema(schemaName);
         if (schema == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindSchema"), schemaName,
                     statement));
         }
@@ -157,7 +157,7 @@ public final class PrivilegeParser {
         }
         
         if (obj == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindObject"), objName, statement));
         }
         

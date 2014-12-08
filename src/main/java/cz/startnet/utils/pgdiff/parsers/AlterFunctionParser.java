@@ -19,7 +19,7 @@ public final class AlterFunctionParser {
         String schemaName = ParserUtils.getSchemaName(id, database);
         PgSchema schema = database.getSchema(schemaName);
         if (schema == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindSchema"), schemaName,
                     statement));
         }
@@ -30,7 +30,7 @@ public final class AlterFunctionParser {
         
         PgFunction function = schema.getFunction(tmp.getSignature());
         if (function == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindFunction"), tmp.getSignature(),
                     statement));
         }

@@ -24,7 +24,7 @@ public class PgPrivilege extends PgStatement {
     
     @Override
     public String getCreationSQL() {
-        return new StringBuilder(definition.length() + 16)
+        return new StringBuilder()
                 .append(revoke? "REVOKE" : "GRANT")
                 .append(' ')
                 .append(definition)
@@ -65,9 +65,11 @@ public class PgPrivilege extends PgStatement {
     @Override
     protected int computeHash() {
         final int prime = 31;
+        final int itrue = 1231;
+        final int ifalse = 1237;
         int result = 1;
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
-        result = prime * result + (revoke ? 1231 : 1237);
+        result = prime * result + (revoke ? itrue : ifalse);
         return result;
     }
 }

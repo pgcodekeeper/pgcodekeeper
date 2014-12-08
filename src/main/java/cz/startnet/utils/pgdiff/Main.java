@@ -10,7 +10,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -23,16 +22,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
  */
 public final class Main {
 
-    /**
-     * APgDiff main method.
-     *
-     * @param args the command line arguments
-     *
-     * @throws UnsupportedEncodingException Thrown if unsupported output
-     *                                      encoding has been encountered.
-     */
-    public static void main(final String[] args)
-            throws UnsupportedEncodingException, IOException {
+    public static void main(final String[] args) throws IOException {
         final PrintWriter writer = new PrintWriter(System.out, true);
         final PgDiffArguments arguments = new PgDiffArguments();
 

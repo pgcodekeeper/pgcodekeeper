@@ -19,13 +19,15 @@ public class JdbcConnector {
     private String pass;
     private String dbName;
     private String encoding;
+    private String timezone;
     
-    public JdbcConnector(String host, int port, String user, String pass, String dbName, String encoding){
+    public JdbcConnector(String host, int port, String user, String pass, String dbName, String encoding, String timezone){
         this.host = host;
         this.port = port == 0 ? ApgdiffConsts.JDBC_CONSTS.JDBC_DEFAULT_PORT : port;
         this.user = user.isEmpty() ? System.getProperty("user.name") : user;
         this.dbName = dbName;
         this.encoding = encoding;
+        this.timezone = timezone;
         this.pass = pass.isEmpty() ? getPgPassPassword() : pass;
     }
     
@@ -58,6 +60,10 @@ public class JdbcConnector {
     
     String getEncoding(){
         return encoding;
+    }
+    
+    String getTimezone(){
+        return timezone;
     }
     
     private String getPgPassPassword(){

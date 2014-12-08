@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.apgdiff.model.exporter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
@@ -46,6 +45,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
  */
 public class ModelExporter {
     
+    private static final int HASH_LENGTH = 10;
     private static final Pattern INVALID_FILENAME = Pattern.compile("[\\/:*?\"<>|]");
     private static final String GROUP_DELIMITER = 
             "\n\n--------------------------------------------------------------------------------\n\n";
@@ -317,11 +317,6 @@ public class ModelExporter {
     /**
      * Starts the {@link #newDb} export process.
      * 
-     * @throws NotDirectoryException
-     * @throws DirectoryNotEmptyException
-     * @throws FileAlreadyExistsException
-     * @throws DirectoryException
-     * @throws FileException
      * @throws IOException
      */
     public void exportFull() throws IOException {
@@ -400,7 +395,7 @@ public class ModelExporter {
                 groupedDump = new StringBuilder(getDumpSql(f));
                 dumps.put(fileName, groupedDump);
             } else {
-                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(f));
+                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(f, false));
             }
         }
         for (Entry<String, StringBuilder> dump : dumps.entrySet()) {
@@ -419,15 +414,15 @@ public class ModelExporter {
             StringBuilder groupSql = new StringBuilder(getDumpSql(table));
             
             for (PgConstraint constr : table.getConstraints()) {
-                groupSql.append(GROUP_DELIMITER).append(getDumpSql(constr));
+                groupSql.append(GROUP_DELIMITER).append(getDumpSql(constr, false));
             }
             
             for (PgIndex idx : table.getIndexes()) {
-                groupSql.append(GROUP_DELIMITER).append(getDumpSql(idx));
+                groupSql.append(GROUP_DELIMITER).append(getDumpSql(idx, false));
             }
             
             for (PgTrigger trig : table.getTriggers()) {
-                groupSql.append(GROUP_DELIMITER).append(getDumpSql(trig));
+                groupSql.append(GROUP_DELIMITER).append(getDumpSql(trig, false));
             }
             
             dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(table)));
@@ -492,7 +487,7 @@ public class ModelExporter {
             String hash = PgDiffUtils.md5(
                     bareNameGrouped? statement.getBareName() : statement.getName())
                             // 2^40 variants, should be enough for this purpose
-                            .substring(0, 10);
+                            .substring(0, HASH_LENGTH);
             
             return m.replaceAll("") + '_' + hash;
         } else {
@@ -505,7 +500,12 @@ public class ModelExporter {
     }
     
     private String getDumpSql(PgStatementWithSearchPath statement) {
-        return statement.getSearchPath() + "\n\n" + statement.getFullSQL();
+        return getDumpSql(statement, true);
+    }
+    
+    private String getDumpSql(PgStatementWithSearchPath statement, boolean searchPath) {
+        return searchPath ? statement.getSearchPath() + "\n\n" + statement.getFullSQL() :
+                    statement.getFullSQL();
     }
     
     private void writeProjVersion(File f) throws IOException {

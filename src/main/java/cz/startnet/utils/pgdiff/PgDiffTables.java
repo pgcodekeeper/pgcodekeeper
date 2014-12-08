@@ -280,7 +280,7 @@ public final class PgDiffTables {
             final PgDiffArguments arguments, final PgTable oldTable,
             final PgTable newTable, final List<PgColumn> dropDefaultsColumns, 
             final List<String> defaultStatements) {
-        StringBuilder defaultStatement = new StringBuilder(100);
+        StringBuilder defaultStatement = new StringBuilder();
         for (final PgColumn column : newTable.getColumns()) {
             if (!oldTable.containsColumn(column.getName())) {
                 statements.add("\tADD COLUMN "
@@ -319,7 +319,7 @@ public final class PgDiffTables {
                 // get dependent PgViews of this column, add them in pairs 
                 // <dependant, reason> to the map if dependent PgView is not 
                 // contained in there
-                Set<PgStatement> dependants = new LinkedHashSet<>(10);
+                Set<PgStatement> dependants = new LinkedHashSet<>();
                 for (PgStatement dependant : PgDiff.getDependantsSet(column, dependants)){
                     if ((dependant instanceof PgView || dependant instanceof PgForeignKey) 
                             && !statementsToDrop.containsKey(dependant)){
@@ -362,7 +362,7 @@ public final class PgDiffTables {
                 // get dependent PgViews of this column, add them in pairs 
                 // <dependant, reason> to the map if dependent PgView is not 
                 // contained in there
-                Set<PgStatement> dependants = new LinkedHashSet<PgStatement>(10);
+                Set<PgStatement> dependants = new LinkedHashSet<PgStatement>();
                 for (PgStatement dependant : PgDiff.getDependantsSet(oldColumn, dependants)){
                     if ((dependant instanceof PgView || dependant instanceof PgForeignKey)
                             && !statementsToDrop.containsKey(dependant)){
@@ -431,23 +431,27 @@ public final class PgDiffTables {
     private static void checkInherits(final PgDiffScript script,
             final PgTable oldTable, final PgTable newTable,
             final SearchPathHelper searchPathHelper) {
-        for (final String tableName : oldTable.getInherits()) {
+        for (final Entry<String, String> tableName : oldTable.getInherits()) {
             if (!newTable.getInherits().contains(tableName)) {
                 searchPathHelper.outputSearchPath(script);
                 script.addStatement(ALTER_TABLE
                         + PgDiffUtils.getQuotedName(newTable.getName())
                         + "\n\tNO INHERIT "
-                        + PgDiffUtils.getQuotedName(tableName) + ';');
+                        + (tableName.getKey() == null ? 
+                                "" : PgDiffUtils.getQuotedName(tableName.getKey()) + ".")
+                        + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
             }
         }
 
-        for (final String tableName : newTable.getInherits()) {
+        for (final Entry<String, String> tableName : newTable.getInherits()) {
             if (!oldTable.getInherits().contains(tableName)) {
                 searchPathHelper.outputSearchPath(script);
                 script.addStatement(ALTER_TABLE
                         + PgDiffUtils.getQuotedName(newTable.getName())
                         + "\n\tINHERIT "
-                        + PgDiffUtils.getQuotedName(tableName) + ';');
+                        + (tableName.getKey() == null ? 
+                                "" : PgDiffUtils.getQuotedName(tableName.getKey()) + ".")
+                        + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
             }
         }
     }
@@ -569,7 +573,7 @@ public final class PgDiffTables {
                 }
                 // check all dependants, drop them if blocking
                 // output search path, if necessary
-                Set<PgStatement> dependantsSet = new LinkedHashSet<>(10);
+                Set<PgStatement> dependantsSet = new LinkedHashSet<>();
                 PgDiff.getDependantsSet(table, dependantsSet);
                 // wrap Set into array for reverse iteration
                 PgStatement[] dependants = dependantsSet.toArray(
@@ -626,7 +630,7 @@ public final class PgDiffTables {
         final List<String> defaultStatements = new ArrayList<>();
         
         // ordered pairs of <statementToDrop, reasonOfDrop>
-        Map<PgStatement, String> statementsToDrop = new LinkedHashMap<>(10);
+        Map<PgStatement, String> statementsToDrop = new LinkedHashMap<>();
         
         addDropTableColumns(statementsToDrop, statementsDrop, oldTable, newTable);
         addCreateTableColumns(statementsCreate, arguments, oldTable, newTable, 

@@ -48,7 +48,7 @@ public final class CreateIndexParser {
         final PgSchema schema = database.getSchema(schemaName);
 
         if (schema == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindSchema"), schemaName,
                     statement));
         }
@@ -57,7 +57,7 @@ public final class CreateIndexParser {
         final PgTable table = schema.getTable(objectName);
 
         if (table == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindTable"), tableName,
                     statement));
         }

@@ -37,6 +37,7 @@ import cz.startnet.utils.pgdiff.parsers.CreateSequenceParser;
 import cz.startnet.utils.pgdiff.parsers.CreateTableParser;
 import cz.startnet.utils.pgdiff.parsers.CreateTriggerParser;
 import cz.startnet.utils.pgdiff.parsers.CreateViewParser;
+import cz.startnet.utils.pgdiff.parsers.ParserException;
 import cz.startnet.utils.pgdiff.parsers.PrivilegeParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.SqlParserMain;
@@ -56,7 +57,7 @@ public final class PgDumpLoader { //NOPMD
      */
     // NOTE: constraints, triggers and indexes are now stored in tables,
     // those directories are here for backward compatibility only
-    private static final String[] walkOrder = new String[] { "SEQUENCE",
+    private static final String[] DIR_LOAD_ORDER = new String[] { "SEQUENCE",
         "FUNCTION", "TABLE", "CONSTRAINT", "INDEX", "TRIGGER", "VIEW" };
 
     /**
@@ -319,12 +320,19 @@ public final class PgDumpLoader { //NOPMD
         walkSubdirsRunCore(dir, charsetName, outputIgnoredStatements,
                 ignoreSlonyTriggers, dirs, db);
 
+        File schemasCommonDir = new File(dir, ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
+
+        // skip walking SCHEMA folder if it does not exist
+        if (!schemasCommonDir.exists()){
+            return db;
+        }
+        
         // step 2
         // read out schemas names, and work in loop on each
-        for (File schemaFolder : new File(dir, "SCHEMA").listFiles()) {
+        for (File schemaFolder : schemasCommonDir.listFiles()) {
             if (schemaFolder.isDirectory()) {
                 walkSubdirsRunCore(schemaFolder, charsetName, outputIgnoredStatements,
-                        ignoreSlonyTriggers, walkOrder, db);
+                        ignoreSlonyTriggers, DIR_LOAD_ORDER, db);
             }
         }
         return db;
@@ -437,7 +445,7 @@ public final class PgDumpLoader { //NOPMD
                     if (sbStatement.toString().trim().length() == 0) {
                         return null;
                     } else {
-                        throw new RuntimeException(MessageFormat.format(
+                        throw new ParserException(MessageFormat.format(
                                 Resources.getString("EndOfStatementNotFound"),
                                 sbStatement.toString()));
                     }

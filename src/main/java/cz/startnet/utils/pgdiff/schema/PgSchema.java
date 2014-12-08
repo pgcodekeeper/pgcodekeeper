@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
+import cz.startnet.utils.pgdiff.parsers.Parser;
+import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 
 /**
  * Stores schema information.
@@ -20,10 +23,10 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  */
 public class PgSchema extends PgStatement {
 
-    private final List<PgFunction> functions = new ArrayList<PgFunction>();
-    private final List<PgSequence> sequences = new ArrayList<PgSequence>();
-    private final List<PgTable> tables = new ArrayList<PgTable>();
-    private final List<PgView> views = new ArrayList<PgView>();
+    private final List<PgFunction> functions = new ArrayList<>();
+    private final List<PgSequence> sequences = new ArrayList<>();
+    private final List<PgTable> tables = new ArrayList<>();
+    private final List<PgView> views = new ArrayList<>();
 
     private String authorization;
     private String definition;
@@ -61,7 +64,7 @@ public class PgSchema extends PgStatement {
 
     @Override
     public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder(50);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SCHEMA ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
 
@@ -100,8 +103,15 @@ public class PgSchema extends PgStatement {
      * @return found function or null if no such function has been found
      */
     public PgFunction getFunction(final String signature) {
+        Parser p = new Parser(signature);
+        // TODO qualified names here?
+        PgFunction tmp = new PgFunction(
+                ParserUtils.getObjectName(p.parseIdentifier()), null, null);
+        CreateFunctionParser.parseArguments(p, tmp);
+        
         for (PgFunction function : functions) {
-            if (function.getSignature().equals(signature)) {
+            if (function.getBareName().equals(tmp.getBareName()) && 
+                    function.compareSignature(tmp)) {
                 return function;
             }
         }
@@ -289,6 +299,11 @@ public class PgSchema extends PgStatement {
         
         return eq;
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
     
     @Override
     public int computeHash() {
@@ -305,12 +320,7 @@ public class PgSchema extends PgStatement {
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
-    
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-    
+
     @Override
     public PgSchema shallowCopy() {
         PgSchema schemaDst = new PgSchema(getName(), getRawStatement());

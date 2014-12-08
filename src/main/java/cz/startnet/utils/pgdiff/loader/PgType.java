@@ -23,7 +23,9 @@ public class PgType{
         DATA_TYPE_ALIASES.put("bigserial","bigint");
         DATA_TYPE_ALIASES.put("serial","integer");
         DATA_TYPE_ALIASES.put("timetz","time with time zone");
+        DATA_TYPE_ALIASES.put("time","time without time zone");
         DATA_TYPE_ALIASES.put("timestamptz","timestamp with time zone");
+        DATA_TYPE_ALIASES.put("timestamp","timestamp without time zone");
         DATA_TYPE_ALIASES.put("bpchar","character");
     }
     

@@ -5,10 +5,12 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -21,7 +23,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 public class PgTable extends PgStatementWithSearchPath {
 
     private final List<PgColumn> columns = new ArrayList<PgColumn>();
-    private final List<String> inherits = new ArrayList<String>();
+    private final List<Entry<String, String>> inherits = new ArrayList<>();
     private final List<PgConstraint> constraints = new ArrayList<PgConstraint>();
     private final List<PgIndex> indexes = new ArrayList<PgIndex>();
     private final List<PgTrigger> triggers = new ArrayList<PgTrigger>();
@@ -113,7 +115,7 @@ public class PgTable extends PgStatementWithSearchPath {
 
     @Override
     public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder(1000);
+        final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE TABLE ");
         sbSQL.append(PgDiffUtils.getQuotedName(name));
         sbSQL.append(" (\n");
@@ -142,14 +144,15 @@ public class PgTable extends PgStatementWithSearchPath {
 
             first = true;
 
-            for (final String tableName : inherits) {
+            for (final Entry<String, String> tableName : inherits) {
                 if (first) {
                     first = false;
                 } else {
                     sbSQL.append(", ");
                 }
 
-                sbSQL.append(tableName);
+                sbSQL.append((tableName.getKey() == null ? "" : (tableName.getKey() + ".")) + 
+                        tableName.getValue());
             }
 
             sbSQL.append(")");
@@ -284,8 +287,8 @@ public class PgTable extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(indexes);
     }
 
-    public void addInherits(final String tableName) {
-        inherits.add(tableName);
+    public void addInherits(final String schemaName, final String tableName) {
+        inherits.add(new SimpleEntry<String, String>(schemaName, tableName));
         resetHash();
     }
 
@@ -294,7 +297,7 @@ public class PgTable extends PgStatementWithSearchPath {
      *
      * @return {@link #inherits}
      */
-    public List<String> getInherits() {
+    public List<Entry<String, String>> getInherits() {
         return Collections.unmodifiableList(inherits);
     }
 
@@ -307,6 +310,17 @@ public class PgTable extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(triggers);
     }
 
+    public List<String> getSequences() {
+        return Collections.unmodifiableList(sequences);
+    }
+
+    public void addSequence(final String string) {
+        if (string != null && !sequences.contains(string)) {
+            sequences.add(string);
+            resetHash();
+        }
+    }
+    
     public void setWith(final String with) {
         this.with = with;
         resetHash();
@@ -428,6 +442,11 @@ public class PgTable extends PgStatementWithSearchPath {
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+    
+    @Override
     public int computeHash() {
         final int prime = 31;
         int result = 1;
@@ -448,18 +467,13 @@ public class PgTable extends PgStatementWithSearchPath {
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-    
-    @Override
     public PgTable shallowCopy() {
         PgTable tableDst = new PgTable(getName(), getRawStatement(), getSearchPath());
         tableDst.setClusterIndexName(getClusterIndexName());
         tableDst.setTablespace(getTablespace());
         tableDst.setWith(getWith());
-        for(String inh : inherits) {
-            tableDst.addInherits(inh);
+        for(Entry<String, String> inh : inherits) {
+            tableDst.addInherits(inh.getKey(), inh.getValue());
         }
         for(PgColumn colSrc : columns) {
             tableDst.addColumn(colSrc.shallowCopy());
@@ -490,16 +504,5 @@ public class PgTable extends PgStatementWithSearchPath {
         }
         
         return copy;
-    }
-
-    public List<String> getSequences() {
-        return Collections.unmodifiableList(sequences);
-    }
-
-    public void addSequence(final String string) {
-        if (string != null && !sequences.contains(string)) {
-            sequences.add(string);
-            resetHash();
-        }
     }
 }

@@ -47,7 +47,7 @@ public final class PgDiffViews {
                 
                 if (isModified){
                  // check all dependants, drop them if blocking
-                    Set<PgStatement> dependantsSet = new LinkedHashSet<>(10);
+                    Set<PgStatement> dependantsSet = new LinkedHashSet<>();
                     PgDiff.getDependantsSet(oldSchema.getView(newView.getName()), dependantsSet);
                     
                     for (PgStatement depnt : dependantsSet){
@@ -84,7 +84,7 @@ public final class PgDiffViews {
             if (newView == null || isModified) {
                 
                 // check all dependants, drop them if blocking
-                Set<PgStatement> dependantsSet = new LinkedHashSet<>(10);
+                Set<PgStatement> dependantsSet = new LinkedHashSet<>();
                 PgDiff.getDependantsSet(oldView, dependantsSet);
                 // wrap Set into array for reverse iteration
                 PgStatement[] dependants = dependantsSet.toArray(

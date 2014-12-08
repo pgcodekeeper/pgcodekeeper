@@ -5,13 +5,14 @@
  */
 package cz.startnet.utils.pgdiff.parsers;
 
+import java.text.MessageFormat;
+
 import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import java.text.MessageFormat;
 
 /**
  * Parses CREATE TABLE statements.
@@ -42,7 +43,7 @@ public final class CreateTableParser {
         final PgSchema schema = database.getSchema(schemaName);
 
         if (schema == null) {
-            throw new RuntimeException(MessageFormat.format(
+            throw new ParserException(MessageFormat.format(
                     Resources.getString("CannotFindSchema"), schemaName,
                     statement));
         }
@@ -53,7 +54,7 @@ public final class CreateTableParser {
 
         while (!parser.expectOptional(")")) {
             if (parser.expectOptional("CONSTRAINT")) {
-                parseConstraint(parser, table, schema, searchPath);
+                parseConstraint(parser, table, searchPath);
             } else {
                 parseColumn(parser, table);
             }
@@ -98,7 +99,10 @@ public final class CreateTableParser {
         parser.expect("(");
 
         while (!parser.expectOptional(")")) {
-            table.addInherits(parser.parseIdentifier());
+            String ident = parser.parseIdentifier();
+            
+            table.addInherits(
+                    ParserUtils.getSecondObjectName(ident), ParserUtils.getObjectName(ident));
 
             if (parser.expectOptional(")")) {
                 break;
@@ -115,7 +119,7 @@ public final class CreateTableParser {
      * @param table  table
      */
     private static void parseConstraint(final Parser parser,
-            final PgTable table, final PgSchema schema, final String searchPath) {
+            final PgTable table, final String searchPath) {
         final PgConstraint constraint = new PgConstraint(
                 ParserUtils.getObjectName(parser.parseIdentifier()),
                 null, searchPath);
