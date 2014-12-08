@@ -431,23 +431,27 @@ public final class PgDiffTables {
     private static void checkInherits(final PgDiffScript script,
             final PgTable oldTable, final PgTable newTable,
             final SearchPathHelper searchPathHelper) {
-        for (final String tableName : oldTable.getInherits()) {
+        for (final Entry<String, String> tableName : oldTable.getInherits()) {
             if (!newTable.getInherits().contains(tableName)) {
                 searchPathHelper.outputSearchPath(script);
                 script.addStatement(ALTER_TABLE
                         + PgDiffUtils.getQuotedName(newTable.getName())
                         + "\n\tNO INHERIT "
-                        + PgDiffUtils.getQuotedName(tableName) + ';');
+                        + (tableName.getKey() == null ? 
+                                "" : PgDiffUtils.getQuotedName(tableName.getKey()) + ".")
+                        + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
             }
         }
 
-        for (final String tableName : newTable.getInherits()) {
+        for (final Entry<String, String> tableName : newTable.getInherits()) {
             if (!oldTable.getInherits().contains(tableName)) {
                 searchPathHelper.outputSearchPath(script);
                 script.addStatement(ALTER_TABLE
                         + PgDiffUtils.getQuotedName(newTable.getName())
                         + "\n\tINHERIT "
-                        + PgDiffUtils.getQuotedName(tableName) + ';');
+                        + (tableName.getKey() == null ? 
+                                "" : PgDiffUtils.getQuotedName(tableName.getKey()) + ".")
+                        + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
             }
         }
     }

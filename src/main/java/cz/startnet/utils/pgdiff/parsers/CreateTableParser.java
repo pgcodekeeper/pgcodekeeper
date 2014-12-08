@@ -99,7 +99,10 @@ public final class CreateTableParser {
         parser.expect("(");
 
         while (!parser.expectOptional(")")) {
-            table.addInherits(parser.parseIdentifier());
+            String ident = parser.parseIdentifier();
+            
+            table.addInherits(
+                    ParserUtils.getSecondObjectName(ident), ParserUtils.getObjectName(ident));
 
             if (parser.expectOptional(")")) {
                 break;
