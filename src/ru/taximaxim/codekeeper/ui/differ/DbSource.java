@@ -5,10 +5,12 @@ import java.io.IOException;
 
 import org.eclipse.core.runtime.SubMonitor;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
@@ -70,9 +72,9 @@ public abstract class DbSource {
 
     public static DbSource fromDb(String exePgdump, String customParams,
             String host, int port, String user, String pass, String dbname,
-            String encoding) {
+            String encoding, String timezone) {
         return new DbSourceDb(exePgdump, customParams,
-                host, port, user, pass, dbname, encoding);
+                host, port, user, pass, dbname, encoding, timezone);
     }
 
     public static DbSource fromFilter(DbSource src, TreeElement filter,
@@ -82,16 +84,17 @@ public abstract class DbSource {
     
     public static DbSource fromJdbc(PgDbProject proj, String password){
         return fromJdbc(proj.getPrefs().get(PROJ_PREF.DB_HOST, ""),  //$NON-NLS-1$
-                proj.getPrefs().getInt(PROJ_PREF.DB_PORT, 0),
+                proj.getPrefs().getInt(PROJ_PREF.DB_PORT, JDBC_CONSTS.JDBC_DEFAULT_PORT),
                 proj.getPrefs().get(PROJ_PREF.DB_USER, ""),  //$NON-NLS-1$
                 password,
                 proj.getPrefs().get(PROJ_PREF.DB_NAME, ""),  //$NON-NLS-1$
-                proj.getPrefs().get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
+                proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
     }
     
     public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
-            String encoding) {
-        return new DbSourceJdbc(host, port, user, pass, dbname, encoding);
+            String encoding, String timezone) {
+        return new DbSourceJdbc(host, port, user, pass, dbname, encoding, timezone);
     }
     
     public static DbSource fromDbObject(PgDatabase db, String origin) {
@@ -135,9 +138,10 @@ class DbSourceProject extends DbSource {
     protected PgDatabase loadInternal(SubMonitor monitor) {
         monitor.subTask(Messages.dbSource_loading_tree);
 
-        return PgDumpLoader.loadDatabaseSchemaFromDirTree(proj
-                .getPathToProject().toString(), proj.getPrefs()
-                .get(PROJ_PREF.ENCODING, ""), false, false); //$NON-NLS-1$
+        return PgDumpLoader.loadDatabaseSchemaFromDirTree(
+                proj.getPathToProject().toString(), 
+                proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                false, false);
     }
 }
 
@@ -168,22 +172,23 @@ class DbSourceDb extends DbSource {
     private final String exePgdump;
     private final String customParams;
 
-    private final String host, user, pass, dbname, encoding;
+    private final String host, user, pass, dbname, encoding, timezone;
     private final int port;
 
     DbSourceDb(String exePgdump, String customParams, PgDbProject props, String password) {
         this(exePgdump, customParams,
                 props.getPrefs().get(PROJ_PREF.DB_HOST, ""), //$NON-NLS-1$
-                props.getPrefs().getInt(PROJ_PREF.DB_PORT, 0),
+                props.getPrefs().getInt(PROJ_PREF.DB_PORT, JDBC_CONSTS.JDBC_DEFAULT_PORT),
                 props.getPrefs().get(PROJ_PREF.DB_USER, ""), //$NON-NLS-1$
                 password,
                 props.getPrefs().get(PROJ_PREF.DB_NAME, ""), //$NON-NLS-1$
-                props.getPrefs().get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
+                props.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                props.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
     }
 
     DbSourceDb(String exePgdump, String customParams,
             String host, int port, String user, String pass,
-            String dbname, String encoding) {
+            String dbname, String encoding, String timezone) {
         super((dbname.isEmpty() ? Messages.unknown_db : dbname) + "@" //$NON-NLS-1$
                 + (host.isEmpty() ? Messages.unknown_host : host));
 
@@ -195,6 +200,7 @@ class DbSourceDb extends DbSource {
         this.pass = pass;
         this.dbname = dbname;
         this.encoding = encoding;
+        this.timezone = timezone;
     }
 
     @Override
@@ -207,7 +213,7 @@ class DbSourceDb extends DbSource {
             pm.newChild(1).subTask(Messages.dbSource_executing_pg_dump);
 
             new PgDumper(exePgdump, customParams,
-                    host, port, user, pass, dbname, encoding,
+                    host, port, user, pass, dbname, encoding, timezone, 
                     dump.getAbsolutePath()).pgDump();
 
             pm.newChild(1).subTask(Messages.dbSource_loading_dump);
@@ -249,9 +255,10 @@ class DbSourceFilter extends DbSource {
 class DbSourceJdbc extends DbSource {
     private JdbcLoader jdbcLoader;
     
-    DbSourceJdbc(String host, int port, String user, String pass, String dbName, String encoding) {
+    DbSourceJdbc(String host, int port, String user, String pass, String dbName, 
+            String encoding, String timezone) {
         super(dbName);
-        jdbcLoader = new JdbcLoader(new JdbcConnector(host, port, user, pass, dbName, encoding));
+        jdbcLoader = new JdbcLoader(new JdbcConnector(host, port, user, pass, dbName, encoding, timezone));
     }
     
     @Override

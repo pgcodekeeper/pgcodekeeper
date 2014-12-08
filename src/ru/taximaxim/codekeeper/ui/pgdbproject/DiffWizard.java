@@ -8,7 +8,9 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.TimeZone;
 
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
@@ -77,7 +79,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
 
     @Override
     public void addPages() {
-        pageDiff = new PageDiff(Messages.diffWizard_diff_parameters, mainPrefs);
+        pageDiff = new PageDiff(Messages.diffWizard_diff_parameters, mainPrefs, proj);
         pagePartial = new PagePartial(Messages.diffWizard_diff_tree);
         pageResult = new PageResult(Messages.diffWizard_diff_result, proj);
 
@@ -142,7 +144,8 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 DbSource fdbTarget = DbSource.fromFilter(dbTarget,
                         filtered, DiffSide.RIGHT);
 
-                Differ differ = new Differ(fdbSource, fdbTarget, true);
+                Differ differ = new Differ(fdbSource, fdbTarget, true, 
+                        proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
                 differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
                 try {
                     getContainer().run(true, false, differ);
@@ -190,6 +193,7 @@ class PageDiff extends WizardPage implements Listener {
     }
 
     private final IPreferenceStore mainPrefs;
+    private final PgDbProject proj;
 
     private Composite container;
     private Button radioDb, radioJdbc, radioDump, radioProj;
@@ -198,6 +202,7 @@ class PageDiff extends WizardPage implements Listener {
     private Group grpDump, grpProj;
     private Text txtDumpPath, txtProjPath;
     private Combo cmbEncoding;
+    private Combo cmbTimezone;
 
     public DiffTargetType getTargetType() throws PgCodekeeperUIException {
         if (radioDb.getSelection()) {
@@ -247,6 +252,10 @@ class PageDiff extends WizardPage implements Listener {
     public String getTargetEncoding() {
         return cmbEncoding.getText();
     }
+    
+    public String getTargetTimezone() {
+        return cmbTimezone.getText();
+    }
 
     public DbSource getTargetDbSource() throws PgCodekeeperUIException {
         DbSource dbs;
@@ -257,12 +266,12 @@ class PageDiff extends WizardPage implements Listener {
                     mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     getDbHost(), getDbPort(), getDbUser(), getDbPass(),
-                    getDbName(), getTargetEncoding());
+                    getDbName(), getTargetEncoding(), getTargetTimezone());
             break;
 
         case JDBC:
             dbs = DbSource.fromJdbc(getDbHost(), getDbPort(), getDbUser(), 
-                    getDbPass(),getDbName(), getTargetEncoding());
+                    getDbPass(),getDbName(), getTargetEncoding(), getTargetTimezone());
             break;
             
         case DUMP:
@@ -280,10 +289,11 @@ class PageDiff extends WizardPage implements Listener {
         return dbs;
     }
 
-    public PageDiff(String pageName, IPreferenceStore mainPrefs) {
+    public PageDiff(String pageName, IPreferenceStore mainPrefs, PgDbProject proj) {
         super(pageName, pageName, null);
 
         this.mainPrefs = mainPrefs;
+        this.proj = proj;
     }
 
     @Override
@@ -408,8 +418,10 @@ class PageDiff extends WizardPage implements Listener {
                 if (!dir.isEmpty() && new File(dir).isDirectory()) {
                     try {
                         PgDbProject tmpProj = PgDbProject.getProjFromFile(dir);
-                        cmbEncoding.select(cmbEncoding.indexOf(tmpProj.getPrefs().get(
-                                PROJ_PREF.ENCODING, ""))); //$NON-NLS-1$
+                        cmbEncoding.select(cmbEncoding.indexOf(
+                                tmpProj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8)));
+                        cmbTimezone.select(cmbTimezone.indexOf(
+                                tmpProj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC)));
                     } catch (PgCodekeeperUIException e1) {
                         ExceptionNotifier.showErrorDialog(Messages.DiffWizard_error_opening_project, e1);
                     }
@@ -448,12 +460,22 @@ class PageDiff extends WizardPage implements Listener {
 
         new Label(grpEncoding, SWT.NONE).setText(Messages.diffWizard_target_encoding);
 
-        cmbEncoding = new Combo(grpEncoding, SWT.BORDER | SWT.DROP_DOWN
-                | SWT.READ_ONLY);
+        cmbEncoding = new Combo(grpEncoding,  SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
-        cmbEncoding.select(cmbEncoding.indexOf(UIConsts.UTF_8));
+        cmbEncoding.select(
+                cmbEncoding.indexOf(proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8)));
 
+        String [] availableTimezones = TimeZone.getAvailableIDs();
+        Arrays.sort(availableTimezones);
+        
+        new Label(grpEncoding, SWT.NONE).setText(Messages.diffWizard_target_timezone);
+        cmbTimezone = new Combo(grpEncoding, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
+        cmbTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        cmbTimezone.setItems(availableTimezones);
+        cmbTimezone.select(cmbTimezone.indexOf(
+                proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC)));
+        
         setControl(container);
     }
 
@@ -690,8 +712,10 @@ class PageResult extends WizardPage {
 
     private void saveScript(String saveTo) {
         try (PrintWriter encodedWriter = new UnixPrintWriter(
+                // TODO save to proj encoding can be incorrect. 
+                // Consider saving to unicode if proj and PageDiff encodings differ
                 new OutputStreamWriter(new FileOutputStream(saveTo),
-                        proj.getPrefs().get(PROJ_PREF.ENCODING, "")))) { //$NON-NLS-1$
+                        proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8)))) {
             Text txtDiff = (Text) tabs.getSelection()[0].getControl();
             encodedWriter.println(txtDiff.getText());
         } catch (FileNotFoundException | UnsupportedEncodingException ex) {

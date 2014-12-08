@@ -49,6 +49,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -528,7 +529,7 @@ public abstract class DiffPresentationPane extends Composite {
                 return false;
             }
             dbsRemote = DbSource
-                    .fromFile(dumpfile, projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
+                    .fromFile(dumpfile, projProps.get(PROJ_PREF.ENCODING, UIConsts.UTF_8));
             break;
         case SOURCE_TYPE_DB:
             String sPort = dbSrc.getTxtDbPort().getText();
@@ -538,7 +539,8 @@ public abstract class DiffPresentationPane extends Composite {
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     dbSrc.getTxtDbHost().getText(), port, dbSrc.getTxtDbUser().getText(),
                     dbSrc.getTxtDbPass().getText(), dbSrc.getTxtDbName().getText(),
-                    projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
+                    projProps.get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                    projProps.get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
             break;
         case SOURCE_TYPE_JDBC:
             sPort = dbSrc.getTxtDbPort().getText();
@@ -546,7 +548,9 @@ public abstract class DiffPresentationPane extends Composite {
 
             dbsRemote = DbSource.fromJdbc(dbSrc.getTxtDbHost().getText(), port,
                     dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText(),
-                    dbSrc.getTxtDbName().getText(), projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
+                    dbSrc.getTxtDbName().getText(), 
+                    projProps.get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                    projProps.get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
             break;
         default:
             throw new PgCodekeeperUIException(Messages.undefined_source_for_db_changes);

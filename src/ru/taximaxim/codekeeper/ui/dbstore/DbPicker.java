@@ -188,7 +188,7 @@ public class DbPicker extends Group {
             @Override
             public void verifyText(VerifyEvent e) {
                 try{
-                    if (Integer.valueOf(e.text) < 0){
+                    if (!e.text.isEmpty() && Integer.valueOf(e.text) < 0){
                         e.doit = false;
                     }
                 }catch(NumberFormatException ex){

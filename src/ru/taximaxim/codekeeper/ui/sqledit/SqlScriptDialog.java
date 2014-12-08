@@ -56,6 +56,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
@@ -64,6 +65,7 @@ import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
@@ -116,6 +118,8 @@ public class SqlScriptDialog extends TrayDialog {
     private String title;
     private String message;
     private int type;
+    private String scriptFileEncoding;
+    private String connectionTimezone;
 
     public void setDbParams(String dbHost, String dbPort, String dbName,
             String dbUser, String dbPass) {
@@ -147,7 +151,8 @@ public class SqlScriptDialog extends TrayDialog {
     }
     
     public SqlScriptDialog(Shell parentShell, int type, String title, String message,
-            Differ differ, List<PgStatement> objList, IPreferenceStore mainPrefs) {
+            Differ differ, List<PgStatement> objList, IPreferenceStore mainPrefs,
+            PgDbProject proj) {
         super(parentShell);
         this.title = title;
         this.message = message;
@@ -161,6 +166,8 @@ public class SqlScriptDialog extends TrayDialog {
                 FILE.DDL_UPDATE_COMMANDS_HIST_FILENAME, 
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT, 
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
+        this.connectionTimezone = proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC);
+        this.scriptFileEncoding = proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8);
     }
     
     @Override
@@ -383,7 +390,8 @@ public class SqlScriptDialog extends TrayDialog {
                         String output = Messages.sqlScriptDialog_script_has_not_been_run_yet;
                         try{
                             JdbcConnector connector = new JdbcConnector(
-                                    dbHost, Integer.valueOf(dbPort), dbUser, dbPass, dbName, UIConsts.UTF_8);
+                                    dbHost, Integer.valueOf(dbPort), dbUser, dbPass, dbName, 
+                                    scriptFileEncoding, connectionTimezone);
                             output = new JdbcRunner(connector).runScript(textRetrieved);
                             if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                                 addDepcy = getDependenciesFromOutput(output);
@@ -640,7 +648,8 @@ public class SqlScriptDialog extends TrayDialog {
             final StdStreamRedirector sr = new StdStreamRedirector();
             try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
                 File outFile = tempFile.get();
-                try (PrintWriter writer = new PrintWriter(outFile, UIConsts.UTF_8)) {
+                try (PrintWriter writer = 
+                        new PrintWriter(outFile, SqlScriptDialog.this.scriptFileEncoding)) {
                     writer.write(textRetrieved);
                 }
    

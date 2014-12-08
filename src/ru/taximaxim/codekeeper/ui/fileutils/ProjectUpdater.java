@@ -14,6 +14,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -37,7 +38,7 @@ public class ProjectUpdater {
         
         this.changedObjects = changedObjects;
         
-        this.encoding = proj.getPrefs().get(PROJ_PREF.ENCODING, ""); //$NON-NLS-1$
+        this.encoding = proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8);
         this.dirExport = proj.getPathToProject().toFile();
     }
 
