@@ -395,7 +395,7 @@ public class ModelExporter {
                 groupedDump = new StringBuilder(getDumpSql(f));
                 dumps.put(fileName, groupedDump);
             } else {
-                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(f));
+                groupedDump.append(GROUP_DELIMITER).append(getDumpSql(f, false));
             }
         }
         for (Entry<String, StringBuilder> dump : dumps.entrySet()) {
@@ -414,15 +414,15 @@ public class ModelExporter {
             StringBuilder groupSql = new StringBuilder(getDumpSql(table));
             
             for (PgConstraint constr : table.getConstraints()) {
-                groupSql.append(GROUP_DELIMITER).append(getDumpSql(constr));
+                groupSql.append(GROUP_DELIMITER).append(getDumpSql(constr, false));
             }
             
             for (PgIndex idx : table.getIndexes()) {
-                groupSql.append(GROUP_DELIMITER).append(getDumpSql(idx));
+                groupSql.append(GROUP_DELIMITER).append(getDumpSql(idx, false));
             }
             
             for (PgTrigger trig : table.getTriggers()) {
-                groupSql.append(GROUP_DELIMITER).append(getDumpSql(trig));
+                groupSql.append(GROUP_DELIMITER).append(getDumpSql(trig, false));
             }
             
             dumpSQL(groupSql, new File(tablesDir, getExportedFilenameSql(table)));
@@ -500,7 +500,12 @@ public class ModelExporter {
     }
     
     private String getDumpSql(PgStatementWithSearchPath statement) {
-        return statement.getSearchPath() + "\n\n" + statement.getFullSQL();
+        return getDumpSql(statement, true);
+    }
+    
+    private String getDumpSql(PgStatementWithSearchPath statement, boolean searchPath) {
+        return searchPath ? statement.getSearchPath() + "\n\n" + statement.getFullSQL() :
+                    statement.getFullSQL();
     }
     
     private void writeProjVersion(File f) throws IOException {
