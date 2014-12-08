@@ -630,7 +630,8 @@ public class JdbcLoader implements PgCatalogStrings {
         if(arrInherits != null && (inherits = (String[]) arrInherits.getArray()) != null && 
                 inherits.length > 0){
             for (String inherited : inherits){
-                t.addInherits(inherited);
+                t.addInherits(
+                        ParserUtils.getSecondObjectName(inherited), ParserUtils.getObjectName(inherited));
             }
         }else{
             for(PgColumn column : columns){
