@@ -145,13 +145,13 @@ public class Differ implements IRunnableWithProgress {
         try {
             PrintWriter writer = new UnixPrintWriter(
                     new OutputStreamWriter(diffOut, UIConsts.UTF_8), true);
-        
+
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
                     dbSrc, dbTgt, sourceDbFull, targetDbFull, 
                     additionalDepciesSource, additionalDepciesTarget);
             writer.flush();
             diffDirect = prependTimezone(diffOut.toString(UIConsts.UTF_8).trim());
-    
+
             if (needTwoWay) {
                 Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin() //$NON-NLS-1$
                         + " to: " + this.dbSource.getOrigin()); //$NON-NLS-1$
@@ -171,6 +171,6 @@ public class Differ implements IRunnableWithProgress {
     }
     
     private String prependTimezone(String diff){
-        return "SET TIMEZONE TO '" + timezone + "';\n\n" + diff;
+        return "SET TIMEZONE TO '" + timezone + "';\n\n" + diff; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

@@ -21,7 +21,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -32,6 +31,7 @@ import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Event;
@@ -201,8 +201,8 @@ class PageDiff extends WizardPage implements Listener {
     private DbPicker grpDb;
     private Group grpDump, grpProj;
     private Text txtDumpPath, txtProjPath;
-    private CCombo cmbEncoding;
-    private CCombo cmbTimezone;
+    private Combo cmbEncoding;
+    private Combo cmbTimezone;
 
     public DiffTargetType getTargetType() throws PgCodekeeperUIException {
         if (radioDb.getSelection()) {
@@ -460,7 +460,7 @@ class PageDiff extends WizardPage implements Listener {
 
         new Label(grpEncoding, SWT.NONE).setText(Messages.diffWizard_target_encoding);
 
-        cmbEncoding = new CCombo(grpEncoding,  SWT.BORDER | SWT.READ_ONLY);
+        cmbEncoding = new Combo(grpEncoding,  SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
         cmbEncoding.select(
@@ -470,11 +470,11 @@ class PageDiff extends WizardPage implements Listener {
         Arrays.sort(availableTimezones);
         
         new Label(grpEncoding, SWT.NONE).setText(Messages.diffWizard_target_timezone);
-        cmbTimezone = new CCombo(grpEncoding, SWT.BORDER | SWT.READ_ONLY);
+        cmbTimezone = new Combo(grpEncoding, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
         cmbTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbTimezone.setItems(availableTimezones);
-        cmbTimezone.select(
-                cmbTimezone.indexOf(proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC)));
+        cmbTimezone.select(cmbTimezone.indexOf(
+                proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC)));
         
         setControl(container);
     }
