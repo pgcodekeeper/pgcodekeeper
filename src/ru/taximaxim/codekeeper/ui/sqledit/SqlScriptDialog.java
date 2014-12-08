@@ -112,6 +112,7 @@ public class SqlScriptDialog extends TrayDialog {
     private Text txtCommand;
     private Combo cmbScript;
     private Button btnJdbcToggle;
+    private Label lblSourceInfo;
     
     private volatile boolean isRunning;
     private Thread scriptThread;
@@ -232,8 +233,25 @@ public class SqlScriptDialog extends TrayDialog {
                 Activator.getDefault().getPreferenceStore().getBoolean(PREF.IS_DDL_UPDATE_OVER_JDBC);
         btnJdbcToggle.setSelection(isDdlUpdateOverJdbc);
         
-        final Composite notJdbc = new Composite(parent, SWT.NONE);
+        lblSourceInfo = new Label(parent, SWT.NONE);
+        lblSourceInfo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, true));
+        
+        StringBuilder connectionDetails = new StringBuilder();
+        connectionDetails.append(Messages.connection_details); //$NON-NLS-1$
+        connectionDetails.append(dbUser.isEmpty() ? "" : dbUser + "@"); //$NON-NLS-1$
+        connectionDetails.append(dbHost.isEmpty() ? Messages.unknown_host : dbHost);
+        connectionDetails.append(dbPort.isEmpty() ? "" : ":" + dbPort); //$NON-NLS-1$ 
+        connectionDetails.append('/'); 
+        connectionDetails.append(dbName.isEmpty() ? Messages.unknown_db : dbName);
+        
+        lblSourceInfo.setText(connectionDetails.toString());
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.exclude = !isDdlUpdateOverJdbc;
+        lblSourceInfo.setLayoutData(gd);
+        lblSourceInfo.setVisible(isDdlUpdateOverJdbc);
+        
+        final Composite notJdbc = new Composite(parent, SWT.NONE);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.exclude = isDdlUpdateOverJdbc;
         notJdbc.setLayoutData(gd);
         notJdbc.setVisible(!isDdlUpdateOverJdbc);
@@ -330,6 +348,9 @@ public class SqlScriptDialog extends TrayDialog {
                 boolean isJdbc = btnJdbcToggle.getSelection();
                 notJdbc.setVisible(!isJdbc);
                 ((GridData)notJdbc.getLayoutData()).exclude = isJdbc;
+                
+                lblSourceInfo.setVisible(isJdbc);
+                ((GridData)lblSourceInfo.getLayoutData()).exclude = !isJdbc;
                 
                 parent.layout();
                 parent.redraw();
