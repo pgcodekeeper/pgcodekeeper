@@ -46,6 +46,10 @@ public abstract class DbSource {
         return dbObject;
     }
 
+    public boolean isLoaded(){
+        return dbObject != null;
+    }
+    
     protected DbSource(String origin) {
         this.origin = origin;
     }
