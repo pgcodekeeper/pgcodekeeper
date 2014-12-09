@@ -203,14 +203,20 @@ public class DiffTableViewer extends Composite {
             prevChecked = new HashMap<>();
         }
         
-        int viewerStyle = SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER | SWT.VIRTUAL;
+        int viewerStyle = SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER;
         if (!viewOnly) {
+            // TODO always needs SWT.CHECK?
+            // Creates a table viewer on the given table control.
+            // The SWT.CHECK style bit must be set on the given table control. 
             viewerStyle |= SWT.CHECK;
         }
         viewer = new CheckboxTableViewer(new Table(this, viewerStyle)){
+            
             @Override
             public ISelection getSelection() {
-                return new DepcyStructuredSelection(depcyGraphSource, depcyGraphTarget, ((IStructuredSelection) super.getSelection()).toArray());
+                return new DepcyStructuredSelection(
+                        depcyGraphSource, depcyGraphTarget,
+                        ((IStructuredSelection) super.getSelection()).toArray());
             }
         };
         
@@ -307,12 +313,11 @@ public class DiffTableViewer extends Composite {
                 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    Set<TreeElement> initial = new HashSet<>(elements.getCheckedElements(true));
+                    Object[] initial = elements.getCheckedElements(true).toArray();
                     
                     // select all
                     checkListener.setElementsChecked(elements.keySet().toArray(), true);
-                    
-                    checkListener.setElementsChecked(initial.toArray(), false);
+                    checkListener.setElementsChecked(initial, false);
                     
                     viewerRefresh();
                 }
