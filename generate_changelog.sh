@@ -4,6 +4,9 @@
 # Install some python on Ubuntu
 # sudo apt-get install python-pip python-dev build-essential
 # pip install gitchangelog
+# WARNING!!!!!
+# gitchangelog.py uses "git log with --first-parent" which doesn't show all commits in the repository
+# need some modification in 261,463 strings, file "/usr/local/lib/python2.7/dist-packages/gitchangelog.py" 
 #------------------------------------------------------------------------------------------
 
 # Repository may have .gitchangelog.rc file to customize it's commits to collect
@@ -25,7 +28,7 @@ COMMAND=${TOOLS_GEN_CHANGE_LOG}" > "${CHANGE_LOG_FILENAME};
 # Set path to changeLogSettings
 export GITCHANGELOG_CONFIG_FILENAME=${ROOT_PATH}"/.gitchangelog.rc";
 #-----------------------------------------------
-version=$(${TOOLS_GEN_CHANGE_LOG} | egrep -m 1 -i -o 'Версия .\..\..')
+version=$(${TOOLS_GEN_CHANGE_LOG} | egrep -m 1 -i -o 'v.\..\..')
 # Write Version to file
 echo $version" has been released." > ${ROOT_PATH}${change_log_folder}"/"${CHANGE_LOG_FILENAME}
 # Combine changes to separate files: reponame.txt
