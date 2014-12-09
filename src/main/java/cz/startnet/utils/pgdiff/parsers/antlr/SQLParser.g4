@@ -507,7 +507,11 @@ like_option
 */
 constraint_common
     : (CONSTRAINT constraint_name=identifier)?
-      ((EXCLUDE (USING index_method=identifier)? 
+      constr_body
+    ;
+
+constr_body
+    :((EXCLUDE (USING index_method=identifier)? 
             LEFT_PAREN exclude_element=identifier WITH operator=names_references RIGHT_PAREN 
             index_parameters where_clause?) 
        | (FOREIGN KEY column_references)? table_references

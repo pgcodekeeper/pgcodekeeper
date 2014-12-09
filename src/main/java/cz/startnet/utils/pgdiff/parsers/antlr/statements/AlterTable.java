@@ -1,9 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -23,6 +26,11 @@ public class AlterTable extends ParserAbstract {
         for (Table_actionContext tablAction : ctx.table_action()) {
             if (tablAction.table_column_definition()!=null) {
                 table.addColumn(getColumn(tablAction.table_column_definition()));
+            }
+            if (tablAction.tabl_constraint != null) {
+                PgConstraint constr = getTableConstraint(tablAction.tabl_constraint);
+                constr.setTableName(name);
+                table.addConstraint(constr);
             }
             if (tablAction.index_name!=null) {
                 table.setClusterIndexName(tablAction.index_name.getText());

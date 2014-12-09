@@ -14,6 +14,8 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import cz.startnet.utils.pgdiff.parsers.ParserUtils;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgComment;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -24,6 +26,7 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgRuleCommon;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
@@ -124,7 +127,12 @@ public class SqlParserMain {
         }
 
         for (PgObjLocation schema : schemas) {
-            database.addSchema((PgSchema) schema.getObj());
+            PgSchema exists = database.getSchema(schema.getObj().getName());
+            if(exists == null) {
+                database.addSchema((PgSchema)schema.getObj());
+            } else {
+                database.tryReplacePublicDef((PgSchema)schema.getObj());
+            }
         }
         for (PgObjLocation extension : extensions) {
             database.addExtension((PgExtension) extension.getObj());
@@ -247,7 +255,6 @@ public class SqlParserMain {
                     for (PgFunction function : schema.getFunctions()) {
                         if (function.getSignature().equals(obj_name)) {
                             function.addPrivilege(privilege);
-                            int a =1;
                             break lable;
                         }
                     }
@@ -291,7 +298,7 @@ public class SqlParserMain {
             }
         }
     }
-
+   
     public static void fillAlterObjects(List<PgObjLocation> alterObjects, PgDatabase database) {
         for (PgObjLocation obj : alterObjects) {
             if (obj.getObj() instanceof PgFunction) {
@@ -309,8 +316,16 @@ public class SqlParserMain {
             } else if (obj.getObj() instanceof PgTable) {
                 PgTable tabl = (PgTable) obj.getObj();
                 PgTable table = database.getSchema(obj.getSchemaName()).getTable(tabl.getName());
-                if (table != null && tabl.getOwner()!= null) {
-                    table.setOwner(tabl.getOwner());
+                if (table != null) {
+                    if( tabl.getOwner()!= null) {
+                        table.setOwner(tabl.getOwner());
+                    }
+                    for (PgConstraint constr: tabl.getConstraints()) {
+                        if (table.getConstraint(constr.getName()) == null) {
+                            constr.dropParent();
+                            table.addConstraint(constr);
+                        }
+                    }
                 }
             } else if (obj.getObj() instanceof PgSequence) {
                 PgSequence seq = (PgSequence) obj.getObj();

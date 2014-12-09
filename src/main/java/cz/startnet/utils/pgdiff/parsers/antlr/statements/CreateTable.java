@@ -61,32 +61,4 @@ public class CreateTable extends ParserAbstract {
         fillObjLocation(table, ctx.name.getStart().getStartIndex(), schemaName);
         return table;
     }
-
-    private List<PgConstraint> getConstraint(Table_column_defContext colCtx) {
-        List<PgConstraint> result = new ArrayList<>();
-        PgConstraint constr = null;
-        if (colCtx.tabl_constraint != null) {
-            Constraint_commonContext tablConstr = colCtx.tabl_constraint;
-            constr = new PgConstraint(
-                    tablConstr.constraint_name != null ? tablConstr.constraint_name.getText()
-                            : "", getFullCtxText(tablConstr), "");
-            constr.setDefinition(getFullCtxText(tablConstr));
-            result.add(constr);
-        } else {
-            for (Constraint_commonContext column_constraint : colCtx.table_column_definition().colmn_constraint) {
-                // skip null and def values, it parsed to column def
-                if (column_constraint.null_value != null
-                        || column_constraint.default_expr != null
-                        || column_constraint.default_expr_data != null) {
-                    continue;
-                }
-                constr = new PgConstraint(
-                        column_constraint.constraint_name != null ? column_constraint.constraint_name.getText()
-                                : "", getFullCtxText(column_constraint), "");
-                constr.setDefinition(getFullCtxText(column_constraint));
-                result.add(constr);
-            }
-        }
-        return result;
-    }
 }

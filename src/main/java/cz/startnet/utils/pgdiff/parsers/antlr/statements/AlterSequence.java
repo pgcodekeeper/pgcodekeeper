@@ -20,7 +20,6 @@ private Alter_sequence_statementContext ctx;
         PgSequence seq = new PgSequence(getName(ctx.name), null, null);
         if (ctx.owner_to() !=null) {
             seq.setOwner(removeQuoted(ctx.owner_to().name));
-            return seq;
         }
         for (Sequence_bodyContext seqbody : ctx.sequence_body()) {
             if (seqbody.OWNED() != null && 

@@ -76,7 +76,7 @@ public class CreateView extends ParserAbstract {
 
     private PgSelect parseSelect(Query_expressionContext ctx) {
         PgSelect select = new PgSelect(getFullCtxText(ctx), null);
-        non_join_query_expression(ctx.non_join_query_expression(), select);
+        query_expression(ctx, select);
         
         return select;
     }

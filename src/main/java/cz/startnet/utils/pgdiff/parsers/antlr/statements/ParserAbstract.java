@@ -13,8 +13,10 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -127,14 +129,14 @@ public abstract class ParserAbstract {
             col = new PgColumn(removeQuoted(colCtx.column_name));
             for (Constraint_commonContext column_constraint : colCtx
                     .colmn_constraint) {
-                if (column_constraint.default_expr != null) {
-                    col.setDefaultValue(getFullCtxText(column_constraint.default_expr));
-                } else if (column_constraint.default_expr_data != null) {
-                    col.setDefaultValue(getFullCtxText(column_constraint.default_expr_data));
+                if (column_constraint.constr_body().default_expr != null) {
+                    col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
+                } else if (column_constraint.constr_body().default_expr_data != null) {
+                    col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr_data));
                 }
                 
-                if (column_constraint.null_value != null) {
-                    if (column_constraint.null_false != null) {
+                if (column_constraint.constr_body().null_value != null) {
+                    if (column_constraint.constr_body().null_false != null) {
                         col.setNullValue(false);
                     } else {
                         col.setNullValue(true);
@@ -168,5 +170,36 @@ public abstract class ParserAbstract {
             }
             function.addArgument(arg);
         }
+    }
+    
+    protected List<PgConstraint> getConstraint(Table_column_defContext colCtx) {
+        List<PgConstraint> result = new ArrayList<>();
+        if (colCtx.tabl_constraint != null) {
+            result.add(getTableConstraint(colCtx.tabl_constraint));
+        } else {
+            for (Constraint_commonContext column_constraint : colCtx.table_column_definition().colmn_constraint) {
+                getColumnConstraint(column_constraint, result);
+            }
+        }
+        return result;
+    }
+    protected PgConstraint getTableConstraint(Constraint_commonContext tablConstr) {
+        PgConstraint constr;
+        constr = new PgConstraint(
+                tablConstr.constraint_name != null ? tablConstr.constraint_name.getText()
+                        : "", getFullCtxText(tablConstr), "");
+        constr.setDefinition(getFullCtxText(tablConstr.constr_body()));
+        return constr;
+    }
+    private void getColumnConstraint(Constraint_commonContext column_constraint, List<PgConstraint> result) {
+        PgConstraint constr = null;
+        // skip null and def values, it parsed to column def
+        if (column_constraint.constr_body().null_value != null
+                || column_constraint.constr_body().default_expr != null
+                || column_constraint.constr_body().default_expr_data != null) {
+            return;
+        }
+        constr = getTableConstraint(column_constraint);
+        result.add(constr);
     }
 }

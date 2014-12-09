@@ -35,7 +35,4 @@ public class CreateFunction extends ParserAbstract {
         fillObjLocation(function, ctx.function_parameters().name.getStart().getStartIndex(),schemaName);
         return function;
     }
-
-    
-
 }
