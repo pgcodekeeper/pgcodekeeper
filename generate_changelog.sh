@@ -6,7 +6,7 @@
 # pip install gitchangelog
 # WARNING!!!!!
 # gitchangelog.py uses "git log with --first-parent" which doesn't show all commits in the repository
-# need some modification in 261,463 strings, file "/usr/local/lib/python2.7/dist-packages/gitchangelog.py" 
+# need some modification in 261,453 strings, file "/usr/local/lib/python2.7/dist-packages/gitchangelog.py" 
 #------------------------------------------------------------------------------------------
 
 # Repository may have .gitchangelog.rc file to customize it's commits to collect
