@@ -134,8 +134,8 @@ table_action
     | DROP COLUMN? (IF EXISTS)? column=schema_qualified_name (RESTRICT | CASCADE)?
     | ALTER COLUMN? column=schema_qualified_name 
       ((SET DATA)? TYPE datatype=data_type (COLLATE collation=identifier)? (USING expression=value_expression)?
-      | (SET DEFAULT expression=value_expression 
-        | DROP DEFAULT 
+      | (set_def_column
+        | drop_def
         | ((SET | DROP) NOT NULL) 
         | SET STATISTICS integer=NUMBER
         | SET LEFT_PAREN attribute_option_value (COMMA attribute_option_value)* RIGHT_PAREN
@@ -232,12 +232,20 @@ alter_sequence_statement
 
 alter_view_statement
     : VIEW (IF EXISTS)? name=schema_qualified_name 
-     (ALTER COLUMN? column_name=schema_qualified_name  (SET DEFAULT expression=value_expression | DROP DEFAULT)
+     (ALTER COLUMN? column_name=schema_qualified_name  (set_def_column | drop_def)
     | set_schema
     | owner_to
     | rename_to
     | SET LEFT_PAREN view_option_name=identifier (EQUAL view_option_value=value_expression)?(COMMA view_option_name=identifier (EQUAL view_option_value=value_expression)?)*  RIGHT_PAREN
     | RESET LEFT_PAREN view_option_name=identifier (COMMA view_option_name=identifier)*  RIGHT_PAREN)
+    ;
+
+set_def_column
+    : SET DEFAULT expression=value_expression
+    ;
+
+drop_def
+    : DROP DEFAULT
     ;
 
 index_statement

@@ -7,7 +7,9 @@ import java.util.List;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_language_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_event_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
@@ -23,7 +25,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSchema;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSequence;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CommentOn;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateExtension;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFunction;
@@ -151,6 +155,20 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitAlter_table_statement(Alter_table_statementContext ctx) {
         PgObjLocation loc = new PgObjLocation(new AlterTable(ctx, db, filePath).getObject(), 0, Paths.get("/"));
+        loc.setSchemaName(schemaName);
+        alterObjects.add(loc);
+    }
+    
+    @Override
+    public void exitAlter_sequence_statement(Alter_sequence_statementContext ctx) {
+        PgObjLocation loc = new PgObjLocation(new AlterSequence(ctx, db, filePath).getObject(), 0, Paths.get("/"));
+        loc.setSchemaName(schemaName);
+        alterObjects.add(loc);
+    }
+    
+    @Override
+    public void exitAlter_view_statement(Alter_view_statementContext ctx) {
+        PgObjLocation loc = new PgObjLocation(new AlterView(ctx, db, filePath).getObject(), 0, Paths.get("/"));
         loc.setSchemaName(schemaName);
         alterObjects.add(loc);
     }

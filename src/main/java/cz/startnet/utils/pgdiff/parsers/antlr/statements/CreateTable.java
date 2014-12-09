@@ -45,7 +45,7 @@ public class CreateTable extends ParserAbstract {
         
         if (ctx.paret_table != null) {
             for (Schema_qualified_nameContext nameInher : ctx.paret_table.names_references().name) {
-                table.addInherits(getSchemaName(nameInher) +"."+ getName(nameInher));
+                table.addInherits(getSchemaName(nameInher), getName(nameInher));
             }
         }
         

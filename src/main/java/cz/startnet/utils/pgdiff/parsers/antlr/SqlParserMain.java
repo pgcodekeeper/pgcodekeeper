@@ -28,6 +28,7 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.schema.PgView.DefaultValue;
 
 public class SqlParserMain {
     public static void main(String[] args) throws IOException,
@@ -310,6 +311,32 @@ public class SqlParserMain {
                 PgTable table = database.getSchema(obj.getSchemaName()).getTable(tabl.getName());
                 if (table != null && tabl.getOwner()!= null) {
                     table.setOwner(tabl.getOwner());
+                }
+            } else if (obj.getObj() instanceof PgSequence) {
+                PgSequence seq = (PgSequence) obj.getObj();
+                PgSequence sequence = database.getSchema(obj.getSchemaName())
+                        .getSequence(seq.getName());
+                if (sequence != null) {
+                    if (seq.getOwner() != null) {
+                        sequence.setOwner(seq.getOwner());
+                    }
+                    if (seq.getOwnedBy() != null) {
+                        sequence.setOwnedBy(seq.getOwnedBy());
+                    }
+                }
+            } else if (obj.getObj() instanceof PgView) {
+                PgView vie = (PgView) obj.getObj();
+                PgView view = database.getSchema(obj.getSchemaName())
+                        .getView(vie.getName());
+                if (view != null) {
+                    for (DefaultValue col : view.getDefaultValues()) {
+                        if (!vie.getDefaultValues().contains(col)) {
+                            view.removeColumnDefaultValue(col.getColumnName());
+                        }
+                    }
+                    if (vie.getOwner() != null) {
+                        view.setOwner(vie.getOwner());
+                    }
                 }
             }
             
