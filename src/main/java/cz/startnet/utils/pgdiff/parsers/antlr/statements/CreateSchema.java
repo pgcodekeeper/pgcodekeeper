@@ -29,7 +29,9 @@ public class CreateSchema extends ParserAbstract {
         for (StatementContext element : ctx.schema_element) {
             elements.append(element.getText());
         }
-        schema.setDefinition(elements.toString());
+        if (elements.length() > 0) {
+            schema.setDefinition(elements.toString());
+        }
         fillObjLocation(schema, ctx.name.getStart().getStartIndex(), name);
         return schema;
     }
