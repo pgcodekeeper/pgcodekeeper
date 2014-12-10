@@ -10,16 +10,15 @@ import org.antlr.v4.runtime.misc.Interval;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 /**
@@ -29,13 +28,15 @@ public abstract class ParserAbstract {
     private final PgDatabase db;
     private final Path filePath;
     private String defSchemaName;
-    
+
     public ParserAbstract(PgDatabase db, Path filePath) {
         this.db = db;
         this.filePath = filePath;
     }
+
     /**
      * Parse object from context and return it
+     * 
      * @return parsed object
      */
     public abstract PgStatement getObject();
@@ -43,25 +44,30 @@ public abstract class ParserAbstract {
     protected String getDefSchemaName() {
         return defSchemaName;
     }
+
     public ParserAbstract setDefSchemaName(String defSchemaName) {
         this.defSchemaName = defSchemaName;
         return this;
     }
-    
+
     /**
      * Add object with start position to db object location List
-     * @param obj 
+     * 
+     * @param obj
      * @param startIndex
      */
-    protected void fillObjLocation(PgStatement obj, int startIndex, String schemaName) {
+    protected void fillObjLocation(PgStatement obj, int startIndex,
+            String schemaName) {
         PgObjLocation loc = new PgObjLocation(obj, startIndex, filePath);
         loc.setSchemaName(schemaName);
         db.addObjLocation(loc);
     }
-    
+
     /**
      * Extracts raw text from context
-     * @param ctx context
+     * 
+     * @param ctx
+     *            context
      * @return raw string
      */
     protected String getFullCtxText(ParserRuleContext ctx) {
@@ -70,7 +76,7 @@ public abstract class ParserAbstract {
         ctx.start.getInputStream().getText(interval);
         return ctx.start.getInputStream().getText(interval);
     }
-    
+
     protected List<String> getNames(List<Schema_qualified_nameContext> ctx) {
         List<String> result = new ArrayList<>();
         for (Schema_qualified_nameContext name : ctx) {
@@ -89,16 +95,15 @@ public abstract class ParserAbstract {
         }
         return removeQuoted(name.identifier(i));
     }
-    
+
     protected String removeQuoted(IdentifierContext name) {
-        String nameUnqualif =name.getText();
-        if (nameUnqualif.startsWith("\"") && 
-                nameUnqualif.endsWith("\"")) {
-            nameUnqualif = nameUnqualif.substring(1, nameUnqualif.length() -1);
+        String nameUnqualif = name.getText();
+        if (nameUnqualif.startsWith("\"") && nameUnqualif.endsWith("\"")) {
+            nameUnqualif = nameUnqualif.substring(1, nameUnqualif.length() - 1);
         }
         return nameUnqualif;
     }
-    
+
     protected String getSchemaName(Schema_qualified_nameContext name) {
         int i = 0;
         if (name == null) {
@@ -107,34 +112,51 @@ public abstract class ParserAbstract {
         while (name.identifier(i + 1) != null) {
             i++;
         }
-        IdentifierContext nameQuoted = null;
         switch (i) {
-        case 0:
-            return null;
         case 1:
-            nameQuoted= name.identifier(i-1);
-            break;
         case 2:
-            nameQuoted = name.identifier(i-2);
-            break;
+            return removeQuoted(name.identifier(0));
         default:
             return null;
         }
-        return removeQuoted(nameQuoted);
     }
-    
+
+    protected String getTableName(Schema_qualified_nameContext name) {
+        int i = 0;
+        if (name == null) {
+            return null;
+        }
+        while (name.identifier(i + 1) != null) {
+            i++;
+        }
+        // i points on name
+        switch (i) {
+            // its only name
+        case 0:
+            return null;
+            // may be unqualified table or schema name
+        case 1:
+            return removeQuoted(name.identifier(0));
+            // qualified table name on 1 position
+        case 2:
+            return removeQuoted(name.identifier(1));
+        }
+        return null;
+    }
+
     protected PgColumn getColumn(Table_column_definitionContext colCtx) {
         PgColumn col = null;
         if (colCtx.column_name != null) {
             col = new PgColumn(removeQuoted(colCtx.column_name));
-            for (Constraint_commonContext column_constraint : colCtx
-                    .colmn_constraint) {
+            for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
                 if (column_constraint.constr_body().default_expr != null) {
-                    col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
+                    col.setDefaultValue(getFullCtxText(column_constraint
+                            .constr_body().default_expr));
                 } else if (column_constraint.constr_body().default_expr_data != null) {
-                    col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr_data));
+                    col.setDefaultValue(getFullCtxText(column_constraint
+                            .constr_body().default_expr_data));
                 }
-                
+
                 if (column_constraint.constr_body().null_value != null) {
                     if (column_constraint.constr_body().null_false != null) {
                         col.setNullValue(false);
@@ -147,43 +169,49 @@ public abstract class ParserAbstract {
                 col.setType(getFullCtxText(colCtx.datatype));
             }
         }
-        
+
         return col;
     }
-    
-    protected void fillArguments(Function_argsContext function_argsContext, PgFunction function) {
-        for (Function_argumentsContext argument : function_argsContext.function_arguments()) {
+
+    protected void fillArguments(Function_argsContext function_argsContext,
+            PgFunction function) {
+        for (Function_argumentsContext argument : function_argsContext
+                .function_arguments()) {
             PgFunction.Argument arg = new PgFunction.Argument();
-            if (argument.argname!=null) {
+            if (argument.argname != null) {
                 arg.setName(removeQuoted(argument.argname));
             }
-            if (argument.argtype_data!= null) {
+            if (argument.argtype_data != null) {
                 arg.setDataType(getFullCtxText(argument.argtype_data));
             } else if (argument.argtype_expres != null) {
                 arg.setDataType(getFullCtxText(argument.argtype_expres));
             }
             if (argument.function_def_value() != null) {
-                arg.setDefaultExpression(getFullCtxText(argument.function_def_value().def_value));
+                arg.setDefaultExpression(getFullCtxText(argument
+                        .function_def_value().def_value));
             }
-            if (argument.arg_mode!=null) {
+            if (argument.arg_mode != null) {
                 arg.setMode(argument.arg_mode.getText());
             }
             function.addArgument(arg);
         }
     }
-    
+
     protected List<PgConstraint> getConstraint(Table_column_defContext colCtx) {
         List<PgConstraint> result = new ArrayList<>();
         if (colCtx.tabl_constraint != null) {
             result.add(getTableConstraint(colCtx.tabl_constraint));
         } else {
-            for (Constraint_commonContext column_constraint : colCtx.table_column_definition().colmn_constraint) {
+            for (Constraint_commonContext column_constraint : colCtx
+                    .table_column_definition().colmn_constraint) {
                 getColumnConstraint(column_constraint, result);
             }
         }
         return result;
     }
-    protected PgConstraint getTableConstraint(Constraint_commonContext tablConstr) {
+
+    protected PgConstraint getTableConstraint(
+            Constraint_commonContext tablConstr) {
         PgConstraint constr;
         constr = new PgConstraint(
                 tablConstr.constraint_name != null ? tablConstr.constraint_name.getText()
@@ -191,7 +219,10 @@ public abstract class ParserAbstract {
         constr.setDefinition(getFullCtxText(tablConstr.constr_body()));
         return constr;
     }
-    private void getColumnConstraint(Constraint_commonContext column_constraint, List<PgConstraint> result) {
+
+    private void getColumnConstraint(
+            Constraint_commonContext column_constraint,
+            List<PgConstraint> result) {
         PgConstraint constr = null;
         // skip null and def values, it parsed to column def
         if (column_constraint.constr_body().null_value != null

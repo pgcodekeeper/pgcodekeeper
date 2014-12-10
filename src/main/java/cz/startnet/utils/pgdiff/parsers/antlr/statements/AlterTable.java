@@ -6,6 +6,7 @@ import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -33,12 +34,37 @@ public class AlterTable extends ParserAbstract {
                 table.addConstraint(constr);
             }
             if (tablAction.index_name!=null) {
-                table.setClusterIndexName(tablAction.index_name.getText());
+                table.setClusterIndexName(getFullCtxText(tablAction.index_name));
             }
             if (tablAction.owner_to() !=null) {
                 table.setOwner(tablAction.owner_to().name.getText());
             }
-            
+            if (tablAction.WITHOUT() != null && tablAction.OIDS() != null) {
+                table.setWith("OIDS=false");
+            } else if (tablAction.WITH() != null && tablAction.OIDS() != null) {
+                table.setWith("OIDS=true");
+            }
+            if (tablAction.column != null) {
+                if (tablAction.STATISTICS() != null) {
+                    if (table.getColumn(getName(tablAction.column)) == null) {
+                        PgColumn col = new PgColumn(getName(tablAction.column));
+                        String number = tablAction.integer.getText();
+                        col.setStatistics(new Integer(number));
+                        table.addColumn(col);
+                    } else {
+                        table.getColumn(getName(tablAction.column)).setStatistics(new Integer(tablAction.integer.toString()));   
+                    }
+                }
+                if (tablAction.set_def_column() != null) {
+                    if (table.getColumn(getName(tablAction.column)) == null) {
+                        PgColumn col = new PgColumn(getName(tablAction.column));
+                        col.setDefaultValue(getFullCtxText(tablAction.set_def_column().expression));
+                        table.addColumn(col);
+                    } else {
+                        table.getColumn(getName(tablAction.column)).setDefaultValue(getFullCtxText(tablAction.set_def_column().expression));   
+                    }
+                }
+            }
         }
         return table;
     }

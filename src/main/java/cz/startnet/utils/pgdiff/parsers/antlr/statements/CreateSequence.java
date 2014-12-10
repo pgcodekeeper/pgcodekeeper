@@ -34,13 +34,13 @@ public class CreateSequence extends ParserAbstract {
                 sequnce.setMaxValue(body.maxval.getText());
             }
             if (body.minval!=null) {
-                sequnce.setMaxValue(body.minval.getText());
+                sequnce.setMinValue(body.minval.getText());
             }
             if (body.start_val!=null) {
                 sequnce.setStartWith(body.start_val.getText());
             }
             if (body.cycle_val!=null) {
-                sequnce.setCycle(body.cycle_true!=null);
+                sequnce.setCycle(body.cycle_true==null);
             }
             if (body.col_name!=null) {
                 sequnce.setOwnedBy(body.col_name.getText());

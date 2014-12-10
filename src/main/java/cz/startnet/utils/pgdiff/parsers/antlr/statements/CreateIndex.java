@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 
+import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;

@@ -16,6 +16,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgComment;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -44,14 +45,14 @@ public class SqlParserMain {
         List<String> paths = new ArrayList<>();
 //        paths = getPathsToFiles(pathToFile);
 //        pathToFile = "/home/botov_av/workspace/codekeeper/apgdiff/src/test/resources/cz/startnet/utils/pgdiff/loader";
-        paths = getPathsToFiles(pathToFile);
+//        paths = getPathsToFiles(pathToFile);
 //        paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/test/resources/cz/startnet/utils/pgdiff/loader/schema_17.sql");
         long timeout= System.currentTimeMillis();
 //        paths.add("/home/botov_av/workspace/pg_dump_folder/maindb_dev2.sql");
 //        paths.add("/home/botov_av/workspace/codekeeper/tmp_dump_9221153347570520215.sql");
-         paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/first_part.sql");
+//         paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/first_part.sql");
          paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/second_part.sql");
-         paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/third_part.sql");
+//         paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/third_part.sql");
         for (String path : paths) {
             if (path.endsWith("diff.sql")) {
                 continue;
@@ -323,10 +324,29 @@ public class SqlParserMain {
                     if( tabl.getOwner()!= null) {
                         table.setOwner(tabl.getOwner());
                     }
+                    if (tabl.getClusterIndexName() != null) {
+                        table.setClusterIndexName(tabl.getClusterIndexName());
+                    }
+                    if (tabl.getWith() != null) {
+                        table.setWith(tabl.getWith());
+                    }
                     for (PgConstraint constr: tabl.getConstraints()) {
                         if (table.getConstraint(constr.getName()) == null) {
                             constr.dropParent();
                             table.addConstraint(constr);
+                        }
+                    }
+                    for (PgColumn col : tabl.getColumns()) {
+                        PgColumn column = table.getColumn(col.getName());
+                        if (column == null) {
+                            table.addColumn(col);
+                        } else {
+                            if (col.getStatistics() != null) {
+                                column.setStatistics(col.getStatistics());
+                            }
+                            if (col.getDefaultValue() !=null) {
+                                column.setDefaultValue(col.getDefaultValue());
+                            }
                         }
                     }
                 }

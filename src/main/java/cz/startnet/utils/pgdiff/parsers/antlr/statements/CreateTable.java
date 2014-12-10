@@ -36,6 +36,7 @@ public class CreateTable extends ParserAbstract {
 
         for (Table_column_defContext colCtx : ctx.table_col_def) {
             for (PgConstraint constr : getConstraint(colCtx)) {
+                constr.setTableName(name);
                 table.addConstraint(constr);                
             }
             if (colCtx.table_column_definition()!=null) {
@@ -54,8 +55,14 @@ public class CreateTable extends ParserAbstract {
         }
         
         if (ctx.storage_parameter_oid() != null) {
-            if (ctx.storage_parameter_oid().with_storage_parameter() != null)
-            table.setWith(getFullCtxText(ctx.storage_parameter_oid().with_storage_parameter().storage_parameter()));
+            if (ctx.storage_parameter_oid().with_storage_parameter() != null) {
+                table.setWith(getFullCtxText(ctx.storage_parameter_oid().with_storage_parameter().storage_parameter()));
+            }
+            if (ctx.storage_parameter_oid().WITHOUT() != null) {
+                table.setWith("OIDS=false");
+            } else if (ctx.storage_parameter_oid().WITH() != null) {
+                table.setWith("OIDS=true");
+            }
         }
         
         fillObjLocation(table, ctx.name.getStart().getStartIndex(), schemaName);
