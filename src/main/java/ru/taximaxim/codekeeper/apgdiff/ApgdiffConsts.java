@@ -32,7 +32,7 @@ public interface ApgdiffConsts {
         String REMOTE_HOST = "10.84.0.5";
         String REMOTE_DB = "pgcodekeeper_testing";
         int REMOTE_PORT = 5432;
-        String REMOTE_USERNAME = "ryabinin_av";
-        String REMOTE_PASSWORD = "";
+        String REMOTE_USERNAME = "unit_test";
+        String REMOTE_PASSWORD = "***REMOVED***";
     }
 }
