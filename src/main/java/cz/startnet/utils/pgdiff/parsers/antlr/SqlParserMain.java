@@ -42,7 +42,10 @@ public class SqlParserMain {
         PgDatabase database = new PgDatabase();
         List<PgObjLocation> alterObjects = new ArrayList<>();
         List<String> paths = new ArrayList<>();
+//        paths = getPathsToFiles(pathToFile);
+//        pathToFile = "/home/botov_av/workspace/codekeeper/apgdiff/src/test/resources/cz/startnet/utils/pgdiff/loader";
         paths = getPathsToFiles(pathToFile);
+//        paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/test/resources/cz/startnet/utils/pgdiff/loader/schema_17.sql");
         long timeout= System.currentTimeMillis();
 //        paths.add("/home/botov_av/workspace/pg_dump_folder/maindb_dev2.sql");
 //        paths.add("/home/botov_av/workspace/codekeeper/tmp_dump_9221153347570520215.sql");

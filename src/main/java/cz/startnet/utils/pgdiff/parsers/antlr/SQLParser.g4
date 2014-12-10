@@ -88,7 +88,8 @@ schema_create
     | create_schema_statement
     | create_view_statement
     | create_language_statement
-    | create_event_trigger)
+    | create_event_trigger
+    | create_type_statement)
      
     | comment_on_statement
     | rule_common
@@ -102,7 +103,8 @@ schema_alter
     | alter_table_statement
     | alter_default_privileges
     | alter_sequence_statement
-    | alter_view_statement)
+    | alter_view_statement
+    | alter_type_statement)
     ;
     
 alter_function_statement
@@ -239,6 +241,11 @@ alter_view_statement
     | SET LEFT_PAREN view_option_name=identifier (EQUAL view_option_value=value_expression)?(COMMA view_option_name=identifier (EQUAL view_option_value=value_expression)?)*  RIGHT_PAREN
     | RESET LEFT_PAREN view_option_name=identifier (COMMA view_option_name=identifier)*  RIGHT_PAREN)
     ;
+// TODO дописать для остальных алтеров
+alter_type_statement
+    : TYPE name=schema_qualified_name 
+      (set_schema | owner_to)
+    ;
 
 set_def_column
     : SET DEFAULT expression=value_expression
@@ -276,7 +283,40 @@ create_event_trigger
             RIGHT_PAREN AND?)+ )?
         EXECUTE PROCEDURE funct_name=value_expression
     ;
-    
+
+create_type_statement
+    :TYPE name=schema_qualified_name (AS(
+        LEFT_PAREN (attribute_name+=identifier dt_type+=data_type (COLLATE collation=identifier)? 
+                    (COMMA attribute_name+=identifier dt_type+=data_type (COLLATE collation=identifier)?)*)? RIGHT_PAREN
+    | ENUM LEFT_PAREN ( Character_String_Literal (COMMA Character_String_Literal)* )? RIGHT_PAREN
+    | RANGE LEFT_PAREN SUBTYPE EQUAL schema_qualified_name
+            ( COMMA SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier)?
+            ( COMMA COLLATION EQUAL collation=identifier )?
+            ( COMMA CANONICAL EQUAL canonical_function=identifier )?
+            ( COMMA SUBTYPE_DIFF EQUAL subtype_diff_function=identifier )?
+        RIGHT_PAREN)
+    | LEFT_PAREN
+            INPUT EQUAL input_function=identifier COMMA
+            OUTPUT EQUAL output_function=identifier
+            ( COMMA RECEIVE EQUAL receive_function=identifier )?
+            ( COMMA SEND EQUAL send_function=identifier )?
+            ( COMMA TYPMOD_IN EQUAL type_modifier_input_function=identifier )?
+            ( COMMA TYPMOD_OUT EQUAL type_modifier_output_function=identifier )?
+            ( COMMA ANALYZE EQUAL analyze_function=identifier )?
+            ( COMMA INTERNALLENGTH EQUAL (internallength=signed_numerical_literal | VARIABLE ) )?
+            ( COMMA PASSEDBYVALUE )?
+            ( COMMA ALIGNMENT EQUAL alignment=identifier )?
+            ( COMMA STORAGE EQUAL storage=identifier )?
+            ( COMMA LIKE EQUAL like_type=identifier )?
+            ( COMMA CATEGORY EQUAL category=identifier )?
+            ( COMMA PREFERRED EQUAL preferred=identifier )?
+            ( COMMA DEFAULT EQUAL default_value=identifier )?
+            ( COMMA ELEMENT EQUAL element=identifier )?
+            ( COMMA DELIMITER EQUAL delimiter=identifier )?
+            ( COMMA COLLATABLE EQUAL collatable=identifier )?
+        RIGHT_PAREN)
+    ;
+
 set_statement
     : SET (SESSION | LOCAL)? 
       (config_param=identifier (TO |EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
@@ -890,7 +930,7 @@ date_literal
 
 data_type
   : predefined_type (LEFT_BRACKET RIGHT_BRACKET)?
-  | SETOF value=identifier
+  | SETOF value=predefined_type
   ;
 
 predefined_type
@@ -969,7 +1009,7 @@ boolean_type
 
 datetime_type
   : DATE
-  | TIME (WITH TIME ZONE)?
+  | TIME ((WITH | WITHOUT) TIME ZONE)?
   | TIMETZ
   | TIMESTAMP ((WITH | WITHOUT) TIME ZONE)?
   | TIMESTAMPTZ
