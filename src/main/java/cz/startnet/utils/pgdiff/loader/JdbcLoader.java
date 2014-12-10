@@ -733,27 +733,20 @@ public class JdbcLoader implements PgCatalogStrings {
         String functionName = res.getString("proname").concat("(");
         byte[] args = res.getBytes("tgargs");
         if (args.length > 0){
-            List<Byte> target = new ArrayList<>(args.length);
-            target.add((byte) '\'');
-            for(int i = 0; i < args.length; i++){
-                byte b = args[i];
-                if (b == 0 && i < args.length - 1){
-                    target.add((byte) '\''); // APOSTROPHE
-                    target.add((byte) ','); // COMMA
-                    target.add((byte) ' '); // SPACE
-                    target.add((byte) '\''); // APOSTROPHE
-                }else if (b != 0){
-                    target.add(b);
+            StringBuilder sbArgs = new StringBuilder();
+            int start = 0;
+            for (int i = 0; i < args.length; ++i) {
+                if (args[i] != 0) {
+                    continue;
                 }
+                
+                sbArgs.append(new String(args, start, i - start, connector.getEncoding()));
+                if (i != args.length - 1) {
+                    sbArgs.append("', '");
+                }
+                start = i + 1;
             }
-            target.add((byte) '\'');
-            
-            args = new byte[target.size()];
-            for(int i = 0; i < target.size(); i++){
-                args[i] = target.get(i);
-            }
-            // FIXME JDBC works in UTF8 (yes/no/maybe)
-            functionName = functionName.concat(new String(args, connector.getEncoding()));
+            functionName = functionName.concat('\'' + sbArgs.toString() + '\'');
         }
         functionName = functionName.concat(")");
         if (!res.getString(NAMESPACE_NSPNAME).equals(schemaName)){
