@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -89,8 +90,7 @@ public class CreateView extends ParserAbstract {
         ParseTreeWalker walker = new ParseTreeWalker();
         SelectListener sleList = new SelectListener(select);
         walker.walk(sleList, ctx);
-        // todo return parsed select!
-        return select;
+        return sleList.getSelect();
     }
 
     private class SelectListener extends SQLParserBaseListener {
@@ -99,6 +99,7 @@ public class CreateView extends ParserAbstract {
         private Queue<String> aliasNames = new LinkedList<>();
         private PgSelect select;
         private boolean isFrom = false;
+        private boolean isFromQuery = false;
 
         public SelectListener(PgSelect select) {
             this.select = select;
@@ -134,8 +135,19 @@ public class CreateView extends ParserAbstract {
                     columns.add(new GenericColumn(colSchema, colTable, colName));
                 }
             } else {
-                tableAliases.put(aliasNames.poll(),
-                        getFullCtxText(ctx.schema_qualified_name()));
+                if (isFromQuery) {
+                    Iterator<GenericColumn> iter = columns.iterator();
+                    while (iter.hasNext()) {
+                        GenericColumn col = iter.next();
+                        if (col.table.equals(aliasNames.peek())) {
+                            iter.remove();
+                        }
+                    }
+                } else {
+                    tableAliases.put(aliasNames.poll(),
+                            getFullCtxText(ctx.schema_qualified_name()));
+                }
+                
             }
         }
 
@@ -148,7 +160,19 @@ public class CreateView extends ParserAbstract {
         public void exitFrom_clause(From_clauseContext ctx) {
             isFrom = false;
         }
-
+        @Override
+        public void enterQuery_specification(Query_specificationContext ctx) {
+            if (isFrom) {
+                isFromQuery  =true;
+            }
+        };
+        @Override
+        public void exitQuery_specification(Query_specificationContext ctx) {
+            if (isFrom) {
+                isFromQuery = false;
+            }
+        };
+        
         PgSelect getSelect() {
             for (GenericColumn column : columns) {
                 if (column.schema == null && column.table != null) {
