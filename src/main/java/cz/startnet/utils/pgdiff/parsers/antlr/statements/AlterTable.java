@@ -24,9 +24,10 @@ public class AlterTable extends ParserAbstract {
     public PgStatement getObject() {
         String name = getName(ctx.name);
         PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()), "");
+        List<String> sequences = new ArrayList<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
             if (tablAction.table_column_definition()!=null) {
-                table.addColumn(getColumn(tablAction.table_column_definition()));
+                table.addColumn(getColumn(tablAction.table_column_definition(), sequences));
             }
             if (tablAction.tabl_constraint != null) {
                 PgConstraint constr = getTableConstraint(tablAction.tabl_constraint);
@@ -65,6 +66,9 @@ public class AlterTable extends ParserAbstract {
                     }
                 }
             }
+        }
+        for (String seq : sequences) {
+            table.addSequence(seq);
         }
         return table;
     }

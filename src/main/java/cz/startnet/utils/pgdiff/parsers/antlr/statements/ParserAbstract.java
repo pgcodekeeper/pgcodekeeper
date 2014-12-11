@@ -6,14 +6,19 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Name_or_func_callsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expressionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -144,14 +149,17 @@ public abstract class ParserAbstract {
         return null;
     }
 
-    protected PgColumn getColumn(Table_column_definitionContext colCtx) {
+    protected PgColumn getColumn(Table_column_definitionContext colCtx, List<String> sequences) {
         PgColumn col = null;
         if (colCtx.column_name != null) {
             col = new PgColumn(removeQuoted(colCtx.column_name));
             for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
                 if (column_constraint.constr_body().default_expr != null) {
-                    col.setDefaultValue(getFullCtxText(column_constraint
-                            .constr_body().default_expr));
+                    col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
+                    String sequence = getSequence(column_constraint.constr_body().default_expr);
+                    if (sequence != null) {
+                        sequences.add(sequence);
+                    }
                 } else if (column_constraint.constr_body().default_expr_data != null) {
                     col.setDefaultValue(getFullCtxText(column_constraint
                             .constr_body().default_expr_data));
@@ -171,6 +179,38 @@ public abstract class ParserAbstract {
         }
 
         return col;
+    }
+
+    private String getSequence(Value_expressionContext default_expr) {
+        SeqName name = new SeqName();
+        new ParseTreeWalker().walk(name, default_expr);
+        return name.getSeqName();
+    }
+    
+    class SeqName extends SQLParserBaseListener {
+        private String seqName;
+        @Override
+        public void enterName_or_func_calls(Name_or_func_callsContext ctx) {
+         if (getName(ctx.schema_qualified_name()).equals("nextval")) {
+             GeneralLiteralSearch seq = new GeneralLiteralSearch();
+             new ParseTreeWalker().walk(seq, ctx);
+             seqName = seq.getSeqName();
+         }
+        }
+        public String getSeqName() {
+            return seqName;
+        }
+    }
+    
+    class GeneralLiteralSearch extends SQLParserBaseListener {
+        private String seqName;
+        @Override
+       public void enterGeneral_literal(General_literalContext ctx) {
+            seqName = ctx.getText();
+       }
+        public String getSeqName() {
+            return seqName.substring(1, seqName.length() - 1);
+        }
     }
 
     protected void fillArguments(Function_argsContext function_argsContext,

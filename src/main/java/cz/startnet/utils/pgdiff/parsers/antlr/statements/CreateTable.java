@@ -33,17 +33,19 @@ public class CreateTable extends ParserAbstract {
             return null;
         }
         PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()), "");
-
+        List<String> sequences = new ArrayList<>();
         for (Table_column_defContext colCtx : ctx.table_col_def) {
             for (PgConstraint constr : getConstraint(colCtx)) {
                 constr.setTableName(name);
                 table.addConstraint(constr);                
             }
             if (colCtx.table_column_definition()!=null) {
-                table.addColumn(getColumn(colCtx.table_column_definition()));
+                table.addColumn(getColumn(colCtx.table_column_definition(), sequences));
             }
         }
-        
+        for (String seq : sequences) {
+        table.addSequence(seq);
+        }
         if (ctx.paret_table != null) {
             for (Schema_qualified_nameContext nameInher : ctx.paret_table.names_references().name) {
                 table.addInherits(getSchemaName(nameInher), getName(nameInher));
