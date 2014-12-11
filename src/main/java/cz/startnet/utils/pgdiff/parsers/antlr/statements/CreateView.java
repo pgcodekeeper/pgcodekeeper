@@ -179,7 +179,7 @@ public class CreateView extends ParserAbstract {
                     String unaliased = tableAliases.get(column.table);
                     if (unaliased != null) {
                         column = new GenericColumn(ParserUtils.getSchemaName(
-                                unaliased, new PgDatabase()),
+                                unaliased, db),
                                 ParserUtils.getObjectName(unaliased),
                                 column.column);
                     }

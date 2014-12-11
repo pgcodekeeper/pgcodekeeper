@@ -30,9 +30,8 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
  * Abstract Class contents common operations for parsing
  */
 public abstract class ParserAbstract {
-    private final PgDatabase db;
+    protected final PgDatabase db;
     private final Path filePath;
-    private String defSchemaName;
 
     public ParserAbstract(PgDatabase db, Path filePath) {
         this.db = db;
@@ -47,12 +46,7 @@ public abstract class ParserAbstract {
     public abstract PgStatement getObject();
 
     protected String getDefSchemaName() {
-        return defSchemaName;
-    }
-
-    public ParserAbstract setDefSchemaName(String defSchemaName) {
-        this.defSchemaName = defSchemaName;
-        return this;
+        return db.getDefaultSchema().getName();
     }
 
     /**

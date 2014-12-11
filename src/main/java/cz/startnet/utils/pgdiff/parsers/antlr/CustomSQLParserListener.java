@@ -42,14 +42,12 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.Set;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgSet;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CustomSQLParserListener extends SQLParserBaseListener {
 
     private PgDatabase db;
     private Path filePath;
     private List<PgObjLocation> alterObjects;
-    private String schemaName = "public";
 
     public CustomSQLParserListener(List<PgObjLocation> alterObjects,
             PgDatabase database, Path filePath) {
@@ -60,45 +58,45 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
 
     @Override
     public void exitCreate_table_statement(Create_table_statementContext ctx) {
-        new CreateTable(ctx, db, filePath).setDefSchemaName(schemaName).getObject();
+        new CreateTable(ctx, db, filePath).getObject();
     }
 
     @Override
     public void exitIndex_statement(Index_statementContext ctx) {
-        new CreateIndex(ctx, db, filePath).setDefSchemaName(schemaName).getObject();
+        new CreateIndex(ctx, db, filePath).getObject();
     }
     
     @Override
     public void exitCreate_extension_statement(
             Create_extension_statementContext ctx) {
-        new CreateExtension(ctx, db, filePath).setDefSchemaName(schemaName).getObject();
+        new CreateExtension(ctx, db, filePath).getObject();
     }
     
     @Override
     public void exitCreate_trigger_statement(Create_trigger_statementContext ctx) {
-        new CreateTrigger(ctx, db, filePath).setDefSchemaName(schemaName).getObject();
+        new CreateTrigger(ctx, db, filePath).getObject();
     }
     
     @Override
     public void exitCreate_function_statement(
             Create_function_statementContext ctx) {
-        new CreateFunction(ctx, db, filePath).setDefSchemaName(schemaName).getObject();
+        new CreateFunction(ctx, db, filePath).getObject();
     }
     
     @Override
     public void exitCreate_sequence_statement(
             Create_sequence_statementContext ctx) {
-        new CreateSequence(ctx, db, filePath).setDefSchemaName(schemaName).getObject();
+        new CreateSequence(ctx, db, filePath).getObject();
     }
     
     @Override
     public void exitCreate_schema_statement(Create_schema_statementContext ctx) {
-        new CreateSchema(ctx, db, filePath).setDefSchemaName(schemaName).getObject();
+        new CreateSchema(ctx, db, filePath).getObject();
     }
     
     @Override
     public void exitCreate_view_statement(Create_view_statementContext ctx) {
-        new CreateView(ctx, db, filePath).setDefSchemaName(schemaName).getObject();
+        new CreateView(ctx, db, filePath).getObject();
     }
     
     @Override
@@ -122,7 +120,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         PgSet set = (PgSet)new Set(ctx, db, filePath).getObject();
         if (set.getParam().equalsIgnoreCase("search_path")) {
             for (String value : set.getValues()) {
-                schemaName = value;
+                db.setDefaultSchema(value);
                 break;
             }
         }
@@ -130,20 +128,20 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     
     @Override
     public void exitRule_common(Rule_commonContext ctx) {
-        new CreateRule(ctx, db, filePath).setDefSchemaName(schemaName).getObject();
+        new CreateRule(ctx, db, filePath).getObject();
     }
     
     @Override
     public void exitAlter_function_statement(Alter_function_statementContext ctx) {
         PgObjLocation loc = new PgObjLocation(new AlterFunction(ctx, db, filePath).getObject(), 0, Paths.get("/"));
-        loc.setSchemaName(schemaName);
+        loc.setSchemaName(db.getDefaultSchema().getName());
         alterObjects.add(loc);
     }
     
     @Override
     public void exitAlter_schema_statement(Alter_schema_statementContext ctx) {
         PgObjLocation loc = new PgObjLocation(new AlterSchema(ctx, db, filePath).getObject(), 0, Paths.get("/"));
-        loc.setSchemaName(schemaName);
+        loc.setSchemaName(db.getDefaultSchema().getName());
         alterObjects.add(loc);
     }
     
@@ -155,21 +153,21 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitAlter_table_statement(Alter_table_statementContext ctx) {
         PgObjLocation loc = new PgObjLocation(new AlterTable(ctx, db, filePath).getObject(), 0, Paths.get("/"));
-        loc.setSchemaName(schemaName);
+        loc.setSchemaName(db.getDefaultSchema().getName());
         alterObjects.add(loc);
     }
     
     @Override
     public void exitAlter_sequence_statement(Alter_sequence_statementContext ctx) {
         PgObjLocation loc = new PgObjLocation(new AlterSequence(ctx, db, filePath).getObject(), 0, Paths.get("/"));
-        loc.setSchemaName(schemaName);
+        loc.setSchemaName(db.getDefaultSchema().getName());
         alterObjects.add(loc);
     }
     
     @Override
     public void exitAlter_view_statement(Alter_view_statementContext ctx) {
         PgObjLocation loc = new PgObjLocation(new AlterView(ctx, db, filePath).getObject(), 0, Paths.get("/"));
-        loc.setSchemaName(schemaName);
+        loc.setSchemaName(db.getDefaultSchema().getName());
         alterObjects.add(loc);
     }
 }
