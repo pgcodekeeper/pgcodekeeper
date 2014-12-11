@@ -14,6 +14,7 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -43,28 +44,27 @@ public class SqlParserMain {
         PgDatabase database = new PgDatabase();
         List<PgObjLocation> alterObjects = new ArrayList<>();
         List<String> paths = new ArrayList<>();
-//        paths = getPathsToFiles(pathToFile);
-//        pathToFile = "/home/botov_av/workspace/codekeeper/apgdiff/src/test/resources/cz/startnet/utils/pgdiff/loader";
-//        paths = getPathsToFiles(pathToFile);
-//        paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/test/resources/cz/startnet/utils/pgdiff/loader/schema_17.sql");
-        long timeout= System.currentTimeMillis();
-//        paths.add("/home/botov_av/workspace/pg_dump_folder/maindb_dev2.sql");
-//        paths.add("/home/botov_av/workspace/codekeeper/tmp_dump_9221153347570520215.sql");
-//         paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/first_part.sql");
-         paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/second_part.sql");
-//         paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/third_part.sql");
+        // paths = getPathsToFiles(pathToFile);
+        // pathToFile =
+        // "/home/botov_av/workspace/codekeeper/apgdiff/src/test/resources/cz/startnet/utils/pgdiff/loader";
+        // paths = getPathsToFiles(pathToFile);
+        // paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/test/resources/cz/startnet/utils/pgdiff/loader/schema_17.sql");
+        long timeout = System.currentTimeMillis();
+        // paths.add("/home/botov_av/workspace/pg_dump_folder/maindb_dev2.sql");
+        // paths.add("/home/botov_av/workspace/codekeeper/tmp_dump_9221153347570520215.sql");
+        // paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/first_part.sql");
+        paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/second_part.sql");
+        // paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr/third_part.sql");
         for (String path : paths) {
             if (path.endsWith("diff.sql")) {
                 continue;
             }
-            new SqlParserMain().testSampleInputs(
-                    Files.newInputStream(Paths
-                            .get(path)),
-                    new CustomSQLParserListener(alterObjects, database, Paths
-                            .get(path)));
+            new SqlParserMain().testSampleInputs(Files.newInputStream(Paths
+                    .get(path)), new CustomSQLParserListener(alterObjects,
+                    database, Paths.get(path)));
         }
-//        fillDB(alterObjects, database);
-        System.out.println((System.currentTimeMillis() - timeout)/1000);
+        // fillDB(alterObjects, database);
+        System.out.println((System.currentTimeMillis() - timeout) / 1000);
     }
 
     public static void fillDB(PgDatabase database) {
@@ -132,10 +132,10 @@ public class SqlParserMain {
 
         for (PgObjLocation schema : schemas) {
             PgSchema exists = database.getSchema(schema.getObj().getName());
-            if(exists == null) {
-                database.addSchema((PgSchema)schema.getObj());
+            if (exists == null) {
+                database.addSchema((PgSchema) schema.getObj());
             } else {
-                database.tryReplacePublicDef((PgSchema)schema.getObj());
+                database.tryReplacePublicDef((PgSchema) schema.getObj());
             }
         }
         for (PgObjLocation extension : extensions) {
@@ -187,15 +187,13 @@ public class SqlParserMain {
         for (PgObjLocation comment : comments) {
             String obj_name = ((PgComment) comment.getObj()).getObjName();
             String commentText = ((PgComment) comment.getObj()).getComment();
-            boolean found = false;
             for (PgExtension ext : database.getExtensions()) {
                 if (ext.getBareName().equals(obj_name)) {
                     ext.setComment(commentText);
-                    found = true;
                 }
             }
 
-            if (!found) {
+            if (((PgComment) comment.getObj()).getType() != DbObjType.EXTENSION) {
                 for (PgSchema schema : database.getSchemas()) {
                     if (schema.getBareName().equals(obj_name)) {
                         schema.setComment(commentText);
@@ -241,73 +239,67 @@ public class SqlParserMain {
         for (PgObjLocation revoke : revokes) {
             PgRuleCommon rule = (PgRuleCommon) revoke.getObj();
             String obj_name = rule.getObjName();
-            PgPrivilege privilege = new PgPrivilege(rule.isRevoke(), rule.getBody(), rule.getRawStatement());
-            boolean found = false;
-            for (PgExtension ext : database.getExtensions()) {
-                if (ext.getBareName().equals(obj_name)) {
-                    ext.addPrivilege(privilege);
-                    found = true;
-                }
-            }
+            PgPrivilege privilege = new PgPrivilege(rule.isRevoke(),
+                    rule.getBody(), rule.getRawStatement());
 
-            if (!found) {
-                lable: for (PgSchema schema : database.getSchemas()) {
-                    if (schema.getBareName().equals(obj_name)) {
-                        schema.addPrivilege(privilege);
+            lable: for (PgSchema schema : database.getSchemas()) {
+                if (schema.getBareName().equals(obj_name)) {
+                    schema.addPrivilege(privilege);
+                    break lable;
+                }
+                for (PgFunction function : schema.getFunctions()) {
+                    if (function.getSignature().equals(obj_name)) {
+                        function.addPrivilege(privilege);
                         break lable;
                     }
-                    for (PgFunction function : schema.getFunctions()) {
-                        if (function.getSignature().equals(obj_name)) {
-                            function.addPrivilege(privilege);
+                }
+                for (PgSequence sequence : schema.getSequences()) {
+                    if (sequence.getBareName().equals(obj_name)) {
+                        sequence.addPrivilege(privilege);
+                        break lable;
+                    }
+                }
+                for (PgView view : schema.getViews()) {
+                    if (view.getBareName().equals(obj_name)) {
+                        view.addPrivilege(privilege);
+                        break lable;
+                    }
+                }
+                for (PgTable table : schema.getTables()) {
+                    if (table.getBareName().equals(obj_name)) {
+                        table.addPrivilege(privilege);
+                        break lable;
+                    }
+                    for (PgIndex index : table.getIndexes()) {
+                        if (index.getBareName().equals(obj_name)) {
+                            index.addPrivilege(privilege);
                             break lable;
                         }
                     }
-                    for (PgSequence sequence : schema.getSequences()) {
-                        if (sequence.getBareName().equals(obj_name)) {
-                            sequence.addPrivilege(privilege);
+                    for (PgTrigger trigger : table.getTriggers()) {
+                        if (trigger.getBareName().equals(obj_name)) {
+                            trigger.addPrivilege(privilege);
                             break lable;
                         }
                     }
-                    for (PgView view : schema.getViews()) {
-                        if (view.getBareName().equals(obj_name)) {
-                            view.addPrivilege(privilege);
+                    for (PgConstraint constr : table.getConstraints()) {
+                        if (constr.getBareName().equals(obj_name)) {
+                            constr.addPrivilege(privilege);
                             break lable;
-                        }
-                    }
-                    for (PgTable table : schema.getTables()) {
-                        if (table.getBareName().equals(obj_name)) {
-                            table.addPrivilege(privilege);
-                            break lable;
-                        }
-                        for (PgIndex index : table.getIndexes()) {
-                            if (index.getBareName().equals(obj_name)) {
-                                index.addPrivilege(privilege);
-                                break lable;
-                            }
-                        }
-                        for (PgTrigger trigger : table.getTriggers()) {
-                            if (trigger.getBareName().equals(obj_name)) {
-                                trigger.addPrivilege(privilege);
-                                break lable;
-                            }
-                        }
-                        for (PgConstraint constr : table.getConstraints()) {
-                            if (constr.getBareName().equals(obj_name)) {
-                                constr.addPrivilege(privilege);
-                                break lable;
-                            }
                         }
                     }
                 }
             }
         }
     }
-   
-    public static void fillAlterObjects(List<PgObjLocation> alterObjects, PgDatabase database) {
+
+    public static void fillAlterObjects(List<PgObjLocation> alterObjects,
+            PgDatabase database) {
         for (PgObjLocation obj : alterObjects) {
             if (obj.getObj() instanceof PgFunction) {
-                PgFunction func = (PgFunction)obj.getObj();
-                PgFunction function = database.getSchema(obj.getSchemaName()).getFunction(func.getSignature());
+                PgFunction func = (PgFunction) obj.getObj();
+                PgFunction function = database.getSchema(obj.getSchemaName())
+                        .getFunction(func.getSignature());
                 if (function != null) {
                     function.setOwner(func.getOwner());
                 }
@@ -319,9 +311,10 @@ public class SqlParserMain {
                 }
             } else if (obj.getObj() instanceof PgTable) {
                 PgTable tabl = (PgTable) obj.getObj();
-                PgTable table = database.getSchema(obj.getSchemaName()).getTable(tabl.getName());
+                PgTable table = database.getSchema(obj.getSchemaName())
+                        .getTable(tabl.getName());
                 if (table != null) {
-                    if( tabl.getOwner()!= null) {
+                    if (tabl.getOwner() != null) {
                         table.setOwner(tabl.getOwner());
                     }
                     if (tabl.getClusterIndexName() != null) {
@@ -330,7 +323,7 @@ public class SqlParserMain {
                     if (tabl.getWith() != null) {
                         table.setWith(tabl.getWith());
                     }
-                    for (PgConstraint constr: tabl.getConstraints()) {
+                    for (PgConstraint constr : tabl.getConstraints()) {
                         if (table.getConstraint(constr.getName()) == null) {
                             constr.dropParent();
                             table.addConstraint(constr);
@@ -344,7 +337,7 @@ public class SqlParserMain {
                             if (col.getStatistics() != null) {
                                 column.setStatistics(col.getStatistics());
                             }
-                            if (col.getDefaultValue() !=null) {
+                            if (col.getDefaultValue() != null) {
                                 column.setDefaultValue(col.getDefaultValue());
                             }
                         }
@@ -364,8 +357,8 @@ public class SqlParserMain {
                 }
             } else if (obj.getObj() instanceof PgView) {
                 PgView vie = (PgView) obj.getObj();
-                PgView view = database.getSchema(obj.getSchemaName())
-                        .getView(vie.getName());
+                PgView view = database.getSchema(obj.getSchemaName()).getView(
+                        vie.getName());
                 if (view != null) {
                     for (DefaultValue col : view.getDefaultValues()) {
                         if (!vie.getDefaultValues().contains(col)) {
@@ -377,10 +370,10 @@ public class SqlParserMain {
                     }
                 }
             }
-            
+
         }
     }
-    
+
     public void testSampleInputs(InputStream inputStream,
             CustomSQLParserListener listener) throws IOException {
 
@@ -392,12 +385,12 @@ public class SqlParserMain {
         SQLParser parser = new SQLParser(tokens);
         parser.removeErrorListeners();
         parser.addErrorListener(CustomErrorListener.INSTATANCE);
-//        parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
-//        parser.addErrorListener(new DiagnosticErrorListener());
+        // parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
+        // parser.addErrorListener(new DiagnosticErrorListener());
         ParseTreeWalker walker = new ParseTreeWalker();
-        
+
         walker.walk(listener, parser.sql());
-//         System.out.println(CustomErrorListener.INSTATANCE.errors);
+        // System.out.println(CustomErrorListener.INSTATANCE.errors);
     }
 
     private static List<String> getPathsToFiles(String root) throws IOException {

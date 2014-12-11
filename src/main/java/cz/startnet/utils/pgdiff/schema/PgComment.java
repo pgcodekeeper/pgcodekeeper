@@ -1,4 +1,7 @@
 package cz.startnet.utils.pgdiff.schema;
+
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+
 /**
  * This is a support class for comment objects, it doesn't have name and should 
  * not be used in objects database 
@@ -7,6 +10,7 @@ public class PgComment extends PgStatement {
  
     private String comment;
     private String objName;
+    private DbObjType type;
     
     public PgComment(String rawStatement) {
         super("", rawStatement);
@@ -78,5 +82,13 @@ public class PgComment extends PgStatement {
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         result = prime * result + ((objName == null) ? 0 : objName.hashCode());
         return result;
+    }
+
+    public DbObjType getType() {
+        return type;
+    }
+
+    public void setType(DbObjType type) {
+        this.type = type;
     }
 }

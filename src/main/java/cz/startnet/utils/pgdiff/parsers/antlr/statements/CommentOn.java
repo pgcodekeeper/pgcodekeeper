@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgComment;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -24,6 +25,12 @@ public class CommentOn extends ParserAbstract {
             comment.setObjName(func.getSignature());
         } else if (ctx.name != null) {
             comment.setObjName(getName(ctx.name));
+        }
+        if (ctx.EXTENSION() != null) {
+            comment.setType(DbObjType.EXTENSION);
+        } else {
+            // для того чтобы выделить расширения в отдельную группу, т.к. их имена могут совпадать с именами схемы
+            comment.setType(DbObjType.SCHEMA);
         }
         comment.setComment(ctx.comment_text.getText());
         fillObjLocation(comment, ctx.comment_text.getStartIndex(), getDefSchemaName());
