@@ -33,8 +33,9 @@ class PgDiffStatement {
         DROP_TABLE("^DROP[\\s]+TABLE.+"),
         
         ALTER_COLUMN(ALTER_TABLE_PATTERN
-                // match 'ALTER COLUMN' or 'ALTER column_name'
-                + "ALTER[\\s]+([\\w]+).+"),
+                // match ALTER [ COLUMN ] column_name [ SET DATA ] TYPE data_type
+                + "ALTER[\\s]+(COLUMN[\\s]+)?([\\w]+[\\s]+)"
+                + "(SET[\\s]+DATA[\\s]+)?(TYPE).+"),
                 
         DROP_COLUMN(ALTER_TABLE_PATTERN
                 // match 'DROP COLUMN' or 'DROP column_name'
