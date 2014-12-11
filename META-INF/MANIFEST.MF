@@ -7,9 +7,13 @@ Bundle-Activator: ru.taximaxim.codekeeper.ui.tests.Activator
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: cz.startnet.utils.pgdiff.loader,
  cz.startnet.utils.pgdiff.schema,
+ org.eclipse.core.runtime;version="3.4.0",
  org.eclipse.core.runtime.preferences;version="3.3.0",
+ org.eclipse.jface.operation,
  org.osgi.framework,
  org.osgi.service.prefs;version="1.1.1",
+ ru.taximaxim.codekeeper.apgdiff,
+ ru.taximaxim.codekeeper.apgdiff.model.difftree,
  ru.taximaxim.codekeeper.apgdiff.model.exporter
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.junit,
