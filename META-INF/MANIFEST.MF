@@ -5,3 +5,4 @@ Bundle-SymbolicName: ru.taximaxim.codekeeper.ui.tests;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: ru.taximaxim.codekeeper.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.junit
