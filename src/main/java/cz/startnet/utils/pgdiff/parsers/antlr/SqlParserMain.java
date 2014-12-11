@@ -1,5 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
+import java.awt.MultipleGradientPaint.ColorSpaceType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
@@ -185,15 +186,16 @@ public class SqlParserMain {
                     (PgView) view.getObj());
         }
         for (PgObjLocation comment : comments) {
-            String obj_name = ((PgComment) comment.getObj()).getObjName();
-            String commentText = ((PgComment) comment.getObj()).getComment();
+            PgComment comm = ((PgComment) comment.getObj());
+            String obj_name = comm.getObjName();
+            String commentText = comm.getComment();
             for (PgExtension ext : database.getExtensions()) {
                 if (ext.getBareName().equals(obj_name)) {
                     ext.setComment(commentText);
                 }
             }
 
-            if (((PgComment) comment.getObj()).getType() != DbObjType.EXTENSION) {
+            if (comm.getType() != DbObjType.EXTENSION) {
                 for (PgSchema schema : database.getSchemas()) {
                     if (schema.getBareName().equals(obj_name)) {
                         schema.setComment(commentText);
@@ -214,7 +216,15 @@ public class SqlParserMain {
                         }
                     }
                     for (PgTable table : schema.getTables()) {
-                        if (table.getBareName().equals(obj_name)) {
+                        if (comm.getType() == DbObjType.COLUMN) {
+                            if (table.getBareName().equals(comm.getTableName())) {
+                                for (PgColumn col : table.getColumns()) {
+                                    if (col.getName().equals(obj_name)) {
+                                        col.setComment(commentText);
+                                    }
+                                }
+                            }
+                        } else if (table.getBareName().equals(obj_name)) {
                             table.setComment(commentText);
                         }
                         for (PgIndex index : table.getIndexes()) {

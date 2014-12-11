@@ -10,6 +10,8 @@ public class PgComment extends PgStatement {
  
     private String comment;
     private String objName;
+    // used for column to find required table
+    private String tableName;
     private DbObjType type;
     
     public PgComment(String rawStatement) {
@@ -90,5 +92,13 @@ public class PgComment extends PgStatement {
 
     public void setType(DbObjType type) {
         this.type = type;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
     }
 }

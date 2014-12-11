@@ -23,15 +23,16 @@ public class CommentOn extends ParserAbstract {
             PgFunction func = new PgFunction(getName(ctx.name),null, null);
             fillArguments(ctx.function_args(), func);
             comment.setObjName(func.getSignature());
-        } else if (ctx.name != null) {
+        } else if (ctx.COLUMN() != null){
+            comment.setType(DbObjType.COLUMN);
+            comment.setObjName(getName(ctx.name));
+            comment.setTableName(getTableName(ctx.name));
+        }else if (ctx.name != null) {
             comment.setObjName(getName(ctx.name));
         }
         if (ctx.EXTENSION() != null) {
             comment.setType(DbObjType.EXTENSION);
-        } else {
-            // для того чтобы выделить расширения в отдельную группу, т.к. их имена могут совпадать с именами схемы
-            comment.setType(DbObjType.SCHEMA);
-        }
+        } 
         comment.setComment(ctx.comment_text.getText());
         fillObjLocation(comment, ctx.comment_text.getStartIndex(), getDefSchemaName());
         return comment;
