@@ -5,3 +5,5 @@
 /SQLParser.tokens
 /SQLParser.java
 /SqlParserMain.java
+/SQLParserVisitor.java
+/SQLParserBaseVisitor.java
