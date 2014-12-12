@@ -30,7 +30,6 @@ public class PgSchema extends PgStatement {
 
     private String authorization;
     private String definition;
-    private String comment;
 
     public PgSchema(String name, String rawStatement) {
         super(name, rawStatement);
@@ -43,14 +42,6 @@ public class PgSchema extends PgStatement {
 
     public String getAuthorization() {
         return authorization;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     public String getDefinition() {

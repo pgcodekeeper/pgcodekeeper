@@ -165,7 +165,7 @@ public class ModelExporter {
                 deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
                 
                 PgSchema newParentSchema = newDb.getSchema(st.getParent().getName());
-                List<PgFunction> funcsToExport = new ArrayList<PgFunction>();
+                List<PgFunction> funcsToExport = new ArrayList<>();
                 
                 String targetFuncFileName = getExportedFilename(st);
                 
@@ -214,7 +214,7 @@ public class ModelExporter {
                 deleteFileIfExists(outDir, getRelativeFilePath(stInNew, true), el);
                 
                 PgSchema newParentSchema = newDb.getSchema(stInNew.getParent().getName());
-                List<PgFunction> funcsToExport = new ArrayList<PgFunction>();
+                List<PgFunction> funcsToExport = new ArrayList<>();
                 
                 String targetFuncFileName = getExportedFilename(stInNew);
                 

@@ -93,7 +93,7 @@ public final class ParserUtils {
         if (string.indexOf('"') == -1) {
             return string.split(Pattern.quote("."));
         } else {
-            final List<String> strings = new ArrayList<String>(3);
+            final List<String> strings = new ArrayList<>(3);
             int startPos = 0;
 
             while (true) {

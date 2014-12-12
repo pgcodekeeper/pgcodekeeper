@@ -23,27 +23,17 @@ public class PgDatabase extends PgStatement {
      */
     private PgSchema defaultSchema;
     
-    private final List<PgSchema> schemas = new ArrayList<PgSchema>(1);
-    private final List<PgExtension> extensions = new ArrayList<PgExtension>();
+    private final List<PgSchema> schemas = new ArrayList<>();
+    private final List<PgExtension> extensions = new ArrayList<>();
     
-    private final List<String> ignoredStatements = new ArrayList<String>();
-    private final List<String> ignoredDataStatements = new ArrayList<String>();
+    private final List<String> ignoredStatements = new ArrayList<>();
+    private final List<String> ignoredDataStatements = new ArrayList<>();
     
-    private String comment;
-
     public PgDatabase() {
         super("DB_name_placeholder", null);
         
         addSchema(new PgSchema(ApgdiffConsts.PUBLIC, null));
         defaultSchema = schemas.get(0);
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     public void setDefaultSchema(final String name) {

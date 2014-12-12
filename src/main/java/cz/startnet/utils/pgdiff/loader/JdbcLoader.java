@@ -68,17 +68,15 @@ public class JdbcLoader implements PgCatalogStrings {
     private PreparedStatement prepStatIndecies;
     private PreparedStatement prepStatColumnsOfSchema;
     
-    private Map<Long, String> cachedRolesNamesByOid = new HashMap<Long, String>();
-    private Map<Long, PgType> cachedTypeNamesByOid = new HashMap<Long, PgType>();
+    private Map<Long, String> cachedRolesNamesByOid = new HashMap<>();
+    private Map<Long, PgType> cachedTypeNamesByOid = new HashMap<>();
     /*
      * Stores cached results of query "SELECT typmodout(colTypeMod)" for types.<br>
      * Key is the oid of pg_catalog.pg_type table. Inner map stores pairs of colTypeMod 
      * and result of "SELECT typmodout(colTypeMod)" query.
      */
-    private Map<Long, Map<Integer,String>> cachedTypesTypmodouts = 
-            new HashMap<Long, Map<Integer,String>>();
-    private Map<Long, Map<Integer, String>> cachedColumnNamesByTableOid = 
-            new HashMap<Long, Map<Integer,String>>();
+    private Map<Long, Map<Integer,String>> cachedTypesTypmodouts = new HashMap<>();
+    private Map<Long, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<>();
     
     private Connection connection;
     private JdbcConnector connector;
@@ -586,7 +584,7 @@ public class JdbcLoader implements PgCatalogStrings {
                             typMod = resTypMod.getString(1);
                             // cache queried values 
                             if (typeAvailableModes == null){
-                                typeAvailableModes = new HashMap<Integer, String>();
+                                typeAvailableModes = new HashMap<>();
                                 typeAvailableModes.put(colTypeMod[i], typMod);
                                 cachedTypesTypmodouts.put(colTypes[i], typeAvailableModes);
                             }else{
@@ -1021,7 +1019,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             List<String> grantValues = grant.grantValues;
             if (column != null && !column.isEmpty()){
-                grantValues = new ArrayList<String>(grant.grantValues.size());
+                grantValues = new ArrayList<>(grant.grantValues.size());
                 for (String plainGrant : grant.grantValues){
                     grantValues.add(plainGrant + column);
                 }
@@ -1055,7 +1053,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 String columnName = res.getString("attname");
                 if (!previousTableOid.equals(tableOid)){
                     previousTableOid = tableOid;
-                    previousMap = new HashMap<Integer, String>();
+                    previousMap = new HashMap<>();
                     previousMap.put(columnNumber, columnName);
                     cachedColumnNamesByTableOid.put(tableOid, previousMap);
                 }else{
@@ -1080,7 +1078,7 @@ public class JdbcLoader implements PgCatalogStrings {
             try(    Statement st = connection.createStatement();
                     ResultSet res = st.executeQuery("SELECT attname, attnum FROM "
                             + "pg_catalog.pg_attribute WHERE attrelid = " + tableOid);){
-                tableColumns = new HashMap<Integer, String>();
+                tableColumns = new HashMap<>();
                 while(res.next()){
                     tableColumns.put(res.getInt("attnum"), res.getString("attname"));
                 }

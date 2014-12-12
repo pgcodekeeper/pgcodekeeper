@@ -109,7 +109,7 @@ public final class PgDiffIndexes {
      */
     private static List<PgIndex> getDropIndexes(final PgTable oldTable,
             final PgTable newTable) {
-        final List<PgIndex> list = new ArrayList<PgIndex>();
+        final List<PgIndex> list = new ArrayList<>();
 
         if (newTable != null && oldTable != null) {
             for (final PgIndex index : oldTable.getIndexes()) {
@@ -133,7 +133,7 @@ public final class PgDiffIndexes {
      */
     private static List<PgIndex> getNewIndexes(final PgTable oldTable,
             final PgTable newTable) {
-        final List<PgIndex> list = new ArrayList<PgIndex>();
+        final List<PgIndex> list = new ArrayList<>();
 
         if (newTable != null) {
             if (oldTable == null) {

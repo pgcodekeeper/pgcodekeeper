@@ -23,7 +23,6 @@ public class PgSequence extends PgStatementWithSearchPath {
     private String startWith;
     private boolean cycle;
     private String ownedBy;
-    private String comment;
 
     public PgSequence(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
@@ -36,14 +35,6 @@ public class PgSequence extends PgStatementWithSearchPath {
 
     public String getCache() {
         return cache;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     @Override

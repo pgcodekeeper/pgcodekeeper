@@ -61,7 +61,7 @@ public final class PrivilegeParser {
             
             columns(p);
         } else {
-            Set<String> roles = new HashSet<String>(Arrays.asList(ROLES));
+            Set<String> roles = new HashSet<>(Arrays.asList(ROLES));
             do {
                 String role = p.expectOneOf(roles.toArray(new String[roles.size()]));
                 // prohibit multiple entries of the same role

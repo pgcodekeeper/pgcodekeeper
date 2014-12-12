@@ -259,7 +259,7 @@ public final class PgDiff {
                 boolean alreadyProcessed = result.contains(dependant);
                 if (alreadyProcessed) {
                     DepthFirstIterator<PgStatement, DefaultEdge> iter = 
-                            new DepthFirstIterator<PgStatement, DefaultEdge>(graph.getReversedGraph(), dependant);
+                            new DepthFirstIterator<>(graph.getReversedGraph(), dependant);
                     while(iter.hasNext()){
                         PgStatement next = iter.next();
                         result.remove(next);
@@ -584,7 +584,7 @@ public final class PgDiff {
             PgStatement fullStatement, PgStatement previous){
         
         // order is insignificant, if we do firstLevelSearchOnly
-        Set<PgStatement> dependencies = new HashSet<PgStatement>();
+        Set<PgStatement> dependencies = new HashSet<>();
         getDependenciesSet(fullStatement, dependencies, true);
         
         for (PgStatement dep : dependencies){

@@ -103,7 +103,7 @@ public final class PgDiffTriggers {
      */
     private static List<PgTrigger> getDropTriggers(final PgTable oldTable,
             final PgTable newTable) {
-        final List<PgTrigger> list = new ArrayList<PgTrigger>();
+        final List<PgTrigger> list = new ArrayList<>();
 
         if (newTable != null && oldTable != null) {
             checkTrgExists(newTable, oldTable, list);
@@ -122,7 +122,7 @@ public final class PgDiffTriggers {
      */
     private static List<PgTrigger> getNewTriggers(final PgTable oldTable,
             final PgTable newTable) {
-        final List<PgTrigger> list = new ArrayList<PgTrigger>();
+        final List<PgTrigger> list = new ArrayList<>();
 
         if (newTable != null) {
             if (oldTable == null) {

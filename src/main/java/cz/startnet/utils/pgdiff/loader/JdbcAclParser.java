@@ -49,7 +49,7 @@ public class JdbcAclParser {
             return privileges;
         }
         
-        ArrayList<String> acls = new ArrayList<String>(
+        ArrayList<String> acls = new ArrayList<>(
                 Arrays.asList(aclArrayAsString.replaceAll("[{}]", "").split(Pattern.quote(","))));
         
         // move owner's grants to front

@@ -19,14 +19,12 @@ public abstract class PgStatement {
      * The statement as it's been read from dump before parsing.
      */
     private final String rawStatement;
-    
     protected final String name;
+    protected String owner;
+    protected String comment;
+    protected final List<PgPrivilege> privileges = new ArrayList<>();
     
     private PgStatement parent;
-    
-    protected final List<PgPrivilege> privileges = new ArrayList<>(1);
-
-    protected String owner;
     
     private volatile int hash;
     private volatile boolean hashComputed;
@@ -49,6 +47,14 @@ public abstract class PgStatement {
      */
     public final String getBareName() {
         return name;
+    }
+    
+    public final String getComment() {
+        return comment;
+    }
+    
+    public final void setComment(String comment) {
+        this.comment = comment;
     }
 
     public PgStatement getParent() {

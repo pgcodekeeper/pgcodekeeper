@@ -188,7 +188,7 @@ public final class PgDiffTables {
     private static void addAlterStatistics(final PgDiffScript script,
             final PgTable oldTable, final PgTable newTable,
             final SearchPathHelper searchPathHelper) {
-        final Map<String, Integer> stats = new HashMap<String, Integer>();
+        final Map<String, Integer> stats = new HashMap<>();
 
         for (final PgColumn newColumn : newTable.getColumns()) {
             final PgColumn oldColumn = oldTable.getColumn(newColumn.getName());
@@ -362,7 +362,7 @@ public final class PgDiffTables {
                 // get dependent PgViews of this column, add them in pairs 
                 // <dependant, reason> to the map if dependent PgView is not 
                 // contained in there
-                Set<PgStatement> dependants = new LinkedHashSet<PgStatement>();
+                Set<PgStatement> dependants = new LinkedHashSet<>();
                 for (PgStatement dependant : PgDiff.getDependantsSet(oldColumn, dependants)){
                     if ((dependant instanceof PgView || dependant instanceof PgForeignKey)
                             && !statementsToDrop.containsKey(dependant)){

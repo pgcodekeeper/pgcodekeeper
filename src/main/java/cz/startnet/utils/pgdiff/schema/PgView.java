@@ -23,10 +23,9 @@ public class PgView extends PgStatementWithSearchPath {
     private String query;
     private String normalizedQuery;
     private PgSelect select;
-    private List<String> columnNames = new ArrayList<>(1);
-    private final List<DefaultValue> defaultValues = new ArrayList<DefaultValue>(0);
-    private final List<ColumnComment> columnComments = new ArrayList<ColumnComment>(0);
-    private String comment;
+    private List<String> columnNames = new ArrayList<>();
+    private final List<DefaultValue> defaultValues = new ArrayList<>();
+    private final List<ColumnComment> columnComments = new ArrayList<>();
 
     public PgView(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
@@ -44,14 +43,6 @@ public class PgView extends PgStatementWithSearchPath {
      */
     public List<String> getColumnNames() {
         return Collections.unmodifiableList(columnNames);
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     @Override

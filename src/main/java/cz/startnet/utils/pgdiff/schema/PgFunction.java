@@ -22,19 +22,10 @@ public class PgFunction extends PgStatementWithSearchPath {
 
     private final List<Argument> arguments = new ArrayList<>();
     private String body;
-    private String comment;
     private String returns;
     
     public PgFunction(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     @Override

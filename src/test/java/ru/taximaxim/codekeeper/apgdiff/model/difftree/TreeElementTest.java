@@ -68,7 +68,7 @@ public class TreeElementTest {
 
         TreeElement treeFull = DiffTree.create(dbFull, new PgDatabase());
         
-        Set<TreeElement> checked = new HashSet<TreeElement>();
+        Set<TreeElement> checked = new HashSet<>();
         visitAndFindNew(treeFull, checked);
         
         TreeElement treeFiltered = treeFull.getFilteredCopy(checked);

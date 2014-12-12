@@ -23,7 +23,7 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class DepcyTreeExtender {
-    private final Set<PgStatement> dependantsOfDeleted = new HashSet<>(5);
+    private final Set<PgStatement> dependantsOfDeleted = new HashSet<>();
     /**
      * Набор элементов дерева, которые зависят от удаленных и должны 
      * быть удалены, но не были в первоначальном фильтрованном дереве или были 

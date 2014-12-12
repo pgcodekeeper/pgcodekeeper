@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class PgSelect extends PgStatementWithSearchPath {
     
-    private final List<GenericColumn> columns = new ArrayList<>(10);
+    private final List<GenericColumn> columns = new ArrayList<>();
     
     public PgSelect(String rawStatement, String searchPath) {
         super(null, rawStatement, searchPath);

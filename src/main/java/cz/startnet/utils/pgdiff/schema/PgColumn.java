@@ -34,18 +34,9 @@ public class PgColumn extends PgStatement {
     private String type;
     private boolean nullValue = true;
     private String storage;
-    private String comment;
 
     public PgColumn(String name) {
         super(name, null);
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     public void setDefaultValue(final String defaultValue) {

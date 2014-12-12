@@ -189,7 +189,7 @@ public final class PgDiffViews {
             }
 
             final List<String> columnNames =
-                    new ArrayList<String>(newView.getColumnComments().size());
+                    new ArrayList<>(newView.getColumnComments().size());
 
             for (final PgView.ColumnComment columnComment :
                     newView.getColumnComments()) {

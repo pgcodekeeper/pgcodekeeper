@@ -25,7 +25,6 @@ public class PgConstraint extends PgStatementWithSearchPath {
 
     private String definition;
     private String tableName;
-    private String comment;
 
     public PgConstraint(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
@@ -53,14 +52,6 @@ public class PgConstraint extends PgStatementWithSearchPath {
         }
 
         return sbSQL.toString();
-    }
-    
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     public void setDefinition(final String definition) {

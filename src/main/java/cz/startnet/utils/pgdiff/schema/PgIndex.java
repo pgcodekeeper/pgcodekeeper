@@ -19,18 +19,9 @@ public class PgIndex extends PgStatementWithSearchPath {
     private String definition;
     private String tableName;
     private boolean unique;
-    private String comment;
 
     public PgIndex(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     @Override

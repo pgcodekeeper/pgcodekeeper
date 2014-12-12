@@ -39,9 +39,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
     /**
      * Optional list of columns for UPDATE event.
      */
-    private final List<String> updateColumns = new ArrayList<String>();
+    private final List<String> updateColumns = new ArrayList<>();
     private String when;
-    private String comment;
     
     public PgTrigger(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);        
@@ -54,14 +53,6 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     public boolean isBefore() {
         return before;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     @Override

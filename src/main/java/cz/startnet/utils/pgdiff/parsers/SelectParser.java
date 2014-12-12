@@ -90,7 +90,7 @@ public final class SelectParser {
     private int parens;
     
     private void parseSelectRecursive(String statement) {
-        final List<GenericColumn> columns = new ArrayList<>(10);
+        final List<GenericColumn> columns = new ArrayList<>();
         final Map<String, String> tableAliases = new HashMap<>();
         
         Parser p = new Parser(statement);

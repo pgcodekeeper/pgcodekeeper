@@ -22,14 +22,14 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  */
 public class PgTable extends PgStatementWithSearchPath {
 
-    private final List<PgColumn> columns = new ArrayList<PgColumn>();
+    private final List<PgColumn> columns = new ArrayList<>();
     private final List<Entry<String, String>> inherits = new ArrayList<>();
-    private final List<PgConstraint> constraints = new ArrayList<PgConstraint>();
-    private final List<PgIndex> indexes = new ArrayList<PgIndex>();
-    private final List<PgTrigger> triggers = new ArrayList<PgTrigger>();
+    private final List<PgConstraint> constraints = new ArrayList<>();
+    private final List<PgIndex> indexes = new ArrayList<>();
+    private final List<PgTrigger> triggers = new ArrayList<>();
     // Костыль позволяет отследить использование Sequence в выражениях вставки
     // DEFAULT (nextval)('sequenceName'::Type)
-    private final List<String> sequences = new ArrayList<String>();
+    private final List<String> sequences = new ArrayList<>();
 
     private String clusterIndexName;
     /**
@@ -38,7 +38,6 @@ public class PgTable extends PgStatementWithSearchPath {
      */
     private String with;
     private String tablespace;
-    private String comment;
     
     public PgTable(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
@@ -77,14 +76,6 @@ public class PgTable extends PgStatementWithSearchPath {
      */
     public List<PgColumn> getColumns() {
         return Collections.unmodifiableList(columns);
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     /**
@@ -288,7 +279,7 @@ public class PgTable extends PgStatementWithSearchPath {
     }
 
     public void addInherits(final String schemaName, final String tableName) {
-        inherits.add(new SimpleEntry<String, String>(schemaName, tableName));
+        inherits.add(new SimpleEntry<>(schemaName, tableName));
         resetHash();
     }
 
@@ -383,7 +374,7 @@ public class PgTable extends PgStatementWithSearchPath {
      * Returns list of columns that have statistics defined.
      */
     private List<PgColumn> getColumnsWithStatistics() {
-        final List<PgColumn> list = new ArrayList<PgColumn>();
+        final List<PgColumn> list = new ArrayList<>();
 
         for (PgColumn column : columns) {
             if (column.getStatistics() != null) {

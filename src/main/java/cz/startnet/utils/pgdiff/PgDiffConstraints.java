@@ -115,7 +115,7 @@ public final class PgDiffConstraints {
      */
     private static List<PgConstraint> getDropConstraints(final PgTable oldTable,
             final PgTable newTable, final boolean primaryKey) {
-        final List<PgConstraint> list = new ArrayList<PgConstraint>();
+        final List<PgConstraint> list = new ArrayList<>();
 
         if (newTable != null && oldTable != null) {
             for (final PgConstraint constraint : oldTable.getConstraints()) {
@@ -143,7 +143,7 @@ public final class PgDiffConstraints {
      */
     private static List<PgConstraint> getNewConstraints(final PgTable oldTable,
             final PgTable newTable, final boolean primaryKey) {
-        final List<PgConstraint> list = new ArrayList<PgConstraint>();
+        final List<PgConstraint> list = new ArrayList<>();
 
         if (newTable != null) {
             if (oldTable == null) {

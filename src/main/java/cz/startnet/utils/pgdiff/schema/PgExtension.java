@@ -14,7 +14,6 @@ public class PgExtension extends PgStatement {
     private String schema;
     private String version;
     private String oldVersion;
-    private String comment;
 
     public PgExtension(String name, String rawStatement) {
         super(name, rawStatement);
@@ -45,14 +44,6 @@ public class PgExtension extends PgStatement {
     public void setOldVersion(final String oldVersion) {
         this.oldVersion = oldVersion;
         resetHash();
-    }
-    
-    public String getComment() {
-        return comment;
-    }
-    
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
     
     @Override
