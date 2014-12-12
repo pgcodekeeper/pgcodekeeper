@@ -1,0 +1,587 @@
+package cz.startnet.utils.pgdiff;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Collection;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+@RunWith(value = Parameterized.class)
+public class MainTest {
+
+    @Parameters
+    public static Collection<?> parameters() {
+        return Arrays.asList(new ArgumentsProvider[][]{
+                                {new ArgumentsProvider_usage()},
+                                {new ArgumentsProvider_2()},
+                                {new ArgumentsProvider_3()},
+                                {new ArgumentsProvider_4()},
+                                {new ArgumentsProvider_5()},
+                                {new ArgumentsProvider_6()},
+                                {new ArgumentsProvider_7()},
+                                {new ArgumentsProvider_unsupportedDbFormat()},
+                                {new ArgumentsProvider_9()},
+                                {new ArgumentsProvider_DangerTbl()},
+                                {new ArgumentsProvider_DangerTblOk()},
+                                {new ArgumentsProvider_DangerDropCol()},
+                                {new ArgumentsProvider_DangerDropColOk()},
+                                {new ArgumentsProvider_DangerAlterCol()},
+                                {new ArgumentsProvider_DangerAlterColOk()},
+                                {new ArgumentsProvider_16()},
+                                {new ArgumentsProvider_17()},
+                            });
+    }
+
+    private final ArgumentsProvider args;
+    
+    public MainTest(ArgumentsProvider args) {
+        this.args = args;
+    }
+    
+    @Test
+    public void mainTest() throws IOException, URISyntaxException{
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+        PrintStream old = System.out;
+        System.setOut(ps);
+        
+        Main.main(args.arguments());
+        
+        System.out.flush();
+        System.setOut(old);
+        
+        String output = baos.toString();
+        
+        File resFile = args.getDiffResultFile();
+        File resDir = args.getParseResultDir();
+        if (resFile != null){
+            File predefined = args.getPredefinedResultFile();
+            assertTrue("Predefined file does not exist: " + predefined.getAbsolutePath(), predefined.exists());
+            assertTrue("Resulting file does not exist: " + resFile.getAbsolutePath(), resFile.exists());
+            
+            assertFalse("Predefined file is a directory: " + predefined.getAbsolutePath(), predefined.isDirectory());
+            assertFalse("Resulting file is a directory: " + resFile.getAbsolutePath(), resFile.isDirectory());
+            
+            assertTrue("Predefined and resulting script differ", filesEqualIgnoreNewLines(predefined, resFile));
+        }else if (resDir != null){
+            
+        }else{
+            assertEquals("Output is not as expected", args.output(), output);
+        }
+    }
+    
+    @After
+    public void removeFiles(){
+        try{
+            File resulting = args.getDiffResultFile();
+            if (resulting != null && !resulting.isDirectory()){
+                Files.deleteIfExists(resulting.toPath());
+            }
+        }catch(Exception e){
+            // do nothing
+        }
+        
+        try{
+            File resulting = args.getParseResultDir();
+            if (resulting != null && resulting.isDirectory()){
+                deleteRecursive(resulting);
+            }
+        }catch(Exception e){
+            // do nothing
+        }
+    }
+    
+    /**
+     * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
+     */
+    private static void deleteRecursive(File f) throws IOException {
+        if (f.isDirectory()) {
+            for (File sub : f.listFiles()) {
+                deleteRecursive(sub);
+            }
+        }
+        Files.deleteIfExists(f.toPath());
+    }
+    
+    private boolean filesEqualIgnoreNewLines(File f1, File f2) throws IOException{
+        try (InputStreamReader isr1 = new InputStreamReader(new FileInputStream(f1), "UTF-8");
+                BufferedReader reader1 = new BufferedReader(isr1);
+                InputStreamReader isr2 = new InputStreamReader(new FileInputStream(f2), "UTF-8");
+                BufferedReader reader2 = new BufferedReader(isr2);) {
+    
+            String line1, line2;
+            while((line1 = getNextLine(reader1)) != null & (line2 = getNextLine(reader2)) != null ) {
+                if(!line1.equals(line2)){
+                    return false;
+                }
+            }
+            
+            if (line1 == line2){
+                return true;
+            }
+        }
+        
+        return true;
+    }
+    
+    private String getNextLine(BufferedReader reader) throws IOException{
+        String nextLine;
+        
+        while((nextLine = reader.readLine()) != null && nextLine.equals("")){
+            
+        }
+        
+        return nextLine;
+    }
+}
+
+abstract class ArgumentsProvider{
+
+    public String resName = null;
+    public File resFile = null;
+    public File resDir = null;
+    
+    public abstract String[] arguments() throws URISyntaxException, IOException;
+    
+    public String output(){
+        return "";
+    }
+    
+    public File getPredefinedResultFile() throws URISyntaxException, IOException {
+        URL resourceUrl = MainTest.class.getResource(resName + "_diff.sql");
+        return new File(FileLocator.toFileURL(resourceUrl).toURI());
+    }
+
+    public File getDiffResultFile() throws IOException {
+        return null;
+    }
+    
+    public File getParseResultDir() throws IOException {
+        return null;
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing help message
+ */
+class ArgumentsProvider_usage extends ArgumentsProvider{
+
+    @Override
+    public String[] arguments() {
+        return new String[]{"--help"};
+    }
+
+    @Override
+    public String output() {
+        return Resources.getString("UsageHelp").replace("${tab}", "\t").concat("\n");
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing version message
+ */
+class ArgumentsProvider_2 extends ArgumentsProvider{
+
+    @Override
+    public String[] arguments() {
+        return new String[]{"--version"};
+    }
+
+    @Override
+    public String output() {
+        return Resources.getString("Version") + ": " + Resources.getString("VersionNumber") + "\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing list-charsets message
+ */
+class ArgumentsProvider_3 extends ArgumentsProvider{
+
+    @Override
+    public String[] arguments() {
+        return new String[]{"--list-charsets"};
+    }
+
+    @Override
+    public String output() {
+        StringBuilder sb = new StringBuilder();
+        for (final String name : Charset.availableCharsets().keySet()) {
+            sb.append(name + "\n");
+        }
+        return sb.toString();
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing empty args message
+ */
+class ArgumentsProvider_4 extends ArgumentsProvider{
+
+    @Override
+    public String[] arguments() {
+        return new String[]{};
+    }
+
+    @Override
+    public String output() {
+        return new ArgumentsProvider_usage().output();
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing diff+parse error message
+ */
+class ArgumentsProvider_5 extends ArgumentsProvider{
+
+    @Override
+    public String[] arguments() {
+        return new String[]{"--diff", "--parse", "--dbOld-format", "dump", "--allow-danger-ddl", "DROP_TABLE"};
+    }
+
+    @Override
+    public String output() {
+        return "Only one of --diff or --parse mode can be set!" + "\n" + new ArgumentsProvider_usage().output();
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing diff
+ */
+class ArgumentsProvider_6 extends ArgumentsProvider{
+    
+    {
+        super.resName = "add_cluster";
+    }
+    
+    @Override
+    public String[] arguments() throws URISyntaxException, IOException {
+        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
+        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
+        
+        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
+        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        
+        return new String[]{"--diff", "--dbOld-format", "dump", "--allow-danger-ddl", "DROP_TABLE", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+    }
+    
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+        
+        return resFile;
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing diff
+ */
+class ArgumentsProvider_7 extends ArgumentsProvider{
+    
+    {
+        super.resName = "modify_function_args2";
+    }
+    
+    @Override
+    public String[] arguments() throws URISyntaxException, IOException {
+        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
+        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
+        
+        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
+        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        
+        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_TABLE", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+    }
+    
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+        
+        return resFile;
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing wrong source db format 
+ */
+class ArgumentsProvider_unsupportedDbFormat extends ArgumentsProvider{
+    
+    @Override
+    public String[] arguments() throws URISyntaxException, IOException {
+        return new String[]{"--diff", "--dbOld-format", "dumpa", "--allow-danger-ddl", "DROP_TABLE", "stub"};
+    }
+    
+    @Override
+    public String output() {
+        return "Unsupported DB format!\n" + new ArgumentsProvider_usage().output();
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing wrong source db format 
+ */
+class ArgumentsProvider_9 extends ArgumentsProvider{
+    
+    @Override
+    public String[] arguments() throws URISyntaxException, IOException {
+        return new String[]{"--diff", "--dbNew-format", "dumpa", "--allow-danger-ddl", "DROP_TABLE", "stub"};
+    }
+    
+    @Override
+    public String output() {
+        return "Unsupported DB format!\n" + new ArgumentsProvider_usage().output();
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing dangerous statements ERROR
+ */
+class ArgumentsProvider_DangerTbl extends ArgumentsProvider{
+    
+    {
+        super.resName = "drop_table";
+    }
+    
+    @Override
+    public String[] arguments() throws URISyntaxException, IOException {
+        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
+        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
+        
+        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
+        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        
+        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), "stub"};
+    }
+    
+    @Override
+    public String output() {
+        return "Script contains dangerous statements, use --allow-danger-ddl to override\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing successful dangerous statements
+ */
+class ArgumentsProvider_DangerTblOk extends ArgumentsProvider{
+    
+    {
+        super.resName = "drop_table";
+    }
+    
+    @Override
+    public String[] arguments() throws URISyntaxException, IOException {
+        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
+        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
+        
+        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
+        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        
+        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_TABLE", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+    }
+    
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+        
+        return resFile;
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing dangerous statements ERROR
+ */
+class ArgumentsProvider_DangerDropCol extends ArgumentsProvider{
+    
+    {
+        super.resName = "drop_column";
+    }
+    
+    @Override
+    public String[] arguments() throws URISyntaxException, IOException {
+        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
+        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
+        
+        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
+        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        
+        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), "stub"};
+    }
+    
+    @Override
+    public String output() {
+        return "Script contains dangerous statements, use --allow-danger-ddl to override\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing successful dangerous statements
+ */
+class ArgumentsProvider_DangerDropColOk extends ArgumentsProvider{
+    
+    {
+        super.resName = "drop_column";
+    }
+    
+    @Override
+    public String[] arguments() throws URISyntaxException, IOException {
+        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
+        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
+        
+        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
+        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        
+        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+    }
+    
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+        
+        return resFile;
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing dangerous statements ERROR
+ */
+class ArgumentsProvider_DangerAlterCol extends ArgumentsProvider{
+    
+    {
+        super.resName = "modify_column_type";
+    }
+    
+    @Override
+    public String[] arguments() throws URISyntaxException, IOException {
+        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
+        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
+        
+        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
+        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        
+        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), "stub"};
+    }
+
+    @Override
+    public String output() {
+        return "Script contains dangerous statements, use --allow-danger-ddl to override\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing successful dangerous statements
+ */
+class ArgumentsProvider_DangerAlterColOk extends ArgumentsProvider{
+    
+    {
+        super.resName = "modify_column_type";
+    }
+    
+    @Override
+    public String[] arguments() throws URISyntaxException, IOException {
+        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
+        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
+        
+        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
+        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        
+        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "ALTER_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+    }
+    
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+        
+        return resFile;
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing all other flags
+ */
+class ArgumentsProvider_16 extends ArgumentsProvider{
+    
+    {
+        super.resName = "modify_column_type";
+    }
+    
+    @Override
+    public String[] arguments() throws URISyntaxException, IOException {
+        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
+        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
+        
+        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
+        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        
+        return new String[]{"--diff", "--output-ignored-statements", "--ignore-start-with", "--ignore-slony-triggers", "--ignore-function-whitespace", "--add-transaction", "--add-defaults", "--allow-danger-ddl", "ALTER_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+    }
+    
+    @Override
+    public File getPredefinedResultFile() throws URISyntaxException, IOException {
+        URL resourceUrl = MainTest.class.getResource("MainTest_" + resName + "_diff.sql");
+        return new File(FileLocator.toFileURL(resourceUrl).toURI());
+    }
+    
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+        
+        return resFile;
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing parsing option
+ */
+class ArgumentsProvider_17 extends ArgumentsProvider{
+    
+    {
+        super.resName = "./loader/remote/testing_dump.sql";
+    }
+    
+    @Override
+    public String[] arguments() throws URISyntaxException, IOException {
+        File db = new File(FileLocator.toFileURL(MainTest.class.getResource(resName)).toURI());
+        
+        return new String[]{"--parse", db.getAbsolutePath(), getParseResultDir().getAbsolutePath()};
+    }
+    
+    @Override
+    public File getParseResultDir() throws IOException {
+        if (resDir == null){
+            resDir = Files.createTempDirectory("pgcodekeeper_standalone_").toFile();
+        }
+        
+        return resDir;
+    }
+}
