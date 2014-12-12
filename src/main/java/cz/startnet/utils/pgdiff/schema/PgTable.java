@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -38,6 +39,11 @@ public class PgTable extends PgStatementWithSearchPath {
      */
     private String with;
     private String tablespace;
+
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.TABLE;
+    }
     
     public PgTable(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);

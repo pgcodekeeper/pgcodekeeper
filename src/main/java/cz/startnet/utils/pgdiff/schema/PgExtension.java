@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -15,6 +16,11 @@ public class PgExtension extends PgStatement {
     private String version;
     private String oldVersion;
 
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.EXTENSION;
+    }
+    
     public PgExtension(String name, String rawStatement) {
         super(name, rawStatement);
     }

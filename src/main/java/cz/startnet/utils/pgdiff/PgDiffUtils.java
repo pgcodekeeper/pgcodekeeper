@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 /**
  * Utilities for creation of diffs.
@@ -615,6 +616,11 @@ public final class PgDiffUtils {
             throw new IllegalStateException("NoSuchAlgorithmException thrown while "
                             + "getting hash",e);
         }
+    }
+    
+    public void diffComments(PgStatement oldStatement, PgStatement newStatement,
+            PgDiffScript script) {
+        
     }
     
     private PgDiffUtils() {

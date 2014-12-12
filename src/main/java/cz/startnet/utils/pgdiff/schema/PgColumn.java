@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -35,6 +36,11 @@ public class PgColumn extends PgStatement {
     private boolean nullValue = true;
     private String storage;
 
+    @Override
+    public DbObjType getStatementType() {
+        return null;
+    }
+    
     public PgColumn(String name) {
         super(name, null);
     }

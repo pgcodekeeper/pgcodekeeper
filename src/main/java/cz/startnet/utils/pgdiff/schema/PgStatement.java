@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -49,14 +50,8 @@ public abstract class PgStatement {
         return name;
     }
     
-    public final String getComment() {
-        return comment;
-    }
+    public abstract DbObjType getStatementType();
     
-    public final void setComment(String comment) {
-        this.comment = comment;
-    }
-
     public PgStatement getParent() {
         return parent;
     }
@@ -68,6 +63,23 @@ public abstract class PgStatement {
         }
         
         this.parent = parent;
+    }
+    
+    public String getComment() {
+        return comment;
+    }
+    
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public StringBuilder appendCommentSql(StringBuilder sb) {
+        
+        return sb;
+    }
+    
+    public String getCommentSql() {
+        return appendCommentSql(new StringBuilder()).toString();
     }
     
     public List<PgPrivilege> getPrivileges() {
@@ -85,18 +97,15 @@ public abstract class PgStatement {
             return sb;
         }
         
-        String type;
-        if (this instanceof PgSchema) {
-            type = "SCHEMA";
-        } else if (this instanceof PgSequence) {
-            type = "SEQUENCE";
-        } else if (this instanceof PgTable) {
-            type = "TABLE";
-        } else if (this instanceof PgView) {
-            type = "VIEW";
-        } else if (this instanceof PgFunction) {
-            type = "FUNCTION";
-        } else {
+        DbObjType type = getStatementType();
+        switch (type) {
+        case SCHEMA:
+        case SEQUENCE:
+        case TABLE:
+        case VIEW:
+        case FUNCTION:
+            break;
+        default:
             throw new IllegalStateException("GRANTs allowed only for SCHEMA, "
                     + "SEQUENCE, TABLE, VIEW, FUNCTION objects.");
         }
@@ -132,20 +141,18 @@ public abstract class PgStatement {
             return sb;
         }
         
-        String type;
-        if (this instanceof PgSchema) {
-            type = "SCHEMA";
-        } else if (this instanceof PgSequence) {
-            type = "SEQUENCE";
-        } else if (this instanceof PgTable) {
-            type = "TABLE";
-        } else if (this instanceof PgView) {
-            type = "VIEW";
-        } else {
+        DbObjType type = getStatementType();
+        switch (type) {
+        case SCHEMA:
+        case SEQUENCE:
+        case TABLE:
+        case VIEW:
+        case FUNCTION: // NOTE: handled separately in its class
+            break;
+        default:
             throw new IllegalStateException("OWNERs allowed only for SCHEMA, "
                     + "SEQUENCE, TABLE, VIEW, FUNCTION objects.");
         }
-        
         sb.append("\n\nALTER ")
             .append(type)
             .append(' ')

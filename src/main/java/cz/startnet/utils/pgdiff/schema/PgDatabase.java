@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 
 /**
  * Stores database information.
@@ -28,6 +29,11 @@ public class PgDatabase extends PgStatement {
     
     private final List<String> ignoredStatements = new ArrayList<>();
     private final List<String> ignoredDataStatements = new ArrayList<>();
+    
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.DATABASE;
+    }
     
     public PgDatabase() {
         super("DB_name_placeholder", null);

@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -27,6 +28,11 @@ public class PgView extends PgStatementWithSearchPath {
     private final List<DefaultValue> defaultValues = new ArrayList<>();
     private final List<ColumnComment> columnComments = new ArrayList<>();
 
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.VIEW;
+    }
+    
     public PgView(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
     }

@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -23,6 +24,11 @@ public class PgFunction extends PgStatementWithSearchPath {
     private final List<Argument> arguments = new ArrayList<>();
     private String body;
     private String returns;
+
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.FUNCTION;
+    }
     
     public PgFunction(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);

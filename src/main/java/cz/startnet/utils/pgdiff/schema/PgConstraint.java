@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -26,6 +27,11 @@ public class PgConstraint extends PgStatementWithSearchPath {
     private String definition;
     private String tableName;
 
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.CONSTRAINT;
+    }
+    
     public PgConstraint(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
     }

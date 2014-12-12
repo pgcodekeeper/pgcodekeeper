@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -20,6 +21,12 @@ public class PgIndex extends PgStatementWithSearchPath {
     private String tableName;
     private boolean unique;
 
+
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.INDEX;
+    }
+    
     public PgIndex(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
     }

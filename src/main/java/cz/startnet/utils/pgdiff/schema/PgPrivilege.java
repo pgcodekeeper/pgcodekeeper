@@ -2,6 +2,8 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+
 public class PgPrivilege extends PgStatement {
     
     private final boolean revoke;
@@ -20,6 +22,11 @@ public class PgPrivilege extends PgStatement {
         
         this.revoke = revoke;
         this.definition = definition;
+    }
+    
+    @Override
+    public DbObjType getStatementType() {
+        return null;
     }
     
     @Override

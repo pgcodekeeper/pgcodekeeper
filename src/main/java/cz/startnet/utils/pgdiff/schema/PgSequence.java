@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -24,6 +25,11 @@ public class PgSequence extends PgStatementWithSearchPath {
     private boolean cycle;
     private String ownedBy;
 
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.SEQUENCE;
+    }
+    
     public PgSequence(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
     }

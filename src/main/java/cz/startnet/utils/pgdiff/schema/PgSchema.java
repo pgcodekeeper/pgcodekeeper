@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.Parser;
@@ -31,6 +32,11 @@ public class PgSchema extends PgStatement {
     private String authorization;
     private String definition;
 
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.SCHEMA;
+    }
+    
     public PgSchema(String name, String rawStatement) {
         super(name, rawStatement);
     }
