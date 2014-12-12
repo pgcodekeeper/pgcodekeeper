@@ -142,7 +142,7 @@ public final class XmlHistory {
     }
     
     public void setHistory(List<String> list) throws IOException{
-        LinkedList<String> linkedList = new LinkedList<String>(list);
+        LinkedList<String> linkedList = new LinkedList<>(list);
         while (linkedList.size() > maxEntries) {
             linkedList.removeLast();
         }

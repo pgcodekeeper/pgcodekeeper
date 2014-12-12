@@ -105,7 +105,7 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
     }
     
     private void updateList() {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         try {
             list = history.getHistory();
         } catch (IOException e) {

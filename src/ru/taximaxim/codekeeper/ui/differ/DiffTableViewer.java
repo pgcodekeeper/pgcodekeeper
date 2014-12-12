@@ -738,7 +738,7 @@ public class DiffTableViewer extends Composite {
                 public void run() {
                     @SuppressWarnings("unchecked")
                     List<TreeElement> selected = ((IStructuredSelection) viewer.getSelection()).toList();
-                    HashSet<TreeElement> selectedSet = new HashSet<TreeElement>(selected);
+                    HashSet<TreeElement> selectedSet = new HashSet<>(selected);
                     setCheckedElements(selectedSet, true);
                 }
             });
@@ -748,7 +748,7 @@ public class DiffTableViewer extends Composite {
                 public void run() {
                     @SuppressWarnings("unchecked")
                     List<TreeElement> selected = ((IStructuredSelection) viewer.getSelection()).toList();
-                    HashSet<TreeElement> selectedSet = new HashSet<TreeElement>(selected);
+                    HashSet<TreeElement> selectedSet = new HashSet<>(selected);
                     setCheckedElements(selectedSet, false);
                 }
             });

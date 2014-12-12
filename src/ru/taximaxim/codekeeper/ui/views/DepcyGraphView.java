@@ -118,7 +118,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             currentSource = isCommit ? dss.getTargetDepcyGraph() : dss.getSourceDepcyGraph();
         }
         
-        HashSet<PgStatement> pgStatSele = new HashSet<PgStatement>();
+        HashSet<PgStatement> pgStatSele = new HashSet<>();
         
         for(Object o : dss.toArray()){
             if (!(o instanceof TreeElement)){
