@@ -8,6 +8,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -148,5 +151,11 @@ public class DbSourceTest {
         Assert.assertTrue("DB source should be loaded", source.isLoaded());
         
         Assert.assertEquals("Db loaded from file not equal to predefined db", dbPredefined, dbFile);
+    }
+    
+    @Test
+    public void testProject() throws CoreException{
+        // init project
+        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
     }
 }
