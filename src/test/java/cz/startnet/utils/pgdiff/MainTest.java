@@ -566,7 +566,7 @@ class ArgumentsProvider_16 extends ArgumentsProvider{
 class ArgumentsProvider_17 extends ArgumentsProvider{
     
     {
-        super.resName = "./loader/remote/testing_dump.sql";
+        super.resName = "loader/remote/testing_dump.sql";
     }
     
     @Override
