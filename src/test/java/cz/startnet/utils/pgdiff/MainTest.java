@@ -60,21 +60,10 @@ public class MainTest {
     
     @Test
     public void mainTest() throws IOException, URISyntaxException{
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(baos);
-        PrintStream old = System.out;
-        System.setOut(ps);
-        
-        Main.main(args.arguments());
-        
-        System.out.flush();
-        System.setOut(old);
-        
-        String output = baos.toString();
-        
-        File resFile = args.getDiffResultFile();
         switch (args.testType) {
         case TEST_DIFF:
+            Main.main(args.arguments());
+            File resFile = args.getDiffResultFile();
             File predefined = args.getPredefinedResultFile();
             assertTrue("Predefined file does not exist: " + predefined.getAbsolutePath(), predefined.exists());
             assertTrue("Resulting file does not exist: " + resFile.getAbsolutePath(), resFile.exists());
@@ -85,9 +74,22 @@ public class MainTest {
             assertTrue("Predefined and resulting script differ", filesEqualIgnoreNewLines(predefined, resFile));
             break;
         case TEST_PARSE:
+            Main.main(args.arguments());
             break;
-        default:
-            assertEquals("Output is not as expected", args.output(), output);
+        case TEST_OUTPUT:
+            PrintStream old = System.out;
+            try(ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+                    PrintStream ps = new PrintStream(baos)){
+                System.setOut(ps);
+                
+                Main.main(args.arguments());
+                
+                System.out.flush();
+                assertEquals("Output is not as expected", args.output(), baos.toString());
+            }finally{
+                System.setOut(old);                
+            }
+            break;
         }
     }
     
@@ -297,7 +299,8 @@ class ArgumentsProvider_6 extends ArgumentsProvider{
         File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
         File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
         
-        return new String[]{"--diff", "--dbOld-format", "dump", "--allow-danger-ddl", "DROP_TABLE", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+        return new String[]{"--diff", "--dbOld-format", "dump", "--allow-danger-ddl", "DROP_TABLE", 
+                fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
     
     @Override
@@ -328,7 +331,8 @@ class ArgumentsProvider_7 extends ArgumentsProvider{
         File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
         File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
         
-        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_TABLE", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_TABLE", 
+                fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
     
     @Override
@@ -348,7 +352,8 @@ class ArgumentsProvider_unsupportedDbFormat extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        return new String[]{"--diff", "--dbOld-format", "dumpa", "--allow-danger-ddl", "DROP_TABLE", getDiffResultFile().getAbsolutePath()};
+        return new String[]{"--diff", "--dbOld-format", "dumpa", "--allow-danger-ddl", "DROP_TABLE", 
+                getDiffResultFile().getAbsolutePath()};
     }
     
     @Override
@@ -374,7 +379,8 @@ class ArgumentsProvider_9 extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        return new String[]{"--diff", "--dbNew-format", "dumpa", "--allow-danger-ddl", "DROP_TABLE", getDiffResultFile().getAbsolutePath()};
+        return new String[]{"--diff", "--dbNew-format", "dumpa", "--allow-danger-ddl", "DROP_TABLE", 
+                getDiffResultFile().getAbsolutePath()};
     }
     
     @Override
@@ -410,7 +416,8 @@ class ArgumentsProvider_DangerTbl extends ArgumentsProvider{
         File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
         File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
         
-        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), 
+                fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
     
     @Override
@@ -446,7 +453,8 @@ class ArgumentsProvider_DangerTblOk extends ArgumentsProvider{
         File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
         File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
         
-        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_TABLE", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_TABLE", 
+                fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
     
     @Override
@@ -476,7 +484,8 @@ class ArgumentsProvider_DangerDropCol extends ArgumentsProvider{
         File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
         File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
         
-        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), 
+                fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
     
     @Override
@@ -512,7 +521,9 @@ class ArgumentsProvider_DangerDropColOk extends ArgumentsProvider{
         File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
         File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
         
-        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", 
+                "DROP_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), 
+                getDiffResultFile().getAbsolutePath()};
     }
     
     @Override
@@ -542,7 +553,8 @@ class ArgumentsProvider_DangerAlterCol extends ArgumentsProvider{
         File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
         File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
         
-        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), 
+                fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
 
     @Override
@@ -578,7 +590,9 @@ class ArgumentsProvider_DangerAlterColOk extends ArgumentsProvider{
         File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
         File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
         
-        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "ALTER_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", 
+                "ALTER_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), 
+                getDiffResultFile().getAbsolutePath()};
     }
     
     @Override
@@ -609,7 +623,10 @@ class ArgumentsProvider_16 extends ArgumentsProvider{
         File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
         File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
         
-        return new String[]{"--diff", "--output-ignored-statements", "--ignore-start-with", "--ignore-slony-triggers", "--ignore-function-whitespace", "--add-transaction", "--add-defaults", "--allow-danger-ddl", "ALTER_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+        return new String[]{"--diff", "--output-ignored-statements", "--ignore-start-with", 
+                "--ignore-slony-triggers", "--ignore-function-whitespace", "--add-transaction", 
+                "--add-defaults", "--allow-danger-ddl", "ALTER_COLUMN", fOriginal.getAbsolutePath(), 
+                fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
     
     @Override
