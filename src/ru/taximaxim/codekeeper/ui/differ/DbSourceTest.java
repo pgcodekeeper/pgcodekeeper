@@ -1,5 +1,11 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -8,13 +14,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -61,7 +69,7 @@ public class DbSourceTest {
             }
             
             String res = new JdbcRunner(connector).runScript(script.toString());
-            Assert.assertEquals("DB cleanup script returned an error: " + res, "success", res);
+            assertEquals("DB cleanup script returned an error: " + res, "success", res);
         }
         
         // dump schemas back
@@ -77,7 +85,7 @@ public class DbSourceTest {
             }
             
             String res = new JdbcRunner(connector).runScript(script.toString());
-            Assert.assertEquals("DDL update over JDBC exited with an error: " + res, "success", res);
+            assertEquals("DDL update over JDBC exited with an error: " + res, "success", res);
         }
         
         dbPredefined = PgDumpLoader.loadDatabaseSchemaFromDump(
@@ -94,13 +102,13 @@ public class DbSourceTest {
                                             TEST.REMOTE_DB, 
                                             UIConsts.UTF_8, 
                                             UIConsts.UTC);
-        Assert.assertFalse("DB source should not be loaded", source.isLoaded());
+        assertFalse("DB source should not be loaded", source.isLoaded());
         
         PgDatabase dbJdbc = source.get(SubMonitor.convert(new NullProgressMonitor(), "", 1));
         
-        Assert.assertTrue("DB source should be loaded", source.isLoaded());
+        assertTrue("DB source should be loaded", source.isLoaded());
         
-        Assert.assertEquals("Db loaded from JDBC not equal to predefined db", dbPredefined, dbJdbc);
+        assertEquals("Db loaded from JDBC not equal to predefined db", dbPredefined, dbJdbc);
     }
     
     @Test
@@ -109,13 +117,13 @@ public class DbSourceTest {
             new ModelExporter(exportDir.get(), dbPredefined, UIConsts.UTF_8).exportFull();
             
             final DbSource source = DbSource.fromDirTree(exportDir.get().getAbsolutePath(), UIConsts.UTF_8);
-            Assert.assertFalse("DB source should not be loaded", source.isLoaded());
+            assertFalse("DB source should not be loaded", source.isLoaded());
             
             PgDatabase dbDirTree = source.get(SubMonitor.convert(new NullProgressMonitor(), "", 1));
             
-            Assert.assertTrue("DB source should be loaded", source.isLoaded());
+            assertTrue("DB source should be loaded", source.isLoaded());
             
-            Assert.assertEquals("Db loaded from dir tree not equal to predefined db", dbPredefined, dbDirTree);
+            assertEquals("Db loaded from dir tree not equal to predefined db", dbPredefined, dbDirTree);
         }
     }
     
@@ -129,13 +137,13 @@ public class DbSourceTest {
         
         DbSource source = DbSource.fromFilter(predefined, diff, DiffSide.LEFT);
         
-        Assert.assertFalse("DB source should not be loaded", source.isLoaded());
+        assertFalse("DB source should not be loaded", source.isLoaded());
         
         PgDatabase dbFiltered = source.get(SubMonitor.convert(new NullProgressMonitor(), "", 1));
 
-        Assert.assertTrue("DB source should be loaded", source.isLoaded());
+        assertTrue("DB source should be loaded", source.isLoaded());
         
-        Assert.assertEquals("Db loaded from filter not equal to predefined db", dbPredefined, dbFiltered);
+        assertEquals("Db loaded from filter not equal to predefined db", dbPredefined, dbFiltered);
     }
     
     @Test
@@ -144,18 +152,44 @@ public class DbSourceTest {
         
         final DbSource source = DbSource.fromFile(new File(FileLocator.toFileURL(urla).toURI()).getCanonicalPath(), UIConsts.UTF_8);
         
-        Assert.assertFalse("DB source should not be loaded", source.isLoaded());
+        assertFalse("DB source should not be loaded", source.isLoaded());
         
         PgDatabase dbFile = source.get(SubMonitor.convert(new NullProgressMonitor(), "", 1));
         
-        Assert.assertTrue("DB source should be loaded", source.isLoaded());
+        assertTrue("DB source should be loaded", source.isLoaded());
         
-        Assert.assertEquals("Db loaded from file not equal to predefined db", dbPredefined, dbFile);
+        assertEquals("Db loaded from file not equal to predefined db", dbPredefined, dbFile);
     }
     
     @Test
     public void testProject() throws CoreException{
-        // init project
-        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+        IWorkspace workspace = null;
+        try{
+            workspace = ResourcesPlugin.getWorkspace();
+        }catch(IllegalStateException ex){
+            fail(ex.getMessage());
+        }
+        IWorkspaceRoot root = workspace.getRoot();
+        
+        IPath p = root.getLocation();
+        
+        // assure we are in correct workspace
+        assertEquals("Workspace path should end by \"junit-workspace\"", p.toFile().getName(), "junit-workspace");
+        
+        IProject project = root.getProject("dbSourceProjectTest");
+        project.create(null);
+        
+        assertNotNull("Project location cannot be determined", project.getLocation());
+        
+        File projectFile = project.getLocation().toFile();
+        assertTrue("Project folder not created", projectFile.exists() && projectFile.isDirectory());
+        
+        String projectPath = projectFile.getAbsolutePath();
+        
+//        DbSource source = DbSource.fromProject(new PgDbProject(project));
+        
+//        project.open(null);
+        project.delete(true, null);
+        assertFalse("Expected to be deleted: " + projectPath, projectFile.exists());
     }
 }
