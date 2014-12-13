@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -72,8 +73,8 @@ public class MainTest {
         String output = baos.toString();
         
         File resFile = args.getDiffResultFile();
-        File resDir = args.getParseResultDir();
-        if (resFile != null){
+        switch (args.testType) {
+        case TEST_DIFF:
             File predefined = args.getPredefinedResultFile();
             assertTrue("Predefined file does not exist: " + predefined.getAbsolutePath(), predefined.exists());
             assertTrue("Resulting file does not exist: " + resFile.getAbsolutePath(), resFile.exists());
@@ -82,44 +83,17 @@ public class MainTest {
             assertFalse("Resulting file is a directory: " + resFile.getAbsolutePath(), resFile.isDirectory());
             
             assertTrue("Predefined and resulting script differ", filesEqualIgnoreNewLines(predefined, resFile));
-        }else if (resDir != null){
-            
-        }else{
+            break;
+        case TEST_PARSE:
+            break;
+        default:
             assertEquals("Output is not as expected", args.output(), output);
         }
     }
     
     @After
-    public void removeFiles(){
-        try{
-            File resulting = args.getDiffResultFile();
-            if (resulting != null && !resulting.isDirectory()){
-                Files.deleteIfExists(resulting.toPath());
-            }
-        }catch(Exception e){
-            // do nothing
-        }
-        
-        try{
-            File resulting = args.getParseResultDir();
-            if (resulting != null && resulting.isDirectory()){
-                deleteRecursive(resulting);
-            }
-        }catch(Exception e){
-            // do nothing
-        }
-    }
-    
-    /**
-     * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
-     */
-    private static void deleteRecursive(File f) throws IOException {
-        if (f.isDirectory()) {
-            for (File sub : f.listFiles()) {
-                deleteRecursive(sub);
-            }
-        }
-        Files.deleteIfExists(f.toPath());
+    public void closeResources(){
+        args.close();
     }
     
     private boolean filesEqualIgnoreNewLines(File f1, File f2) throws IOException{
@@ -143,19 +117,27 @@ public class MainTest {
         return true;
     }
     
+    /**
+     * Iterates through <code>reader</code> line by line until reaches not empty line or EOF
+     * 
+     * @return  next not empty line or null if EOF is reached
+     */
     private String getNextLine(BufferedReader reader) throws IOException{
         String nextLine;
         
         while((nextLine = reader.readLine()) != null && nextLine.equals("")){
-            
+            // skip to next line
         }
         
         return nextLine;
     }
 }
 
-abstract class ArgumentsProvider{
+abstract class ArgumentsProvider implements Closeable{
 
+    enum TestType {TEST_OUTPUT, TEST_DIFF, TEST_PARSE}
+    
+    public TestType testType = TestType.TEST_OUTPUT;
     public String resName = null;
     public File resFile = null;
     public File resDir = null;
@@ -177,6 +159,37 @@ abstract class ArgumentsProvider{
     
     public File getParseResultDir() throws IOException {
         return null;
+    }
+    
+    @Override
+    public void close() {
+        try{
+            if (resFile != null && !resFile.isDirectory()){
+                Files.deleteIfExists(resFile.toPath());
+            }
+        }catch(Exception e){
+            // do nothing
+        }
+        
+        try{
+            if (resDir != null && resDir.isDirectory()){
+                deleteRecursive(resDir);
+            }
+        }catch(Exception e){
+            // do nothing
+        }
+    }
+    
+    /**
+     * Deletes folder and its contents recursively. FOLLOWS SYMLINKS!
+     */
+    private static void deleteRecursive(File f) throws IOException {
+        if (f.isDirectory()) {
+            for (File sub : f.listFiles()) {
+                deleteRecursive(sub);
+            }
+        }
+        Files.deleteIfExists(f.toPath());
     }
 }
 
@@ -242,6 +255,7 @@ class ArgumentsProvider_4 extends ArgumentsProvider{
         return new String[]{};
     }
 
+    @SuppressWarnings("resource")
     @Override
     public String output() {
         return new ArgumentsProvider_usage().output();
@@ -258,6 +272,7 @@ class ArgumentsProvider_5 extends ArgumentsProvider{
         return new String[]{"--diff", "--parse", "--dbOld-format", "dump", "--allow-danger-ddl", "DROP_TABLE"};
     }
 
+    @SuppressWarnings("resource")
     @Override
     public String output() {
         return "Only one of --diff or --parse mode can be set!" + "\n" + new ArgumentsProvider_usage().output();
@@ -271,6 +286,7 @@ class ArgumentsProvider_6 extends ArgumentsProvider{
     
     {
         super.resName = "add_cluster";
+        super.testType = TestType.TEST_DIFF;
     }
     
     @Override
@@ -301,6 +317,7 @@ class ArgumentsProvider_7 extends ArgumentsProvider{
     
     {
         super.resName = "modify_function_args2";
+        super.testType = TestType.TEST_DIFF;
     }
     
     @Override
@@ -331,9 +348,19 @@ class ArgumentsProvider_unsupportedDbFormat extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        return new String[]{"--diff", "--dbOld-format", "dumpa", "--allow-danger-ddl", "DROP_TABLE", "stub"};
+        return new String[]{"--diff", "--dbOld-format", "dumpa", "--allow-danger-ddl", "DROP_TABLE", getDiffResultFile().getAbsolutePath()};
     }
     
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+        
+        return resFile;
+    }
+    
+    @SuppressWarnings("resource")
     @Override
     public String output() {
         return "Unsupported DB format!\n" + new ArgumentsProvider_usage().output();
@@ -347,9 +374,19 @@ class ArgumentsProvider_9 extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        return new String[]{"--diff", "--dbNew-format", "dumpa", "--allow-danger-ddl", "DROP_TABLE", "stub"};
+        return new String[]{"--diff", "--dbNew-format", "dumpa", "--allow-danger-ddl", "DROP_TABLE", getDiffResultFile().getAbsolutePath()};
     }
     
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+        
+        return resFile;
+    }
+    
+    @SuppressWarnings("resource")
     @Override
     public String output() {
         return "Unsupported DB format!\n" + new ArgumentsProvider_usage().output();
@@ -373,7 +410,16 @@ class ArgumentsProvider_DangerTbl extends ArgumentsProvider{
         File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
         File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
         
-        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), "stub"};
+        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+    }
+    
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+        
+        return resFile;
     }
     
     @Override
@@ -389,6 +435,7 @@ class ArgumentsProvider_DangerTblOk extends ArgumentsProvider{
     
     {
         super.resName = "drop_table";
+        super.testType = TestType.TEST_DIFF;
     }
     
     @Override
@@ -429,7 +476,16 @@ class ArgumentsProvider_DangerDropCol extends ArgumentsProvider{
         File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
         File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
         
-        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), "stub"};
+        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+    }
+    
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+        
+        return resFile;
     }
     
     @Override
@@ -445,6 +501,7 @@ class ArgumentsProvider_DangerDropColOk extends ArgumentsProvider{
     
     {
         super.resName = "drop_column";
+        super.testType = TestType.TEST_DIFF;
     }
     
     @Override
@@ -485,9 +542,18 @@ class ArgumentsProvider_DangerAlterCol extends ArgumentsProvider{
         File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
         File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
         
-        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), "stub"};
+        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
 
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+        
+        return resFile;
+    }
+    
     @Override
     public String output() {
         return "Script contains dangerous statements, use --allow-danger-ddl to override\n";
@@ -501,6 +567,7 @@ class ArgumentsProvider_DangerAlterColOk extends ArgumentsProvider{
     
     {
         super.resName = "modify_column_type";
+        super.testType = TestType.TEST_DIFF;
     }
     
     @Override
@@ -531,6 +598,7 @@ class ArgumentsProvider_16 extends ArgumentsProvider{
     
     {
         super.resName = "modify_column_type";
+        super.testType = TestType.TEST_DIFF;
     }
     
     @Override
@@ -567,6 +635,7 @@ class ArgumentsProvider_17 extends ArgumentsProvider{
     
     {
         super.resName = "loader/remote/testing_dump.sql";
+        super.testType = TestType.TEST_PARSE;
     }
     
     @Override
