@@ -173,8 +173,9 @@ public class DbSourceTest {
         
         IPath p = root.getLocation();
         
+        assertTrue("Workspace does not exist: " + p.toFile().getAbsolutePath(), p.toFile().exists());
         // assure we are in correct workspace
-        assertEquals("Workspace path should end by \"junit-workspace\". Actual workspace: " + p.toFile().getName(), "junit-workspace", p.toFile().getName());
+        assertEquals("Workspace path should end by \"junit-workspace\". Actual workspace path: " + p.toFile().getAbsolutePath(), "junit-workspace", p.toFile().getName());
         
         IProject project = root.getProject("dbSourceProjectTest");
         project.create(null);
