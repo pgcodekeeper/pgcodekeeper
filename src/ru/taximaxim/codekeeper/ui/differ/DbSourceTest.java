@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,11 +19,11 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.TEST;
@@ -31,6 +32,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
@@ -45,6 +47,8 @@ public class DbSourceTest {
     private static final String RESOURCE_DUMP = "remote/testing_dump.sql";
     private static final String RESOURCE_CLEANUP = "remote/testing_cleanup.sql";
     private static PgDatabase dbPredefined;
+    private static File workspacePath;
+    private static IWorkspaceRoot workspaceRoot;
     
     @BeforeClass
     public static void initDb() throws IOException{
@@ -90,24 +94,22 @@ public class DbSourceTest {
         dbPredefined = PgDumpLoader.loadDatabaseSchemaFromDump(
                 JdbcLoaderTest.class.getResourceAsStream(RESOURCE_DUMP),
                 ApgdiffConsts.UTF_8, false, false);
+        
+        workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+        workspacePath = workspaceRoot.getLocation().toFile();
+        assertTrue("Workspace does not exist: " + workspacePath.getAbsolutePath(), workspacePath.exists());
     }
     
     @Test
     public void testJdbc() throws IOException{
-        final DbSource source = DbSource.fromJdbc(TEST.REMOTE_HOST, 
+        performTest(DbSource.fromJdbc(TEST.REMOTE_HOST, 
                                             TEST.REMOTE_PORT, 
                                             TEST.REMOTE_USERNAME, 
                                             TEST.REMOTE_PASSWORD, 
                                             TEST.REMOTE_DB, 
                                             UIConsts.UTF_8, 
-                                            UIConsts.UTC);
-        assertFalse("DB source should not be loaded", source.isLoaded());
+                                            UIConsts.UTC));
         
-        PgDatabase dbJdbc = source.get(SubMonitor.convert(new NullProgressMonitor(), "", 1));
-        
-        assertTrue("DB source should be loaded", source.isLoaded());
-        
-        assertEquals("Db loaded from JDBC not equal to predefined db", dbPredefined, dbJdbc);
     }
     
     @Test
@@ -115,14 +117,7 @@ public class DbSourceTest {
         try(TempDir exportDir = new TempDir("pgcodekeeper-test")){
             new ModelExporter(exportDir.get(), dbPredefined, UIConsts.UTF_8).exportFull();
             
-            final DbSource source = DbSource.fromDirTree(exportDir.get().getAbsolutePath(), UIConsts.UTF_8);
-            assertFalse("DB source should not be loaded", source.isLoaded());
-            
-            PgDatabase dbDirTree = source.get(SubMonitor.convert(new NullProgressMonitor(), "", 1));
-            
-            assertTrue("DB source should be loaded", source.isLoaded());
-            
-            assertEquals("Db loaded from dir tree not equal to predefined db", dbPredefined, dbDirTree);
+            performTest(DbSource.fromDirTree(exportDir.get().getAbsolutePath(), UIConsts.UTF_8));
         }
     }
     
@@ -134,68 +129,77 @@ public class DbSourceTest {
         differ.run(new NullProgressMonitor());
         TreeElement diff = differ.getDiffTree();
         
-        DbSource source = DbSource.fromFilter(predefined, diff, DiffSide.LEFT);
-        
-        assertFalse("DB source should not be loaded", source.isLoaded());
-        
-        PgDatabase dbFiltered = source.get(SubMonitor.convert(new NullProgressMonitor(), "", 1));
-
-        assertTrue("DB source should be loaded", source.isLoaded());
-        
-        assertEquals("Db loaded from filter not equal to predefined db", dbPredefined, dbFiltered);
+        performTest(DbSource.fromFilter(predefined, diff, DiffSide.LEFT));
     }
     
     @Test
     public void testFile () throws IOException, URISyntaxException {
         URL urla = JdbcLoaderTest.class.getResource(RESOURCE_DUMP);
         
-        final DbSource source = DbSource.fromFile(new File(FileLocator.toFileURL(urla).toURI()).getCanonicalPath(), UIConsts.UTF_8);
-        
-        assertFalse("DB source should not be loaded", source.isLoaded());
-        
-        PgDatabase dbFile = source.get(SubMonitor.convert(new NullProgressMonitor(), "", 1));
-        
-        assertTrue("DB source should be loaded", source.isLoaded());
-        
-        assertEquals("Db loaded from file not equal to predefined db", dbPredefined, dbFile);
+        performTest(DbSource.fromFile(
+                new File(FileLocator.toFileURL(urla).toURI()).getCanonicalPath(), UIConsts.UTF_8));
     }
     
-    /*
-     * workspace in Jenkins:
-     * /var/lib/jenkins/workspace/codekeeper-multi/jdk/JDK-1.7_i586/ru.taximaxim.codekeeper.ui.tests/target/work/data
-     * 
-     */
     @Test
     public void testProject() throws CoreException, IOException{
-        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-        
-        IPath p = root.getLocation();
-        
-        assertTrue("Workspace does not exist: " + p.toFile().getAbsolutePath(), p.toFile().exists());
-        
-        try(TempDir tempDir = new TempDir(p.toFile().toPath(), "dbSourceProjectTest")){
-            File projectPath = tempDir.get();
-            
-            IProject project = root.getProject(projectPath.getName());
-            project.create(null);
-            
-            assertNotNull("Project location cannot be determined", project.getLocation());
+        try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")){
+            // create empty project in temp dir
+            IProject project = createProjectInWorkspace(tempDir.get());
             
             // populate project with data
-            new ModelExporter(projectPath, dbPredefined, UIConsts.UTF_8).exportFull();
+            new ModelExporter(tempDir.get(), dbPredefined, UIConsts.UTF_8).exportFull();
             
             // testing itself
-            DbSource source = DbSource.fromProject(new PgDbProject(project));
-            
-            assertFalse("DB source should not be loaded", source.isLoaded());
-            
-            PgDatabase dbProject = source.get(SubMonitor.convert(new NullProgressMonitor(), "", 1));
-
-            assertTrue("DB source should be loaded", source.isLoaded());
-            
-            assertEquals("Db loaded from project not equal to predefined db", dbPredefined, dbProject);
+            performTest(DbSource.fromProject(new PgDbProject(project)));
             
             project.delete(true, null);
         }
+    }
+    
+    @Test
+    public void testJdbcFromProject() throws CoreException, IOException, URISyntaxException, BackingStoreException{
+        try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceJdbcTest")){
+            // create empty project in temp dir
+            IProject project = createProjectInWorkspace(tempDir.get());
+            
+            // populate project with data
+            new ModelExporter(tempDir.get(), dbPredefined, UIConsts.UTF_8).exportFull();
+            
+            // set required settings
+            PgDbProject proj = new PgDbProject(project);
+            proj.getPrefs().put(PROJ_PREF.DB_NAME, TEST.REMOTE_DB);
+            proj.getPrefs().put(PROJ_PREF.DB_USER, TEST.REMOTE_USERNAME);
+            proj.getPrefs().put(PROJ_PREF.DB_HOST, TEST.REMOTE_HOST);
+            proj.getPrefs().putInt(PROJ_PREF.DB_PORT, TEST.REMOTE_PORT);
+            
+            // testing itself
+            performTest(DbSource.fromJdbc(proj, TEST.REMOTE_PASSWORD));
+            
+            project.delete(true, null);
+        }
+    }
+    
+    private void performTest(DbSource source) throws IOException{
+        assertFalse("DB source should not be loaded", source.isLoaded());
+        
+        try{
+            source.getDbObject();
+            fail("Source is not loaded yet, exception expected");
+        }catch(IllegalStateException ex){
+            // do nothing: expected behavior
+        }
+        PgDatabase dbSource = source.get(SubMonitor.convert(new NullProgressMonitor(), "", 1));
+        
+        assertTrue("DB source should be loaded", source.isLoaded());
+        
+        assertEquals("Db loaded not equal to predefined db", dbPredefined, dbSource);
+    }
+    
+    private IProject createProjectInWorkspace(File projectPath) throws CoreException{
+        IProject project = workspaceRoot.getProject(projectPath.getName());
+        project.create(null);
+        
+        assertNotNull("Project location cannot be determined", project.getLocation());
+        return project;
     }
 }
