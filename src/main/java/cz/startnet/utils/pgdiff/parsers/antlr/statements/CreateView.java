@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.As_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Name_or_func_callsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Query_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_function_specificationContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Simple_tableContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseVisitor;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -65,14 +65,21 @@ public class CreateView extends ParserAbstract {
         // список алиасов запросов, игнорируются при заполнении колонок в селект
         private Queue<String> aliasNames = new LinkedList<>();
         private List<GenericColumn> columns = new ArrayList<>();
-        private Map<String, String> tableAliases = new HashMap<>();
+        private Map<String, GenericColumn> tableAliases = new HashMap<>();
         boolean isQiery = false;
         private PgSelect select;
+        private boolean isTableRef = false;
 
         public MyVisitor(PgSelect select) {
             this.select = select;
         }
 
+        @Override
+        public Query_expressionContext visitTable_primary(
+                Table_primaryContext ctx) {
+            isTableRef = true;
+            return super.visitTable_primary(ctx);
+        }
         @Override
         public Query_expressionContext visitSimple_table(Simple_tableContext ctx) {
             if (ctx.query_specification() != null) {
@@ -91,9 +98,9 @@ public class CreateView extends ParserAbstract {
         public Query_expressionContext visitSet_function_specification(
                 Set_function_specificationContext ctx) {
             if (ctx.COUNT() != null) {
-                columns.add(new GenericColumn(ctx.COUNT().getText()));
+                columns.add(new GenericColumn(null, null, ctx.COUNT().getText()));
             } else {
-                columns.add(new GenericColumn(ctx.general_set_function()
+                columns.add(new GenericColumn(null, null, ctx.general_set_function()
                         .set_function_type().getText()));
             }
             return null;
@@ -112,7 +119,12 @@ public class CreateView extends ParserAbstract {
             String colTable = getTableName(ctx.schema_qualified_name());
             String colSchema = getSchemaName(ctx.schema_qualified_name());
             if (colSchema == null || colSchema.equals(colTable)) {
-                columns.add(new GenericColumn(null, colTable, colName));
+                if (isTableRef) {
+                    isTableRef = false;
+                    columns.add(new GenericColumn(colTable, colName, null));
+                } else {
+                    columns.add(new GenericColumn(null, colTable, colName));
+                }
             } else {
                 columns.add(new GenericColumn(colSchema, colTable, colName));
             }
@@ -134,7 +146,7 @@ public class CreateView extends ParserAbstract {
                 }
             } else {
                 tableAliases.put(aliasName,
-                        columns.get(columns.size() - 1).column);
+                            columns.get(columns.size() - 1));
             }
             return super.visitAs_clause(ctx);
         }
@@ -142,22 +154,30 @@ public class CreateView extends ParserAbstract {
         PgSelect getSelect() {
             for (GenericColumn column : columns) {
                 if (column.schema == null && column.table != null) {
-                    String unaliased = tableAliases.get(column.table);
+                    GenericColumn unaliased = tableAliases.get(column.table);
                     if (unaliased != null) {
-                        column = new GenericColumn(ParserUtils.getSchemaName(
-                                unaliased, db),
-                                ParserUtils.getObjectName(unaliased),
+                        column = new GenericColumn(unaliased.schema == null ? 
+                                db.getDefaultSchema().getName()
+                                : unaliased.schema, unaliased.table,
                                 column.column);
-                    }
-                    // те колонки которые не попали в алиасы не должны быть в
-                    // списке алиасов подзапросов
-                    if (!aliasNames.contains(column.table)) {
-                        column = new GenericColumn(
-                                column.schema != null ? column.schema : db
-                                        .getDefaultSchema().getName(),
-                                column.table, column.column);
                         select.addColumn(column);
+                    } else if (!aliasNames.contains(column.table)
+                            && column.column != null) {
+                        select.addColumn(new GenericColumn(
+                                column.schema == null ? 
+                                        db.getDefaultSchema().getName() 
+                                        : column.schema,
+                                column.table, column.column));
                     }
+                } else
+                // те колонки которые не попали в алиасы не должны быть в
+                // списке алиасов подзапросов
+                if (!aliasNames.contains(column.table) && column.column != null) {
+                    column = new GenericColumn(
+                            column.schema != null ? column.schema : db
+                                    .getDefaultSchema().getName(),
+                            column.table, column.column);
+                    select.addColumn(column);
                 }
             }
             return select;
