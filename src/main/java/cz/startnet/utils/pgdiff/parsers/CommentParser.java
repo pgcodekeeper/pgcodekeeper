@@ -65,12 +65,6 @@ public final class CommentParser {
         }
     }
 
-    /**
-     * Parses COMMENT ON TABLE.
-     *
-     * @param parser   parser
-     * @param database database
-     */
     private static void parseTable(final Parser parser,
             final PgDatabase database) {
         final String tableName = parser.parseIdentifier();
@@ -86,12 +80,6 @@ public final class CommentParser {
         parser.expect(";");
     }
 
-    /**
-     * Parses COMMENT ON CONSTRAINT.
-     *
-     * @param parser   parser
-     * @param database database
-     */
     private static void parseConstraint(final Parser parser,
             final PgDatabase database) {
         final String constraintName =
@@ -112,12 +100,6 @@ public final class CommentParser {
         parser.expect(";");
     }
 
-    /**
-     * Parses COMMENT ON DATABASE.
-     *
-     * @param parser   parser
-     * @param database database
-     */
     private static void parseDatabase(final Parser parser,
             final PgDatabase database) {
         parser.parseIdentifier();
@@ -126,12 +108,6 @@ public final class CommentParser {
         parser.expect(";");
     }
 
-    /**
-     * Parses COMMENT ON INDEX.
-     *
-     * @param parser   parser
-     * @param database database
-     */
     private static void parseIndex(final Parser parser,
             final PgDatabase database) {
         final String indexName = parser.parseIdentifier();
@@ -171,12 +147,6 @@ public final class CommentParser {
         }
     }
 
-    /**
-     * Parses COMMENT ON SCHEMA.
-     *
-     * @param parser   parser
-     * @param database database
-     */
     private static void parseSchema(final Parser parser,
             final PgDatabase database) {
         final String schemaName =
@@ -188,12 +158,6 @@ public final class CommentParser {
         parser.expect(";");
     }
 
-    /**
-     * Parses COMMENT ON SEQUENCE.
-     *
-     * @param parser   parser
-     * @param database database
-     */
     private static void parseSequence(final Parser parser,
             final PgDatabase database) {
         final String sequenceName = parser.parseIdentifier();
@@ -209,12 +173,6 @@ public final class CommentParser {
         parser.expect(";");
     }
 
-    /**
-     * Parses COMMENT ON TRIGGER.
-     *
-     * @param parser   parser
-     * @param database database
-     */
     private static void parseTrigger(final Parser parser,
             final PgDatabase database) {
         final String triggerName =
@@ -235,12 +193,6 @@ public final class CommentParser {
         parser.expect(";");
     }
 
-    /**
-     * Parses COMMENT ON VIEW.
-     *
-     * @param parser   parser
-     * @param database database
-     */
     private static void parseView(final Parser parser,
             final PgDatabase database) {
         final String viewName = parser.parseIdentifier();
@@ -255,12 +207,6 @@ public final class CommentParser {
         parser.expect(";");
     }
 
-    /**
-     * Parses COMMENT ON COLUMN.
-     *
-     * @param parser   parser
-     * @param database database
-     */
     private static void parseColumn(final Parser parser,
             final PgDatabase database) {
         final String columnName = parser.parseIdentifier();
@@ -298,12 +244,6 @@ public final class CommentParser {
         }
     }
 
-    /**
-     * Parses COMMENT ON FUNCTION.
-     *
-     * @param parser   parser
-     * @param database database
-     */
     private static void parseFunction(final Parser parser,
             final PgDatabase database) {
         final String functionName = parser.parseIdentifier();
@@ -366,13 +306,7 @@ public final class CommentParser {
         function.setComment(getComment(parser));
         parser.expect(";");
     }
-    
-    /**
-     * Parses COMMENT ON EXTENSION.
-     * 
-     * @param parser parser
-     * @param database database
-     */
+
     private static void parseExtension(final Parser parser,
             final PgDatabase database) {
         final String extension =
@@ -402,9 +336,6 @@ public final class CommentParser {
         return comment;
     }
 
-    /**
-     * Creates new instance of CommentParser.
-     */
     private CommentParser() {
     }
 }

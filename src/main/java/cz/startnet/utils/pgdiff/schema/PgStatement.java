@@ -73,7 +73,7 @@ public abstract class PgStatement {
         this.comment = comment;
     }
 
-    public StringBuilder appendCommentSql(StringBuilder sb) {
+    protected StringBuilder appendCommentSql(StringBuilder sb) {
         sb.append("COMMENT ON ");
         DbObjType type = getStatementType();
         if (type == null) {
@@ -89,7 +89,7 @@ public abstract class PgStatement {
             sb.append(type).append(' ');
             switch (type) {
             case FUNCTION:
-                ((PgFunction) this).appendFunctionSignature(sb, false, false);
+                ((PgFunction) this).appendFunctionSignature(sb, false, true);
                 break;
                 
             case CONSTRAINT:
@@ -99,13 +99,17 @@ public abstract class PgStatement {
                     .append(PgDiffUtils.getQuotedName(getParent().getName()));
                 break;
                 
+            case DATABASE:
+                sb.append("current_database()");
+                break;
+                
             default:
                 sb.append(PgDiffUtils.getQuotedName(getName()));
             }
         }
 
         return sb.append(" IS ")
-                .append(comment == null ? "NULL" : comment)
+                .append(comment == null || comment.isEmpty() ? "NULL" : comment)
                 .append(';');
     }
     

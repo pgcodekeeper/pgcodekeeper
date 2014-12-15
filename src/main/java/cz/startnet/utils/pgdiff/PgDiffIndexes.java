@@ -182,24 +182,8 @@ public final class PgDiffIndexes {
                 if (newIndex == null) {
                     continue;
                 }
-    
-                if (oldIndex.getComment() == null
-                        && newIndex.getComment() != null
-                        || oldIndex.getComment() != null
-                        && newIndex.getComment() != null
-                        && !oldIndex.getComment().equals(
-                        newIndex.getComment())) {
-                    searchPathHelper.outputSearchPath(script);
-                    script.addStatement("COMMENT ON INDEX "
-                            + PgDiffUtils.getQuotedName(newIndex.getName())
-                            + " IS " + newIndex.getComment() + ';');
-                } else if (oldIndex.getComment() != null
-                        && newIndex.getComment() == null) {
-                    searchPathHelper.outputSearchPath(script);
-                    script.addStatement("COMMENT ON INDEX "
-                            + PgDiffUtils.getQuotedName(newIndex.getName())
-                            + " IS NULL;");
-                }
+
+                PgDiff.diffComments(oldIndex, newIndex, script);
             }
         }
     }

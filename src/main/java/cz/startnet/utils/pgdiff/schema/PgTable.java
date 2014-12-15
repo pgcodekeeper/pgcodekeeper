@@ -194,22 +194,14 @@ public class PgTable extends PgStatementWithSearchPath {
         }
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\nCOMMENT ON TABLE ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
-            sbSQL.append(" IS ");
-            sbSQL.append(comment);
-            sbSQL.append(';');
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
         }
 
         for (final PgColumn column : columns) {
             if (column.getComment() != null && !column.getComment().isEmpty()) {
-                sbSQL.append("\n\nCOMMENT ON COLUMN ");
-                sbSQL.append(PgDiffUtils.getQuotedName(name));
-                sbSQL.append('.');
-                sbSQL.append(PgDiffUtils.getQuotedName(column.getName()));
-                sbSQL.append(" IS ");
-                sbSQL.append(column.getComment());
-                sbSQL.append(';');
+                sbSQL.append("\n\n");
+                column.appendCommentSql(sbSQL);
             }
         }
 

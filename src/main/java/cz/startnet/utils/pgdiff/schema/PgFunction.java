@@ -50,11 +50,8 @@ public class PgFunction extends PgStatementWithSearchPath {
         appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\nCOMMENT ON FUNCTION ");
-            appendFunctionSignature(sbSQL, false, true);
-            sbSQL.append(" IS ");
-            sbSQL.append(comment);
-            sbSQL.append(';');
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
         }
 
         return sbSQL.toString();

@@ -166,28 +166,8 @@ public final class PgDiffViews {
                 script.addStatement(newView.getPrivilegesSQL());
             }
 
-            if (oldView.getComment() == null
-                    && newView.getComment() != null
-                    || oldView.getComment() != null
-                    && newView.getComment() != null
-                    && !oldView.getComment().equals(
-                    newView.getComment())) {
-                searchPathHelper.outputSearchPath(script);
-                
-                script.addStatement("COMMENT ON VIEW "
-                        + PgDiffUtils.getQuotedName(newView.getName())
-                        + " IS "
-                        + newView.getComment()
-                        + ';');
-            } else if (oldView.getComment() != null
-                    && newView.getComment() == null) {
-                searchPathHelper.outputSearchPath(script);
-
-                script.addStatement("COMMENT ON VIEW "
-                        + PgDiffUtils.getQuotedName(newView.getName())
-                        + " IS NULL;");
-            }
-
+            PgDiff.diffComments(oldView, newView, script);
+            
             final List<String> columnNames =
                     new ArrayList<>(newView.getColumnComments().size());
 

@@ -181,31 +181,7 @@ public final class PgDiffTriggers {
                     continue;
                 }
 
-                if (oldTrigger.getComment() == null
-                        && newTrigger.getComment() != null
-                        || oldTrigger.getComment() != null
-                        && newTrigger.getComment() != null
-                        && !oldTrigger.getComment().equals(
-                        newTrigger.getComment())) {
-                    searchPathHelper.outputSearchPath(script);
-
-                    script.addStatement("COMMENT ON TRIGGER "
-                            + PgDiffUtils.getQuotedName(newTrigger.getName())
-                            + " ON "
-                            + PgDiffUtils.getQuotedName(newTrigger.getTableName())
-                            + " IS "
-                            + newTrigger.getComment()
-                            + ';');
-                } else if (oldTrigger.getComment() != null
-                        && newTrigger.getComment() == null) {
-                    searchPathHelper.outputSearchPath(script);
-
-                    script.addStatement("COMMENT ON TRIGGER "
-                            + PgDiffUtils.getQuotedName(newTrigger.getName())
-                            + " ON "
-                            + PgDiffUtils.getQuotedName(newTrigger.getTableName())
-                            + " IS NULL;");
-                }
+                PgDiff.diffComments(oldTrigger, newTrigger, script);
             }
         }
     }

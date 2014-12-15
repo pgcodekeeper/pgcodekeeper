@@ -76,11 +76,8 @@ public class PgExtension extends PgStatement {
         sbSQL.append(';');
         
         if(getComment() != null && !getComment().isEmpty()) {
-            sbSQL.append("\n\nCOMMENT ON EXTENSION ");
-            sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-            sbSQL.append(" IS ");
-            sbSQL.append(comment);
-            sbSQL.append(';');
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
         }
         
         return sbSQL.toString();

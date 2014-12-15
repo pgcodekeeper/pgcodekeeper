@@ -199,48 +199,8 @@ public final class PgDiffConstraints {
                 if (newConstraint == null) {
                     continue;
                 }
-
-                if (oldConstraint.getComment() == null
-                        && newConstraint.getComment() != null
-                        || oldConstraint.getComment() != null
-                        && newConstraint.getComment() != null
-                        && !oldConstraint.getComment().equals(
-                        newConstraint.getComment())) {
-                    searchPathHelper.outputSearchPath(script);
-                    
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("COMMENT ON ");
-                    if (newConstraint.isPrimaryKeyConstraint()) {
-                        sb.append("INDEX ");
-                        sb.append(PgDiffUtils.getQuotedName(newConstraint.getName()));
-                    } else {
-                        sb.append("CONSTRAINT ");
-                        sb.append(PgDiffUtils.getQuotedName(newConstraint.getName()));
-                        sb.append(" ON ");
-                        sb.append(PgDiffUtils.getQuotedName(newConstraint.getTableName()));
-                    }
-                    sb.append(" IS ");
-                    sb.append(newConstraint.getComment());
-                    sb.append(';');
-                    script.addStatement(sb.toString());
-                } else if (oldConstraint.getComment() != null
-                        && newConstraint.getComment() == null) {
-                    searchPathHelper.outputSearchPath(script);
-                    
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("COMMENT ON ");
-                    if (newConstraint.isPrimaryKeyConstraint()) {
-                        sb.append("INDEX ");
-                        sb.append(PgDiffUtils.getQuotedName(newConstraint.getName()));
-                    } else {
-                        sb.append("CONSTRAINT ");
-                        sb.append(PgDiffUtils.getQuotedName(newConstraint.getName()));
-                        sb.append(" ON ");
-                        sb.append(PgDiffUtils.getQuotedName(newConstraint.getTableName()));
-                    }
-                    sb.append(" IS NULL;");
-                    script.addStatement(sb.toString());
-                }
+                
+                PgDiff.diffComments(oldConstraint, newConstraint, script);
             }
         }
     }
