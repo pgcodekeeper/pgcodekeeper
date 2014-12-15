@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,7 +14,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -34,6 +32,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoaderTest;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
@@ -161,36 +160,42 @@ public class DbSourceTest {
         assertEquals("Db loaded from file not equal to predefined db", dbPredefined, dbFile);
     }
     
+    /*
+     * workspace in Jenkins:
+     * /var/lib/jenkins/workspace/codekeeper-multi/jdk/JDK-1.7_i586/ru.taximaxim.codekeeper.ui.tests/target/work/data
+     * 
+     */
     @Test
-    public void testProject() throws CoreException{
-        IWorkspace workspace = null;
-        try{
-            workspace = ResourcesPlugin.getWorkspace();
-        }catch(IllegalStateException ex){
-            fail(ex.getMessage());
-        }
-        IWorkspaceRoot root = workspace.getRoot();
+    public void testProject() throws CoreException, IOException{
+        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
         
         IPath p = root.getLocation();
         
         assertTrue("Workspace does not exist: " + p.toFile().getAbsolutePath(), p.toFile().exists());
-        // assure we are in correct workspace
-        assertEquals("Workspace path should end by \"junit-workspace\". Actual workspace path: " + p.toFile().getAbsolutePath(), "junit-workspace", p.toFile().getName());
         
-        IProject project = root.getProject("dbSourceProjectTest");
-        project.create(null);
-        
-        assertNotNull("Project location cannot be determined", project.getLocation());
-        
-        File projectFile = project.getLocation().toFile();
-        assertTrue("Project folder not created", projectFile.exists() && projectFile.isDirectory());
-        
-        String projectPath = projectFile.getAbsolutePath();
-        
-//        DbSource source = DbSource.fromProject(new PgDbProject(project));
-        
-//        project.open(null);
-        project.delete(true, null);
-        assertFalse("Expected to be deleted: " + projectPath, projectFile.exists());
+        try(TempDir tempDir = new TempDir(p.toFile().toPath(), "dbSourceProjectTest")){
+            File projectPath = tempDir.get();
+            
+            IProject project = root.getProject(projectPath.getName());
+            project.create(null);
+            
+            assertNotNull("Project location cannot be determined", project.getLocation());
+            
+            // populate project with data
+            new ModelExporter(projectPath, dbPredefined, UIConsts.UTF_8).exportFull();
+            
+            // testing itself
+            DbSource source = DbSource.fromProject(new PgDbProject(project));
+            
+            assertFalse("DB source should not be loaded", source.isLoaded());
+            
+            PgDatabase dbProject = source.get(SubMonitor.convert(new NullProgressMonitor(), "", 1));
+
+            assertTrue("DB source should be loaded", source.isLoaded());
+            
+            assertEquals("Db loaded from project not equal to predefined db", dbPredefined, dbProject);
+            
+            project.delete(true, null);
+        }
     }
 }
