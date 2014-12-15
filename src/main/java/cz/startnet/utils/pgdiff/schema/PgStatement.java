@@ -74,8 +74,39 @@ public abstract class PgStatement {
     }
 
     public StringBuilder appendCommentSql(StringBuilder sb) {
-        
-        return sb;
+        sb.append("COMMENT ON ");
+        DbObjType type = getStatementType();
+        if (type == null) {
+            if (this instanceof PgColumn) {
+                sb.append("COLUMN ")
+                    .append(PgDiffUtils.getQuotedName(getParent().getName()))
+                    .append('.')
+                    .append(PgDiffUtils.getQuotedName(getName()));
+            } else {
+                throw new IllegalStateException("Object type is null!");
+            }
+        } else {
+            sb.append(type).append(' ');
+            switch (type) {
+            case FUNCTION:
+                ((PgFunction) this).appendFunctionSignature(sb, false, false);
+                break;
+                
+            case CONSTRAINT:
+            case TRIGGER:
+                sb.append(PgDiffUtils.getQuotedName(getName()))
+                    .append(" ON ")
+                    .append(PgDiffUtils.getQuotedName(getParent().getName()));
+                break;
+                
+            default:
+                sb.append(PgDiffUtils.getQuotedName(getName()));
+            }
+        }
+
+        return sb.append(" IS ")
+                .append(comment == null ? "NULL" : comment)
+                .append(';');
     }
     
     public String getCommentSql() {
@@ -147,7 +178,7 @@ public abstract class PgStatement {
         case SEQUENCE:
         case TABLE:
         case VIEW:
-        case FUNCTION: // NOTE: handled separately in its class
+        case FUNCTION:
             break;
         default:
             throw new IllegalStateException("OWNERs allowed only for SCHEMA, "
@@ -155,9 +186,13 @@ public abstract class PgStatement {
         }
         sb.append("\n\nALTER ")
             .append(type)
-            .append(' ')
-            .append(PgDiffUtils.getQuotedName(getName()))
-            .append(" OWNER TO ")
+            .append(' ');
+        if (this instanceof PgFunction) {
+            ((PgFunction) this).appendFunctionSignature(sb, false, true);
+        } else {
+            sb.append(PgDiffUtils.getQuotedName(getName()));
+        }
+        sb.append(" OWNER TO ")
             .append(owner)
             .append(';');
         

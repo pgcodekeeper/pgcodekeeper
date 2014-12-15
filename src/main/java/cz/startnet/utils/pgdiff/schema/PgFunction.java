@@ -60,21 +60,6 @@ public class PgFunction extends PgStatementWithSearchPath {
         return sbSQL.toString();
     }
     
-    @Override
-    protected StringBuilder appendOwnerSQL(StringBuilder sb) {
-        if (owner == null) {
-            return sb;
-        }
-        
-        sb.append("\n\nALTER FUNCTION ");
-        appendFunctionSignature(sb, false, true)
-            .append(" OWNER TO ")
-            .append(owner)
-            .append(';');
-        
-        return sb;
-    }
-    
     public StringBuilder appendFunctionSignature(StringBuilder sb,
             boolean includeDefaultValues, boolean includeArgNames) {
         sb.append(PgDiffUtils.getQuotedName(name));
