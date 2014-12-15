@@ -141,7 +141,7 @@ public class DbSourceTest {
     }
     
     @Test
-    public void testProject() throws CoreException, IOException{
+    public void testProject() throws CoreException, IOException, PgCodekeeperUIException{
         try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceProjectTest")){
             // create empty project in temp dir
             IProject project = createProjectInWorkspace(tempDir.get());
@@ -150,14 +150,19 @@ public class DbSourceTest {
             new ModelExporter(tempDir.get(), dbPredefined, UIConsts.UTF_8).exportFull();
             
             // testing itself
-            performTest(DbSource.fromProject(new PgDbProject(project)));
+            PgDbProject proj = new PgDbProject(project);
+            proj.openProject();
+
+            assertEquals("Project name differs", tempDir.get().getName(), proj.getProjectName());
             
-            project.delete(true, null);
+            performTest(DbSource.fromProject(proj));
+            
+            proj.deleteFromWorkspace();
         }
     }
     
     @Test
-    public void testJdbcFromProject() throws CoreException, IOException, URISyntaxException, BackingStoreException{
+    public void testJdbcFromProject() throws CoreException, IOException, URISyntaxException, BackingStoreException, PgCodekeeperUIException{
         try(TempDir tempDir = new TempDir(workspacePath.toPath(), "dbSourceJdbcTest")){
             // create empty project in temp dir
             IProject project = createProjectInWorkspace(tempDir.get());
@@ -167,15 +172,19 @@ public class DbSourceTest {
             
             // set required settings
             PgDbProject proj = new PgDbProject(project);
+            proj.openProject();
+            
             proj.getPrefs().put(PROJ_PREF.DB_NAME, TEST.REMOTE_DB);
             proj.getPrefs().put(PROJ_PREF.DB_USER, TEST.REMOTE_USERNAME);
             proj.getPrefs().put(PROJ_PREF.DB_HOST, TEST.REMOTE_HOST);
             proj.getPrefs().putInt(PROJ_PREF.DB_PORT, TEST.REMOTE_PORT);
             
+            assertEquals("Project name differs", tempDir.get().getName(), proj.getProjectName());
+            
             // testing itself
             performTest(DbSource.fromJdbc(proj, TEST.REMOTE_PASSWORD));
             
-            project.delete(true, null);
+            proj.deleteFromWorkspace();
         }
     }
     
