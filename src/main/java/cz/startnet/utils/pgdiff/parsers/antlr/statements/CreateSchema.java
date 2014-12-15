@@ -32,7 +32,14 @@ public class CreateSchema extends ParserAbstract {
         if (elements.length() > 0) {
             schema.setDefinition(elements.toString());
         }
-        fillObjLocation(schema, ctx.name.getStart().getStartIndex(), name);
+        PgSchema exists = db.getSchema(schema.getName());
+        if (exists == null) {
+            db.addSchema((PgSchema) schema);
+        } else {
+            db.tryReplacePublicDef((PgSchema) schema);
+        }
+        fillObjLocation(schema, ctx.name.getStart().getStartIndex(), name, 
+                db.getSchema(schema.getName()) != null);
         return schema;
     }
 

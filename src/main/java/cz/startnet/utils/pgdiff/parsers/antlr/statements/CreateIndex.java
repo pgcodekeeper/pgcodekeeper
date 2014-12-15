@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 
-import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -28,7 +27,9 @@ public class CreateIndex extends ParserAbstract {
         ind.setDefinition(getFullCtxText(ctx.using_def()));
         ind.setUnique(ctx.UNIQUE() != null);
         if (name != null) {
-            fillObjLocation(ind, ctx.name.getStart().getStartIndex(),schemaName);
+            db.getSchema(schemaName).getTable(ind.getTableName()).addIndex(ind);
+            fillObjLocation(ind, ctx.name.getStart().getStartIndex(),schemaName, 
+                    db.getSchema(schemaName).getTable(ind.getTableName()).getIndex(name) !=null);
         }
         return ind;
     }

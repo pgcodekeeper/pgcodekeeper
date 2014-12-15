@@ -49,7 +49,9 @@ public class CreateView extends ParserAbstract {
                 view.addColumnName(column);
             }
         }
-        fillObjLocation(view, ctx.name.getStart().getStartIndex(), schemaName);
+        db.getSchema(schemaName).addView(view);
+        fillObjLocation(view, ctx.name.getStart().getStartIndex(), schemaName,
+                db.getSchema(schemaName).getView(name) != null);
         return view;
     }
 

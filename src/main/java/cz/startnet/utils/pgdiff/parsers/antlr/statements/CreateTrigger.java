@@ -46,8 +46,9 @@ public class CreateTrigger extends ParserAbstract {
         if (ctx.when_expr != null) {
             trigger.setWhen(ctx.when_expr.getText());
         }
-        
-        fillObjLocation(trigger, ctx.name.getStart().getStartIndex(), schemaName);
+        db.getSchema(schemaName).getTable(trigger.getTableName()).addTrigger(trigger);
+        fillObjLocation(trigger, ctx.name.getStart().getStartIndex(), schemaName,
+                db.getSchema(schemaName).getTable(trigger.getTableName()).getTrigger(name)!=null);
         return trigger;
     }
 

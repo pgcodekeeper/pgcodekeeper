@@ -34,7 +34,7 @@ public class CommentOn extends ParserAbstract {
             comment.setType(DbObjType.EXTENSION);
         } 
         comment.setComment(ctx.comment_text.getText());
-        fillObjLocation(comment, ctx.comment_text.getStartIndex(), getDefSchemaName());
+        fillObjLocation(comment, ctx.comment_text.getStartIndex(), getDefSchemaName(), false);
         return comment;
     }
 

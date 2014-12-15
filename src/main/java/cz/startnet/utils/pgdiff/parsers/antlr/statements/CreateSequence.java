@@ -22,32 +22,34 @@ public class CreateSequence extends ParserAbstract {
         if (schemaName==null) {
             schemaName = getDefSchemaName();
         }
-        PgSequence sequnce = new PgSequence(name, getFullCtxText(ctx.getParent()), "");
+        PgSequence sequence = new PgSequence(name, getFullCtxText(ctx.getParent()), "");
         for (Sequence_bodyContext body : ctx.sequence_body()) {
             if (body.cache_val != null) {
-                sequnce.setCache(body.cache_val.getText());
+                sequence.setCache(body.cache_val.getText());
             }
             if (body.incr!=null) {
-                sequnce.setIncrement(body.incr.getText());
+                sequence.setIncrement(body.incr.getText());
             }
             if (body.maxval!=null) {
-                sequnce.setMaxValue(body.maxval.getText());
+                sequence.setMaxValue(body.maxval.getText());
             }
             if (body.minval!=null) {
-                sequnce.setMinValue(body.minval.getText());
+                sequence.setMinValue(body.minval.getText());
             }
             if (body.start_val!=null) {
-                sequnce.setStartWith(body.start_val.getText());
+                sequence.setStartWith(body.start_val.getText());
             }
             if (body.cycle_val!=null) {
-                sequnce.setCycle(body.cycle_true==null);
+                sequence.setCycle(body.cycle_true==null);
             }
             if (body.col_name!=null) {
-                sequnce.setOwnedBy(body.col_name.getText());
+                sequence.setOwnedBy(body.col_name.getText());
             }
         }
-        fillObjLocation(sequnce, ctx.name.getStart().getStartIndex(), schemaName);
-        return sequnce;
+        db.getSchema(schemaName).addSequence(sequence);
+        fillObjLocation(sequence, ctx.name.getStart().getStartIndex(), schemaName,
+                db.getSchema(schemaName).getSequence(name)!= null);
+        return sequence;
     }
 
 }

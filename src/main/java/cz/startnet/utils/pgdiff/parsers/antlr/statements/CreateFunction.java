@@ -32,7 +32,9 @@ public class CreateFunction extends ParserAbstract {
         } else if(ctx.rettype_data != null) {
             function.setReturns(getFullCtxText(ctx.rettype_data));
         }
-        fillObjLocation(function, ctx.function_parameters().name.getStart().getStartIndex(),schemaName);
+        db.getSchema(schemaName).addFunction(function);
+        fillObjLocation(function, ctx.function_parameters().name.getStart().getStartIndex(),schemaName,
+                db.getSchema(schemaName).getFunction(function.getSignature())!=null);
         return function;
     }
 }

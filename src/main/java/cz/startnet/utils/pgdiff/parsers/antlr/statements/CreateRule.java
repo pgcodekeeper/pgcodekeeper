@@ -55,7 +55,7 @@ public class CreateRule extends ParserAbstract {
             object.setRevoke(ctx.REVOKE() != null);
             object.setObjName(name);
             fillObjLocation(object, ctx.getStart().getStartIndex(),
-                    getDefSchemaName());
+                    getDefSchemaName(), false);
         }
 
         return null;

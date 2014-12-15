@@ -95,6 +95,44 @@ public class PgDatabase extends PgStatement {
     public Set<PgObjLocation> getObjLocations() {
         return Collections.unmodifiableSet(objLocations);
     }
+    
+    public List<PgStatement> getObjectsByName(String objName) {
+        List<PgStatement> result = new ArrayList<>();
+        result.add(getObjByName(getSchemas(), objName));
+        result.add(getObjByName(getExtensions(), objName));
+        for (PgSchema schema : getSchemas()) {
+            findObjInSchema(schema, objName, result);
+        }
+        return result;
+    }
+    public List<PgStatement> getSchemaQualObjByName(String schemaName, String objName) {
+        List<PgStatement> result = new ArrayList<>();
+        findObjInSchema(getSchema(schemaName), objName, result);
+        return result;
+    }
+
+    private void findObjInSchema(PgSchema schema, String objName, List<PgStatement> result) {
+        result.add(getObjByName(schema.getFunctions(), objName));
+        result.add(getObjByName(schema.getViews(), objName));
+        result.add(getObjByName(schema.getSequences(), objName));
+        result.add(getObjByName(schema.getTables(), objName));
+        for (PgTable table : schema.getTables()) {
+            result.add(getObjByName(table.getColumns(), objName));
+            result.add(getObjByName(table.getConstraints(), objName));
+            result.add(getObjByName(table.getIndexes(), objName));
+            result.add(getObjByName(table.getTriggers(), objName));
+        }
+    }
+    
+    private <T extends PgStatement> T getObjByName(List<T> objs, String objName) {
+        for (T obj : objs) {
+            if (obj.getName().equals(objName)) {
+                return obj;
+            }
+        }
+        return null;
+    }
+    
 
     /**
      * Returns schema of given name or null if the schema has not been found. If

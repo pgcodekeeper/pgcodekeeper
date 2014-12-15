@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
@@ -29,9 +28,7 @@ public class CreateTable extends ParserAbstract {
         if (schemaName==null) {
             schemaName = getDefSchemaName();
         }
-        if (name == null) {
-            return null;
-        }
+        
         PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()), "");
         List<String> sequences = new ArrayList<>();
         for (Table_column_defContext colCtx : ctx.table_col_def) {
@@ -66,8 +63,9 @@ public class CreateTable extends ParserAbstract {
                 table.setWith("OIDS=true");
             }
         }
-        
-        fillObjLocation(table, ctx.name.getStart().getStartIndex(), schemaName);
+        db.getSchema(schemaName).addTable(table);
+        fillObjLocation(table, ctx.name.getStart().getStartIndex(), schemaName,
+                db.getSchema(schemaName).getTable(name)!=null);
         return table;
     }
 }

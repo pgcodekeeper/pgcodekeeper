@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
-import java.awt.MultipleGradientPaint.ColorSpaceType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
@@ -16,8 +15,6 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
-import cz.startnet.utils.pgdiff.parsers.ParserUtils;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgComment;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -29,7 +26,6 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgRuleCommon;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
@@ -46,9 +42,8 @@ public class SqlParserMain {
         List<PgObjLocation> alterObjects = new ArrayList<>();
         List<String> paths = new ArrayList<>();
         // paths = getPathsToFiles(pathToFile);
-        // pathToFile =
-        // "/home/botov_av/workspace/codekeeper/apgdiff/src/test/resources/cz/startnet/utils/pgdiff/loader";
-         paths = getPathsToFiles(pathToFile);
+        // pathToFile = "/home/botov_av/workspace/codekeeper/apgdiff/src/test/resources/cz/startnet/utils/pgdiff/loader";
+//         paths = getPathsToFiles(pathToFile);
         // paths.add("/home/botov_av/workspace/codekeeper/apgdiff/src/test/resources/cz/startnet/utils/pgdiff/loader/schema_17.sql");
         long timeout = System.currentTimeMillis();
         // paths.add("/home/botov_av/workspace/pg_dump_folder/maindb_dev2.sql");
