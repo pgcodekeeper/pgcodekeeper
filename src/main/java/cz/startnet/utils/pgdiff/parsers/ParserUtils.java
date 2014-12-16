@@ -18,6 +18,8 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
  */
 public final class ParserUtils {
 
+    public static final int ERROR_SUBSTRING_LENGTH = 20;
+
     /**
      * Returns object name from optionally schema qualified name.
      *
@@ -138,6 +140,17 @@ public final class ParserUtils {
         return "'" + s.replace("'", "''") + "'";
     }
 
+    public static String getErrorSubstr(String s, int pos) {
+        return getErrorSubstr(s, pos, ERROR_SUBSTRING_LENGTH);
+    }
+    
+    public static String getErrorSubstr(String s, int pos, int len) {
+        if (pos >= s.length()) {
+            return "";
+        }
+        return pos + len < s.length() ? s.substring(pos, pos + len) : s.substring(pos);
+    }
+    
     /**
      * Creates a new instance of ParserUtils.
      */

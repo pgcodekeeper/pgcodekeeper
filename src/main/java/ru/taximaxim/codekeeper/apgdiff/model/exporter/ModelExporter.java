@@ -496,8 +496,6 @@ public class ModelExporter {
         }
         
         try(PrintWriter outFile = new UnixPrintWriter(file, sqlEncoding)) {
-            Log.log(Log.LOG_DEBUG, "Dumped SQL:\n" + file.getAbsolutePath());
-            
             outFile.println(sql);
         }
     }

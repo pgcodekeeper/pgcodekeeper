@@ -54,7 +54,6 @@ public class JdbcConnector {
                 host + ":" + port + ", db name " + dbName + ", username " + user);
         Connection connection = DriverManager.getConnection(
                 "jdbc:postgresql://" + host + ":" + port + "/" + dbName, user, pass);
-        Log.log(Log.LOG_INFO, "JDBC connection has been established successfully");
         return connection;
     }
     

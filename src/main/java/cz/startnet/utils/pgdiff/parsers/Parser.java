@@ -16,8 +16,6 @@ import cz.startnet.utils.pgdiff.Resources;
  * @author fordfrog
  */
 public final class Parser {
-
-    public static final int ERROR_SUBSTRING_LENGTH = 20;
     
     /**
      * String to be parsed.
@@ -603,8 +601,6 @@ public final class Parser {
     }
     
     private String getErrorSubstring() {
-        return position + ERROR_SUBSTRING_LENGTH < string.length() ?
-                string.substring(position, position + ERROR_SUBSTRING_LENGTH) :
-                    string.substring(position);
+        return ParserUtils.getErrorSubstr(string, position);
     }
 }

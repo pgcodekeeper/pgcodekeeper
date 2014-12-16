@@ -93,7 +93,7 @@ public class JdbcLoader implements PgCatalogStrings {
             Log.log(Log.LOG_INFO, "Reading db using JDBC.");
             connection = connector.getConnection();
             
-            setTimeZone("'" + connector.getTimezone() + "'");
+            setTimeZone(connector.getTimezone());
             prepareStatements();
             prepareData();
             
@@ -150,7 +150,7 @@ public class JdbcLoader implements PgCatalogStrings {
     private void setTimeZone(String timezone) throws SQLException {
         Log.log(Log.LOG_INFO, "Setting JDBC session timezone to " + timezone);
         try(Statement stmnt = connection.createStatement()){
-            stmnt.execute("SET timezone = " + timezone);
+            stmnt.execute("SET timezone = '" + timezone + '\'');
         }
     }
 
@@ -194,47 +194,47 @@ public class JdbcLoader implements PgCatalogStrings {
         try {
             connection.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_DEBUG, "Could not close JDBC connection", e);
+            Log.log(Log.LOG_WARNING, "Could not close JDBC connection", e);
         }
         try {
             prepStatTables.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for tables", e);
+            Log.log(Log.LOG_WARNING, "Could not close prepared statement for tables", e);
         }
         try {
             prepStatViews.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for views", e);
+            Log.log(Log.LOG_WARNING, "Could not close prepared statement for views", e);
         }
         try {
             prepStatTriggers.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for triggers", e);
+            Log.log(Log.LOG_WARNING, "Could not close prepared statement for triggers", e);
         }
         try {
             prepStatFunctions.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for functions", e);
+            Log.log(Log.LOG_WARNING, "Could not close prepared statement for functions", e);
         }
         try {
             prepStatSequences.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for sequences", e);
+            Log.log(Log.LOG_WARNING, "Could not close prepared statement for sequences", e);
         }
         try {
             prepStatConstraints.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for constraints", e);
+            Log.log(Log.LOG_WARNING, "Could not close prepared statement for constraints", e);
         }
         try {
             prepStatIndecies.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for indecies", e);
+            Log.log(Log.LOG_WARNING, "Could not close prepared statement for indecies", e);
         }
         try {
             prepStatColumnsOfSchema.close();
         } catch (Exception e) {
-            Log.log(Log.LOG_DEBUG, "Could not close prepared statement for schema columns", e);
+            Log.log(Log.LOG_WARNING, "Could not close prepared statement for schema columns", e);
         }
     }
     

@@ -184,8 +184,8 @@ public class DepcyGraph {
                         if (clmn != null){
                             graph.addEdge(view, clmn);
                         } else {
-                            Log.log(Log.LOG_DEBUG,
-                                    "No column " + clmnName 
+                            Log.log(Log.LOG_WARNING,
+                                    "Depcy: No column " + clmnName 
                                     + " found in " + tblName 
                                     + " selected by view " + view.getName());
                         }
@@ -195,8 +195,8 @@ public class DepcyGraph {
                             graph.addVertex(vw);
                             graph.addEdge(view, vw);
                         } else {
-                            Log.log(Log.LOG_DEBUG,
-                                    "View " + view.getName()
+                            Log.log(Log.LOG_WARNING,
+                                    "Depcy: View " + view.getName()
                                     + " references table/view " + tblName
                                     + " that doesn't exist!");
                         }

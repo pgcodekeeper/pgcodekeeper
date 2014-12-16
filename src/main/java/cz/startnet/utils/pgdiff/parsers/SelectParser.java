@@ -74,9 +74,9 @@ public final class SelectParser {
         } catch (ParserException ex) {
             Log.log(ex);
         } catch (Exception ex) {
-            Log.log(Log.LOG_DEBUG,
+            Log.log(Log.LOG_WARNING,
                     "Exception while trying to parse following SELECT statement\n"
-                            + statement, ex);
+                            + ParserUtils.getErrorSubstr(statement, 0, 50), ex);
         }
         
         // return at least what we were able to parse
@@ -110,9 +110,6 @@ public final class SelectParser {
                 if (m.matches()) {
                     columns.add(new GenericColumn(m.group(GRP_SCHEMA),
                             m.group(GRP_TABLE), m.group(GRP_COLUMN)));
-                } else {
-                    Log.log(Log.LOG_DEBUG, "SELECT column didn't match the pattern:\n"
-                            + column);
                 }
             } while (p.expectOptional(","));
             
