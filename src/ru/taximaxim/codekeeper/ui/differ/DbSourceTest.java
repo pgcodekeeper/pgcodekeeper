@@ -18,7 +18,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.junit.BeforeClass;
@@ -27,6 +26,7 @@ import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.TEST;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -137,7 +137,7 @@ public class DbSourceTest {
         URL urla = JdbcLoaderTest.class.getResource(RESOURCE_DUMP);
         
         performTest(DbSource.fromFile(
-                new File(FileLocator.toFileURL(urla).toURI()).getCanonicalPath(), UIConsts.UTF_8));
+                ApgdiffTestUtils.getFileFromRes(urla).getCanonicalPath(), UIConsts.UTF_8));
     }
     
     @Test
