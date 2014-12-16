@@ -77,10 +77,15 @@ public abstract class ParserAbstract {
         return ctx.start.getInputStream().getText(interval);
     }
 
+    /**
+     * Get list schema qualified names in string
+     * @param ctx list Schema_qualified_name
+     * @return List of strings
+     */
     protected List<String> getNames(List<Schema_qualified_nameContext> ctx) {
         List<String> result = new ArrayList<>();
         for (Schema_qualified_nameContext name : ctx) {
-            result.add(getName(name));
+            result.add(name.getText());
         }
         return result;
     }
