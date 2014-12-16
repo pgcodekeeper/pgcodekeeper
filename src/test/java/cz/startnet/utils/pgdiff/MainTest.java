@@ -19,7 +19,6 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.eclipse.core.runtime.FileLocator;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
