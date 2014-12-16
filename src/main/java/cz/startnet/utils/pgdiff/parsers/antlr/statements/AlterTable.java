@@ -56,6 +56,10 @@ public class AlterTable extends ParserAbstract {
                 table.setOwner(tablAction.owner_to().name.getText());
                 if (tabl != null) {
                     tabl.setOwner(tablAction.owner_to().name.getText());
+                } else if (db.getSchema(schemaName).getSequence(name) != null) {
+                    db.getSchema(schemaName).getSequence(name).setOwner(tablAction.owner_to().name.getText());
+                } else if (db.getSchema(schemaName).getView(name) != null) {
+                    db.getSchema(schemaName).getView(name).setOwner(tablAction.owner_to().name.getText());
                 }
             }
             if (tablAction.WITHOUT() != null && tablAction.OIDS() != null) {

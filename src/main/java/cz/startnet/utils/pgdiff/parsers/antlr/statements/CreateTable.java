@@ -41,7 +41,7 @@ public class CreateTable extends ParserAbstract {
             }
         }
         for (String seq : sequences) {
-        table.addSequence(seq);
+            table.addSequence(seq);
         }
         if (ctx.paret_table != null) {
             for (Schema_qualified_nameContext nameInher : ctx.paret_table.names_references().name) {
