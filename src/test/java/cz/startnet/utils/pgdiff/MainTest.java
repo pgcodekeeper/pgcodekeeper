@@ -26,6 +26,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+
 @RunWith(value = Parameterized.class)
 public class MainTest {
 
@@ -151,8 +153,7 @@ abstract class ArgumentsProvider implements Closeable{
     }
     
     public File getPredefinedResultFile() throws URISyntaxException, IOException {
-        URL resourceUrl = MainTest.class.getResource(resName + "_diff.sql");
-        return new File(FileLocator.toFileURL(resourceUrl).toURI());
+        return ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_diff.sql"));
     }
 
     public File getDiffResultFile() throws IOException {
@@ -293,11 +294,8 @@ class ArgumentsProvider_6 extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
-        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
-        
-        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
-        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        File fNew = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_new.sql"));
+        File fOriginal = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_original.sql"));
         
         return new String[]{"--diff", "--dbOld-format", "dump", "--allow-danger-ddl", "DROP_TABLE", 
                 fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
@@ -325,11 +323,8 @@ class ArgumentsProvider_7 extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
-        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
-        
-        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
-        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        File fNew = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_new.sql"));
+        File fOriginal = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_original.sql"));
         
         return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_TABLE", 
                 fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
@@ -410,11 +405,8 @@ class ArgumentsProvider_DangerTbl extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
-        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
-        
-        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
-        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        File fNew = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_new.sql"));
+        File fOriginal = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_original.sql"));
         
         return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), 
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
@@ -447,11 +439,8 @@ class ArgumentsProvider_DangerTblOk extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
-        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
-        
-        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
-        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        File fNew = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_new.sql"));
+        File fOriginal = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_original.sql"));
         
         return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_TABLE", 
                 fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
@@ -478,11 +467,8 @@ class ArgumentsProvider_DangerDropCol extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
-        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
-        
-        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
-        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        File fNew = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_new.sql"));
+        File fOriginal = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_original.sql"));
         
         return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), 
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
@@ -515,11 +501,8 @@ class ArgumentsProvider_DangerDropColOk extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
-        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
-        
-        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
-        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        File fNew = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_new.sql"));
+        File fOriginal = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_original.sql"));
         
         return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", 
                 "DROP_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), 
@@ -547,11 +530,8 @@ class ArgumentsProvider_DangerAlterCol extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
-        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
-        
-        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
-        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        File fNew = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_new.sql"));
+        File fOriginal = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_original.sql"));
         
         return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), 
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
@@ -584,11 +564,8 @@ class ArgumentsProvider_DangerAlterColOk extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
-        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
-        
-        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
-        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        File fNew = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_new.sql"));
+        File fOriginal = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_original.sql"));
         
         return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", 
                 "ALTER_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), 
@@ -617,11 +594,8 @@ class ArgumentsProvider_16 extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        URL urlaNew = MainTest.class.getResource(resName + "_new.sql");
-        URL urlaOriginal = MainTest.class.getResource(resName + "_original.sql");
-        
-        File fNew = new File(FileLocator.toFileURL(urlaNew).toURI());
-        File fOriginal = new File(FileLocator.toFileURL(urlaOriginal).toURI());
+        File fNew = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_new.sql"));
+        File fOriginal = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName + "_original.sql"));
         
         return new String[]{"--diff", "--output-ignored-statements", "--ignore-start-with", 
                 "--ignore-slony-triggers", "--ignore-function-whitespace", "--add-transaction", 
@@ -632,7 +606,7 @@ class ArgumentsProvider_16 extends ArgumentsProvider{
     @Override
     public File getPredefinedResultFile() throws URISyntaxException, IOException {
         URL resourceUrl = MainTest.class.getResource("MainTest_" + resName + "_diff.sql");
-        return new File(FileLocator.toFileURL(resourceUrl).toURI());
+        return ApgdiffTestUtils.getFileFromRes(resourceUrl);
     }
     
     @Override
@@ -657,7 +631,7 @@ class ArgumentsProvider_17 extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        File db = new File(FileLocator.toFileURL(MainTest.class.getResource(resName)).toURI());
+        File db = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName));
         
         return new String[]{"--parse", db.getAbsolutePath(), getParseResultDir().getAbsolutePath()};
     }
