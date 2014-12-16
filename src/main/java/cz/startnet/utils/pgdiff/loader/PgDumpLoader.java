@@ -384,7 +384,7 @@ public final class PgDumpLoader { //NOPMD
     public static PgDatabase loadDatabaseSchemaFromDump(final InputStream inputStream,
             final String charsetName, final boolean outputIgnoredStatements,
             final boolean ignoreSlonyTriggers) {
-        return loadDatabaseSchemaCore(inputStream, charsetName, outputIgnoredStatements,
+        return loadDatabaseSchemaCoreAntLR(inputStream, charsetName, outputIgnoredStatements,
                 ignoreSlonyTriggers, new PgDatabase());
     }
     

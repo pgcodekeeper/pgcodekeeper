@@ -113,7 +113,7 @@ public class AlterTable extends ParserAbstract {
             col.setStatistics(new Integer(number));
             table.addColumn(col);
         } else {
-            table.getColumn(getName(tablAction.column)).setStatistics(new Integer(tablAction.integer.toString()));   
+            table.getColumn(getName(tablAction.column)).setStatistics(new Integer(tablAction.integer.getText()));   
         }
     }
 

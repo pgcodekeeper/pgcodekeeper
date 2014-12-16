@@ -30,9 +30,9 @@ private Alter_view_statementContext ctx;
             }
         }
         if (ctx.set_def_column() != null) {
-            view.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(ctx.set_def_column()));
+            view.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(ctx.set_def_column().expression));
             if (dbView != null) {
-                view.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(ctx.set_def_column()));
+                dbView.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(ctx.set_def_column().expression));
             }
         }
         if(ctx.drop_def() != null) {

@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgComment;
+import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -69,13 +70,28 @@ public class CommentOn extends ParserAbstract {
             return comment;
             // index
         } else if (ctx.INDEX() != null) {
-            comment.setTableName(getTableName(ctx.name));
             if (schemaName.equals(comment.getTableName())) {
                 schemaName= getDefSchemaName();
             }
-            PgIndex index = db.getSchema(schemaName).getTable(comment.getTableName()).getIndex(comment.getObjName());
+            PgIndex index = null;
+            for (PgTable table : db.getSchema(schemaName).getTables()) {
+                index = table.getIndex(comment.getObjName());
+                if (index != null) {
+                    break;
+                }
+            }
+            
             if (index == null) {
-                db.getSchema(schemaName).getTable(comment.getTableName()).getConstraint(comment.getObjName()).setComment(comment.getComment());
+                PgConstraint constr= null;
+                for (PgTable table : db.getSchema(schemaName).getTables()) {
+                    constr = table.getConstraint(comment.getObjName());
+                    if (constr != null) {
+                        break;
+                    }
+                }
+                if (constr != null) {
+                    constr.setComment(comment.getComment());
+                }
             } else {
                 index.setComment(comment.getComment());
             }

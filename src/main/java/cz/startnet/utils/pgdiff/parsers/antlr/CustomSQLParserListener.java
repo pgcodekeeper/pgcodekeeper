@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_language_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
@@ -120,7 +121,7 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         PgSet set = (PgSet)new Set(ctx, db, filePath).getObject();
         if (set.getParam().equalsIgnoreCase("search_path")) {
             for (String value : set.getValues()) {
-                db.setDefaultSchema(value);
+                db.setDefaultSchema(ParserUtils.getObjectName(value));
                 break;
             }
         }

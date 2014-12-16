@@ -1390,7 +1390,7 @@ join_specification
   ;
 
 join_condition
-  : ON value_expression_primary_cast
+  : ON boolean_value_expression
   ;
 
 named_columns_join
