@@ -237,7 +237,7 @@ public class SqlScriptDialog extends TrayDialog {
         lblSourceInfo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, true));
         
         StringBuilder connectionDetails = new StringBuilder();
-        connectionDetails.append(Messages.connection_details); //$NON-NLS-1$
+        connectionDetails.append(Messages.connection_details); 
         connectionDetails.append(dbUser.isEmpty() ? "" : dbUser + "@"); //$NON-NLS-1$
         connectionDetails.append(dbHost.isEmpty() ? Messages.unknown_host : dbHost);
         connectionDetails.append(dbPort.isEmpty() ? "" : ":" + dbPort); //$NON-NLS-1$ 
@@ -449,7 +449,7 @@ public class SqlScriptDialog extends TrayDialog {
         // case Stop script
         else if (buttonId == 0 && isRunning){
             ConsoleFactory.write(Messages.sqlScriptDialog_script_execution_interrupted);
-            Log.log(Log.LOG_INFO, Messages.sqlScriptDialog_script_interrupted_by_user);
+            Log.log(Log.LOG_INFO, "Script execution interrupted by user");
             
             scriptThread.interrupt();
             getButton(0).setText(RUN_SCRIPT_LABEL);
@@ -473,9 +473,8 @@ public class SqlScriptDialog extends TrayDialog {
                     return;
                 }
                 
-                String fileSaved = Messages.sqlScriptDialog_script_saved_to_file + script.getAbsolutePath();
-                ConsoleFactory.write(fileSaved);
-                Log.log(Log.LOG_INFO, fileSaved);
+                ConsoleFactory.write(Messages.sqlScriptDialog_script_saved_to_file + script.getAbsolutePath());
+                Log.log(Log.LOG_INFO, "Script saved to file" + script.getAbsolutePath());
             }
         } else {
             this.close();

@@ -696,9 +696,7 @@ public class DiffTableViewer extends Composite {
         if (treeRoot == null){
             return null;
         }
-        
-        Log.log(Log.LOG_INFO, Messages.diffTableViewer_filtering_diff_tree_based_on_gui_selection);
-        
+        Log.log(Log.LOG_INFO, "Filtering diff tree based on user selection");
         return treeRoot.getFilteredCopy(getCheckedElements(true));
     }
     

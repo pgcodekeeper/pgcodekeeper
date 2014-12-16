@@ -46,6 +46,8 @@ public class ProjectUpdater {
         if (dbOld == null){
             throw new IOException(Messages.ProjectUpdater_old_db_null);
         }
+        
+        boolean caughtProcessingEx = false;
         try (TempDir tmp = new TempDir(dirExport.toPath(), "tmp-export")) { //$NON-NLS-1$
             File dirTmp = tmp.get();
             
@@ -75,6 +77,8 @@ public class ProjectUpdater {
                 
                 new ModelExporter(dirExport, dbNew, dbOld, changedObjects, encoding).exportPartial();
             } catch (Exception ex) {
+                caughtProcessingEx = true;
+                
                 Log.log(Log.LOG_ERROR, "Error while updating project!" , ex); //$NON-NLS-1$
             
                 try {
@@ -91,11 +95,16 @@ public class ProjectUpdater {
                 throw new IOException(Messages.ProjectUpdater_error_update, ex);
             }
         } catch (IOException ex) {
+            if (caughtProcessingEx) {
+                // exception & err msg are already formed in the inner catch
+                throw ex;
+            }
             throw new IOException(Messages.ProjectUpdater_error_no_tempdir, ex);
         }
     }
     
     public void updateFull() throws IOException {
+        boolean caughtProcessingEx = false;
         try (TempDir tmp = new TempDir(dirExport.toPath(), "tmp-export")) { //$NON-NLS-1$
             File dirTmp = tmp.get();
             
@@ -103,6 +112,8 @@ public class ProjectUpdater {
                 safeCleanProjectDir(dirTmp);
                 new ModelExporter(dirExport, dbNew, encoding).exportFull();
             } catch (Exception ex) {
+                caughtProcessingEx = true;
+                
                 Log.log(Log.LOG_ERROR, "Error while updating project!" //$NON-NLS-1$
                         + " Trying to restore data from backup", ex); //$NON-NLS-1$
             
@@ -120,8 +131,10 @@ public class ProjectUpdater {
                 throw new IOException(Messages.ProjectUpdater_error_update, ex);
             }
         } catch (IOException ex) {
-            // FIXME catches IOEx from the inside try block
-            // also updatePartial
+            if (caughtProcessingEx) {
+                // exception & err msg are already formed in the inner catch
+                throw ex;
+            }
             throw new IOException(Messages.ProjectUpdater_error_no_tempdir, ex);
         }
     }

@@ -66,7 +66,6 @@ public final class Messages extends NLS {
     public static String sqlScriptDialog_save_as;
     public static String sqlScriptDialog_script_contains_statements_that_may_modify_data;
     public static String sqlScriptDialog_script_execution_interrupted;
-    public static String sqlScriptDialog_script_interrupted_by_user;
     public static String sqlScriptDialog_script_output;
     public static String sqlScriptDialog_script_saved_to_file;
     public static String sqlScriptDialog_stop_script;
@@ -112,7 +111,6 @@ public final class Messages extends NLS {
     public static String diffTableViewer_deselect_child_elements;
     public static String diffTableViewer_mark_selected_elements;
     public static String diffTableViewer_unmark_selected_elements;
-    public static String diffTableViewer_filtering_diff_tree_based_on_gui_selection;
     public static String diffTableViewer_Input_name_for_save_checked_elements;
     public static String diffTableViewer_invert_selection;
     public static String diffTableViewer_object_name;

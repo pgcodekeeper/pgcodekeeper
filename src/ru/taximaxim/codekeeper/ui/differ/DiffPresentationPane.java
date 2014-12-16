@@ -430,7 +430,7 @@ public abstract class DiffPresentationPane extends Composite {
                     ModelExporter.getExportedFilename(el.getPgStatement(projectDb)) + ".sql"); //$NON-NLS-1$
             
             if (file.exists() && file.isFile()) {
-                Log.log(Log.LOG_WARNING, "Opening editor for file " + file.getAbsolutePath()); //$NON-NLS-1$
+                Log.log(Log.LOG_INFO, "Opening editor for file " + file.getAbsolutePath()); //$NON-NLS-1$
                 
                 IFileStore fileStore = EFS.getLocalFileSystem().getStore(file.toURI());
                 IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
