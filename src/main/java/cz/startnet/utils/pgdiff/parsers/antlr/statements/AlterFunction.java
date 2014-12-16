@@ -18,10 +18,19 @@ public class AlterFunction extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = getName(ctx.function_parameters().name);
+        String schemaName = getSchemaName(ctx.function_parameters().name);
+        if (schemaName == null) {
+            schemaName = getDefSchemaName();
+        }
         PgFunction function = new PgFunction(name, getFullCtxText(ctx.getParent()), "");
         fillArguments(ctx.function_parameters().function_args(), function);
+        PgFunction func= db.getSchema(schemaName).getFunction(function.getSignature());
         if (ctx.owner_to()!=null) {
             function.setOwner(ctx.owner_to().name.getText());
+            if (func != null) {
+                func.setOwner(ctx.owner_to().name.getText());
+                return null;
+            }
             return function;
         }
         return null;

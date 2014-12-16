@@ -23,54 +23,98 @@ public class AlterTable extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = getName(ctx.name);
+        String schemaName = getSchemaName(ctx.name);
+        if (schemaName == null) {
+            schemaName = getDefSchemaName();
+        }
         PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()), "");
+        PgTable tabl = db.getSchema(schemaName).getTable(name);
         List<String> sequences = new ArrayList<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
             if (tablAction.table_column_definition()!=null) {
                 table.addColumn(getColumn(tablAction.table_column_definition(), sequences));
+                if (tabl != null) {
+                    tabl.addColumn(getColumn(tablAction.table_column_definition(), sequences));
+                }
             }
             if (tablAction.tabl_constraint != null) {
                 PgConstraint constr = getTableConstraint(tablAction.tabl_constraint);
                 constr.setTableName(name);
                 table.addConstraint(constr);
+                if (tabl != null) {
+                    constr.dropParent();
+                    tabl.addConstraint(constr);
+                }
             }
             if (tablAction.index_name!=null) {
                 table.setClusterIndexName(getFullCtxText(tablAction.index_name));
+                if (tabl != null) {
+                    tabl.setClusterIndexName(getFullCtxText(tablAction.index_name));
+                }
             }
             if (tablAction.owner_to() !=null) {
                 table.setOwner(tablAction.owner_to().name.getText());
+                if (tabl != null) {
+                    tabl.setOwner(tablAction.owner_to().name.getText());
+                }
             }
             if (tablAction.WITHOUT() != null && tablAction.OIDS() != null) {
                 table.setWith("OIDS=false");
+                if (tabl != null) {
+                    tabl.setWith("OIDS=false");
+                }
             } else if (tablAction.WITH() != null && tablAction.OIDS() != null) {
                 table.setWith("OIDS=true");
+                if (tabl != null) {
+                    tabl.setWith("OIDS=true");
+                }
             }
             if (tablAction.column != null) {
                 if (tablAction.STATISTICS() != null) {
-                    if (table.getColumn(getName(tablAction.column)) == null) {
-                        PgColumn col = new PgColumn(getName(tablAction.column));
-                        String number = tablAction.integer.getText();
-                        col.setStatistics(new Integer(number));
-                        table.addColumn(col);
-                    } else {
-                        table.getColumn(getName(tablAction.column)).setStatistics(new Integer(tablAction.integer.toString()));   
+                    fillStatictics(table, tablAction);
+                    if (tabl != null) {
+                        fillStatictics(tabl, tablAction);
                     }
                 }
                 if (tablAction.set_def_column() != null) {
-                    if (table.getColumn(getName(tablAction.column)) == null) {
-                        PgColumn col = new PgColumn(getName(tablAction.column));
-                        col.setDefaultValue(getFullCtxText(tablAction.set_def_column().expression));
-                        table.addColumn(col);
-                    } else {
-                        table.getColumn(getName(tablAction.column)).setDefaultValue(getFullCtxText(tablAction.set_def_column().expression));   
+                    fillDefColumn(table, tablAction);
+                    if (tabl != null) {
+                        fillDefColumn(tabl, tablAction);
                     }
                 }
             }
         }
         for (String seq : sequences) {
             table.addSequence(seq);
+            if (tabl != null) {
+                tabl.addSequence(seq);
+            }
+        }
+        if (tabl != null) {
+            return null;
         }
         return table;
+    }
+
+    private void fillDefColumn(PgTable table, Table_actionContext tablAction) {
+        if (table.getColumn(getName(tablAction.column)) == null) {
+            PgColumn col = new PgColumn(getName(tablAction.column));
+            col.setDefaultValue(getFullCtxText(tablAction.set_def_column().expression));
+            table.addColumn(col);
+        } else {
+            table.getColumn(getName(tablAction.column)).setDefaultValue(getFullCtxText(tablAction.set_def_column().expression));   
+        }
+    }
+
+    private void fillStatictics(PgTable table, Table_actionContext tablAction) {
+        if (table.getColumn(getName(tablAction.column)) == null) {
+            PgColumn col = new PgColumn(getName(tablAction.column));
+            String number = tablAction.integer.getText();
+            col.setStatistics(new Integer(number));
+            table.addColumn(col);
+        } else {
+            table.getColumn(getName(tablAction.column)).setStatistics(new Integer(tablAction.integer.toString()));   
+        }
     }
 
 }

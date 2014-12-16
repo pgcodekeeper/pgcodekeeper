@@ -22,14 +22,27 @@ private Alter_view_statementContext ctx;
             schemaName = getDefSchemaName();
         }
         PgView view = new PgView(name, null, null);
+        PgView dbView = db.getSchema(schemaName).getView(name);
         if (ctx.owner_to() != null) {
             view.setOwner(removeQuoted(ctx.owner_to().name));
+            if (dbView != null) {
+                dbView.setOwner(removeQuoted(ctx.owner_to().name));
+            }
         }
         if (ctx.set_def_column() != null) {
             view.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(ctx.set_def_column()));
+            if (dbView != null) {
+                view.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(ctx.set_def_column()));
+            }
         }
         if(ctx.drop_def() != null) {
             view.removeColumnDefaultValue(getFullCtxText(ctx.column_name));
+            if (dbView != null) {
+                dbView.removeColumnDefaultValue(getFullCtxText(ctx.column_name));
+            }
+        }
+        if (dbView != null) {
+            return null;
         }
         return view;
     }

@@ -20,6 +20,11 @@ public class AlterSchema extends ParserAbstract {
         PgSchema schema = new PgSchema(name, getFullCtxText(ctx.getParent()));
         if (ctx.owner_to() != null) {
             schema.setOwner(removeQuoted(ctx.owner_to().name));
+            PgSchema sch = db.getSchema(name);
+            if (sch != null) {
+                sch.setOwner(removeQuoted(ctx.owner_to().name));
+                return null;
+            }
             return schema;
         }
         return null;
