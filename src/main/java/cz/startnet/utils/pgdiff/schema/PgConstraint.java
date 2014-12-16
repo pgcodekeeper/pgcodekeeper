@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -25,8 +26,12 @@ public class PgConstraint extends PgStatementWithSearchPath {
 
     private String definition;
     private String tableName;
-    private String comment;
 
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.CONSTRAINT;
+    }
+    
     public PgConstraint(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
     }
@@ -43,24 +48,11 @@ public class PgConstraint extends PgStatementWithSearchPath {
         sbSQL.append(';');
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\nCOMMENT ON CONSTRAINT ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
-            sbSQL.append(" ON ");
-            sbSQL.append(PgDiffUtils.getQuotedName(tableName));
-            sbSQL.append(" IS ");
-            sbSQL.append(comment);
-            sbSQL.append(';');
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
         }
 
         return sbSQL.toString();
-    }
-    
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     public void setDefinition(final String definition) {

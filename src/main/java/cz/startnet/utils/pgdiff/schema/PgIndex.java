@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -19,18 +20,15 @@ public class PgIndex extends PgStatementWithSearchPath {
     private String definition;
     private String tableName;
     private boolean unique;
-    private String comment;
 
+
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.INDEX;
+    }
+    
     public PgIndex(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     @Override
@@ -51,11 +49,8 @@ public class PgIndex extends PgStatementWithSearchPath {
         sbSQL.append(';');
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\nCOMMENT ON INDEX ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
-            sbSQL.append(" IS ");
-            sbSQL.append(comment);
-            sbSQL.append(';');
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
         }
 
         return sbSQL.toString();

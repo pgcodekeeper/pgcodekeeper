@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -39,9 +40,13 @@ public class PgTrigger extends PgStatementWithSearchPath {
     /**
      * Optional list of columns for UPDATE event.
      */
-    private final List<String> updateColumns = new ArrayList<String>();
+    private final List<String> updateColumns = new ArrayList<>();
     private String when;
-    private String comment;
+
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.TRIGGER;
+    }
     
     public PgTrigger(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);        
@@ -54,14 +59,6 @@ public class PgTrigger extends PgStatementWithSearchPath {
 
     public boolean isBefore() {
         return before;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     @Override
@@ -138,13 +135,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
         sbSQL.append(';');
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\nCOMMENT ON TRIGGER ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
-            sbSQL.append(" ON ");
-            sbSQL.append(PgDiffUtils.getQuotedName(tableName));
-            sbSQL.append(" IS ");
-            sbSQL.append(comment);
-            sbSQL.append(';');
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
         }
 
         return sbSQL.toString();

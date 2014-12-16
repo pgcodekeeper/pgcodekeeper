@@ -22,6 +22,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -30,12 +31,10 @@ import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgStatementWithSearchPath;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
-import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
  * Exports PgDatabase model as a directory tree with
@@ -152,20 +151,23 @@ public class ModelExporter {
         PgStatement st = el.getPgStatement(oldDb);
 
         TreeElement elParent = el.getParent().getParent();
-        if (st instanceof PgSchema){
+        switch (st.getStatementType()) {
+        case SCHEMA:
             // delete schema sql file
             deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
             
             // delete schema's folder content
             Log.log(Log.LOG_INFO, "Deleting schema folder for schema " + el.getName());
             deleteRecursive(new File(outDir, getRelativeFilePath(st, false).toString()));
-        }else if (st instanceof PgFunction){
+            break;
+        
+        case FUNCTION:
             if (!(elParent.getSide() == DiffSide.LEFT && changedObjects.contains(elParent))){
                 // delete function sql file
                 deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
                 
                 PgSchema newParentSchema = newDb.getSchema(st.getParent().getName());
-                List<PgFunction> funcsToExport = new ArrayList<PgFunction>();
+                List<PgFunction> funcsToExport = new ArrayList<>();
                 
                 String targetFuncFileName = getExportedFilename(st);
                 
@@ -179,13 +181,17 @@ public class ModelExporter {
                 dumpFunctions(funcsToExport, 
                         new File (outDir, getRelativeFilePath(newParentSchema, false).toString()));
             }
-        }else if (st instanceof PgConstraint 
-                || st instanceof PgIndex 
-                || st instanceof PgTrigger){
+            break;
+        
+        case CONSTRAINT:
+        case INDEX:
+        case TRIGGER:
             if (!changedObjects.contains(elParent)){
                 editObject(elParent);
             }
-        }else{
+            break;
+            
+        default:
             deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
         }
     }
@@ -201,20 +207,24 @@ public class ModelExporter {
         PgStatement stInNew = el.getPgStatement(newDb);
         TreeElement elParent = el.getParent().getParent();
 
-        if (stInNew instanceof PgSchema || stInNew instanceof PgExtension){
+        switch (stInNew.getStatementType()) {
+        case SCHEMA:
+        case EXTENSION:
             // delete sql file
             deleteFileIfExists(outDir, getRelativeFilePath(stInNew, true), el);
             
             // dump new version
             dumpSQL(stInNew.getFullSQL(), 
                     new File(outDir, getRelativeFilePath(stInNew, true).toString()));
-        }else if (stInNew instanceof PgFunction){
+            break;
+            
+        case FUNCTION:
             if ((elParent.getSide() != DiffSide.LEFT) || !changedObjects.contains(elParent)){
                 // delete function sql file
                 deleteFileIfExists(outDir, getRelativeFilePath(stInNew, true), el);
                 
                 PgSchema newParentSchema = newDb.getSchema(stInNew.getParent().getName());
-                List<PgFunction> funcsToExport = new ArrayList<PgFunction>();
+                List<PgFunction> funcsToExport = new ArrayList<>();
                 
                 String targetFuncFileName = getExportedFilename(stInNew);
                 
@@ -228,13 +238,17 @@ public class ModelExporter {
                 dumpFunctions(funcsToExport, 
                         new File (outDir, getRelativeFilePath(newParentSchema, false).toString()));
             }
-        }else if (stInNew instanceof PgConstraint 
-                || stInNew instanceof PgIndex 
-                || stInNew instanceof PgTrigger){
+            break;
+            
+        case CONSTRAINT:
+        case INDEX:
+        case TRIGGER:
             if (!changedObjects.contains(elParent)){
                 editObject(elParent);
             }
-        }else if (stInNew instanceof PgTable){
+            break;
+            
+        case TABLE:
             // remove old version
             deleteFileIfExists(outDir, getRelativeFilePath(stInNew, true), el);
 
@@ -245,7 +259,9 @@ public class ModelExporter {
             
             dumpTables(Arrays.asList(newTable), 
                     new File (outDir, getRelativeFilePath(stInNew.getParent(), false).toString()));
-        }else{
+            break;
+            
+        default:
             // remove old version
             deleteFileIfExists(outDir, getRelativeFilePath(stInNew, true), el);
             
@@ -266,37 +282,47 @@ public class ModelExporter {
         PgStatement stInNew = el.getPgStatement(newDb);
         TreeElement elParent = el.getParent().getParent();
         
-        if (stInNew instanceof PgSchema || stInNew instanceof PgExtension){
+        switch (stInNew.getStatementType()) {
+        case SCHEMA:
+        case EXTENSION:
             // export schema/extension sql file
             dumpSQL(stInNew.getFullSQL(), 
                     new File (outDir, getRelativeFilePath(stInNew, true).toString()));
-        }else if (stInNew instanceof PgFunction){
-            testParentSchema(elParent);
+            break;
             
+        case FUNCTION:
+            testParentSchema(elParent);
             editObject(el);
-        }else if (stInNew instanceof PgConstraint 
-                || stInNew instanceof PgIndex 
-                || stInNew instanceof PgTrigger){
+            break;
+            
+        case CONSTRAINT:
+        case INDEX:
+        case TRIGGER:
             if(!changedObjects.contains(elParent)){
                 editObject(elParent);
             }
-        }else if (stInNew instanceof PgSequence){
+            break;
+            
+        case SEQUENCE:
             testParentSchema(elParent);
-
             dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew), 
                     new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
                     "SEQUENCE");
-        }else if (stInNew instanceof PgView){
+            break;
+            
+        case VIEW:
             testParentSchema(elParent);
-
             dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew), 
                     new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())), 
                     "VIEW");
-        }else if (stInNew instanceof PgTable){
+            break;
+            
+        case TABLE:
             testParentSchema(elParent);
-
             editObject(el);
-        }else{
+            break;
+            
+        default:
             throw new IOException("Wrong TreeElement type: " + el.getType());
         }
     }
@@ -516,31 +542,36 @@ public class ModelExporter {
     }
     
     private File getRelativeFilePath(PgStatement st, boolean addExtension){
-        File file = new File("SCHEMA");
-        
         PgStatement parentSt = st.getParent();
         String parentExportedFileName = parentSt == null ? 
                 null : ModelExporter.getExportedFilename(parentSt);
-                
-        if (st instanceof PgExtension){
-            file = new File("EXTENSION");
-        }
-        else if (st instanceof PgSequence){
-            file = new File(new File(file, parentExportedFileName), "SEQUENCE");
-        }
-        else if (st instanceof PgView){
-            file = new File(new File(file, parentExportedFileName), "VIEW");
-        }
-        else if (st instanceof PgTable){
-            file = new File(new File(file, parentExportedFileName), "TABLE");
-        }
-        else if (st instanceof PgFunction){
-            file = new File(new File(file, parentExportedFileName), "FUNCTION");
-        }
-        else if (st instanceof PgConstraint || st instanceof PgIndex || st instanceof PgTrigger){
+        
+        File file = new File("SCHEMA");
+        DbObjType type = st.getStatementType();
+        switch (type) {
+        case EXTENSION:
+        case SCHEMA:
+            file = new File(type.toString());
+            break;
+            
+        case SEQUENCE:
+        case VIEW:
+        case TABLE:
+        case FUNCTION:
+            file = new File(new File(file, parentExportedFileName), type.toString());
+            break;
+            
+        case CONSTRAINT:
+        case INDEX:
+        case TRIGGER:
             st = parentSt;
             String schemaName = ModelExporter.getExportedFilename(parentSt.getParent());
             file = new File(new File(file, schemaName), "TABLE");
+            break;
+            
+        case DATABASE:
+        case CONTAINER:
+            // warning suppressor
         }
         
         return new File(file, ModelExporter.getExportedFilename(st) + (addExtension ? ".sql" : ""));

@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.Parser;
@@ -30,8 +31,12 @@ public class PgSchema extends PgStatement {
 
     private String authorization;
     private String definition;
-    private String comment;
 
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.SCHEMA;
+    }
+    
     public PgSchema(String name, String rawStatement) {
         super(name, rawStatement);
     }
@@ -43,14 +48,6 @@ public class PgSchema extends PgStatement {
 
     public String getAuthorization() {
         return authorization;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     public String getDefinition() {
@@ -79,11 +76,8 @@ public class PgSchema extends PgStatement {
         appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\nCOMMENT ON SCHEMA ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
-            sbSQL.append(" IS ");
-            sbSQL.append(comment);
-            sbSQL.append(';');
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
         }
 
         return sbSQL.toString();

@@ -232,7 +232,7 @@ class Predefined1 extends TreeElementCreator{
         PgView view = schema.getView("v2");
         PgTable table = schema.getTable("t1");
         PgColumn column = table.getColumn("c1");
-        return new HashSet<PgStatement>(Arrays.asList(db, schema, view, table, column));
+        return new HashSet<>(Arrays.asList(db, schema, view, table, column));
     }
    
     @Override
@@ -264,7 +264,7 @@ class Predefined1 extends TreeElementCreator{
     public Set<TreeElement> getExtraElementInTree(TreeElement filtered) {
         TreeElement o = filtered.getChild("Database").getChild("Target only").getChild("Schemas").
                 getChild(ApgdiffConsts.PUBLIC).getChild("Views").getChild("v1");
-        return new HashSet<TreeElement>(Arrays.asList(o));
+        return new HashSet<>(Arrays.asList(o));
     }
 
     @Override
@@ -368,7 +368,7 @@ class Predefined1 extends TreeElementCreator{
                 getChild(ApgdiffConsts.PUBLIC).getChild("Views");
         // КОСТЫЛЬ - конфликтующие объекты копируются в одного парента с разными DiffSide 
         TreeElement view = contViews.getChild(1);
-        return new HashSet<TreeElement>(Arrays.asList(view));
+        return new HashSet<>(Arrays.asList(view));
     }
 }
 
@@ -401,14 +401,14 @@ class Predefined2 extends TreeElementCreator{
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        return new HashSet<PgStatement>(Arrays.asList(db, db.getSchema(ApgdiffConsts.PUBLIC)));
+        return new HashSet<>(Arrays.asList(db, db.getSchema(ApgdiffConsts.PUBLIC)));
     }
 
     @Override
     public Set<TreeElement> getExtraElementInTree(TreeElement filtered) {
         TreeElement o = filtered.getChild("Database").getChild("Target only").getChild("Schemas").
         getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
-        return new HashSet<TreeElement>(Arrays.asList(o));
+        return new HashSet<>(Arrays.asList(o));
     }
 
     @Override
@@ -491,7 +491,7 @@ class Predefined2 extends TreeElementCreator{
 
     @Override
     public HashSet<TreeElement> getConflicting(TreeElement copy) {
-        return new HashSet<TreeElement>();
+        return new HashSet<>();
     }
 }
 
@@ -527,14 +527,14 @@ class Predefined3 extends TreeElementCreator{
         PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
         PgTable table = schema.getTable("t1");
         PgSequence seq = schema.getSequence("s1");
-        return new HashSet<PgStatement>(Arrays.asList(db, schema, table, seq));
+        return new HashSet<>(Arrays.asList(db, schema, table, seq));
     }
 
     @Override
     public Set<TreeElement> getExtraElementInTree(TreeElement filtered) {
         TreeElement o = filtered.getChild("Database").getChild("Target only").getChild("Schemas").
                 getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
-        return new HashSet<TreeElement>(Arrays.asList(o));
+        return new HashSet<>(Arrays.asList(o));
     }
 
     @Override
@@ -596,7 +596,7 @@ class Predefined3 extends TreeElementCreator{
         // КОСТЫЛЬ - конфликтующие объекты копируются в одного парента с разными DiffSide 
         TreeElement seq = contSeq.getChild(1);
         
-        return new HashSet<TreeElement>(Arrays.asList(seq));
+        return new HashSet<>(Arrays.asList(seq));
     }
 }
 
@@ -630,14 +630,14 @@ class Predefined4 extends TreeElementCreator{
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
         PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
-        return new HashSet<PgStatement>(Arrays.asList(db, schema));
+        return new HashSet<>(Arrays.asList(db, schema));
     }
 
     @Override
     public Set<TreeElement> getExtraElementInTree(TreeElement filtered) {
         TreeElement o = filtered.getChild("Database").getChild("Target only").getChild("Schemas").
                 getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
-        return new HashSet<TreeElement>(Arrays.asList(o));
+        return new HashSet<>(Arrays.asList(o));
     }
 
     @Override

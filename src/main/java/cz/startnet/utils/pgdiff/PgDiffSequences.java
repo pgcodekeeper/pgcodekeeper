@@ -199,22 +199,7 @@ public final class PgDiffSequences {
                 script.addStatement(newSequence.getPrivilegesSQL());
             }
 
-            if (oldSequence.getComment() == null
-                    && newSequence.getComment() != null
-                    || oldSequence.getComment() != null
-                    && newSequence.getComment() != null
-                    && !oldSequence.getComment().equals(
-                    newSequence.getComment())) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement("COMMENT ON SEQUENCE "
-                        + PgDiffUtils.getQuotedName(newSequence.getName())
-                        + " IS " + newSequence.getComment() + ';');
-            } else if (oldSequence.getComment() != null
-                    && newSequence.getComment() == null) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement("COMMENT ON SEQUENCE "
-                        + newSequence.getName() + " IS NULL;");
-            }
+            PgDiff.diffComments(oldSequence, newSequence, script);
         }
     }
 

@@ -167,17 +167,7 @@ public final class PgDiff {
             depcyNew = new DepcyGraph(new PgDatabase());
         }
         
-        if (oldDatabase.getComment() == null
-                && newDatabase.getComment() != null
-                || oldDatabase.getComment() != null
-                && newDatabase.getComment() != null
-                && !oldDatabase.getComment().equals(newDatabase.getComment())) {
-            script.addStatement("\nCOMMENT ON DATABASE current_database() IS " +
-                    newDatabase.getComment() + ";");
-        } else if (oldDatabase.getComment() != null
-                && newDatabase.getComment() == null) {
-            script.addStatement("\nCOMMENT ON DATABASE current_database() IS NULL;");
-        }
+        diffComments(oldDatabase, newDatabase, script);
 
         
         
@@ -259,7 +249,7 @@ public final class PgDiff {
                 boolean alreadyProcessed = result.contains(dependant);
                 if (alreadyProcessed) {
                     DepthFirstIterator<PgStatement, DefaultEdge> iter = 
-                            new DepthFirstIterator<PgStatement, DefaultEdge>(graph.getReversedGraph(), dependant);
+                            new DepthFirstIterator<>(graph.getReversedGraph(), dependant);
                     while(iter.hasNext()){
                         PgStatement next = iter.next();
                         result.remove(next);
@@ -361,6 +351,8 @@ public final class PgDiff {
                         + PgDiffUtils.getQuotedName(oldExt.getName())
                         + " SET SCHEMA " + newExt.getSchema() + ";");
             }
+            
+            diffComments(oldExt, newExt, script);
         }
     }
     
@@ -458,21 +450,7 @@ public final class PgDiff {
                     script.addStatement(newSchema.getPrivilegesSQL());
                 }
                 
-                if (oldSchema.getComment() == null
-                        && newSchema.getComment() != null
-                        || oldSchema.getComment() != null
-                        && newSchema.getComment() != null
-                        && !oldSchema.getComment().equals(
-                                newSchema.getComment())) {
-                    script.addStatement("COMMENT ON SCHEMA "
-                            + PgDiffUtils.getQuotedName(newSchema.getName())
-                            + " IS " + newSchema.getComment() + ';');
-                } else if (oldSchema.getComment() != null
-                        && newSchema.getComment() == null) {
-                    script.addStatement("COMMENT ON SCHEMA "
-                                + PgDiffUtils.getQuotedName(newSchema.getName())
-                                + " IS NULL;");
-                }
+                diffComments(oldSchema, newSchema, script);
             }
             updateSchemaContent(script, oldSchema, newSchema, searchPathHelper, arguments);
         }
@@ -571,7 +549,7 @@ public final class PgDiff {
         script.addDrop(pgObject, comment, pgObject.getDropSQL());
     }
     
-    public static List<PgStatement> addUniqueDependenciesOnCreateEdit(PgDiffScript script,
+    static List<PgStatement> addUniqueDependenciesOnCreateEdit(PgDiffScript script,
             PgDiffArguments arguments, SearchPathHelper newSearchPathHelper, PgStatement fullStatement){
         
         List<PgStatement> specialDependencies = new ArrayList<>();
@@ -584,7 +562,7 @@ public final class PgDiff {
             PgStatement fullStatement, PgStatement previous){
         
         // order is insignificant, if we do firstLevelSearchOnly
-        Set<PgStatement> dependencies = new HashSet<PgStatement>();
+        Set<PgStatement> dependencies = new HashSet<>();
         getDependenciesSet(fullStatement, dependencies, true);
         
         for (PgStatement dep : dependencies){
@@ -709,10 +687,21 @@ public final class PgDiff {
         }
     }
     
-    public static PgDatabase getFullDbNew() {
+    static PgDatabase getFullDbNew() {
         return dbNew;
     }
-
+    
+    static void diffComments(PgStatement oldStatement, PgStatement newStatement,
+            PgDiffScript script) {
+        String oldComment = oldStatement == null ? null : oldStatement.getComment();
+        // new statements are null checked before these calls
+        // but we may add a check here later if needed
+        
+        if (!Objects.equals(oldComment, newStatement.getComment())) {
+            script.addStatement(newStatement.getCommentSql());
+        }
+    }
+    
     private PgDiff() {
     }
 }

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -19,14 +20,12 @@ public abstract class PgStatement {
      * The statement as it's been read from dump before parsing.
      */
     private final String rawStatement;
-    
     protected final String name;
+    protected String owner;
+    protected String comment;
+    protected final List<PgPrivilege> privileges = new ArrayList<>();
     
     private PgStatement parent;
-    
-    protected final List<PgPrivilege> privileges = new ArrayList<>(1);
-
-    protected String owner;
     
     private volatile int hash;
     private volatile boolean hashComputed;
@@ -50,7 +49,9 @@ public abstract class PgStatement {
     public final String getBareName() {
         return name;
     }
-
+    
+    public abstract DbObjType getStatementType();
+    
     public PgStatement getParent() {
         return parent;
     }
@@ -68,6 +69,58 @@ public abstract class PgStatement {
         this.parent = parent;
     }
     
+    public String getComment() {
+        return comment;
+    }
+    
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    protected StringBuilder appendCommentSql(StringBuilder sb) {
+        sb.append("COMMENT ON ");
+        DbObjType type = getStatementType();
+        if (type == null) {
+            if (this instanceof PgColumn) {
+                sb.append("COLUMN ")
+                    .append(PgDiffUtils.getQuotedName(getParent().getName()))
+                    .append('.')
+                    .append(PgDiffUtils.getQuotedName(getName()));
+            } else {
+                throw new IllegalStateException("Object type is null!");
+            }
+        } else {
+            sb.append(type).append(' ');
+            switch (type) {
+            case FUNCTION:
+                ((PgFunction) this).appendFunctionSignature(sb, false, true);
+                break;
+                
+            case CONSTRAINT:
+            case TRIGGER:
+                sb.append(PgDiffUtils.getQuotedName(getName()))
+                    .append(" ON ")
+                    .append(PgDiffUtils.getQuotedName(getParent().getName()));
+                break;
+                
+            case DATABASE:
+                sb.append("current_database()");
+                break;
+                
+            default:
+                sb.append(PgDiffUtils.getQuotedName(getName()));
+            }
+        }
+
+        return sb.append(" IS ")
+                .append(comment == null || comment.isEmpty() ? "NULL" : comment)
+                .append(';');
+    }
+    
+    public String getCommentSql() {
+        return appendCommentSql(new StringBuilder()).toString();
+    }
+    
     public List<PgPrivilege> getPrivileges() {
         return Collections.unmodifiableList(privileges);
     }
@@ -83,18 +136,15 @@ public abstract class PgStatement {
             return sb;
         }
         
-        String type;
-        if (this instanceof PgSchema) {
-            type = "SCHEMA";
-        } else if (this instanceof PgSequence) {
-            type = "SEQUENCE";
-        } else if (this instanceof PgTable) {
-            type = "TABLE";
-        } else if (this instanceof PgView) {
-            type = "VIEW";
-        } else if (this instanceof PgFunction) {
-            type = "FUNCTION";
-        } else {
+        DbObjType type = getStatementType();
+        switch (type) {
+        case SCHEMA:
+        case SEQUENCE:
+        case TABLE:
+        case VIEW:
+        case FUNCTION:
+            break;
+        default:
             throw new IllegalStateException("GRANTs allowed only for SCHEMA, "
                     + "SEQUENCE, TABLE, VIEW, FUNCTION objects.");
         }
@@ -130,25 +180,27 @@ public abstract class PgStatement {
             return sb;
         }
         
-        String type;
-        if (this instanceof PgSchema) {
-            type = "SCHEMA";
-        } else if (this instanceof PgSequence) {
-            type = "SEQUENCE";
-        } else if (this instanceof PgTable) {
-            type = "TABLE";
-        } else if (this instanceof PgView) {
-            type = "VIEW";
-        } else {
+        DbObjType type = getStatementType();
+        switch (type) {
+        case SCHEMA:
+        case SEQUENCE:
+        case TABLE:
+        case VIEW:
+        case FUNCTION:
+            break;
+        default:
             throw new IllegalStateException("OWNERs allowed only for SCHEMA, "
                     + "SEQUENCE, TABLE, VIEW, FUNCTION objects.");
         }
-        
         sb.append("\n\nALTER ")
             .append(type)
-            .append(' ')
-            .append(PgDiffUtils.getQuotedName(getName()))
-            .append(" OWNER TO ")
+            .append(' ');
+        if (this instanceof PgFunction) {
+            ((PgFunction) this).appendFunctionSignature(sb, false, true);
+        } else {
+            sb.append(PgDiffUtils.getQuotedName(getName()));
+        }
+        sb.append(" OWNER TO ")
             .append(owner)
             .append(';');
         

@@ -152,39 +152,15 @@ public final class PgDiffFunctions {
             return;
         }
 
-        for (final PgFunction oldfunction : oldSchema.getFunctions()) {
+        for (final PgFunction oldFunction : oldSchema.getFunctions()) {
             final PgFunction newFunction =
-                    newSchema.getFunction(oldfunction.getSignature());
+                    newSchema.getFunction(oldFunction.getSignature());
 
             if (newFunction == null) {
                 continue;
             }
 
-            if (oldfunction.getComment() == null
-                    && newFunction.getComment() != null
-                    || oldfunction.getComment() != null
-                    && newFunction.getComment() != null
-                    && !oldfunction.getComment().equals(
-                            newFunction.getComment())) {
-                searchPathHelper.outputSearchPath(script);
-                
-                StringBuilder sb = new StringBuilder();
-                sb.append("COMMENT ON FUNCTION ");
-                newFunction.appendFunctionSignature(sb, false, true);
-                sb.append(" IS ");
-                sb.append(newFunction.getComment());
-                sb.append(';');
-                script.addStatement(sb.toString());
-            } else if (oldfunction.getComment() != null
-                    && newFunction.getComment() == null) {
-                searchPathHelper.outputSearchPath(script);
-                
-                StringBuilder sb = new StringBuilder();
-                sb.append("COMMENT ON FUNCTION ");
-                newFunction.appendFunctionSignature(sb, false, true);
-                sb.append(" IS NULL;");
-                script.addStatement(sb.toString());
-            }
+            PgDiff.diffComments(oldFunction, newFunction, script);
         }
     }
 

@@ -109,7 +109,7 @@ public final class PgDiffIndexes {
      */
     private static List<PgIndex> getDropIndexes(final PgTable oldTable,
             final PgTable newTable) {
-        final List<PgIndex> list = new ArrayList<PgIndex>();
+        final List<PgIndex> list = new ArrayList<>();
 
         if (newTable != null && oldTable != null) {
             for (final PgIndex index : oldTable.getIndexes()) {
@@ -133,7 +133,7 @@ public final class PgDiffIndexes {
      */
     private static List<PgIndex> getNewIndexes(final PgTable oldTable,
             final PgTable newTable) {
-        final List<PgIndex> list = new ArrayList<PgIndex>();
+        final List<PgIndex> list = new ArrayList<>();
 
         if (newTable != null) {
             if (oldTable == null) {
@@ -182,24 +182,8 @@ public final class PgDiffIndexes {
                 if (newIndex == null) {
                     continue;
                 }
-    
-                if (oldIndex.getComment() == null
-                        && newIndex.getComment() != null
-                        || oldIndex.getComment() != null
-                        && newIndex.getComment() != null
-                        && !oldIndex.getComment().equals(
-                        newIndex.getComment())) {
-                    searchPathHelper.outputSearchPath(script);
-                    script.addStatement("COMMENT ON INDEX "
-                            + PgDiffUtils.getQuotedName(newIndex.getName())
-                            + " IS " + newIndex.getComment() + ';');
-                } else if (oldIndex.getComment() != null
-                        && newIndex.getComment() == null) {
-                    searchPathHelper.outputSearchPath(script);
-                    script.addStatement("COMMENT ON INDEX "
-                            + PgDiffUtils.getQuotedName(newIndex.getName())
-                            + " IS NULL;");
-                }
+
+                PgDiff.diffComments(oldIndex, newIndex, script);
             }
         }
     }

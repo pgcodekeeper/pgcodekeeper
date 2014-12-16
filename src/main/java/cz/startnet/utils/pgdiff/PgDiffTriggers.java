@@ -103,7 +103,7 @@ public final class PgDiffTriggers {
      */
     private static List<PgTrigger> getDropTriggers(final PgTable oldTable,
             final PgTable newTable) {
-        final List<PgTrigger> list = new ArrayList<PgTrigger>();
+        final List<PgTrigger> list = new ArrayList<>();
 
         if (newTable != null && oldTable != null) {
             checkTrgExists(newTable, oldTable, list);
@@ -122,7 +122,7 @@ public final class PgDiffTriggers {
      */
     private static List<PgTrigger> getNewTriggers(final PgTable oldTable,
             final PgTable newTable) {
-        final List<PgTrigger> list = new ArrayList<PgTrigger>();
+        final List<PgTrigger> list = new ArrayList<>();
 
         if (newTable != null) {
             if (oldTable == null) {
@@ -181,31 +181,7 @@ public final class PgDiffTriggers {
                     continue;
                 }
 
-                if (oldTrigger.getComment() == null
-                        && newTrigger.getComment() != null
-                        || oldTrigger.getComment() != null
-                        && newTrigger.getComment() != null
-                        && !oldTrigger.getComment().equals(
-                        newTrigger.getComment())) {
-                    searchPathHelper.outputSearchPath(script);
-
-                    script.addStatement("COMMENT ON TRIGGER "
-                            + PgDiffUtils.getQuotedName(newTrigger.getName())
-                            + " ON "
-                            + PgDiffUtils.getQuotedName(newTrigger.getTableName())
-                            + " IS "
-                            + newTrigger.getComment()
-                            + ';');
-                } else if (oldTrigger.getComment() != null
-                        && newTrigger.getComment() == null) {
-                    searchPathHelper.outputSearchPath(script);
-
-                    script.addStatement("COMMENT ON TRIGGER "
-                            + PgDiffUtils.getQuotedName(newTrigger.getName())
-                            + " ON "
-                            + PgDiffUtils.getQuotedName(newTrigger.getTableName())
-                            + " IS NULL;");
-                }
+                PgDiff.diffComments(oldTrigger, newTrigger, script);
             }
         }
     }

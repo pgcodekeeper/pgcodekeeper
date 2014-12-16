@@ -6,7 +6,7 @@ import java.util.List;
 
 public class PgForeignKey extends PgConstraint{
     
-    private final List<GenericColumn> refs = new ArrayList<>(5);
+    private final List<GenericColumn> refs = new ArrayList<>();
     
     public PgForeignKey(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);

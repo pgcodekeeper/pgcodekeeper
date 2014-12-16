@@ -1,4 +1,7 @@
 package cz.startnet.utils.pgdiff.schema;
+
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+
 /**
  * This is a support class for comment objects, it doesn't have name and should 
  * not be used in objects database 
@@ -90,5 +93,11 @@ public class PgRuleCommon extends PgStatement {
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+    @Override
+    public DbObjType getStatementType() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

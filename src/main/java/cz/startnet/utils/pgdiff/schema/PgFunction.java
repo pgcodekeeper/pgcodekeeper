@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -22,19 +23,15 @@ public class PgFunction extends PgStatementWithSearchPath {
 
     private final List<Argument> arguments = new ArrayList<>();
     private String body;
-    private String comment;
     private String returns;
+
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.FUNCTION;
+    }
     
     public PgFunction(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     @Override
@@ -53,29 +50,11 @@ public class PgFunction extends PgStatementWithSearchPath {
         appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\nCOMMENT ON FUNCTION ");
-            appendFunctionSignature(sbSQL, false, true);
-            sbSQL.append(" IS ");
-            sbSQL.append(comment);
-            sbSQL.append(';');
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
         }
 
         return sbSQL.toString();
-    }
-    
-    @Override
-    protected StringBuilder appendOwnerSQL(StringBuilder sb) {
-        if (owner == null) {
-            return sb;
-        }
-        
-        sb.append("\n\nALTER FUNCTION ");
-        appendFunctionSignature(sb, false, true)
-            .append(" OWNER TO ")
-            .append(owner)
-            .append(';');
-        
-        return sb;
     }
     
     public StringBuilder appendFunctionSignature(StringBuilder sb,

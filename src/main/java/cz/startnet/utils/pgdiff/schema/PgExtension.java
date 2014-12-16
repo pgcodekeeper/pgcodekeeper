@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -14,8 +15,12 @@ public class PgExtension extends PgStatement {
     private String schema;
     private String version;
     private String oldVersion;
-    private String comment;
 
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.EXTENSION;
+    }
+    
     public PgExtension(String name, String rawStatement) {
         super(name, rawStatement);
     }
@@ -47,14 +52,6 @@ public class PgExtension extends PgStatement {
         resetHash();
     }
     
-    public String getComment() {
-        return comment;
-    }
-    
-    public void setComment(final String comment) {
-        this.comment = comment;
-    }
-    
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
@@ -79,11 +76,8 @@ public class PgExtension extends PgStatement {
         sbSQL.append(';');
         
         if(getComment() != null && !getComment().isEmpty()) {
-            sbSQL.append("\n\nCOMMENT ON EXTENSION ");
-            sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-            sbSQL.append(" IS ");
-            sbSQL.append(comment);
-            sbSQL.append(';');
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
         }
         
         return sbSQL.toString();

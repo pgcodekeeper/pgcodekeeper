@@ -18,6 +18,6 @@ COMMENT ON FUNCTION test_fnc(arg character varying) IS 'test function';
 
 COMMENT ON CONSTRAINT text_check ON test IS 'text check';
 
-COMMENT ON INDEX test_pkey IS 'primary key';
+COMMENT ON CONSTRAINT test_pkey ON test IS 'primary key';
 
 COMMENT ON TRIGGER test_trigger ON test IS 'test trigger';

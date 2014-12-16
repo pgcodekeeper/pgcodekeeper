@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+
 /**
  * This is a support class for comment objects, it doesn't have name and should 
  * not be used in objects database 
@@ -88,5 +90,11 @@ public class PgSet extends PgStatement {
         result = prime * result + ((getParam() == null) ? 0 : getParam().hashCode());
         result = prime * result + ((getValues() == null) ? 0 : getValues().hashCode());
         return result;
+    }
+
+    @Override
+    public DbObjType getStatementType() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

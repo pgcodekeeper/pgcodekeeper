@@ -5,12 +5,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+
 public class PgSelect extends PgStatementWithSearchPath {
     
-    private final List<GenericColumn> columns = new ArrayList<>(10);
+    private final List<GenericColumn> columns = new ArrayList<>();
     
     public PgSelect(String rawStatement, String searchPath) {
         super(null, rawStatement, searchPath);
+    }
+    
+    @Override
+    public DbObjType getStatementType() {
+        return null;
     }
     
     /**

@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -23,11 +24,15 @@ public class PgView extends PgStatementWithSearchPath {
     private String query;
     private String normalizedQuery;
     private PgSelect select;
-    private List<String> columnNames = new ArrayList<>(1);
-    private final List<DefaultValue> defaultValues = new ArrayList<DefaultValue>(0);
-    private final List<ColumnComment> columnComments = new ArrayList<ColumnComment>(0);
-    private String comment;
+    private List<String> columnNames = new ArrayList<>();
+    private final List<DefaultValue> defaultValues = new ArrayList<>();
+    private final List<ColumnComment> columnComments = new ArrayList<>();
 
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.VIEW;
+    }
+    
     public PgView(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
     }
@@ -49,14 +54,6 @@ public class PgView extends PgStatementWithSearchPath {
      */
     public List<String> getColumnNames() {
         return Collections.unmodifiableList(columnNames);
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     @Override
@@ -97,11 +94,8 @@ public class PgView extends PgStatementWithSearchPath {
         }
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\nCOMMENT ON VIEW ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
-            sbSQL.append(" IS ");
-            sbSQL.append(comment);
-            sbSQL.append(';');
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
         }
 
         for (final ColumnComment columnComment : columnComments) {

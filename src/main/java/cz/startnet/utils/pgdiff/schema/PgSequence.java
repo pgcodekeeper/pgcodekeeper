@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -23,8 +24,12 @@ public class PgSequence extends PgStatementWithSearchPath {
     private String startWith;
     private boolean cycle;
     private String ownedBy;
-    private String comment;
 
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.SEQUENCE;
+    }
+    
     public PgSequence(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
     }
@@ -36,14 +41,6 @@ public class PgSequence extends PgStatementWithSearchPath {
 
     public String getCache() {
         return cache;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     @Override
@@ -95,11 +92,8 @@ public class PgSequence extends PgStatementWithSearchPath {
         appendPrivileges(sbSQL);
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\nCOMMENT ON SEQUENCE ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
-            sbSQL.append(" IS ");
-            sbSQL.append(comment);
-            sbSQL.append(';');
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
         }
 
         return sbSQL.toString();

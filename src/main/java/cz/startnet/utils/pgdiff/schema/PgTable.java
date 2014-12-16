@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -22,14 +23,14 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  */
 public class PgTable extends PgStatementWithSearchPath {
 
-    private final List<PgColumn> columns = new ArrayList<PgColumn>();
+    private final List<PgColumn> columns = new ArrayList<>();
     private final List<Entry<String, String>> inherits = new ArrayList<>();
-    private final List<PgConstraint> constraints = new ArrayList<PgConstraint>();
-    private final List<PgIndex> indexes = new ArrayList<PgIndex>();
-    private final List<PgTrigger> triggers = new ArrayList<PgTrigger>();
+    private final List<PgConstraint> constraints = new ArrayList<>();
+    private final List<PgIndex> indexes = new ArrayList<>();
+    private final List<PgTrigger> triggers = new ArrayList<>();
     // Костыль позволяет отследить использование Sequence в выражениях вставки
     // DEFAULT (nextval)('sequenceName'::Type)
-    private final List<String> sequences = new ArrayList<String>();
+    private final List<String> sequences = new ArrayList<>();
 
     private String clusterIndexName;
     /**
@@ -38,7 +39,11 @@ public class PgTable extends PgStatementWithSearchPath {
      */
     private String with;
     private String tablespace;
-    private String comment;
+
+    @Override
+    public DbObjType getStatementType() {
+        return DbObjType.TABLE;
+    }
     
     public PgTable(String name, String rawStatement, String searchPath) {
         super(name, rawStatement, searchPath);
@@ -77,14 +82,6 @@ public class PgTable extends PgStatementWithSearchPath {
      */
     public List<PgColumn> getColumns() {
         return Collections.unmodifiableList(columns);
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(final String comment) {
-        this.comment = comment;
     }
 
     /**
@@ -197,22 +194,14 @@ public class PgTable extends PgStatementWithSearchPath {
         }
 
         if (comment != null && !comment.isEmpty()) {
-            sbSQL.append("\n\nCOMMENT ON TABLE ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
-            sbSQL.append(" IS ");
-            sbSQL.append(comment);
-            sbSQL.append(';');
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
         }
 
         for (final PgColumn column : columns) {
             if (column.getComment() != null && !column.getComment().isEmpty()) {
-                sbSQL.append("\n\nCOMMENT ON COLUMN ");
-                sbSQL.append(PgDiffUtils.getQuotedName(name));
-                sbSQL.append('.');
-                sbSQL.append(PgDiffUtils.getQuotedName(column.getName()));
-                sbSQL.append(" IS ");
-                sbSQL.append(column.getComment());
-                sbSQL.append(';');
+                sbSQL.append("\n\n");
+                column.appendCommentSql(sbSQL);
             }
         }
 
@@ -288,7 +277,7 @@ public class PgTable extends PgStatementWithSearchPath {
     }
 
     public void addInherits(final String schemaName, final String tableName) {
-        inherits.add(new SimpleEntry<String, String>(schemaName, tableName));
+        inherits.add(new SimpleEntry<>(schemaName, tableName));
         resetHash();
     }
 
@@ -386,7 +375,7 @@ public class PgTable extends PgStatementWithSearchPath {
      * Returns list of columns that have statistics defined.
      */
     private List<PgColumn> getColumnsWithStatistics() {
-        final List<PgColumn> list = new ArrayList<PgColumn>();
+        final List<PgColumn> list = new ArrayList<>();
 
         for (PgColumn column : columns) {
             if (column.getStatistics() != null) {

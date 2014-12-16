@@ -188,7 +188,7 @@ public final class PgDiffTables {
     private static void addAlterStatistics(final PgDiffScript script,
             final PgTable oldTable, final PgTable newTable,
             final SearchPathHelper searchPathHelper) {
-        final Map<String, Integer> stats = new HashMap<String, Integer>();
+        final Map<String, Integer> stats = new HashMap<>();
 
         for (final PgColumn newColumn : newTable.getColumns()) {
             final PgColumn oldColumn = oldTable.getColumn(newColumn.getName());
@@ -362,7 +362,7 @@ public final class PgDiffTables {
                 // get dependent PgViews of this column, add them in pairs 
                 // <dependant, reason> to the map if dependent PgView is not 
                 // contained in there
-                Set<PgStatement> dependants = new LinkedHashSet<PgStatement>();
+                Set<PgStatement> dependants = new LinkedHashSet<>();
                 for (PgStatement dependant : PgDiff.getDependantsSet(oldColumn, dependants)){
                     if ((dependant instanceof PgView || dependant instanceof PgForeignKey)
                             && !statementsToDrop.containsKey(dependant)){
@@ -760,53 +760,11 @@ public final class PgDiffTables {
     private static void alterComments(final PgDiffScript script,
             final PgTable oldTable, final PgTable newTable,
             final SearchPathHelper searchPathHelper) {
-        if (oldTable.getComment() == null
-                && newTable.getComment() != null
-                || oldTable.getComment() != null
-                && newTable.getComment() != null
-                && !oldTable.getComment().equals(newTable.getComment())) {
-            searchPathHelper.outputSearchPath(script);
-            
-            script.addStatement("COMMENT ON TABLE "
-                    + PgDiffUtils.getQuotedName(newTable.getName())
-                    + " IS "
-                    + newTable.getComment()
-                    + ';');
-        } else if (oldTable.getComment() != null
-                && newTable.getComment() == null) {
-            searchPathHelper.outputSearchPath(script);
-            
-            script.addStatement("COMMENT ON TABLE "
-                     + PgDiffUtils.getQuotedName(newTable.getName())
-                     + " IS NULL;");
-        }
+        PgDiff.diffComments(oldTable, newTable, script);
 
         for (final PgColumn newColumn : newTable.getColumns()) {
             final PgColumn oldColumn = oldTable.getColumn(newColumn.getName());
-            final String oldComment =
-                    oldColumn == null ? null : oldColumn.getComment();
-            final String newComment = newColumn.getComment();
-
-            if (newComment != null && (oldComment == null ? newComment != null
-                    : !oldComment.equals(newComment))) {
-                searchPathHelper.outputSearchPath(script);
-
-                script.addStatement("COMMENT ON COLUMN "
-                        + PgDiffUtils.getQuotedName(newTable.getName())
-                        + '.'
-                        + PgDiffUtils.getQuotedName(newColumn.getName())
-                        + " IS "
-                        + newColumn.getComment()
-                        + ';');
-            } else if (oldComment != null && newComment == null) {
-                searchPathHelper.outputSearchPath(script);
-
-                script.addStatement("COMMENT ON COLUMN "
-                        + PgDiffUtils.getQuotedName(newTable.getName())
-                        + '.'
-                        + PgDiffUtils.getQuotedName(newColumn.getName())
-                        + " IS NULL;");
-            }
+            PgDiff.diffComments(oldColumn, newColumn, script);
         }
     }
 

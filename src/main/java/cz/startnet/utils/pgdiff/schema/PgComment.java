@@ -101,4 +101,10 @@ public class PgComment extends PgStatement {
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
+
+    @Override
+    public DbObjType getStatementType() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }
