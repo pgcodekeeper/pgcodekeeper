@@ -11,6 +11,8 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 
+import ru.taximaxim.codekeeper.apgdiff.Log;
+
 public class CustomErrorListener implements ANTLRErrorListener {
     
     public static final CustomErrorListener INSTATANCE = new CustomErrorListener();
@@ -30,6 +32,8 @@ public class CustomErrorListener implements ANTLRErrorListener {
         }
 //        System.out.println(msg);
         System.err.println(sourceName+"line "+line+":"+charPositionInLine+" "+msg);
+        Log.log(Log.LOG_ERROR, "AntLR Error:\n" +
+                sourceName+"line "+line+":"+charPositionInLine+" "+msg);
 //        errors.add(sourceName+"line "+line+":"+charPositionInLine+" "+msg);
     }
 
