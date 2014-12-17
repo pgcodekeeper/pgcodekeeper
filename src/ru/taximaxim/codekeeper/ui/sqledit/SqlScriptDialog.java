@@ -404,6 +404,7 @@ public class SqlScriptDialog extends TrayDialog {
             Runnable launcher;
             
             if (btnJdbcToggle.getSelection()){
+                Log.log(Log.LOG_INFO, "Running DDL update using JDBC");                
                 launcher = new Runnable() {
                     
                     @Override
@@ -426,6 +427,7 @@ public class SqlScriptDialog extends TrayDialog {
                     }
                 };
             }else{
+                Log.log(Log.LOG_INFO, "Running DDL update using external command");
                 final List<String> command = new ArrayList<>(Arrays.asList(
                         getReplacedString().split(Pattern.quote(" ")))); //$NON-NLS-1$
                 
@@ -474,7 +476,6 @@ public class SqlScriptDialog extends TrayDialog {
                 }
                 
                 ConsoleFactory.write(Messages.sqlScriptDialog_script_saved_to_file + script.getAbsolutePath());
-                Log.log(Log.LOG_INFO, "Script saved to file" + script.getAbsolutePath());
             }
         } else {
             this.close();

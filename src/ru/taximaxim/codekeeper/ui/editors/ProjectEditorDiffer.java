@@ -258,6 +258,7 @@ class CommitPage extends DiffPresentationPane {
     }
     
     private void commit() {
+        Log.log(Log.LOG_INFO, "Started project update");
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
             return;
         }
@@ -277,6 +278,8 @@ class CommitPage extends DiffPresentationPane {
         TreeElement filteredWithNewAndDelete = null;
         
         if(considerDepcy){
+            Log.log(Log.LOG_INFO, "Processing depcies for project update");
+            
             // Получить список зависимых от NEW/EDIT элементов
             dte = new DepcyTreeExtender(dbSource.getDbObject(), 
                     dbTarget.getDbObject(), filtered);
@@ -303,6 +306,7 @@ class CommitPage extends DiffPresentationPane {
             sumNewAndDelete = dte.sumAllDepcies(elementsNewEditDependentFrom);
         }
         
+        Log.log(Log.LOG_INFO, "Quering user for project update");
         // display commit dialog
         CommitDialog cd = new CommitDialog(getShell(), filtered, sumNewAndDelete,
                 mainPrefs, treeDiffer);
@@ -313,6 +317,7 @@ class CommitPage extends DiffPresentationPane {
         
         TreeElement filteredTwiceWithAllDepcy = null;
         if(considerDepcy){
+            Log.log(Log.LOG_INFO, "Filtering depcies on user selection");
             // Убрать из списка всех элементов в filteredWithNewAndDelete те
             // элементы, с которых пользователь снял отметку в нижней таблице
             // FIXME убрать шелл, отделить логику от UI
@@ -332,6 +337,8 @@ class CommitPage extends DiffPresentationPane {
             
             @Override
             public void done(IJobChangeEvent event) {
+                Log.log(Log.LOG_INFO, "Project updater job finished with status " +
+                        event.getResult().getSeverity());
                 if (event.getResult().isOK()) {
                     ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
                     try {
@@ -371,10 +378,10 @@ class CommitPage extends DiffPresentationPane {
             SubMonitor pm = SubMonitor.convert(
                     monitor, Messages.commitPartDescr_commiting, 2);
 
+            Log.log(Log.LOG_INFO, "Applying diff tree to db");
             pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
             DiffTreeApplier applier = new DiffTreeApplier(
-                    dbSource.getDbObject(), dbTarget.getDbObject(),tree);
-            
+                    dbSource.getDbObject(), dbTarget.getDbObject(), tree);
             PgDatabase dbNew = applier.apply();
 
             pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
@@ -471,6 +478,7 @@ class DiffPage extends DiffPresentationPane {
     }
     
     private void diff() throws PgCodekeeperUIException {
+        Log.log(Log.LOG_INFO, "Started DB update");
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
             return;
         }
@@ -496,6 +504,8 @@ class DiffPage extends DiffPresentationPane {
             
             @Override
             public void done(IJobChangeEvent event) {
+                Log.log(Log.LOG_INFO, "Differ job finished with status " + 
+                        event.getResult().getSeverity());
                 if (event.getResult().isOK()) {
                     Display.getDefault().asyncExec(new Runnable() {
                         

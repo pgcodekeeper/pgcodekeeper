@@ -27,7 +27,7 @@ public class StdStreamRedirector {
      * 
      * @author Alexander Levsha
      */
-    static class StdStreamRedirectorWorker implements Runnable {
+    private static class StdStreamRedirectorWorker implements Runnable {
 
         private BufferedReader in;
         private StringBuilder storage;

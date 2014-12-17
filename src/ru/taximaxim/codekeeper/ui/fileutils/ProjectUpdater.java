@@ -43,6 +43,7 @@ public class ProjectUpdater {
     }
 
     public void updatePartial() throws IOException {
+        Log.log(Log.LOG_INFO, "Project updater: started partial"); //$NON-NLS-1$
         if (dbOld == null){
             throw new IOException(Messages.ProjectUpdater_old_db_null);
         }
@@ -104,6 +105,7 @@ public class ProjectUpdater {
     }
     
     public void updateFull() throws IOException {
+        Log.log(Log.LOG_INFO, "Project updater: started full");
         boolean caughtProcessingEx = false;
         try (TempDir tmp = new TempDir(dirExport.toPath(), "tmp-export")) { //$NON-NLS-1$
             File dirTmp = tmp.get();

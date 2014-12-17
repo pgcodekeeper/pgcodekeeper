@@ -8,6 +8,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -33,6 +34,7 @@ public class OpenEditor extends AbstractHandler {
 
     public static void openEditor(IWorkbenchPage page, IProject proj)
             throws PgCodekeeperUIException {
+        Log.log(Log.LOG_INFO, "Opening editor for project: " + proj.getName());
         if (OpenProjectUtils.checkVersionAndWarn(proj,
                 page.getWorkbenchWindow().getShell(), true)) { 
             ProjectEditorInput input = new ProjectEditorInput(proj.getName());
