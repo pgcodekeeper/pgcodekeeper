@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import cz.startnet.utils.pgdiff.parsers.Parser;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
@@ -174,11 +175,25 @@ public abstract class ParserAbstract {
                 }
             }
             if (colCtx.datatype != null) {
-                col.setType(getFullCtxText(colCtx.datatype));
+//                col.setType(getFullCtxText(colCtx.datatype));
+                col.setType(getWrongColumn(getFullCtxText(colCtx)));
             }
         }
 
         return col;
+    }
+    /**
+     * Made only for compatibility with apgdiff 
+     * Should be removed after refactor!
+     * @param fullCtxText
+     * @return type of column
+     */
+    private String getWrongColumn(String fullCtxText) {
+        Parser par = new Parser(fullCtxText);
+        par.parseIdentifier();
+        PgColumn col = new PgColumn("");
+        col.parseDefinition(par.getRest(), new StringBuilder(1));
+        return col.getType();
     }
 
     protected String getSequence(Value_expressionContext default_expr) {
@@ -241,12 +256,14 @@ public abstract class ParserAbstract {
         List<PgConstraint> result = new ArrayList<>();
         if (colCtx.tabl_constraint != null) {
             result.add(getTableConstraint(colCtx.tabl_constraint));
-        } else {
+        }
+        // колоночные констрайнты добавляются в тип колонки, особенности апгдиффа
+        /*else {
             for (Constraint_commonContext column_constraint : colCtx
                     .table_column_definition().colmn_constraint) {
                 getColumnConstraint(column_constraint, result);
             }
-        }
+        }*/
         return result;
     }
 
