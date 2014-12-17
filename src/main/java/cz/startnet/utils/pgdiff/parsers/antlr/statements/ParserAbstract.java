@@ -74,7 +74,6 @@ public abstract class ParserAbstract {
     protected String getFullCtxText(ParserRuleContext ctx) {
         Interval interval = new Interval(ctx.start.getStartIndex(),
                 ctx.stop.getStopIndex());
-        ctx.start.getInputStream().getText(interval);
         return ctx.start.getInputStream().getText(interval);
     }
 

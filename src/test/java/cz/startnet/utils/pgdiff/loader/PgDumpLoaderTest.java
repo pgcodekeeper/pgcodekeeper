@@ -541,7 +541,7 @@ class PgDB5 extends     PgDatabaseObjectCreator {
     func.addArgument(arg);
     
     func = new PgFunction("select_something2", "", "");
-    func.setBody("AS 'SELECT number1 * number2 || \\'text\\'' LANGUAGE plpgsql");
+    func.setBody("AS 'SELECT number1 * number2 || ''text''' LANGUAGE plpgsql");
     func.setReturns("integer");
     schema.addFunction(func);
     
@@ -556,7 +556,7 @@ class PgDB5 extends     PgDatabaseObjectCreator {
     func.addArgument(arg);
     
     func = new PgFunction("select_something3", "", "");
-    func.setBody("AS '\nSELECT number1 * number2 || \\'text\\'\n' LANGUAGE plpgsql");
+    func.setBody("AS '\nSELECT number1 * number2 || ''text''\n' LANGUAGE plpgsql");
     func.setReturns("integer");
     schema.addFunction(func);
     
