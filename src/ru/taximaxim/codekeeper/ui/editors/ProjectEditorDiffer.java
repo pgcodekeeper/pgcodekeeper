@@ -292,9 +292,9 @@ class CommitPage extends DiffPresentationPane {
                     dte.getDepcyElementsContainedInDb(diffTable.getCheckedElements(false),
                             dependencies, depcyTargetDb); 
             
-            diffTable.setCheckedElements(elementsNewEditDependentFrom, true);
+            diffTable.setCheckedElements(elementsNewEditDependentFrom.toArray(), true);
             TreeElement filteredWithNew = diffTable.filterDiffTree();
-            diffTable.setCheckedElements(elementsNewEditDependentFrom, false);
+            diffTable.setCheckedElements(elementsNewEditDependentFrom.toArray(), false);
 
             // Расширить дерево filteredWithNew элементами, зависящими от удаляемых
             dte = new DepcyTreeExtender(dbSource.getDbObject(), 

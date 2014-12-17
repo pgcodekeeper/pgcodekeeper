@@ -285,7 +285,8 @@ public class DiffTableViewer extends Composite {
                 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    setCheckedElements(elements.keySet(), true);
+                    viewer.setAllChecked(true);
+                    setCheckedElements(viewer.getCheckedElements(), true);
                     cmbPrevChecked.setSelection(StructuredSelection.EMPTY);
                 }
             });
@@ -299,7 +300,8 @@ public class DiffTableViewer extends Composite {
                 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    setCheckedElements(elements.keySet(), false);
+                    setCheckedElements(viewer.getCheckedElements(), false);
+                    viewer.setAllChecked(false);
                     cmbPrevChecked.setSelection(StructuredSelection.EMPTY);
                 }
             });
@@ -313,10 +315,10 @@ public class DiffTableViewer extends Composite {
                 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    Object[] initial = elements.getCheckedElements(true).toArray();
+                    Object[] initial = viewer.getCheckedElements();
                     
-                    // select all
-                    checkListener.setElementsChecked(elements.keySet().toArray(), true);
+                    viewer.setAllChecked(true);
+                    checkListener.setElementsChecked(viewer.getCheckedElements(), true);
                     checkListener.setElementsChecked(initial, false);
                     
                     viewerRefresh();
@@ -734,20 +736,14 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public void run() {
-                    @SuppressWarnings("unchecked")
-                    List<TreeElement> selected = ((IStructuredSelection) viewer.getSelection()).toList();
-                    HashSet<TreeElement> selectedSet = new HashSet<>(selected);
-                    setCheckedElements(selectedSet, true);
+                    setCheckedElements(((IStructuredSelection) viewer.getSelection()).toArray(), true);
                 }
             });
             menuMgr.add(new Action(Messages.diffTableViewer_unmark_selected_elements) {
 
                 @Override
                 public void run() {
-                    @SuppressWarnings("unchecked")
-                    List<TreeElement> selected = ((IStructuredSelection) viewer.getSelection()).toList();
-                    HashSet<TreeElement> selectedSet = new HashSet<>(selected);
-                    setCheckedElements(selectedSet, false);
+                    setCheckedElements(((IStructuredSelection) viewer.getSelection()).toArray(), false);
                 }
             });
             menuMgr.add(new Separator());
@@ -788,8 +784,8 @@ public class DiffTableViewer extends Composite {
         }
     }
     
-    public void setCheckedElements(Set<TreeElement> elementsToCheck, boolean markChecked) {
-        checkListener.setElementsChecked(elementsToCheck.toArray(), markChecked);
+    public void setCheckedElements(Object[] elementsToCheck, boolean markChecked) {
+        checkListener.setElementsChecked(elementsToCheck, markChecked);
         viewerRefresh();
     }
     

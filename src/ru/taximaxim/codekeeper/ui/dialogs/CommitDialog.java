@@ -88,7 +88,8 @@ public class CommitDialog extends TrayDialog {
             gd.widthHint = 1000;
             dtvBottom.setLayoutData(gd);
             dtvBottom.setInputCollection(depcyElementsSet, treeDiffer, false);
-            dtvBottom.setCheckedElements(conflictingElementsSet, false);
+            // FIXME NPE!!!
+            dtvBottom.setCheckedElements(conflictingElementsSet.toArray(), false);
             dtvBottom.redraw();
         }
         return area;
