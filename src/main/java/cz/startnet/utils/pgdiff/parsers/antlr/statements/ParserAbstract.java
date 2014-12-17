@@ -255,7 +255,7 @@ public abstract class ParserAbstract {
             Constraint_commonContext tablConstr) {
         PgConstraint constr;
         constr = new PgConstraint(
-                tablConstr.constraint_name != null ? tablConstr.constraint_name.getText()
+                tablConstr.constraint_name != null ? removeQuotes(tablConstr.constraint_name)
                         : "", getFullCtxText(tablConstr), "");
         constr.setDefinition(getFullCtxText(tablConstr.constr_body()));
         return constr;

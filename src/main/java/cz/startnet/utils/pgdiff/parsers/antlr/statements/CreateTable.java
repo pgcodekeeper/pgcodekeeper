@@ -34,7 +34,7 @@ public class CreateTable extends ParserAbstract {
         for (Table_column_defContext colCtx : ctx.table_col_def) {
             for (PgConstraint constr : getConstraint(colCtx)) {
                 constr.setTableName(name);
-                table.addConstraint(constr);                
+                table.addConstraint(constr);
             }
             if (colCtx.table_column_definition()!=null) {
                 table.addColumn(getColumn(colCtx.table_column_definition(), sequences));
