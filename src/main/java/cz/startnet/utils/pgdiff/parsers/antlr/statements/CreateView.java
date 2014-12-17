@@ -154,6 +154,32 @@ public class CreateView extends ParserAbstract {
         }
 
         PgSelect getSelect() {
+            Iterator<GenericColumn> iter = columns.iterator();
+            // поищем имена таблиц с указанием схемы
+            List<GenericColumn> tableNames = new ArrayList<>();
+            while (iter.hasNext()) {
+                GenericColumn col = iter.next();
+                if (col.column == null
+                        && col.schema != null) {
+                    tableNames.add(col);
+                    iter.remove();
+                }
+            }
+            // заменим колонки с таблицами без схемы на колонки со схемой и таблицей
+            List<GenericColumn> fixedCol = new ArrayList<>(); 
+            iter = columns.iterator();
+            for (GenericColumn tabl : tableNames) {
+                while (iter.hasNext()) {
+                GenericColumn col = iter.next();
+                    if (col.table!=null &&
+                            col.table.equals(tabl.table)) {
+                        iter.remove();
+                        fixedCol.add(new GenericColumn(tabl.schema, col.table, col.column));
+                    }
+                }
+            }
+            columns.addAll(fixedCol);
+            // поищем в алиасах
             for (GenericColumn column : columns) {
                 if (column.schema == null && column.table != null) {
                     GenericColumn unaliased = tableAliases.get(column.table);
