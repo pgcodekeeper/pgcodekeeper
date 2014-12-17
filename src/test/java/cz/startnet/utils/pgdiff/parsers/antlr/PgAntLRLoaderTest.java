@@ -1049,8 +1049,8 @@ class PgDB16 extends PgDatabaseObjectCreator {
     schema.addView(view);
 
     PgSelect select = new PgSelect("", "");
-    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", "id"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
     
     view.setSelect(select);
     
@@ -1095,13 +1095,13 @@ class PgDB17 extends PgDatabaseObjectCreator {
     // view
     PgView view = new PgView("v_subselect", "", "");
     view.setQuery("SELECT c.id, t.id, t.name FROM  ( SELECT w.id, m.name FROM "
-            + "(SELECT t_work.id FROM t_work) w JOIN t_memo m )  t JOIN t_chart c ON t.id = c.id");
+            + "(SELECT t_work.id FROM t_work) w JOIN t_memo m ON w.id::text = m.name)  t JOIN t_chart c ON t.id = c.id");
     schema.addView(view);
 
     PgSelect select = new PgSelect("", "");
-    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
-    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_memo", "name"));
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", "id"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_memo", "name"));
+    select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
     
     view.setSelect(select);
     

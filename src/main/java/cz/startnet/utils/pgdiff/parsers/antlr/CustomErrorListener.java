@@ -31,7 +31,7 @@ public class CustomErrorListener implements ANTLRErrorListener {
             sourceName = String.format("%s:%d:%d: ", sourceName, line, charPositionInLine);
         }
 //        System.out.println(msg);
-        System.err.println(sourceName+"line "+line+":"+charPositionInLine+" "+msg);
+//        System.err.println(sourceName+"line "+line+":"+charPositionInLine+" "+msg);
         Log.log(Log.LOG_ERROR, "AntLR Error:\n" +
                 sourceName+"line "+line+":"+charPositionInLine+" "+msg);
 //        errors.add(sourceName+"line "+line+":"+charPositionInLine+" "+msg);
