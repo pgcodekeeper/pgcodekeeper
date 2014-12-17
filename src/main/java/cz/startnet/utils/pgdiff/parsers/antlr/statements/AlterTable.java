@@ -37,6 +37,12 @@ public class AlterTable extends ParserAbstract {
                     tabl.addColumn(getColumn(tablAction.table_column_definition(), sequences));
                 }
             }
+            if (tablAction.set_def_column() != null) {
+                String sequence = getSequence(tablAction.set_def_column().expression);
+                if (sequence != null) {
+                    sequences.add(sequence);
+                }
+            }
             if (tablAction.tabl_constraint != null) {
                 PgConstraint constr = getTableConstraint(tablAction.tabl_constraint);
                 constr.setTableName(name);

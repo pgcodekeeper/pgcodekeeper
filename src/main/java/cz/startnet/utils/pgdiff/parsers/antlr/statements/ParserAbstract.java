@@ -182,7 +182,7 @@ public abstract class ParserAbstract {
         return col;
     }
 
-    private String getSequence(Value_expressionContext default_expr) {
+    protected String getSequence(Value_expressionContext default_expr) {
         SeqName name = new SeqName();
         new ParseTreeWalker().walk(name, default_expr);
         return name.getSeqName();
