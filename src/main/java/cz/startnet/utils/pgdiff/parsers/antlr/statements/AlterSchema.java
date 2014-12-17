@@ -19,10 +19,10 @@ public class AlterSchema extends ParserAbstract {
         String name = getName(ctx.schema_with_name().name);
         PgSchema schema = new PgSchema(name, getFullCtxText(ctx.getParent()));
         if (ctx.owner_to() != null) {
-            schema.setOwner(removeQuoted(ctx.owner_to().name));
+            schema.setOwner(removeQuotes(ctx.owner_to().name));
             PgSchema sch = db.getSchema(name);
             if (sch != null) {
-                sch.setOwner(removeQuoted(ctx.owner_to().name));
+                sch.setOwner(removeQuotes(ctx.owner_to().name));
                 return null;
             }
             return schema;

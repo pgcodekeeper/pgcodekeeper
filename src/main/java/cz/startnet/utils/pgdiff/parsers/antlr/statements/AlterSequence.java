@@ -25,9 +25,9 @@ private Alter_sequence_statementContext ctx;
         }
         PgSequence sequence = db.getSchema(schemaName).getSequence(name);
         if (ctx.owner_to() !=null) {
-            seq.setOwner(removeQuoted(ctx.owner_to().name));
+            seq.setOwner(removeQuotes(ctx.owner_to().name));
             if (sequence!=null) {
-                sequence.setOwner(removeQuoted(ctx.owner_to().name));
+                sequence.setOwner(removeQuotes(ctx.owner_to().name));
             }
         }
         for (Sequence_bodyContext seqbody : ctx.sequence_body()) {

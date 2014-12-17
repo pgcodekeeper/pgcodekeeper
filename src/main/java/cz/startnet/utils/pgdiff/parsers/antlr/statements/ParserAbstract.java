@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
@@ -98,15 +99,15 @@ public abstract class ParserAbstract {
         while (name.identifier(i + 1) != null) {
             i++;
         }
-        return removeQuoted(name.identifier(i));
+        return removeQuotes(name.identifier(i));
     }
-
-    protected String removeQuoted(IdentifierContext name) {
-        String nameUnqualif = name.getText();
-        if (nameUnqualif.startsWith("\"") && nameUnqualif.endsWith("\"")) {
-            nameUnqualif = nameUnqualif.substring(1, nameUnqualif.length() - 1);
-        }
-        return nameUnqualif;
+    /**
+     * Remove quotes from identifier
+     * @param name identifier context
+     * @return string name without quotes
+     */
+    protected String removeQuotes(IdentifierContext name) {
+        return ParserUtils.splitNames(name.getText())[0];
     }
 
     protected String getSchemaName(Schema_qualified_nameContext name) {
@@ -120,7 +121,7 @@ public abstract class ParserAbstract {
         switch (i) {
         case 1:
         case 2:
-            return removeQuoted(name.identifier(0));
+            return removeQuotes(name.identifier(0));
         default:
             return null;
         }
@@ -141,10 +142,10 @@ public abstract class ParserAbstract {
             return null;
             // may be unqualified table or schema name
         case 1:
-            return removeQuoted(name.identifier(0));
+            return removeQuotes(name.identifier(0));
             // qualified table name on 1 position
         case 2:
-            return removeQuoted(name.identifier(1));
+            return removeQuotes(name.identifier(1));
         }
         return null;
     }
@@ -152,7 +153,7 @@ public abstract class ParserAbstract {
     protected PgColumn getColumn(Table_column_definitionContext colCtx, List<String> sequences) {
         PgColumn col = null;
         if (colCtx.column_name != null) {
-            col = new PgColumn(removeQuoted(colCtx.column_name));
+            col = new PgColumn(removeQuotes(colCtx.column_name));
             for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
                 if (column_constraint.constr_body().default_expr != null) {
                     col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
@@ -219,7 +220,7 @@ public abstract class ParserAbstract {
                 .function_arguments()) {
             PgFunction.Argument arg = new PgFunction.Argument();
             if (argument.argname != null) {
-                arg.setName(removeQuoted(argument.argname));
+                arg.setName(removeQuotes(argument.argname));
             }
             if (argument.argtype_data != null) {
                 arg.setDataType(getFullCtxText(argument.argtype_data));

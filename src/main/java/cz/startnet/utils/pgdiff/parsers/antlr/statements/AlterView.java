@@ -24,9 +24,9 @@ private Alter_view_statementContext ctx;
         PgView view = new PgView(name, null, null);
         PgView dbView = db.getSchema(schemaName).getView(name);
         if (ctx.owner_to() != null) {
-            view.setOwner(removeQuoted(ctx.owner_to().name));
+            view.setOwner(removeQuotes(ctx.owner_to().name));
             if (dbView != null) {
-                dbView.setOwner(removeQuoted(ctx.owner_to().name));
+                dbView.setOwner(removeQuotes(ctx.owner_to().name));
             }
         }
         if (ctx.set_def_column() != null) {
