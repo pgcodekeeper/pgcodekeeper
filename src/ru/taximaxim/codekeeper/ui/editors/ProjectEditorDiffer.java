@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.editors;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -310,7 +311,7 @@ class CommitPage extends DiffPresentationPane {
         // display commit dialog
         CommitDialog cd = new CommitDialog(getShell(), filtered, sumNewAndDelete,
                 mainPrefs, treeDiffer);
-        cd.setConflictingElements(considerDepcy ? dte.getConflicting() : null);
+        cd.setConflictingElements(considerDepcy ? dte.getConflicting() : Collections.EMPTY_SET);
         if (cd.open() != CommitDialog.OK) {
             return;
         }

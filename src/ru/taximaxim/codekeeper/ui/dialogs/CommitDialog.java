@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
+import java.util.Collections;
 import java.util.Set;
 
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -26,7 +27,7 @@ public class CommitDialog extends TrayDialog {
     private DiffTableViewer dtvBottom;
     private TreeDiffer treeDiffer;
     private final Set<TreeElement> depcyElementsSet;
-    private Set<TreeElement> conflictingElementsSet;
+    private Set<?> conflictingElementsSet = Collections.EMPTY_SET;
     
     public CommitDialog(Shell parentShell, TreeElement filtered,
             Set<TreeElement> depcyElementsSet, IPreferenceStore mainPrefs,
@@ -88,7 +89,6 @@ public class CommitDialog extends TrayDialog {
             gd.widthHint = 1000;
             dtvBottom.setLayoutData(gd);
             dtvBottom.setInputCollection(depcyElementsSet, treeDiffer, false);
-            // FIXME NPE!!!
             dtvBottom.setCheckedElements(conflictingElementsSet.toArray(), false);
             dtvBottom.redraw();
         }
@@ -99,7 +99,7 @@ public class CommitDialog extends TrayDialog {
         return dtvBottom;
     }
 
-    public void setConflictingElements(Set<TreeElement> conflictingElementsSet) {
+    public void setConflictingElements(Set<?> conflictingElementsSet) {
         this.conflictingElementsSet = conflictingElementsSet;
     }
 }
