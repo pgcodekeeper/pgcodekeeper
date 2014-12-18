@@ -88,7 +88,9 @@ public class AlterTable extends ParserAbstract {
                 }
                 if (tablAction.set_def_column() != null) {
                     fillDefColumn(table, tablAction);
-                    if (tabl != null) {
+                    // не добавляем в таблицу сиквенс если она наследует некоторые поля из др таблицы
+                    // совместимость с текущей версией экспорта
+                    if (tabl != null && tabl.getInherits().isEmpty()) {
                         fillDefColumn(tabl, tablAction);
                     }
                 }
@@ -96,7 +98,9 @@ public class AlterTable extends ParserAbstract {
         }
         for (String seq : sequences) {
             table.addSequence(seq);
-            if (tabl != null) {
+            // не добавляем в таблицу сиквенс если она наследует некоторые поля из др таблицы
+            // совместимость с текущей версией экспорта
+            if (tabl != null && tabl.getInherits().isEmpty()) {
                 tabl.addSequence(seq);
             }
         }
