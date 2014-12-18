@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.loader;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Paths;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -25,6 +28,11 @@ import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.Parser;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.SelectParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.CustomErrorListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView.SelectQueryVisitor;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -34,6 +42,7 @@ import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -486,7 +495,8 @@ public class JdbcLoader implements PgCatalogStrings {
             fakeDb.addSchema(new PgSchema(schemaName, ""));
         }
         fakeDb.setDefaultSchema(schemaName);
-        v.setSelect(SelectParser.parse(fakeDb, viewDef, getSearchPath(schemaName)));
+//        v.setSelect(SelectParser.parse(fakeDb, viewDef, getSearchPath(schemaName)));
+        v.setSelect(parseAntLrSelect(fakeDb, viewDef, getSearchPath(schemaName)));
         
         // Query columns default values and comments
         Array colNamesArr = res.getArray("column_names");
@@ -521,6 +531,22 @@ public class JdbcLoader implements PgCatalogStrings {
         }
         
         return v;
+    }
+    
+    private PgSelect parseAntLrSelect(PgDatabase db, String statement, String searchPath) {
+        PgSelect select = new PgSelect(statement, searchPath);
+        SQLLexer lexer = new SQLLexer(new ANTLRInputStream(statement));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(CustomErrorListener.INSTATANCE);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+        SQLParser parser = new SQLParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(CustomErrorListener.INSTATANCE);
+        CreateView cv = new CreateView(null, db, Paths.get("/"));
+        SelectQueryVisitor visitor = cv.getVisitor(select);
+        visitor.visit(parser.query_expression());
+        return visitor.getSelect();
     }
 
     private PgTable getTable(ResultSet res, String schemaName) throws SQLException{

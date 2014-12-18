@@ -54,15 +54,19 @@ public class CreateView extends ParserAbstract {
                 db.getSchema(schemaName).getView(name) != null);
         return view;
     }
+    
+    public SelectQueryVisitor getVisitor(PgSelect select) {
+        return new SelectQueryVisitor(select);
+    }
 
     private PgSelect parseSelect(Query_expressionContext ctx) {
         PgSelect select = new PgSelect(getFullCtxText(ctx), null);
-        MyVisitor visitor = new MyVisitor(select);
+        SelectQueryVisitor visitor = new SelectQueryVisitor(select);
         visitor.visit(ctx);
         return visitor.getSelect();
     }
 
-    private class MyVisitor extends
+    public class SelectQueryVisitor extends
             SQLParserBaseVisitor<Query_expressionContext> {
         // список алиасов запросов, игнорируются при заполнении колонок в селект
         private Queue<String> aliasNames = new LinkedList<>();
@@ -72,7 +76,7 @@ public class CreateView extends ParserAbstract {
         private PgSelect select;
         private boolean isTableRef = false;
 
-        public MyVisitor(PgSelect select) {
+        public SelectQueryVisitor(PgSelect select) {
             this.select = select;
         }
 
@@ -85,7 +89,7 @@ public class CreateView extends ParserAbstract {
         @Override
         public Query_expressionContext visitSimple_table(Simple_tableContext ctx) {
             if (ctx.query_specification() != null) {
-                MyVisitor vis = new MyVisitor(select);
+                SelectQueryVisitor vis = new SelectQueryVisitor(select);
                 vis.visit(ctx.query_specification());
                 isQiery = true;
                 aliasNames.addAll(vis.aliasNames);
@@ -153,7 +157,7 @@ public class CreateView extends ParserAbstract {
             return super.visitAs_clause(ctx);
         }
 
-        PgSelect getSelect() {
+        public PgSelect getSelect() {
             Iterator<GenericColumn> iter = columns.iterator();
             // поищем имена таблиц с указанием схемы
             List<GenericColumn> tableNames = new ArrayList<>();
