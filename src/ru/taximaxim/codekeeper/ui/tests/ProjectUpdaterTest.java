@@ -29,7 +29,6 @@ import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
-import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -76,9 +75,7 @@ public class ProjectUpdaterTest {
             proj.getPrefs().put(UIConsts.PROJ_PREF.ENCODING, "");
             new ProjectUpdater(dbNew, null, null, proj).updateFull();
         }catch(IOException ex){
-            if (!ex.getMessage().equals(Messages.ProjectUpdater_error_no_tempdir)){
-                fail("ProjectUpdater failed with not expected exception: " + ex.getMessage());
-            }
+            // expected behavior
         }
             
         new ModelExporter(referenceDir.get(), dbOld, ENCODING).exportFull();
