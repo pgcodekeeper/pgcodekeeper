@@ -20,6 +20,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -94,12 +98,33 @@ public class DifferTest {
         differ.setAdditionalDepciesSource(differData.getAdditionalDepciesSource(dbSource.getDbObject()));
         differ.setAdditionalDepciesTarget(differData.getAdditionalDepciesTarget(dbTarget.getDbObject()));
         
-        differ.run(new NullProgressMonitor());
+        try{
+            differ.getScript();
+            Assert.fail("Expected to throw an exception");
+        }catch(PgCodekeeperUIException e){
+            // expected behavior
+        }
+        Job job = differ.getDifferJob();
         
-        assertEquals("Direct script differs", 
-                differData.getPredefinedDirectDiff(), differ.getDiffDirect());
-        assertEquals("Reverse script differs", 
-                differData.getPredefinedReverseDiff(), differ.getDiffReverse());
+        job.addJobChangeListener(new JobChangeAdapter() {
+            
+            @Override
+            public void done(IJobChangeEvent event) {
+                if (event.getResult().isOK()) {
+                    try {
+                        differ.getScript();
+                        assertEquals("Direct script differs", 
+                                differData.getPredefinedDirectDiff(), differ.getDiffDirect());
+                        assertEquals("Reverse script differs", 
+                                differData.getPredefinedReverseDiff(), differ.getDiffReverse());
+                    } catch (PgCodekeeperUIException | IOException e) {
+                        Assert.fail(e.getMessage());
+                    }
+                }
+            }
+        });
+
+        job.schedule();
     }
 }
 
