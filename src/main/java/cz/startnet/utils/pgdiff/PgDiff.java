@@ -615,6 +615,13 @@ public final class PgDiff {
                     writeCreationSql(script, "-- DEPCY: this table is in dependency tree of " + 
                             fullStatement.getBareName(), dep);
                 }else if (fullStatement instanceof PgView && !dep.equals(tableOld)){
+                    /*
+                     *  FIXME !dep.equals(tableOld) on previous line checks 
+                     *  constraints/triggers/indecies too, while PgDiffTables.alterTable() 
+                     *  later does not consider changes in named objects
+                     *  
+                     *  Important: fix will break test DifferTest case DifferData_5
+                     */
                     // special case: modified table is required for view creation/edit
                     // ensure that dependant view is in NEW/EDIT state
                     PgView viewNew = (PgView) fullStatement;
