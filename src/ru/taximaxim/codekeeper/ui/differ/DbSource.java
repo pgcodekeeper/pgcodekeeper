@@ -18,6 +18,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -57,27 +58,30 @@ public abstract class DbSource {
     protected abstract PgDatabase loadInternal(SubMonitor monitor)
             throws IOException;
 
-    public static DbSource fromDirTree(String dirTreePath, String encoding) {
-        return new DbSourceDirTree(dirTreePath, encoding);
+    public static DbSource fromDirTree(ParserClass parser,
+            String dirTreePath, String encoding) {
+        return new DbSourceDirTree(parser, dirTreePath, encoding);
     }
 
-    public static DbSource fromProject(PgDbProject proj) {
-        return new DbSourceProject(proj);
+    public static DbSource fromProject(ParserClass parser, PgDbProject proj) {
+        return new DbSourceProject(parser, proj);
     }
 
-    public static DbSource fromFile(String filename, String encoding) {
-        return new DbSourceFile(filename, encoding);
+    public static DbSource fromFile(ParserClass parser,
+            String filename, String encoding) {
+        return new DbSourceFile(parser, filename, encoding);
     }
 
-    public static DbSource fromDb(String exePgdump, String customParams,
+    public static DbSource fromDb(ParserClass parser,
+            String exePgdump, String customParams,
             PgDbProject proj, String password) {
-        return new DbSourceDb(exePgdump, customParams, proj, password);
+        return new DbSourceDb(parser, exePgdump, customParams, proj, password);
     }
 
-    public static DbSource fromDb(String exePgdump, String customParams,
+    public static DbSource fromDb(ParserClass parser, String exePgdump, String customParams,
             String host, int port, String user, String pass, String dbname,
             String encoding, String timezone) {
-        return new DbSourceDb(exePgdump, customParams,
+        return new DbSourceDb(parser, exePgdump, customParams,
                 host, port, user, pass, dbname, encoding, timezone);
     }
 
@@ -86,19 +90,22 @@ public abstract class DbSource {
         return new DbSourceFilter(src, filter, side);
     }
     
-    public static DbSource fromJdbc(PgDbProject proj, String password){
+    public static DbSource fromJdbc(PgDbProject proj, String password,
+            boolean useAntrlForViews){
         return fromJdbc(proj.getPrefs().get(PROJ_PREF.DB_HOST, ""),  //$NON-NLS-1$
                 proj.getPrefs().getInt(PROJ_PREF.DB_PORT, JDBC_CONSTS.JDBC_DEFAULT_PORT),
                 proj.getPrefs().get(PROJ_PREF.DB_USER, ""),  //$NON-NLS-1$
                 password,
                 proj.getPrefs().get(PROJ_PREF.DB_NAME, ""),  //$NON-NLS-1$
                 proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
-                proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
+                proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC),
+                useAntrlForViews);
     }
     
     public static DbSource fromJdbc(String host, int port, String user, String pass, String dbname,
-            String encoding, String timezone) {
-        return new DbSourceJdbc(host, port, user, pass, dbname, encoding, timezone);
+            String encoding, String timezone, boolean useAntrlForViews) {
+        return new DbSourceJdbc(host, port, user, pass, dbname,
+                encoding, timezone, useAntrlForViews);
     }
     
     public static DbSource fromDbObject(PgDatabase db, String origin) {
@@ -108,13 +115,14 @@ public abstract class DbSource {
 
 class DbSourceDirTree extends DbSource {
 
+    private final ParserClass parser;
     private final String dirTreePath;
-
     private final String encoding;
 
-    DbSourceDirTree(String dirTreePath, String encoding) {
+    DbSourceDirTree(ParserClass parser, String dirTreePath, String encoding) {
         super(dirTreePath);
 
+        this.parser = parser;
         this.dirTreePath = dirTreePath;
         this.encoding = encoding;
     }
@@ -123,18 +131,20 @@ class DbSourceDirTree extends DbSource {
     protected PgDatabase loadInternal(SubMonitor monitor) {
         monitor.subTask(Messages.dbSource_loading_tree);
 
-        return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
-                encoding, false, false);
+        return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath, encoding,
+                false, false, parser);
     }
 }
 
 class DbSourceProject extends DbSource {
 
+    private final ParserClass parser;
     private final PgDbProject proj;
 
-    DbSourceProject(PgDbProject proj) {
+    DbSourceProject(ParserClass parser, PgDbProject proj) {
         super(proj.getPathToProject().toString());
 
+        this.parser = parser;
         this.proj = proj;
     }
 
@@ -145,19 +155,20 @@ class DbSourceProject extends DbSource {
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 proj.getPathToProject().toString(), 
                 proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
-                false, false);
+                false, false, parser);
     }
 }
 
 class DbSourceFile extends DbSource {
 
+    private final ParserClass parser;
     private final String filename;
-
     private final String encoding;
 
-    DbSourceFile(String filename, String encoding) {
+    DbSourceFile(ParserClass parser, String filename, String encoding) {
         super(filename);
 
+        this.parser = parser;
         this.filename = filename;
         this.encoding = encoding;
     }
@@ -167,20 +178,22 @@ class DbSourceFile extends DbSource {
         monitor.subTask(Messages.dbSource_loading_dump);
 
         return PgDumpLoader.loadDatabaseSchemaFromDump(filename, encoding,
-                false, false);
+                false, false, parser);
     }
 }
 
 class DbSourceDb extends DbSource {
 
+    private final ParserClass parser;
     private final String exePgdump;
     private final String customParams;
 
     private final String host, user, pass, dbname, encoding, timezone;
     private final int port;
 
-    DbSourceDb(String exePgdump, String customParams, PgDbProject props, String password) {
-        this(exePgdump, customParams,
+    DbSourceDb(ParserClass parser, String exePgdump, String customParams,
+            PgDbProject props, String password) {
+        this(parser, exePgdump, customParams,
                 props.getPrefs().get(PROJ_PREF.DB_HOST, ""), //$NON-NLS-1$
                 props.getPrefs().getInt(PROJ_PREF.DB_PORT, JDBC_CONSTS.JDBC_DEFAULT_PORT),
                 props.getPrefs().get(PROJ_PREF.DB_USER, ""), //$NON-NLS-1$
@@ -190,12 +203,13 @@ class DbSourceDb extends DbSource {
                 props.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
     }
 
-    DbSourceDb(String exePgdump, String customParams,
+    DbSourceDb(ParserClass parser, String exePgdump, String customParams,
             String host, int port, String user, String pass,
             String dbname, String encoding, String timezone) {
         super((dbname.isEmpty() ? Messages.unknown_db : dbname) + "@" //$NON-NLS-1$
                 + (host.isEmpty() ? Messages.unknown_host : host));
 
+        this.parser = parser;
         this.exePgdump = exePgdump;
         this.customParams = customParams;
         this.host = host;
@@ -223,7 +237,7 @@ class DbSourceDb extends DbSource {
             pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
             return PgDumpLoader.loadDatabaseSchemaFromDump(
-                    dump.getAbsolutePath(), encoding, false, false);
+                    dump.getAbsolutePath(), encoding, false, false, parser);
         }
     }
 }
@@ -257,12 +271,15 @@ class DbSourceFilter extends DbSource {
 }
 
 class DbSourceJdbc extends DbSource {
+
     private JdbcLoader jdbcLoader;
     
     DbSourceJdbc(String host, int port, String user, String pass, String dbName, 
-            String encoding, String timezone) {
+            String encoding, String timezone, boolean useAntrlForViews) {
         super(dbName);
-        jdbcLoader = new JdbcLoader(new JdbcConnector(host, port, user, pass, dbName, encoding, timezone));
+        jdbcLoader = new JdbcLoader(
+                new JdbcConnector(host, port, user, pass, dbName, encoding, timezone),
+                useAntrlForViews);
     }
     
     @Override
