@@ -35,6 +35,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.PartialExporterTest;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -77,8 +78,8 @@ public class DifferTest {
         File sourceFile = ApgdiffTestUtils.getFileFromRes(PartialExporterTest.class.getResource(sourceFilename));
         File targetFile = ApgdiffTestUtils.getFileFromRes(PartialExporterTest.class.getResource(targetFilename));
 
-        DbSource dbSource = DbSource.fromFile(sourceFile.getAbsolutePath(), UIConsts.UTF_8);
-        DbSource dbTarget = DbSource.fromFile(targetFile.getAbsolutePath(), UIConsts.UTF_8);
+        DbSource dbSource = DbSource.fromFile(ParserClass.LEGACY, sourceFile.getAbsolutePath(), UIConsts.UTF_8);
+        DbSource dbTarget = DbSource.fromFile(ParserClass.LEGACY, targetFile.getAbsolutePath(), UIConsts.UTF_8);
         
         final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget);
         
