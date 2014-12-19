@@ -65,7 +65,7 @@ abstract class PgDatabaseObjectCreator {
  * @author fordfrog
  */
 @RunWith(value = Parameterized.class)
-public class PgAntLRLoaderTest {
+public class PgAntlrLoaderTest {
 
     private final String encoding = ApgdiffConsts.UTF_8;
     private final List<Integer> skipForExport = Arrays.asList(8);
@@ -133,7 +133,7 @@ public class PgAntLRLoaderTest {
      *
      * @param fileIndex {@link #fileIndex}
      */
-    public PgAntLRLoaderTest(final int fileIndex) {
+    public PgAntlrLoaderTest(final int fileIndex) {
         this.fileIndex = fileIndex;
     }
 
