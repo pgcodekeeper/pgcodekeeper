@@ -31,6 +31,7 @@ import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -47,8 +48,10 @@ public class ProjectUpdaterTest {
             Assert.assertNotNull("Could not load resource", isOld); //$NON-NLS-1$
             Assert.assertNotNull("Could not load resource", isNew); //$NON-NLS-1$
             
-            dbOld = PgDumpLoader.loadDatabaseSchemaFromDump(isOld, ENCODING, false, false);
-            dbNew = PgDumpLoader.loadDatabaseSchemaFromDump(isNew, ENCODING, false, false);
+            dbOld = PgDumpLoader.loadDatabaseSchemaFromDump(isOld, ENCODING,
+                    false, false, ParserClass.LEGACY);
+            dbNew = PgDumpLoader.loadDatabaseSchemaFromDump(isNew, ENCODING,
+                    false, false, ParserClass.LEGACY);
         }
         
         workingDir = new TempDir("test_new"); //$NON-NLS-1$
