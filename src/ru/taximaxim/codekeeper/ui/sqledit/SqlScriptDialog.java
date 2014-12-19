@@ -261,10 +261,10 @@ public class SqlScriptDialog extends TrayDialog {
         picker = new DbPicker(parent, SWT.BORDER, mainPrefs, false);
         picker.setText(Messages.SqlScriptDialog_jdbc_connection_details);
         
-        picker.getTxtDbName().setText(dbName == null ? "" : dbName);
-        picker.getTxtDbUser().setText(dbUser == null ? "" : dbUser);
-        picker.getTxtDbHost().setText(dbHost == null ? "" : dbHost);
-        picker.getTxtDbPort().setText(dbPort == null ? "0" : dbPort);
+        picker.getTxtDbName().setText(dbName == null ? "" : dbName); //$NON-NLS-1$
+        picker.getTxtDbUser().setText(dbUser == null ? "" : dbUser); //$NON-NLS-1$
+        picker.getTxtDbHost().setText(dbHost == null ? "" : dbHost); //$NON-NLS-1$
+        picker.getTxtDbPort().setText(dbPort == null || dbPort.isEmpty() ? "0" : dbPort); //$NON-NLS-1$
         
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         gd.exclude = !isDdlUpdateOverJdbc;
