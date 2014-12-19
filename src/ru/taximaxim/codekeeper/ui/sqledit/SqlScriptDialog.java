@@ -26,6 +26,7 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -60,6 +61,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
+import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
@@ -112,7 +114,8 @@ public class SqlScriptDialog extends TrayDialog {
     private Text txtCommand;
     private Combo cmbScript;
     private Button btnJdbcToggle;
-    private Label lblSourceInfo;
+    private Button btnHidePicker;
+    private DbPicker picker;
     
     private volatile boolean isRunning;
     private Thread scriptThread;
@@ -172,7 +175,7 @@ public class SqlScriptDialog extends TrayDialog {
     }
     
     @Override
-    protected void configureShell(Shell newShell) {
+    protected void configureShell(final Shell newShell) {
         newShell.setText(title);
         super.configureShell(newShell);
     }
@@ -184,6 +187,7 @@ public class SqlScriptDialog extends TrayDialog {
                     i == BUTTONS.length - 1);
         }
     }
+    
     private Control createMessageArea(Composite composite) {
         // create composite
         // create image
@@ -227,28 +231,47 @@ public class SqlScriptDialog extends TrayDialog {
         createMessageArea(parent);
         createSQLViewer(parent);
         
-        btnJdbcToggle = new Button(parent, SWT.CHECK);
+        Composite buttons = new Composite(parent, SWT.NONE);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);;
+        buttons.setLayoutData(gd);
+        
+        GridLayout gl = new GridLayout(2, false);
+        gl.marginHeight = gl.marginWidth = 0;
+        buttons.setLayout(gl);
+        
+        btnJdbcToggle = new Button(buttons, SWT.CHECK);
         btnJdbcToggle.setText(Messages.sqlScriptDialog_use_jdbc_for_ddl_update);
         boolean isDdlUpdateOverJdbc = 
                 Activator.getDefault().getPreferenceStore().getBoolean(PREF.IS_DDL_UPDATE_OVER_JDBC);
         btnJdbcToggle.setSelection(isDdlUpdateOverJdbc);
         
-        lblSourceInfo = new Label(parent, SWT.NONE);
-        lblSourceInfo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, true));
+        btnHidePicker = new Button(buttons, SWT.CHECK); 
+        btnHidePicker.setText(Messages.sqlScriptDialog_hide_picker);
+        btnHidePicker.setSelection(false);
+        btnHidePicker.addSelectionListener(new SelectionAdapter() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                picker.setVisible(!btnHidePicker.getSelection());
+                ((GridData)picker.getLayoutData()).exclude = btnHidePicker.getSelection();
+                parent.layout();
+            }
+        });
+        // picker
+        picker = new DbPicker(parent, SWT.BORDER, mainPrefs, false);
+        picker.setText(Messages.SqlScriptDialog_jdbc_connection_details);
         
-        StringBuilder connectionDetails = new StringBuilder();
-        connectionDetails.append(Messages.connection_details); 
-        connectionDetails.append(dbUser.isEmpty() ? "" : dbUser + "@"); //$NON-NLS-1$
-        connectionDetails.append(dbHost.isEmpty() ? Messages.unknown_host : dbHost);
-        connectionDetails.append(dbPort.isEmpty() ? "" : ":" + dbPort); //$NON-NLS-1$ 
-        connectionDetails.append('/'); 
-        connectionDetails.append(dbName.isEmpty() ? Messages.unknown_db : dbName);
+        picker.getTxtDbName().setText(dbName == null ? "" : dbName);
+        picker.getTxtDbUser().setText(dbUser == null ? "" : dbUser);
+        picker.getTxtDbHost().setText(dbHost == null ? "" : dbHost);
+        picker.getTxtDbPort().setText(dbPort == null ? "0" : dbPort);
         
-        lblSourceInfo.setText(connectionDetails.toString());
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         gd.exclude = !isDdlUpdateOverJdbc;
-        lblSourceInfo.setLayoutData(gd);
-        lblSourceInfo.setVisible(isDdlUpdateOverJdbc);
+        gd.heightHint = 230;
+        gd.minimumHeight = 230;
+        picker.setLayoutData(gd);
+        picker.setVisible(isDdlUpdateOverJdbc);
         
         final Composite notJdbc = new Composite(parent, SWT.NONE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -256,7 +279,7 @@ public class SqlScriptDialog extends TrayDialog {
         notJdbc.setLayoutData(gd);
         notJdbc.setVisible(!isDdlUpdateOverJdbc);
         
-        GridLayout gl = new GridLayout();
+        gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
         notJdbc.setLayout(gl);
         
@@ -349,11 +372,13 @@ public class SqlScriptDialog extends TrayDialog {
                 notJdbc.setVisible(!isJdbc);
                 ((GridData)notJdbc.getLayoutData()).exclude = isJdbc;
                 
-                lblSourceInfo.setVisible(isJdbc);
-                ((GridData)lblSourceInfo.getLayoutData()).exclude = !isJdbc;
+                picker.setVisible(isJdbc && !btnHidePicker.getSelection());
+                ((GridData)picker.getLayoutData()).exclude = !isJdbc || btnHidePicker.getSelection();
+                
+                btnHidePicker.setVisible(isJdbc);
+                ((GridData)btnHidePicker.getLayoutData()).exclude = !isJdbc;
                 
                 parent.layout();
-                parent.redraw();
                 
                 PreferenceInitializer.savePreference(Activator.getDefault().getPreferenceStore(), 
                         PREF.IS_DDL_UPDATE_OVER_JDBC, String.valueOf(btnJdbcToggle.getSelection()));
@@ -364,8 +389,7 @@ public class SqlScriptDialog extends TrayDialog {
             }
         });
         
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), HELP.SQL_SCRIPT_DIALOG); 
-        
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), HELP.SQL_SCRIPT_DIALOG);
         return parent;
     }
 
@@ -412,7 +436,11 @@ public class SqlScriptDialog extends TrayDialog {
                         String output = Messages.sqlScriptDialog_script_has_not_been_run_yet;
                         try{
                             JdbcConnector connector = new JdbcConnector(
-                                    dbHost, Integer.valueOf(dbPort), dbUser, dbPass, dbName, 
+                                    picker.getTxtDbHost().getText(), 
+                                    Integer.valueOf(picker.getTxtDbPort().getText()),
+                                    picker.getTxtDbUser().getText(), 
+                                    picker.getTxtDbPass().getText(), 
+                                    picker.getTxtDbName().getText(), 
                                     scriptFileEncoding, connectionTimezone);
                             output = new JdbcRunner(connector).runScript(textRetrieved);
                             if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {

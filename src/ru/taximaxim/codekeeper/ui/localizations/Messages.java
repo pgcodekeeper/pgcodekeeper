@@ -61,6 +61,8 @@ public final class Messages extends NLS {
     public static String sqlScriptDialog_Enter_cmd_to_update_ddl_with_sql_script;
     public static String sqlScriptDialog_error_saving_script_to_file;
     public static String sqlScriptDialog_exception_during_script_execution;
+    public static String SqlScriptDialog_jdbc_connection_details;
+    public static String sqlScriptDialog_hide_picker;
     public static String sqlScriptDialog_psql_dependencies;
     public static String sqlScriptDialog_run_script;
     public static String sqlScriptDialog_save_as;
