@@ -175,7 +175,7 @@ public class SqlScriptDialog extends TrayDialog {
     }
     
     @Override
-    protected void configureShell(final Shell newShell) {
+    protected void configureShell(Shell newShell) {
         newShell.setText(title);
         super.configureShell(newShell);
     }
@@ -249,7 +249,7 @@ public class SqlScriptDialog extends TrayDialog {
         btnHidePicker.setText(Messages.sqlScriptDialog_hide_picker);
         btnHidePicker.setSelection(false);
         btnHidePicker.addSelectionListener(new SelectionAdapter() {
-            
+        
             @Override
             public void widgetSelected(SelectionEvent e) {
                 picker.setVisible(!btnHidePicker.getSelection());
@@ -428,7 +428,7 @@ public class SqlScriptDialog extends TrayDialog {
             Runnable launcher;
             
             if (btnJdbcToggle.getSelection()){
-                Log.log(Log.LOG_INFO, "Running DDL update using JDBC");                
+                Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
                 launcher = new Runnable() {
                     
                     @Override
@@ -455,7 +455,7 @@ public class SqlScriptDialog extends TrayDialog {
                     }
                 };
             }else{
-                Log.log(Log.LOG_INFO, "Running DDL update using external command");
+                Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
                 final List<String> command = new ArrayList<>(Arrays.asList(
                         getReplacedString().split(Pattern.quote(" ")))); //$NON-NLS-1$
                 
@@ -479,7 +479,7 @@ public class SqlScriptDialog extends TrayDialog {
         // case Stop script
         else if (buttonId == 0 && isRunning){
             ConsoleFactory.write(Messages.sqlScriptDialog_script_execution_interrupted);
-            Log.log(Log.LOG_INFO, "Script execution interrupted by user");
+            Log.log(Log.LOG_INFO, "Script execution interrupted by user"); //$NON-NLS-1$
             
             scriptThread.interrupt();
             getButton(0).setText(RUN_SCRIPT_LABEL);

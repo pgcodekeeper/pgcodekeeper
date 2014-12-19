@@ -105,7 +105,7 @@ public class ProjectUpdater {
     }
     
     public void updateFull() throws IOException {
-        Log.log(Log.LOG_INFO, "Project updater: started full");
+        Log.log(Log.LOG_INFO, "Project updater: started full"); //$NON-NLS-1$
         boolean caughtProcessingEx = false;
         try (TempDir tmp = new TempDir(dirExport.toPath(), "tmp-export")) { //$NON-NLS-1$
             File dirTmp = tmp.get();

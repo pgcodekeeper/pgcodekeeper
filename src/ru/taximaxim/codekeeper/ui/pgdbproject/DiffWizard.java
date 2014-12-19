@@ -58,6 +58,7 @@ import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
 
 public class DiffWizard extends Wizard implements IPageChangingListener {
 
@@ -112,7 +113,8 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         try {
             if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
                 TreeDiffer treediffer = new TreeDiffer(
-                        DbSource.fromProject(proj),
+                        DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+                                ParserClass.ANTLR : ParserClass.LEGACY, proj),
                         pageDiff.getTargetDbSource());
 
                 try {
@@ -262,7 +264,8 @@ class PageDiff extends WizardPage implements Listener {
 
         switch (getTargetType()) {
         case DB:
-            dbs = DbSource.fromDb(
+            dbs = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+                    ParserClass.ANTLR : ParserClass.LEGACY, 
                     mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     getDbHost(), getDbPort(), getDbUser(), getDbPass(),
@@ -271,15 +274,20 @@ class PageDiff extends WizardPage implements Listener {
 
         case JDBC:
             dbs = DbSource.fromJdbc(getDbHost(), getDbPort(), getDbUser(), 
-                    getDbPass(),getDbName(), getTargetEncoding(), getTargetTimezone());
+                    getDbPass(),getDbName(), getTargetEncoding(), getTargetTimezone(),
+                    mainPrefs.getBoolean(PREF.USE_ANTLR));
             break;
             
         case DUMP:
-            dbs = DbSource.fromFile(getDumpPath(), getTargetEncoding());
+            dbs = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+                    ParserClass.ANTLR : ParserClass.LEGACY,
+                    getDumpPath(), getTargetEncoding());
             break;
 
         case PROJ:
-            dbs = DbSource.fromProject(PgDbProject.getProjFromFile(getProjPath()));
+            dbs = DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+                    ParserClass.ANTLR : ParserClass.LEGACY,
+                    PgDbProject.getProjFromFile(getProjPath()));
             break;
 
         default:

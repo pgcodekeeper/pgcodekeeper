@@ -61,6 +61,7 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public abstract class DiffPresentationPane extends Composite {
@@ -519,7 +520,8 @@ public abstract class DiffPresentationPane extends Composite {
         }
         
         DbSource dbsProj, dbsRemote;
-        dbsProj = DbSource.fromProject(proj);
+        dbsProj = DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+                ParserClass.ANTLR : ParserClass.LEGACY, proj);
         switch (selectedDBSource) {
         case SOURCE_TYPE_DUMP:
             FileDialog dialog = new FileDialog(getShell());
@@ -528,14 +530,17 @@ public abstract class DiffPresentationPane extends Composite {
             if (dumpfile == null) {
                 return false;
             }
-            dbsRemote = DbSource
-                    .fromFile(dumpfile, projProps.get(PROJ_PREF.ENCODING, UIConsts.UTF_8));
+            dbsRemote = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+                    ParserClass.ANTLR : ParserClass.LEGACY, dumpfile,
+                    projProps.get(PROJ_PREF.ENCODING, UIConsts.UTF_8));
             break;
         case SOURCE_TYPE_DB:
             String sPort = dbSrc.getTxtDbPort().getText();
             int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
-            dbsRemote = DbSource.fromDb(mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
+            dbsRemote = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+                    ParserClass.ANTLR : ParserClass.LEGACY,
+                    mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     dbSrc.getTxtDbHost().getText(), port, dbSrc.getTxtDbUser().getText(),
                     dbSrc.getTxtDbPass().getText(), dbSrc.getTxtDbName().getText(),
@@ -550,7 +555,8 @@ public abstract class DiffPresentationPane extends Composite {
                     dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText(),
                     dbSrc.getTxtDbName().getText(), 
                     projProps.get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
-                    projProps.get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
+                    projProps.get(PROJ_PREF.TIMEZONE, UIConsts.UTC),
+                    mainPrefs.getBoolean(PREF.USE_ANTLR));
             break;
         default:
             throw new PgCodekeeperUIException(Messages.undefined_source_for_db_changes);

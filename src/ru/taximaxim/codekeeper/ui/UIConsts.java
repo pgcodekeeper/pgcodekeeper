@@ -22,12 +22,14 @@ public interface UIConsts {
     }
     
     interface PREF {
+        String USE_ANTLR = "prefUseAntlr"; //$NON-NLS-1$
         String PGDUMP_EXE_PATH = "prefPgdumpExePath"; //$NON-NLS-1$
         String PGDUMP_CUSTOM_PARAMS = "prefPgdumpCustomParams"; //$NON-NLS-1$
-        String DB_STORE = "prefDbStore"; //$NON-NLS-1$
-        String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
-        String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
+        String DB_STORE = "prefDbStore"; //$NON-NLS-1$
+        String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
+        
+        String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
         String IS_DDL_UPDATE_OVER_JDBC = "isDdlUpdateOverJdbc"; //$NON-NLS-1$
     }

@@ -34,7 +34,7 @@ public class OpenEditor extends AbstractHandler {
 
     public static void openEditor(IWorkbenchPage page, IProject proj)
             throws PgCodekeeperUIException {
-        Log.log(Log.LOG_INFO, "Opening editor for project: " + proj.getName());
+        Log.log(Log.LOG_INFO, "Opening editor for project: " + proj.getName()); //$NON-NLS-1$
         if (OpenProjectUtils.checkVersionAndWarn(proj,
                 page.getWorkbenchWindow().getShell(), true)) { 
             ProjectEditorInput input = new ProjectEditorInput(proj.getName());
