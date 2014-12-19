@@ -140,8 +140,8 @@ public class PgDumpLoaderTest {
         // first test the dump loader itself
         String filename = "schema_" + fileIndex + ".sql";
         PgDatabase d = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PgDumpLoaderTest.class.getResourceAsStream(filename),
-                encoding, false, false);
+                PgDumpLoaderTest.class.getResourceAsStream(filename), encoding,
+                false, false, ParserClass.LEGACY);
         
         // then check result's validity against handmade DB object
         if(fileIndex > DB_OBJS.length) {        
@@ -194,8 +194,8 @@ public class PgDumpLoaderTest {
         // prepare db object from sql file
         String filename = "schema_" + fileIndex + ".sql";
         PgDatabase dbFromFile = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PgDumpLoaderTest.class.getResourceAsStream(filename),
-                encoding, false, false);
+                PgDumpLoaderTest.class.getResourceAsStream(filename), encoding,
+                false, false, ParserClass.LEGACY);
         
         PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
         Path exportDir = null;
@@ -204,7 +204,7 @@ public class PgDumpLoaderTest {
             new ModelExporter(exportDir.toFile(), dbPredefined, encoding).exportFull();
             
             PgDatabase dbAfterExport = PgDumpLoader.loadDatabaseSchemaFromDirTree(
-                    exportDir.toString(), encoding, true, true);
+                    exportDir.toString(), encoding, true, true, ParserClass.LEGACY);
 
             // check the same db similarity before and after export
             Assert.assertEquals("ModelExporter: predefined object PgDB" + fileIndex + 

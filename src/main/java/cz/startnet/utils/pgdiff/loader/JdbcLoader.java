@@ -90,9 +90,11 @@ public class JdbcLoader implements PgCatalogStrings {
     private Connection connection;
     private JdbcConnector connector;
     private IProgressMonitor monitor;
+    private final boolean useAntrlForViews;
     
-    public JdbcLoader(JdbcConnector connector){
+    public JdbcLoader(JdbcConnector connector, boolean useAntrlForViews){
         this.connector = connector;
+        this.useAntrlForViews = useAntrlForViews;
     }
 
     public PgDatabase getDbFromJdbc(IProgressMonitor mon) throws IOException{
@@ -495,8 +497,11 @@ public class JdbcLoader implements PgCatalogStrings {
             fakeDb.addSchema(new PgSchema(schemaName, ""));
         }
         fakeDb.setDefaultSchema(schemaName);
-//        v.setSelect(SelectParser.parse(fakeDb, viewDef, getSearchPath(schemaName)));
-        v.setSelect(parseAntLrSelect(fakeDb, viewDef, getSearchPath(schemaName)));
+        if (useAntrlForViews) {
+            v.setSelect(parseAntLrSelect(fakeDb, viewDef, getSearchPath(schemaName)));
+        } else {
+            v.setSelect(SelectParser.parse(fakeDb, viewDef, getSearchPath(schemaName)));
+        }
         
         // Query columns default values and comments
         Array colNamesArr = res.getArray("column_names");

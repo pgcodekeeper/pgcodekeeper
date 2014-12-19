@@ -16,6 +16,7 @@ import org.junit.runners.Parameterized.Parameters;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoaderTest;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -48,7 +49,7 @@ public class TreeElementTest {
     public void testGetFilteredCopy() {
         PgDatabase dbFull = PgDumpLoader.loadDatabaseSchemaFromDump(
                 PgDumpLoaderTest.class.getResourceAsStream(dbDumpName),
-                "UTF8", false, false);
+                "UTF8", false, false, ParserClass.LEGACY);
         PgDatabase dbPartial = new PgDatabase();
         
         if (dbDumpName.equals("schema_6.sql")) {

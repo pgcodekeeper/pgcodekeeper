@@ -18,6 +18,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -96,7 +97,7 @@ public class DepcyTreeExtenderTest {
     public void testGetDependenciesOfNew() {
         PgDatabase dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
-                ApgdiffConsts.UTF_8, false, false);
+                ApgdiffConsts.UTF_8, false, false, ParserClass.LEGACY);
         
         TreeElement filtered = TREES[fileIndex - 1].getFilteredTree();
         
@@ -111,7 +112,7 @@ public class DepcyTreeExtenderTest {
     public void testGetTreeCopyWithDepcy() {
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
-                ApgdiffConsts.UTF_8, false, false);
+                ApgdiffConsts.UTF_8, false, false, ParserClass.LEGACY);
         
         TreeElementCreator treeCreator = TREES[fileIndex - 1];
         
@@ -132,7 +133,7 @@ public class DepcyTreeExtenderTest {
     public void testSumAllDepcies() {
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
-                ApgdiffConsts.UTF_8, false, false);
+                ApgdiffConsts.UTF_8, false, false, ParserClass.LEGACY);
         
         TreeElementCreator treeCreator = TREES[fileIndex - 1];
         
@@ -156,11 +157,11 @@ public class DepcyTreeExtenderTest {
         String filenameConflicting = "depcy_schema_conflicting_" + fileIndex + ".sql";
         PgDatabase dbRemote = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename), ApgdiffConsts.UTF_8,
-                false, false);
+                false, false, ParserClass.LEGACY);
 
         PgDatabase dbGit = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filenameConflicting), ApgdiffConsts.UTF_8,
-                false, false);
+                false, false, ParserClass.LEGACY);
 
         TreeElementCreator treeCreator = TREES[fileIndex - 1];
         

@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoaderTest;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -142,8 +143,8 @@ public class PgAntLRLoaderTest {
         // first test the dump loader itself
         String filename = "schema_" + fileIndex + ".sql";
         PgDatabase d = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PgDumpLoaderTest.class.getResourceAsStream(filename),
-                encoding, false, false);
+                PgDumpLoaderTest.class.getResourceAsStream(filename), encoding,
+                false, false, ParserClass.ANTLR);
         
         // then check result's validity against handmade DB object
         if(fileIndex > DB_OBJS.length) {        
@@ -196,8 +197,8 @@ public class PgAntLRLoaderTest {
         // prepare db object from sql file
         String filename = "schema_" + fileIndex + ".sql";
         PgDatabase dbFromFile = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PgDumpLoaderTest.class.getResourceAsStream(filename),
-                encoding, false, false);
+                PgDumpLoaderTest.class.getResourceAsStream(filename), encoding,
+                false, false, ParserClass.ANTLR);
         
         PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
         Path exportDir = null;
@@ -206,7 +207,7 @@ public class PgAntLRLoaderTest {
             new ModelExporter(exportDir.toFile(), dbPredefined, encoding).exportFull();
             
             PgDatabase dbAfterExport = PgDumpLoader.loadDatabaseSchemaFromDirTree(
-                    exportDir.toString(), encoding, true, true);
+                    exportDir.toString(), encoding, true, true, ParserClass.ANTLR);
 
             // check the same db similarity before and after export
             Assert.assertEquals("ModelExporter: predefined object PgDB" + fileIndex + 

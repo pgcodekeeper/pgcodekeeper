@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -111,10 +112,10 @@ public class PartialExporterTest {
         String targetFilename = "TestPartialExportTarget.sql";
         dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 PartialExporterTest.class.getResourceAsStream(sourceFilename),
-                encoding, false, false);
+                encoding, false, false, ParserClass.LEGACY);
         dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
                 PartialExporterTest.class.getResourceAsStream(targetFilename),
-                encoding, false, false);
+                encoding, false, false, ParserClass.LEGACY);
         
         Assert.assertNotNull(dbSource);
         Assert.assertNotNull(dbTarget);

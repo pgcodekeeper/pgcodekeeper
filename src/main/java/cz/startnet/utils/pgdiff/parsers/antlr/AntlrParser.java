@@ -32,7 +32,7 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 import cz.startnet.utils.pgdiff.schema.PgView.DefaultValue;
 
-public class SqlParserMain {
+public class AntlrParser {
     public static void main(String[] args) throws IOException,
             InterruptedException {
         // String pathToFile =
@@ -56,7 +56,7 @@ public class SqlParserMain {
             if (path.endsWith("diff.sql")) {
                 continue;
             }
-            new SqlParserMain().testSampleInputs(Files.newInputStream(Paths
+            new AntlrParser().parseInputStream(Files.newInputStream(Paths
                     .get(path)), new CustomSQLParserListener(alterObjects,
                     database, Paths.get(path)));
         }
@@ -380,7 +380,7 @@ public class SqlParserMain {
         }
     }
 
-    public void testSampleInputs(InputStream inputStream,
+    public void parseInputStream(InputStream inputStream,
             CustomSQLParserListener listener) throws IOException {
 
         SQLLexer lexer = new SQLLexer(new ANTLRInputStream(inputStream));
