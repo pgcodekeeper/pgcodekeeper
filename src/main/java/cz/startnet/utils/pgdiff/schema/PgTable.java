@@ -329,6 +329,9 @@ public class PgTable extends PgStatementWithSearchPath {
     }
 
     public void addColumn(final PgColumn column) {
+        if (column == null) {
+            return;
+        }
         columns.add(column);
         column.setParent(this);
         resetHash();

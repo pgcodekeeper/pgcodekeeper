@@ -14,9 +14,9 @@ CREATE FUNCTION select_something(number1 integer, number2 integer) RETURNS integ
     AS $_$SELECT number1 * number2$_$ LANGUAGE plpgsql;
 
 CREATE FUNCTION select_something2(number1 integer, number2 integer) RETURNS integer
-    AS 'SELECT number1 * number2 || \'text\'' LANGUAGE plpgsql;
+    AS 'SELECT number1 * number2 || ''text''' LANGUAGE plpgsql;
 
 CREATE FUNCTION select_something3(number1 integer, number2 integer) RETURNS integer
     AS '
-SELECT number1 * number2 || \'text\'
+SELECT number1 * number2 || ''text''
 ' LANGUAGE plpgsql;

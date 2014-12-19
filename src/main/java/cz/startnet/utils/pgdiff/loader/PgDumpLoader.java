@@ -13,8 +13,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +39,10 @@ import cz.startnet.utils.pgdiff.parsers.CreateTriggerParser;
 import cz.startnet.utils.pgdiff.parsers.CreateViewParser;
 import cz.startnet.utils.pgdiff.parsers.ParserException;
 import cz.startnet.utils.pgdiff.parsers.PrivilegeParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -197,9 +203,10 @@ public final class PgDumpLoader { //NOPMD
      *
      * @return database schema from dump file
      */
-    private static PgDatabase loadDatabaseSchemaCore(final InputStream inputStream,
-            final String charsetName, final boolean outputIgnoredStatements,
-            final boolean ignoreSlonyTriggers, final PgDatabase database) {
+    static PgDatabase loadDatabaseSchemaCore(
+            InputStream inputStream, String charsetName,
+            boolean outputIgnoredStatements, final boolean ignoreSlonyTriggers,
+            final PgDatabase database) {
         try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(inputStream, charsetName))) {
         
@@ -268,6 +275,22 @@ public final class PgDumpLoader { //NOPMD
         }
     }
     
+    static PgDatabase loadDatabaseSchemaCoreAntLR(
+            InputStream inputStream, String charsetName, 
+            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers, 
+            PgDatabase database) {
+        List<PgObjLocation> alterObjects = new ArrayList<>();
+        AntlrParser parser = new AntlrParser();
+        try {
+            parser.parseInputStream(inputStream,
+                    new CustomSQLParserListener(alterObjects, database, Paths.get("/")));
+        } catch (IOException e) {
+            throw new FileException("Exception while closing dump file", e);
+        }
+        AntlrParser.fillDB(database);
+        AntlrParser.fillAlterObjects(alterObjects, database);
+        return database;
+    }
     /**
      * Loads database schema from a ModelExporter directory tree.
      * The root directory must contain a listing.lst file for ordered list of files.
@@ -282,9 +305,9 @@ public final class PgDumpLoader { //NOPMD
      * @return database schema
      */
     public static PgDatabase loadDatabaseSchemaFromDirTree(
-            final String dirPath, final String charsetName,
-            final boolean outputIgnoredStatements,
-            final boolean ignoreSlonyTriggers) {
+            String dirPath, String charsetName,
+            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+            ParserClass parser) {
         final PgDatabase db = new PgDatabase();
         File dir = new File(dirPath);
 
@@ -296,7 +319,7 @@ public final class PgDumpLoader { //NOPMD
             dirs[i] = dirEnums[i].toString();
         }
         walkSubdirsRunCore(dir, charsetName, outputIgnoredStatements,
-                ignoreSlonyTriggers, dirs, db);
+                ignoreSlonyTriggers, dirs, db, parser);
 
         File schemasCommonDir = new File(dir, ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
 
@@ -310,15 +333,15 @@ public final class PgDumpLoader { //NOPMD
         for (File schemaFolder : schemasCommonDir.listFiles()) {
             if (schemaFolder.isDirectory()) {
                 walkSubdirsRunCore(schemaFolder, charsetName, outputIgnoredStatements,
-                        ignoreSlonyTriggers, DIR_LOAD_ORDER, db);
+                        ignoreSlonyTriggers, DIR_LOAD_ORDER, db, parser);
             }
         }
         return db;
     }
     
-    private static void walkSubdirsRunCore(final File dir,
-            final String charsetName, final boolean outputIgnoredStatements,
-            final boolean ignoreSlonyTriggers, String[] subDir, PgDatabase db) {
+    private static void walkSubdirsRunCore(File dir, String charsetName,
+            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+            String[] subDir, PgDatabase db, ParserClass parser) {
         for (String s : subDir) {
             File folder = new File(dir, s);
             
@@ -330,9 +353,8 @@ public final class PgDumpLoader { //NOPMD
                     if (f.exists() && !f.isDirectory() && 
                             f.getName().toLowerCase().endsWith(".sql")) {
                         try (FileInputStream inputStream = new FileInputStream(f)) {
-                            loadDatabaseSchemaCore(inputStream, charsetName,
-                                    outputIgnoredStatements,
-                                    ignoreSlonyTriggers, db);
+                            parser.parse(inputStream, charsetName,
+                                    outputIgnoredStatements, ignoreSlonyTriggers, db);
                         } catch (FileNotFoundException ex) {
                             throw new FileException(MessageFormat.format(
                                     Resources.getString("FileNotFound"),
@@ -359,10 +381,11 @@ public final class PgDumpLoader { //NOPMD
      *
      * @return database schema from dump file
      */
-    public static PgDatabase loadDatabaseSchemaFromDump(final InputStream inputStream,
-            final String charsetName, final boolean outputIgnoredStatements,
-            final boolean ignoreSlonyTriggers) {
-        return loadDatabaseSchemaCore(inputStream, charsetName, outputIgnoredStatements,
+    public static PgDatabase loadDatabaseSchemaFromDump(
+            InputStream inputStream, String charsetName, 
+            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+            ParserClass parser) {
+        return parser.parse(inputStream, charsetName, outputIgnoredStatements,
                 ignoreSlonyTriggers, new PgDatabase());
     }
     
@@ -378,12 +401,13 @@ public final class PgDumpLoader { //NOPMD
      *
      * @return database schema from dump file
      */
-    public static PgDatabase loadDatabaseSchemaFromDump(final String file,
-            final String charsetName, final boolean outputIgnoredStatements,
-            final boolean ignoreSlonyTriggers) {
+    public static PgDatabase loadDatabaseSchemaFromDump(
+            String file, String charsetName, 
+            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+            ParserClass parser) {
         try {
             return loadDatabaseSchemaFromDump(new FileInputStream(file), charsetName,
-                    outputIgnoredStatements, ignoreSlonyTriggers);
+                    outputIgnoredStatements, ignoreSlonyTriggers, parser);
         } catch (final FileNotFoundException ex) {
             throw new FileException(MessageFormat.format(
                     Resources.getString("FileNotFound"), file), ex);
@@ -397,7 +421,7 @@ public final class PgDumpLoader { //NOPMD
      *
      * @return whole statement from the reader into single-line string
      */
-    private static String getWholeStatement(final BufferedReader reader) {
+    private static String getWholeStatement(BufferedReader reader) {
         final StringBuilder sbStatement = new StringBuilder(1024);
 
         if (lineBuffer != null) {
@@ -460,7 +484,7 @@ public final class PgDumpLoader { //NOPMD
      *
      * @param sbStatement string builder containing statement
      */
-    private static void stripComment(final StringBuilder sbStatement) {
+    private static void stripComment(StringBuilder sbStatement) {
         int pos = sbStatement.indexOf("--");
 
         while (pos >= 0) {
@@ -489,8 +513,7 @@ public final class PgDumpLoader { //NOPMD
      *
      * @return true if the specified position is quoted, otherwise false
      */
-    private static boolean isQuoted(final StringBuilder sbString,
-            final int pos) {
+    private static boolean isQuoted(StringBuilder sbString, int pos) {
         boolean isQuoted = false,
                 isDoubleQuoted = false;
 

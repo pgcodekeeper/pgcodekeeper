@@ -91,7 +91,7 @@ public final class ParserUtils {
      *
      * @return array of names
      */
-    private static String[] splitNames(final String string) {
+    public static String[] splitNames(final String string) {
         if (string.indexOf('"') == -1) {
             return string.split(Pattern.quote("."));
         } else {

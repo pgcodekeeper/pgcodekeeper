@@ -56,6 +56,10 @@ public abstract class PgStatement {
         return parent;
     }
     
+    public void dropParent() {
+        parent = null;
+    }
+    
     public void setParent(PgStatement parent) {
         if(this.parent != null) {
             throw new IllegalStateException("Statement already has a parent: "
@@ -333,5 +337,9 @@ public abstract class PgStatement {
         }
         
         return qname;
+    }
+    @Override
+    public String toString() {
+        return name;
     }
 }

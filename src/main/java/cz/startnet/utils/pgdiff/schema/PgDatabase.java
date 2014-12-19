@@ -8,7 +8,9 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
@@ -30,6 +32,8 @@ public class PgDatabase extends PgStatement {
     private final List<String> ignoredStatements = new ArrayList<>();
     private final List<String> ignoredDataStatements = new ArrayList<>();
     
+    // Exclude duplicate and keep order
+    private final Set<PgObjLocation> objLocations = new LinkedHashSet<>(); 
     @Override
     public DbObjType getStatementType() {
         return DbObjType.DATABASE;
@@ -65,6 +69,65 @@ public class PgDatabase extends PgStatement {
     public void addIgnoredDataStatement(final String ignoredDataStatement) {
         ignoredDataStatements.add(ignoredDataStatement);
     }
+    
+    public boolean addObjLocation(PgObjLocation objLocation) {
+        return objLocations.add(objLocation);
+    }
+    /**
+     * May return NULL if objects doesn't determines location
+     * @param objName object name
+     * @return location or null 
+     */
+    public PgObjLocation getObjLocation(String objName) {
+        for (PgObjLocation location : objLocations) {
+            if (location.getObjName().equals(objName)) {
+                return location;
+            }
+        }
+        return null;
+    }
+    
+    public Set<PgObjLocation> getObjLocations() {
+        return Collections.unmodifiableSet(objLocations);
+    }
+    
+    public List<PgStatement> getObjectsByName(String objName) {
+        List<PgStatement> result = new ArrayList<>();
+        result.add(getObjByName(getSchemas(), objName));
+        result.add(getObjByName(getExtensions(), objName));
+        for (PgSchema schema : getSchemas()) {
+            findObjInSchema(schema, objName, result);
+        }
+        return result;
+    }
+    public List<PgStatement> getSchemaQualObjByName(String schemaName, String objName) {
+        List<PgStatement> result = new ArrayList<>();
+        findObjInSchema(getSchema(schemaName), objName, result);
+        return result;
+    }
+
+    private void findObjInSchema(PgSchema schema, String objName, List<PgStatement> result) {
+        result.add(getObjByName(schema.getFunctions(), objName));
+        result.add(getObjByName(schema.getViews(), objName));
+        result.add(getObjByName(schema.getSequences(), objName));
+        result.add(getObjByName(schema.getTables(), objName));
+        for (PgTable table : schema.getTables()) {
+            result.add(getObjByName(table.getColumns(), objName));
+            result.add(getObjByName(table.getConstraints(), objName));
+            result.add(getObjByName(table.getIndexes(), objName));
+            result.add(getObjByName(table.getTriggers(), objName));
+        }
+    }
+    
+    private <T extends PgStatement> T getObjByName(List<T> objs, String objName) {
+        for (T obj : objs) {
+            if (obj.getName().equals(objName)) {
+                return obj;
+            }
+        }
+        return null;
+    }
+    
 
     /**
      * Returns schema of given name or null if the schema has not been found. If

@@ -70,13 +70,13 @@ public class PgDiffTest {
                     {"modify_statistics", false, false, false, false},
                     // Tests scenario where STATISTICS information is dropped.
                     {"drop_statistics", false, false, false, false},
-                    // Tests scenario where DEFAULT value is set on COLUMN.
+//                     Tests scenario where DEFAULT value is set on COLUMN.
                     {"add_default_value", false, false, false, false},
                     // Tests scenario where DEFAULT value is modified.
                     {"modify_default_value", false, false, false, false},
-                    // Tests scenario where DEFAULT value is dropped from COLUMN.
+//                     Tests scenario where DEFAULT value is dropped from COLUMN.
                     {"drop_default_value", false, false, false, false},
-                    // Tests scenario where NOT NULL constraint is set on COLUMN.
+//                     Tests scenario where NOT NULL constraint is set on COLUMN.
                     {"add_not_null", false, false, false, false},
                     // Tests scenario where NOT NULL constraint is dropped
                     // from COLUMN.
@@ -331,7 +331,7 @@ public class PgDiffTest {
     /**
      * Runs single test using class member variables.
      */
-    @Test(timeout = 5000)
+    @Test/*(timeout = 5000)*/
     public void runDiff() throws IOException {
         
         Assume.assumeThat(RUN_DIFF_SKIP_FILES, not(hasItem(fileNameTemplate)));
@@ -362,6 +362,9 @@ public class PgDiffTest {
             }
         }
 
+        if (!sbExpDiff.toString().trim().equals(diffInput.toString().trim())) {
+            System.out.println(fileNameTemplate);
+        }
         Assert.assertEquals("File name template: " + fileNameTemplate,
                 sbExpDiff.toString().trim(),
                 diffInput.toString().trim());

@@ -18,7 +18,7 @@ public class TreeElement {
         DATABASE,
         SCHEMA, EXTENSION,
         FUNCTION, SEQUENCE, TABLE, VIEW,
-        INDEX, TRIGGER, CONSTRAINT
+        INDEX, TRIGGER, CONSTRAINT, COLUMN
     }
     
     public enum DiffSide {

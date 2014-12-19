@@ -20,6 +20,7 @@ import org.jgrapht.traverse.DepthFirstIterator;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -74,14 +75,14 @@ public final class PgDiff {
     public static void createDiff(final PrintWriter writer,
             final PgDiffArguments arguments, final InputStream oldInputStream,
             final InputStream newInputStream) {
-        final PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
+        PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
                 oldInputStream, arguments.getInCharsetName(),
                 arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers());
-        final PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
+                arguments.isIgnoreSlonyTriggers(), ParserClass.LEGACY);
+        PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
                 newInputStream, arguments.getInCharsetName(),
                 arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers());
+                arguments.isIgnoreSlonyTriggers(), ParserClass.LEGACY);
 
         diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase,
                 oldDatabase, newDatabase);
@@ -102,11 +103,11 @@ public final class PgDiff {
         if(format.equals("dump")) {
             return PgDumpLoader.loadDatabaseSchemaFromDump(srcPath,
                     arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
-                    arguments.isIgnoreSlonyTriggers());
+                    arguments.isIgnoreSlonyTriggers(), ParserClass.LEGACY);
         } else if(format.equals("parsed")) {
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
                     arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
-                    arguments.isIgnoreSlonyTriggers());
+                    arguments.isIgnoreSlonyTriggers(), ParserClass.LEGACY);
         } else if(format.equals("db")) {
             throw new UnsupportedOperationException("DB connection is not yet implemented!");
         }
