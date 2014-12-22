@@ -19,6 +19,7 @@
 lexer grammar SQLLexer;
 
 @header {
+    package cz.startnet.utils.pgdiff.parsers.antlr;
     import java.util.ArrayDeque;
     import java.util.Deque;
 }
