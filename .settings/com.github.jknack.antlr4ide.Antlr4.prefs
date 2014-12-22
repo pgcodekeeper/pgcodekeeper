@@ -1,5 +1,5 @@
 antlr4.antlrRegisteredTools=4.2.2@/tmp/antlr-4.2.2-complete.jar\:4.4@/home/botov_av/workspace/codekeeper/apgdiff/lib/antlr-4.4-complete.jar\:4.3@/home/botov_av/workspace/codekeeper/apgdiff/lib/antlr-4.3-complete.jar
-antlr4.antlrToolPath=/home/botov_av/workspace/codekeeper/apgdiff/lib/antlr-4.3-complete.jar
+antlr4.antlrToolPath=/home/botov_av/workspace/codekeeper/apgdiff/lib/antlr-4.4-complete.jar
 antlr4.encoding=UTF-8
 antlr4.listener=true
 antlr4.visitor=false
