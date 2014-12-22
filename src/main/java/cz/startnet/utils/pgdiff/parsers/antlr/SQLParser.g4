@@ -24,6 +24,7 @@ options {
 }
 
 @header {
+    package cz.startnet.utils.pgdiff.parsers.antlr;
 }
 
 @members {
