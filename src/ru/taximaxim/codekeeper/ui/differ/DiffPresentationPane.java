@@ -127,7 +127,7 @@ public abstract class DiffPresentationPane extends Composite {
         // simplified for 1 static notification
         // refactor into multiple child composites w/ description class
         // for multiple dynamic notifications if necessary
-        contNotifications = new Group(this, SWT.BORDER | SWT.SHADOW_ETCHED_IN);
+        contNotifications = new Group(this, SWT.BORDER);
         contNotifications.setLayout(new GridLayout(5, false));
         
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
