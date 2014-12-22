@@ -22,7 +22,7 @@
         <artifactId>antlr4-maven-plugin</artifactId>
         <version>4.3</version>
         <configuration>
-            <visitor>yes</visitor>
+            <visitor>true</visitor>
             <sourceDirectory>${project.basedir}/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr</sourceDirectory>
             <outputDirectory>${project.build.outputDirectory}/cz/startnet/utils/pgdiff/parsers/antlr</outputDirectory>
         </configuration>
