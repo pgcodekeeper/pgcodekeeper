@@ -109,11 +109,11 @@ public class CreateView extends ParserAbstract {
         public Query_expressionContext visitSet_function_specification(
                 Set_function_specificationContext ctx) {
             if (ctx.COUNT() != null) {
-                columns.add(new GenericColumn(null, ctx.COUNT().getText(), null)
-                        .setType(ViewReference.FUNCTION));
+                columns.add(new GenericColumn(null, getFullCtxText(ctx), null)
+                        .setType(ViewReference.SYSTEM));
             } else {
                 columns.add(new GenericColumn(null, ctx.general_set_function()
-                        .set_function_type().getText(), null).setType(ViewReference.FUNCTION));
+                        .set_function_type().getText(), null).setType(ViewReference.SYSTEM));
             }
             return null;
         }
@@ -194,6 +194,7 @@ public class CreateView extends ParserAbstract {
                     continue;
                 }
                 switch (col.getType()) {
+                case FUNCTION:
                 case COLUMN:
                     GenericColumn unaliased = tableAliases.get(col.table);
                     if (unaliased != null) {
@@ -206,8 +207,6 @@ public class CreateView extends ParserAbstract {
                     } else {
                         newColumns.add(col);
                     }
-                    break;
-                case FUNCTION:
                     break;
                 case TABLE:
                     break;

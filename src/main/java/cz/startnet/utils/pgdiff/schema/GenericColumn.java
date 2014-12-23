@@ -68,6 +68,7 @@ public final class GenericColumn {
     public enum ViewReference {
         COLUMN,
         FUNCTION,
-        TABLE
+        TABLE,
+        SYSTEM
     }
 }
