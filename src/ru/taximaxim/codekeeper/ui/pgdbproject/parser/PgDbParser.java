@@ -113,6 +113,16 @@ public class PgDbParser {
         return locations;
     }
     
+    public List<PgObjLocation> getObjectByPath(Path path) {
+        List<PgObjLocation> locations = new ArrayList<>();
+        for (PgObjLocation obj : objLocations) {
+            if (obj.getFilePath().equals(path)) {
+                locations.add(obj);
+            }
+        }
+        return locations;
+    }
+    
     private void getDBFromDirectory(URI locationURI) {
         String dirPath = Paths.get(locationURI).toAbsolutePath().toString();
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(dirPath,
