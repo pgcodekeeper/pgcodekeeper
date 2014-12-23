@@ -17,7 +17,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
-import cz.startnet.utils.pgdiff.schema.PGObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
 
@@ -60,7 +60,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
             int wordEnd = lineInfo.getOffset() + line.indexOf(name) + name.length();
             if (line.contains(name)
                     && (wordBegin < offset && wordEnd > offset)) {
-                for (PGObjLocation loc : parser.getObjectLocations(name)) {
+                for (PgObjLocation loc : parser.getObjectLocations(name)) {
                     hyperlinks.add(new SQLEditorHyperLink(new Region(loc.getOffset(), loc.getObjLength()), new Region(wordBegin, name.length()),
                             "Reference", loc.getFilePath(), textViewer));
                 }

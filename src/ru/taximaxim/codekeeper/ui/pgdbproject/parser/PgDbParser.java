@@ -10,12 +10,9 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -23,18 +20,17 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 
-import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.SqlParserMain;
-import cz.startnet.utils.pgdiff.schema.PGObjLocation;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class PgDbParser {
 
     public static final String PATH_TO_OBJ_SCHEMA = ".settings/schema";
     private static final String SERIALIZATIONFILE = "objects";
     private Set<String> objNames = new HashSet<>();
-    private List<PGObjLocation> objLocations;
+    private List<PgObjLocation> objLocations;
     private final IProject proj;
 
     public PgDbParser(IProject proj) {
@@ -43,7 +39,7 @@ public class PgDbParser {
     }
 
     public PgDbParser getObjFromProject() {
-        fillObjectLocations(proj.getLocationURI());
+        getDBFromDirectory(proj.getLocationURI());
         return this;
     }
 
@@ -85,7 +81,7 @@ public class PgDbParser {
                     ObjectInput in = new ObjectInputStream(bis);) {
                 Object o = in.readObject();
                 if (o instanceof List<?>) {
-                    objLocations = (List<PGObjLocation>) o;
+                    objLocations = (List<PgObjLocation>) o;
                 }
             } catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block
@@ -98,7 +94,7 @@ public class PgDbParser {
     }
 
     private void fillNamesFromStore() {
-        for (PGObjLocation obj : objLocations) {
+        for (PgObjLocation obj : objLocations) {
             objNames.add(obj.getObjName());
         }
     }
@@ -107,55 +103,20 @@ public class PgDbParser {
         return objNames;
     }
     
-    public List<PGObjLocation> getObjectLocations(String objName) {
-        List<PGObjLocation> locations = new ArrayList<>();
-        for (PGObjLocation loc : objLocations) {
+    public List<PgObjLocation> getObjectLocations(String objName) {
+        List<PgObjLocation> locations = new ArrayList<>();
+        for (PgObjLocation loc : objLocations) {
             if (loc.getObjName().equals(objName)) {
                 locations.add(loc);
             }
         }
         return locations;
     }
-
-    private void fillObjectLocations(URI locationURI) {
-        Path root = Paths.get(locationURI);
-        try {
-            if (Files.readAttributes(root, BasicFileAttributes.class)
-                    .isDirectory()) {
-                List<String> allowingDir = new ArrayList<>();
-                for (WORK_DIR_NAMES name : ApgdiffConsts.WORK_DIR_NAMES
-                        .values()) {
-                    allowingDir.add(name.toString());
-                }
-                for (Path child : Files.newDirectoryStream(root)) {
-                    if (allowingDir.contains(child.getFileName().toString())) {
-                        recursiveParseFiles(child);
-                    }
-                }
-
-            }
-        } catch (IOException e) {
-            // do nothing
-        }
-    }
-
-    private void recursiveParseFiles(Path root) throws IOException {
-        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(root)) {
-            for (Path child : dirStream) {
-                BasicFileAttributes attribs = Files.readAttributes(child,
-                        BasicFileAttributes.class);
-                if (attribs.isDirectory()) {
-                    recursiveParseFiles(child);
-                } else {
-                    parseFile(child);
-                }
-            }
-        }
-    }
-
-    private void parseFile(Path children) throws IOException {
-        if (Files.exists(children, LinkOption.NOFOLLOW_LINKS)) {
-            new SqlParserMain().testSampleInputs(children.toAbsolutePath().toString(), new CustomSQLParserListener(objLocations, children));
-        }
+    
+    private void getDBFromDirectory(URI locationURI) {
+        String dirPath = Paths.get(locationURI).toAbsolutePath().toString();
+        PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(dirPath,
+                "UTF-8", false, false, ParserClass.ANTLR);
+        objLocations.addAll(db.getObjLocations());
     }
 }
