@@ -2,13 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: ru.taximaxim.codekeeper.ui;singleton:=true
-Bundle-Version: 1.1.0.qualifier
+Bundle-Version: 1.1.2.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.ui.Activator
-Export-Package: ru.taximaxim.codekeeper.ui,
- ru.taximaxim.codekeeper.ui.externalcalls,
- ru.taximaxim.codekeeper.ui.fileutils,
- ru.taximaxim.codekeeper.ui.localizations,
- ru.taximaxim.codekeeper.ui.pgdbproject
 Require-Bundle: org.eclipse.compare;bundle-version="[3.5.0,4.0.0)",
  org.eclipse.core.filesystem;bundle-version="[1.3.0,2.0.0)",
  org.eclipse.core.resources;bundle-version="[3.7.0,4.0.0)",
@@ -20,7 +15,7 @@ Require-Bundle: org.eclipse.compare;bundle-version="[3.5.0,4.0.0)",
  org.eclipse.ui.ide;bundle-version="[3.7.0,4.0.0)",
  org.eclipse.zest.core,
  org.eclipse.zest.layouts,
- apgdiff;bundle-version="[0.4.0,1.0.0)"
+ apgdiff;bundle-version="[1.0.0,2.0.0)"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: org.jgrapht,
  org.osgi.framework;version="[1.6.0,2.0.0)"

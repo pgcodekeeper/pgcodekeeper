@@ -104,7 +104,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         }
         
         IEditorPart editor = getSite().getPage().getActiveEditor();
-        if (editor == null || !(editor instanceof ProjectEditorDiffer)){
+        if (!(editor instanceof ProjectEditorDiffer)){
             return;
         }
         
@@ -118,7 +118,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             currentSource = isCommit ? dss.getTargetDepcyGraph() : dss.getSourceDepcyGraph();
         }
         
-        HashSet<PgStatement> pgStatSele = new HashSet<PgStatement>();
+        HashSet<PgStatement> pgStatSele = new HashSet<>();
         
         for(Object o : dss.toArray()){
             if (!(o instanceof TreeElement)){
@@ -154,7 +154,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             if (entity instanceof PgStatement){
                 DirectedGraph<PgStatement, DefaultEdge> graph = DepcyGraphView.this.currentSource.getGraph();
                 if (graph != null){
-                    ArrayList<PgStatement> connected = new ArrayList<PgStatement>(5);
+                    ArrayList<PgStatement> connected = new ArrayList<>();
                     for (DefaultEdge e : graph.outgoingEdgesOf((PgStatement)entity)){
                         PgStatement connectedVertex = graph.getEdgeTarget(e);
                         if (!(connectedVertex instanceof PgColumn)){

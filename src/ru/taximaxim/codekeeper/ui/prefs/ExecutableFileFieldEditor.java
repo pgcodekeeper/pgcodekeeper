@@ -40,7 +40,7 @@ public class ExecutableFileFieldEditor extends FileFieldEditor {
             
             String pathSep = Pattern.quote(File.pathSeparator);
             
-            List<String> pathExts = new ArrayList<>(16);
+            List<String> pathExts = new ArrayList<>();
             // since we always try to search with extension add empty one too
             pathExts.add(""); //$NON-NLS-1$
             

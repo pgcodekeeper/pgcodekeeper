@@ -52,12 +52,13 @@ public final class ExceptionNotifier {
      */
     private static void notify(Throwable source, final String message, 
             boolean outputToConsole, boolean showInDialog) {
-        if (source == null) {
-            source = new Throwable("Null throwable reported!"); //$NON-NLS-1$
+        Throwable th = source;
+        if (th == null) {
+            th = new Throwable("Null throwable reported!"); //$NON-NLS-1$
         }
-        Log.log(Log.LOG_ERROR, source.getMessage(), source);
+        Log.log(Log.LOG_ERROR, source.getMessage(), th);
         
-        executeNotify(source, message, outputToConsole, showInDialog);
+        executeNotify(th, message, outputToConsole, showInDialog);
     }
 
     private static void executeNotify(final Throwable source,

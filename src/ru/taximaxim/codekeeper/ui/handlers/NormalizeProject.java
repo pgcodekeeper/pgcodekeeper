@@ -20,13 +20,16 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class NormalizeProject extends AbstractHandler {
@@ -40,7 +43,7 @@ public class NormalizeProject extends AbstractHandler {
             return null;
         }
         
-        MessageBox mbSure = new MessageBox(shell,SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+        MessageBox mbSure = new MessageBox(shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
         mbSure.setText(Messages.NormalizeProject_normalize_project);
         mbSure.setMessage(Messages.NormalizeProject_are_you_sure);
         if (mbSure.open() != SWT.YES) {
@@ -54,7 +57,10 @@ public class NormalizeProject extends AbstractHandler {
             protected IStatus run(IProgressMonitor monitor) {
                 SubMonitor mon = SubMonitor.convert(monitor, Messages.NormalizeProject_normalizing_project, 2);
                 try {
-                    PgDatabase db = DbSource.fromProject(proj).get(mon.newChild(1));
+                    PgDatabase db = DbSource.fromProject(Activator.getDefault()
+                            .getPreferenceStore().getBoolean(PREF.USE_ANTLR) ? 
+                                    ParserClass.ANTLR : ParserClass.LEGACY, proj)
+                                    .get(mon.newChild(1));
                     
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
                     new ProjectUpdater(db, null, null, proj).updateFull();
@@ -70,27 +76,7 @@ public class NormalizeProject extends AbstractHandler {
             @Override
             public void done(IJobChangeEvent event) {
                 if (event.getResult().isOK()) {
-                    Display.getDefault().asyncExec(new Runnable() {
-                        
-                        @Override
-                        public void run() {
-                            try {
-                                proj.getProject().refreshLocal(
-                                        IResource.DEPTH_INFINITE, null);
-                            } catch (CoreException ex) {
-                                ExceptionNotifier.showErrorDialog(
-                                        Messages.ProjectEditorDiffer_error_refreshing_project, ex);
-                            }
-                            
-                            if (shell.isDisposed()) {
-                                return;
-                            }
-                            MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
-                            mb.setMessage(Messages.NormalizeProject_project_normalized_success);
-                            mb.setText(Messages.NormalizeProject_project_normalized);
-                            mb.open();
-                        }
-                    });
+                    Display.getDefault().asyncExec(new RunRefreshAfterNorm(proj, shell));
                 }
             }
         });
@@ -99,4 +85,33 @@ public class NormalizeProject extends AbstractHandler {
         return null;
     }
 
+    private static class RunRefreshAfterNorm implements Runnable {
+
+        private final PgDbProject proj;
+        private final Shell shell;
+
+        RunRefreshAfterNorm(PgDbProject proj, Shell shell) {
+            this.proj = proj;
+            this.shell = shell;
+        }
+
+        @Override
+        public void run() {
+            try {
+                proj.getProject().refreshLocal(
+                        IResource.DEPTH_INFINITE, null);
+            } catch (CoreException ex) {
+                ExceptionNotifier.showErrorDialog(
+                        Messages.ProjectEditorDiffer_error_refreshing_project, ex);
+            }
+            
+            if (shell.isDisposed()) {
+                return;
+            }
+            MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
+            mb.setMessage(Messages.NormalizeProject_project_normalized_success);
+            mb.setText(Messages.NormalizeProject_project_normalized);
+            mb.open();
+        }
+    }
 }

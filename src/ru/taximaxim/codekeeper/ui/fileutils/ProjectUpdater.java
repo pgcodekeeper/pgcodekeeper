@@ -14,6 +14,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -37,14 +38,17 @@ public class ProjectUpdater {
         
         this.changedObjects = changedObjects;
         
-        this.encoding = proj.getPrefs().get(PROJ_PREF.ENCODING, ""); //$NON-NLS-1$
+        this.encoding = proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8);
         this.dirExport = proj.getPathToProject().toFile();
     }
 
     public void updatePartial() throws IOException {
+        Log.log(Log.LOG_INFO, "Project updater: started partial"); //$NON-NLS-1$
         if (dbOld == null){
             throw new IOException(Messages.ProjectUpdater_old_db_null);
         }
+        
+        boolean caughtProcessingEx = false;
         try (TempDir tmp = new TempDir(dirExport.toPath(), "tmp-export")) { //$NON-NLS-1$
             File dirTmp = tmp.get();
             
@@ -74,6 +78,8 @@ public class ProjectUpdater {
                 
                 new ModelExporter(dirExport, dbNew, dbOld, changedObjects, encoding).exportPartial();
             } catch (Exception ex) {
+                caughtProcessingEx = true;
+                
                 Log.log(Log.LOG_ERROR, "Error while updating project!" , ex); //$NON-NLS-1$
             
                 try {
@@ -90,11 +96,17 @@ public class ProjectUpdater {
                 throw new IOException(Messages.ProjectUpdater_error_update, ex);
             }
         } catch (IOException ex) {
+            if (caughtProcessingEx) {
+                // exception & err msg are already formed in the inner catch
+                throw ex;
+            }
             throw new IOException(Messages.ProjectUpdater_error_no_tempdir, ex);
         }
     }
     
     public void updateFull() throws IOException {
+        Log.log(Log.LOG_INFO, "Project updater: started full"); //$NON-NLS-1$
+        boolean caughtProcessingEx = false;
         try (TempDir tmp = new TempDir(dirExport.toPath(), "tmp-export")) { //$NON-NLS-1$
             File dirTmp = tmp.get();
             
@@ -102,6 +114,8 @@ public class ProjectUpdater {
                 safeCleanProjectDir(dirTmp);
                 new ModelExporter(dirExport, dbNew, encoding).exportFull();
             } catch (Exception ex) {
+                caughtProcessingEx = true;
+                
                 Log.log(Log.LOG_ERROR, "Error while updating project!" //$NON-NLS-1$
                         + " Trying to restore data from backup", ex); //$NON-NLS-1$
             
@@ -119,6 +133,10 @@ public class ProjectUpdater {
                 throw new IOException(Messages.ProjectUpdater_error_update, ex);
             }
         } catch (IOException ex) {
+            if (caughtProcessingEx) {
+                // exception & err msg are already formed in the inner catch
+                throw ex;
+            }
             throw new IOException(Messages.ProjectUpdater_error_no_tempdir, ex);
         }
     }

@@ -60,7 +60,7 @@ public class XmlStringList {
         return readList(readXml(reader));
     }
     
-    public LinkedHashMap<String, LinkedList<String>> deserializeMap(Reader reader) 
+    public Map<String, List<String>> deserializeMap(Reader reader) 
             throws IOException, SAXException {
         return readMap(readXml(reader));
     }
@@ -91,7 +91,7 @@ public class XmlStringList {
         tf.transform(new DOMSource(xml), new StreamResult(writer));
     }
     
-    public void serializeMap(Map<String, LinkedList<String>> mapToConvert, boolean noFormatting,
+    public void serializeMap(Map<String, List<String>> mapToConvert, boolean noFormatting,
             Writer writer) throws TransformerException, IOException {
         Document xml;
         try {
@@ -159,13 +159,13 @@ public class XmlStringList {
         return list;
     }
     
-    private LinkedHashMap<String, LinkedList<String>> readMap(Document xml) {
-        LinkedHashMap<String, LinkedList<String>> lists= new LinkedHashMap<>();
+    private Map<String, List<String>> readMap(Document xml) {
+        Map<String, List<String>> lists = new LinkedHashMap<>();
         
         Element root = (Element) xml.getElementsByTagName(rootTagName).item(0);
         NodeList nList = root.getChildNodes();
         for (int i = 0; i < nList.getLength(); i++) {
-            LinkedList<String> list = new LinkedList<>();
+            List<String> list = new LinkedList<>();
             Node node = nList.item(i);
             
             if (node.getNodeType() == Node.ELEMENT_NODE) {

@@ -59,14 +59,14 @@ public class ManualDepciesDialog extends TrayDialog {
     
     @Override
     protected Control createDialogArea(Composite parent) {
-        parent = (Composite) super.createDialogArea(parent);
+        Composite area = (Composite) super.createDialogArea(parent);
         
-        depcyGroupSource = new ManualDepciesGroup(parent, SWT.NONE, 
+        depcyGroupSource = new ManualDepciesGroup(area, SWT.NONE, 
                 depciesSource, objectsSource, groupSourceName);
-        depcyGroupTarget = new ManualDepciesGroup(parent, SWT.NONE, 
+        depcyGroupTarget = new ManualDepciesGroup(area, SWT.NONE, 
                 depciesTarget, objectsTarget, groupTargetName);
         PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), HELP.MANUAL_DEPCIES);
-        return parent;
+        return area;
     }
     
     @Override

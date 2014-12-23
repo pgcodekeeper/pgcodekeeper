@@ -15,6 +15,7 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.Viewer;
@@ -141,24 +142,7 @@ public class ManualDepciesGroup extends Group{
                 return depcies.toArray();
             }
         });
-        listDepcies.setLabelProvider(new ILabelProvider() {
-            
-            @Override
-            public void removeListener(ILabelProviderListener listener) {
-            }
-            
-            @Override
-            public boolean isLabelProperty(Object element, String property) {
-                return false;
-            }
-            
-            @Override
-            public void dispose() {
-            }
-            
-            @Override
-            public void addListener(ILabelProviderListener listener) {
-            }
+        listDepcies.setLabelProvider(new LabelProvider() {
             
             @Override
             public String getText(Object element) {
@@ -166,11 +150,6 @@ public class ManualDepciesGroup extends Group{
                 Entry<PgStatement, PgStatement> e = (Entry<PgStatement, PgStatement>) element;
                 return e.getKey().getQualifiedName() + " \u2192 " //$NON-NLS-1$
                         + e.getValue().getQualifiedName();
-            }
-            
-            @Override
-            public Image getImage(Object element) {
-                return null;
             }
         });
         listDepcies.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -186,6 +165,7 @@ public class ManualDepciesGroup extends Group{
         btnRemove.setEnabled(false);
         btnRemove.addSelectionListener(new SelectionAdapter() {
             
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
                 boolean removedStuff = false;
@@ -194,16 +174,7 @@ public class ManualDepciesGroup extends Group{
                     @SuppressWarnings("unchecked")
                     Entry<PgStatement, PgStatement> toRemove = 
                             (Entry<PgStatement, PgStatement>) selectionElement;
-                    
-                    Iterator<Entry<PgStatement, PgStatement>> it = depcies.iterator();
-                    while (it.hasNext()) {
-                        Entry<PgStatement, PgStatement> el = it.next();
-                        if (toRemove.getKey().compare(el.getKey())
-                                && toRemove.getValue().compare(el.getValue())) {
-                            it.remove();
-                            removedStuff = true;
-                        }
-                    }
+                    removedStuff |= removeDepcy(toRemove, depcies.iterator());
                 }
                 if (removedStuff) {
                     setInput();
@@ -236,6 +207,19 @@ public class ManualDepciesGroup extends Group{
         // ~should~ be fine
     }
     
+    private boolean removeDepcy(Entry<PgStatement, PgStatement> toRemove,
+            Iterator<Entry<PgStatement, PgStatement>> it) {
+        while (it.hasNext()) {
+            Entry<PgStatement, PgStatement> el = it.next();
+            if (toRemove.getKey().compare(el.getKey())
+                    && toRemove.getValue().compare(el.getValue())) {
+                it.remove();
+                return true;
+            }
+        }
+        return false;
+    }
+
     private class ComboModifyListener implements ModifyListener {
 
         @Override

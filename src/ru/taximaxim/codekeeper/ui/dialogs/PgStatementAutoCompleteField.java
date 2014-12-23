@@ -73,7 +73,7 @@ class MyContentProposalProvider implements IContentProposalProvider {
         if (filterProposals) {
             String contentsLc = contents.toLowerCase();
             String contentsNq = contentsLc.replace("\"", ""); //$NON-NLS-1$ //$NON-NLS-2$
-            ArrayList<ContentProposal> list = new ArrayList<ContentProposal>();
+            ArrayList<ContentProposal> list = new ArrayList<>();
             for (String proposal : proposals) {
                 if (proposal.contains(contentsLc)
                         // ignore quotes

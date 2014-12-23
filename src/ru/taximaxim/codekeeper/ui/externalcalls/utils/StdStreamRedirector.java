@@ -15,7 +15,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class StdStreamRedirector {
     
-    private StringBuilder storage = new StringBuilder(20000);
+    private StringBuilder storage = new StringBuilder();
     
     public String getStorage() {
         return storage.toString();
@@ -27,7 +27,7 @@ public class StdStreamRedirector {
      * 
      * @author Alexander Levsha
      */
-    static class StdStreamRedirectorWorker implements Runnable {
+    private static class StdStreamRedirectorWorker implements Runnable {
 
         private BufferedReader in;
         private StringBuilder storage;
@@ -70,7 +70,7 @@ public class StdStreamRedirector {
      * @throws IOException
      */
     public String launchAndRedirect(ProcessBuilder pb) throws IOException {
-        StringBuilder sb = new StringBuilder(1000 * pb.command().size());
+        StringBuilder sb = new StringBuilder();
         for(String param : pb.command()) {
             sb.append(param);
             sb.append(' ');

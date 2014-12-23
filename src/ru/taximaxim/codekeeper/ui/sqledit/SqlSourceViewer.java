@@ -25,7 +25,7 @@ import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 
 public class SqlSourceViewer extends SourceViewer {
 
-    private FastPartitioner _partitioner = new FastPartitioner(
+    private FastPartitioner partitioner = new FastPartitioner(
             new SQLPartitionScanner(), SQLPartitionScanner.SQL_PARTITION_TYPES);
     
     public SqlSourceViewer(Composite parent, int style) {
@@ -52,20 +52,7 @@ public class SqlSourceViewer extends SourceViewer {
             @Override
             public IPresentationReconciler getPresentationReconciler(
                     ISourceViewer sourceViewer) {
-                SQLColorProvider colorProvider = new SQLColorProvider();
-                SQLCodeScanner scanner = new SQLCodeScanner(colorProvider);
-                scanner.setSQLSyntax(new SqlPostgresSyntax());
-                
-                PresentationReconciler reconciler = new PresentationReconciler();
-                reconciler.setDocumentPartitioning(SQLPartitionScanner.SQL_PARTITIONING);
-                
-                for(String token : SQLPartitionScanner.SQL_PARTITION_TYPES) {
-                    DefaultDamagerRepairer dr = new DefaultDamagerRepairer(scanner);
-                    reconciler.setDamager(dr, token);
-                    reconciler.setRepairer(dr, token);
-                }
-                
-                return reconciler;
+                return createReconciler();
             }
         });
         
@@ -84,15 +71,31 @@ public class SqlSourceViewer extends SourceViewer {
         if (oldInput instanceof IDocumentExtension3) {
             IDocumentExtension3 doc = (IDocumentExtension3) oldInput;
             doc.setDocumentPartitioner(ISQLPartitions.SQL_PARTITIONING, null);
-            _partitioner.disconnect();
+            partitioner.disconnect();
         }
         
         if (newInput instanceof IDocumentExtension3) {
             IDocumentExtension3 extension3 = (IDocumentExtension3) newInput;
-            _partitioner.connect((IDocument) newInput);
+            partitioner.connect((IDocument) newInput);
             extension3.setDocumentPartitioner(
-                    ISQLPartitions.SQL_PARTITIONING, _partitioner);
+                    ISQLPartitions.SQL_PARTITIONING, partitioner);
         }
         super.inputChanged(newInput, oldInput);
+    }
+
+    private PresentationReconciler createReconciler() {
+        SQLColorProvider colorProvider = new SQLColorProvider();
+        SQLCodeScanner scanner = new SQLCodeScanner(colorProvider);
+        scanner.setSQLSyntax(new SqlPostgresSyntax());
+        
+        PresentationReconciler reconciler = new PresentationReconciler();
+        reconciler.setDocumentPartitioning(SQLPartitionScanner.SQL_PARTITIONING);
+        
+        for(String token : SQLPartitionScanner.SQL_PARTITION_TYPES) {
+            DefaultDamagerRepairer dr = new DefaultDamagerRepairer(scanner);
+            reconciler.setDamager(dr, token);
+            reconciler.setRepairer(dr, token);
+        }
+        return reconciler;
     }
 }

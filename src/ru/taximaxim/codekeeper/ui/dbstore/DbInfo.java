@@ -11,18 +11,17 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 class DbInfo {
     
+    private static final int DBINFO_LINE_PARTS_COUNT = 6;
     /**
      * Delimiter for spacing parts of the coordinates.
      */
-    private final static char d = '\t';
-    
+    private static final char DELIM = '\t';
     /**
      * Delimiter between coords entries in the preference string.
      */
-    private final static char d_entries = '\n';
+    private static final char DELIM_ENTRY = '\n';
     
     final String name;
-    
     String dbname;
     String dbuser;
     String dbpass;
@@ -40,20 +39,21 @@ class DbInfo {
     }
     
     private DbInfo(String coords) {
-        String[] parts = coords.split(Pattern.quote(String.valueOf(d)), -1);
+        String[] parts = coords.split(Pattern.quote(String.valueOf(DELIM)), -1);
         
         try {
-            if(parts.length > 6) {
+            if(parts.length > DBINFO_LINE_PARTS_COUNT) {
                 throw new ArrayIndexOutOfBoundsException(
                         Messages.dbInfo_too_many_parts_in_dbinfo_string);
             }
-            
+// SONAR-OFF
             this.name = parts[0];
             this.dbname = parts[1];
             this.dbuser = parts[2];
             this.dbpass = parts[3];
             this.dbhost = parts[4];
             this.dbport = Integer.parseInt(parts[5]);
+// SONAR-ON
         } catch (ArrayIndexOutOfBoundsException | NumberFormatException ex) {
             throw new IllegalArgumentException(Messages.dbInfo_bad_dbinfo_string + coords, ex);
         }
@@ -75,17 +75,17 @@ class DbInfo {
                 + dbuser.length()
                 + dbpass.length()
                 + dbhost.length()
-                + 6 + 6);
+                + DBINFO_LINE_PARTS_COUNT * 2);
         sb.append(name)
-            .append(d)
+            .append(DELIM)
             .append(dbname)
-            .append(d)
+            .append(DELIM)
             .append(dbuser)
-            .append(d)
+            .append(DELIM)
             .append(dbpass)
-            .append(d)
+            .append(DELIM)
             .append(dbhost)
-            .append(d)
+            .append(DELIM)
             .append(dbport);
         
         return sb.toString();
@@ -93,7 +93,7 @@ class DbInfo {
     
     public static Map<String, DbInfo> preferenceToStore(String preference) {
         String[] coordStrings = preference.split(
-                Pattern.quote(String.valueOf(d_entries)));
+                Pattern.quote(String.valueOf(DELIM_ENTRY)));
         
         // use LinkedHashmap for insertion-order iteration
         Map<String, DbInfo> store = new LinkedHashMap<>(coordStrings.length);
@@ -118,7 +118,7 @@ class DbInfo {
         while(it.hasNext()) {
             sb.append(it.next().getValue());
             if(it.hasNext()) {
-                sb.append(d_entries);
+                sb.append(DELIM_ENTRY);
             }
         }
         

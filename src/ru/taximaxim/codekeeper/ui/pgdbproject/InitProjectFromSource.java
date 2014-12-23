@@ -9,12 +9,14 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class InitProjectFromSource implements IRunnableWithProgress {
@@ -23,14 +25,16 @@ public class InitProjectFromSource implements IRunnableWithProgress {
     private final String pgdumpCustom;
     private final String password;
     
+    private final IPreferenceStore mainPrefs;
     private final PgDbProject props;
 
     private final String dumpPath;
 
-    public InitProjectFromSource(final IPreferenceStore mainPrefStore,
+    public InitProjectFromSource(final IPreferenceStore mainPrefs,
             final PgDbProject props, final String dumpPath, String password) {
-        this.exePgdump = mainPrefStore.getString(PREF.PGDUMP_EXE_PATH);
-        this.pgdumpCustom = mainPrefStore.getString(PREF.PGDUMP_CUSTOM_PARAMS);
+        this.mainPrefs = mainPrefs;
+        this.exePgdump = mainPrefs.getString(PREF.PGDUMP_EXE_PATH);
+        this.pgdumpCustom = mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS);
         this.props = props;
         this.dumpPath = dumpPath;
         this.password = password;
@@ -62,16 +66,20 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         PgDatabase db;
         switch (DBSources.getEnum(props.getPrefs().get(PROJ_PREF.SOURCE, ""))) { //$NON-NLS-1$
         case SOURCE_TYPE_DB:
-            db = DbSource.fromDb(exePgdump, pgdumpCustom, props, password).get(taskpm);
+            db = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+                    ParserClass.ANTLR : ParserClass.LEGACY,
+                    exePgdump, pgdumpCustom, props, password).get(taskpm);
             break;
 
         case SOURCE_TYPE_DUMP:
-            db = DbSource.fromFile(dumpPath,
-                    props.getPrefs().get(PROJ_PREF.ENCODING, "")).get(taskpm); //$NON-NLS-1$
+            db = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+                    ParserClass.ANTLR : ParserClass.LEGACY, dumpPath,
+                    props.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8)).get(taskpm);
             break;
 
         case SOURCE_TYPE_JDBC:
-            db = DbSource.fromJdbc(props, password).get(taskpm);
+            db = DbSource.fromJdbc(props, password, mainPrefs.getBoolean(PREF.USE_ANTLR))
+                    .get(taskpm);
             break;
             
         default:

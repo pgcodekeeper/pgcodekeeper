@@ -40,6 +40,7 @@ public final class Messages extends NLS {
     public static String please_check_at_least_one_row;
     public static String projectEditorDiffer_save_project;
     public static String projectProperties_encoding_for_all_operation_with_project;
+    public static String projectProperties_timezone_for_all_db_connections;
     public static String projectProperties_error_occurs_while_saving_properties;
     public static String undefined_source_for_db_changes;
     public static String browse;
@@ -50,6 +51,8 @@ public final class Messages extends NLS {
     public static String unknown_db;
     public static String unknown_host;
     public static String connection_details;
+    public static String add;
+    public static String delete;
     
     // ui
     public static String exceptionNotifier_copy_stack_trace;
@@ -58,12 +61,13 @@ public final class Messages extends NLS {
     public static String sqlScriptDialog_Enter_cmd_to_update_ddl_with_sql_script;
     public static String sqlScriptDialog_error_saving_script_to_file;
     public static String sqlScriptDialog_exception_during_script_execution;
+    public static String SqlScriptDialog_jdbc_connection_details;
+    public static String sqlScriptDialog_hide_picker;
     public static String sqlScriptDialog_psql_dependencies;
     public static String sqlScriptDialog_run_script;
     public static String sqlScriptDialog_save_as;
     public static String sqlScriptDialog_script_contains_statements_that_may_modify_data;
     public static String sqlScriptDialog_script_execution_interrupted;
-    public static String sqlScriptDialog_script_interrupted_by_user;
     public static String sqlScriptDialog_script_output;
     public static String sqlScriptDialog_script_saved_to_file;
     public static String sqlScriptDialog_stop_script;
@@ -109,7 +113,6 @@ public final class Messages extends NLS {
     public static String diffTableViewer_deselect_child_elements;
     public static String diffTableViewer_mark_selected_elements;
     public static String diffTableViewer_unmark_selected_elements;
-    public static String diffTableViewer_filtering_diff_tree_based_on_gui_selection;
     public static String diffTableViewer_Input_name_for_save_checked_elements;
     public static String diffTableViewer_invert_selection;
     public static String diffTableViewer_object_name;
@@ -179,6 +182,7 @@ public final class Messages extends NLS {
     public static String diffWizard_source_target;
     public static String diffWizard_target;
     public static String diffWizard_target_encoding;
+    public static String diffWizard_target_timezone;
     public static String diffWizard_target_source;
     public static String diffWizard_unexpected_error_while_saving_diff;
     public static String diffWizard_unexpected_target_type_value;
@@ -209,6 +213,9 @@ public final class Messages extends NLS {
     public static String dBUpdatePrefPage_drop_column_statement;
     public static String dBUpdatePrefPage_drop_table;
     public static String dBUpdatePrefPage_set_warning_when_next_statements_present;
+    public static String dbUpdatePrefPage_add_and_delete_ddl_update_commands;
+    public static String dbUpdatePrefPage_error_getting_commands_list;
+    public static String dbUpdatePrefPage_error_saving_commands_list;
     public static String DiffPaneViewer_project;
     public static String DiffPresentationPane_attention;
 
@@ -232,11 +239,11 @@ public final class Messages extends NLS {
     public static String generalPrefPage_pg_dump_custom_parameters;
     public static String generalPrefPage_pg_dump_executable;
     public static String generalPrefPage_show_console_when_program_write_to_console;
+    public static String generalPrefPage_use_antrl;
+
     public static String generalPrefPage_use_depcy_on_commit_page;
     public static String generalPrefPage_use_partial_project_update;
     public static String generalPrefPage_use_psql_depcy_on_generating_script;
-    public static String ignoreObjectsPrefPage_add_ignore;
-    public static String ignoreObjectsPrefPage_delete_ignore;
     public static String IgnoredObjectsPrefPage_error_getting_ignores_list;
     public static String IgnoredObjectsPrefPage_error_saving_ignores_list;
     public static String IgnoredObjectsPrefPage_these_objects_are_ignored_info;
@@ -292,6 +299,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_page_text_diff;
     public static String ProjectEditorDiffer_project;
     public static String ProjectEditorInput_pgcodekeeper_project;
+
+    public static String ProjectProperties_change_projprefs_warn;
     public static String ProjectUpdater_error_backup_restore;
     public static String ProjectUpdater_error_no_tempdir;
     public static String ProjectUpdater_error_update;

@@ -2,7 +2,7 @@ package ru.taximaxim.codekeeper.ui.editors;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -58,11 +58,13 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -179,8 +181,9 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
                 for (IWorkbenchPage page : getSite().getWorkbenchWindow().getPages()) {
                     ProjectEditorInput editorInput = 
                             (ProjectEditorInput) ProjectEditorDiffer.this.getEditorInput();
-                    if (editorInput.getName().equals(closingProject.getName()))
+                    if (editorInput.getName().equals(closingProject.getName())) {
                         page.closeEditor(page.findEditor(editorInput), true);
+                    }
                 }
             }
         });
@@ -256,6 +259,7 @@ class CommitPage extends DiffPresentationPane {
     }
     
     private void commit() {
+        Log.log(Log.LOG_INFO, "Started project update"); //$NON-NLS-1$
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
             return;
         }
@@ -271,25 +275,27 @@ class CommitPage extends DiffPresentationPane {
         final TreeElement filtered = diffTable.filterDiffTree();
         
         DepcyTreeExtender dte = null;
-        HashSet<TreeElement> sumNewAndDelete = null;
+        Set<TreeElement> sumNewAndDelete = null;
         TreeElement filteredWithNewAndDelete = null;
         
         if(considerDepcy){
+            Log.log(Log.LOG_INFO, "Processing depcies for project update"); //$NON-NLS-1$
+            
             // Получить список зависимых от NEW/EDIT элементов
             dte = new DepcyTreeExtender(dbSource.getDbObject(), 
                     dbTarget.getDbObject(), filtered);
-            HashSet<PgStatement> dependencies = dte.getDependenciesOfNew();
+            Set<PgStatement> dependencies = dte.getDependenciesOfNew();
             PgDatabase depcyTargetDb = dte.getDepcyTargetDb();
             
             // Дополнительно пометить в таблице зависимости от NEW/EDIT и
             // получить новое фильтрованное дерево с этими зависимостями
-            HashSet<TreeElement> elementsNewEditDependentFrom = 
+            Set<TreeElement> elementsNewEditDependentFrom = 
                     dte.getDepcyElementsContainedInDb(diffTable.getCheckedElements(false),
                             dependencies, depcyTargetDb); 
             
-            diffTable.setCheckedElements(elementsNewEditDependentFrom, true);
+            diffTable.setCheckedElements(elementsNewEditDependentFrom.toArray(), true);
             TreeElement filteredWithNew = diffTable.filterDiffTree();
-            diffTable.setCheckedElements(elementsNewEditDependentFrom, false);
+            diffTable.setCheckedElements(elementsNewEditDependentFrom.toArray(), false);
 
             // Расширить дерево filteredWithNew элементами, зависящими от удаляемых
             dte = new DepcyTreeExtender(dbSource.getDbObject(), 
@@ -301,16 +307,18 @@ class CommitPage extends DiffPresentationPane {
             sumNewAndDelete = dte.sumAllDepcies(elementsNewEditDependentFrom);
         }
         
+        Log.log(Log.LOG_INFO, "Quering user for project update"); //$NON-NLS-1$
         // display commit dialog
         CommitDialog cd = new CommitDialog(getShell(), filtered, sumNewAndDelete,
-                mainPrefs, proj, treeDiffer);
-        cd.setConflictingElements(considerDepcy ? dte.getConflicting() : null);
+                mainPrefs, treeDiffer);
+        cd.setConflictingElements(considerDepcy ? dte.getConflicting() : Collections.EMPTY_SET);
         if (cd.open() != CommitDialog.OK) {
             return;
         }
         
         TreeElement filteredTwiceWithAllDepcy = null;
         if(considerDepcy){
+            Log.log(Log.LOG_INFO, "Filtering depcies on user selection"); //$NON-NLS-1$
             // Убрать из списка всех элементов в filteredWithNewAndDelete те
             // элементы, с которых пользователь снял отметку в нижней таблице
             // FIXME убрать шелл, отделить логику от UI
@@ -325,45 +333,13 @@ class CommitPage extends DiffPresentationPane {
         final TreeElement resultingTree = considerDepcy ? filteredTwiceWithAllDepcy : filtered;
 
         Log.log(Log.LOG_INFO, "Updating project " + proj.getProjectName()); //$NON-NLS-1$
-        Job job = new Job(Messages.projectEditorDiffer_save_project) {
-
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                SubMonitor pm = SubMonitor.convert(monitor,
-                        Messages.commitPartDescr_commiting, 2);
-
-                pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
-                DiffTreeApplier applier = new DiffTreeApplier(dbSource
-                        .getDbObject(), dbTarget.getDbObject(),
-                        resultingTree);
-                
-                PgDatabase dbNew = applier.apply();
-
-                pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
-                try {
-                    if (mainPrefs.getBoolean(COMMIT_PREF.USE_PARTIAL_EXPORT_ON_COMMIT)){
-                        List<TreeElement> checked = resultingTree.generateElementsList(
-                                new ArrayList<TreeElement>(), dbSource.getDbObject(), dbTarget.getDbObject());
-                        new ProjectUpdater(dbNew, dbSource.getDbObject(), checked, proj).updatePartial();
-                    }else{
-                        new ProjectUpdater(dbNew, null, null, proj).updateFull();
-                    }
-                    pm.done();
-                } catch (IOException e) {
-                    return new Status(Status.ERROR, PLUGIN_ID.THIS, 
-                            Messages.ProjectEditorDiffer_commit_error, e);
-                }
-                if (monitor.isCanceled()) {
-                    return Status.CANCEL_STATUS;
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        
+        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project, resultingTree);
         job.addJobChangeListener(new JobChangeAdapter() {
             
             @Override
             public void done(IJobChangeEvent event) {
+                Log.log(Log.LOG_INFO, "Project updater job finished with status " + //$NON-NLS-1$
+                        event.getResult().getSeverity());
                 if (event.getResult().isOK()) {
                     ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
                     try {
@@ -387,6 +363,49 @@ class CommitPage extends DiffPresentationPane {
     @Override
     protected final void diffLoaded() {
         btnSave.setEnabled(true);
+    }
+
+    private class JobProjectUpdater extends Job {
+
+        private final TreeElement tree;
+
+        JobProjectUpdater(String name, TreeElement tree) {
+            super(name);
+            this.tree = tree;
+        }
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            SubMonitor pm = SubMonitor.convert(
+                    monitor, Messages.commitPartDescr_commiting, 2);
+
+            Log.log(Log.LOG_INFO, "Applying diff tree to db"); //$NON-NLS-1$
+            pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
+            DiffTreeApplier applier = new DiffTreeApplier(
+                    dbSource.getDbObject(), dbTarget.getDbObject(), tree);
+            PgDatabase dbNew = applier.apply();
+
+            pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
+            try {
+                if (mainPrefs.getBoolean(COMMIT_PREF.USE_PARTIAL_EXPORT_ON_COMMIT)){
+                    List<TreeElement> checked = tree.generateElementsList(
+                            new ArrayList<TreeElement>(),
+                            dbSource.getDbObject(), dbTarget.getDbObject());
+                    new ProjectUpdater(dbNew, dbSource.getDbObject(), checked, proj)
+                            .updatePartial();
+                }else{
+                    new ProjectUpdater(dbNew, null, null, proj).updateFull();
+                }
+                pm.done();
+            } catch (IOException e) {
+                return new Status(Status.ERROR, PLUGIN_ID.THIS, 
+                        Messages.ProjectEditorDiffer_commit_error, e);
+            }
+            if (monitor.isCanceled()) {
+                return Status.CANCEL_STATUS;
+            }
+            return Status.OK_STATUS;
+        }
     }
 }
 
@@ -447,8 +466,8 @@ class DiffPage extends DiffPresentationPane {
             public void widgetSelected(SelectionEvent e) {
                 ManualDepciesDialog dialog = new ManualDepciesDialog(getShell(),
                         manualDepciesSource, manualDepciesTarget,
-                        dbSource.getDbObject().flatten(),
-                        dbTarget.getDbObject().flatten(),
+                        PgDatabase.listViewsTables(dbSource.getDbObject()),
+                        PgDatabase.listViewsTables(dbTarget.getDbObject()),
                         Messages.database, Messages.ProjectEditorDiffer_project);
                 if (dialog.open() == Dialog.OK) {
                     manualDepciesSource = dialog.getDepciesSourceList();
@@ -460,6 +479,7 @@ class DiffPage extends DiffPresentationPane {
     }
     
     private void diff() throws PgCodekeeperUIException {
+        Log.log(Log.LOG_INFO, "Started DB update"); //$NON-NLS-1$
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
             return;
         }
@@ -475,7 +495,7 @@ class DiffPage extends DiffPresentationPane {
         final Differ differ = new Differ(
                 DbSource.fromFilter(dbSource, filtered, DiffSide.LEFT),
                 DbSource.fromFilter(dbTarget, filtered, DiffSide.RIGHT),
-                false);
+                false, proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
         differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
@@ -485,6 +505,8 @@ class DiffPage extends DiffPresentationPane {
             
             @Override
             public void done(IJobChangeEvent event) {
+                Log.log(Log.LOG_INFO, "Differ job finished with status " +  //$NON-NLS-1$
+                        event.getResult().getSeverity());
                 if (event.getResult().isOK()) {
                     Display.getDefault().asyncExec(new Runnable() {
                         
@@ -507,7 +529,8 @@ class DiffPage extends DiffPresentationPane {
         SqlScriptDialog dialog = new SqlScriptDialog(getShell(),
                 MessageDialog.INFORMATION, Messages.diffPartDescr_diff_script,
                 Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database,
-                differ, dbSource.getDbObject().flatten(), mainPrefs);
+                differ, PgDatabase.listViewsTables(dbSource.getDbObject()), mainPrefs, 
+                proj);
         if (selectedDBSource == DBSources.SOURCE_TYPE_DB || 
                 selectedDBSource == DBSources.SOURCE_TYPE_JDBC) {
             dialog.setDbParams(dbSrc.getTxtDbHost().getText(),

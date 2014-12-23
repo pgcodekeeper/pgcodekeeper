@@ -26,6 +26,7 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -53,15 +54,20 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
 import ru.taximaxim.codekeeper.ui.XmlHistory;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
+import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
@@ -87,10 +93,6 @@ public class SqlScriptDialog extends TrayDialog {
     private static final String[] BUTTONS = new String[] {
         RUN_SCRIPT_LABEL, Messages.sqlScriptDialog_save_as, IDialogConstants.CLOSE_LABEL }; 
     
-    private static final String SCRIPTS_HIST_ROOT = "scripts"; //$NON-NLS-1$
-    private static final String SCRIPTS_HIST_EL = "s"; //$NON-NLS-1$
-    private static final String SCRIPTS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
-    private static final int SCRIPTS_HIST_MAX_STORED = 20;
 
     private static final String LINE_SEP = System.lineSeparator();
     
@@ -112,12 +114,16 @@ public class SqlScriptDialog extends TrayDialog {
     private Text txtCommand;
     private Combo cmbScript;
     private Button btnJdbcToggle;
+    private Button btnHidePicker;
+    private DbPicker picker;
     
     private volatile boolean isRunning;
     private Thread scriptThread;
     private String title;
     private String message;
     private int type;
+    private String scriptFileEncoding;
+    private String connectionTimezone;
 
     public void setDbParams(String dbHost, String dbPort, String dbName,
             String dbUser, String dbPass) {
@@ -149,7 +155,8 @@ public class SqlScriptDialog extends TrayDialog {
     }
     
     public SqlScriptDialog(Shell parentShell, int type, String title, String message,
-            Differ differ, List<PgStatement> objList, IPreferenceStore mainPrefs) {
+            Differ differ, List<PgStatement> objList, IPreferenceStore mainPrefs,
+            PgDbProject proj) {
         super(parentShell);
         this.title = title;
         this.message = message;
@@ -159,10 +166,12 @@ public class SqlScriptDialog extends TrayDialog {
         differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
         this.objList = objList;
         this.mainPrefs = mainPrefs;
-        this.history = new XmlHistory.Builder(SCRIPTS_HIST_MAX_STORED, 
-                SCRIPTS_HIST_FILENAME, 
-                SCRIPTS_HIST_ROOT, 
-                SCRIPTS_HIST_EL).build();
+        this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED, 
+                FILE.DDL_UPDATE_COMMANDS_HIST_FILENAME, 
+                XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT, 
+                XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
+        this.connectionTimezone = proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC);
+        this.scriptFileEncoding = proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8);
     }
     
     @Override
@@ -178,6 +187,7 @@ public class SqlScriptDialog extends TrayDialog {
                     i == BUTTONS.length - 1);
         }
     }
+    
     private Control createMessageArea(Composite composite) {
         // create composite
         // create image
@@ -190,7 +200,6 @@ public class SqlScriptDialog extends TrayDialog {
             Label imageLabel = new Label(comp, SWT.NULL);
             image.setBackground(imageLabel.getBackground());
             imageLabel.setImage(image);
-//            addAccessibleListeners(imageLabel, image);
             GridDataFactory.fillDefaults().align(SWT.CENTER, SWT.BEGINNING)
                     .applyTo(imageLabel);
         }
@@ -202,9 +211,9 @@ public class SqlScriptDialog extends TrayDialog {
                     .fillDefaults()
                     .align(SWT.FILL, SWT.BEGINNING)
                     .grab(true, false)
-                    .hint(
-                            convertHorizontalDLUsToPixels(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH),
-                            SWT.DEFAULT).applyTo(messageLabel);
+                    .hint(convertHorizontalDLUsToPixels(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH),
+                            SWT.DEFAULT)
+                    .applyTo(messageLabel);
         }
         return composite;
     }
@@ -222,19 +231,55 @@ public class SqlScriptDialog extends TrayDialog {
         createMessageArea(parent);
         createSQLViewer(parent);
         
-        btnJdbcToggle = new Button(parent, SWT.CHECK);
+        Composite buttons = new Composite(parent, SWT.NONE);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);;
+        buttons.setLayoutData(gd);
+        
+        GridLayout gl = new GridLayout(2, false);
+        gl.marginHeight = gl.marginWidth = 0;
+        buttons.setLayout(gl);
+        
+        btnJdbcToggle = new Button(buttons, SWT.CHECK);
         btnJdbcToggle.setText(Messages.sqlScriptDialog_use_jdbc_for_ddl_update);
         boolean isDdlUpdateOverJdbc = 
                 Activator.getDefault().getPreferenceStore().getBoolean(PREF.IS_DDL_UPDATE_OVER_JDBC);
         btnJdbcToggle.setSelection(isDdlUpdateOverJdbc);
         
+        btnHidePicker = new Button(buttons, SWT.CHECK); 
+        btnHidePicker.setText(Messages.sqlScriptDialog_hide_picker);
+        btnHidePicker.setSelection(false);
+        btnHidePicker.addSelectionListener(new SelectionAdapter() {
+        
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                picker.setVisible(!btnHidePicker.getSelection());
+                ((GridData)picker.getLayoutData()).exclude = btnHidePicker.getSelection();
+                parent.layout();
+            }
+        });
+        // picker
+        picker = new DbPicker(parent, SWT.BORDER, mainPrefs, false);
+        picker.setText(Messages.SqlScriptDialog_jdbc_connection_details);
+        
+        picker.getTxtDbName().setText(dbName == null ? "" : dbName); //$NON-NLS-1$
+        picker.getTxtDbUser().setText(dbUser == null ? "" : dbUser); //$NON-NLS-1$
+        picker.getTxtDbHost().setText(dbHost == null ? "" : dbHost); //$NON-NLS-1$
+        picker.getTxtDbPort().setText(dbPort == null || dbPort.isEmpty() ? "0" : dbPort); //$NON-NLS-1$
+        
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd.exclude = !isDdlUpdateOverJdbc;
+        gd.heightHint = 230;
+        gd.minimumHeight = 230;
+        picker.setLayoutData(gd);
+        picker.setVisible(isDdlUpdateOverJdbc);
+        
         final Composite notJdbc = new Composite(parent, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.exclude = isDdlUpdateOverJdbc;
         notJdbc.setLayoutData(gd);
         notJdbc.setVisible(!isDdlUpdateOverJdbc);
         
-        GridLayout gl = new GridLayout();
+        gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
         notJdbc.setLayout(gl);
         
@@ -296,12 +341,8 @@ public class SqlScriptDialog extends TrayDialog {
             @Override
             public void handleEvent(Event event) {
                 getShell().removeListener(SWT.Activate, this);
-                
                 try {
-                    if (differ.getScript().isDangerDdl(
-                            !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
-                            !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
-                            !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT))) {
+                    if (checkDangerDdl()) {
                         if (showDangerWarning() == SWT.OK) {
                             sqlEditor.getTextWidget().setBackground(colorPink);
                         } else {
@@ -331,8 +372,13 @@ public class SqlScriptDialog extends TrayDialog {
                 notJdbc.setVisible(!isJdbc);
                 ((GridData)notJdbc.getLayoutData()).exclude = isJdbc;
                 
+                picker.setVisible(isJdbc && !btnHidePicker.getSelection());
+                ((GridData)picker.getLayoutData()).exclude = !isJdbc || btnHidePicker.getSelection();
+                
+                btnHidePicker.setVisible(isJdbc);
+                ((GridData)btnHidePicker.getLayoutData()).exclude = !isJdbc;
+                
                 parent.layout();
-                parent.redraw();
                 
                 PreferenceInitializer.savePreference(Activator.getDefault().getPreferenceStore(), 
                         PREF.IS_DDL_UPDATE_OVER_JDBC, String.valueOf(btnJdbcToggle.getSelection()));
@@ -343,8 +389,7 @@ public class SqlScriptDialog extends TrayDialog {
             }
         });
         
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), HELP.SQL_SCRIPT_DIALOG); 
-        
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), HELP.SQL_SCRIPT_DIALOG);
         return parent;
     }
 
@@ -383,6 +428,7 @@ public class SqlScriptDialog extends TrayDialog {
             Runnable launcher;
             
             if (btnJdbcToggle.getSelection()){
+                Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
                 launcher = new Runnable() {
                     
                     @Override
@@ -390,7 +436,12 @@ public class SqlScriptDialog extends TrayDialog {
                         String output = Messages.sqlScriptDialog_script_has_not_been_run_yet;
                         try{
                             JdbcConnector connector = new JdbcConnector(
-                                    dbHost, Integer.valueOf(dbPort), dbUser, dbPass, dbName, UIConsts.UTF_8);
+                                    picker.getTxtDbHost().getText(), 
+                                    Integer.valueOf(picker.getTxtDbPort().getText()),
+                                    picker.getTxtDbUser().getText(), 
+                                    picker.getTxtDbPass().getText(), 
+                                    picker.getTxtDbName().getText(), 
+                                    scriptFileEncoding, connectionTimezone);
                             output = new JdbcRunner(connector).runScript(textRetrieved);
                             if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
                                 addDepcy = getDependenciesFromOutput(output);
@@ -404,46 +455,11 @@ public class SqlScriptDialog extends TrayDialog {
                     }
                 };
             }else{
+                Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
                 final List<String> command = new ArrayList<>(Arrays.asList(
                         getReplacedString().split(Pattern.quote(" ")))); //$NON-NLS-1$
                 
-                launcher = new Runnable() {
-    
-                    @Override
-                    public void run() {
-                        final StdStreamRedirector sr = new StdStreamRedirector();
-                        try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
-                            File outFile = tempFile.get();
-                            try (PrintWriter writer = new PrintWriter(outFile, UIConsts.UTF_8)) {
-                                writer.write(textRetrieved);
-                            }
-    
-                            String filepath = outFile.getAbsolutePath();
-                            ListIterator<String> it = command.listIterator();
-                            while (it.hasNext()) {
-                                it.set(it.next().replace(SCRIPT_PLACEHOLDER, filepath));
-                            }
-                            
-                            ProcessBuilder pb = new ProcessBuilder(command);
-                            sr.launchAndRedirect(pb);
-                            if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
-                                addDepcy = getDependenciesFromOutput(sr.getStorage());
-                            }
-                        } catch (IOException ex) {
-                            if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
-                                addDepcy = getDependenciesFromOutput(sr.getStorage());
-                                if (!addDepcy.isEmpty()) {
-                                    // actually parsed some depcies, do not rethrow
-                                    return;
-                                }
-                            }
-                            throw new IllegalStateException(ex);
-                        } finally {
-                            // request UI change: button label changed
-                            SqlScriptDialog.this.afterScriptFinished(sr.getStorage());
-                        }
-                    }
-                };
+                launcher = new RunScriptExternal(textRetrieved, command);
             }
             // run thread that calls StdStreamRedirector.launchAndRedirect()
             scriptThread = new Thread(launcher);
@@ -463,7 +479,7 @@ public class SqlScriptDialog extends TrayDialog {
         // case Stop script
         else if (buttonId == 0 && isRunning){
             ConsoleFactory.write(Messages.sqlScriptDialog_script_execution_interrupted);
-            Log.log(Log.LOG_INFO, Messages.sqlScriptDialog_script_interrupted_by_user);
+            Log.log(Log.LOG_INFO, "Script execution interrupted by user"); //$NON-NLS-1$
             
             scriptThread.interrupt();
             getButton(0).setText(RUN_SCRIPT_LABEL);
@@ -487,9 +503,7 @@ public class SqlScriptDialog extends TrayDialog {
                     return;
                 }
                 
-                String fileSaved = Messages.sqlScriptDialog_script_saved_to_file + script.getAbsolutePath();
-                ConsoleFactory.write(fileSaved);
-                Log.log(Log.LOG_INFO, fileSaved);
+                ConsoleFactory.write(Messages.sqlScriptDialog_script_saved_to_file + script.getAbsolutePath());
             }
         } else {
             this.close();
@@ -539,46 +553,7 @@ public class SqlScriptDialog extends TrayDialog {
                 differ.addAdditionalDepciesSource(depcyToAdd);
                 
                 Job job = differ.getDifferJob();
-                job.addJobChangeListener(new JobChangeAdapter() {
-                    
-                    @Override
-                    public void done(IJobChangeEvent event) {
-                        if (event.getResult().isOK()) {
-                            Display.getDefault().asyncExec(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    if (getShell().isDisposed()) {
-                                        return;
-                                    }
-                                    checkAskDanger(saveToRestore);
-                                }
-                            });
-                        }
-                    }
-                    
-                    private void checkAskDanger(
-                            List<Entry<PgStatement, PgStatement>> saveToRestore) {
-                        try {
-                            if (differ.getScript().isDangerDdl(
-                                    !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
-                                    !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
-                                    !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT))) {
-                                if (showDangerWarning() != SWT.OK) {
-                                    differ.setAdditionalDepciesSource(saveToRestore);
-                                    return;
-                                } else {
-                                    sqlEditor.getTextWidget().setBackground(colorPink);
-                                }
-                            }
-                            sqlEditor.setDocument(new Document(differ.getDiffDirect()));
-                            sqlEditor.refresh();
-                        } catch (PgCodekeeperUIException e) {
-                            ExceptionNotifier.showErrorDialog(
-                                    Messages.SqlScriptDialog_error_add_depcies, e);
-                        }
-                    }
-                });
+                job.addJobChangeListener(new DiffReGenerationListener(saveToRestore));
                 job.setUser(true);
                 job.schedule();
             }
@@ -682,6 +657,13 @@ public class SqlScriptDialog extends TrayDialog {
         }
     }
 
+    private boolean checkDangerDdl() throws PgCodekeeperUIException {
+        return differ.getScript().isDangerDdl(
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT));
+    }
+    
     @Override
     public boolean close() {
         if (isRunning) {
@@ -700,6 +682,97 @@ public class SqlScriptDialog extends TrayDialog {
         }
     }
     
+    private class RunScriptExternal implements Runnable {
+
+        private final String textRetrieved;
+        private final List<String> command;
+
+        RunScriptExternal(String textRetrieved, List<String> command) {
+            this.textRetrieved = textRetrieved;
+            this.command = command;
+        }
+
+        @Override
+        public void run() {
+            final StdStreamRedirector sr = new StdStreamRedirector();
+            try (TempFile tempFile = new TempFile("tmp_rollon_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
+                File outFile = tempFile.get();
+                try (PrintWriter writer = 
+                        new PrintWriter(outFile, SqlScriptDialog.this.scriptFileEncoding)) {
+                    writer.write(textRetrieved);
+                }
+   
+                String filepath = outFile.getAbsolutePath();
+                ListIterator<String> it = command.listIterator();
+                while (it.hasNext()) {
+                    it.set(it.next().replace(SCRIPT_PLACEHOLDER, filepath));
+                }
+                
+                ProcessBuilder pb = new ProcessBuilder(command);
+                sr.launchAndRedirect(pb);
+                if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
+                    addDepcy = getDependenciesFromOutput(sr.getStorage());
+                }
+            } catch (IOException ex) {
+                if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {
+                    addDepcy = getDependenciesFromOutput(sr.getStorage());
+                    if (!addDepcy.isEmpty()) {
+                        // actually parsed some depcies, do not rethrow
+                        return;
+                    }
+                }
+                throw new IllegalStateException(ex);
+            } finally {
+                // request UI change: button label changed
+                SqlScriptDialog.this.afterScriptFinished(sr.getStorage());
+            }
+        }
+    }
+
+    private class DiffReGenerationListener extends JobChangeAdapter {
+
+        private final List<Entry<PgStatement, PgStatement>> saveToRestore;
+
+        DiffReGenerationListener(
+                List<Entry<PgStatement, PgStatement>> saveToRestore) {
+            this.saveToRestore = saveToRestore;
+        }
+
+        @Override
+        public void done(IJobChangeEvent event) {
+            if (event.getResult().isOK()) {
+                Display.getDefault().asyncExec(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (getShell().isDisposed()) {
+                            return;
+                        }
+                        checkAskDanger(saveToRestore);
+                    }
+                });
+            }
+        }
+
+        private void checkAskDanger(
+                List<Entry<PgStatement, PgStatement>> saveToRestore) {
+            try {
+                if (checkDangerDdl()) {
+                    if (showDangerWarning() != SWT.OK) {
+                        differ.setAdditionalDepciesSource(saveToRestore);
+                        return;
+                    } else {
+                        sqlEditor.getTextWidget().setBackground(colorPink);
+                    }
+                }
+                sqlEditor.setDocument(new Document(differ.getDiffDirect()));
+                sqlEditor.refresh();
+            } catch (PgCodekeeperUIException e) {
+                ExceptionNotifier.showErrorDialog(
+                        Messages.SqlScriptDialog_error_add_depcies, e);
+            }
+        }
+    }
 
     private static class ScriptRunResultDialog extends TrayDialog {
         

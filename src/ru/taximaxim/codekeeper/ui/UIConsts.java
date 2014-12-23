@@ -3,6 +3,7 @@ package ru.taximaxim.codekeeper.ui;
 public interface UIConsts {
 
     String UTF_8 = "UTF-8"; //$NON-NLS-1$
+    String UTC = "UTC"; //$NON-NLS-1$
 
     interface PLUGIN_ID {
         String THIS = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
@@ -21,12 +22,14 @@ public interface UIConsts {
     }
     
     interface PREF {
+        String USE_ANTLR = "prefUseAntlr"; //$NON-NLS-1$
         String PGDUMP_EXE_PATH = "prefPgdumpExePath"; //$NON-NLS-1$
         String PGDUMP_CUSTOM_PARAMS = "prefPgdumpCustomParams"; //$NON-NLS-1$
-        String DB_STORE = "prefDbStore"; //$NON-NLS-1$
-        String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
-        String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
+        String DB_STORE = "prefDbStore"; //$NON-NLS-1$
+        String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
+        
+        String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
         String IS_DDL_UPDATE_OVER_JDBC = "isDdlUpdateOverJdbc"; //$NON-NLS-1$
     }
@@ -74,6 +77,7 @@ public interface UIConsts {
     
     interface PROJ_PREF {
         String ENCODING = "prefGeneralEncoding"; //$NON-NLS-1$
+        String TIMEZONE = "prefGeneralTimezone"; //$NON-NLS-1$
         String SOURCE = "prefGeneralSource"; //$NON-NLS-1$
         String DB_NAME = "prefDbName"; //$NON-NLS-1$
         String DB_HOST = "prefDbHost"; //$NON-NLS-1$
@@ -111,5 +115,15 @@ public interface UIConsts {
         String ICONBALLRED = "/icons/ball_red.png"; //$NON-NLS-1$
         String ICONREFRESH = "/icons/refresh.gif"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
+        String DDL_UPDATE_COMMANDS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
+    }
+    
+    interface XML_TAGS{
+        String DDL_UPDATE_COMMANDS_HIST_ROOT = "scripts"; //$NON-NLS-1$
+        String DDL_UPDATE_COMMANDS_HIST_ELEMENT = "s"; //$NON-NLS-1$
+        int DDL_UPDATE_COMMANDS_MAX_STORED = 20;
+        
+        String IGNORED_OBJS_ROOT = "ignored_objects"; //$NON-NLS-1$
+        String IGNORED_OBJS_ELEMENT = "obj"; //$NON-NLS-1$
     }
 }

@@ -30,13 +30,16 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class Differ implements IRunnableWithProgress {
     
+    private static final int INITIAL_BUFFER_CAPACITY = 1024;
+
     private final DbSource dbSource, dbTarget;
 
     private boolean finished;
     private final boolean needTwoWay;
     private String diffDirect, diffReverse;
     private PgDiffScript script;
-
+    private String timezone;
+    
     private PgDatabase sourceDbFull;
     private PgDatabase targetDbFull;
     
@@ -71,10 +74,11 @@ public class Differ implements IRunnableWithProgress {
         return additionalDepciesSource;
     } 
 
-    public Differ(DbSource dbSource, DbSource dbTarget, boolean needTwoWay) {
+    public Differ(DbSource dbSource, DbSource dbTarget, boolean needTwoWay, String timezone) {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
         this.needTwoWay = needTwoWay;
+        this.timezone = timezone;
     }
     
     public Job getDifferJob() {
@@ -125,11 +129,11 @@ public class Differ implements IRunnableWithProgress {
     public void run(IProgressMonitor monitor) throws InvocationTargetException{
         SubMonitor pm = SubMonitor.convert(monitor, Messages.calculating_diff, 100); // 0
         
-        PgDatabase dbSource, dbTarget;
-        dbSource = dbTarget = null;
+        PgDatabase dbSrc, dbTgt;
+        dbSrc = dbTgt = null;
         try {
-            dbSource = this.dbSource.get(pm.newChild(25)); // 25
-            dbTarget = this.dbTarget.get(pm.newChild(25)); // 50
+            dbSrc = this.dbSource.get(pm.newChild(25)); // 25
+            dbTgt = this.dbTarget.get(pm.newChild(25)); // 50
         } catch(IOException ex) {
             throw new InvocationTargetException(ex);
         }
@@ -139,32 +143,36 @@ public class Differ implements IRunnableWithProgress {
         
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
         PgDiffArguments args = new PgDiffArguments();
-        ByteArrayOutputStream diffOut = new ByteArrayOutputStream(1024);
+        ByteArrayOutputStream diffOut = new ByteArrayOutputStream(INITIAL_BUFFER_CAPACITY);
         try {
             PrintWriter writer = new UnixPrintWriter(
                     new OutputStreamWriter(diffOut, UIConsts.UTF_8), true);
-        
+
             script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
-                    dbSource, dbTarget, sourceDbFull, targetDbFull, 
+                    dbSrc, dbTgt, sourceDbFull, targetDbFull, 
                     additionalDepciesSource, additionalDepciesTarget);
             writer.flush();
-            diffDirect = diffOut.toString(UIConsts.UTF_8).trim();
-    
+            diffDirect = prependTimezone(diffOut.toString(UIConsts.UTF_8).trim());
+
             if (needTwoWay) {
                 Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin() //$NON-NLS-1$
                         + " to: " + this.dbSource.getOrigin()); //$NON-NLS-1$
                 
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
                 diffOut.reset();
-                PgDiff.diffDatabaseSchemas(writer, args, dbTarget, dbSource,
+                PgDiff.diffDatabaseSchemas(writer, args, dbTgt, dbSrc,
                         targetDbFull, sourceDbFull);
                 writer.flush();
-                diffReverse = diffOut.toString(UIConsts.UTF_8).trim();
+                diffReverse = prependTimezone(diffOut.toString(UIConsts.UTF_8).trim());
             }
         } catch (UnsupportedEncodingException ex) {
             throw new InvocationTargetException(ex);
         }
         pm.done();
         finished = true;
+    }
+    
+    private String prependTimezone(String diff){
+        return "SET TIMEZONE TO '" + timezone + "';\n\n" + diff; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

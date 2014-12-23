@@ -49,6 +49,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -60,6 +61,7 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public abstract class DiffPresentationPane extends Composite {
@@ -99,10 +101,11 @@ public abstract class DiffPresentationPane extends Composite {
 
     private void setDiffPaneDb(boolean isDbSrc, DbSource db) {
         if (diffPane != null) {
-            if (isDbSrc)
+            if (isDbSrc) {
                 diffPane.setDbSource(db);
-            else 
+            } else { 
                 diffPane.setDbTarget(db);    
+            }
         }
     }
     
@@ -124,7 +127,7 @@ public abstract class DiffPresentationPane extends Composite {
         // simplified for 1 static notification
         // refactor into multiple child composites w/ description class
         // for multiple dynamic notifications if necessary
-        contNotifications = new Group(this, SWT.BORDER | SWT.SHADOW_ETCHED_IN);
+        contNotifications = new Group(this, SWT.BORDER);
         contNotifications.setLayout(new GridLayout(5, false));
         
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -158,10 +161,10 @@ public abstract class DiffPresentationPane extends Composite {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (isProjSrc) {
+                if (isProjSrc && dbTarget.isLoaded()) {
                     setDbTarget(DbSource.fromDbObject(dbTarget.getDbObject(), 
                             dbTarget.getOrigin()));
-                } else {
+                } else if (!isProjSrc && dbSource.isLoaded()){
                     setDbSource(DbSource.fromDbObject(dbSource.getDbObject(), 
                             dbSource.getOrigin()));
                 }
@@ -428,7 +431,7 @@ public abstract class DiffPresentationPane extends Composite {
                     ModelExporter.getExportedFilename(el.getPgStatement(projectDb)) + ".sql"); //$NON-NLS-1$
             
             if (file.exists() && file.isFile()) {
-                Log.log(Log.LOG_WARNING, "Opening editor for file " + file.getAbsolutePath()); //$NON-NLS-1$
+                Log.log(Log.LOG_INFO, "Opening editor for file " + file.getAbsolutePath()); //$NON-NLS-1$
                 
                 IFileStore fileStore = EFS.getLocalFileSystem().getStore(file.toURI());
                 IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -489,7 +492,7 @@ public abstract class DiffPresentationPane extends Composite {
         }
         String preset = dbSrc.getSelectedDbPresetName();
         if (preset.isEmpty()){
-            value.append("     " + Messages.connection_details); //$NON-NLS-1$
+            value.append("     ").append(Messages.connection_details); //$NON-NLS-1$
             value.append(dbSrc.getTxtDbUser().getText().isEmpty() ? "" : dbSrc.getTxtDbUser().getText() + '@'); //$NON-NLS-1$
             value.append(dbSrc.getTxtDbHost().getText().isEmpty() ? Messages.unknown_host : dbSrc.getTxtDbHost().getText());
             value.append(dbSrc.getTxtDbPort().getText().isEmpty() ? "" : ':' + dbSrc.getTxtDbPort().getText()); //$NON-NLS-1$ 
@@ -517,7 +520,8 @@ public abstract class DiffPresentationPane extends Composite {
         }
         
         DbSource dbsProj, dbsRemote;
-        dbsProj = DbSource.fromProject(proj);
+        dbsProj = DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+                ParserClass.ANTLR : ParserClass.LEGACY, proj);
         switch (selectedDBSource) {
         case SOURCE_TYPE_DUMP:
             FileDialog dialog = new FileDialog(getShell());
@@ -526,18 +530,22 @@ public abstract class DiffPresentationPane extends Composite {
             if (dumpfile == null) {
                 return false;
             }
-            dbsRemote = DbSource
-                    .fromFile(dumpfile, projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
+            dbsRemote = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+                    ParserClass.ANTLR : ParserClass.LEGACY, dumpfile,
+                    projProps.get(PROJ_PREF.ENCODING, UIConsts.UTF_8));
             break;
         case SOURCE_TYPE_DB:
             String sPort = dbSrc.getTxtDbPort().getText();
             int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
-            dbsRemote = DbSource.fromDb(mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
+            dbsRemote = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+                    ParserClass.ANTLR : ParserClass.LEGACY,
+                    mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     dbSrc.getTxtDbHost().getText(), port, dbSrc.getTxtDbUser().getText(),
                     dbSrc.getTxtDbPass().getText(), dbSrc.getTxtDbName().getText(),
-                    projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
+                    projProps.get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                    projProps.get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
             break;
         case SOURCE_TYPE_JDBC:
             sPort = dbSrc.getTxtDbPort().getText();
@@ -545,7 +553,10 @@ public abstract class DiffPresentationPane extends Composite {
 
             dbsRemote = DbSource.fromJdbc(dbSrc.getTxtDbHost().getText(), port,
                     dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText(),
-                    dbSrc.getTxtDbName().getText(), projProps.get(PROJ_PREF.ENCODING, "")); //$NON-NLS-1$
+                    dbSrc.getTxtDbName().getText(), 
+                    projProps.get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                    projProps.get(PROJ_PREF.TIMEZONE, UIConsts.UTC),
+                    mainPrefs.getBoolean(PREF.USE_ANTLR));
             break;
         default:
             throw new PgCodekeeperUIException(Messages.undefined_source_for_db_changes);
@@ -559,14 +570,14 @@ public abstract class DiffPresentationPane extends Composite {
 
     private void loadChanges() {
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
-        final TreeDiffer treeDiffer = new TreeDiffer(dbSource, dbTarget);
+        final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget);
 
         Job job = new Job(Messages.diffPresentationPane_getting_changes_for_diff) {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
-                    treeDiffer.run(monitor);
+                    newDiffer.run(monitor);
                 } catch (InvocationTargetException e) {
                     return new Status(Status.ERROR, PLUGIN_ID.THIS,
                             Messages.error_in_differ_thread, e);
@@ -589,9 +600,8 @@ public abstract class DiffPresentationPane extends Composite {
                             if (DiffPresentationPane.this.isDisposed()) {
                                 return;
                             }
-                            DiffPresentationPane.this.treeDiffer = treeDiffer;
-                            diffTable.setInput(
-                                    DiffPresentationPane.this.treeDiffer, !isProjSrc);
+                            treeDiffer = newDiffer;
+                            diffTable.setInput(newDiffer, !isProjSrc);
                             diffPane.setInput(null);
                             diffLoaded();
                         }

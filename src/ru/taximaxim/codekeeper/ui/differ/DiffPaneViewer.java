@@ -62,108 +62,106 @@ public class DiffPaneViewer extends Composite {
                 return new SqlSourceViewer(parent, textOrientation);
             }
         };
-        diffPane.setContentProvider(new IMergeViewerContentProvider() {
-
-            @Override
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            }
-
-            @Override
-            public void dispose() {
-            }
-
-            @Override
-            public boolean showAncestor(Object input) {
-                return false;
-            }
-
-            @Override
-            public void saveRightContent(Object input, byte[] bytes) {
-            }
-
-            @Override
-            public void saveLeftContent(Object input, byte[] bytes) {
-            }
-
-            @Override
-            public boolean isRightEditable(Object input) {
-                return false;
-            }
-
-            @Override
-            public boolean isLeftEditable(Object input) {
-                return false;
-            }
-
-            @Override
-            public String getRightLabel(Object input) {
-                return (DiffPaneViewer.this.reverseSide ? Messages.diffPartDescr_from
-                        : Messages.to) + Messages.DiffPaneViewer_project;
-            }
-
-            @Override
-            public Image getRightImage(Object input) {
-                return null;
-            }
-
-            @Override
-            public Object getRightContent(Object input) {
-                TreeElement el = (TreeElement) input;
-                if (el != null
-                        && (el.getSide() == (DiffPaneViewer.this.reverseSide ? DiffSide.RIGHT
-                                : DiffSide.LEFT) || el.getSide() == DiffSide.BOTH)) {
-                    return new Document(el.getPgStatement(
-                            DiffPaneViewer.this.dbSource.getDbObject())
-                            .getFullSQL());
-                } else {
-                    return new Document();
-                }
-            }
-
-            @Override
-            public String getLeftLabel(Object input) {
-                return (DiffPaneViewer.this.reverseSide ? Messages.to
-                        : Messages.diffPartDescr_from) + Messages.database;
-            }
-
-            @Override
-            public Image getLeftImage(Object input) {
-                return null;
-            }
-
-            @Override
-            public Object getLeftContent(Object input) {
-                TreeElement el = (TreeElement) input;
-                if (el != null
-                        && (el.getSide() == (DiffPaneViewer.this.reverseSide ? DiffSide.LEFT
-                                : DiffSide.RIGHT) || el.getSide() == DiffSide.BOTH)) {
-                    return new Document(el.getPgStatement(
-                            DiffPaneViewer.this.dbTarget.getDbObject())
-                            .getFullSQL());
-                } else {
-                    return new Document();
-                }
-            }
-
-            @Override
-            public String getAncestorLabel(Object input) {
-                return null;
-            }
-
-            @Override
-            public Image getAncestorImage(Object input) {
-                return null;
-            }
-
-            @Override
-            public Object getAncestorContent(Object input) {
-                return null;
-            }
-        });
+        diffPane.setContentProvider(new DiffPaneContentProvider());
         diffPane.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
     public void setInput(Object value) {
         diffPane.setInput(value);
+    }
+    
+    private class DiffPaneContentProvider implements IMergeViewerContentProvider {
+        
+        @Override
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+        }
+
+        @Override
+        public void dispose() {
+        }
+
+        @Override
+        public boolean showAncestor(Object input) {
+            return false;
+        }
+
+        @Override
+        public void saveRightContent(Object input, byte[] bytes) {
+        }
+
+        @Override
+        public void saveLeftContent(Object input, byte[] bytes) {
+        }
+
+        @Override
+        public boolean isRightEditable(Object input) {
+            return false;
+        }
+
+        @Override
+        public boolean isLeftEditable(Object input) {
+            return false;
+        }
+
+        @Override
+        public String getRightLabel(Object input) {
+            return (reverseSide ? Messages.diffPartDescr_from : Messages.to)
+                    + Messages.DiffPaneViewer_project;
+        }
+
+        @Override
+        public Image getRightImage(Object input) {
+            return null;
+        }
+
+        @Override
+        public Object getRightContent(Object input) {
+            TreeElement el = (TreeElement) input;
+            if (el != null
+                    && (el.getSide() == (reverseSide ? DiffSide.RIGHT : DiffSide.LEFT)
+                    || el.getSide() == DiffSide.BOTH)) {
+                return new Document(el.getPgStatement(dbSource.getDbObject()).getFullSQL());
+            } else {
+                return new Document();
+            }
+        }
+
+        @Override
+        public String getLeftLabel(Object input) {
+            return (reverseSide ? Messages.to : Messages.diffPartDescr_from)
+                    + Messages.database;
+        }
+
+        @Override
+        public Image getLeftImage(Object input) {
+            return null;
+        }
+
+        @Override
+        public Object getLeftContent(Object input) {
+            TreeElement el = (TreeElement) input;
+            if (el != null
+                    && (el.getSide() == (reverseSide ? DiffSide.LEFT: DiffSide.RIGHT)
+                    || el.getSide() == DiffSide.BOTH)) {
+                return new Document(el.getPgStatement(dbTarget.getDbObject()).getFullSQL());
+            } else {
+                return new Document();
+            }
+        }
+
+        @Override
+        public String getAncestorLabel(Object input) {
+            return null;
+        }
+
+        @Override
+        public Image getAncestorImage(Object input) {
+            return null;
+        }
+
+        @Override
+        public Object getAncestorContent(Object input) {
+            return null;
+        }
     }
 }

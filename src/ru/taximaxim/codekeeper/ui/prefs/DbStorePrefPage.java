@@ -5,6 +5,7 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -39,7 +40,12 @@ public class DbStorePrefPage extends FieldEditorPreferencePage
     @Override
     public void createControl(Composite parent) {
         super.createControl(parent);
-        getDefaultsButton().setText(Messages.dbStorePrefPage_clear_db_store);
+        
+        Button btnDef = getDefaultsButton();
+        btnDef.setText(Messages.dbStorePrefPage_clear_db_store);
+        ((GridData) btnDef.getLayoutData()).widthHint = 
+                btnDef.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+        btnDef.getParent().layout();
     }
     
     @Override
