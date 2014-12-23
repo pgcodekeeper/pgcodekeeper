@@ -9,7 +9,8 @@ public class PgObjLocation implements Serializable {
      * 
      */
     private static final long serialVersionUID = -7110926210150404390L;
-    private PgStatement obj;
+    private transient PgStatement obj;
+    private String objName;
     private String schemaName;
     private String filePath;
     private boolean addedToDB = false;
@@ -28,14 +29,14 @@ public class PgObjLocation implements Serializable {
     }
     
     public String getObjName() {
-        return obj.getBareName();
+        return objName;
     }
     
     public int getOffset() {
         return offset;
     }
     public int getObjLength() {
-        return obj.getBareName().length();
+        return objName.length();
     }
 
     public Path getFilePath() {
@@ -45,6 +46,7 @@ public class PgObjLocation implements Serializable {
     public PgObjLocation(PgStatement obj, int offset,
             Path filePath) {
         this.obj = obj;
+        objName = obj != null ? obj.getBareName() : "";
         this.offset = offset;
         this.filePath = filePath.toString();
     }

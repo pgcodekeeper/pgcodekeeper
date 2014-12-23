@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -278,12 +279,12 @@ public final class PgDumpLoader { //NOPMD
     static PgDatabase loadDatabaseSchemaCoreAntLR(
             InputStream inputStream, String charsetName, 
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers, 
-            PgDatabase database) {
+            PgDatabase database, Path path) {
         List<PgObjLocation> alterObjects = new ArrayList<>();
         AntlrParser parser = new AntlrParser();
         try {
             parser.parseInputStream(inputStream,
-                    new CustomSQLParserListener(alterObjects, database, Paths.get("/")));
+                    new CustomSQLParserListener(alterObjects, database, path));
         } catch (IOException e) {
             throw new FileException("Exception while closing dump file", e);
         }
@@ -354,7 +355,7 @@ public final class PgDumpLoader { //NOPMD
                             f.getName().toLowerCase().endsWith(".sql")) {
                         try (FileInputStream inputStream = new FileInputStream(f)) {
                             parser.parse(inputStream, charsetName,
-                                    outputIgnoredStatements, ignoreSlonyTriggers, db);
+                                    outputIgnoredStatements, ignoreSlonyTriggers, db, f.toPath());
                         } catch (FileNotFoundException ex) {
                             throw new FileException(MessageFormat.format(
                                     Resources.getString("FileNotFound"),
@@ -386,7 +387,7 @@ public final class PgDumpLoader { //NOPMD
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
             ParserClass parser) {
         return parser.parse(inputStream, charsetName, outputIgnoredStatements,
-                ignoreSlonyTriggers, new PgDatabase());
+                ignoreSlonyTriggers, new PgDatabase(), Paths.get("/"));
     }
     
     /**

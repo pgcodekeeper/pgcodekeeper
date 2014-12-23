@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
@@ -134,14 +133,14 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     
     @Override
     public void exitAlter_function_statement(Alter_function_statementContext ctx) {
-        PgObjLocation loc = new PgObjLocation(new AlterFunction(ctx, db, filePath).getObject(), 0, Paths.get("/"));
+        PgObjLocation loc = new PgObjLocation(new AlterFunction(ctx, db, filePath).getObject(), 0, filePath);
         loc.setSchemaName(db.getDefaultSchema().getName());
         alterObjects.add(loc);
     }
     
     @Override
     public void exitAlter_schema_statement(Alter_schema_statementContext ctx) {
-        PgObjLocation loc = new PgObjLocation(new AlterSchema(ctx, db, filePath).getObject(), 0, Paths.get("/"));
+        PgObjLocation loc = new PgObjLocation(new AlterSchema(ctx, db, filePath).getObject(), 0, filePath);
         loc.setSchemaName(db.getDefaultSchema().getName());
         alterObjects.add(loc);
     }
@@ -153,21 +152,21 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     
     @Override
     public void exitAlter_table_statement(Alter_table_statementContext ctx) {
-        PgObjLocation loc = new PgObjLocation(new AlterTable(ctx, db, filePath).getObject(), 0, Paths.get("/"));
+        PgObjLocation loc = new PgObjLocation(new AlterTable(ctx, db, filePath).getObject(), 0, filePath);
         loc.setSchemaName(db.getDefaultSchema().getName());
         alterObjects.add(loc);
     }
     
     @Override
     public void exitAlter_sequence_statement(Alter_sequence_statementContext ctx) {
-        PgObjLocation loc = new PgObjLocation(new AlterSequence(ctx, db, filePath).getObject(), 0, Paths.get("/"));
+        PgObjLocation loc = new PgObjLocation(new AlterSequence(ctx, db, filePath).getObject(), 0, filePath);
         loc.setSchemaName(db.getDefaultSchema().getName());
         alterObjects.add(loc);
     }
     
     @Override
     public void exitAlter_view_statement(Alter_view_statementContext ctx) {
-        PgObjLocation loc = new PgObjLocation(new AlterView(ctx, db, filePath).getObject(), 0, Paths.get("/"));
+        PgObjLocation loc = new PgObjLocation(new AlterView(ctx, db, filePath).getObject(), 0, filePath);
         loc.setSchemaName(db.getDefaultSchema().getName());
         alterObjects.add(loc);
     }
