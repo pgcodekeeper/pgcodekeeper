@@ -8,11 +8,21 @@ public final class GenericColumn {
     public final String table;
     public final String column;
 // SONAR-ON
+    private ViewReference type= ViewReference.COLUMN;
     
     public GenericColumn(String schema, String table, String column) {
         this.schema = schema;
         this.table = table;
         this.column = column;
+    }
+    
+    public GenericColumn setType(ViewReference type) {
+        this.type = type;
+        return this;
+    }
+    
+    public ViewReference getType() {
+        return type;
     }
     
     public GenericColumn(String table, String column) {
@@ -53,5 +63,11 @@ public final class GenericColumn {
     public String toString() {
         return "schema: \"" + schema + "\"; table: \"" + table
                 + "\"; column: \"" + column + "\";";
+    }
+    
+    public enum ViewReference {
+        COLUMN,
+        FUNCTION,
+        TABLE
     }
 }
