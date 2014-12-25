@@ -22,7 +22,7 @@ public class CreateIndex extends ParserAbstract {
         if (schemaName==null) {
             schemaName = getDefSchemaName();
         }
-        PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()), "");
+        PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()), db.getDefSearchPath());
         ind.setTableName(getName(ctx.table_name));
         ind.setDefinition(getFullCtxText(ctx.using_def()));
         ind.setUnique(ctx.UNIQUE() != null);

@@ -53,6 +53,10 @@ public class PgDatabase extends PgStatement {
     public PgSchema getDefaultSchema() {
         return defaultSchema;
     }
+    
+    public String getDefSearchPath(){
+        return "SET search_path = " + defaultSchema.getName() + ", pg_catalog;";
+    }
 
     public List<String> getIgnoredStatements() {
         return Collections.unmodifiableList(ignoredStatements);

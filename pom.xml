@@ -81,6 +81,24 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 
     <build>
         <plugins>
+        <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>4.3</version>
+                <configuration>
+                    <visitor>true</visitor>
+                    <sourceDirectory>${project.basedir}/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr</sourceDirectory>
+                    <outputDirectory>${project.build.outputDirectory}/cz/startnet/utils/pgdiff/parsers/antlr</outputDirectory>
+                </configuration>
+                <executions>
+                  <execution>
+                    <id>antlr</id>
+                    <goals>
+                      <goal>antlr4</goal>
+                    </goals>
+                  </execution>
+                </executions>
+              </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
@@ -261,6 +279,12 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
             <artifactId>postgresql</artifactId>
             <version>9.3-1102-jdbc41</version>
         </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-maven-plugin</artifactId>
+            <version>4.3</version>
+        </dependency>
+                
     </dependencies>
 
     <reporting>

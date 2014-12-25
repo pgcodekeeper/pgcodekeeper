@@ -27,7 +27,7 @@ public class AlterTable extends ParserAbstract {
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         }
-        PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()), "");
+        PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
         PgTable tabl = db.getSchema(schemaName).getTable(name);
         List<String> sequences = new ArrayList<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
