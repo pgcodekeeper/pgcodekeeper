@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +15,7 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgComment;
@@ -57,7 +59,7 @@ public class AntlrParser {
                 continue;
             }
             new AntlrParser().parseInputStream(Files.newInputStream(Paths
-                    .get(path)), new CustomSQLParserListener(alterObjects,
+                    .get(path)), ApgdiffConsts.UTF_8, new CustomSQLParserListener(alterObjects,
                     database, Paths.get(path)));
         }
         // fillDB(alterObjects, database);
@@ -381,9 +383,9 @@ public class AntlrParser {
     }
 
     public void parseInputStream(InputStream inputStream,
-            CustomSQLParserListener listener) throws IOException {
+            String charsetName, CustomSQLParserListener listener) throws IOException {
 
-        SQLLexer lexer = new SQLLexer(new ANTLRInputStream(inputStream));
+        SQLLexer lexer = new SQLLexer(new ANTLRInputStream(new InputStreamReader(inputStream, charsetName)));
         lexer.removeErrorListeners();
         lexer.addErrorListener(CustomErrorListener.INSTATANCE);
         CommonTokenStream tokens = new CommonTokenStream(lexer);

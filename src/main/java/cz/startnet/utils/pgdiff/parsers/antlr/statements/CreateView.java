@@ -4,10 +4,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.As_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
@@ -18,7 +16,9 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Simple_tableContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_primaryContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseVisitor;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.GenericColumn.ViewReference;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -69,10 +69,12 @@ public class CreateView extends ParserAbstract {
     public class SelectQueryVisitor extends
             SQLParserBaseVisitor<Query_expressionContext> {
         // список алиасов запросов, игнорируются при заполнении колонок в селект
-        private Queue<String> aliasNames = new LinkedList<>();
+        private List<String> aliasNames = new ArrayList<>();
+        //адреса объектов колонок, таблиц и функций
         private List<GenericColumn> columns = new ArrayList<>();
+        // карта алиасов колонок, таблиц и функций
         private Map<String, GenericColumn> tableAliases = new HashMap<>();
-        boolean isQiery = false;
+        boolean isQuery = false;
         private PgSelect select;
         private boolean isTableRef = false;
 
@@ -86,14 +88,16 @@ public class CreateView extends ParserAbstract {
             isTableRef = true;
             return super.visitTable_primary(ctx);
         }
+        
         @Override
         public Query_expressionContext visitSimple_table(Simple_tableContext ctx) {
             if (ctx.query_specification() != null) {
                 SelectQueryVisitor vis = new SelectQueryVisitor(select);
+                vis.columns.addAll(columns);
                 vis.visit(ctx.query_specification());
-                isQiery = true;
-                aliasNames.addAll(vis.aliasNames);
-                columns.addAll(vis.columns);
+                columns.clear();
+                columns.addAll(vis.getColumns());
+                isQuery = true;
                 tableAliases.putAll(vis.tableAliases);
                 return null;
             }
@@ -104,10 +108,11 @@ public class CreateView extends ParserAbstract {
         public Query_expressionContext visitSet_function_specification(
                 Set_function_specificationContext ctx) {
             if (ctx.COUNT() != null) {
-                columns.add(new GenericColumn(null, null, ctx.COUNT().getText()));
+                columns.add(new GenericColumn(null, getFullCtxText(ctx), null)
+                        .setType(ViewReference.SYSTEM));
             } else {
-                columns.add(new GenericColumn(null, null, ctx.general_set_function()
-                        .set_function_type().getText()));
+                columns.add(new GenericColumn(null, getFullCtxText(ctx.general_set_function()), null)
+                        .setType(ViewReference.SYSTEM));
             }
             return null;
         }
@@ -115,102 +120,107 @@ public class CreateView extends ParserAbstract {
         @Override
         public Query_expressionContext visitName_or_func_calls(
                 Name_or_func_callsContext ctx) {
-            String colName;
             if (ctx.function_calls_paren() != null) {
-                colName = getFullCtxText(ctx);
-            } else {
-                colName = getName(ctx.schema_qualified_name());
+                addFunction(ctx);
+                return null;
+            } 
+            if (isTableRef) {
+                isTableRef = false;
+                String schemaName = getSchemaName(ctx.schema_qualified_name());
+                columns.add(new GenericColumn(
+                        schemaName == null ? getDefSchemaName() : schemaName,
+                        getName(ctx.schema_qualified_name()), null).setType(ViewReference.TABLE));
+                return null;
             }
-
+            
+            String colName = getName(ctx.schema_qualified_name());
             String colTable = getTableName(ctx.schema_qualified_name());
             String colSchema = getSchemaName(ctx.schema_qualified_name());
             if (colSchema == null || colSchema.equals(colTable)) {
-                if (isTableRef) {
-                    isTableRef = false;
-                    columns.add(new GenericColumn(colTable, colName, null));
-                } else {
-                    columns.add(new GenericColumn(null, colTable, colName));
-                }
+                columns.add(new GenericColumn(null, colTable, colName));
             } else {
                 columns.add(new GenericColumn(colSchema, colTable, colName));
             }
             return null;
         }
-
+        
+        private void addFunction(Name_or_func_callsContext ctx) {
+            PgFunction func = new PgFunction(
+                    getName(ctx.schema_qualified_name()), getFullCtxText(ctx), "");
+            String schema = getSchemaName(ctx.schema_qualified_name());
+            columns.add(new GenericColumn(schema, func.getSignature(), null)
+                    .setType(ViewReference.FUNCTION));
+        }
+        
         @Override
         public Query_expressionContext visitAs_clause(As_clauseContext ctx) {
             String aliasName = ctx.identifier().getText();
-            if (isQiery) {
-                isQiery = false;
+            if (isQuery) {
+                isQuery = false;
                 aliasNames.add(aliasName);
                 Iterator<GenericColumn> iter = columns.iterator();
                 while (iter.hasNext()) {
-                    GenericColumn col = iter.next();
-                    if (col.table != null && col.table.equals(aliasName)) {
+                    if (aliasName.equals(iter.next().table)) {
                         iter.remove();
                     }
                 }
             } else {
-                tableAliases.put(aliasName,
-                            columns.get(columns.size() - 1));
+                tableAliases.put(aliasName, columns.get(columns.size() - 1));
             }
             return super.visitAs_clause(ctx);
         }
 
-        public PgSelect getSelect() {
+        private List<GenericColumn> getColumns() {
+            // вытаскиваем таблицы из смешанного списка колонок и помещаем их в
+            // алиасы с их именами
+            // например, select t1.c1 from public.t1 тут для корректного разбора
+            // создаем вспомогательный алиас t1=public.t1
+            Iterator<GenericColumn> tableIter = columns.iterator();
+            while (tableIter.hasNext()) {
+                GenericColumn tableRef = tableIter.next();
+                if (tableRef.getType() == ViewReference.TABLE) {
+                    tableAliases.put(tableRef.table, tableRef);
+                    tableIter.remove();
+                }
+            }
+            
             Iterator<GenericColumn> iter = columns.iterator();
-            // поищем имена таблиц с указанием схемы
-            List<GenericColumn> tableNames = new ArrayList<>();
+            List<GenericColumn> newColumns = new ArrayList<>();
             while (iter.hasNext()) {
                 GenericColumn col = iter.next();
-                if (col.column == null
-                        && col.schema != null) {
-                    tableNames.add(col);
+                // удаляем алиасы из подзапросов
+                if (aliasNames.contains(col.table)) {
                     iter.remove();
+                    continue;
                 }
-            }
-            // заменим колонки с таблицами без схемы на колонки со схемой и таблицей
-            List<GenericColumn> fixedCol = new ArrayList<>(); 
-            iter = columns.iterator();
-            for (GenericColumn tabl : tableNames) {
-                while (iter.hasNext()) {
-                GenericColumn col = iter.next();
-                    if (col.table!=null &&
-                            col.table.equals(tabl.table)) {
-                        iter.remove();
-                        fixedCol.add(new GenericColumn(tabl.schema, col.table, col.column));
-                    }
-                }
-            }
-            columns.addAll(fixedCol);
-            // поищем в алиасах
-            for (GenericColumn column : columns) {
-                if (column.schema == null && column.table != null) {
-                    GenericColumn unaliased = tableAliases.get(column.table);
+                switch (col.getType()) {
+                case FUNCTION:
+                case COLUMN:
+                    GenericColumn unaliased = tableAliases.get(col.table);
                     if (unaliased != null) {
-                        column = new GenericColumn(unaliased.schema == null ? 
-                                db.getDefaultSchema().getName()
-                                : unaliased.schema, unaliased.table,
-                                column.column);
-                        select.addColumn(column);
-                    } else if (!aliasNames.contains(column.table)
-                            && column.column != null) {
-                        select.addColumn(new GenericColumn(
-                                column.schema == null ? 
-                                        db.getDefaultSchema().getName() 
-                                        : column.schema,
-                                column.table, column.column));
+                        GenericColumn column = new GenericColumn(unaliased.schema,
+                                unaliased.table, col.column);
+                        if (unaliased.getType() == ViewReference.FUNCTION) {
+                            column.setType(ViewReference.FUNCTION);
+                        }
+                        newColumns.add(column);
+                    } else {
+                        newColumns.add(col);
                     }
-                } else
-                // те колонки которые не попали в алиасы не должны быть в
-                // списке алиасов подзапросов
-                if (!aliasNames.contains(column.table) && column.column != null) {
-                    column = new GenericColumn(
-                            column.schema != null ? column.schema : db
-                                    .getDefaultSchema().getName(),
-                            column.table, column.column);
-                    select.addColumn(column);
+                    break;
+                case TABLE:
+                case SYSTEM:
+                    break;
                 }
+            }
+            columns.clear();
+            columns.addAll(newColumns);
+            return columns;
+        }
+        
+        public PgSelect getSelect() {
+            for (GenericColumn col : columns) {
+                select.addColumn(col);
             }
             return select;
         }

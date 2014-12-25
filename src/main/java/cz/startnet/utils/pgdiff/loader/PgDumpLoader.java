@@ -283,7 +283,7 @@ public final class PgDumpLoader { //NOPMD
         List<PgObjLocation> alterObjects = new ArrayList<>();
         AntlrParser parser = new AntlrParser();
         try {
-            parser.parseInputStream(inputStream,
+            parser.parseInputStream(inputStream, charsetName, 
                     new CustomSQLParserListener(alterObjects, database, path));
         } catch (IOException e) {
             throw new FileException("Exception while closing dump file", e);

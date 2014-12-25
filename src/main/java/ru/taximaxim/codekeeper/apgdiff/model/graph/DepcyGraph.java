@@ -12,6 +12,7 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
+import cz.startnet.utils.pgdiff.schema.GenericColumn.ViewReference;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -163,7 +164,13 @@ public class DepcyGraph {
                     String scmName = col.schema;
                     String tblName = col.table;
                     String clmnName = col.column;
-                    
+                    // пропускаем системные вещи, например count(*), AVG и т.д.
+                    // TODO: вынести "pg_.*" в настройки, сейчас жесток забито
+                    // чтобы пропускать выборку из pg_views - системной таблицы
+                    if (col.getType() == ViewReference.SYSTEM ||
+                            (col.table != null &&col.table.matches("pg_.*"))){
+                        continue;
+                    }
                     if (scmName == null){
                         scmName = schema.getName();
                     }
@@ -173,6 +180,7 @@ public class DepcyGraph {
                     PgSchema scm = db.getSchema(scmName);
                     
                     PgTable tbl = scm.getTable(tblName);
+                    PgView vw = null;
                     if (tbl != null) {
                         graph.addEdge(view, tbl);
                         
@@ -189,17 +197,23 @@ public class DepcyGraph {
                                     + " found in " + tblName 
                                     + " selected by view " + view.getName());
                         }
-                    } else {
-                        PgView vw = scm.getView(tblName);
-                        if (vw != null){
-                            graph.addVertex(vw);
-                            graph.addEdge(view, vw);
-                        } else {
-                            Log.log(Log.LOG_WARNING,
-                                    "Depcy: View " + view.getName()
-                                    + " references table/view " + tblName
-                                    + " that doesn't exist!");
+                    } else if ((vw = scm.getView(tblName)) != null){
+                        graph.addVertex(vw);
+                        graph.addEdge(view, vw);
+                    } else if (col.getType() == ViewReference.FUNCTION) {
+                        // TODO: Сейчас пропускаются функции типа upper,
+                        // replace, toChar, now, что делать либо
+                        // редактировать правила на эти функции, либо
+                        // вычислять в коде, скорее всего правила
+                        PgFunction func = scm.getFunction(tblName);
+                        if (func != null) {
+                            graph.addVertex(func);
+                            graph.addEdge(view, func);
                         }
+                    } else {
+                        Log.log(Log.LOG_WARNING, "Depcy: View " + view.getName()
+                            + " references table/view/function " + tblName
+                            + " that doesn't exist!");
                     }
                 }
             }
