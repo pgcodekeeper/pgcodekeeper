@@ -338,8 +338,9 @@ public abstract class PgStatement {
         
         return qname;
     }
+    
     @Override
     public String toString() {
-        return name;
+        return name == null ? "Unnamed object" : name;
     }
 }

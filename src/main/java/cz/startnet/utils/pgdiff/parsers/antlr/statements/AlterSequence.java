@@ -18,7 +18,7 @@ private Alter_sequence_statementContext ctx;
     @Override
     public PgStatement getObject() {
         String name = getName(ctx.name);
-        PgSequence seq = new PgSequence(name, null, null);
+        PgSequence seq = new PgSequence(name, null, db.getDefSearchPath());
         String schemaName = getSchemaName(ctx.name);
         if (schemaName == null) {
             schemaName = getDefSchemaName();

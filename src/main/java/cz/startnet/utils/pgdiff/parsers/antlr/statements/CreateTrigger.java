@@ -23,7 +23,7 @@ public class CreateTrigger extends ParserAbstract {
         if (schemaName==null) {
             schemaName = getDefSchemaName();
         }
-        PgTrigger trigger = new PgTrigger(name, getFullCtxText(ctx.getParent()), "");
+        PgTrigger trigger = new PgTrigger(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
         trigger.setTableName(ctx.tabl_name.getText());
         trigger.setBefore(ctx.before_true != null);
         if (ctx.ROW() != null) {
