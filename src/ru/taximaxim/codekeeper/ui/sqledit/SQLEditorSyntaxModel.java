@@ -69,6 +69,15 @@ public class SQLEditorSyntaxModel {
     public String toString() {
         return type.toString();
     }
+    
+    public void setDefault() {
+        PreferenceConverter.setDefault(prefStore, type.getPrefName() + ".Color", color);
+        prefStore.setDefault(type.getPrefName() + ".Bold", bold);
+        prefStore.setDefault(type.getPrefName() + ".Italic", italic);
+        prefStore.setDefault(type.getPrefName() + ".strikethrough", strikethrough);
+        prefStore.setDefault(type.getPrefName() + ".underline", underline);
+    }
+    
     public void store() {
         PreferenceConverter.setValue(prefStore, type.getPrefName() + ".Color", color);
         prefStore.setValue(type.getPrefName() + ".Bold", bold);
