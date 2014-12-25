@@ -157,6 +157,13 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
     }
     
     @Override
+    protected void performDefaults() {
+        for (SQLEditorSyntaxModel element : input) {
+            element.loadDefault();
+        }
+    }
+    
+    @Override
     public boolean performOk() {
         for (SQLEditorSyntaxModel element : input) {
             element.store();

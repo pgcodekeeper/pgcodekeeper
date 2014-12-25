@@ -94,7 +94,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                 syntax.setUnderline(false);
                 break;
             case UN_RESERVED_WORDS:
-                syntax.setBold(false);
+                syntax.setBold(true);
                 syntax.setColor(new RGB(127, 0, 85));
                 syntax.setItalic(false);
                 syntax.setStrikethrough(false);
