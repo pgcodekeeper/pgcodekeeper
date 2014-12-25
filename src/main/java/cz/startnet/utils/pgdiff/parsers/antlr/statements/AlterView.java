@@ -21,7 +21,7 @@ private Alter_view_statementContext ctx;
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         }
-        PgView view = new PgView(name, null, null);
+        PgView view = new PgView(name, null, db.getDefSearchPath());
         PgView dbView = db.getSchema(schemaName).getView(name);
         if (ctx.owner_to() != null) {
             view.setOwner(removeQuotes(ctx.owner_to().name));

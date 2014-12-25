@@ -39,7 +39,7 @@ public class CreateView extends ParserAbstract {
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         }
-        PgView view = new PgView(name, getFullCtxText(ctx.getParent()), "");
+        PgView view = new PgView(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
         if (ctx.v_query != null) {
             view.setQuery(getFullCtxText(ctx.v_query));
             view.setSelect(parseSelect(ctx.v_query));
