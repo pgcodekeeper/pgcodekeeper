@@ -8,9 +8,10 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.core.commands.Command;
-import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.NotEnabledException;
+import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -50,12 +51,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IPageLayout;
-import org.eclipse.ui.ISources;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.part.ISetSelectionTarget;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageSelectionProvider;
 
@@ -89,12 +90,6 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-
-import org.eclipse.ui.part.ISetSelectionTarget;
-import org.eclipse.egit.ui.internal.actions.ActionCommands;
-import org.eclipse.egit.ui.internal.actions.CommitAction;
-import org.eclipse.egit.ui.internal.actions.CommitActionHandler;
-import org.eclipse.core.expressions.*;
 
 public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourceChangeListener {
 
@@ -268,27 +263,23 @@ class CommitPage extends DiffPresentationPane {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
+                // select current project and focus on project explorer
                 IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
                 IViewPart view = page.findView(IPageLayout.ID_PROJECT_EXPLORER);
                 view.setFocus();
                 
                 IStructuredSelection selection = new StructuredSelection(proj.getProject());
                 ((ISetSelectionTarget)view).selectReveal(selection);
-//                new org.eclipse.egit.ui.internal.actions.CommitAction();
-                
-                EvaluationContext app = new EvaluationContext(null, new String());
-                app.addVariable(ISources.ACTIVE_MENU_SELECTION_NAME, selection);
-                app.addVariable(ISources.ACTIVE_SHELL_NAME, container.getShell());
-                app.addVariable(ISources.ACTIVE_PART_NAME, PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart());
-                
-                ICommandService service = (ICommandService) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getService(ICommandService.class);
-                Command com = service.getCommand(ActionCommands.COMMIT_ACTION);
+
+                // execute commit command
+                String commandId = "org.eclipse.egit.ui.team.Commit";
+                IHandlerService handlerService = (IHandlerService)(IHandlerService ) PlatformUI.getWorkbench().getService(IHandlerService.class);
                 try {
-                    ExecutionEvent eve = new ExecutionEvent(com, Collections.EMPTY_MAP, null, app);
-                    new CommitActionHandler().execute(eve);
-                } catch (ExecutionException e1) {
+                    handlerService.executeCommand(commandId, null);
+                } catch (ExecutionException | NotDefinedException
+                        | NotEnabledException | NotHandledException e2) {
                     // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                    e2.printStackTrace();
                 }
 //                commit();
             }
