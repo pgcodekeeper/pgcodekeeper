@@ -4,10 +4,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.As_clauseContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
@@ -71,12 +69,12 @@ public class CreateView extends ParserAbstract {
     public class SelectQueryVisitor extends
             SQLParserBaseVisitor<Query_expressionContext> {
         // список алиасов запросов, игнорируются при заполнении колонок в селект
-        private Queue<String> aliasNames = new LinkedList<>();
+        private List<String> aliasNames = new ArrayList<>();
         //адреса объектов колонок, таблиц и функций
         private List<GenericColumn> columns = new ArrayList<>();
         // карта алиасов колонок, таблиц и функций
         private Map<String, GenericColumn> tableAliases = new HashMap<>();
-        boolean isQiery = false;
+        boolean isQuery = false;
         private PgSelect select;
         private boolean isTableRef = false;
 
@@ -90,6 +88,7 @@ public class CreateView extends ParserAbstract {
             isTableRef = true;
             return super.visitTable_primary(ctx);
         }
+        
         @Override
         public Query_expressionContext visitSimple_table(Simple_tableContext ctx) {
             if (ctx.query_specification() != null) {
@@ -98,7 +97,7 @@ public class CreateView extends ParserAbstract {
                 vis.visit(ctx.query_specification());
                 columns.clear();
                 columns.addAll(vis.getColumns());
-                isQiery = true;
+                isQuery = true;
                 tableAliases.putAll(vis.tableAliases);
                 return null;
             }
@@ -112,8 +111,8 @@ public class CreateView extends ParserAbstract {
                 columns.add(new GenericColumn(null, getFullCtxText(ctx), null)
                         .setType(ViewReference.SYSTEM));
             } else {
-                columns.add(new GenericColumn(null, ctx.general_set_function()
-                        .set_function_type().getText(), null).setType(ViewReference.SYSTEM));
+                columns.add(new GenericColumn(null, getFullCtxText(ctx.general_set_function()), null)
+                        .setType(ViewReference.SYSTEM));
             }
             return null;
         }
@@ -127,9 +126,9 @@ public class CreateView extends ParserAbstract {
             } 
             if (isTableRef) {
                 isTableRef = false;
-                String tableName = getTableName(ctx.schema_qualified_name());
+                String schemaName = getSchemaName(ctx.schema_qualified_name());
                 columns.add(new GenericColumn(
-                        tableName == null ? getDefSchemaName() : tableName,
+                        schemaName == null ? getDefSchemaName() : schemaName,
                         getName(ctx.schema_qualified_name()), null).setType(ViewReference.TABLE));
                 return null;
             }
@@ -153,42 +152,43 @@ public class CreateView extends ParserAbstract {
                     .setType(ViewReference.FUNCTION));
         }
         
-
         @Override
         public Query_expressionContext visitAs_clause(As_clauseContext ctx) {
             String aliasName = ctx.identifier().getText();
-            if (isQiery) {
-                isQiery = false;
+            if (isQuery) {
+                isQuery = false;
                 aliasNames.add(aliasName);
                 Iterator<GenericColumn> iter = columns.iterator();
                 while (iter.hasNext()) {
-                    GenericColumn col = iter.next();
-                    if (col.table != null && col.table.equals(aliasName)) {
+                    if (aliasName.equals(iter.next().table)) {
                         iter.remove();
                     }
                 }
             } else {
-                tableAliases.put(aliasName,
-                            columns.get(columns.size() - 1));
+                tableAliases.put(aliasName, columns.get(columns.size() - 1));
             }
             return super.visitAs_clause(ctx);
         }
 
         private List<GenericColumn> getColumns() {
-            // вытаскиваем таблицы из смешанного списка колонок и помещаем их в алиасы с их именами
+            // вытаскиваем таблицы из смешанного списка колонок и помещаем их в
+            // алиасы с их именами
+            // например, select t1.c1 from public.t1 тут для корректного разбора
+            // создаем вспомогательный алиас t1=public.t1
             Iterator<GenericColumn> tableIter = columns.iterator();
             while (tableIter.hasNext()) {
-                GenericColumn col = tableIter.next();
-                if (col.getType() == ViewReference.TABLE) {
-                    tableAliases.put(col.table, col);
+                GenericColumn tableRef = tableIter.next();
+                if (tableRef.getType() == ViewReference.TABLE) {
+                    tableAliases.put(tableRef.table, tableRef);
                     tableIter.remove();
                 }
             }
+            
             Iterator<GenericColumn> iter = columns.iterator();
             List<GenericColumn> newColumns = new ArrayList<>();
             while (iter.hasNext()) {
                 GenericColumn col = iter.next();
-                // удаляем функции, и алиасы из подзапросов
+                // удаляем алиасы из подзапросов
                 if (aliasNames.contains(col.table)) {
                     iter.remove();
                     continue;
@@ -209,6 +209,7 @@ public class CreateView extends ParserAbstract {
                     }
                     break;
                 case TABLE:
+                case SYSTEM:
                     break;
                 }
             }
@@ -216,6 +217,7 @@ public class CreateView extends ParserAbstract {
             columns.addAll(newColumns);
             return columns;
         }
+        
         public PgSelect getSelect() {
             for (GenericColumn col : columns) {
                 select.addColumn(col);
