@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
-import cz.startnet.utils.pgdiff.schema.PgRuleCommon;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateRule extends ParserAbstract {
@@ -65,14 +64,8 @@ public class CreateRule extends ParserAbstract {
 
         
         for (Schema_qualified_nameContext name : obj_name) {
-            PgRuleCommon object = new PgRuleCommon(getFullCtxText(ctx));
-            object.setBody(getFullCtxText(ctx.body_rule));
-            object.setRevoke(ctx.REVOKE() != null);
-            object.setObjName(name.getText());
-            if (addToDB(name, type, new PgPrivilege(object.isRevoke(),
-                    object.getBody(), object.getRawStatement()))) {
-                fillObjLocation(object, ctx.getStart().getStartIndex(),
-                    getDefSchemaName(), false);
+            if (addToDB(name, type, new PgPrivilege(ctx.REVOKE() != null,
+                    getFullCtxText(ctx.body_rule), getFullCtxText(ctx)))) {
             }
         }
 

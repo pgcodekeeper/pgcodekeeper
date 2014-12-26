@@ -30,9 +30,7 @@ public class AlterTable extends ParserAbstract {
             schemaName = getDefSchemaName();
         }
         PgTable tabl = db.getSchema(schemaName).getTable(name);
-        if (tabl == null) {
-            logError("TABLE", name);
-        }
+        
         List<String> sequences = new ArrayList<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
 

@@ -11,18 +11,8 @@ public class PgObjLocation implements Serializable {
     private static final long serialVersionUID = -7110926210150404390L;
     private transient PgStatement obj;
     private String objName;
-    private String schemaName;
     private String filePath;
-    private boolean addedToDB = false;
     private int offset;
-    
-    public String getSchemaName() {
-        return schemaName;
-    }
-
-    public void setSchemaName(String schemaName) {
-        this.schemaName = schemaName;
-    }
     
     public PgStatement getObj() {
         return obj;
@@ -55,22 +45,26 @@ public class PgObjLocation implements Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof PgObjLocation) {
             PgObjLocation loc = (PgObjLocation)obj;
-            return loc.getObj().equals(getObj()) 
-                    && loc.getSchemaName().equals(getSchemaName())
+            return loc.getObj().equals(getObj())
+                    && loc.getObjName() == getObjName()
                     && loc.getOffset() == getOffset();
         }
         return false;
     }
+    
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((obj == null) ? 0 : obj.hashCode());
+        result = prime * result + ((objName == null) ? 0 : objName.hashCode());
+        result = prime * result + offset;
+        result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
+        return result;
+    }
+    
     @Override
     public String toString() {
         return obj + " " + filePath + " " + offset + obj.getBareName().length();
-    }
-
-    public boolean isAddedToDB() {
-        return addedToDB;
-    }
-
-    public void setAddedToDB(boolean addedToDB) {
-        this.addedToDB = addedToDB;
     }
 }

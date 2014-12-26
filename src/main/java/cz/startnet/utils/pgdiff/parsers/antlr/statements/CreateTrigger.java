@@ -60,8 +60,7 @@ public class CreateTrigger extends ParserAbstract {
             return null;
         }
         db.getSchema(schemaName).getTable(trigger.getTableName()).addTrigger(trigger);
-        fillObjLocation(trigger, ctx.name.getStart().getStartIndex(), schemaName,
-                db.getSchema(schemaName).getTable(trigger.getTableName()).getTrigger(name)!=null);
+        fillObjLocation(trigger, ctx.name.getStart().getStartIndex());
         return trigger;
     }
 

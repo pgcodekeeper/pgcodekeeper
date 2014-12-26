@@ -58,11 +58,8 @@ public abstract class ParserAbstract {
      * @param obj
      * @param startIndex
      */
-    protected void fillObjLocation(PgStatement obj, int startIndex,
-            String schemaName, boolean addedToDB) {
+    protected void fillObjLocation(PgStatement obj, int startIndex) {
         PgObjLocation loc = new PgObjLocation(obj, startIndex, filePath);
-        loc.setSchemaName(schemaName);
-        loc.setAddedToDB(addedToDB);
         db.addObjLocation(loc);
     }
 
