@@ -69,8 +69,10 @@ public class ManualDepciesGroup extends Group{
         Composite grpSelectors = new Composite(this, SWT.NONE);
         GridLayout gl = new GridLayout(2, false);
         gl.marginWidth = gl.marginHeight = 0;
+        gd = new GridData(GridData.FILL_VERTICAL);
+        gd.widthHint = COMBO_SIZE;
         grpSelectors.setLayout(gl);
-        grpSelectors.setLayoutData(new GridData(GridData.FILL_BOTH));
+        grpSelectors.setLayoutData(gd);
         
         // spacer
         new Label(grpSelectors, SWT.NONE).setLayoutData(
@@ -85,9 +87,6 @@ public class ManualDepciesGroup extends Group{
         
         cmbDependants.getCombo().addListener(SWT.Traverse, new ComboReturnKeyListener());
         cmbDependants.getCombo().addModifyListener(new ComboModifyListener());
-        gd = new GridData();
-        gd.widthHint = COMBO_SIZE;
-        cmbDependants.getCombo().setLayoutData(gd);
         new PgStatementAutoCompleteField(cmbDependants.getCombo(), new ComboContentAdapter(), objects);
         
         new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_depends_on);
@@ -99,9 +98,6 @@ public class ManualDepciesGroup extends Group{
         
         cmbDependencies.getCombo().addListener(SWT.Traverse, new ComboReturnKeyListener());
         cmbDependencies.getCombo().addModifyListener(new ComboModifyListener());
-        gd = new GridData();
-        gd.widthHint = COMBO_SIZE;
-        cmbDependencies.getCombo().setLayoutData(gd);
         
         new PgStatementAutoCompleteField(cmbDependencies.getCombo(), new ComboContentAdapter(), objects);
         
