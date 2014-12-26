@@ -15,6 +15,7 @@ public class AntlrParser {
 
         SQLLexer lexer = new SQLLexer(new ANTLRInputStream(new InputStreamReader(inputStream, charsetName)));
         lexer.removeErrorListeners();
+        CustomErrorListener.INSTATANCE.setPath(listener.getPath());
         lexer.addErrorListener(CustomErrorListener.INSTATANCE);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
 

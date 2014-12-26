@@ -50,6 +50,10 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
         this.db = database;
         this.filePath = filePath;
     }
+    
+    Path getPath() {
+        return filePath;
+    }
 
     @Override
     public void exitCreate_table_statement(Create_table_statementContext ctx) {
