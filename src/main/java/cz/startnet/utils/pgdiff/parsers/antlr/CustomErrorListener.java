@@ -25,7 +25,7 @@ public class CustomErrorListener implements ANTLRErrorListener {
             Object offendingSymbol, int line, int charPositionInLine,
             String msg, RecognitionException e) {
         Log.log(Log.LOG_ERROR, "AntLR Error:\n" +
-                path +"line "+line+":"+charPositionInLine+" "+msg);
+                path +" line "+line+":"+charPositionInLine+" "+msg);
     }
 
     @Override
