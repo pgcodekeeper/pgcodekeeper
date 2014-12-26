@@ -8,10 +8,12 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class AlterView extends ParserAbstract {
-private Alter_view_statementContext ctx;
-    public AlterView(Alter_view_statementContext ctx, PgDatabase db, Path filePath) {
+    private Alter_view_statementContext ctx;
+
+    public AlterView(Alter_view_statementContext ctx, PgDatabase db,
+            Path filePath) {
         super(db, filePath);
-        this.ctx=ctx;
+        this.ctx = ctx;
     }
 
     @Override
@@ -21,30 +23,22 @@ private Alter_view_statementContext ctx;
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         }
-        PgView view = new PgView(name, null, db.getDefSearchPath());
         PgView dbView = db.getSchema(schemaName).getView(name);
-        if (ctx.owner_to() != null) {
-            view.setOwner(removeQuotes(ctx.owner_to().name));
-            if (dbView != null) {
-                dbView.setOwner(removeQuotes(ctx.owner_to().name));
-            }
-        }
-        if (ctx.set_def_column() != null) {
-            view.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(ctx.set_def_column().expression));
-            if (dbView != null) {
-                dbView.addColumnDefaultValue(getFullCtxText(ctx.column_name), getFullCtxText(ctx.set_def_column().expression));
-            }
-        }
-        if(ctx.drop_def() != null) {
-            view.removeColumnDefaultValue(getFullCtxText(ctx.column_name));
-            if (dbView != null) {
-                dbView.removeColumnDefaultValue(getFullCtxText(ctx.column_name));
-            }
-        }
-        if (dbView != null) {
+        if (dbView == null) {
+            logError("VIEW", name);
             return null;
         }
-        return view;
+        if (ctx.owner_to() != null) {
+            dbView.setOwner(removeQuotes(ctx.owner_to().name));
+        }
+        if (ctx.set_def_column() != null) {
+            dbView.addColumnDefaultValue(getFullCtxText(ctx.column_name),
+                    getFullCtxText(ctx.set_def_column().expression));
+        }
+        if (ctx.drop_def() != null) {
+            dbView.removeColumnDefaultValue(getFullCtxText(ctx.column_name));
+        }
+        return null;
     }
 
 }

@@ -16,9 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,7 +41,6 @@ import cz.startnet.utils.pgdiff.parsers.PrivilegeParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -280,16 +277,12 @@ public final class PgDumpLoader { //NOPMD
             InputStream inputStream, String charsetName, 
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers, 
             PgDatabase database, Path path) {
-        List<PgObjLocation> alterObjects = new ArrayList<>();
-        AntlrParser parser = new AntlrParser();
         try {
-            parser.parseInputStream(inputStream, charsetName, 
-                    new CustomSQLParserListener(alterObjects, database, path));
+            new AntlrParser().parseInputStream(inputStream, charsetName, 
+                    new CustomSQLParserListener(database, path));
         } catch (IOException e) {
             throw new FileException("Exception while closing dump file", e);
         }
-        AntlrParser.fillDB(database);
-        AntlrParser.fillAlterObjects(alterObjects, database);
         return database;
     }
     /**

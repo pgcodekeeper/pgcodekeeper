@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.parsers.Parser;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
@@ -275,6 +276,20 @@ public abstract class ParserAbstract {
                         : "", getFullCtxText(tablConstr), "");
         constr.setDefinition(getFullCtxText(tablConstr.constr_body()));
         return constr;
+    }
+    
+    protected void logError(String object, String name) {
+        Log.log(Log.LOG_ERROR, new StringBuilder(0).append("Cannot find ")
+                .append(object).append(" in database: ").append(name)
+                .toString());
+    }
+    
+    protected void logSkipedObject(String schema, String object, String name) {
+        Log.log(Log.LOG_ERROR,
+                new StringBuilder(0).append("Cannot find schema ")
+                        .append(schema).append(" in database. ")
+                        .append("Thats why ").append(object).append(" ")
+                        .append(name).append("will be skipped").toString());
     }
 
     private void getColumnConstraint(

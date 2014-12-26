@@ -49,6 +49,10 @@ public class CreateView extends ParserAbstract {
                 view.addColumnName(column);
             }
         }
+        if (db.getSchema(schemaName) == null) {
+            logSkipedObject(schemaName, "VIEW", name);
+            return null;
+        }
         db.getSchema(schemaName).addView(view);
         fillObjLocation(view, ctx.name.getStart().getStartIndex(), schemaName,
                 db.getSchema(schemaName).getView(name) != null);

@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -45,6 +46,18 @@ public class CreateTrigger extends ParserAbstract {
         }
         if (ctx.when_expr != null) {
             trigger.setWhen(ctx.when_expr.getText());
+        }
+        if (db.getSchema(schemaName) == null) {
+            logSkipedObject(schemaName, "TRIGGER", trigger.getTableName());
+            return null;
+        } else if(db.getSchema(schemaName).getTable(trigger.getTableName()) == null) {
+            Log.log(Log.LOG_ERROR,
+                    new StringBuilder().append("TABLE ")
+                            .append(trigger.getTableName())
+                            .append(" not found on schema ").append(schemaName)
+                            .append(" That's why trigger ").append(name)
+                            .append("will be skipped").toString());
+            return null;
         }
         db.getSchema(schemaName).getTable(trigger.getTableName()).addTrigger(trigger);
         fillObjLocation(trigger, ctx.name.getStart().getStartIndex(), schemaName,

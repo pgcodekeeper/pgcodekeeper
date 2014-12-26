@@ -25,13 +25,12 @@ public class AlterFunction extends ParserAbstract {
         PgFunction function = new PgFunction(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
         fillArguments(ctx.function_parameters().function_args(), function);
         PgFunction func= db.getSchema(schemaName).getFunction(function.getSignature());
-        if (ctx.owner_to()!=null) {
-            function.setOwner(ctx.owner_to().name.getText());
-            if (func != null) {
-                func.setOwner(ctx.owner_to().name.getText());
-                return null;
-            }
-            return function;
+        if (func == null) {
+            logError("FUNCTION", name);
+            return null;
+        }
+        if (ctx.owner_to() != null) {
+            func.setOwner(ctx.owner_to().name.getText());
         }
         return null;
     }

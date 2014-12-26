@@ -9,7 +9,9 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class AlterSchema extends ParserAbstract {
     private Alter_schema_statementContext ctx;
-    public AlterSchema(Alter_schema_statementContext ctx, PgDatabase db, Path filePath) {
+
+    public AlterSchema(Alter_schema_statementContext ctx, PgDatabase db,
+            Path filePath) {
         super(db, filePath);
         this.ctx = ctx;
     }
@@ -17,15 +19,13 @@ public class AlterSchema extends ParserAbstract {
     @Override
     public PgStatement getObject() {
         String name = getName(ctx.schema_with_name().name);
-        PgSchema schema = new PgSchema(name, getFullCtxText(ctx.getParent()));
+        PgSchema sch = db.getSchema(name);
+        if (sch == null) {
+            logError("SCHEMA", name);
+            return null;
+        }
         if (ctx.owner_to() != null) {
-            schema.setOwner(removeQuotes(ctx.owner_to().name));
-            PgSchema sch = db.getSchema(name);
-            if (sch != null) {
-                sch.setOwner(removeQuotes(ctx.owner_to().name));
-                return null;
-            }
-            return schema;
+            sch.setOwner(removeQuotes(ctx.owner_to().name));
         }
         return null;
     }
