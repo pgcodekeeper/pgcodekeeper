@@ -40,8 +40,6 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class ManualDepciesGroup extends Group{
     
-    private static final int COMBO_SIZE = 250;
-
     private final List<Entry<PgStatement, PgStatement>> depcies;
     
     private final ComboViewer cmbDependants, cmbDependencies;
@@ -85,9 +83,7 @@ public class ManualDepciesGroup extends Group{
         
         cmbDependants.getCombo().addListener(SWT.Traverse, new ComboReturnKeyListener());
         cmbDependants.getCombo().addModifyListener(new ComboModifyListener());
-        gd = new GridData();
-        gd.widthHint = COMBO_SIZE;
-        cmbDependants.getCombo().setLayoutData(gd);
+        
         new PgStatementAutoCompleteField(cmbDependants.getCombo(), new ComboContentAdapter(), objects);
         
         new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_depends_on);
@@ -99,9 +95,6 @@ public class ManualDepciesGroup extends Group{
         
         cmbDependencies.getCombo().addListener(SWT.Traverse, new ComboReturnKeyListener());
         cmbDependencies.getCombo().addModifyListener(new ComboModifyListener());
-        gd = new GridData();
-        gd.widthHint = COMBO_SIZE;
-        cmbDependencies.getCombo().setLayoutData(gd);
         
         new PgStatementAutoCompleteField(cmbDependencies.getCombo(), new ComboContentAdapter(), objects);
         
