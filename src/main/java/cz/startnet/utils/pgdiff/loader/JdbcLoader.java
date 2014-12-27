@@ -33,6 +33,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView.SelectQueryVisitor;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -393,6 +394,14 @@ public class JdbcLoader implements PgCatalogStrings {
                 definition.append("FOREIGN KEY (").append(getStringListAsString(columnNames, ", "));
                 definition.append(") REFERENCES " + res.getString("confrelid_name") + "(");
                 definition.append(getStringListAsString(referencedColumnNames, ", ")).append(")");
+                
+                for (String colName : referencedColumnNames){
+                    GenericColumn referencedColumn = new GenericColumn(
+                            res.getString("foreign_schema_name"), 
+                            res.getString("foreign_table_name"), 
+                            colName);
+                    ((PgForeignKey)c).addForeignColumn(referencedColumn);
+                }
                 
                 switch (res.getString("confmatchtype")){
                     case "f":
