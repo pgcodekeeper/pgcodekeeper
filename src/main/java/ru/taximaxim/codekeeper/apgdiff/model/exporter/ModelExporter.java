@@ -157,8 +157,11 @@ public class ModelExporter {
             deleteFileIfExists(outDir, getRelativeFilePath(st, true), el);
             
             // delete schema's folder content
-            Log.log(Log.LOG_INFO, "Deleting schema folder for schema " + el.getName());
-            deleteRecursive(new File(outDir, getRelativeFilePath(st, false).toString()));
+            File schemaFolder = new File(outDir, getRelativeFilePath(st, false).toString());
+            if (schemaFolder.exists()){
+                Log.log(Log.LOG_INFO, "Deleting schema folder for schema " + el.getName());
+                deleteRecursive(schemaFolder);                
+            }
             break;
         
         case FUNCTION:
