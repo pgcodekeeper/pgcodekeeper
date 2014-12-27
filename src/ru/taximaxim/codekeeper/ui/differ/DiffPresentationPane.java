@@ -86,7 +86,9 @@ public abstract class DiffPresentationPane extends Composite {
     protected DbSource dbTarget;
     protected TreeDiffer treeDiffer;
 
-    private IPreferenceStore mainPrefs;
+    protected IPreferenceStore mainPrefs;
+    protected final PgDbProject proj;
+    
     private LocalResourceManager lrm;
 
     private void setDbSource(DbSource dbSource) {
@@ -120,6 +122,7 @@ public abstract class DiffPresentationPane extends Composite {
         this.setLayout(new GridLayout());
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         this.isProjSrc = projIsSrc;
+        this.proj = proj;
         this.mainPrefs = mainPrefs;
         final IEclipsePreferences projProps = proj.getPrefs();
 
