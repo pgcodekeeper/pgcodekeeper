@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.editors;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,23 +27,16 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.egit.ui.internal.repository.RepositoriesView;
-import org.eclipse.egit.ui.internal.repository.tree.RepositoryTreeNode;
-//import org.eclipse.egit.ui.internal.repository.RepositoriesView;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
-import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -66,7 +58,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.part.ISetSelectionTarget;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageSelectionProvider;
@@ -104,8 +95,6 @@ import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-
-import org.eclipse.jdt.ui.JavaUI;
 
 public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourceChangeListener {
 
@@ -248,9 +237,7 @@ class CommitPage extends DiffPresentationPane {
             // project explorer
             IPageLayout.ID_PROJECT_EXPLORER,
             // package explorer
-            JavaUI.ID_PACKAGES, 
-            // org.eclipse.egit.ui.internal.repository.RepositoriesView.VIEW_ID
-            "org.eclipse.egit.ui.RepositoriesView" //$NON-NLS-1$
+            JavaUI.ID_PACKAGES
     };
     
     private LocalResourceManager lrm;
@@ -423,27 +410,13 @@ class CommitPage extends DiffPresentationPane {
                     Log.log(Log.LOG_WARNING, "Any of the following views should be open "
                             + "to execute command " + COMMAND.COMMIT_COMMAND_ID + ":\n"
                                     + "\tProject explorer\n"
-                                    + "\tPackage explorer\n"
-                                    + "\tEGit Repository view");
+                                    + "\tPackage explorer\n");
                     return;
                 }
                 
-                // focus on project explorer and select current project
+                // focus on view and select current project
                 page.activate(view);
                 ((ISetSelectionTarget)view).selectReveal(new StructuredSelection(proj.getProject()));
-
-                /*
-                 * attempt to selectReveal a repository (expected git repository view)
-                 * continue in AbstractTreeViewer.setSelectionToWidget
-                 * where internalExpand is called and returns null for now
-                 */
-/*                try {
-                    Repository repo = new FileRepositoryBuilder().setGitDir(new File(proj.getPathToProject().toFile(), ".git")).findGitDir().build();
-                    ((CommonNavigator)view).selectReveal(new StructuredSelection(repo));
-                } catch (IOException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                }*/
                 
                 // execute command
                 try {
