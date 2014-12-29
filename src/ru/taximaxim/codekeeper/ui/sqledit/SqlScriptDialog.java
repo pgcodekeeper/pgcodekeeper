@@ -429,6 +429,13 @@ public class SqlScriptDialog extends TrayDialog {
             
             if (btnJdbcToggle.getSelection()){
                 Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
+                
+                final String jdbcHost = picker.getTxtDbHost().getText();
+                final int jdbcPort = Integer.valueOf(picker.getTxtDbPort().getText());
+                final String jdbcUser = picker.getTxtDbUser().getText();
+                final String jdbcPass = picker.getTxtDbPass().getText();
+                final String jdbcDbName = picker.getTxtDbName().getText();
+                
                 launcher = new Runnable() {
                     
                     @Override
@@ -436,11 +443,7 @@ public class SqlScriptDialog extends TrayDialog {
                         String output = Messages.sqlScriptDialog_script_has_not_been_run_yet;
                         try{
                             JdbcConnector connector = new JdbcConnector(
-                                    picker.getTxtDbHost().getText(), 
-                                    Integer.valueOf(picker.getTxtDbPort().getText()),
-                                    picker.getTxtDbUser().getText(), 
-                                    picker.getTxtDbPass().getText(), 
-                                    picker.getTxtDbName().getText(), 
+                                    jdbcHost, jdbcPort, jdbcUser, jdbcPass, jdbcDbName, 
                                     scriptFileEncoding, connectionTimezone);
                             output = new JdbcRunner(connector).runScript(textRetrieved);
                             if (mainPrefs.getBoolean(DB_UPDATE_PREF.USE_PSQL_DEPCY)) {

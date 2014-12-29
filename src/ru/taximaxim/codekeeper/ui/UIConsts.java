@@ -62,16 +62,13 @@ public interface UIConsts {
             return sourceName;
         }
         public static DBSources getEnum(String value) {
-            // Возвращать Дамп если тип соурса был none
-            if (value.equalsIgnoreCase("none")) { //$NON-NLS-1$
-                return SOURCE_TYPE_DUMP;
-            }
             for (DBSources v : values()) {
                 if (v.sourceName.equalsIgnoreCase(value)) {
                     return v;
                 }
             }
-            throw new IllegalArgumentException("No such DBSource in enum"); //$NON-NLS-1$
+            // источником по умолчанию для всего что не попадает в enum 
+            return SOURCE_TYPE_DUMP;
         }
     }
     
