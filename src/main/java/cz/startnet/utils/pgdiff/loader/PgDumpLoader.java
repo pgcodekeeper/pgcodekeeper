@@ -16,11 +16,14 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.parsers.AlterFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.AlterSchemaParser;
@@ -41,6 +44,8 @@ import cz.startnet.utils.pgdiff.parsers.PrivilegeParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -316,7 +321,6 @@ public final class PgDumpLoader { //NOPMD
                 ignoreSlonyTriggers, dirs, db, parser);
 
         File schemasCommonDir = new File(dir, ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
-
         // skip walking SCHEMA folder if it does not exist
         if (!schemasCommonDir.exists()){
             return db;
@@ -324,7 +328,8 @@ public final class PgDumpLoader { //NOPMD
         
         // step 2
         // read out schemas names, and work in loop on each
-        for (File schemaFolder : schemasCommonDir.listFiles()) {
+        for (PgSchema schema : db.getSchemas()) {
+            File schemaFolder = new File(schemasCommonDir, ModelExporter.getExportedFilename(schema));
             if (schemaFolder.isDirectory()) {
                 walkSubdirsRunCore(schemaFolder, charsetName, outputIgnoredStatements,
                         ignoreSlonyTriggers, DIR_LOAD_ORDER, db, parser);
