@@ -73,7 +73,8 @@ public class DepcyTreeExtenderTest {
                     {1},
                     {2},
                     {3},
-                    {4}
+                    {4},
+                    {5}
 // SONAR-ON
                 });
     }
@@ -85,7 +86,8 @@ public class DepcyTreeExtenderTest {
         new Predefined1(),
         new Predefined2(),
         new Predefined3(),
-        new Predefined4()
+        new Predefined4(),
+        new Predefined5()
     };
     
     public DepcyTreeExtenderTest(final int fileIndex) {
@@ -98,6 +100,21 @@ public class DepcyTreeExtenderTest {
         PgDatabase dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
                 ApgdiffConsts.UTF_8, false, false, ParserClass.LEGACY);
+        
+        TreeElement filtered = TREES[fileIndex - 1].getFilteredTree();
+        
+        DepcyTreeExtender dte = new DepcyTreeExtender(dbTarget, dbTarget, filtered);
+        
+        Set<PgStatement> depcy = dte.getDependenciesOfNew();
+        Set<PgStatement> depcyPredefined = TREES[fileIndex - 1].getDepcySet(dbTarget);
+        assertTrue("List of dependencies is not as expected", depcy.equals(depcyPredefined));
+    }
+    
+    @Test
+    public void testGetDependenciesOfNewAntlr() {
+        PgDatabase dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
+                DepcyTreeExtenderTest.class.getResourceAsStream(filename),
+                ApgdiffConsts.UTF_8, false, false, ParserClass.ANTLR);
         
         TreeElement filtered = TREES[fileIndex - 1].getFilteredTree();
         
@@ -695,6 +712,84 @@ class Predefined4 extends TreeElementCreator{
     @Override
     public HashSet<TreeElement> getConflicting(TreeElement copy) {
         return new Predefined3().getConflicting(copy);
+    }
+}
+
+class Predefined5 extends TreeElementCreator{
+
+    @Override
+    public TreeElement getFilteredTree() {
+        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
+        root.addChild(database);
+        
+        TreeElement sourceOnly = new TreeElement("Source only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.RIGHT);
+        database.addChild(sourceOnly);
+        
+        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.BOTH);
+        sourceOnly.addChild(contSchemas);
+        
+        TreeElement republicSchema = new TreeElement("republic", DbObjType.SCHEMA, null, DiffSide.BOTH);
+        contSchemas.addChild(republicSchema);
+        
+        TreeElement contTables = new TreeElement("Tables", DbObjType.CONTAINER, DbObjType.TABLE, DiffSide.BOTH);
+        republicSchema.addChild(contTables);
+        
+        TreeElement table = new TreeElement("t_test2foreign", DbObjType.TABLE, null, DiffSide.RIGHT);
+        contTables.addChild(table);
+        
+        TreeElement consCont = new TreeElement("Constraints", DbObjType.CONTAINER, null, DiffSide.RIGHT);
+        table.addChild(consCont);
+        
+        TreeElement cons = new TreeElement("fk_t_test2foreign", DbObjType.CONSTRAINT, null, DiffSide.RIGHT);
+        consCont.addChild(cons);
+        
+        return root;
+    }
+
+    @Override
+    public Set<PgStatement> getDepcySet(PgDatabase db) {
+        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
+        PgTable table = schema.getTable("t_test2");
+        PgSchema schemaRep = db.getSchema("republic");
+        PgTable tableConstr = schemaRep.getTable("t_test2foreign");
+        PgColumn col = table.getColumn("c_name_t_test2");
+        return new HashSet<>(Arrays.asList(db, schema, table, tableConstr, schemaRep, col));
+    }
+   
+    @Override
+    public TreeElement getExtraElement() {
+        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        return root;
+    }
+
+    @Override
+    public Set<TreeElement> getExtraElementInTree(TreeElement filtered) {
+        return new HashSet<>(Arrays.asList(filtered));
+    }
+
+    @Override
+    public TreeElement getFilteredTreeForDeletion() {
+        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        return root;
+    }
+
+    @Override
+    public TreeElement getFilteredCopy() {
+        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        return root;
+    }
+
+    @Override
+    public TreeElement getFilteredTreeForConflicting() {
+        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        return root;
+    }
+
+    @Override
+    public HashSet<TreeElement> getConflicting(TreeElement copy) {
+        return new HashSet<>();
     }
 }
 // SONAR-ON

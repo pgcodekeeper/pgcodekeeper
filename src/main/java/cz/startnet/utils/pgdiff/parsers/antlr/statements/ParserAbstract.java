@@ -21,9 +21,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -268,12 +270,26 @@ public abstract class ParserAbstract {
     }
 
     protected PgConstraint getTableConstraint(
-            Constraint_commonContext tablConstr) {
+            Constraint_commonContext ctx) {
         PgConstraint constr;
+        if (ctx.constr_body().FOREIGN() != null) {
+            constr = new PgForeignKey(ctx.constraint_name != null ? removeQuotes(ctx.constraint_name)
+                    : "", "", db.getDefSearchPath());
+            String tableName = getName(ctx.constr_body().table_references().reftable);
+            String schemaName = getSchemaName(ctx.constr_body().table_references().reftable);
+            if (schemaName == null) {
+                schemaName = db.getDefaultSchema().getName();
+            }
+            for (Schema_qualified_nameContext name : ctx.constr_body().table_references().column_references().names_references().name) {
+                ((PgForeignKey)constr).addForeignColumn(new GenericColumn(schemaName, tableName,
+                        ParserUtils.getObjectName(getFullCtxText(name))));
+            }
+        } else {
         constr = new PgConstraint(
-                tablConstr.constraint_name != null ? removeQuotes(tablConstr.constraint_name)
-                        : "", getFullCtxText(tablConstr), "");
-        constr.setDefinition(getFullCtxText(tablConstr.constr_body()));
+                ctx.constraint_name != null ? removeQuotes(ctx.constraint_name)
+                        : "", getFullCtxText(ctx), "");
+        }
+        constr.setDefinition(getFullCtxText(ctx.constr_body()));
         return constr;
     }
 
