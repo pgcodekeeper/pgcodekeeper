@@ -127,6 +127,6 @@ public class PgDbParser {
         String dirPath = Paths.get(locationURI).toAbsolutePath().toString();
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(dirPath,
                 "UTF-8", false, false, ParserClass.ANTLR);
-        objLocations.addAll(db.getObjLocations());
+        objLocations.addAll(db.getObjDefinitions());
     }
 }
