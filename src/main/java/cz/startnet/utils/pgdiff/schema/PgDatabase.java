@@ -32,8 +32,12 @@ public class PgDatabase extends PgStatement {
     private final List<String> ignoredStatements = new ArrayList<>();
     private final List<String> ignoredDataStatements = new ArrayList<>();
     
+    // Contains object definitions
     // Exclude duplicate and keep order
-    private final Set<PgObjLocation> objLocations = new LinkedHashSet<>(); 
+    private final Set<PgObjLocation> objDefinitions = new LinkedHashSet<>();
+    // СОдержит ссылки на объекты
+    private final List<PgObjLocation> objRefecences = new ArrayList<>();
+    
     @Override
     public DbObjType getStatementType() {
         return DbObjType.DATABASE;
@@ -74,16 +78,24 @@ public class PgDatabase extends PgStatement {
         ignoredDataStatements.add(ignoredDataStatement);
     }
     
-    public boolean addObjLocation(PgObjLocation objLocation) {
-        return objLocations.add(objLocation);
+    public boolean addObjDefinition(PgObjLocation definition) {
+        return objDefinitions.add(definition);
+    }
+    
+    public boolean addObjReference(PgObjLocation reference) {
+        if (!objRefecences.contains(reference)) {
+            objRefecences.add(reference);
+            return true;
+        }
+        return false;
     }
     /**
      * May return NULL if objects doesn't determines location
      * @param objName object name
      * @return location or null 
      */
-    public PgObjLocation getObjLocation(String objName) {
-        for (PgObjLocation location : objLocations) {
+    public PgObjLocation getObjDefinition(String objName) {
+        for (PgObjLocation location : objDefinitions) {
             if (location.getObjName().equals(objName)) {
                 return location;
             }
@@ -91,8 +103,8 @@ public class PgDatabase extends PgStatement {
         return null;
     }
     
-    public Set<PgObjLocation> getObjLocations() {
-        return Collections.unmodifiableSet(objLocations);
+    public Set<PgObjLocation> getObjDefinitions() {
+        return Collections.unmodifiableSet(objDefinitions);
     }
     
     public List<PgStatement> getObjectsByName(String objName) {

@@ -41,7 +41,7 @@ public class CreateIndex extends ParserAbstract {
                 return null;
             }
             db.getSchema(schemaName).getTable(ind.getTableName()).addIndex(ind);
-            fillObjLocation(ind, ctx.name.getStart().getStartIndex());
+            fillObjLocation(schemaName, ind, ctx.name.getStart().getStartIndex());
         }
         return ind;
     }

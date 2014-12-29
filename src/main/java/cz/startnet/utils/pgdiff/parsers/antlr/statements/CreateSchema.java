@@ -38,7 +38,7 @@ public class CreateSchema extends ParserAbstract {
         } else {
             db.tryReplacePublicDef((PgSchema) schema);
         }
-        fillObjLocation(schema, ctx.name.getStart().getStartIndex());
+        fillObjLocation(null, schema, ctx.name.getStart().getStartIndex());
         return schema;
     }
 

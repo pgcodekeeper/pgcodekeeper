@@ -9,34 +9,40 @@ public class PgObjLocation implements Serializable {
      * 
      */
     private static final long serialVersionUID = -7110926210150404390L;
-    private transient PgStatement obj;
-    private String objName;
-    private String filePath;
+    private GenericColumn objName;
     private int offset;
-    
-    public PgStatement getObj() {
-        return obj;
-    }
+    private String filePath;
     
     public String getObjName() {
-        return objName;
+        return objName.table != null ? objName.table : "";
     }
     
     public int getOffset() {
         return offset;
     }
+    // непонятно какая длинна должна быть)
+    // свитчить по типу в случае с колонкой?
     public int getObjLength() {
-        return objName.length();
+        int length = 0;
+//        if (objName.schema != null) {
+//            length += objName.schema.length(); 
+//        }
+        if (objName.table != null) {
+            length += objName.table.length(); 
+        }
+//        if (objName.column != null) {
+//            length += objName.table.length(); 
+//        }
+        return length;
     }
 
     public Path getFilePath() {
         return Paths.get(filePath);
     }
 
-    public PgObjLocation(PgStatement obj, int offset,
+    public PgObjLocation(String schema, String name, String column, int offset,
             Path filePath) {
-        this.obj = obj;
-        objName = obj != null ? obj.getBareName() : "";
+        this.objName = new GenericColumn(schema, name, column);
         this.offset = offset;
         this.filePath = filePath.toString();
     }
@@ -45,9 +51,9 @@ public class PgObjLocation implements Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof PgObjLocation) {
             PgObjLocation loc = (PgObjLocation)obj;
-            return loc.getObj().equals(getObj())
-                    && loc.getObjName() == getObjName()
-                    && loc.getOffset() == getOffset();
+            return loc.getObjName() == getObjName()
+                    && loc.getOffset() == getOffset()
+                    && loc.getFilePath().equals(getFilePath());
         }
         return false;
     }
@@ -56,7 +62,6 @@ public class PgObjLocation implements Serializable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((obj == null) ? 0 : obj.hashCode());
         result = prime * result + ((objName == null) ? 0 : objName.hashCode());
         result = prime * result + offset;
         result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
@@ -65,6 +70,6 @@ public class PgObjLocation implements Serializable {
     
     @Override
     public String toString() {
-        return obj + " " + filePath + " " + offset + obj.getBareName().length();
+        return getObjName() + " " + filePath + " " + offset + getObjLength();
     }
 }
