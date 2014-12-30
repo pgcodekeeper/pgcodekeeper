@@ -41,7 +41,6 @@ import cz.startnet.utils.pgdiff.parsers.ParserException;
 import cz.startnet.utils.pgdiff.parsers.PrivilegeParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
-import cz.startnet.utils.pgdiff.parsers.antlr.IdentifierSearcher;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 
@@ -282,8 +281,7 @@ public final class PgDumpLoader { //NOPMD
             PgDatabase database, Path path) {
         try {
             new AntlrParser().parseInputStream(inputStream, charsetName, 
-                    new CustomSQLParserListener(database, path),
-                    new IdentifierSearcher(database, path));
+                    new CustomSQLParserListener(database, path));
         } catch (IOException e) {
             throw new FileException("Exception while closing dump file", e);
         }

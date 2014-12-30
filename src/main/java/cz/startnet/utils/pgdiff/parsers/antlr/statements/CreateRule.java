@@ -64,17 +64,16 @@ public class CreateRule extends ParserAbstract {
 
         
         for (Schema_qualified_nameContext name : obj_name) {
-            if (addToDB(name, type, new PgPrivilege(ctx.REVOKE() != null,
-                    getFullCtxText(ctx.body_rule), getFullCtxText(ctx)))) {
-            }
+            addToDB(name, type, new PgPrivilege(ctx.REVOKE() != null,
+                    getFullCtxText(ctx.body_rule), getFullCtxText(ctx)));
         }
 
         return null;
     }
 
-    private boolean addToDB(Schema_qualified_nameContext name, DbObjType type, PgPrivilege pgPrivilege) {
+    private PgStatement addToDB(Schema_qualified_nameContext name, DbObjType type, PgPrivilege pgPrivilege) {
         if (type == null) {
-            return true;
+            return null;
         }
         String firstPart = getName(name);
         String secondPart = getTableName(name);
@@ -111,8 +110,9 @@ public class CreateRule extends ParserAbstract {
         }
         if (statement != null) {
             statement.addPrivilege(pgPrivilege);
-            return false;
+            addObjReference(schemaName, statement, name.getStart().getStartIndex());
+            return statement;
         }
-        return true;
+        return null;
     }
 }

@@ -34,7 +34,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
  */
 public abstract class ParserAbstract {
     protected final PgDatabase db;
-    private final Path filePath;
+    protected final Path filePath;
 
     public ParserAbstract(PgDatabase db, Path filePath) {
         this.db = db;
@@ -58,11 +58,19 @@ public abstract class ParserAbstract {
      * @param obj
      * @param startIndex
      */
-    protected void fillObjLocation(String schemaName, PgStatement obj, int startIndex) {
+    protected void fillObjDefinition(String schemaName, PgStatement obj, int startIndex) {
         PgObjLocation loc = new PgObjLocation(schemaName, obj.getBareName(),
                 null, startIndex, filePath);
         loc.setObjType(obj.getStatementType());
         db.addObjDefinition(loc);
+        db.addObjReference(loc);
+    }
+    
+    protected void addObjReference(String schemaName, PgStatement obj, int startIndex) {
+        PgObjLocation loc = new PgObjLocation(schemaName, obj.getBareName(),
+                null, startIndex, filePath);
+        loc.setObjType(obj.getStatementType());
+        db.addObjReference(loc);
     }
 
     /**

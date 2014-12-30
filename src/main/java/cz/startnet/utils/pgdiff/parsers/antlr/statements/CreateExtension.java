@@ -28,7 +28,7 @@ public class CreateExtension extends ParserAbstract {
             ext.setVersion(ctx.version.getText());
         }
         db.addExtension(ext);
-        fillObjLocation(getDefSchemaName(), ext, ctx.name.getStart().getStartIndex());
+        fillObjDefinition(null, ext, ctx.name.getStart().getStartIndex());
         return ext;
     }
 

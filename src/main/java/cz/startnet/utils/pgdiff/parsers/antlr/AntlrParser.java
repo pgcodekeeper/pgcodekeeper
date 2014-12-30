@@ -13,8 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
 public class AntlrParser {
 
     public void parseInputStream(InputStream inputStream,
-            String charsetName, CustomSQLParserListener listener,
-            IdentifierSearcher identifierListener) throws IOException {
+            String charsetName, CustomSQLParserListener listener) throws IOException {
 
         SQLLexer lexer = new SQLLexer(new ANTLRInputStream(new InputStreamReader(inputStream, charsetName)));
         lexer.removeErrorListeners();
@@ -28,8 +27,6 @@ public class AntlrParser {
         ParseTreeWalker walker = new ParseTreeWalker();
         SqlContext ctx = parser.sql();
         walker.walk(listener, ctx);
-        
-        walker.walk(identifierListener, ctx);
     }
     
 }

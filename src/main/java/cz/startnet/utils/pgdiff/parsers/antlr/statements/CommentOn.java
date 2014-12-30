@@ -31,6 +31,7 @@ public class CommentOn extends ParserAbstract {
             fillArguments(ctx.function_args(), func);
             name = func.getSignature();
             db.getSchema(schemaName).getFunction(name).setComment(comment);
+            addObjReference(schemaName, func, ctx.name.getStart().getStartIndex());
             //column
         } else if (ctx.COLUMN() != null){
             String tableName = getTableName(ctx.name);
@@ -40,12 +41,15 @@ public class CommentOn extends ParserAbstract {
             PgTable table = db.getSchema(schemaName).getTable(tableName);
             if (table == null) {
                 db.getSchema(schemaName).getView(tableName).addColumnComment(name, comment);
+                addObjReference(schemaName, db.getSchema(schemaName).getView(tableName), ctx.name.getStart().getStartIndex());
             } else {
                 db.getSchema(schemaName).getTable(tableName).getColumn(name).setComment(comment);
+                addObjReference(schemaName, db.getSchema(schemaName).getTable(tableName), ctx.name.getStart().getStartIndex());
             }
             //extension
         }else if (ctx.EXTENSION() != null) {
             db.getExtension(name).setComment(comment);
+            addObjReference(null, db.getExtension(name), ctx.name.getStart().getStartIndex());
             //constraint
         } else if (ctx.CONSTRAINT() != null) {
             String tableName = getName(ctx.table_name);
@@ -54,6 +58,7 @@ public class CommentOn extends ParserAbstract {
         } else if (ctx.TRIGGER() != null) {
             String tableName = getName(ctx.table_name);
             db.getSchema(schemaName).getTable(tableName).getTrigger(name).setComment(comment);
+            addObjReference(null, db.getSchema(schemaName).getTable(tableName).getTrigger(name), ctx.name.getStart().getStartIndex());
             // database
         } else if (ctx.DATABASE() !=null) {
             db.setComment(comment);
@@ -84,19 +89,24 @@ public class CommentOn extends ParserAbstract {
                 }
             } else {
                 index.setComment(comment);
+                addObjReference(null, index, ctx.name.getStart().getStartIndex());
             }
             //schema
         } else if (ctx.SCHEMA() !=null) {
             db.getSchema(name).setComment(comment);
+            addObjReference(null, db.getSchema(name), ctx.name.getStart().getStartIndex());
             // sequence
         } else if (ctx.SEQUENCE() != null) {
             db.getSchema(schemaName).getSequence(name).setComment(comment);
+            addObjReference(null, db.getSchema(schemaName).getSequence(name), ctx.name.getStart().getStartIndex());
             // table
         } else if (ctx.TABLE() != null) {
             db.getSchema(schemaName).getTable(name).setComment(comment);
+            addObjReference(null, db.getSchema(schemaName).getTable(name), ctx.name.getStart().getStartIndex());
             // view
         } else if (ctx.VIEW() != null) {
             db.getSchema(schemaName).getView(name).setComment(comment);
+            addObjReference(null, db.getSchema(schemaName).getView(name), ctx.name.getStart().getStartIndex());
         }
         return null;
     }
