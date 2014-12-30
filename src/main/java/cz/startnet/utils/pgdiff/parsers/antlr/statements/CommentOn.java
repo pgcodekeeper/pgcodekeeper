@@ -31,7 +31,7 @@ public class CommentOn extends ParserAbstract {
             fillArguments(ctx.function_args(), func);
             name = func.getSignature();
             db.getSchema(schemaName).getFunction(name).setComment(comment);
-            addObjReference(schemaName, func, ctx.name.getStart().getStartIndex());
+            addObjReference(schemaName, db.getSchema(schemaName).getFunction(name), ctx.name.getStart().getStartIndex());
             //column
         } else if (ctx.COLUMN() != null){
             String tableName = getTableName(ctx.name);

@@ -52,6 +52,8 @@ public class CreateRule extends ParserAbstract {
                                 new PgPrivilege(ctx.REVOKE() != null,
                                         getFullCtxText(ctx.body_rule),
                                         getFullCtxText(ctx)));
+                addObjReference(getDefSchemaName(), db.getSchema(getDefSchemaName())
+                        .getFunction(func.getSignature()), functparam.name.getStart().getStartIndex());
             }
         } else if (ctx.body_rule.on_large_object() != null) {
             obj_name = ctx.body_rule.on_large_object().obj_name.name;
