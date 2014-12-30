@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.viewers.ISelection;
@@ -14,6 +17,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
@@ -24,6 +28,9 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -68,7 +75,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
                         IDocument document = fDocumentProvider
                                 .getDocument(newInput);
                         if (document != null) {
-                            // document.addPositionCategory(SEGMENTS);
+                             //document.addPositionCategory("SEGMENTS");
                             // document.addPositionUpdater(fPositionUpdater);
                             // parse(document);
                         }
@@ -77,8 +84,6 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
 
                 @Override
                 public void dispose() {
-                    // TODO Auto-generated method stub
-
                 }
 
                 @Override
@@ -87,7 +92,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
                     if (inputElement instanceof FileEditorInput) {
                         FileEditorInput fi = (FileEditorInput)inputElement;
                         for (PgObjLocation loc : parser.getObjectByPath(fi.getFile().getLocation().toFile().toPath())) {
-                            segments.add(new Segments(loc.getOffset(), loc.getObjLength(), loc.getObjName()));
+                            segments.add(new Segments(loc));
                         }
                     }
                     return segments.toArray();
@@ -95,24 +100,36 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
 
                 @Override
                 public Object[] getChildren(Object parentElement) {
-                    // TODO Auto-generated method stub
                     return null;
                 }
 
                 @Override
                 public Object getParent(Object element) {
-                    // TODO Auto-generated method stub
                     return null;
                 }
 
                 @Override
                 public boolean hasChildren(Object element) {
-                    // TODO Auto-generated method stub
                     return false;
                 }
             });
 
-            viewer.setLabelProvider(new LabelProvider());
+            viewer.setLabelProvider(new LabelProvider() {
+                private LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources());
+                @Override
+                public Image getImage(Object element) {
+                    if (element instanceof Segments) {
+                        Segments seg = (Segments)element;
+                        ImageDescriptor iObj = ImageDescriptor.createFromURL(
+                                Activator.getContext().getBundle().getResource(
+                                        FILE.ICONPGADMIN 
+                                        + seg.getType().toString().toLowerCase() 
+                                        + ".png")); //$NON-NLS-1$
+                        return lrm.createImage(iObj);
+                    }
+                    return super.getImage(element);
+                }
+            });
             viewer.addSelectionChangedListener(this);
 
             if (fInput != null)
@@ -143,6 +160,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
     
     private class Segments extends Position {
         private String name;
+        private DbObjType type;
 
         /**
          * Creates a new segment covering the given range.
@@ -150,9 +168,14 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
          * @param offset the offset of the segment
          * @param length the length of the segment
          */
-        public Segments(int offset, int length, String name) {
-            super(offset, length);
-            this.name = name;
+        public Segments(PgObjLocation loc) {
+            super(loc.getOffset(), loc.getObjLength());
+            this.name = loc.getObjName();
+            this.type = loc.getObjType();
+        }
+        
+        public DbObjType getType() {
+            return type;
         }
         
         @Override
