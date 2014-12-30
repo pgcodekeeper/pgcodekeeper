@@ -32,6 +32,7 @@ public class AlterFunction extends ParserAbstract {
         if (ctx.owner_to() != null) {
             func.setOwner(ctx.owner_to().name.getText());
         }
+        addObjReference(schemaName, func, ctx.function_parameters().name.getStart().getStartIndex());
         return null;
     }
 

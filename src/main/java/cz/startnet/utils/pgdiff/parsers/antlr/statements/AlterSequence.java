@@ -35,6 +35,7 @@ private Alter_sequence_statementContext ctx;
                 sequence.setOwnedBy(getFullCtxText(seqbody.col_name));
             }
         }
+        addObjReference(schemaName, sequence, ctx.name.getStart().getStartIndex());
         return null;
     }
 

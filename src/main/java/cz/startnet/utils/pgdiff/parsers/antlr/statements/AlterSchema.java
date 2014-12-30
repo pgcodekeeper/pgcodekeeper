@@ -27,6 +27,7 @@ public class AlterSchema extends ParserAbstract {
         if (ctx.owner_to() != null) {
             sch.setOwner(removeQuotes(ctx.owner_to().name));
         }
+        addObjReference(null, sch, ctx.schema_with_name().name.getStart().getStartIndex());
         return null;
     }
 

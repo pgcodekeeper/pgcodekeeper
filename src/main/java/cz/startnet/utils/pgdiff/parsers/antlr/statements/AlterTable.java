@@ -94,6 +94,7 @@ public class AlterTable extends ParserAbstract {
                 tabl.addSequence(seq);
             }
         }
+        addObjReference(schemaName, tabl, ctx.name.getStart().getStartIndex());
         return null;
     }
 
