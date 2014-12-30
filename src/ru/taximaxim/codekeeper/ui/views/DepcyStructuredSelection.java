@@ -6,22 +6,22 @@ import java.util.List;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 
-import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
+import ru.taximaxim.codekeeper.ui.differ.DbSource;
 
 public class DepcyStructuredSelection implements IStructuredSelection {
-    private DepcyGraph dgSource;
-    private DepcyGraph dgTarget;
+    private DbSource dbSource;
+    private DbSource dbTarget;
     private List<Object> selection;
     
-    public DepcyStructuredSelection(DepcyGraph dgSource, DepcyGraph dgTarget, Object[] sel) {
-        this.dgSource = dgSource;
-        this.dgTarget = dgTarget;
+    public DepcyStructuredSelection(DbSource dbSource, DbSource dbTarget, Object[] sel) {
+        this.dbSource = dbSource;
+        this.dbTarget = dbTarget;
         this.selection = Arrays.asList(sel);
     }
     
     @Override
     public boolean isEmpty() {
-        return selection.isEmpty() || dgSource == null || dgTarget == null;
+        return selection.isEmpty() || dbSource == null || dbTarget == null;
     }
 
     @Override
@@ -49,11 +49,11 @@ public class DepcyStructuredSelection implements IStructuredSelection {
         return selection;
     }
 
-    public DepcyGraph getSourceDepcyGraph(){
-        return dgSource;
+    public DbSource getSource(){
+        return dbSource;
     }
     
-    public DepcyGraph getTargetDepcyGraph(){
-        return dgTarget;
+    public DbSource getTarget(){
+        return dbTarget;
     }
 }
