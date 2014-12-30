@@ -107,6 +107,10 @@ public class PgDatabase extends PgStatement {
         return Collections.unmodifiableSet(objDefinitions);
     }
     
+    public List<PgObjLocation> getObjReferences() {
+        return Collections.unmodifiableList(objRefecences);
+    }
+    
     public List<PgStatement> getObjectsByName(String objName) {
         List<PgStatement> result = new ArrayList<>();
         result.add(getObjByName(getSchemas(), objName));

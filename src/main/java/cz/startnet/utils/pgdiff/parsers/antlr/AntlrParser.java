@@ -8,10 +8,13 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.SqlContext;
+
 public class AntlrParser {
 
     public void parseInputStream(InputStream inputStream,
-            String charsetName, CustomSQLParserListener listener) throws IOException {
+            String charsetName, CustomSQLParserListener listener,
+            IdentifierSearcher identifierListener) throws IOException {
 
         SQLLexer lexer = new SQLLexer(new ANTLRInputStream(new InputStreamReader(inputStream, charsetName)));
         lexer.removeErrorListeners();
@@ -23,6 +26,10 @@ public class AntlrParser {
         parser.removeErrorListeners();
         parser.addErrorListener(CustomErrorListener.INSTATANCE);
         ParseTreeWalker walker = new ParseTreeWalker();
-        walker.walk(listener, parser.sql());
+        SqlContext ctx = parser.sql();
+        walker.walk(listener, ctx);
+        
+        walker.walk(identifierListener, ctx);
     }
+    
 }

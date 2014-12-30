@@ -13,6 +13,11 @@ public class PgObjLocation implements Serializable {
     private int offset;
     private String filePath;
     
+    
+    public GenericColumn getObject() {
+        return objName;
+    }
+    
     public String getObjName() {
         return objName.table != null ? objName.table : "";
     }
@@ -51,7 +56,8 @@ public class PgObjLocation implements Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof PgObjLocation) {
             PgObjLocation loc = (PgObjLocation)obj;
-            return loc.getObjName() == getObjName()
+            return loc.getObject().equals(getObject())
+                    && loc.getObjName().equals(getObjName())
                     && loc.getOffset() == getOffset()
                     && loc.getFilePath().equals(getFilePath());
         }
