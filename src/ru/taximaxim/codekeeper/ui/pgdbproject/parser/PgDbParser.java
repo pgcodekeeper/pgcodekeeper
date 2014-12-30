@@ -101,7 +101,8 @@ public class PgDbParser {
 
     public PgObjLocation getDefinitionForObj(PgObjLocation obj) {
         for (PgObjLocation col : objDefinitions) {
-            if (col.getObject().equals(obj.getObject())) {
+            if (col.getObject().equals(obj.getObject())
+                    && col.getObjType().equals(obj.getObjType())) {
                 return col;
             }
         }
