@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui.editors;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
@@ -14,18 +16,22 @@ public class ProjectEditorInput implements IEditorInput  {
         projName = projectName;
     }
     
-    public String getProjectName() {
-        return projName;
+    public IProject getProject() {
+        return ResourcesPlugin.getWorkspace().getRoot().getProject(projName);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+        if (adapter.isAssignableFrom(IProject.class)) {
+            return getProject();
+        }
         return null;
     }
 
     @Override
     public boolean exists() {
-        return (projName != null) || (!projName.isEmpty());
+        return projName != null || !projName.isEmpty();
     }
 
     @Override
