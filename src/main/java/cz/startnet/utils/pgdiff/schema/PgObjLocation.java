@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+
 public class PgObjLocation implements Serializable {
     /**
      * 
@@ -12,7 +14,7 @@ public class PgObjLocation implements Serializable {
     private GenericColumn objName;
     private int offset;
     private String filePath;
-    
+    private DbObjType type;
     
     public GenericColumn getObject() {
         return objName;
@@ -44,6 +46,14 @@ public class PgObjLocation implements Serializable {
     public Path getFilePath() {
         return Paths.get(filePath);
     }
+    
+    public DbObjType getObjType() {
+        return type;
+    }
+    
+    public void setObjType(DbObjType type) {
+        this.type = type;
+    }
 
     public PgObjLocation(String schema, String name, String column, int offset,
             Path filePath) {
@@ -59,7 +69,8 @@ public class PgObjLocation implements Serializable {
             return loc.getObject().equals(getObject())
                     && loc.getObjName().equals(getObjName())
                     && loc.getOffset() == getOffset()
-                    && loc.getFilePath().equals(getFilePath());
+                    && loc.getFilePath().equals(getFilePath())
+                    && loc.getObjType().equals(getObjType());
         }
         return false;
     }
@@ -71,11 +82,12 @@ public class PgObjLocation implements Serializable {
         result = prime * result + ((objName == null) ? 0 : objName.hashCode());
         result = prime * result + offset;
         result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
         return result;
     }
     
     @Override
     public String toString() {
-        return getObjName() + " " + filePath + " " + offset + getObjLength();
+        return getObjName() + " " + filePath + " " + offset + " " + getObjLength() + " " + type;
     }
 }

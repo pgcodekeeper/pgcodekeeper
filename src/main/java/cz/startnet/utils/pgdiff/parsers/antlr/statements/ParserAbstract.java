@@ -61,6 +61,7 @@ public abstract class ParserAbstract {
     protected void fillObjLocation(String schemaName, PgStatement obj, int startIndex) {
         PgObjLocation loc = new PgObjLocation(schemaName, obj.getBareName(),
                 null, startIndex, filePath);
+        loc.setObjType(obj.getStatementType());
         db.addObjDefinition(loc);
     }
 
