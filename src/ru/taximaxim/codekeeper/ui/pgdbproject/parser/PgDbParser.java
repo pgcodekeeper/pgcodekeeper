@@ -112,16 +112,17 @@ public class PgDbParser {
         List<PgObjLocation> locations = new ArrayList<>();
         for (PgObjLocation loc : objReferences) {
             if (loc.getFilePath().equals(pathToFile) 
-                    && hasDefinition(loc.getObject())) {
+                    && hasDefinition(loc)) {
                 locations.add(loc);
             }
         }
         return locations;
     }
     
-    private boolean hasDefinition(GenericColumn obj) {
+    private boolean hasDefinition(PgObjLocation obj) {
         for (PgObjLocation loc : objDefinitions) {
-            if (loc.getObject().equals(obj)) {
+            if (loc.getObject().table.equals(obj.getObject().table)
+                    && loc.getObjType().equals(obj.getObjType())) {
                 return true;
             }
         }
