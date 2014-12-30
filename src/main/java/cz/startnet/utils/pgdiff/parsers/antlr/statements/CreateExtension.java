@@ -23,6 +23,9 @@ public class CreateExtension extends ParserAbstract {
         }
         if (ctx.schema_with_name() != null) {
             ext.setSchema(getName(ctx.schema_with_name().name));
+            if (db.getSchema(getName(ctx.schema_with_name().name)) != null) {
+                addObjReference(null, db.getSchema(getName(ctx.schema_with_name().name)), ctx.schema_with_name().name.getStart().getStartIndex());
+            }
         }
         if (ctx.version!= null) {
             ext.setVersion(ctx.version.getText());
