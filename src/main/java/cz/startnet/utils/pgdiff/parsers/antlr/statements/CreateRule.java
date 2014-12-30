@@ -105,6 +105,7 @@ public class CreateRule extends ParserAbstract {
             statement = db;
             break;
         case SCHEMA:
+            schemaName = null;
             statement = db.getSchema(firstPart);
             break;
         default:
