@@ -22,8 +22,6 @@ public final class Messages extends NLS {
     public static String runnable_has_not_finished;
     public static String select_all;
     public static String select_none;
-    public static String create_marker_file_named;
-    public static String manually_and_try_again;
     public static String missing_marker_file_in_working_directory;
     public static String choose_dump_file_with_changes;
     public static String db;
