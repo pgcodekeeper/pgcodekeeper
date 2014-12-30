@@ -15,16 +15,14 @@ public class SQLEditorHyperLink implements IHyperlink {
 
     private Path location;
     private IRegion region;
-    private ITextViewer viewer;
     private String label;
     private IRegion regionHightLight;
 
-    public SQLEditorHyperLink(IRegion region, IRegion regionHightLight, String label, Path path, ITextViewer viewer) {
+    public SQLEditorHyperLink(IRegion region, IRegion regionHightLight, String label, Path path) {
 
         this.region= region;
         this.regionHightLight = regionHightLight;
         this.location = path;
-        this.viewer = viewer;
         this.label = label;
     }
     

@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IProject;
 
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
@@ -29,13 +30,14 @@ public class PgDbParser {
 
     public static final String PATH_TO_OBJ_SCHEMA = ".settings/schema";
     private static final String SERIALIZATIONFILE = "objects";
-    private Set<String> objNames = new HashSet<>();
-    private List<PgObjLocation> objLocations;
+    private Set<PgObjLocation> objDefinitions;
+    private List<PgObjLocation> objReferences;
     private final IProject proj;
 
     public PgDbParser(IProject proj) {
         this.proj = proj;
-        objLocations = new ArrayList<>();
+        objDefinitions = new HashSet<>();
+        objReferences = new ArrayList<>();
     }
 
     public PgDbParser getObjFromProject() {
@@ -50,7 +52,8 @@ public class PgDbParser {
                 ObjectOutput out = new ObjectOutputStream(bos);) {
             Files.createDirectories(path);
 
-            out.writeObject(objLocations);
+            out.writeObject(objDefinitions);
+            out.writeObject(objReferences);
             byte[] myByte = bos.toByteArray();
             Path filePath = path.resolve(SERIALIZATIONFILE);
             Files.deleteIfExists(filePath);
@@ -68,7 +71,6 @@ public class PgDbParser {
     public static PgDbParser getParserFromStore(IProject proj) {
         PgDbParser parser = new PgDbParser(proj);
         parser.load();
-        parser.fillNamesFromStore();
         return parser;
     }
 
@@ -80,8 +82,12 @@ public class PgDbParser {
             try (ByteArrayInputStream bis = new ByteArrayInputStream(yourBytes);
                     ObjectInput in = new ObjectInputStream(bis);) {
                 Object o = in.readObject();
+                if (o instanceof Set<?>) {
+                    objDefinitions = (Set<PgObjLocation>) o;
+                }
+                o = in.readObject();
                 if (o instanceof List<?>) {
-                    objLocations = (List<PgObjLocation>) o;
+                    objReferences = (List<PgObjLocation>) o;
                 }
             } catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block
@@ -93,29 +99,38 @@ public class PgDbParser {
         }
     }
 
-    private void fillNamesFromStore() {
-        for (PgObjLocation obj : objLocations) {
-            objNames.add(obj.getObjName());
+    public PgObjLocation getDefinitionForObj(PgObjLocation obj) {
+        for (PgObjLocation col : objDefinitions) {
+            if (col.getObject().equals(obj.getObject())) {
+                return col;
+            }
         }
-    }
-
-    public Set<String> getObjNames() {
-        return objNames;
+        return null;
     }
     
-    public List<PgObjLocation> getObjectLocations(String objName) {
+    public List<PgObjLocation> getObjsForPath(Path pathToFile) {
         List<PgObjLocation> locations = new ArrayList<>();
-        for (PgObjLocation loc : objLocations) {
-            if (loc.getObjName().equals(objName)) {
+        for (PgObjLocation loc : objReferences) {
+            if (loc.getFilePath().equals(pathToFile) 
+                    && hasDefinition(loc.getObject())) {
                 locations.add(loc);
             }
         }
         return locations;
     }
     
+    private boolean hasDefinition(GenericColumn obj) {
+        for (PgObjLocation loc : objDefinitions) {
+            if (loc.getObject().equals(obj)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public List<PgObjLocation> getObjectByPath(Path path) {
         List<PgObjLocation> locations = new ArrayList<>();
-        for (PgObjLocation obj : objLocations) {
+        for (PgObjLocation obj : objDefinitions) {
             if (obj.getFilePath().equals(path)) {
                 locations.add(obj);
             }
@@ -127,6 +142,7 @@ public class PgDbParser {
         String dirPath = Paths.get(locationURI).toAbsolutePath().toString();
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(dirPath,
                 "UTF-8", false, false, ParserClass.ANTLR);
-        objLocations.addAll(db.getObjDefinitions());
+        objDefinitions.addAll(db.getObjDefinitions());
+        objReferences.addAll(db.getObjReferences());
     }
 }
