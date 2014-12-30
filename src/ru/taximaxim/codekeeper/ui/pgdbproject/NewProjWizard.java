@@ -120,12 +120,7 @@ public class NewProjWizard extends Wizard
             File sub = new File (pageRepo.getLocationURI()); 
 
             if (!new File(sub, ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()){
-                MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
-                mb.setMessage(Messages.missing_marker_file_in_working_directory 
-                        + sub + System.lineSeparator()
-                        + Messages.NewProjWizard_demand_init_project);
-                mb.setText(Messages.newProjWizard_bad_work_dir);
-                mb.open();
+                displayNoMarkerDialog();
                 event.doit = false;
             }
         }
@@ -169,18 +164,10 @@ public class NewProjWizard extends Wizard
                                     ex);
                     return false;
                 }
-            } else if (!pageRepo.isDoInit()
-                    && !new File(new File(pageRepo.getLocationURI()),
+            } else if (!new File(new File(pageRepo.getLocationURI()),
                             ApgdiffConsts.FILENAME_WORKING_DIR_MARKER).exists()) {
                 props.deleteFromWorkspace();
-                MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
-                mb.setMessage(Messages.missing_marker_file_in_working_directory
-                        + pageRepo.getLocationURI()
-                        + Messages.create_marker_file_named
-                        + ApgdiffConsts.FILENAME_WORKING_DIR_MARKER
-                        + Messages.manually_and_try_again);
-                mb.setText(Messages.newProjWizard_bad_work_dir);
-                mb.open();
+                displayNoMarkerDialog();
                 return false;
             }
             
@@ -216,6 +203,17 @@ public class NewProjWizard extends Wizard
         return true;
     }
 
+    private void displayNoMarkerDialog(){
+        MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
+        mb.setMessage(Messages.missing_marker_file_in_working_directory
+                + System.lineSeparator()
+                + pageRepo.getLocationURI()
+                + System.lineSeparator() + System.lineSeparator()
+                + Messages.NewProjWizard_demand_init_project);
+        mb.setText(Messages.newProjWizard_missing_marker_file);
+        mb.open();
+    }
+    
     private void fillProjProps() {
         IEclipsePreferences newPrefs = props.getPrefs();
         setDbSource(newPrefs);
