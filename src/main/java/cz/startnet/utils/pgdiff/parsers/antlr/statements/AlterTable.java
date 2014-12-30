@@ -37,12 +37,15 @@ public class AlterTable extends ParserAbstract {
             if (tablAction.owner_to() != null) {
                 if (tabl != null) {
                     tabl.setOwner(tablAction.owner_to().name.getText());
+                    addObjReference(schemaName, tabl, ctx.name.getStart().getStartIndex());
                 } else if (db.getSchema(schemaName).getSequence(name) != null) {
                     db.getSchema(schemaName).getSequence(name)
                             .setOwner(tablAction.owner_to().name.getText());
+                    addObjReference(schemaName, db.getSchema(schemaName).getSequence(name), ctx.name.getStart().getStartIndex());
                 } else if (db.getSchema(schemaName).getView(name) != null) {
                     db.getSchema(schemaName).getView(name)
                             .setOwner(tablAction.owner_to().name.getText());
+                    addObjReference(schemaName, db.getSchema(schemaName).getView(name), ctx.name.getStart().getStartIndex());
                 }
             }
             if (tabl == null) {
@@ -94,7 +97,6 @@ public class AlterTable extends ParserAbstract {
                 tabl.addSequence(seq);
             }
         }
-        addObjReference(schemaName, tabl, ctx.name.getStart().getStartIndex());
         return null;
     }
 

@@ -26,6 +26,8 @@ public class CreateTrigger extends ParserAbstract {
         }
         PgTrigger trigger = new PgTrigger(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
         trigger.setTableName(ctx.tabl_name.getText());
+        addObjReference(schemaName, db.getSchema(schemaName).getTable(ctx.tabl_name.getText()), 
+                ctx.tabl_name.getStart().getStartIndex());
         trigger.setBefore(ctx.before_true != null);
         if (ctx.ROW() != null) {
             trigger.setForEachRow(true);
