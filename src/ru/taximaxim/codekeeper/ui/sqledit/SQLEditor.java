@@ -58,7 +58,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
             this.fInput = input;
             IFile file = ((FileEditorInput)input).getFile();
             if (file != null) {
-                parser = PgDbParser.getParserFromStore(file.getProject());
+                parser = PgDbParser.getParser(file.getProject());
             }
         }
 

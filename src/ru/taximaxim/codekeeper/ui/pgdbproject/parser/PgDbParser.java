@@ -14,30 +14,42 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class PgDbParser {
 
+    private static final Map<IProject, PgDbParser> PROJ_PARSERS = new HashMap<>();
     public static final String PATH_TO_OBJ_SCHEMA = ".settings/schema";
     private static final String SERIALIZATIONFILE = "objects";
     private Set<PgObjLocation> objDefinitions;
     private List<PgObjLocation> objReferences;
     private final IProject proj;
 
-    public PgDbParser(IProject proj) {
+    private PgDbParser(IProject proj) {
         this.proj = proj;
         objDefinitions = new HashSet<>();
         objReferences = new ArrayList<>();
+    }
+    
+    public static PgDbParser getParser(IProject proj) {
+        if (PROJ_PARSERS.get(proj) != null) {
+            return PROJ_PARSERS.get(proj); 
+        }
+        PgDbParser parser = new PgDbParser(proj);
+        parser.load();
+        PROJ_PARSERS.put(proj, parser);
+        return parser;
     }
 
     public PgDbParser getObjFromProject() {
@@ -66,12 +78,6 @@ public class PgDbParser {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-    }
-
-    public static PgDbParser getParserFromStore(IProject proj) {
-        PgDbParser parser = new PgDbParser(proj);
-        parser.load();
-        return parser;
     }
 
     private void load() {

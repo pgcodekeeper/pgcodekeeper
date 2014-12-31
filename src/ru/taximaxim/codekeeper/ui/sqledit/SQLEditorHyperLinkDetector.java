@@ -42,7 +42,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
             return null;
         }
 
-        PgDbParser parser = PgDbParser.getParserFromStore(proj);
+        PgDbParser parser = PgDbParser.getParser(proj);
         List<IHyperlink> hyperlinks = new ArrayList<>();
         for (PgObjLocation obj : parser.getObjsForPath(file.getLocation()
                 .toFile().toPath())) {
