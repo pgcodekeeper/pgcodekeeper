@@ -27,7 +27,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -50,7 +49,6 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -229,18 +227,18 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 }
 
 class CommitPage extends DiffPresentationPane {
+/*
     private final String [] VIEW_IDS_SUPPORTING_EGIT_COMMIT = {
             // project explorer
             IPageLayout.ID_PROJECT_EXPLORER,
             // package explorer
             JavaUI.ID_PACKAGES
     };
+*/
+    private boolean isCommitCommandAvailable;
     
     private LocalResourceManager lrm;
-
     private Button btnSave;
-    
-    private boolean isCommitCommandAvailable;
     
     public CommitPage(Composite parent, IPreferenceStore mainPrefs, PgDbProject proj) {
         super(parent, true, mainPrefs, proj);
@@ -282,6 +280,7 @@ class CommitPage extends DiffPresentationPane {
         });
         
         Object commandService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getService(ICommandService.class);
+        @SuppressWarnings("unchecked")
         Collection<String> commandIds = ((ICommandService)commandService).getDefinedCommandIds();
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
         btnAutoCommitWindow.setEnabled(isCommitCommandAvailable);
@@ -403,6 +402,12 @@ class CommitPage extends DiffPresentationPane {
          * 
          * wrap the Depcy selections that we pass through into the parent selection
          * as an element next to IProject and extract it in the depcy view
+         * 
+         * ProjectEditorSelectionProvider is the WIP
+         * impl examples are:
+         * ==================
+         * org.eclipse.jface.viewers.Viewer
+         * org.eclipse.jdt.internal.ui.viewsupport.SelectionProviderMediator
          */
 /*
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();                
