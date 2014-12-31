@@ -109,7 +109,11 @@ public abstract class ParserAbstract {
      * @return string name without quotes
      */
     protected String removeQuotes(IdentifierContext name) {
-        return ParserUtils.splitNames(name.getText())[0];
+        String identifier = name.getText();
+        if (identifier.startsWith("\"")) {
+            return ParserUtils.splitNames(name.getText())[0];
+        }
+        return ParserUtils.splitNames(name.getText())[0].toLowerCase();
     }
 
     protected String getSchemaName(Schema_qualified_nameContext name) {
