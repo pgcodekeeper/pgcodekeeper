@@ -286,7 +286,7 @@ public abstract class ParserAbstract {
             }
             for (Schema_qualified_nameContext name : ctx.constr_body().table_references().column_references().names_references().name) {
                 ((PgForeignKey)constr).addForeignColumn(new GenericColumn(schemaName, tableName,
-                        ParserUtils.getObjectName(getFullCtxText(name))));
+                        ParserUtils.getObjectName(getName(name))));
             }
         } else {
         constr = new PgConstraint(

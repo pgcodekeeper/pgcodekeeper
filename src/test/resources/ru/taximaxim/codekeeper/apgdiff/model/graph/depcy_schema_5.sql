@@ -81,7 +81,7 @@ SET search_path = republic, pg_catalog;
 --
 
 ALTER TABLE ONLY t_test2foreign
-    ADD CONSTRAINT fk_t_test2foreign FOREIGN KEY (column_referencing) REFERENCES public.t_test2(c_name_t_test2);
+    ADD CONSTRAINT fk_t_test2foreign FOREIGN KEY (column_referencing) REFERENCES public.t_test2(c_name_T_test2);
 
 
 --
