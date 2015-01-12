@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Name_or_func_callsContex
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -103,6 +104,7 @@ public abstract class ParserAbstract {
         }
         return removeQuotes(name.identifier(i));
     }
+    
     /**
      * Remove quotes from identifier
      * @param name identifier context
@@ -110,10 +112,9 @@ public abstract class ParserAbstract {
      */
     protected String removeQuotes(IdentifierContext name) {
         String identifier = name.getText();
-        if (identifier.startsWith("\"")) {
-            return ParserUtils.splitNames(name.getText())[0];
-        }
-        return ParserUtils.splitNames(name.getText())[0].toLowerCase();
+        String unquotedName = ParserUtils.splitNames(identifier)[0];
+        
+        return (identifier.startsWith("\"")) ? unquotedName : unquotedName.toLowerCase();
     }
 
     protected String getSchemaName(Schema_qualified_nameContext name) {
@@ -273,25 +274,24 @@ public abstract class ParserAbstract {
         return result;
     }
 
-    protected PgConstraint getTableConstraint(
-            Constraint_commonContext ctx) {
-        PgConstraint constr;
+    protected PgConstraint getTableConstraint(Constraint_commonContext ctx) {
+        String constrName = ctx.constraint_name == null ? "" : removeQuotes(ctx.constraint_name);
+        PgConstraint constr = new PgConstraint(constrName, getFullCtxText(ctx), db.getDefSearchPath());
+        
         if (ctx.constr_body().FOREIGN() != null) {
-            constr = new PgForeignKey(ctx.constraint_name != null ? removeQuotes(ctx.constraint_name)
-                    : "", "", db.getDefSearchPath());
-            String tableName = getName(ctx.constr_body().table_references().reftable);
-            String schemaName = getSchemaName(ctx.constr_body().table_references().reftable);
+            constr = new PgForeignKey(constrName, "", db.getDefSearchPath());
+
+            Table_referencesContext tblRef = ctx.constr_body().table_references();
+
+            String tableName = getName(tblRef.reftable);
+            String schemaName = getSchemaName(tblRef.reftable);
             if (schemaName == null) {
                 schemaName = db.getDefaultSchema().getName();
             }
-            for (Schema_qualified_nameContext name : ctx.constr_body().table_references().column_references().names_references().name) {
-                ((PgForeignKey)constr).addForeignColumn(new GenericColumn(schemaName, tableName,
-                        ParserUtils.getObjectName(getName(name))));
+            for (Schema_qualified_nameContext name : tblRef.column_references().names_references().name) {
+                ((PgForeignKey)constr).addForeignColumn(
+                        new GenericColumn(schemaName, tableName, getName(name)));
             }
-        } else {
-        constr = new PgConstraint(
-                ctx.constraint_name != null ? removeQuotes(ctx.constraint_name)
-                        : "", getFullCtxText(ctx), "");
         }
         constr.setDefinition(getFullCtxText(ctx.constr_body()));
         return constr;
