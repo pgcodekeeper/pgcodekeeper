@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.Parser;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
@@ -66,10 +67,10 @@ public abstract class ParserAbstract {
         db.addObjReference(loc);
     }
     
-    protected void addObjReference(String schemaName, PgStatement obj, int startIndex) {
-        PgObjLocation loc = new PgObjLocation(schemaName, obj.getBareName(),
+    protected void addObjReference(String schemaName, String objName, DbObjType objType, int startIndex) {
+        PgObjLocation loc = new PgObjLocation(schemaName, objName,
                 null, startIndex, filePath);
-        loc.setObjType(obj.getStatementType());
+        loc.setObjType(objType);
         db.addObjReference(loc);
     }
 

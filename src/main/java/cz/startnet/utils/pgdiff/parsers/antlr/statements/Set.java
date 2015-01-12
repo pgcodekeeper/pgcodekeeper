@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -23,9 +24,7 @@ public class Set extends ParserAbstract {
             set.setParam(ctx.config_param.getText());
             for (Set_statement_valueContext value : ctx.config_param_val){
                 set.addValue(value.getText());
-                if (db.getSchema(value.getText()) != null) {
-                    addObjReference(null, db.getSchema(value.getText()), value.getStart().getStartIndex());
-                }
+                addObjReference(null, value.getText(), DbObjType.SCHEMA, value.getStart().getStartIndex());
             }
         }
         return set;

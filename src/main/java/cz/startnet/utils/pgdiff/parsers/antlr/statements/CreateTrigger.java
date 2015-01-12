@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.nio.file.Path;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -26,7 +27,7 @@ public class CreateTrigger extends ParserAbstract {
         }
         PgTrigger trigger = new PgTrigger(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
         trigger.setTableName(ctx.tabl_name.getText());
-        addObjReference(schemaName, db.getSchema(schemaName).getTable(ctx.tabl_name.getText()), 
+        addObjReference(schemaName, ctx.tabl_name.getText(), DbObjType.TABLE, 
                 ctx.tabl_name.getStart().getStartIndex());
         trigger.setBefore(ctx.before_true != null);
         if (ctx.ROW() != null) {

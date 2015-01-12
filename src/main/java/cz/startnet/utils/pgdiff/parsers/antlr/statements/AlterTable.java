@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -37,15 +38,15 @@ public class AlterTable extends ParserAbstract {
             if (tablAction.owner_to() != null) {
                 if (tabl != null) {
                     tabl.setOwner(tablAction.owner_to().name.getText());
-                    addObjReference(schemaName, tabl, ctx.name.getStart().getStartIndex());
+                    addObjReference(schemaName, name, DbObjType.TABLE, ctx.name.getStart().getStartIndex());
                 } else if (db.getSchema(schemaName).getSequence(name) != null) {
                     db.getSchema(schemaName).getSequence(name)
                             .setOwner(tablAction.owner_to().name.getText());
-                    addObjReference(schemaName, db.getSchema(schemaName).getSequence(name), ctx.name.getStart().getStartIndex());
+                    addObjReference(schemaName, name, DbObjType.SEQUENCE, ctx.name.getStart().getStartIndex());
                 } else if (db.getSchema(schemaName).getView(name) != null) {
                     db.getSchema(schemaName).getView(name)
                             .setOwner(tablAction.owner_to().name.getText());
-                    addObjReference(schemaName, db.getSchema(schemaName).getView(name), ctx.name.getStart().getStartIndex());
+                    addObjReference(schemaName, name, DbObjType.VIEW, ctx.name.getStart().getStartIndex());
                 }
             }
             if (tabl == null) {

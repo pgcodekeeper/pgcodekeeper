@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -40,10 +41,10 @@ private Alter_sequence_statementContext ctx;
                 if (tableName.equals(schName)) {
                     schName = schemaName;
                 }
-                addObjReference(schName, new PgTable(tableName, "" ,""), seqbody.col_name.getStart().getStartIndex());
+                addObjReference(schName, tableName, DbObjType.TABLE, seqbody.col_name.getStart().getStartIndex());
             }
         }
-        addObjReference(schemaName, sequence, ctx.name.getStart().getStartIndex());
+        addObjReference(schemaName, name, DbObjType.SEQUENCE, ctx.name.getStart().getStartIndex());
         return null;
     }
 

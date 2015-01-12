@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -27,7 +28,7 @@ public class AlterSchema extends ParserAbstract {
         if (ctx.owner_to() != null) {
             sch.setOwner(removeQuotes(ctx.owner_to().name));
         }
-        addObjReference(null, sch, ctx.schema_with_name().name.getStart().getStartIndex());
+        addObjReference(null, name, DbObjType.SCHEMA, ctx.schema_with_name().name.getStart().getStartIndex());
         return null;
     }
 

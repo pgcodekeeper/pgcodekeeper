@@ -309,13 +309,8 @@ public final class PgDumpLoader { //NOPMD
 
         // step 1
         // read files in schema folder, add schemas to db
-        ApgdiffConsts.WORK_DIR_NAMES[] dirEnums = ApgdiffConsts.WORK_DIR_NAMES.values();
-        String[] dirs = new String[dirEnums.length];
-        for (int i = 0; i < dirEnums.length; ++i) {
-            dirs[i] = dirEnums[i].toString();
-        }
-        walkSubdirsRunCore(dir, charsetName, outputIgnoredStatements,
-                ignoreSlonyTriggers, dirs, db, parser);
+        loadSchemasExtensions(charsetName, outputIgnoredStatements,
+                ignoreSlonyTriggers, parser, db, dir);
 
         File schemasCommonDir = new File(dir, ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
         // skip walking SCHEMA folder if it does not exist
@@ -333,6 +328,18 @@ public final class PgDumpLoader { //NOPMD
             }
         }
         return db;
+    }
+
+    private static void loadSchemasExtensions(String charsetName,
+            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+            ParserClass parser, final PgDatabase db, File dir) {
+        ApgdiffConsts.WORK_DIR_NAMES[] dirEnums = ApgdiffConsts.WORK_DIR_NAMES.values();
+        String[] dirs = new String[dirEnums.length];
+        for (int i = 0; i < dirEnums.length; ++i) {
+            dirs[i] = dirEnums[i].toString();
+        }
+        walkSubdirsRunCore(dir, charsetName, outputIgnoredStatements,
+                ignoreSlonyTriggers, dirs, db, parser);
     }
     
     private static void walkSubdirsRunCore(File dir, String charsetName,
