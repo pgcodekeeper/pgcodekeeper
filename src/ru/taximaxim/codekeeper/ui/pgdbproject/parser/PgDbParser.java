@@ -1,27 +1,23 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ProjectScope;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -29,17 +25,15 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class PgDbParser {
 
-    private static final Map<IProject, PgDbParser> PROJ_PARSERS = new HashMap<>();
-    public static final String PATH_TO_OBJ_SCHEMA = ".settings/schema";
-    private static final String SERIALIZATIONFILE = "objects";
-    private Set<PgObjLocation> objDefinitions;
-    private List<PgObjLocation> objReferences;
+    private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
+    private final CopyOnWriteArrayList<PgObjLocation> objDefinitions;
+    private final CopyOnWriteArrayList<PgObjLocation> objReferences;
     private final IProject proj;
 
     private PgDbParser(IProject proj) {
         this.proj = proj;
-        objDefinitions = new HashSet<>();
-        objReferences = new ArrayList<>();
+        objDefinitions = new CopyOnWriteArrayList<>();
+        objReferences = new CopyOnWriteArrayList<>();
     }
     
     public static PgDbParser getParser(IProject proj) {
@@ -47,7 +41,7 @@ public class PgDbParser {
             return PROJ_PARSERS.get(proj); 
         }
         PgDbParser parser = new PgDbParser(proj);
-        parser.load();
+        parser.getObjFromProject();
         PROJ_PARSERS.put(proj, parser);
         return parser;
     }
@@ -55,54 +49,6 @@ public class PgDbParser {
     public PgDbParser getObjFromProject() {
         getDBFromDirectory(proj.getLocationURI());
         return this;
-    }
-
-    public void saveToProject() {
-        Path path = Paths.get(proj.getLocationURI())
-                .resolve(PATH_TO_OBJ_SCHEMA);
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                ObjectOutput out = new ObjectOutputStream(bos);) {
-            Files.createDirectories(path);
-
-            out.writeObject(objDefinitions);
-            out.writeObject(objReferences);
-            byte[] myByte = bos.toByteArray();
-            Path filePath = path.resolve(SERIALIZATIONFILE);
-            Files.deleteIfExists(filePath);
-            try (OutputStream fout = new BufferedOutputStream(
-                    Files.newOutputStream(Files.createFile(filePath)))) {
-                fout.write(myByte);
-            }
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    private void load() {
-        try {
-            byte[] yourBytes = Files.readAllBytes(Paths
-                    .get(proj.getLocationURI()).resolve(PATH_TO_OBJ_SCHEMA)
-                    .resolve(SERIALIZATIONFILE));
-            try (ByteArrayInputStream bis = new ByteArrayInputStream(yourBytes);
-                    ObjectInput in = new ObjectInputStream(bis);) {
-                Object o = in.readObject();
-                if (o instanceof Set<?>) {
-                    objDefinitions = (Set<PgObjLocation>) o;
-                }
-                o = in.readObject();
-                if (o instanceof List<?>) {
-                    objReferences = (List<PgObjLocation>) o;
-                }
-            } catch (ClassNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        } catch (IOException ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-        }
     }
 
     public PgObjLocation getDefinitionForObj(PgObjLocation obj) {
@@ -136,7 +82,7 @@ public class PgDbParser {
         return false;
     }
     
-    public List<PgObjLocation> getObjectByPath(Path path) {
+    public List<PgObjLocation> getObjDefinitionsByPath(Path path) {
         List<PgObjLocation> locations = new ArrayList<>();
         for (PgObjLocation obj : objDefinitions) {
             if (obj.getFilePath().equals(path)) {
@@ -146,11 +92,25 @@ public class PgDbParser {
         return locations;
     }
     
-    private void getDBFromDirectory(URI locationURI) {
-        String dirPath = Paths.get(locationURI).toAbsolutePath().toString();
-        PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(dirPath,
-                "UTF-8", false, false, ParserClass.ANTLR);
-        objDefinitions.addAll(db.getObjDefinitions());
-        objReferences.addAll(db.getObjReferences());
+    private void getDBFromDirectory(final URI locationURI) {
+        Job job = new Job("getDatabaseReferences") {
+            
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                ProjectScope ps = new ProjectScope(proj);
+                IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
+                String dirPath = Paths.get(locationURI).toAbsolutePath().toString();
+                PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(dirPath,
+                        prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                        false, false, ParserClass.ANTLR);
+                objDefinitions.clear();
+                objReferences.clear();
+                objDefinitions.addAll(db.getObjDefinitions());
+                objReferences.addAll(db.getObjReferences());
+                return Status.OK_STATUS;
+            }
+        };
+        job.setSystem(true);
+        job.schedule();
     }
 }

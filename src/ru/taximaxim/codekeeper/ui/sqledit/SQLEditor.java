@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
@@ -91,7 +92,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
                     List<Segments> segments = new ArrayList<>();
                     if (inputElement instanceof FileEditorInput) {
                         FileEditorInput fi = (FileEditorInput)inputElement;
-                        for (PgObjLocation loc : parser.getObjectByPath(fi.getFile().getLocation().toFile().toPath())) {
+                        for (PgObjLocation loc : parser.getObjDefinitionsByPath(fi.getFile().getLocation().toFile().toPath())) {
                             segments.add(new Segments(loc));
                         }
                     }
@@ -214,5 +215,14 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
         ContentAssistAction action= new ContentAssistAction(bundle, "contentAssist.", this); //$NON-NLS-1$
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         setAction(CONTENT_ASSIST, action);
+    }
+    
+    @Override
+    public void doSave(IProgressMonitor progressMonitor) {
+        super.doSave(progressMonitor);
+        IFile file = ((FileEditorInput)getEditorInput()).getFile();
+        if (file != null) {
+            PgDbParser.getParser(file.getProject()).getObjFromProject();
+        }
     }
 }
