@@ -2,13 +2,18 @@ package ru.taximaxim.codekeeper.ui.editors;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.PlatformObject;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
+import org.eclipse.ui.model.IWorkbenchAdapter;
 
+import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class ProjectEditorInput implements IEditorInput  {
+public class ProjectEditorInput extends PlatformObject implements IEditorInput {
 
     private final String projName;
     
@@ -26,7 +31,42 @@ public class ProjectEditorInput implements IEditorInput  {
         if (adapter.isAssignableFrom(IProject.class)) {
             return getProject();
         }
-        return null;
+        
+        if (adapter.isAssignableFrom(IWorkbenchAdapter.class)) {
+            return new IWorkbenchAdapter() {
+                
+                @Override
+                public Object getParent(Object o) {
+                    return getProject().getParent();
+                }
+                
+                @Override
+                public Object[] getChildren(Object o) {
+                    IProject proj = getProject();
+                    if (proj.isOpen()) {
+                        try {
+                            return proj.members();
+                        } catch (CoreException ex) {
+                            // return empty array
+                        }
+                    }
+                    return new Object[0];
+                }
+                
+                @Override
+                public String getLabel(Object o) {
+                    return getProject().getName();
+                }
+                
+                @Override
+                public ImageDescriptor getImageDescriptor(Object object) {
+                    return ImageDescriptor.createFromURL(Activator.getContext()
+                            .getBundle().getResource(FILE.ICONAPPSMALL));
+                }
+            };
+        }
+        
+        return super.getAdapter(adapter);
     }
 
     @Override
@@ -36,7 +76,8 @@ public class ProjectEditorInput implements IEditorInput  {
 
     @Override
     public ImageDescriptor getImageDescriptor() {
-        return null;
+        return ImageDescriptor.createFromURL(Activator.getContext().getBundle()
+                .getResource(FILE.ICONAPPSMALL));
     }
 
     @Override
@@ -46,6 +87,7 @@ public class ProjectEditorInput implements IEditorInput  {
 
     @Override
     public IPersistableElement getPersistable() {
+        // see FileEditorInput for impl
         return null;
     }
 
