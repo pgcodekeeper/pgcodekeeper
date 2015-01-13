@@ -40,8 +40,6 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class ManualDepciesGroup extends Group{
     
-    private static final int COMBO_SIZE = 250;
-
     private final List<Entry<PgStatement, PgStatement>> depcies;
     
     private final ComboViewer cmbDependants, cmbDependencies;
@@ -60,7 +58,7 @@ public class ManualDepciesGroup extends Group{
         
         this.depcies = new LinkedList<>(dependencies);
         
-        setLayout(new GridLayout(3, false));
+        setLayout(new GridLayout(2, true));
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
         setLayoutData(gd);
@@ -69,10 +67,8 @@ public class ManualDepciesGroup extends Group{
         Composite grpSelectors = new Composite(this, SWT.NONE);
         GridLayout gl = new GridLayout(2, false);
         gl.marginWidth = gl.marginHeight = 0;
-        gd = new GridData(GridData.FILL_VERTICAL);
-        gd.widthHint = COMBO_SIZE;
         grpSelectors.setLayout(gl);
-        grpSelectors.setLayoutData(gd);
+        grpSelectors.setLayoutData(new GridData(GridData.FILL_BOTH));
         
         // spacer
         new Label(grpSelectors, SWT.NONE).setLayoutData(
@@ -113,9 +109,6 @@ public class ManualDepciesGroup extends Group{
                 setInput();
             }
         });
-        
-        new Label(this, SWT.SEPARATOR | SWT.VERTICAL)
-                .setLayoutData(new GridData(GridData.FILL_VERTICAL));
         
         Composite grpList = new Composite(this, SWT.NONE);
         gl = new GridLayout();
