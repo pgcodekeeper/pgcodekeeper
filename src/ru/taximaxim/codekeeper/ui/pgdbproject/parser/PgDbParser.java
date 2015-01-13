@@ -105,27 +105,18 @@ public class PgDbParser extends IncrementalProjectBuilder{
     }
     
     private void getFullDBFromDirectory(final URI locationURI) {
-//        Job job = new Job("getDatabaseReferences") {
-//            
-//            @Override
-//            protected IStatus run(IProgressMonitor monitor) {
-                ProjectScope ps = new ProjectScope(proj);
-                IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
-                String dirPath = Paths.get(locationURI).toAbsolutePath().toString();
-                PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(dirPath,
-                        prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), 
-                        false, false, ParserClass.ANTLR);
-                objDefinitions.clear();
-                objReferences.clear();
-                objDefinitions.addAll(db.getObjDefinitions());
-                objReferences.addAll(db.getObjReferences());
-//                return Status.OK_STATUS;
-//            }
-//        };
-//        job.setSystem(true);
-//        job.schedule();
+        ProjectScope ps = new ProjectScope(proj);
+        IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
+        PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(
+                Paths.get(locationURI).toAbsolutePath().toString(),
+                prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                false, false, ParserClass.ANTLR);
+        objDefinitions.clear();
+        objReferences.clear();
+        objDefinitions.addAll(db.getObjDefinitions());
+        objReferences.addAll(db.getObjReferences());
     }
-    
+
     private void getPartialDBFromDirectory(final URI projURI, final URI fileURI) {
         Job job = new Job("getDatabaseReferences") {
 
@@ -165,7 +156,6 @@ public class PgDbParser extends IncrementalProjectBuilder{
     protected IProject[] build(int kind, Map<String, String> args,
             IProgressMonitor monitor) throws CoreException {
         this.proj = getProject();
-        System.out.println("Start builder");
         if (!proj.hasNature(NATURE.ID)) {
             return null;    
         }
