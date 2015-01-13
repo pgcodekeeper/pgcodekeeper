@@ -27,7 +27,7 @@ public class PgObjLocation implements Serializable {
     public int getOffset() {
         return offset;
     }
-    // непонятно какая длинна должна быть)
+    // непонятно какая длина должна быть)
     // свитчить по типу в случае с колонкой?
     public int getObjLength() {
         int length = 0;
