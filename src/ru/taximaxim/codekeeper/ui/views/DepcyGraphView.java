@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.views;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Objects;
 
 import org.eclipse.core.commands.IStateListener;
 import org.eclipse.core.commands.State;
@@ -31,14 +32,17 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
+import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, ISelectionListener, IStateListener{
     
-    private DepcyGraph currentSource;
+    private DepcyGraph currentGraph;
+    private PgDatabase currentDb;
     private GraphViewer gv;
     private Boolean isSource = true;
     
@@ -112,12 +116,14 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         
         DepcyStructuredSelection dss = (DepcyStructuredSelection) selection;
         
-        if (isSource){
-            currentSource = isCommit ? dss.getSourceDepcyGraph() : dss.getTargetDepcyGraph(); 
-        }else{
-            currentSource = isCommit ? dss.getTargetDepcyGraph() : dss.getSourceDepcyGraph();
-        }
+        DbSource newDbSource = isSource.equals(isCommit) ? dss.getSource() : dss.getTarget();
         
+        PgDatabase newDb = newDbSource == null ? null : newDbSource.getDbObject();
+        if (!Objects.equals(currentDb, newDb)){
+            currentDb = newDb;
+            currentGraph = (currentDb == null) ? null : new DepcyGraph(currentDb);            
+        }
+
         HashSet<PgStatement> pgStatSele = new HashSet<>();
         
         for(Object o : dss.toArray()){
@@ -129,10 +135,10 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             if (el.getSide() == DiffSide.RIGHT && isSource || el.getSide() == DiffSide.LEFT && !isSource){
                 continue;
             }
-            PgStatement dbObject = (el).getPgStatement(currentSource.getDb());                     
+            PgStatement dbObject = (el).getPgStatement(currentDb);                     
             pgStatSele.add(dbObject);
             
-            for(PgStatement stat : PgDiff.getDependantsSet(dbObject, new HashSet<PgStatement>(), currentSource)){
+            for(PgStatement stat : PgDiff.getDependantsSet(dbObject, new HashSet<PgStatement>(), currentGraph)){
                 if (!(stat instanceof PgColumn)){
                     pgStatSele.add(stat);
                 }
@@ -152,7 +158,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         @Override
         public Object[] getConnectedTo(Object entity) {
             if (entity instanceof PgStatement){
-                DirectedGraph<PgStatement, DefaultEdge> graph = DepcyGraphView.this.currentSource.getGraph();
+                DirectedGraph<PgStatement, DefaultEdge> graph = DepcyGraphView.this.currentGraph.getGraph();
                 if (graph != null){
                     ArrayList<PgStatement> connected = new ArrayList<>();
                     for (DefaultEdge e : graph.outgoingEdgesOf((PgStatement)entity)){
