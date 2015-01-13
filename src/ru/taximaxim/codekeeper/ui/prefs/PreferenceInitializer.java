@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.graphics.RGB;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
@@ -12,6 +13,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorStatementTypes;
+import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorSyntaxModel;
 
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
@@ -34,6 +37,72 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY, true);
         
         store.setDefault(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT, true);
+        setSQLSyntaxColorDefaults(store);
+    }
+    
+    private void setSQLSyntaxColorDefaults(IPreferenceStore store) {
+        for (SQLEditorStatementTypes type : SQLEditorStatementTypes.values()) {
+            SQLEditorSyntaxModel syntax = new SQLEditorSyntaxModel(type, store);
+            switch (type) {
+            case CONSTANTS:
+                syntax.setBold(false);
+                syntax.setColor(new RGB(0, 0, 128));
+                syntax.setItalic(false);
+                syntax.setStrikethrough(false);
+                syntax.setUnderline(false);
+                break;
+            case FUNCTIONS:
+                syntax.setBold(false);
+                syntax.setColor(new RGB(0, 0, 128));
+                syntax.setItalic(false);
+                syntax.setStrikethrough(false);
+                syntax.setUnderline(false);
+                break;
+            case GLOBAL_VARIABLES:
+                syntax.setBold(false);
+                syntax.setColor(new RGB(0, 0, 128));
+                syntax.setItalic(false);
+                syntax.setStrikethrough(false);
+                syntax.setUnderline(false);
+                break;
+            case PREDICATES:
+                syntax.setBold(false);
+                syntax.setColor(new RGB(0, 0, 128));
+                syntax.setItalic(false);
+                syntax.setStrikethrough(false);
+                syntax.setUnderline(false);
+                break;
+            case RESERVED_WORDS:
+                syntax.setBold(true);
+                syntax.setColor(new RGB(127, 0, 85));
+                syntax.setItalic(false);
+                syntax.setStrikethrough(false);
+                syntax.setUnderline(false);
+                break;
+            case SINGLE_LINE_COMMENTS:
+                syntax.setBold(false);
+                syntax.setColor(new RGB(64, 128, 128));
+                syntax.setItalic(false);
+                syntax.setStrikethrough(false);
+                syntax.setUnderline(false);
+                break;
+            case TYPES:
+                syntax.setBold(true);
+                syntax.setColor(new RGB(64, 0, 200));
+                syntax.setItalic(false);
+                syntax.setStrikethrough(false);
+                syntax.setUnderline(false);
+                break;
+            case UN_RESERVED_WORDS:
+                syntax.setBold(true);
+                syntax.setColor(new RGB(127, 0, 85));
+                syntax.setItalic(false);
+                syntax.setStrikethrough(false);
+                syntax.setUnderline(false);
+                break;
+            }
+            syntax.setDefault();
+        }
     }
 
     public static void savePreference(IPreferenceStore mainPrefs, String preference, String value){

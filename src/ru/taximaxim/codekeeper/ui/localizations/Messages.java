@@ -4,7 +4,7 @@ import org.eclipse.osgi.util.NLS;
 
 @javax.annotation.Generated("externalized-strings")
 public final class Messages extends NLS {
-    private static final String BUNDLE_NAME = "ru.taximaxim.codekeeper.ui.localizations.messages"; //$NON-NLS-1$
+    public static final String BUNDLE_NAME = "ru.taximaxim.codekeeper.ui.localizations.messages"; //$NON-NLS-1$
 
 // SONAR-OFF
 

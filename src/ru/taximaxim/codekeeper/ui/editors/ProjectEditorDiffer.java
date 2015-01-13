@@ -92,6 +92,7 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -377,6 +378,7 @@ class CommitPage extends DiffPresentationPane {
                     ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
                     try {
                         proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+                        PgDbParser.getParser(proj.getProject()).getObjFromProject();
                         CommitPage.this.callEgitCommitCommand();
                     } catch (CoreException e) {
                         ExceptionNotifier.showErrorDialog(Messages.ProjectEditorDiffer_error_refreshing_project, e);
