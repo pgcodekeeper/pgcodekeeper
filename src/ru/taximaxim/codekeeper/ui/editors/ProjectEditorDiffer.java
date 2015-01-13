@@ -287,6 +287,7 @@ class CommitPage extends DiffPresentationPane {
         });
         
         Object commandService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getService(ICommandService.class);
+        @SuppressWarnings("unchecked")
         Collection<String> commandIds = ((ICommandService)commandService).getDefinedCommandIds();
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
         btnAutoCommitWindow.setEnabled(isCommitCommandAvailable);
