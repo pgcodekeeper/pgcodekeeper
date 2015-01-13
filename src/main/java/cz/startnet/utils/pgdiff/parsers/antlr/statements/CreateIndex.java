@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.nio.file.Path;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -24,6 +25,7 @@ public class CreateIndex extends ParserAbstract {
             schemaName = getDefSchemaName();
         }
         PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()), db.getDefSearchPath());
+        addObjReference(schemaName, getName(ctx.table_name), DbObjType.TABLE, ctx.table_name.getStart().getStartIndex());
         ind.setTableName(getName(ctx.table_name));
         ind.setDefinition(getFullCtxText(ctx.using_def()));
         ind.setUnique(ctx.UNIQUE() != null);

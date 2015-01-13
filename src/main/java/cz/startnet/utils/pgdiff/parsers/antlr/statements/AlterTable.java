@@ -48,6 +48,8 @@ public class AlterTable extends ParserAbstract {
                             .setOwner(tablAction.owner_to().name.getText());
                     addObjReference(schemaName, name, DbObjType.VIEW, ctx.name.getStart().getStartIndex());
                 }
+            } else {
+                addObjReference(schemaName, name, DbObjType.TABLE, ctx.name.getStart().getStartIndex());
             }
             if (tabl == null) {
                 continue;
