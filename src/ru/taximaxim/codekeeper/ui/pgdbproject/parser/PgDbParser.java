@@ -37,10 +37,11 @@ public class PgDbParser {
     }
     
     public static PgDbParser getParser(IProject proj) {
-        if (PROJ_PARSERS.get(proj) != null) {
-            return PROJ_PARSERS.get(proj); 
+        PgDbParser parser = PROJ_PARSERS.get(proj);
+        if (parser != null) {
+            return parser;
         }
-        PgDbParser parser = new PgDbParser(proj);
+        parser = new PgDbParser(proj);
         parser.getObjFromProject();
         PROJ_PARSERS.put(proj, parser);
         return parser;
