@@ -12,7 +12,7 @@ public class ProjectNature implements IProjectNature {
 
     @Override
     public void configure() throws CoreException {
-        PgDbParser.getParser(proj).getObjFromProject();
+//        PgDbParser.getParser(proj).getObjFromProject();
     }
 
     @Override

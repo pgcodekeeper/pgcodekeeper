@@ -4,13 +4,17 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ProjectScope;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -18,17 +22,23 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
-public class PgDbParser {
+public class PgDbParser extends IncrementalProjectBuilder{
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
     private final CopyOnWriteArrayList<PgObjLocation> objDefinitions;
     private final CopyOnWriteArrayList<PgObjLocation> objReferences;
-    private final IProject proj;
+    private IProject proj;
+    
+    public PgDbParser() {
+        objDefinitions = new CopyOnWriteArrayList<>();
+        objReferences = new CopyOnWriteArrayList<>();
+    }
 
     private PgDbParser(IProject proj) {
         this.proj = proj;
@@ -41,14 +51,16 @@ public class PgDbParser {
             return PROJ_PARSERS.get(proj); 
         }
         PgDbParser parser = new PgDbParser(proj);
-        parser.getObjFromProject();
         PROJ_PARSERS.put(proj, parser);
         return parser;
     }
 
-    public PgDbParser getObjFromProject() {
-        getDBFromDirectory(proj.getLocationURI());
-        return this;
+    public void getObjFromProject() {
+        getFullDBFromDirectory(proj.getLocationURI());
+    }
+    
+    public void getObjFromProjFile(URI fileURI) {
+        getPartialDBFromDirectory(proj.getLocationURI(), fileURI);
     }
 
     public PgObjLocation getDefinitionForObj(PgObjLocation obj) {
@@ -92,11 +104,11 @@ public class PgDbParser {
         return locations;
     }
     
-    private void getDBFromDirectory(final URI locationURI) {
-        Job job = new Job("getDatabaseReferences") {
-            
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
+    private void getFullDBFromDirectory(final URI locationURI) {
+//        Job job = new Job("getDatabaseReferences") {
+//            
+//            @Override
+//            protected IStatus run(IProgressMonitor monitor) {
                 ProjectScope ps = new ProjectScope(proj);
                 IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
                 String dirPath = Paths.get(locationURI).toAbsolutePath().toString();
@@ -107,10 +119,66 @@ public class PgDbParser {
                 objReferences.clear();
                 objDefinitions.addAll(db.getObjDefinitions());
                 objReferences.addAll(db.getObjReferences());
+//                return Status.OK_STATUS;
+//            }
+//        };
+//        job.setSystem(true);
+//        job.schedule();
+    }
+    
+    private void getPartialDBFromDirectory(final URI projURI, final URI fileURI) {
+        Job job = new Job("getDatabaseReferences") {
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                ProjectScope ps = new ProjectScope(proj);
+                IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
+                String projPath = Paths.get(projURI).toAbsolutePath().toString();
+                String filePath = Paths.get(fileURI).toAbsolutePath().toString();
+                PgDatabase db = PgDumpLoader.loadSchemasAndFile(projPath, filePath, 
+                        prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8),
+                        false, false, ParserClass.ANTLR);
+                fillRefs(objReferences, db.getObjReferences());
+                fillRefs(objDefinitions, db.getObjDefinitions());
                 return Status.OK_STATUS;
             }
         };
         job.setSystem(true);
         job.schedule();
+    }
+
+    protected void fillRefs(CopyOnWriteArrayList<PgObjLocation> oldRefs,
+            Collection<PgObjLocation> newRefs) {
+        CopyOnWriteArrayList<PgObjLocation> remove = new CopyOnWriteArrayList<>(); 
+        for (PgObjLocation ref : newRefs) {
+            for (PgObjLocation oldRef : oldRefs) {
+                if (oldRef.getFilePath().equals(ref.getFilePath())) {
+                    remove.add(oldRef);
+                }
+            }
+        }
+        oldRefs.removeAll(remove);
+        oldRefs.addAll(newRefs);
+    }
+
+    @Override
+    protected IProject[] build(int kind, Map<String, String> args,
+            IProgressMonitor monitor) throws CoreException {
+        this.proj = getProject();
+        System.out.println("Start builder");
+        if (!proj.hasNature(NATURE.ID)) {
+            return null;    
+        }
+        switch (kind) {
+        case IncrementalProjectBuilder.AUTO_BUILD:
+        case IncrementalProjectBuilder.CLEAN_BUILD:
+        case IncrementalProjectBuilder.FULL_BUILD:
+        case IncrementalProjectBuilder.INCREMENTAL_BUILD:
+            PgDbParser.getParser(proj).getObjFromProject();
+            break;
+        }
+        List<IProject> list = new ArrayList<>();
+        list.add(proj);
+        return list.toArray(new IProject[list.size()]);
     }
 }

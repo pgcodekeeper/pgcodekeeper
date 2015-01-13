@@ -217,12 +217,12 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
         setAction(CONTENT_ASSIST, action);
     }
     
-    @Override
-    public void doSave(IProgressMonitor progressMonitor) {
-        super.doSave(progressMonitor);
-        IFile file = ((FileEditorInput)getEditorInput()).getFile();
-        if (file != null) {
-            PgDbParser.getParser(file.getProject()).getObjFromProject();
-        }
-    }
+//    @Override
+//    public void doSave(IProgressMonitor progressMonitor) {
+//        super.doSave(progressMonitor);
+//        IFile file = ((FileEditorInput)getEditorInput()).getFile();
+//        if (file != null) {
+//            PgDbParser.getParser(file.getProject()).getObjFromProjFile(file.getLocationURI());
+//        }
+//    }
 }

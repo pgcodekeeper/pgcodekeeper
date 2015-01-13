@@ -57,6 +57,18 @@
             id="ru.taximaxim.codekeeper.ui.command.normalizeProject"
             name="%command.name.normalizeProject">
       </command>
+      <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.AddBuilder"
+            id="ru.taximaxim.codekeeper.ui.command.AddBuilder"
+            name="Add Codekeeper Builder">
+      </command>
+      <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.RemoveBuilder"
+            id="ru.taximaxim.codekeeper.ui.command.RemoveBuilder"
+            name="Remove Codekeeper Builder">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -103,6 +115,16 @@
                   commandId="ru.taximaxim.codekeeper.ui.command.normalizeProject"
                   label="%command.label.normalizeProject"
                   mnemonic="%command.mnemonic.normalizeProject"
+                  style="push">
+            </command>
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.command.AddBuilder"
+                  label="Add Builder"
+                  style="push">
+            </command>
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.command.RemoveBuilder"
+                  label="Remove Builder"
                   style="push">
             </command>
          </menu>
@@ -210,6 +232,9 @@
                class="ru.taximaxim.codekeeper.ui.natures.ProjectNature">
          </run>
       </runtime>
+      <builder
+            id="ru.taximaxim.codekeeper.ui.builder">
+      </builder>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">
@@ -346,6 +371,16 @@
                 relative="org.eclipse.ui.console.ConsoleView">
           </view>
        </perspectiveExtension>
+    </extension>
+    <extension
+          id="ru.taximaxim.codekeeper.ui.builder"
+          name="pgCodekeeper Builder"
+          point="org.eclipse.core.resources.builders">
+       <builder>
+          <run
+                class="ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser">
+          </run>
+       </builder>
     </extension>
 
 </plugin>
