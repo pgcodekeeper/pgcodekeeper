@@ -2,12 +2,17 @@ package ru.taximaxim.codekeeper.ui.editors;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.NotEnabledException;
+import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -22,6 +27,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -30,6 +36,7 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -44,9 +51,14 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IPageLayout;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.part.ISetSelectionTarget;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageSelectionProvider;
 
@@ -59,11 +71,13 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
@@ -77,6 +91,7 @@ import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -218,27 +233,28 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 }
 
 class CommitPage extends DiffPresentationPane {
-
+    private final String [] VIEW_IDS_SUPPORTING_EGIT_COMMIT = {
+            // project explorer
+            IPageLayout.ID_PROJECT_EXPLORER,
+            // package explorer
+            JavaUI.ID_PACKAGES
+    };
+    
     private LocalResourceManager lrm;
 
-    private final IPreferenceStore mainPrefs;
-    private final PgDbProject proj;
-    
     private Button btnSave;
     
-    public CommitPage(Composite parent, IPreferenceStore mainPrefs,
-            PgDbProject proj) {
+    private boolean isCommitCommandAvailable;
+    
+    public CommitPage(Composite parent, IPreferenceStore mainPrefs, PgDbProject proj) {
         super(parent, true, mainPrefs, proj);
-        
-        this.mainPrefs = mainPrefs;
-        this.proj = proj;
         
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
     }
     
     @Override
-    protected void createUpperContainer(Composite container, GridLayout gl) {
-        gl.numColumns = 2;
+    protected void createUpperContainer(final Composite container, GridLayout gl) {
+        gl.numColumns = 3;
         container.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         
         lrm = new LocalResourceManager(JFaceResources.getResources(), container);
@@ -256,6 +272,23 @@ class CommitPage extends DiffPresentationPane {
                 commit();
             }
         });
+        
+        final Button btnAutoCommitWindow = new Button(container, SWT.CHECK);
+        btnAutoCommitWindow.setText(Messages.commitPartDescr_show_commit_window);
+        btnAutoCommitWindow.setSelection(mainPrefs.getBoolean(PREF.CALL_COMMIT_COMMAND_AFTER_UPDATE));
+        btnAutoCommitWindow.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                PreferenceInitializer.savePreference(mainPrefs, 
+                        PREF.CALL_COMMIT_COMMAND_AFTER_UPDATE, String.valueOf(btnAutoCommitWindow.getSelection()));
+            }
+        });
+        
+        Object commandService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getService(ICommandService.class);
+        Collection<String> commandIds = ((ICommandService)commandService).getDefinedCommandIds();
+        isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
+        btnAutoCommitWindow.setEnabled(isCommitCommandAvailable);
     }
     
     private void commit() {
@@ -344,14 +377,58 @@ class CommitPage extends DiffPresentationPane {
                     ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
                     try {
                         proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+                        CommitPage.this.callEgitCommitCommand();
                     } catch (CoreException e) {
                         ExceptionNotifier.showErrorDialog(Messages.ProjectEditorDiffer_error_refreshing_project, e);
                     }
                 }
             }
         });
+        
         job.setUser(true);
         job.schedule();
+    }
+    
+    private void callEgitCommitCommand(){
+        if (!isCommitCommandAvailable || !mainPrefs.getBoolean(PREF.CALL_COMMIT_COMMAND_AFTER_UPDATE)){
+            return;
+        }
+        
+        // run in UI thread to acquire not null WorkbenchWindow
+        Display.getDefault().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();                
+                IViewPart view = null;
+                
+                for (int i = 0; i < VIEW_IDS_SUPPORTING_EGIT_COMMIT.length && view == null; i++){
+                    String id = VIEW_IDS_SUPPORTING_EGIT_COMMIT[i];
+                    view = page.findView(id);
+                }
+                
+                if (view == null){
+                    Log.log(Log.LOG_WARNING, "Any of the following views should be open "
+                            + "to execute command " + COMMAND.COMMIT_COMMAND_ID + ":\n"
+                                    + "\tProject explorer\n"
+                                    + "\tPackage explorer\n");
+                    return;
+                }
+                
+                // focus on view and select current project
+                page.activate(view);
+                ((ISetSelectionTarget)view).selectReveal(new StructuredSelection(proj.getProject()));
+                
+                // execute command
+                try {
+                    ((IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class))
+                    .executeCommand(COMMAND.COMMIT_COMMAND_ID, null);
+                } catch (ExecutionException | NotDefinedException | NotEnabledException
+                        | NotHandledException e) {
+                    Log.log(Log.LOG_WARNING, "Could not execute command " + COMMAND.COMMIT_COMMAND_ID, e);
+                }
+            }
+        });
+        
     }
     
     @Override
@@ -413,9 +490,6 @@ class DiffPage extends DiffPresentationPane {
     
     private LocalResourceManager lrm;
     
-    private final PgDbProject proj;
-    private final IPreferenceStore mainPrefs;
-    
     private Button btnGetLatest, btnAddDepcy;
 
     /**
@@ -425,11 +499,8 @@ class DiffPage extends DiffPresentationPane {
     private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new LinkedList<>();
     private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new LinkedList<>();
 
-    public DiffPage(Composite parent, IPreferenceStore mainPrefs,
-            PgDbProject proj) {
+    public DiffPage(Composite parent, IPreferenceStore mainPrefs, PgDbProject proj) {
         super(parent, false, mainPrefs, proj);
-        this.mainPrefs = mainPrefs;
-        this.proj = proj;
     }
     
     @Override

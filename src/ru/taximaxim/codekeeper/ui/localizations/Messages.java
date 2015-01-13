@@ -141,6 +141,7 @@ public final class Messages extends NLS {
 
     // ui.parts
     public static String commitPartDescr_commit;
+    public static String commitPartDescr_show_commit_window;
     public static String commitPartDescr_commit_confirmation;
     public static String commitPartDescr_commiting;
     public static String commitPartDescr_exporting_db_model;

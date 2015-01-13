@@ -19,6 +19,9 @@ public interface UIConsts {
         String DEPCY_SRC_STATE = DEPCY_SRC + "state"; //$NON-NLS-1$
         String DEPCY_TGT = PLUGIN_ID.THIS + ".toggleDepcyTgt"; //$NON-NLS-1$
         String DEPCY_TGT_STATE = DEPCY_TGT + "state"; //$NON-NLS-1$
+        /* EGit commit command id 
+        (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION) */
+        String COMMIT_COMMAND_ID = "org.eclipse.egit.ui.team.Commit"; //$NON-NLS-1$
     }
     
     interface PREF {
@@ -32,6 +35,8 @@ public interface UIConsts {
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
         String IS_DDL_UPDATE_OVER_JDBC = "isDdlUpdateOverJdbc"; //$NON-NLS-1$
+        
+        String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate";
     }
     
     interface COMMIT_PREF {
