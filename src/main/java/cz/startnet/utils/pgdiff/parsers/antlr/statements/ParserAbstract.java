@@ -8,6 +8,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.Parser;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
@@ -36,7 +38,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
  */
 public abstract class ParserAbstract {
     protected final PgDatabase db;
-    private final Path filePath;
+    protected final Path filePath;
 
     public ParserAbstract(PgDatabase db, Path filePath) {
         this.db = db;
@@ -60,12 +62,19 @@ public abstract class ParserAbstract {
      * @param obj
      * @param startIndex
      */
-    protected void fillObjLocation(PgStatement obj, int startIndex,
-            String schemaName, boolean addedToDB) {
-        PgObjLocation loc = new PgObjLocation(obj, startIndex, filePath);
-        loc.setSchemaName(schemaName);
-        loc.setAddedToDB(addedToDB);
-        db.addObjLocation(loc);
+    protected void fillObjDefinition(String schemaName, PgStatement obj, int startIndex) {
+        PgObjLocation loc = new PgObjLocation(schemaName, obj.getBareName(),
+                null, startIndex, filePath);
+        loc.setObjType(obj.getStatementType());
+        db.addObjDefinition(loc);
+        db.addObjReference(loc);
+    }
+    
+    protected void addObjReference(String schemaName, String objName, DbObjType objType, int startIndex) {
+        PgObjLocation loc = new PgObjLocation(schemaName, objName,
+                null, startIndex, filePath);
+        loc.setObjType(objType);
+        db.addObjReference(loc);
     }
 
     /**
@@ -295,6 +304,20 @@ public abstract class ParserAbstract {
         }
         constr.setDefinition(getFullCtxText(ctx.constr_body()));
         return constr;
+    }
+    
+    protected void logError(String object, String name) {
+        Log.log(Log.LOG_ERROR, new StringBuilder(0).append("Cannot find ")
+                .append(object).append(" in database: ").append(name)
+                .toString());
+    }
+    
+    protected void logSkipedObject(String schema, String object, String name) {
+        Log.log(Log.LOG_ERROR,
+                new StringBuilder(0).append("Cannot find schema ")
+                        .append(schema).append(" in database. ")
+                        .append("Thats why ").append(object).append(" ")
+                        .append(name).append("will be skipped").toString());
     }
 
     private void getColumnConstraint(

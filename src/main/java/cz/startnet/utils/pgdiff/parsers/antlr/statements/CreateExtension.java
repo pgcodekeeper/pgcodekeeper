@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
@@ -16,23 +17,20 @@ public class CreateExtension extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
-        String name = getName(ctx.name);
-        String schemaName =getSchemaName(ctx.name);
-        if (schemaName==null) {
-            schemaName = getDefSchemaName();
-        }
-        PgExtension ext = new PgExtension(name, getFullCtxText(ctx.getParent()));
+        PgExtension ext = new PgExtension(getName(ctx.name), 
+                getFullCtxText(ctx.getParent()));
         if (ctx.old_version!= null) {
             ext.setOldVersion(ctx.old_version.getText());
         }
         if (ctx.schema_with_name() != null) {
             ext.setSchema(getName(ctx.schema_with_name().name));
+            addObjReference(null, getName(ctx.schema_with_name().name), DbObjType.SCHEMA, ctx.schema_with_name().name.getStart().getStartIndex());
         }
         if (ctx.version!= null) {
             ext.setVersion(ctx.version.getText());
         }
         db.addExtension(ext);
-        fillObjLocation(ext, ctx.name.getStart().getStartIndex(),schemaName, db.getExtension(name)!= null);
+        fillObjDefinition(null, ext, ctx.name.getStart().getStartIndex());
         return ext;
     }
 

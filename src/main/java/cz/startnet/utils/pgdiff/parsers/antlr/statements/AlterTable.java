@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -15,7 +16,9 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
 public class AlterTable extends ParserAbstract {
 
     private Alter_table_statementContext ctx;
-    public AlterTable(Alter_table_statementContext ctx, PgDatabase db, Path filePath) {
+
+    public AlterTable(Alter_table_statementContext ctx, PgDatabase db,
+            Path filePath) {
         super(db, filePath);
         this.ctx = ctx;
     }
@@ -27,15 +30,33 @@ public class AlterTable extends ParserAbstract {
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         }
-        PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
         PgTable tabl = db.getSchema(schemaName).getTable(name);
+        
         List<String> sequences = new ArrayList<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
-            if (tablAction.table_column_definition()!=null) {
-                table.addColumn(getColumn(tablAction.table_column_definition(), sequences));
+
+            if (tablAction.owner_to() != null) {
                 if (tabl != null) {
-                    tabl.addColumn(getColumn(tablAction.table_column_definition(), sequences));
+                    tabl.setOwner(tablAction.owner_to().name.getText());
+                    addObjReference(schemaName, name, DbObjType.TABLE, ctx.name.getStart().getStartIndex());
+                } else if (db.getSchema(schemaName).getSequence(name) != null) {
+                    db.getSchema(schemaName).getSequence(name)
+                            .setOwner(tablAction.owner_to().name.getText());
+                    addObjReference(schemaName, name, DbObjType.SEQUENCE, ctx.name.getStart().getStartIndex());
+                } else if (db.getSchema(schemaName).getView(name) != null) {
+                    db.getSchema(schemaName).getView(name)
+                            .setOwner(tablAction.owner_to().name.getText());
+                    addObjReference(schemaName, name, DbObjType.VIEW, ctx.name.getStart().getStartIndex());
                 }
+            } else {
+                addObjReference(schemaName, name, DbObjType.TABLE, ctx.name.getStart().getStartIndex());
+            }
+            if (tabl == null) {
+                continue;
+            }
+            if (tablAction.table_column_definition() != null) {
+                tabl.addColumn(getColumn(tablAction.table_column_definition(),
+                        sequences));
             }
             if (tablAction.set_def_column() != null) {
                 String sequence = getSequence(tablAction.set_def_column().expression);
@@ -46,68 +67,40 @@ public class AlterTable extends ParserAbstract {
             if (tablAction.tabl_constraint != null) {
                 PgConstraint constr = getTableConstraint(tablAction.tabl_constraint);
                 constr.setTableName(name);
-                table.addConstraint(constr);
-                if (tabl != null) {
-                    constr.dropParent();
-                    tabl.addConstraint(constr);
-                }
+                tabl.addConstraint(constr);
             }
-            if (tablAction.index_name!=null) {
-                table.setClusterIndexName(getFullCtxText(tablAction.index_name));
-                if (tabl != null) {
-                    tabl.setClusterIndexName(getFullCtxText(tablAction.index_name));
-                }
+            if (tablAction.index_name != null) {
+                tabl.setClusterIndexName(getFullCtxText(tablAction.index_name));
             }
-            if (tablAction.owner_to() !=null) {
-                table.setOwner(tablAction.owner_to().name.getText());
-                if (tabl != null) {
-                    tabl.setOwner(tablAction.owner_to().name.getText());
-                } else if (db.getSchema(schemaName).getSequence(name) != null) {
-                    db.getSchema(schemaName).getSequence(name).setOwner(tablAction.owner_to().name.getText());
-                } else if (db.getSchema(schemaName).getView(name) != null) {
-                    db.getSchema(schemaName).getView(name).setOwner(tablAction.owner_to().name.getText());
-                }
-            }
+
             if (tablAction.WITHOUT() != null && tablAction.OIDS() != null) {
-                table.setWith("OIDS=false");
-                if (tabl != null) {
-                    tabl.setWith("OIDS=false");
-                }
+                tabl.setWith("OIDS=false");
             } else if (tablAction.WITH() != null && tablAction.OIDS() != null) {
-                table.setWith("OIDS=true");
-                if (tabl != null) {
-                    tabl.setWith("OIDS=true");
-                }
+                tabl.setWith("OIDS=true");
             }
             if (tablAction.column != null) {
                 if (tablAction.STATISTICS() != null) {
-                    fillStatictics(table, tablAction);
-                    if (tabl != null) {
-                        fillStatictics(tabl, tablAction);
-                    }
+                    fillStatictics(tabl, tablAction);
                 }
                 if (tablAction.set_def_column() != null) {
-                    fillDefColumn(table, tablAction);
-                    // не добавляем в таблицу сиквенс если она наследует некоторые поля из др таблицы
+                    // не добавляем в таблицу сиквенс если она наследует
+                    // некоторые поля из др таблицы
                     // совместимость с текущей версией экспорта
-                    if (tabl != null && tabl.getInherits().isEmpty()) {
+                    if (tabl.getInherits().isEmpty()) {
                         fillDefColumn(tabl, tablAction);
                     }
                 }
             }
         }
         for (String seq : sequences) {
-            table.addSequence(seq);
-            // не добавляем в таблицу сиквенс если она наследует некоторые поля из др таблицы
+            // не добавляем в таблицу сиквенс если она наследует некоторые поля
+            // из др таблицы
             // совместимость с текущей версией экспорта
-            if (tabl != null && tabl.getInherits().isEmpty()) {
+            if (tabl.getInherits().isEmpty()) {
                 tabl.addSequence(seq);
             }
         }
-        if (tabl != null) {
-            return null;
-        }
-        return table;
+        return null;
     }
 
     private void fillDefColumn(PgTable table, Table_actionContext tablAction) {
@@ -116,7 +109,8 @@ public class AlterTable extends ParserAbstract {
             col.setDefaultValue(getFullCtxText(tablAction.set_def_column().expression));
             table.addColumn(col);
         } else {
-            table.getColumn(getName(tablAction.column)).setDefaultValue(getFullCtxText(tablAction.set_def_column().expression));   
+            table.getColumn(getName(tablAction.column)).setDefaultValue(
+                    getFullCtxText(tablAction.set_def_column().expression));
         }
     }
 
@@ -127,7 +121,8 @@ public class AlterTable extends ParserAbstract {
             col.setStatistics(new Integer(number));
             table.addColumn(col);
         } else {
-            table.getColumn(getName(tablAction.column)).setStatistics(new Integer(tablAction.integer.getText()));   
+            table.getColumn(getName(tablAction.column)).setStatistics(
+                    new Integer(tablAction.integer.getText()));
         }
     }
 

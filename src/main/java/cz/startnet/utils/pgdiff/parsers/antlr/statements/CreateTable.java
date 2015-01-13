@@ -63,9 +63,12 @@ public class CreateTable extends ParserAbstract {
                 table.setWith("OIDS=true");
             }
         }
+        if (db.getSchema(schemaName) == null) {
+            logSkipedObject(schemaName, "TABLE", name);
+            return null;
+        }
         db.getSchema(schemaName).addTable(table);
-        fillObjLocation(table, ctx.name.getStart().getStartIndex(), schemaName,
-                db.getSchema(schemaName).getTable(name)!=null);
+        fillObjDefinition(schemaName, table, ctx.name.getStart().getStartIndex());
         return table;
     }
 }

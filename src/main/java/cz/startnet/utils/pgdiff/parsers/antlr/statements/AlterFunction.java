@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -25,14 +26,14 @@ public class AlterFunction extends ParserAbstract {
         PgFunction function = new PgFunction(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
         fillArguments(ctx.function_parameters().function_args(), function);
         PgFunction func= db.getSchema(schemaName).getFunction(function.getSignature());
-        if (ctx.owner_to()!=null) {
-            function.setOwner(ctx.owner_to().name.getText());
-            if (func != null) {
-                func.setOwner(ctx.owner_to().name.getText());
-                return null;
-            }
-            return function;
+        if (func == null) {
+            logError("FUNCTION", name);
+            return null;
         }
+        if (ctx.owner_to() != null) {
+            func.setOwner(ctx.owner_to().name.getText());
+        }
+        addObjReference(schemaName, func.getBareName(), DbObjType.FUNCTION, ctx.function_parameters().name.getStart().getStartIndex());
         return null;
     }
 

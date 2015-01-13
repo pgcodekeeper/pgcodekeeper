@@ -11,7 +11,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameCon
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
-import cz.startnet.utils.pgdiff.schema.PgRuleCommon;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class CreateRule extends ParserAbstract {
@@ -53,6 +52,7 @@ public class CreateRule extends ParserAbstract {
                                 new PgPrivilege(ctx.REVOKE() != null,
                                         getFullCtxText(ctx.body_rule),
                                         getFullCtxText(ctx)));
+                addObjReference(getDefSchemaName(), func.getBareName(), DbObjType.FUNCTION, functparam.name.getStart().getStartIndex());
             }
         } else if (ctx.body_rule.on_large_object() != null) {
             obj_name = ctx.body_rule.on_large_object().obj_name.name;
@@ -65,23 +65,16 @@ public class CreateRule extends ParserAbstract {
 
         
         for (Schema_qualified_nameContext name : obj_name) {
-            PgRuleCommon object = new PgRuleCommon(getFullCtxText(ctx));
-            object.setBody(getFullCtxText(ctx.body_rule));
-            object.setRevoke(ctx.REVOKE() != null);
-            object.setObjName(name.getText());
-            if (addToDB(name, type, new PgPrivilege(object.isRevoke(),
-                    object.getBody(), object.getRawStatement()))) {
-                fillObjLocation(object, ctx.getStart().getStartIndex(),
-                    getDefSchemaName(), false);
-            }
+            addToDB(name, type, new PgPrivilege(ctx.REVOKE() != null,
+                    getFullCtxText(ctx.body_rule), getFullCtxText(ctx)));
         }
 
         return null;
     }
 
-    private boolean addToDB(Schema_qualified_nameContext name, DbObjType type, PgPrivilege pgPrivilege) {
+    private PgStatement addToDB(Schema_qualified_nameContext name, DbObjType type, PgPrivilege pgPrivilege) {
         if (type == null) {
-            return true;
+            return null;
         }
         String firstPart = getName(name);
         String secondPart = getTableName(name);
@@ -111,6 +104,7 @@ public class CreateRule extends ParserAbstract {
             statement = db;
             break;
         case SCHEMA:
+            schemaName = null;
             statement = db.getSchema(firstPart);
             break;
         default:
@@ -118,8 +112,9 @@ public class CreateRule extends ParserAbstract {
         }
         if (statement != null) {
             statement.addPrivilege(pgPrivilege);
-            return false;
+            addObjReference(schemaName, statement.getBareName(), statement.getStatementType(), name.getStart().getStartIndex());
+            return statement;
         }
-        return true;
+        return null;
     }
 }

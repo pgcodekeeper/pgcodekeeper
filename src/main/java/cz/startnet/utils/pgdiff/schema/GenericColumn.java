@@ -1,8 +1,13 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public final class GenericColumn {
+public final class GenericColumn implements Serializable{
+/**
+     * 
+     */
+    private static final long serialVersionUID = -5032985077177033449L;
 // SONAR-OFF
     public final String schema;
     public final String table;

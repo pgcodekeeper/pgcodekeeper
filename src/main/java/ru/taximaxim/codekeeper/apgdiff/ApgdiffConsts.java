@@ -19,8 +19,8 @@ public interface ApgdiffConsts {
     String EXPORT_MIN_VERSION = "0.2.9";
     
     enum WORK_DIR_NAMES {
-        EXTENSION,
-        SCHEMA
+        SCHEMA,
+        EXTENSION
     }
     
     interface JDBC_CONSTS{

@@ -13,11 +13,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,7 +42,6 @@ import cz.startnet.utils.pgdiff.parsers.PrivilegeParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 
 /**
@@ -280,17 +278,13 @@ public final class PgDumpLoader { //NOPMD
     static PgDatabase loadDatabaseSchemaCoreAntLR(
             InputStream inputStream, String charsetName, 
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers, 
-            PgDatabase database) {
-        List<PgObjLocation> alterObjects = new ArrayList<>();
-        AntlrParser parser = new AntlrParser();
+            PgDatabase database, Path path) {
         try {
-            parser.parseInputStream(inputStream, charsetName, 
-                    new CustomSQLParserListener(alterObjects, database, Paths.get("/")));
+            new AntlrParser().parseInputStream(inputStream, charsetName, 
+                    new CustomSQLParserListener(database, path));
         } catch (IOException e) {
             throw new FileException("Exception while closing dump file", e);
         }
-        AntlrParser.fillDB(database);
-        AntlrParser.fillAlterObjects(alterObjects, database);
         return database;
     }
     /**
@@ -315,13 +309,8 @@ public final class PgDumpLoader { //NOPMD
 
         // step 1
         // read files in schema folder, add schemas to db
-        ApgdiffConsts.WORK_DIR_NAMES[] dirEnums = ApgdiffConsts.WORK_DIR_NAMES.values();
-        String[] dirs = new String[dirEnums.length];
-        for (int i = 0; i < dirEnums.length; ++i) {
-            dirs[i] = dirEnums[i].toString();
-        }
-        walkSubdirsRunCore(dir, charsetName, outputIgnoredStatements,
-                ignoreSlonyTriggers, dirs, db, parser);
+        loadSchemasExtensions(charsetName, outputIgnoredStatements,
+                ignoreSlonyTriggers, parser, db, dir);
 
         File schemasCommonDir = new File(dir, ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
         // skip walking SCHEMA folder if it does not exist
@@ -340,6 +329,18 @@ public final class PgDumpLoader { //NOPMD
         }
         return db;
     }
+
+    private static void loadSchemasExtensions(String charsetName,
+            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+            ParserClass parser, final PgDatabase db, File dir) {
+        ApgdiffConsts.WORK_DIR_NAMES[] dirEnums = ApgdiffConsts.WORK_DIR_NAMES.values();
+        String[] dirs = new String[dirEnums.length];
+        for (int i = 0; i < dirEnums.length; ++i) {
+            dirs[i] = dirEnums[i].toString();
+        }
+        walkSubdirsRunCore(dir, charsetName, outputIgnoredStatements,
+                ignoreSlonyTriggers, dirs, db, parser);
+    }
     
     private static void walkSubdirsRunCore(File dir, String charsetName,
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
@@ -356,7 +357,7 @@ public final class PgDumpLoader { //NOPMD
                             f.getName().toLowerCase().endsWith(".sql")) {
                         try (FileInputStream inputStream = new FileInputStream(f)) {
                             parser.parse(inputStream, charsetName,
-                                    outputIgnoredStatements, ignoreSlonyTriggers, db);
+                                    outputIgnoredStatements, ignoreSlonyTriggers, db, f.toPath());
                         } catch (FileNotFoundException ex) {
                             throw new FileException(MessageFormat.format(
                                     Resources.getString("FileNotFound"),
@@ -388,7 +389,7 @@ public final class PgDumpLoader { //NOPMD
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
             ParserClass parser) {
         return parser.parse(inputStream, charsetName, outputIgnoredStatements,
-                ignoreSlonyTriggers, new PgDatabase());
+                ignoreSlonyTriggers, new PgDatabase(), Paths.get("/"));
     }
     
     /**

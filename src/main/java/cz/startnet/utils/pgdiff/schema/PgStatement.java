@@ -75,6 +75,7 @@ public abstract class PgStatement {
     
     public void setComment(String comment) {
         this.comment = comment;
+        resetHash();
     }
 
     protected StringBuilder appendCommentSql(StringBuilder sb) {

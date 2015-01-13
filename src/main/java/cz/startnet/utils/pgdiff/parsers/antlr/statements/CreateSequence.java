@@ -46,9 +46,12 @@ public class CreateSequence extends ParserAbstract {
                 sequence.setOwnedBy(body.col_name.getText());
             }
         }
+        if (db.getSchema(schemaName) == null) {
+            logSkipedObject(schemaName, "SEQUENCE", name);
+            return null;
+        }
         db.getSchema(schemaName).addSequence(sequence);
-        fillObjLocation(sequence, ctx.name.getStart().getStartIndex(), schemaName,
-                db.getSchema(schemaName).getSequence(name)!= null);
+        fillObjDefinition(schemaName, sequence, ctx.name.getStart().getStartIndex());
         return sequence;
     }
 
