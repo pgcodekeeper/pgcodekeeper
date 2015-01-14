@@ -15,6 +15,7 @@ public class PgObjLocation implements Serializable {
     private int offset;
     private String filePath;
     private DbObjType type;
+    private String comment;
     
     public GenericColumn getObject() {
         return objName;
@@ -89,5 +90,13 @@ public class PgObjLocation implements Serializable {
     @Override
     public String toString() {
         return getObjName() + " " + filePath + " " + offset + " " + getObjLength() + " " + type;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }

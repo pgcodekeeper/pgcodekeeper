@@ -68,10 +68,20 @@ public abstract class ParserAbstract {
     }
     
     protected void addObjReference(String schemaName, String objName, DbObjType objType, int startIndex) {
-        PgObjLocation loc = new PgObjLocation(schemaName, objName,
-                null, startIndex, filePath);
+        PgObjLocation loc = new PgObjLocation(schemaName, objName, null,
+                startIndex, filePath);
         loc.setObjType(objType);
         db.addObjReference(loc);
+    }
+    
+    protected void setCommentToDefinition(String schemaName, String objName,
+            DbObjType objType, String comment) {
+        for (PgObjLocation loc : db.getObjDefinitions()) {
+            if (loc.getObjName().equals(objName)
+                    && loc.getObjType().equals(objType)) {
+                loc.setComment(comment);
+            }
+        }
     }
 
     /**
