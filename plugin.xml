@@ -134,6 +134,14 @@
             id="ru.taximaxim.codekeeper.ui.projectEditorDiffer"
             name="%editor.name.keeperProjectEditor">
       </editor>
+      <editor
+            class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditor"
+            contributorClass="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorActionContributor"
+            default="false"
+            filenames="*.sql"
+            id="ru.taximaxim.codekeeper.ui.SQLEditor"
+            name="PgCodeKeeper SQL Editor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
@@ -165,6 +173,18 @@
             class="ru.taximaxim.codekeeper.ui.prefs.DbUpdatePrefPage"
             id="ru.taximaxim.codekeeper.ui.dbupdateprefpage"
             name="%page.name.db_update_pref_page">
+      </page>
+      <page
+            category="ru.taximaxim.codekeeper.ui.general"
+            class="ru.taximaxim.codekeeper.ui.prefs.SQLEditorMainPage"
+            id="ru.taximaxim.codekeeper.ui.sqleditor"
+            name="SQL Editor">
+      </page>
+      <page
+            category="ru.taximaxim.codekeeper.ui.sqleditor"
+            class="ru.taximaxim.codekeeper.ui.prefs.SQLEditorSytaxColoring"
+            id="ru.taximaxim.codekeeper.ui.sqlsyntaxcoloring"
+            name="Syntax Coloring">
       </page>
    </extension>
    <extension
@@ -218,6 +238,23 @@
             </and>
          </enabledWhen>
       </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
+      <hyperlinkDetector
+            activate="true"
+            class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorHyperLinkDetector"
+            id="ru.taximaxim.codekeeper.ui.pgcodekeeperhyperlinkDetector"
+            name="PgCodeKeeper HyperLink Detector"
+            targetId="ru.taximaxim.codekeeper.ui.SQLEditorTarget">
+      </hyperlinkDetector>
+   </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectorTargets">
+      <target
+            id="ru.taximaxim.codekeeper.ui.SQLEditorTarget"
+            name="SQL Editor Target">
+      </target>
    </extension>
     <extension point="org.eclipse.ui.views">
       <view id="ru.taximaxim.codekeeper.ui.depcyview"
