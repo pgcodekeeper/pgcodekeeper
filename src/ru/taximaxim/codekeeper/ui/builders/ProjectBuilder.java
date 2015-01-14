@@ -17,7 +17,6 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 public class ProjectBuilder extends IncrementalProjectBuilder {
 
     public ProjectBuilder() {
-        // TODO Auto-generated constructor stub
     }
 
     @Override
@@ -36,12 +35,11 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             parser.getObjFromProject();
             break;
         }
-        List<IProject> list = new ArrayList<>();
-        list.add(proj);
         for (Listener e : parser.getListeners()) {
             e.handleEvent(new Event());
         }
+        List<IProject> list = new ArrayList<>();
+        list.add(proj);
         return list.toArray(new IProject[list.size()]);
     }
-
 }

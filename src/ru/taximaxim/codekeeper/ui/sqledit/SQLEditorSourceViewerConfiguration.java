@@ -1,10 +1,9 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
@@ -16,7 +15,6 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
-import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
@@ -30,11 +28,15 @@ import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+import org.eclipse.ui.part.FileEditorInput;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
@@ -66,24 +68,46 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             
             @Override
             public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-                Point selection= textViewer.getSelectedRange();
-                if (selection.x <= offset && offset < selection.x + selection.y)
-                    return new Region(selection.x, selection.y);
+                IProject proj = null;
+                IFile file = null;
+                IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                        .getActivePage().getActiveEditor();
+                if (page instanceof SQLEditor) {
+                    SQLEditor edit = (SQLEditor) page;
+                    file = ((FileEditorInput) ((edit).getEditorInput())).getFile();
+                    if (file != null) {
+                        proj = file.getProject();
+                    }
+                }
+                if (proj == null) {
+                    return new Region(offset, 0);
+                }
+                PgDbParser parser = PgDbParser.getParser(proj);
+                for (PgObjLocation obj : parser.getObjsForPath(file.getLocation()
+                        .toFile().toPath())) {
+                    if (offset > obj.getOffset()
+                            && offset < (obj.getOffset() + obj.getObjLength())) {
+                        PgObjLocation loc = parser.getDefinitionForObj(obj);
+                        if (loc != null) {
+                            SQLEditorMyRegion region = new SQLEditorMyRegion(loc.getOffset(), loc.getObjLength());
+                            region.setComment(loc.getComment());
+                            return region;
+                        }
+                    }
+                }
                 return new Region(offset, 0);
             }
             
             @Override
             public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
                 if (hoverRegion != null) {
-                    try {
-                        if (hoverRegion.getLength() > -1)
-                            return textViewer.getDocument().get(
-                                    hoverRegion.getOffset(),
-                                    hoverRegion.getLength());
-                    } catch (BadLocationException x) {
+                    if (hoverRegion.getLength() > -1
+                            && hoverRegion instanceof SQLEditorMyRegion) {
+                        SQLEditorMyRegion myRegion = (SQLEditorMyRegion) hoverRegion;
+                        return myRegion.getComment();
                     }
                 }
-                return "JavaTextHover.emptySelection"; 
+                return ""; 
             }
         };
     }
@@ -282,4 +306,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                 new TextAttribute(blue, null, SWT.ITALIC)));
         return commentScanner;
     }
+    
 }
+

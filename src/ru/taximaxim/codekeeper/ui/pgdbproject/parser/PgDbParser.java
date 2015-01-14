@@ -32,14 +32,10 @@ public class PgDbParser {
     private final CopyOnWriteArrayList<PgObjLocation> objReferences;
     private IProject proj;
     private List<Listener> listeners = new ArrayList<>();
-    
-    public PgDbParser() {
-        objDefinitions = new CopyOnWriteArrayList<>();
-        objReferences = new CopyOnWriteArrayList<>();
-    }
 
     private PgDbParser(IProject proj) {
-        this();
+        objDefinitions = new CopyOnWriteArrayList<>();
+        objReferences = new CopyOnWriteArrayList<>();
         this.proj = proj;
     }
     
@@ -71,47 +67,6 @@ public class PgDbParser {
     
     public void getObjFromProjFile(URI fileURI) {
         getPartialDBFromDirectory(proj.getLocationURI(), fileURI);
-    }
-
-    public PgObjLocation getDefinitionForObj(PgObjLocation obj) {
-        for (PgObjLocation col : objDefinitions) {
-            if (col.getObject().equals(obj.getObject())
-                    && col.getObjType().equals(obj.getObjType())) {
-                return col;
-            }
-        }
-        return null;
-    }
-    
-    public List<PgObjLocation> getObjsForPath(Path pathToFile) {
-        List<PgObjLocation> locations = new ArrayList<>();
-        for (PgObjLocation loc : objReferences) {
-            if (loc.getFilePath().equals(pathToFile) 
-                    && hasDefinition(loc)) {
-                locations.add(loc);
-            }
-        }
-        return locations;
-    }
-    
-    private boolean hasDefinition(PgObjLocation obj) {
-        for (PgObjLocation loc : objDefinitions) {
-            if (loc.getObject().table.equals(obj.getObject().table)
-                    && loc.getObjType().equals(obj.getObjType())) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public List<PgObjLocation> getObjDefinitionsByPath(Path path) {
-        List<PgObjLocation> locations = new ArrayList<>();
-        for (PgObjLocation obj : objDefinitions) {
-            if (obj.getFilePath().equals(path)) {
-                locations.add(obj);
-            }
-        }
-        return locations;
     }
     
     private void getFullDBFromDirectory(final URI locationURI) {
@@ -160,5 +115,46 @@ public class PgDbParser {
         }
         oldRefs.removeAll(remove);
         oldRefs.addAll(newRefs);
+    }
+
+    public PgObjLocation getDefinitionForObj(PgObjLocation obj) {
+        for (PgObjLocation col : objDefinitions) {
+            if (col.getObject().equals(obj.getObject())
+                    && col.getObjType().equals(obj.getObjType())) {
+                return col;
+            }
+        }
+        return null;
+    }
+    
+    public List<PgObjLocation> getObjsForPath(Path pathToFile) {
+        List<PgObjLocation> locations = new ArrayList<>();
+        for (PgObjLocation loc : objReferences) {
+            if (loc.getFilePath().equals(pathToFile) 
+                    && hasDefinition(loc)) {
+                locations.add(loc);
+            }
+        }
+        return locations;
+    }
+    
+    private boolean hasDefinition(PgObjLocation obj) {
+        for (PgObjLocation loc : objDefinitions) {
+            if (loc.getObject().table.equals(obj.getObject().table)
+                    && loc.getObjType().equals(obj.getObjType())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public List<PgObjLocation> getObjDefinitionsByPath(Path path) {
+        List<PgObjLocation> locations = new ArrayList<>();
+        for (PgObjLocation obj : objDefinitions) {
+            if (obj.getFilePath().equals(path)) {
+                locations.add(obj);
+            }
+        }
+        return locations;
     }
 }
