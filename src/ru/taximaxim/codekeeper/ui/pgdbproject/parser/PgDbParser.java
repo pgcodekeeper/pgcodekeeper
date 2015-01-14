@@ -6,34 +6,32 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ProjectScope;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.swt.widgets.Listener;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
-public class PgDbParser extends IncrementalProjectBuilder{
+public class PgDbParser {
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
     private final CopyOnWriteArrayList<PgObjLocation> objDefinitions;
     private final CopyOnWriteArrayList<PgObjLocation> objReferences;
     private IProject proj;
+    private List<Listener> listeners = new ArrayList<>();
     
     public PgDbParser() {
         objDefinitions = new CopyOnWriteArrayList<>();
@@ -41,9 +39,20 @@ public class PgDbParser extends IncrementalProjectBuilder{
     }
 
     private PgDbParser(IProject proj) {
+        this();
         this.proj = proj;
-        objDefinitions = new CopyOnWriteArrayList<>();
-        objReferences = new CopyOnWriteArrayList<>();
+    }
+    
+    public void addListener(Listener e) {
+        listeners.add(e);
+    }
+    
+    public void removeListener(Listener e) {
+        listeners.remove(e);
+    }
+    
+    public List<Listener> getListeners() {
+        return listeners;
     }
     
     public static PgDbParser getParser(IProject proj) {
@@ -151,25 +160,5 @@ public class PgDbParser extends IncrementalProjectBuilder{
         }
         oldRefs.removeAll(remove);
         oldRefs.addAll(newRefs);
-    }
-
-    @Override
-    protected IProject[] build(int kind, Map<String, String> args,
-            IProgressMonitor monitor) throws CoreException {
-        this.proj = getProject();
-        if (!proj.hasNature(NATURE.ID)) {
-            return null;    
-        }
-        switch (kind) {
-        case IncrementalProjectBuilder.AUTO_BUILD:
-        case IncrementalProjectBuilder.CLEAN_BUILD:
-        case IncrementalProjectBuilder.FULL_BUILD:
-        case IncrementalProjectBuilder.INCREMENTAL_BUILD:
-            PgDbParser.getParser(proj).getObjFromProject();
-            break;
-        }
-        List<IProject> list = new ArrayList<>();
-        list.add(proj);
-        return list.toArray(new IProject[list.size()]);
     }
 }

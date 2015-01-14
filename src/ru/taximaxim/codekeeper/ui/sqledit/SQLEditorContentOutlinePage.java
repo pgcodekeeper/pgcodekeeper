@@ -37,13 +37,18 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     private AbstractDecoratedTextEditor fTextEditor;
     private IDocumentProvider fDocumentProvider;
     private PgDbParser parser;
+    private TreeViewer viewer;
 
     public SQLEditorContentOutlinePage(IDocumentProvider fDocumentProvider,
             AbstractDecoratedTextEditor sqlEditor) {
         fTextEditor = sqlEditor;
         this.fDocumentProvider = fDocumentProvider;
     }
-
+    
+    public void externalRefresh() {
+        viewer.refresh();
+    }
+    
     public void setInput(IEditorInput input) {
         this.fInput = input;
         IFile file = ((FileEditorInput)input).getFile();
@@ -55,7 +60,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     @Override
     public void createControl(Composite parent) {
         super.createControl(parent);
-        TreeViewer viewer = getTreeViewer();
+        viewer = getTreeViewer();
         viewer.setContentProvider(new ITreeContentProvider() {
 
             @Override

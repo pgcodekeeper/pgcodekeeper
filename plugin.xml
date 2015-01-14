@@ -378,7 +378,7 @@
           point="org.eclipse.core.resources.builders">
        <builder>
           <run
-                class="ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser">
+                class="ru.taximaxim.codekeeper.ui.builders.ProjectBuilder">
           </run>
        </builder>
     </extension>
