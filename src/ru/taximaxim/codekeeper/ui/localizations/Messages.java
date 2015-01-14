@@ -22,8 +22,6 @@ public final class Messages extends NLS {
     public static String runnable_has_not_finished;
     public static String select_all;
     public static String select_none;
-    public static String create_marker_file_named;
-    public static String manually_and_try_again;
     public static String missing_marker_file_in_working_directory;
     public static String choose_dump_file_with_changes;
     public static String db;
@@ -143,6 +141,7 @@ public final class Messages extends NLS {
 
     // ui.parts
     public static String commitPartDescr_commit;
+    public static String commitPartDescr_show_commit_window;
     public static String commitPartDescr_commit_confirmation;
     public static String commitPartDescr_commiting;
     public static String commitPartDescr_exporting_db_model;
@@ -191,7 +190,7 @@ public final class Messages extends NLS {
     public static String initProjectFromSource_init_request_but_no_schema_source;
     public static String initProjectFromSource_initializing_project;
     public static String initProjectFromSource_ioexception_while_creating_project;
-    public static String newProjWizard_bad_work_dir;
+    public static String newProjWizard_missing_marker_file;
     public static String newProjWizard_db_source_settings;
     public static String newProjWizard_dump_file_source_settings;
     public static String newProjWizard_error_in_initializing_repo_from_source;

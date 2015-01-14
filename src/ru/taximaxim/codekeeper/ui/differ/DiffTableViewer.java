@@ -64,7 +64,6 @@ import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -125,9 +124,6 @@ public class DiffTableViewer extends Composite {
     private DbSource dbSource;
     private DbSource dbTarget;
     
-    private DepcyGraph depcyGraphSource;
-    private DepcyGraph depcyGraphTarget;
-
     private Map<String, List<String>> prevChecked; 
     private XmlHistory prevCheckedHistory;
     
@@ -215,7 +211,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public ISelection getSelection() {
                 return new DepcyStructuredSelection(
-                        depcyGraphSource, depcyGraphTarget,
+                        dbSource, dbTarget,
                         ((IStructuredSelection) super.getSelection()).toArray());
             }
         };
@@ -601,16 +597,12 @@ public class DiffTableViewer extends Composite {
             this.treeRoot = (differ == null) ? null : differ.getDiffTree();
             this.dbSource = (differ == null) ? null : 
                 reverseDiffSide ? differ.getDbTarget() : differ.getDbSource();
-            this.depcyGraphSource = (dbSource == null) ? null : new DepcyGraph(dbSource.getDbObject());
             this.dbTarget = (differ == null) ? null : 
                 reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
-            this.depcyGraphTarget = (dbTarget == null) ? null : new DepcyGraph(dbTarget.getDbObject());
         } catch (PgCodekeeperUIException e) {
             ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_setting_input, e);
             this.treeRoot = null;
             this.dbSource = null;
-            this.depcyGraphSource = null;
-            this.depcyGraphTarget = null;
             this.dbTarget = null;
         }
     }
@@ -679,10 +671,6 @@ public class DiffTableViewer extends Composite {
     
     public CheckboxTableViewer getViewer() {
         return viewer;
-    }
-    
-    public DepcyGraph getDepcyGraphSource() {
-        return depcyGraphSource;
     }
     
     public Set<TreeElement> getCheckedElements(boolean checkedStatus) {

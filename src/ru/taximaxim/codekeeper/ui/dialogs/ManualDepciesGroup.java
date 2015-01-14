@@ -58,7 +58,7 @@ public class ManualDepciesGroup extends Group{
         
         this.depcies = new LinkedList<>(dependencies);
         
-        setLayout(new GridLayout(3, false));
+        setLayout(new GridLayout(2, true));
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
         setLayoutData(gd);
@@ -83,7 +83,6 @@ public class ManualDepciesGroup extends Group{
         
         cmbDependants.getCombo().addListener(SWT.Traverse, new ComboReturnKeyListener());
         cmbDependants.getCombo().addModifyListener(new ComboModifyListener());
-        
         new PgStatementAutoCompleteField(cmbDependants.getCombo(), new ComboContentAdapter(), objects);
         
         new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_depends_on);
@@ -110,9 +109,6 @@ public class ManualDepciesGroup extends Group{
                 setInput();
             }
         });
-        
-        new Label(this, SWT.SEPARATOR | SWT.VERTICAL)
-                .setLayoutData(new GridData(GridData.FILL_VERTICAL));
         
         Composite grpList = new Composite(this, SWT.NONE);
         gl = new GridLayout();
