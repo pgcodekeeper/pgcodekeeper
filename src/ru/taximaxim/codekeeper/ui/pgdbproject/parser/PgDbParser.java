@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -57,6 +58,7 @@ public class PgDbParser {
             return parser;
         }
         parser = new PgDbParser(proj);
+        parser.getFullDBFromDirectoryJob(proj.getLocationURI());
         PROJ_PARSERS.put(proj, parser);
         return parser;
     }
@@ -69,7 +71,29 @@ public class PgDbParser {
         getPartialDBFromDirectory(proj.getLocationURI(), fileURI);
     }
     
-    private void getFullDBFromDirectory(final URI locationURI) {
+    /**
+     * This method used instead serialize objects
+     * Need to remember references
+     * @param locationURI project location
+     */
+    private void getFullDBFromDirectoryJob(final URI locationURI) {
+        Job job = new Job("getDatabaseReferences") {
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                getFullDBFromDirectory(locationURI);
+                for (Listener e : getListeners()) {
+                    e.handleEvent(new Event());
+                }
+                return Status.OK_STATUS;
+            }
+            
+        };
+        job.setSystem(true);
+        job.schedule();
+    }
+    
+    private void getFullDBFromDirectory(URI locationURI) {
         ProjectScope ps = new ProjectScope(proj);
         IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(
