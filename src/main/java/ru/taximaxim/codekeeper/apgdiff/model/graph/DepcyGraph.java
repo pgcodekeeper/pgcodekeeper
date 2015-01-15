@@ -33,6 +33,7 @@ public class DepcyGraph {
             "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
             });
     
+    // expect no nulls here
     private static final List<String> SYS_SCHEMAS = Arrays.asList(new String[]{
             "information_schema", "pg_catalog"});
     
@@ -102,128 +103,135 @@ public class DepcyGraph {
                     graph.addEdge(idx, table);
                 }
                 
-                for(PgTrigger trig : table.getTriggers()) {
-                    graph.addVertex(trig);
-                    graph.addEdge(trig, table);
-                }
-            }
-        }
-
-        // do "special" dependencies in separate loops after the base structure has been created
-        // currently: foreign keys and views
-        
-        // "base" dependencies for those objects are also processed here (less loops)
-        // at least for now
-        for (PgSchema schema : db.getSchemas()) {
-            for (PgTable table : schema.getTables()) {
-                for(PgConstraint cons : table.getConstraints()) {
-                    graph.addVertex(cons);
-                    graph.addEdge(cons, table);
-                    
-                    if (cons instanceof PgForeignKey){
-                        for (GenericColumn ref : ((PgForeignKey) cons).getRefs()){
-                            PgColumn referredColumn = 
-                                    db.getSchema(ref.schema).getTable(ref.table).getColumn(ref.column);
-                            graph.addEdge(cons, referredColumn);
-                        }
-                    }
-                }
+                createTableToConstraints(table);
                 
-                for (String seqName : table.getSequences()) {
-                    PgSequence seq = getSchemaForObject(schema, seqName).getSequence(
-                            ParserUtils.getObjectName(seqName));
-                    if (seq != null) {
-                        graph.addVertex(seq);
-                        graph.addEdge(table, seq);
-                         
-                        String owned = seq.getOwnedBy();
-                        if (owned != null) {
-                            if (table.getName().equals(ParserUtils.getSecondObjectName(owned))) {
-                                graph.addEdge(seq, table);
-                            }
-                        }
-                    }
-                }
+                createTableToSequences(table, schema);
                 
-                for (PgTrigger trigger : table.getTriggers()) {
-                    String funcDef = trigger.getFunction();
-                    PgFunction func = getSchemaForObject(schema, funcDef).getFunction(
-                            ParserUtils.getObjectName(funcDef));
-                    if (func != null) {
-                        graph.addVertex(func);
-                        graph.addEdge(trigger, func);
-                    }
-                }
+                createTableToTriggers(table, schema);
             }
             
             for(PgView view : schema.getViews()) {
                 graph.addVertex(view);
                 graph.addEdge(view, schema);
                 
-                for (GenericColumn col : view.getSelect().getColumns()){
-                    String scmName = col.schema;
-                    String tblName = col.table;
-                    String clmnName = col.column;
-                    // пропускаем системные вещи, например count(*), AVG и т.д.
-                    // TODO: вынести "pg_.*" в настройки, сейчас жесток забито
-                    // чтобы пропускать выборку из pg_views - системной таблицы
-                    if (col.getType() == ViewReference.SYSTEM ||
-                            (col.table != null &&col.table.matches("pg_.*"))){
-                        continue;
-                    }
-                    if (scmName == null){
-                        scmName = schema.getName();
-                    }
-                    if (SYS_SCHEMAS.contains(scmName)){
-                        continue;
-                    }
-                    PgSchema scm = db.getSchema(scmName);
-                    
-                    PgTable tbl = scm.getTable(tblName);
-                    PgView vw = null;
-                    if (tbl != null) {
-                        graph.addEdge(view, tbl);
-                        
-                        if (SYS_COLUMNS.contains(clmnName)){
-                            continue;
-                        }
-                        
-                        PgColumn clmn = tbl.getColumn(clmnName);
-                        if (clmn != null){
-                            graph.addEdge(view, clmn);
-                        } else {
-                            Log.log(Log.LOG_WARNING,
-                                    "Depcy: No column " + clmnName 
-                                    + " found in " + tblName 
-                                    + " selected by view " + view.getName());
-                        }
-                    } else if ((vw = scm.getView(tblName)) != null){
-                        graph.addVertex(vw);
-                        graph.addEdge(view, vw);
-                    } else if (col.getType() == ViewReference.FUNCTION) {
-                        // TODO: Сейчас пропускаются функции типа upper,
-                        // replace, toChar, now, что делать либо
-                        // редактировать правила на эти функции, либо
-                        // вычислять в коде, скорее всего правила
-                        PgFunction func = scm.getFunction(tblName);
-                        if (func != null) {
-                            graph.addVertex(func);
-                            graph.addEdge(view, func);
-                        }
-                    } else {
-                        Log.log(Log.LOG_WARNING, "Depcy: View " + view.getName()
-                            + " references table/view/function " + tblName
-                            + " that doesn't exist!");
-                    }
-                }
+                createViewToQueried(view, schema);
             }
         }
-        
+
         for(PgExtension ext : db.getExtensions()) {
             graph.addVertex(ext);
             graph.addEdge(ext, db);
         }
     }
+    
+    private void createViewToQueried(PgView view, PgSchema schema) {
+        for (GenericColumn col : view.getSelect().getColumns()){
+            String scmName = col.schema;
+            String tblName = col.table;
+            String clmnName = col.column;
+            
+            // пропускаем системные вещи, например count(*), AVG и т.д.
+            // TODO: вынести "pg_.*" в настройки, сейчас жесток забито
+            // чтобы пропускать выборку из pg_views - системной таблицы
+            if (tblName == null || 
+                    col.getType() == ViewReference.SYSTEM ||
+                    (col.table != null && col.table.matches("pg_.*")) || 
+                    SYS_SCHEMAS.contains(scmName)){
+                continue;
+            }
+            
+            PgSchema scm = (scmName == null) ? schema : db.getSchema(scmName);
+            
+            PgTable tbl = scm.getTable(tblName);
+            if (tbl != null) {
+                graph.addEdge(view, tbl);
+                
+                if (SYS_COLUMNS.contains(clmnName)){
+                    continue;
+                }
+                
+                PgColumn clmn = tbl.getColumn(clmnName);
+                if (clmn != null){
+                    graph.addEdge(view, clmn);
+                } else {
+                    Log.log(Log.LOG_WARNING,
+                            "Depcy: No column " + clmnName 
+                            + " found in " + tblName 
+                            + " selected by view " + view.getName());
+                }
+                continue;
+            }
+            
+            PgView vw = scm.getView(tblName);
+            if (vw != null){
+                graph.addVertex(vw);
+                graph.addEdge(view, vw);
+            } else if (col.getType() == ViewReference.FUNCTION) {
+                // TODO: Сейчас пропускаются функции типа upper,
+                // replace, toChar, now, что делать либо
+                // редактировать правила на эти функции, либо
+                // вычислять в коде, скорее всего правила
+                PgFunction func = scm.getFunction(tblName);
+                if (func != null) {
+                    graph.addVertex(func);
+                    graph.addEdge(view, func);
+                }
+            } else {
+                Log.log(Log.LOG_WARNING, "Depcy: View " + view.getName()
+                    + " references table/view/function " + tblName
+                    + " that doesn't exist!");
+            }
+        }
+    }
+
+    private void createTableToTriggers(PgTable table, PgSchema schema) {
+        for (PgTrigger trigger : table.getTriggers()) {
+            graph.addVertex(trigger);
+            graph.addEdge(trigger, table);
+            
+            String funcDef = trigger.getFunction();
+            PgFunction func = getSchemaForObject(schema, funcDef).getFunction(
+                    ParserUtils.getObjectName(funcDef));
+            if (func != null) {
+                graph.addVertex(func);
+                graph.addEdge(trigger, func);
+            }
+        }
+    }
+
+    private void createTableToSequences(PgTable table, PgSchema schema) {
+        for (String seqName : table.getSequences()) {
+            PgSequence seq = getSchemaForObject(schema, seqName).getSequence(
+                    ParserUtils.getObjectName(seqName));
+            if (seq != null) {
+                graph.addVertex(seq);
+                graph.addEdge(table, seq);
+                 
+                String owned = seq.getOwnedBy();
+                if (owned != null) {
+                    if (table.getName().equals(ParserUtils.getSecondObjectName(owned))) {
+                        graph.addEdge(seq, table);
+                    }
+                }
+            }
+        }
+    }
+
+    private void createTableToConstraints(PgTable table) {
+        for(PgConstraint cons : table.getConstraints()) {
+            graph.addVertex(cons);
+            graph.addEdge(cons, table);
+            
+            if (cons instanceof PgForeignKey){
+                for (GenericColumn ref : ((PgForeignKey) cons).getRefs()){
+                    PgColumn referredColumn = 
+                            db.getSchema(ref.schema).getTable(ref.table).getColumn(ref.column);
+                    graph.addEdge(cons, referredColumn);
+                }
+            }
+        }
+    }
+
     /**
      * Возвращает схему, на которую указывает строковое определение объекта,
      * либо текущую схему
