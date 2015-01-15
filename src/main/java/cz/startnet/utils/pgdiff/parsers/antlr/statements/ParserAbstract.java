@@ -236,6 +236,11 @@ public abstract class ParserAbstract {
              GeneralLiteralSearch seq = new GeneralLiteralSearch();
              new ParseTreeWalker().walk(seq, ctx);
              seqName = seq.getSeqName();
+             if (seqName != null &&
+                     !seqName.isEmpty()) {
+                 addObjReference(getDefSchemaName(), seqName, DbObjType.SEQUENCE,
+                         seq.getContext().getStart().getStartIndex() + 1);
+             }
          }
         }
         public String getSeqName() {
@@ -245,12 +250,17 @@ public abstract class ParserAbstract {
     
     class GeneralLiteralSearch extends SQLParserBaseListener {
         private String seqName;
+        private General_literalContext ctx;
         @Override
        public void enterGeneral_literal(General_literalContext ctx) {
             seqName = ctx.getText();
+            this.ctx = ctx;
        }
         public String getSeqName() {
             return seqName.substring(1, seqName.length() - 1);
+        }
+        public General_literalContext getContext() {
+            return ctx;
         }
     }
 
