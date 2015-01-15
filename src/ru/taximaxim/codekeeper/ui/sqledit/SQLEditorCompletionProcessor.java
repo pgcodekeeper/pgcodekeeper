@@ -1,37 +1,65 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.contentassist.ContextInformation;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
-import org.eclipse.jface.text.templates.DocumentTemplateContext;
-import org.eclipse.jface.text.templates.Template;
-import org.eclipse.jface.text.templates.TemplateContext;
-import org.eclipse.jface.text.templates.TemplateContextType;
-import org.eclipse.jface.text.templates.TemplateProposal;
 
 public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
-    public SQLEditorCompletionProcessor() {
-        // TODO Auto-generated constructor stub
+    private SqlPostgresSyntax sqlSyntax;
+    private String text = "";
+    public SQLEditorCompletionProcessor(SqlPostgresSyntax sqlSyntax) {
+        this.sqlSyntax = sqlSyntax;
     }
-    
-    private static final String CONTEXT_ID= "preparation"; //$NON-NLS-1$
-    private final TemplateContextType fContextType= new TemplateContextType(CONTEXT_ID, "Preparation Templates"); //$NON-NLS-1$
-    private final Template fTemplate= new Template("Stir", "Stir gently", CONTEXT_ID, "Stir ${ingredient} gently", false);   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
     
     @Override
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
         IDocument document= viewer.getDocument();
-        Region region= new Region(offset, 0);
-        TemplateContext templateContext= new DocumentTemplateContext(fContextType, document, offset, 0);
-        TemplateProposal templateProposal= new TemplateProposal(fTemplate, templateContext, region, null);
-    
-        ICompletionProposal[] result= { templateProposal };
-        return result;
+        text = "";
+        try {
+            int length = 1;
+            text = document.get(offset - length, length);
+            if (text.getBytes()[0] != '\n') {
+                while (Character.isLetter(document.get(offset - length, length).getBytes()[0])) {
+                    text = document.get(offset - length, length);
+                    length++;
+                }
+            }
+            if (length == 1) {
+                text = "";
+            }
+        } catch (BadLocationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        List<ICompletionProposal> result= new ArrayList<ICompletionProposal>();
+        for (String fgProposal : sqlSyntax.getReservedwords()) {
+            if (!text.isEmpty()) {
+                if (fgProposal.contains(text)) {
+                    IContextInformation info = new ContextInformation(
+                            fgProposal, fgProposal);
+                    result.add(new CompletionProposal(fgProposal, offset, 0,
+                            fgProposal.length(), null, fgProposal, info,
+                            fgProposal));
+                }
+            } else {
+                IContextInformation info = new ContextInformation(fgProposal,
+                        fgProposal);
+                result.add(new CompletionProposal(fgProposal, offset, 0,
+                        fgProposal.length(), null, fgProposal, info, fgProposal));
+   }
+        }
+        return result.toArray(new ICompletionProposal[result.size()]);
     }
 
     @Override

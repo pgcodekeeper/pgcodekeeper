@@ -58,7 +58,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         this.prefs = Activator.getDefault().getPreferenceStore();
     }
     
-    // Всплывающая подсказка пока
     @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer,
             String contentType) {
@@ -87,7 +86,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                             && offset < (obj.getOffset() + obj.getObjLength())) {
                         PgObjLocation loc = parser.getDefinitionForObj(obj);
                         if (loc != null) {
-                            SQLEditorMyRegion region = new SQLEditorMyRegion(loc.getOffset(), loc.getObjLength());
+                            SQLEditorMyRegion region = new SQLEditorMyRegion(obj.getOffset(), obj.getObjLength());
                             region.setComment(loc.getComment());
                             return region;
                         }
@@ -133,7 +132,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         ContentAssistant assistant= new ContentAssistant();
-        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor()
+        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(sqlSyntax)
                 /*new IContentAssistProcessor() {
             
             @Override
