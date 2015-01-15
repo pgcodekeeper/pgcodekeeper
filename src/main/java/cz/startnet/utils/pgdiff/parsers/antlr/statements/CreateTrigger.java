@@ -41,6 +41,12 @@ public class CreateTrigger extends ParserAbstract {
         trigger.setOnUpdate(ctx.update_true != null);
         trigger.setOnTruncate(ctx.truncate_true != null);
         trigger.setFunction(getFullCtxText(ctx.func_name));
+        String funcName = getName(ctx.function_parameters().name);
+        String funcSchema = getSchemaName(ctx.function_parameters().name);
+        if (funcSchema == null) {
+            funcSchema = getDefSchemaName();
+        }
+        addObjReference(funcSchema, funcName, DbObjType.FUNCTION, ctx.function_parameters().getStart().getStartIndex());
         
         for (Names_referencesContext column : ctx.names_references()) {
             for (Schema_qualified_nameContext nameCol : column.name){
