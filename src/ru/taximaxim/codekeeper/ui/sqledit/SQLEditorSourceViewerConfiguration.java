@@ -27,8 +27,6 @@ import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
@@ -207,6 +205,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         
         addDamagerRepairer(reconciler, createCommentScanner(), SQLEditorDocumentProvider.SQL_SINGLE_COMMENT);
         addDamagerRepairer(reconciler, createMultiCommentScanner(), SQLEditorDocumentProvider.SQL_MULTI_COMMENT);
+        addDamagerRepairer(reconciler, createCharacterStringLiteralCommentScanner(), SQLEditorDocumentProvider.SQL_CHARACTER_STRING_LITERAL);
         addDamagerRepairer(reconciler, createRecipeScanner(), SQLEditorDocumentProvider.SQL_CODE);
         
         return reconciler;
@@ -290,12 +289,17 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     }
     
     private RuleBasedScanner createMultiCommentScanner() {
-        Color blue= fSharedColors.getColor(new RGB(0, 0, 200));
         RuleBasedScanner commentScanner= new RuleBasedScanner();
         commentScanner.setDefaultReturnToken(new Token(
-                new TextAttribute(blue, null, SWT.ITALIC)));
+                getTextAttribute(prefs, SQLEditorStatementTypes.MULTI_LINE_COMMENTS)));
         return commentScanner;
     }
     
+    private RuleBasedScanner createCharacterStringLiteralCommentScanner() {
+        RuleBasedScanner commentScanner= new RuleBasedScanner();
+        commentScanner.setDefaultReturnToken(new Token(
+                getTextAttribute(prefs, SQLEditorStatementTypes.CHARACTER_STRING_LITERAL)));
+        return commentScanner;
+    }
 }
 

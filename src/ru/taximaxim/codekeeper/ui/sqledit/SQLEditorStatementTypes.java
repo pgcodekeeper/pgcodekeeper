@@ -8,7 +8,9 @@ public enum SQLEditorStatementTypes {
     TYPES("prefsTypes", "Types"),
     CONSTANTS("prefsConstants", "Constants"),
     SINGLE_LINE_COMMENTS("prefsSingleLineComments", "SingleLineComments"),
-    GLOBAL_VARIABLES("prefsGlobalVariables", "GlobalVariables");
+    GLOBAL_VARIABLES("prefsGlobalVariables", "GlobalVariables"),
+    MULTI_LINE_COMMENTS("prefsMultiLineComments", "MultiLineComments"),
+    CHARACTER_STRING_LITERAL("prefsCharacterStringLiteralComments", "CharacterStringLiteralComments");
     
     private String name;
     private String translatedName;
