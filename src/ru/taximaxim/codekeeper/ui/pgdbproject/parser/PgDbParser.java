@@ -97,30 +97,26 @@ public class PgDbParser {
         objReferences.clear();
         objDefinitions.addAll(db.getObjDefinitions());
         objReferences.addAll(db.getObjReferences());
+        invokeListeners();
+    }
+
+    private void invokeListeners() {
         for (Listener e : listeners) {
             e.handleEvent(new Event());
         }
     }
 
     private void getPartialDBFromDirectory(final URI projURI, final URI fileURI) {
-        Job job = new Job("getDatabaseReferences") {
-
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                ProjectScope ps = new ProjectScope(proj);
-                IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
-                String projPath = Paths.get(projURI).toAbsolutePath().toString();
-                String filePath = Paths.get(fileURI).toAbsolutePath().toString();
-                PgDatabase db = PgDumpLoader.loadSchemasAndFile(projPath, filePath, 
-                        prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8),
-                        false, false, ParserClass.ANTLR);
-                fillRefs(objReferences, db.getObjReferences());
-                fillRefs(objDefinitions, db.getObjDefinitions());
-                return Status.OK_STATUS;
-            }
-        };
-        job.setSystem(true);
-        job.schedule();
+        ProjectScope ps = new ProjectScope(proj);
+        IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
+        String projPath = Paths.get(projURI).toAbsolutePath().toString();
+        String filePath = Paths.get(fileURI).toAbsolutePath().toString();
+        PgDatabase db = PgDumpLoader.loadSchemasAndFile(projPath, filePath,
+                prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), false,
+                false, ParserClass.ANTLR);
+        fillRefs(objReferences, db.getObjReferences());
+        fillRefs(objDefinitions, db.getObjDefinitions());
+        invokeListeners();
     }
 
     protected void fillRefs(CopyOnWriteArrayList<PgObjLocation> oldRefs,
