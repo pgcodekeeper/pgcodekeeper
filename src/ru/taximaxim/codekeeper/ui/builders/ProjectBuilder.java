@@ -8,8 +8,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
@@ -34,9 +32,6 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
         case IncrementalProjectBuilder.INCREMENTAL_BUILD:
             parser.getObjFromProject();
             break;
-        }
-        for (Listener e : parser.getListeners()) {
-            e.handleEvent(new Event());
         }
         List<IProject> list = new ArrayList<>();
         list.add(proj);

@@ -48,10 +48,6 @@ public class PgDbParser {
         listeners.remove(e);
     }
     
-    public List<Listener> getListeners() {
-        return listeners;
-    }
-    
     public static PgDbParser getParser(IProject proj) {
         PgDbParser parser = PROJ_PARSERS.get(proj);
         if (parser != null) {
@@ -82,9 +78,6 @@ public class PgDbParser {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 getFullDBFromDirectory(locationURI);
-                for (Listener e : getListeners()) {
-                    e.handleEvent(new Event());
-                }
                 return Status.OK_STATUS;
             }
             
@@ -104,6 +97,9 @@ public class PgDbParser {
         objReferences.clear();
         objDefinitions.addAll(db.getObjDefinitions());
         objReferences.addAll(db.getObjReferences());
+        for (Listener e : listeners) {
+            e.handleEvent(new Event());
+        }
     }
 
     private void getPartialDBFromDirectory(final URI projURI, final URI fileURI) {
