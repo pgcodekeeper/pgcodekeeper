@@ -6,6 +6,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.PlatformObject;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 
@@ -13,7 +14,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class ProjectEditorInput extends PlatformObject implements IEditorInput {
+public class ProjectEditorInput extends PlatformObject implements IEditorInput, IPersistableElement {
 
     private final String projName;
     
@@ -66,6 +67,10 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput {
             };
         }
         
+        if (adapter.isAssignableFrom(org.eclipse.ui.IPersistableElement.class)){
+            return this;
+        }
+        
         return super.getAdapter(adapter);
     }
 
@@ -87,8 +92,7 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput {
 
     @Override
     public IPersistableElement getPersistable() {
-        // see FileEditorInput for impl
-        return null;
+        return this;
     }
 
     @Override
@@ -120,5 +124,15 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void saveState(IMemento memento) {
+        ProjectEditorInputFactory.saveState(memento, this);
+    }
+
+    @Override
+    public String getFactoryId() {
+        return ProjectEditorInputFactory.getFactoryId();
     }
 }

@@ -347,5 +347,12 @@
           </view>
        </perspectiveExtension>
     </extension>
+    <extension
+          point="org.eclipse.ui.elementFactories">
+       <factory
+             class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"
+             id="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory">
+       </factory>
+    </extension>
 
 </plugin>

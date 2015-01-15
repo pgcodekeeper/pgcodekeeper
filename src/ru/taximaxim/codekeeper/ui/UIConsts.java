@@ -12,6 +12,8 @@ public interface UIConsts {
     
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
+        String PROJECT_EDITOR_FACTORY_ID = "ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"; //$NON-NLS-1$
+        String PROJECT_EDITOR_FACTORY_TAG_PROJECT = "project"; //$NON-NLS-1$
     }
     
     interface COMMAND {
