@@ -233,14 +233,14 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 }
 
 class CommitPage extends DiffPresentationPane {
-/*
+
     private final String [] VIEW_IDS_SUPPORTING_EGIT_COMMIT = {
             // project explorer
             IPageLayout.ID_PROJECT_EXPLORER,
             // package explorer
             JavaUI.ID_PACKAGES
     };
-*/
+
     private boolean isCommitCommandAvailable;
     
     private LocalResourceManager lrm;
@@ -417,7 +417,7 @@ class CommitPage extends DiffPresentationPane {
          * org.eclipse.jface.viewers.Viewer
          * org.eclipse.jdt.internal.ui.viewsupport.SelectionProviderMediator
          */
-/*
+
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();                
         IViewPart view = null;
         
@@ -437,7 +437,7 @@ class CommitPage extends DiffPresentationPane {
         // focus on view and select current project
         page.activate(view);
         ((ISetSelectionTarget)view).selectReveal(new StructuredSelection(proj.getProject()));
-*/
+
         // execute command
         try {
             ((IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class))
