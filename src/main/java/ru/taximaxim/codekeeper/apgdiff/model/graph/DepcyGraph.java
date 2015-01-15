@@ -102,22 +102,28 @@ public class DepcyGraph {
                     graph.addVertex(idx);
                     graph.addEdge(idx, table);
                 }
-                
-                createTableToConstraints(table);
-                
-                createTableToSequences(table, schema);
-                
-                createTableToTriggers(table, schema);
             }
             
             for(PgView view : schema.getViews()) {
                 graph.addVertex(view);
                 graph.addEdge(view, schema);
-                
-                createViewToQueried(view, schema);
             }
         }
 
+        // second loop: dependencies of objects from likely different schemas
+        for(PgSchema schema : db.getSchemas()) {
+            
+            for(PgTable table : schema.getTables()) {
+                createTableToConstraints(table);
+                createTableToSequences(table, schema);
+                createTableToTriggers(table, schema);
+            }
+            
+            for(PgView view : schema.getViews()) {
+                createViewToQueried(view, schema);
+            }
+        }
+        
         for(PgExtension ext : db.getExtensions()) {
             graph.addVertex(ext);
             graph.addEdge(ext, db);
@@ -133,10 +139,10 @@ public class DepcyGraph {
             // пропускаем системные вещи, например count(*), AVG и т.д.
             // TODO: вынести "pg_.*" в настройки, сейчас жесток забито
             // чтобы пропускать выборку из pg_views - системной таблицы
-            if (tblName == null || 
-                    col.getType() == ViewReference.SYSTEM ||
-                    (col.table != null && col.table.matches("pg_.*")) || 
-                    SYS_SCHEMAS.contains(scmName)){
+            if (tblName == null 
+                    || col.getType() == ViewReference.SYSTEM 
+                    || (col.table != null && col.table.matches("pg_.*")) 
+                    || SYS_SCHEMAS.contains(scmName)){
                 continue;
             }
             
