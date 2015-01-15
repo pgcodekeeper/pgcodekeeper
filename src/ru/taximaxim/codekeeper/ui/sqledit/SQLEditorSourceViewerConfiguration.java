@@ -239,43 +239,33 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     private WordRule sqlSyntaxRules() {
         
         // Define a word rule and add SQL keywords to it.
-        WordRule wordRule = new WordRule(new WordDetector(), Token.WHITESPACE);
+        WordRule wordRule = new WordRule(new WordDetector(), Token.WHITESPACE, true);
         for (String reservedWord : sqlSyntax.getReservedwords()) {
-            wordRule.addWord(reservedWord.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorStatementTypes.RESERVED_WORDS)));
-            wordRule.addWord(reservedWord.toUpperCase(), new Token(
+            wordRule.addWord(reservedWord, new Token(
                     getTextAttribute(prefs, SQLEditorStatementTypes.RESERVED_WORDS)));
         }
         // TODO render unreserved keywords in the same way with reserved
         // keywords, should let user decide via preference
         for (String unreservedWord : sqlSyntax.getUnreservedwords()) {
-            wordRule.addWord(unreservedWord.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorStatementTypes.UN_RESERVED_WORDS)));
-            wordRule.addWord(unreservedWord.toUpperCase(), new Token(
+            wordRule.addWord(unreservedWord, new Token(
                     getTextAttribute(prefs, SQLEditorStatementTypes.UN_RESERVED_WORDS)));
         }
 
         // Add the SQL datatype names to the word rule.
         for (String datatype : sqlSyntax.getTypes()) {
-            wordRule.addWord(datatype.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorStatementTypes.TYPES)));
-            wordRule.addWord(datatype.toUpperCase(), new Token(
+            wordRule.addWord(datatype, new Token(
                     getTextAttribute(prefs, SQLEditorStatementTypes.TYPES)));
         }
 
         // Add the SQL function names to the word rule.
         for (String function : sqlSyntax.getFunctions()) {
-            wordRule.addWord(function.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorStatementTypes.FUNCTIONS)));
-            wordRule.addWord(function.toUpperCase(), new Token(
+            wordRule.addWord(function, new Token(
                     getTextAttribute(prefs, SQLEditorStatementTypes.FUNCTIONS)));
         }
 
         // Add the SQL constants to the word rule.
         for (String constant : sqlSyntax.getConstants()) {
-            wordRule.addWord(constant.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorStatementTypes.CONSTANTS)));
-            wordRule.addWord(constant.toUpperCase(), new Token(
+            wordRule.addWord(constant, new Token(
                     getTextAttribute(prefs, SQLEditorStatementTypes.CONSTANTS)));
         }
 
