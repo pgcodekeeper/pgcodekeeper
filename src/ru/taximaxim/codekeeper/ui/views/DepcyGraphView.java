@@ -28,14 +28,12 @@ import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
-import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -123,20 +121,9 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         PgDatabase newDb = newDbSource == null ? null : newDbSource.getDbObject();
         if (!Objects.equals(currentDb, newDb)){
             currentDb = newDb;
-            try {
-                currentGraph = (currentDb == null) ? null : new DepcyGraph(currentDb);
-            } catch (PgCodekeeperException e) {
-                gv.setInput(null);
-                Log.log(Log.LOG_WARNING, "Error creating dependency graph", e);
-                return;
-            }
+            currentGraph = (currentDb == null) ? null : new DepcyGraph(currentDb);            
         }
 
-        if (currentDb == null || currentGraph == null){
-            gv.setInput(null);
-            return;
-        }
-        
         HashSet<PgStatement> pgStatSele = new HashSet<>();
         
         for(Object o : dss.toArray()){

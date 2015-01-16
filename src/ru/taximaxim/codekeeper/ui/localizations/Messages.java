@@ -51,7 +51,6 @@ public final class Messages extends NLS {
     public static String connection_details;
     public static String add;
     public static String delete;
-    public static String error_creating_dependency_graph;
     
     // ui
     public static String exceptionNotifier_copy_stack_trace;
