@@ -94,6 +94,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -270,7 +271,14 @@ class CommitPage extends DiffPresentationPane {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                commit();
+                try {
+                    commit();
+                } catch (PgCodekeeperException ex) {
+                    // TODO make sure there is no way to display RuntimeException to the user
+                    // any runtimeException thrown in this SelectionAdapter gets swallowed 
+                    // in event loop (not displayed to user except than in log)
+                    ExceptionNotifier.showErrorDialog(Messages.error_creating_dependency_graph, ex);
+                }
             }
         });
         
@@ -293,7 +301,7 @@ class CommitPage extends DiffPresentationPane {
         btnAutoCommitWindow.setEnabled(isCommitCommandAvailable);
     }
     
-    private void commit() {
+    private void commit() throws PgCodekeeperException {
         Log.log(Log.LOG_INFO, "Started project update"); //$NON-NLS-1$
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
             return;
