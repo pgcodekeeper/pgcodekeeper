@@ -24,9 +24,8 @@ public class AntlrParser {
         SQLParser parser = new SQLParser(tokens);
         parser.removeErrorListeners();
         parser.addErrorListener(CustomErrorListener.INSTATANCE);
-        ParseTreeWalker walker = new ParseTreeWalker();
         SqlContext ctx = parser.sql();
-        walker.walk(listener, ctx);
+        ParseTreeWalker.DEFAULT.walk(listener, ctx);
     }
     
 }
