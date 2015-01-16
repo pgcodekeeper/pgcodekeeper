@@ -3,13 +3,14 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.nio.file.Path;
 
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
+
+import ru.taximaxim.codekeeper.ui.Log;
 
 public class SQLEditorHyperLink implements IHyperlink {
 
@@ -51,8 +52,7 @@ public class SQLEditorHyperLink implements IHyperlink {
                 editor = (ITextEditor)IDE.openEditor(page, location.toUri(), SQLEditor.ID, true);
                 editor.selectAndReveal(region.getOffset(), region.getLength());
             } catch (PartInitException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Log.log(Log.LOG_ERROR, "Cannot find editor part", e);
             }
         }
     }
