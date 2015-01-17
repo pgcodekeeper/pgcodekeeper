@@ -39,7 +39,7 @@ public class AlterView extends ParserAbstract {
         if (ctx.drop_def() != null) {
             dbView.removeColumnDefaultValue(getFullCtxText(ctx.column_name));
         }
-        addObjReference(schemaName, name, DbObjType.VIEW, ctx.name.getStart().getStartIndex());
+        addObjReference(schemaName, name, DbObjType.VIEW, ctx.name.getStart().getStartIndex(), 0);
         return null;
     }
 

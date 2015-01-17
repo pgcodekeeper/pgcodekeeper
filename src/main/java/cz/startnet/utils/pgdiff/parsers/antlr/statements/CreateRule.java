@@ -52,7 +52,7 @@ public class CreateRule extends ParserAbstract {
                                 new PgPrivilege(ctx.REVOKE() != null,
                                         getFullCtxText(ctx.body_rule),
                                         getFullCtxText(ctx)));
-                addObjReference(getDefSchemaName(), func.getBareName(), DbObjType.FUNCTION, functparam.name.getStart().getStartIndex());
+                addObjReference(getDefSchemaName(), func.getSignature(), DbObjType.FUNCTION, functparam.name.getStart().getStartIndex(), func.getBareName().length());
             }
         } else if (ctx.body_rule.on_large_object() != null) {
             obj_name = ctx.body_rule.on_large_object().obj_name.name;
@@ -112,7 +112,7 @@ public class CreateRule extends ParserAbstract {
         }
         if (statement != null) {
             statement.addPrivilege(pgPrivilege);
-            addObjReference(schemaName, statement.getBareName(), statement.getStatementType(), name.getStart().getStartIndex());
+            addObjReference(schemaName, statement.getBareName(), statement.getStatementType(), name.getStart().getStartIndex(), 0);
             return statement;
         }
         return null;

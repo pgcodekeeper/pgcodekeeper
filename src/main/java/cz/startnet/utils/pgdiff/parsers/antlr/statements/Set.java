@@ -24,7 +24,7 @@ public class Set extends ParserAbstract {
             set.setParam(ctx.config_param.getText());
             for (Set_statement_valueContext value : ctx.config_param_val){
                 set.addValue(value.getText());
-                addObjReference(null, value.getText(), DbObjType.SCHEMA, value.getStart().getStartIndex());
+                addObjReference(null, value.getText(), DbObjType.SCHEMA, value.getStart().getStartIndex(), 0);
             }
         }
         return set;

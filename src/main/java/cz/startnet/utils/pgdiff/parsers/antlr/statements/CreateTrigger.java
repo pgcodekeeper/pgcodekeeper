@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statement
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 
@@ -28,7 +29,7 @@ public class CreateTrigger extends ParserAbstract {
         PgTrigger trigger = new PgTrigger(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
         trigger.setTableName(ctx.tabl_name.getText());
         addObjReference(schemaName, ctx.tabl_name.getText(), DbObjType.TABLE, 
-                ctx.tabl_name.getStart().getStartIndex());
+                ctx.tabl_name.getStart().getStartIndex(), 0);
         trigger.setBefore(ctx.before_true != null);
         if (ctx.ROW() != null) {
             trigger.setForEachRow(true);
@@ -43,10 +44,16 @@ public class CreateTrigger extends ParserAbstract {
         trigger.setFunction(getFullCtxText(ctx.func_name));
         String funcName = getName(ctx.function_parameters().name);
         String funcSchema = getSchemaName(ctx.function_parameters().name);
+        int offset = 0;
         if (funcSchema == null) {
             funcSchema = getDefSchemaName();
+        } else {
+            offset = funcSchema.length() + 1;
+            addObjReference(null, funcSchema, DbObjType.SCHEMA, ctx.function_parameters().getStart().getStartIndex(), 0);
         }
-        addObjReference(funcSchema, funcName, DbObjType.FUNCTION, ctx.function_parameters().getStart().getStartIndex());
+        PgFunction func = new PgFunction(funcName, getFullCtxText(ctx.func_name), "");
+        fillArguments(ctx.function_parameters().function_args(), func);
+        addObjReference(funcSchema, func.getSignature(), DbObjType.FUNCTION, ctx.function_parameters().getStart().getStartIndex()+ offset, func.getBareName().length());
         
         for (Names_referencesContext column : ctx.names_references()) {
             for (Schema_qualified_nameContext nameCol : column.name){

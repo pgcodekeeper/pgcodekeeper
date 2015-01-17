@@ -62,17 +62,32 @@ public abstract class ParserAbstract {
      * @param obj
      * @param startIndex
      */
-    protected void fillObjDefinition(String schemaName, PgStatement obj, int startIndex) {
-        PgObjLocation loc = new PgObjLocation(schemaName, obj.getBareName(),
-                null, startIndex, filePath);
+    protected void fillObjDefinition(String schemaName, PgStatement obj,
+            int startIndex) {
+        PgObjLocation loc = null;
+        switch (obj.getStatementType()) {
+        case FUNCTION:
+            PgFunction func = (PgFunction) obj;
+            loc = new PgObjLocation(schemaName,
+                    func.getSignature(), null, startIndex,
+                    filePath);
+            loc.setObjNameLength(func.getBareName().length());
+            break;
+        default:
+            loc = new PgObjLocation(schemaName, obj.getBareName(), null,
+                    startIndex, filePath);
+        }
         loc.setObjType(obj.getStatementType());
         db.addObjDefinition(loc);
         db.addObjReference(loc);
     }
     
-    protected void addObjReference(String schemaName, String objName, DbObjType objType, int startIndex) {
+    protected void addObjReference(String schemaName, String objName, DbObjType objType, int startIndex, int nameLength) {
         PgObjLocation loc = new PgObjLocation(schemaName, objName, null,
                 startIndex, filePath);
+        if (objType == DbObjType.FUNCTION) {
+            loc.setObjNameLength(nameLength);
+        }
         loc.setObjType(objType);
         db.addObjReference(loc);
     }
@@ -239,7 +254,7 @@ public abstract class ParserAbstract {
              if (seqName != null &&
                      !seqName.isEmpty()) {
                  addObjReference(getDefSchemaName(), seqName, DbObjType.SEQUENCE,
-                         seq.getContext().getStart().getStartIndex() + 1);
+                         seq.getContext().getStart().getStartIndex() + 1, 0);
              }
          }
         }

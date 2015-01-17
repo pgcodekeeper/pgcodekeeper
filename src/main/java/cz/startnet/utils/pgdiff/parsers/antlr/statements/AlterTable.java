@@ -38,18 +38,18 @@ public class AlterTable extends ParserAbstract {
             if (tablAction.owner_to() != null) {
                 if (tabl != null) {
                     tabl.setOwner(tablAction.owner_to().name.getText());
-                    addObjReference(schemaName, name, DbObjType.TABLE, ctx.name.getStart().getStartIndex());
+                    addObjReference(schemaName, name, DbObjType.TABLE, ctx.name.getStart().getStartIndex(), 0);
                 } else if (db.getSchema(schemaName).getSequence(name) != null) {
                     db.getSchema(schemaName).getSequence(name)
                             .setOwner(tablAction.owner_to().name.getText());
-                    addObjReference(schemaName, name, DbObjType.SEQUENCE, ctx.name.getStart().getStartIndex());
+                    addObjReference(schemaName, name, DbObjType.SEQUENCE, ctx.name.getStart().getStartIndex(), 0);
                 } else if (db.getSchema(schemaName).getView(name) != null) {
                     db.getSchema(schemaName).getView(name)
                             .setOwner(tablAction.owner_to().name.getText());
-                    addObjReference(schemaName, name, DbObjType.VIEW, ctx.name.getStart().getStartIndex());
+                    addObjReference(schemaName, name, DbObjType.VIEW, ctx.name.getStart().getStartIndex(), 0);
                 }
             } else {
-                addObjReference(schemaName, name, DbObjType.TABLE, ctx.name.getStart().getStartIndex());
+                addObjReference(schemaName, name, DbObjType.TABLE, ctx.name.getStart().getStartIndex(), 0);
             }
             if (tabl == null) {
                 continue;
