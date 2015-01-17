@@ -59,6 +59,12 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                         fgProposal.length(), null, fgProposal, info, fgProposal));
    }
         }
+        ICompletionProposal[] templates = new SQLEditorTemplateAssistProcessor().computeCompletionProposals(viewer, offset);
+        if(templates!=null){
+         for(int i=0;i<templates.length;i++){
+             result.add(templates[i]);
+         }
+        }
         return result.toArray(new ICompletionProposal[result.size()]);
     }
 

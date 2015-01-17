@@ -260,6 +260,12 @@
             id="ru.taximaxim.codekeeper.ui.sqlsyntaxcoloring"
             name="Syntax Coloring">
       </page>
+      <page
+            category="ru.taximaxim.codekeeper.ui.sqleditor"
+            class="ru.taximaxim.codekeeper.ui.prefs.SQLEditorTemplatePrefPage"
+            id="ru.taximaxim.codekeeper.ui.sqleditortemplates"
+            name="SQLEditor Templates">
+      </page>
    </extension>
    <extension
          point="org.eclipse.ui.newWizards">
@@ -443,6 +449,20 @@
              properties="isEnabled"
              type="java.lang.Object">
        </propertyTester>
+    </extension>
+    <extension
+          id="ru.taximaxim.codekeeper.ui.editorTemplates"
+          name="SQLEditor Templates"
+          point="org.eclipse.ui.editors.templates">
+       <contextType
+             class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"
+             id="ru.taximaxim.codekeeper.ui.sqlEditorContextType"
+             name="SQLEditor Context Type">
+       </contextType>
+       <include
+             file="sql_templates/templates.xml"
+             translations="sql_templates/sqlTemplate.properties">
+       </include>
     </extension>
 
 </plugin>
