@@ -128,7 +128,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         };
     }
     
-    // Автозавершение, не работает при вводе не фильтрует по вводу
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         ContentAssistant assistant= new ContentAssistant();

@@ -6,17 +6,17 @@ import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
 
-public class SQLTemplateCompletionProposal extends TemplateProposal {
+public class SQLEditorTemplateCompletionProposal extends TemplateProposal {
 
     private final Template fTemplate;
 
-    public SQLTemplateCompletionProposal(Template template,
+    public SQLEditorTemplateCompletionProposal(Template template,
             TemplateContext context, IRegion region, Image image) {
         super(template, context, region, image);
         fTemplate = template;
     }
 
-    public SQLTemplateCompletionProposal(Template template,
+    public SQLEditorTemplateCompletionProposal(Template template,
             TemplateContext context, IRegion region, Image image, int relevance) {
         super(template, context, region, image, relevance);
         fTemplate = template;
