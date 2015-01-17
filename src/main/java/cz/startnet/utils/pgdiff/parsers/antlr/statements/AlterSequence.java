@@ -41,7 +41,12 @@ private Alter_sequence_statementContext ctx;
                 if (tableName.equals(schName)) {
                     schName = schemaName;
                 }
-                addObjReference(schName, tableName, DbObjType.TABLE, seqbody.col_name.getStart().getStartIndex());
+                int offset = 0; 
+                if (schName != null) {
+                    offset = schName.length() + 1;
+                    addObjReference(null, schName, DbObjType.SCHEMA, seqbody.col_name.getStart().getStartIndex());
+                }
+                addObjReference(schName, tableName, DbObjType.TABLE, seqbody.col_name.getStart().getStartIndex()+offset);
             }
         }
         addObjReference(schemaName, name, DbObjType.SEQUENCE, ctx.name.getStart().getStartIndex());
