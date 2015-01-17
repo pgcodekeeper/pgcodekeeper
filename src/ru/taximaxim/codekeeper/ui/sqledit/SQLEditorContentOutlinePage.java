@@ -148,6 +148,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
             int length = segment.getLength();
             try {
                 fTextEditor.setHighlightRange(start, length, true);
+                fTextEditor.selectAndReveal(start, length);
             } catch (IllegalArgumentException x) {
                 fTextEditor.resetHighlightRange();
             }
