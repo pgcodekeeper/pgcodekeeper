@@ -13,6 +13,8 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
+import ru.taximaxim.codekeeper.ui.Log;
+
 public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
     private SqlPostgresSyntax sqlSyntax;
@@ -38,8 +40,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                 text = "";
             }
         } catch (BadLocationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.log(Log.LOG_ERROR, "Document doesn't contain such offset", e);
         }
         
         List<ICompletionProposal> result= new ArrayList<ICompletionProposal>();
@@ -48,7 +49,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                 if (fgProposal.contains(text)) {
                     IContextInformation info = new ContextInformation(
                             fgProposal, fgProposal);
-                    result.add(new CompletionProposal(fgProposal, offset, 0,
+                    result.add(new CompletionProposal(fgProposal, offset - text.length(), text.length(),
                             fgProposal.length(), null, fgProposal, info,
                             fgProposal));
                 }
