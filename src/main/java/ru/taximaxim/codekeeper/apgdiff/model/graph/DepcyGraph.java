@@ -10,6 +10,7 @@ import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.GenericColumn.ViewReference;
@@ -67,12 +68,12 @@ public class DepcyGraph {
         return db;
     }
     
-    public DepcyGraph(PgDatabase graphSrc) {
+    public DepcyGraph(PgDatabase graphSrc) throws PgCodekeeperException {
         db = graphSrc.deepCopy();
         create();
     }
     
-    private void create() {
+    private void create() throws PgCodekeeperException {
         graph.addVertex(db);
         
         for(PgSchema schema : db.getSchemas()) {
@@ -130,7 +131,7 @@ public class DepcyGraph {
         }
     }
     
-    private void createViewToQueried(PgView view, PgSchema schema) {
+    private void createViewToQueried(PgView view, PgSchema schema) throws PgCodekeeperException {
         for (GenericColumn col : view.getSelect().getColumns()){
             String scmName = col.schema;
             String tblName = col.table;
@@ -147,6 +148,12 @@ public class DepcyGraph {
             }
             
             PgSchema scm = (scmName == null) ? schema : db.getSchema(scmName);
+            
+            if (scm == null){
+                throw new PgCodekeeperException("View " + view.getName() + 
+                        " selects from object " + tblName + " in schema " + 
+                        scmName + " that does not exist");
+            }
             
             PgTable tbl = scm.getTable(tblName);
             if (tbl != null) {
