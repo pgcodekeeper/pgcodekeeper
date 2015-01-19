@@ -46,7 +46,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             int length = 1;
             text = document.get(offset - length, length);
             if (text.getBytes()[0] != '\n') {
-                while (Character.isLetter(document.get(offset - length, length)
+                while (Character.isJavaIdentifierPart(document.get(offset - length, length)
                         .getBytes()[0])) {
                     text = document.get(offset - length, length);
                     length++;
@@ -93,7 +93,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             Image img = lrm.createImage(iObj);
             String displayText = obj.getObjName();
             if (!obj.getComment().isEmpty()) {
-                displayText += " - " +obj.getComment();
+                displayText += " - " + obj.getComment();
             }
             if (!text.isEmpty()) {
                 if (obj.getObjName().contains(text)) {
@@ -108,7 +108,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                 IContextInformation info = new ContextInformation(obj.getObjName(),
                         obj.getComment());
                 result.add(new CompletionProposal(obj.getObjName(), offset, 0,
-                        obj.getObjLength(), img, obj.getObjName(), info, obj.getObjName()));
+                        obj.getObjLength(), img, displayText, info, obj.getObjName()));
             }
         }
 
