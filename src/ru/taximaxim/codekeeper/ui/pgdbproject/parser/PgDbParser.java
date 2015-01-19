@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -152,6 +153,10 @@ public class PgDbParser {
             }
         }
         return locations;
+    }
+    
+    public List<PgObjLocation> getObjDefinitions() {
+        return Collections.unmodifiableList(objDefinitions);
     }
     
     private boolean hasDefinition(PgObjLocation obj) {

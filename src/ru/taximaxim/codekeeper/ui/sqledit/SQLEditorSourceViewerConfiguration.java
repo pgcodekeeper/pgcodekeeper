@@ -211,7 +211,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     
     @Override
     protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
-        // TODO Auto-generated method stub
         Map<String, IAdaptable> targets = super.getHyperlinkDetectorTargets(sourceViewer);
         targets.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", null);
         return targets;
