@@ -15,7 +15,7 @@ public class PgObjLocation implements Serializable {
     private int offset;
     private String filePath;
     private DbObjType type;
-    private String comment;
+    private String comment = "";
     private int objLength;
     
     public GenericColumn getObject() {
