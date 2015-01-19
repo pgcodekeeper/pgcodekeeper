@@ -131,6 +131,12 @@ public class DepcyGraph {
         }
     }
     
+    private void testNotNull(Object o, String message) throws PgCodekeeperException{
+        if (o == null){
+            throw new PgCodekeeperException(message);
+        }
+    }
+    
     private void createViewToQueried(PgView view, PgSchema schema) throws PgCodekeeperException {
         for (GenericColumn col : view.getSelect().getColumns()){
             String scmName = col.schema;
@@ -149,11 +155,8 @@ public class DepcyGraph {
             
             PgSchema scm = (scmName == null) ? schema : db.getSchema(scmName);
             
-            if (scm == null){
-                throw new PgCodekeeperException("View " + view.getName() + 
-                        " selects from object " + tblName + " in schema " + 
-                        scmName + " that does not exist");
-            }
+            testNotNull(scm, "View " + view.getName() + " selects from object " + 
+                    tblName + " in schema " + scmName + " that does not exist");
             
             PgTable tbl = scm.getTable(tblName);
             if (tbl != null) {
@@ -230,16 +233,29 @@ public class DepcyGraph {
         }
     }
 
-    private void createTableToConstraints(PgTable table) {
+    private void createTableToConstraints(PgTable table) throws PgCodekeeperException {
         for(PgConstraint cons : table.getConstraints()) {
             graph.addVertex(cons);
             graph.addEdge(cons, table);
             
             if (cons instanceof PgForeignKey){
                 for (GenericColumn ref : ((PgForeignKey) cons).getRefs()){
-                    PgColumn referredColumn = 
-                            db.getSchema(ref.schema).getTable(ref.table).getColumn(ref.column);
-                    graph.addEdge(cons, referredColumn);
+                    PgSchema refSchema = db.getSchema(ref.schema);
+                    testNotNull(refSchema, "Table " + table.getName() + " foreign key " +
+                            cons.getName() + " references column from table in schema " + 
+                            ref.schema + " that does not exist");
+                    
+                    PgTable refTable = refSchema.getTable(ref.table);
+                    testNotNull(refTable, "Table " + table.getName() + " foreign key " + 
+                            cons.getName() + " references column from table " + 
+                            ref.schema + "." + ref.table + " that does not exist");
+                    
+                    PgColumn refColumn = refTable.getColumn(ref.column);
+                    testNotNull(refTable, "Table " + table.getName() + " foreign key " + 
+                            cons.getName() + " references column " + ref.column + 
+                            " from table " + ref.schema + "." + ref.table + ", but it does not exist");
+                    
+                    graph.addEdge(cons, refColumn);
                 }
             }
         }
