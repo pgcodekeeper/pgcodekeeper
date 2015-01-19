@@ -129,9 +129,9 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         });
         viewer.addSelectionChangedListener(this);
 
-        if (fInput != null)
+        if (fInput != null) {
             viewer.setInput(fInput);
-
+        }
     }
 
     @Override
@@ -139,8 +139,9 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         super.selectionChanged(event);
 
         ISelection selection = event.getSelection();
-        if (selection.isEmpty())
+        if (selection.isEmpty()) {
             fTextEditor.resetHighlightRange();
+        }
         else {
             Segments segment = (Segments) ((IStructuredSelection) selection)
                     .getFirstElement();

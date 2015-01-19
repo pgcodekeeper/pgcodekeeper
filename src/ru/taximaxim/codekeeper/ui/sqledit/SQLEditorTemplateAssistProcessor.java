@@ -83,7 +83,7 @@ public class SQLEditorTemplateAssistProcessor extends
             return new ICompletionProposal[0];
         context.setVariable("selection", selection.getText()); // name of the selection variables {line, word_selection //$NON-NLS-1$
         Template[] templates = getTemplates(context.getContextType().getId());
-        List<ICompletionProposal> matches = new ArrayList<ICompletionProposal>();
+        List<ICompletionProposal> matches = new ArrayList<>();
         for (int i = 0; i < templates.length; i++) {
             Template template = templates[i];
             try {
