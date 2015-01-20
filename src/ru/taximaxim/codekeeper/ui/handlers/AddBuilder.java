@@ -16,6 +16,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.BUILDER;
 
 public class AddBuilder extends AbstractHandler implements IHandler {
@@ -29,32 +30,34 @@ public class AddBuilder extends AbstractHandler implements IHandler {
         final IProject project = getProject(event);
 
         if (project != null) {
-            try {
-                // verify already registered builders
-                if (hasBuilder(project))
-                    // already enabled
-                    return null;
-
-                // add builder to project properties
-                IProjectDescription description = project.getDescription();
-                final ICommand buildCommand = description.newCommand();
-                buildCommand.setBuilderName(BUILDER.ID);
-
-                final List<ICommand> commands = new ArrayList<ICommand>();
-                commands.addAll(Arrays.asList(description.getBuildSpec()));
-                commands.add(buildCommand);
-
-                description.setBuildSpec(commands.toArray(new ICommand[commands
-                        .size()]));
-                project.setDescription(description, null);
-
-            } catch (final CoreException e) {
-                // TODO could not read/write project description
-                e.printStackTrace();
-            }
+            addBuilder(project);
         }
 
         return null;
+    }
+
+    public static void addBuilder(final IProject project) {
+        try {
+            // verify already registered builders
+            if (hasBuilder(project))
+                // already enabled
+                return;
+
+            // add builder to project properties
+            IProjectDescription description = project.getDescription();
+            final ICommand buildCommand = description.newCommand();
+            buildCommand.setBuilderName(BUILDER.ID);
+
+            final List<ICommand> commands = new ArrayList<ICommand>();
+            commands.addAll(Arrays.asList(description.getBuildSpec()));
+            commands.add(buildCommand);
+
+            description.setBuildSpec(commands.toArray(new ICommand[commands
+                    .size()]));
+            project.setDescription(description, null);
+        } catch (final CoreException e) {
+            Log.log(Log.LOG_ERROR, "Cannot add builder", e);
+        }
     }
 
     public static IProject getProject(final ExecutionEvent event) {

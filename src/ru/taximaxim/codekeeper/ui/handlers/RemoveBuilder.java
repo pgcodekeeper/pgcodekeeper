@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.BUILDER;
 
 public class RemoveBuilder extends AbstractHandler implements IHandler {
@@ -26,28 +27,31 @@ public class RemoveBuilder extends AbstractHandler implements IHandler {
         final IProject project = AddBuilder.getProject(event);
 
         if (project != null) {
-            try {
-                final IProjectDescription description = project
-                        .getDescription();
-                final List<ICommand> commands = new ArrayList<ICommand>();
-                commands.addAll(Arrays.asList(description.getBuildSpec()));
-
-                for (final ICommand buildSpec : description.getBuildSpec()) {
-                    if (BUILDER.ID.equals(buildSpec.getBuilderName())) {
-                        // remove builder
-                        commands.remove(buildSpec);
-                    }
-                }
-
-                description.setBuildSpec(commands.toArray(new ICommand[commands
-                        .size()]));
-                project.setDescription(description, null);
-            } catch (final CoreException e) {
-                // TODO could not read/write project description
-                e.printStackTrace();
-            }
+            removeBuilder(project);
         }
 
         return null;
+    }
+
+    public static void removeBuilder(final IProject project) {
+        try {
+            final IProjectDescription description = project
+                    .getDescription();
+            final List<ICommand> commands = new ArrayList<ICommand>();
+            commands.addAll(Arrays.asList(description.getBuildSpec()));
+
+            for (final ICommand buildSpec : description.getBuildSpec()) {
+                if (BUILDER.ID.equals(buildSpec.getBuilderName())) {
+                    // remove builder
+                    commands.remove(buildSpec);
+                }
+            }
+
+            description.setBuildSpec(commands.toArray(new ICommand[commands
+                    .size()]));
+            project.setDescription(description, null);
+        } catch (final CoreException e) {
+            Log.log(Log.LOG_ERROR, "Cannot remove builder", e);
+        }
     }
 }
