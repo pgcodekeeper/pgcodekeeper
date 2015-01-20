@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 // разобраться с вычислением частей документа и выводить части в аутлайн
 public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
@@ -86,7 +87,8 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
                 if (inputElement instanceof FileEditorInput) {
                     Path inputPath = ((FileEditorInput)inputElement).
                             getFile().getLocation().toFile().toPath();
-                    for (PgObjLocation loc : parser.getObjDefinitionsByPath(inputPath)) {
+                    for (PgObjLocation loc : parser.getObjsForPath(inputPath)) {
+                        if (loc.getAction() != StatementActions.NONE)
                         segments.add(new Segments(loc));
                     }
                 }
@@ -160,6 +162,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
 class Segments extends Position {
     private String name;
     private DbObjType type;
+    private StatementActions action;
 
     /**
      * Creates a new segment covering the given range.
@@ -171,6 +174,7 @@ class Segments extends Position {
         super(loc.getOffset(), loc.getObjLength());
         this.name = loc.getObjName();
         this.type = loc.getObjType();
+        this.action = loc.getAction();
     }
     
     public DbObjType getType() {
@@ -179,6 +183,6 @@ class Segments extends Position {
     
     @Override
     public String toString() {
-        return name;
+        return action + " " + name;
     }
 }
