@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementCo
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 public class AlterSchema extends ParserAbstract {
     private Alter_schema_statementContext ctx;
@@ -28,7 +29,8 @@ public class AlterSchema extends ParserAbstract {
         if (ctx.owner_to() != null) {
             sch.setOwner(removeQuotes(ctx.owner_to().name));
         }
-        addObjReference(null, name, DbObjType.SCHEMA, ctx.schema_with_name().name.getStart().getStartIndex(), 0);
+        addObjReference(null, name, DbObjType.SCHEMA,
+                StatementActions.ALTER, ctx.schema_with_name().name.getStart().getStartIndex(), 0);
         return null;
     }
 

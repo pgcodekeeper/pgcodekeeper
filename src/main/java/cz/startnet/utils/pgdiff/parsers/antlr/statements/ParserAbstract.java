@@ -32,6 +32,7 @@ import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 /**
  * Abstract Class contents common operations for parsing
@@ -77,14 +78,16 @@ public abstract class ParserAbstract {
             loc = new PgObjLocation(schemaName, obj.getBareName(), null,
                     startIndex, filePath);
         }
+        loc.setAction(StatementActions.CREATE);
         loc.setObjType(obj.getStatementType());
         db.addObjDefinition(loc);
         db.addObjReference(loc);
     }
     
-    protected void addObjReference(String schemaName, String objName, DbObjType objType, int startIndex, int nameLength) {
+    protected void addObjReference(String schemaName, String objName, DbObjType objType,
+            StatementActions action, int startIndex, int nameLength) {
         PgObjLocation loc = new PgObjLocation(schemaName, objName, null,
-                startIndex, filePath);
+                startIndex, filePath).setAction(action);
         if (objType == DbObjType.FUNCTION) {
             loc.setObjNameLength(nameLength);
         }
@@ -254,6 +257,7 @@ public abstract class ParserAbstract {
              if (seqName != null &&
                      !seqName.isEmpty()) {
                  addObjReference(getDefSchemaName(), seqName, DbObjType.SEQUENCE,
+                         StatementActions.NONE,
                          seq.getContext().getStart().getStartIndex() + 1, 0);
              }
          }

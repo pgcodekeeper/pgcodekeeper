@@ -17,7 +17,17 @@ public class PgObjLocation implements Serializable {
     private DbObjType type;
     private String comment = "";
     private int objLength;
+    private StatementActions action;
     
+    public StatementActions getAction() {
+        return action;
+    }
+
+    public PgObjLocation setAction(StatementActions action) {
+        this.action = action;
+        return this;
+    }
+
     public GenericColumn getObject() {
         return objName;
     }
