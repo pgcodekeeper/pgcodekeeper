@@ -156,7 +156,7 @@ public class DepcyGraph {
             PgSchema scm = (scmName == null) ? schema : db.getSchema(scmName);
             
             testNotNull(scm, "View " + view.getName() + " selects from object " + 
-                    tblName + " in schema " + scmName + " that does not exist");
+                    tblName + " in schema " + scm.getName() + " that does not exist");
             
             PgTable tbl = scm.getTable(tblName);
             if (tbl != null) {
@@ -167,14 +167,9 @@ public class DepcyGraph {
                 }
                 
                 PgColumn clmn = tbl.getColumn(clmnName);
-                if (clmn != null){
-                    graph.addEdge(view, clmn);
-                } else {
-                    Log.log(Log.LOG_WARNING,
-                            "Depcy: No column " + clmnName 
-                            + " found in " + tblName 
-                            + " selected by view " + view.getName());
-                }
+                testNotNull(clmn, "View " + view.getName() + " selects from table " + scm.getName() + 
+                        "." + tblName + " column " + clmnName + " that does not exist");
+                graph.addEdge(view, clmn);
                 continue;
             }
             
@@ -188,8 +183,10 @@ public class DepcyGraph {
                 // редактировать правила на эти функции, либо
                 // вычислять в коде, скорее всего правила
                 PgFunction func = scm.getFunction(tblName);
-                if (func != null) {
-                    graph.addVertex(func);
+                // do not check for (func == null) because it can be a system function
+                // which currently does not get skipped
+                if (func != null) {    
+                    graph.addEdge(view, func);
                     graph.addEdge(view, func);
                 }
             } else {
@@ -240,6 +237,10 @@ public class DepcyGraph {
             
             if (cons instanceof PgForeignKey){
                 for (GenericColumn ref : ((PgForeignKey) cons).getRefs()){
+                    if (SYS_COLUMNS.contains(ref.column)){
+                        continue;
+                    }
+                    
                     PgSchema refSchema = db.getSchema(ref.schema);
                     testNotNull(refSchema, "Table " + table.getName() + " foreign key " +
                             cons.getName() + " references column from table in schema " + 
@@ -251,7 +252,7 @@ public class DepcyGraph {
                             ref.schema + "." + ref.table + " that does not exist");
                     
                     PgColumn refColumn = refTable.getColumn(ref.column);
-                    testNotNull(refTable, "Table " + table.getName() + " foreign key " + 
+                    testNotNull(refColumn, "Table " + table.getName() + " foreign key " + 
                             cons.getName() + " references column " + ref.column + 
                             " from table " + ref.schema + "." + ref.table + ", but it does not exist");
                     
