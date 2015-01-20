@@ -60,13 +60,18 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         }
 
         List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
-        // SQL TEmplates 
-        ICompletionProposal[] templates = new SQLEditorTemplateAssistProcessor()
-                .computeCompletionProposals(viewer, offset);
-        if (templates != null) {
-            for (int i = 0; i < templates.length; i++) {
-                result.add(templates[i]);
-            }
+        // SQL TEmplates
+        if (text.isEmpty()) {
+            result.addAll(new SQLEditorTemplateAssistProcessor()
+                    .getAllTemplates(viewer, offset));
+        } else {
+            ICompletionProposal[] templates = new SQLEditorTemplateAssistProcessor()
+                    .computeCompletionProposals(viewer, offset);
+            if (templates != null) {
+                for (int i = 0; i < templates.length; i++) {
+                    result.add(templates[i]);
+                }
+            }    
         }
         
         IProject proj = null;

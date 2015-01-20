@@ -105,4 +105,18 @@ public class SQLEditorTemplateAssistProcessor extends
         }
         return matches.toArray(new ICompletionProposal[matches.size()]);
     }
+    
+    public List<ICompletionProposal> getAllTemplates(ITextViewer viewer,
+            int offset) {
+        List<ICompletionProposal> result = new ArrayList<>();
+        String prefix = extractPrefix(viewer, offset);
+        Region region = new Region(offset - prefix.length(), prefix.length());
+        TemplateContext context = createContext(viewer, region);
+        Template[] templates = getTemplates(context.getContextType().getId());
+        for (Template template : templates) {
+            result.add(createProposal(template, context, (IRegion) region,
+                getRelevance(template, prefix)));
+        }
+        return result;
+    }
 }
