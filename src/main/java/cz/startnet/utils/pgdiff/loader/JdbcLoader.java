@@ -396,11 +396,13 @@ public class JdbcLoader implements PgCatalogStrings {
                 definition.append(getStringListAsString(referencedColumnNames, ", ")).append(")");
                 
                 for (String colName : referencedColumnNames){
-                    GenericColumn referencedColumn = new GenericColumn(
-                            res.getString("foreign_schema_name"), 
-                            res.getString("foreign_table_name"), 
-                            colName);
-                    ((PgForeignKey)c).addForeignColumn(referencedColumn);
+                    if (colName != null){
+                        GenericColumn referencedColumn = new GenericColumn(
+                                res.getString("foreign_schema_name"), 
+                                res.getString("foreign_table_name"), 
+                                colName);
+                        ((PgForeignKey)c).addForeignColumn(referencedColumn);                        
+                    }
                 }
                 
                 switch (res.getString("confmatchtype")){
