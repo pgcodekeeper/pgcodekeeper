@@ -74,13 +74,15 @@ public class SQLEditorTemplateAssistProcessor extends
         ITextSelection selection = (ITextSelection) viewer
                 .getSelectionProvider().getSelection();
         // adjust offset to end of normalized selection
-        if (selection.getOffset() == offset)
+        if (selection.getOffset() == offset) {
             offset = selection.getOffset() + selection.getLength();
+        }
         String prefix = extractPrefix(viewer, offset);
         Region region = new Region(offset - prefix.length(), prefix.length());
         TemplateContext context = createContext(viewer, region);
-        if (context == null)
+        if (context == null) {
             return new ICompletionProposal[0];
+        }
         context.setVariable("selection", selection.getText()); // name of the selection variables {line, word_selection //$NON-NLS-1$
         Template[] templates = getTemplates(context.getContextType().getId());
         List<ICompletionProposal> matches = new ArrayList<>();
@@ -91,13 +93,15 @@ public class SQLEditorTemplateAssistProcessor extends
             } catch (TemplateException e) {
                 continue;
             }
-            if (!prefix.equals("") && prefix.charAt(0) == '<')
+            if (!prefix.equals("") && prefix.charAt(0) == '<') {
                 prefix = prefix.substring(1);
+            }
             if (!prefix.equals("")
                     && (template.getName().startsWith(prefix) && template
-                            .matches(prefix, context.getContextType().getId())))
+                            .matches(prefix, context.getContextType().getId()))) {
                 matches.add(createProposal(template, context, (IRegion) region,
                         getRelevance(template, prefix)));
+            }
         }
         return matches.toArray(new ICompletionProposal[matches.size()]);
     }
