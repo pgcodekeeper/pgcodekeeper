@@ -38,11 +38,10 @@ private Alter_sequence_statementContext ctx;
 //                String colName = getTableName(seqbody.col_name);
                 String tableName = getTableName(seqbody.col_name);
                 String schName = getSchemaName(seqbody.col_name);
+                int offset = 0;
                 if (tableName.equals(schName)) {
                     schName = schemaName;
-                }
-                int offset = 0; 
-                if (schName != null) {
+                } else {
                     offset = schName.length() + 1;
                     addObjReference(null, schName, DbObjType.SCHEMA,
                             StatementActions.NONE, seqbody.col_name.getStart().getStartIndex(), 0);
