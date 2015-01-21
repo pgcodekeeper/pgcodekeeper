@@ -431,7 +431,8 @@ class PageDiff extends WizardPage implements Listener {
                         cmbTimezone.select(cmbTimezone.indexOf(
                                 tmpProj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC)));
                     } catch (PgCodekeeperUIException e1) {
-                        ExceptionNotifier.showErrorDialog(Messages.DiffWizard_error_opening_project, e1);
+                        ExceptionNotifier.showErrorDialog(
+                                Messages.DiffWizard_error_opening_project, e1);
                     }
                 }
             }

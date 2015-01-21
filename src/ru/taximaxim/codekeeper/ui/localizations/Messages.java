@@ -10,13 +10,12 @@ public final class Messages extends NLS {
 
     // common phrases
     public static String unexpected_error_while_saving_preferences;
-    public static String consider_using_pgpass_file_instead;
     public static String dB_host;
     public static String dB_name;
     public static String dB_password;
     public static String dB_user;
     public static String entry_name;
-    public static String providing_password_here_is_insecure;
+    public static String warning_providing_password_here_is_insecure_use_pgpass_instead;
     public static String warning;
     public static String calculating_diff;
     public static String runnable_has_not_finished;

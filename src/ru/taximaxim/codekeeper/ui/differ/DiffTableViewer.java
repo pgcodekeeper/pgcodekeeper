@@ -195,7 +195,8 @@ public class DiffTableViewer extends Composite {
         try {
             prevChecked = prevCheckedHistory.getMapHistory();
         } catch (IOException e1) {
-            ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_load_checked_set, e1);
+            ExceptionNotifier.showErrorDialog(
+                    Messages.DiffTableViewer_error_load_checked_set, e1);
             prevChecked = new HashMap<>();
         }
         
@@ -321,7 +322,8 @@ public class DiffTableViewer extends Composite {
                 }
             });
             
-            new Label(contButtons, SWT.NONE).setText(Messages.diffTableViewer_stored_selections);
+            new Label(contButtons, SWT.NONE).setText(
+                    Messages.diffTableViewer_stored_selections);
             
             cmbPrevChecked = new ComboViewer(contButtons, SWT.DROP_DOWN);
             GridData gd = new GridData();
@@ -551,7 +553,8 @@ public class DiffTableViewer extends Composite {
                             checkedElements, addEntry);
                 prevChecked = prevCheckedHistory.getMapHistory();
             } catch (IOException e) {
-                ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_save_checked_set, e);
+                ExceptionNotifier.showErrorDialog(
+                        Messages.DiffTableViewer_error_save_checked_set, e);
                 prevChecked = new HashMap<>();
             }
             cmbPrevChecked.setInput(prevChecked.keySet());
@@ -825,7 +828,8 @@ public class DiffTableViewer extends Composite {
                     ignoredElements = xml.deserializeList(
                             new StringReader((String) event.getNewValue()));
                 } catch (IOException | SAXException ex) {
-                    ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_reading_ignored_objects, ex);
+                    ExceptionNotifier.showErrorDialog(
+                            Messages.DiffTableViewer_error_reading_ignored_objects, ex);
                     return;
                 }
                 viewerRefresh();

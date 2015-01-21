@@ -55,7 +55,8 @@ public class StdStreamRedirector {
                     // the process was destroyed by us, exit silently
                     return;
                 }
-                throw new IllegalStateException(Messages.StdStreamRedirector_error_reading_std, ex);
+                throw new IllegalStateException(
+                        Messages.StdStreamRedirector_error_reading_std, ex);
             }
         }
     }
@@ -106,14 +107,16 @@ public class StdStreamRedirector {
                     // wait for destroy to get the exitValue()
                     p.waitFor();
                 } catch (InterruptedException ex2) {
-                    throw new IOException(Messages.StdStreamRedirector_wait_destroy_interrupted_unexpectedly, ex2);
+                    throw new IOException(
+                            Messages.StdStreamRedirector_wait_destroy_interrupted_unexpectedly, ex2);
                 }
             }
             
             try {
                 redirectorThread.join();
             } catch (InterruptedException ex) {
-                throw new IOException(Messages.StdStreamRedirector_wait_thread_interrupted_unexpectedly, ex);
+                throw new IOException(
+                        Messages.StdStreamRedirector_wait_thread_interrupted_unexpectedly, ex);
             }
             ConsoleFactory.write(pb.command().get(0) + 
                     Messages.stdStreamRedirector_completed_with_code + p.exitValue());

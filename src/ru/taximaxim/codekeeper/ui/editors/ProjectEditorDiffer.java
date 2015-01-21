@@ -382,7 +382,8 @@ class CommitPage extends DiffPresentationPane {
                         PgDbParser.getParser(proj.getProject()).getObjFromProject();
                         CommitPage.this.callEgitCommitCommand();
                     } catch (CoreException e) {
-                        ExceptionNotifier.showErrorDialog(Messages.ProjectEditorDiffer_error_refreshing_project, e);
+                        ExceptionNotifier.showErrorDialog(
+                                Messages.ProjectEditorDiffer_error_refreshing_project, e);
                     }
                 }
             }
@@ -410,10 +411,10 @@ class CommitPage extends DiffPresentationPane {
                 }
                 
                 if (view == null){
-                    Log.log(Log.LOG_WARNING, "Any of the following views should be open "
-                            + "to execute command " + COMMAND.COMMIT_COMMAND_ID + ":\n"
-                                    + "\tProject explorer\n"
-                                    + "\tPackage explorer\n");
+                    Log.log(Log.LOG_WARNING, 
+                            "Any of the following views should be open to execute command "
+                                    + COMMAND.COMMIT_COMMAND_ID
+                                    + ":\n\tProject explorer\n\tPackage explorer\n");
                     return;
                 }
                 

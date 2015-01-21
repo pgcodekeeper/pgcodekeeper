@@ -55,7 +55,8 @@ public class NormalizeProject extends AbstractHandler {
             
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                SubMonitor mon = SubMonitor.convert(monitor, Messages.NormalizeProject_normalizing_project, 2);
+                SubMonitor mon = SubMonitor.convert(monitor, 
+                        Messages.NormalizeProject_normalizing_project, 2);
                 try {
                     PgDatabase db = DbSource.fromProject(Activator.getDefault()
                             .getPreferenceStore().getBoolean(PREF.USE_ANTLR) ? 

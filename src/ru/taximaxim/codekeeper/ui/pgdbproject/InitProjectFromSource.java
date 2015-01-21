@@ -45,13 +45,15 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         try {
             Log.log(Log.LOG_INFO, "Init project at " + props.getPathToProject()); //$NON-NLS-1$
             
-            SubMonitor pm = SubMonitor.convert(monitor, Messages.initProjectFromSource_initializing_project, 75);
+            SubMonitor pm = SubMonitor.convert(monitor, 
+                    Messages.initProjectFromSource_initializing_project, 75);
 
             initRepoFromSource(pm);
             
             pm.done();
         } catch (IOException ex) {
-            throw new InvocationTargetException(ex, Messages.initProjectFromSource_ioexception_while_creating_project);
+            throw new InvocationTargetException(ex, 
+                    Messages.initProjectFromSource_ioexception_while_creating_project);
         }
     }
 
