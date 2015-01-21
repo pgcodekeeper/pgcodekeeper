@@ -44,7 +44,7 @@ public class JdbcConnector {
         }catch (ClassNotFoundException e) {
             throw new IOException("JDBC driver class not found", e);
         } catch (SQLException e) {
-            throw new IOException("Database JDBC access error occured", e);
+            throw new IOException("Database JDBC access error occured: " + e.getLocalizedMessage(), e);
         }
     }
     

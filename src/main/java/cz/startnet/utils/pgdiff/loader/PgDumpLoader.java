@@ -271,7 +271,7 @@ public final class PgDumpLoader { //NOPMD
                     Resources.getString("UnsupportedEncoding") + ": "
                     + charsetName, ex);
         } catch(IOException ex) {
-            throw new FileException("Exception while closing dump file", ex);
+            throw new FileException("Exception while closing dump file: " + ex.getLocalizedMessage(), ex);
         }
     }
     
@@ -283,7 +283,7 @@ public final class PgDumpLoader { //NOPMD
             new AntlrParser().parseInputStream(inputStream, charsetName, 
                     new CustomSQLParserListener(database, path));
         } catch (IOException e) {
-            throw new FileException("Exception while closing dump file", e);
+            throw new FileException("Exception while closing dump file: " + e.getLocalizedMessage(), e);
         }
         return database;
     }
@@ -364,7 +364,7 @@ public final class PgDumpLoader { //NOPMD
                                     f.getAbsolutePath()), ex);
                         } catch (IOException ex) {
                             throw new FileException(
-                                    "An unexpected IOException", ex);
+                                    "An unexpected IOException: " + ex.getLocalizedMessage(), ex);
                         }
                     }
                 }

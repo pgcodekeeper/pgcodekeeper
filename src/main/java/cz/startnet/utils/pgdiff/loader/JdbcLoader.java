@@ -151,7 +151,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (SQLException e) {
-            throw new IOException("Database JDBC access error occured", e);
+            throw new IOException("Database JDBC access error occured: " + e.getLocalizedMessage(), e);
         } finally{
             Log.log(Log.LOG_INFO, "Closing used JDBC resources");
             closeResources();

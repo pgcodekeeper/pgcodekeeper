@@ -609,11 +609,11 @@ public final class PgDiffUtils {
             }
             return sb.toString();
         } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("UnsupportedEncodingException thrown while "
-                            + "getting hash", e);
+            throw new IllegalStateException(
+                    "UnsupportedEncodingException thrown while getting hash", e);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("NoSuchAlgorithmException thrown while "
-                            + "getting hash",e);
+            throw new IllegalStateException(
+                    "NoSuchAlgorithmException thrown while getting hash",e);
         }
     }
     

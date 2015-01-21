@@ -36,19 +36,19 @@ public final class Log {
                     = Activator.getLogTracker();
             if (logTracker == null) {
                 failedToGetLog = true;
-                throw new IllegalStateException();
+                throw new IllegalStateException("logTracker is null");
             }
             
             ExtendedLogService logService = logTracker.getService();
             if (logService == null) {
                 failedToGetLog = true;
-                throw new IllegalStateException();
+                throw new IllegalStateException("logService is null");
             }
             
             Logger logger = logService.getLogger(EQUINOX_LOGGER);
             if (logger == null) {
                 failedToGetLog = true;
-                throw new IllegalStateException();
+                throw new IllegalStateException("logger is null");
             }
             logger.log(level, msg, ex);
         } catch (Exception exLog) {
