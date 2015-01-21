@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TimeZone;
@@ -703,8 +704,9 @@ class PageResult extends WizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 FileDialog saveDialog = new FileDialog(getShell(), SWT.SAVE);
-                saveDialog.setText(Messages.diffWizard_save__ + tabs.getSelection()[0].getText()
-                        + Messages.diffWizard_diff);
+                saveDialog.setText(MessageFormat.format(
+                        Messages.diffWizard_save__,
+                        tabs.getSelection()[0].getText()));
                 saveDialog.setOverwrite(true);
                 saveDialog.setFilterExtensions(new String[] { "*.sql", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
                 saveDialog.setFilterPath(proj.getPathToProject().toString());

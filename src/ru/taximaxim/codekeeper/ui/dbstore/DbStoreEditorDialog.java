@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.Dialog;
@@ -230,8 +231,9 @@ public class DbStoreEditorDialog extends TrayDialog {
         } catch (NumberFormatException ex) {
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
             mb.setText(Messages.dbStoreEditorDialog_cannot_save_entry);
-            mb.setMessage(Messages.dbStoreEditorDialog_not_valid_port_number + 
-                    grpDbData.getTxtDbPort().getText());
+            mb.setMessage(MessageFormat.format(
+                    Messages.dbStoreEditorDialog_not_valid_port_number,
+                    grpDbData.getTxtDbPort().getText()));
             mb.open();
             return;
         }
@@ -288,8 +290,9 @@ public class DbStoreEditorDialog extends TrayDialog {
         if(store.containsKey(name)) {
             MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
             mb.setText(Messages.dbStoreEditorDialog_cannot_add_entry);
-            mb.setMessage(Messages.dbStoreEditorDialog_entry_with_this_name_already_exists
-                    + name);
+            mb.setMessage(MessageFormat
+                    .format(Messages.dbStoreEditorDialog_entry_with_this_name_already_exists,
+                            name));
             mb.open();
             return;
         }

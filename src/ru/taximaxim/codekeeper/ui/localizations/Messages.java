@@ -16,7 +16,6 @@ public final class Messages extends NLS {
     public static String dB_user;
     public static String entry_name;
     public static String warning_providing_password_here_is_insecure_use_pgpass_instead;
-    public static String warning;
     public static String calculating_diff;
     public static String runnable_has_not_finished;
     public static String select_all;
@@ -184,7 +183,6 @@ public final class Messages extends NLS {
     public static String diffWizard_target_source;
     public static String diffWizard_unexpected_error_while_saving_diff;
     public static String diffWizard_unexpected_target_type_value;
-    public static String diffWizard_diff;
     public static String initProjectFromSource_exporting_db_model;
     public static String initProjectFromSource_init_request_but_no_schema_source;
     public static String initProjectFromSource_initializing_project;
@@ -270,8 +268,6 @@ public final class Messages extends NLS {
 
     public static String OpenProjectUtils_high_proj_version;
 
-    public static String OpenProjectUtils_is_missing;
-
     public static String OpenProjectUtils_low_proj_version;
 
     public static String OpenProjectUtils_proj_version_unsupported;
@@ -315,7 +311,6 @@ public final class Messages extends NLS {
     public static String sqlScriptDialog_script_has_not_been_run_yet;
     public static String StdStreamRedirector_error_reading_std;
     public static String StdStreamRedirector_error_reading_std_external;
-    public static String StdStreamRedirector_error_returncode_see_for_details;
     public static String StdStreamRedirector_process_returned_with_error;
     public static String StdStreamRedirector_wait_destroy_interrupted_unexpectedly;
     public static String StdStreamRedirector_wait_thread_interrupted_unexpectedly;

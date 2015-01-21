@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.text.MessageFormat;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -443,8 +444,8 @@ public abstract class DiffPresentationPane extends Composite {
                     IDE.openEditorOnFileStore( page, fileStore );
                 } catch (PartInitException e) {
                     ExceptionNotifier.showErrorDialog(
-                            Messages.could_not_open_editor_for_file + 
-                            file.getAbsolutePath(), e);
+                            MessageFormat.format(Messages.could_not_open_editor_for_file, 
+                            file.getAbsolutePath()), e);
                 }
             } else {
                 Log.log(Log.LOG_WARNING, "Editor will not be opened for file " +  //$NON-NLS-1$

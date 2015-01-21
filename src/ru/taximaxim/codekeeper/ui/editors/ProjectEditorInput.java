@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui.editors;
 
+import java.text.MessageFormat;
+
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
@@ -45,7 +47,8 @@ public class ProjectEditorInput implements IEditorInput  {
 
     @Override
     public String getToolTipText() {
-        return projName + Messages.ProjectEditorInput_pgcodekeeper_project;
+        return MessageFormat.format(
+                Messages.ProjectEditorInput_pgcodekeeper_project, projName);
     }
     
     @Override

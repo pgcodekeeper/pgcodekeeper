@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.text.MessageFormat;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -118,13 +119,13 @@ public class StdStreamRedirector {
                 throw new IOException(
                         Messages.StdStreamRedirector_wait_thread_interrupted_unexpectedly, ex);
             }
-            ConsoleFactory.write(pb.command().get(0) + 
-                    Messages.stdStreamRedirector_completed_with_code + p.exitValue());
+            ConsoleFactory.write(MessageFormat.format(
+                    Messages.stdStreamRedirector_completed_with_code, pb
+                            .command().get(0), p.exitValue()));
 
             if (!redirector.isDestroyed.get() && p.exitValue() != 0) {
-                throw new IOException(Messages.StdStreamRedirector_process_returned_with_error
-                        + p.exitValue() +
-                        Messages.StdStreamRedirector_error_returncode_see_for_details);
+                throw new IOException(MessageFormat.format(Messages.StdStreamRedirector_process_returned_with_error,
+                                        p.exitValue()));
             }
             
             if (lastException.get() != null){

@@ -304,8 +304,7 @@ class PageRepo extends WizardNewProjectCreationPage implements Listener {
         lblWarnInit = new CLabel(container, SWT.NONE);
         lblWarnInit.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONWARNING))));
-        lblWarnInit.setText(Messages.warning
-                        + Messages.newProjWizard_this_will_delete_contents_and_recreate_them);        
+        lblWarnInit.setText(Messages.newProjWizard_this_will_delete_contents_and_recreate_them);        
         gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
         gd.exclude = true;
         lblWarnInit.setLayoutData(gd);

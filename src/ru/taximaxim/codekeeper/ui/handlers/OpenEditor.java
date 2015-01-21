@@ -1,5 +1,7 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
+import java.text.MessageFormat;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -25,8 +27,8 @@ public class OpenEditor extends AbstractHandler {
             try {
                 openEditor(HandlerUtil.getActiveWorkbenchWindow(event).getActivePage(), proj);
             } catch (PgCodekeeperUIException e) {
-                ExceptionNotifier.showErrorDialog(
-                        Messages.OpenEditor_error_open_project_editor + proj.getName(), e);
+                ExceptionNotifier.showErrorDialog(MessageFormat.format(
+                        Messages.OpenEditor_error_open_project_editor, proj.getName()), e);
             }
         }
         return null;

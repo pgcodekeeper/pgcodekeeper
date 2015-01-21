@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -251,7 +252,7 @@ class DbSourceFilter extends DbSource {
     final DiffSide side;
 
     DbSourceFilter(DbSource src, TreeElement filter, DiffSide side) {
-        super(Messages.dbSource_filter_on + src.getOrigin());
+        super(MessageFormat.format(Messages.dbSource_filter_on, src.getOrigin()));
         this.src = src;
         this.filter = filter;
         this.side = side;
