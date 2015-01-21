@@ -11,12 +11,14 @@ import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ProjectEditorInput extends PlatformObject implements IEditorInput, IPersistableElement {
 
     private final String projName;
+    private PgCodekeeperUIException ex;
     
     public ProjectEditorInput(String projectName) {
         projName = projectName;
@@ -24,6 +26,15 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
     
     public IProject getProject() {
         return ResourcesPlugin.getWorkspace().getRoot().getProject(projName);
+    }
+    
+    public PgCodekeeperUIException getError() {
+        return ex;
+    }
+    
+    public ProjectEditorInput setError(PgCodekeeperUIException ex) {
+        this.ex = ex;
+        return this;
     }
 
     @Override

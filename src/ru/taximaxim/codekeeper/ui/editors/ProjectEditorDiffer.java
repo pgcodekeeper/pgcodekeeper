@@ -109,6 +109,9 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
             throw new PartInitException(Messages.ProjectEditorDiffer_error_bad_input_type);
         }
         ProjectEditorInput in = (ProjectEditorInput) input;
+        if (in.getError() != null) {
+            throw new PartInitException(in.getError().getLocalizedMessage());
+        }
         this.proj = new PgDbProject(in.getProject());
         setPartName(in.getName());
         super.init(site, input);

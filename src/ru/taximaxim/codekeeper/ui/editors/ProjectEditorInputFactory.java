@@ -6,6 +6,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
 
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 
 public class ProjectEditorInputFactory implements IElementFactory {
@@ -14,7 +15,8 @@ public class ProjectEditorInputFactory implements IElementFactory {
     public IAdaptable createElement(IMemento memento) {
         String projName = memento.getString(EDITOR.PROJECT_EDITOR_FACTORY_TAG_PROJECT);
         if (projName == null) {
-            return null;
+            return new ProjectEditorInput(projName)
+                    .setError(new PgCodekeeperUIException("Project not found"));
         }
         
         // Get a handle to the IProject
