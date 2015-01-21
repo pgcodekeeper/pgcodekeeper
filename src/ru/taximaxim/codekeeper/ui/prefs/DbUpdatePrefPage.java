@@ -98,7 +98,7 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         try {
             history.setHistory(listEditor.getList());
         } catch (IOException e) {
-            ExceptionNotifier.showErrorDialog(Messages.dbUpdatePrefPage_error_saving_commands_list, e);
+            ExceptionNotifier.notifyDefault(Messages.dbUpdatePrefPage_error_saving_commands_list, e);
         }
         
         return super.performOk();
@@ -109,7 +109,7 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         try {
             list = history.getHistory();
         } catch (IOException e) {
-            ExceptionNotifier.showErrorDialog(Messages.dbUpdatePrefPage_error_getting_commands_list, e);
+            ExceptionNotifier.notifyDefault(Messages.dbUpdatePrefPage_error_getting_commands_list, e);
         }
         
         listEditor.setInputList(list);

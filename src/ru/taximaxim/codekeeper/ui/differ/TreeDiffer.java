@@ -59,7 +59,7 @@ public class TreeDiffer implements IRunnableWithProgress {
             dbSrc = this.dbSource.get(pm.newChild(33)); // 33
             dbTgt = this.dbTarget.get(pm.newChild(33)); // 66
         } catch(IOException ex) {
-            throw new InvocationTargetException(ex);
+            throw new InvocationTargetException(ex, ex.getLocalizedMessage());
         }
         
         Log.log(Log.LOG_INFO, "Generating diff tree between src: " + this.dbSource.getOrigin() //$NON-NLS-1$

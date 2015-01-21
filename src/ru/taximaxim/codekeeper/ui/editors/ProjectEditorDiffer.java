@@ -382,7 +382,7 @@ class CommitPage extends DiffPresentationPane {
                         PgDbParser.getParser(proj.getProject()).getObjFromProject();
                         CommitPage.this.callEgitCommitCommand();
                     } catch (CoreException e) {
-                        ExceptionNotifier.showErrorDialog(Messages.ProjectEditorDiffer_error_refreshing_project, e);
+                        ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_error_refreshing_project, e);
                     }
                 }
             }
@@ -526,7 +526,7 @@ class DiffPage extends DiffPresentationPane {
                 try {
                     diff();
                 } catch (PgCodekeeperUIException e1) {
-                    ExceptionNotifier.showErrorDialog(Messages.ProjectEditorDiffer_diff_error, e1);
+                    ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_diff_error, e1);
                 }
             }
         });
