@@ -8,23 +8,22 @@ import org.eclipse.ui.IMemento;
 
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ProjectEditorInputFactory implements IElementFactory {
     
     @Override
     public IAdaptable createElement(IMemento memento) {
         String projName = memento.getString(EDITOR.PROJECT_EDITOR_FACTORY_TAG_PROJECT);
-        if (projName == null) {
-            return new ProjectEditorInput(projName)
-                    .setError(new PgCodekeeperUIException("Project not found"));
+        ProjectEditorInput input = new ProjectEditorInput(projName);
+        
+        IProject project = 
+                (projName == null) ? null : ResourcesPlugin.getWorkspace().getRoot().getProject(projName);
+        if (project == null || !project.exists() || !project.isOpen()) {
+            input.setError(new PgCodekeeperUIException(Messages.project_either_closed_or_deleted + projName));
         }
         
-        // Get a handle to the IProject
-        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projName);
-        if (project.exists() && project.isOpen()) {
-            return new ProjectEditorInput(projName);
-        }
-        return null;
+        return input;
     }
     
     /**

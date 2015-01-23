@@ -32,9 +32,8 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
         return ex;
     }
     
-    public ProjectEditorInput setError(PgCodekeeperUIException ex) {
+    public void setError(PgCodekeeperUIException ex) {
         this.ex = ex;
-        return this;
     }
 
     @Override
