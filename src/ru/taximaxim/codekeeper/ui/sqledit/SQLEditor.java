@@ -33,7 +33,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
                 
                 @Override
                 public void run() {
-                    fOutlinePage.externalRefresh();
+                    if (fOutlinePage != null) {
+                        fOutlinePage.externalRefresh();
+                    }
                 }
             });
         }};
