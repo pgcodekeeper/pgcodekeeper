@@ -33,15 +33,17 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
                 
                 @Override
                 public void run() {
-                    fOutlinePage.externalRefresh();
+                    if (fOutlinePage != null) { 
+                        fOutlinePage.externalRefresh();
+                    }
                 }
             });
         }};
 
     public SQLEditor() {
         super();
-        
-        setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(getSharedColors(), getPreferenceStore()));
+        setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(
+                getSharedColors(), getPreferenceStore()));
         setDocumentProvider(new SQLEditorDocumentProvider());
         
     }
