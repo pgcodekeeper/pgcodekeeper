@@ -109,8 +109,10 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
             throw new PartInitException(Messages.ProjectEditorDiffer_error_bad_input_type);
         }
         ProjectEditorInput in = (ProjectEditorInput) input;
-        this.proj = new PgDbProject(ResourcesPlugin.getWorkspace().getRoot()
-                .getProject(in.getProjectName()));
+        if (in.getError() != null) {
+            throw new PartInitException(in.getError().getLocalizedMessage());
+        }
+        this.proj = new PgDbProject(in.getProject());
         setPartName(in.getName());
         super.init(site, input);
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
@@ -234,18 +236,19 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 }
 
 class CommitPage extends DiffPresentationPane {
+
     private final String [] VIEW_IDS_SUPPORTING_EGIT_COMMIT = {
             // project explorer
             IPageLayout.ID_PROJECT_EXPLORER,
             // package explorer
             JavaUI.ID_PACKAGES
     };
+
+    private boolean isCommitCommandAvailable;
     
     private LocalResourceManager lrm;
 
     private Button btnSave;
-    
-    private boolean isCommitCommandAvailable;
     
     public CommitPage(Composite parent, IPreferenceStore mainPrefs, PgDbProject proj) {
         super(parent, true, mainPrefs, proj);
@@ -379,11 +382,17 @@ class CommitPage extends DiffPresentationPane {
                     ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
                     try {
                         proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-                        PgDbParser.getParser(proj.getProject()).getObjFromProject();
-                        CommitPage.this.callEgitCommitCommand();
                     } catch (CoreException e) {
                         ExceptionNotifier.showErrorDialog(Messages.ProjectEditorDiffer_error_refreshing_project, e);
                     }
+                    PgDbParser.getParser(proj.getProject()).getObjFromProject();
+                    Display.getDefault().asyncExec(new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            callEgitCommitCommand();
+                        }
+                    });
                 }
             }
         });
@@ -397,41 +406,49 @@ class CommitPage extends DiffPresentationPane {
             return;
         }
         
-        // run in UI thread to acquire not null WorkbenchWindow
-        Display.getDefault().syncExec(new Runnable() {
-            @Override
-            public void run() {
-                IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();                
-                IViewPart view = null;
-                
-                for (int i = 0; i < VIEW_IDS_SUPPORTING_EGIT_COMMIT.length && view == null; i++){
-                    String id = VIEW_IDS_SUPPORTING_EGIT_COMMIT[i];
-                    view = page.findView(id);
-                }
-                
-                if (view == null){
-                    Log.log(Log.LOG_WARNING, "Any of the following views should be open "
-                            + "to execute command " + COMMAND.COMMIT_COMMAND_ID + ":\n"
-                                    + "\tProject explorer\n"
-                                    + "\tPackage explorer\n");
-                    return;
-                }
-                
-                // focus on view and select current project
-                page.activate(view);
-                ((ISetSelectionTarget)view).selectReveal(new StructuredSelection(proj.getProject()));
-                
-                // execute command
-                try {
-                    ((IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class))
-                    .executeCommand(COMMAND.COMMIT_COMMAND_ID, null);
-                } catch (ExecutionException | NotDefinedException | NotEnabledException
-                        | NotHandledException e) {
-                    Log.log(Log.LOG_WARNING, "Could not execute command " + COMMAND.COMMIT_COMMAND_ID, e);
-                }
-            }
-        });
+        /*
+         * TODO make this editor a selection provider
+         * that always has the IProject as a selection element
+         * so that Commit command is available with the focus anywhere in this editor
+         * 
+         * wrap the Depcy selections that we pass through into the parent selection
+         * as an element next to IProject and extract it in the depcy view
+         * 
+         * ProjectEditorSelectionProvider is the WIP
+         * impl examples are:
+         * ==================
+         * org.eclipse.jface.viewers.Viewer
+         * org.eclipse.jdt.internal.ui.viewsupport.SelectionProviderMediator
+         */
+
+        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();                
+        IViewPart view = null;
         
+        for (int i = 0; i < VIEW_IDS_SUPPORTING_EGIT_COMMIT.length && view == null; i++){
+            String id = VIEW_IDS_SUPPORTING_EGIT_COMMIT[i];
+            view = page.findView(id);
+        }
+        
+        if (view == null){
+            Log.log(Log.LOG_WARNING, "Any of the following views should be open "
+                    + "to execute command " + COMMAND.COMMIT_COMMAND_ID + ":\n"
+                            + "\tProject explorer\n"
+                            + "\tPackage explorer\n");
+            return;
+        }
+        
+        // focus on view and select current project
+        page.activate(view);
+        ((ISetSelectionTarget)view).selectReveal(new StructuredSelection(proj.getProject()));
+
+        // execute command
+        try {
+            ((IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class))
+                    .executeCommand(COMMAND.COMMIT_COMMAND_ID, null);
+        } catch (ExecutionException | NotDefinedException | NotEnabledException
+                | NotHandledException e) {
+            Log.log(Log.LOG_WARNING, "Could not execute command " + COMMAND.COMMIT_COMMAND_ID, e);
+        }
     }
     
     @Override

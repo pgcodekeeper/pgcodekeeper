@@ -12,6 +12,8 @@ public interface UIConsts {
     
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
+        String PROJECT_EDITOR_FACTORY_ID = "ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"; //$NON-NLS-1$
+        String PROJECT_EDITOR_FACTORY_TAG_PROJECT = "project"; //$NON-NLS-1$
     }
     
     interface COMMAND {
@@ -103,6 +105,7 @@ public interface UIConsts {
     }
     
     interface FILE {
+        String ICONAPPSMALL = "/icons/app_icon16.png"; //$NON-NLS-1$
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONWARNING = "/icons/warning.gif"; //$NON-NLS-1$
         String ICONADD = "/icons/add_obj.gif"; //$NON-NLS-1$
