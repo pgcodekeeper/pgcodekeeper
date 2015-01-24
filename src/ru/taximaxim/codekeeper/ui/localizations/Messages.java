@@ -49,6 +49,7 @@ public final class Messages extends NLS {
     public static String connection_details;
     public static String add;
     public static String delete;
+    public static String error_creating_dependency_graph;
     
     // ui
     public static String exceptionNotifier_copy_stack_trace;
@@ -158,6 +159,7 @@ public final class Messages extends NLS {
     public static String diffPartDescr_get_latest;
     public static String diffPartDescr_this_will_apply_selected_changes_to_your_database;
     public static String diffPresentationPane_getting_changes_for_diff;
+    public static String project_either_closed_or_deleted;
     
     // ui.pgdbproject
     public static String diffWizard_db_taget;

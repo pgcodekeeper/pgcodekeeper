@@ -102,7 +102,7 @@ public class NormalizeProject extends AbstractHandler {
                 proj.getProject().refreshLocal(
                         IResource.DEPTH_INFINITE, null);
             } catch (CoreException ex) {
-                ExceptionNotifier.showErrorDialog(
+                ExceptionNotifier.notifyDefault(
                         Messages.ProjectEditorDiffer_error_refreshing_project, ex);
             }
             

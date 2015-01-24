@@ -268,8 +268,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 try {
                     ((IPersistentPreferenceStore) prefStore).save();
                 } catch (IOException ex) {
-                    ExceptionNotifier.showErrorDialog(
-                            Messages.unexpected_error_while_saving_preferences, ex);
+                    ExceptionNotifier.notifyDefault(Messages.unexpected_error_while_saving_preferences, ex);
                     return;
                 }
             }
