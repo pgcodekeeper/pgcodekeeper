@@ -274,10 +274,7 @@ class CommitPage extends DiffPresentationPane {
                 try {
                     commit();
                 } catch (PgCodekeeperException ex) {
-                    // TODO make sure there is no way to display RuntimeException to the user
-                    // any runtimeException thrown in this SelectionAdapter gets swallowed
-                    // in event loop (not displayed to user except than in log)
-                    ExceptionNotifier.showErrorDialog(Messages.error_creating_dependency_graph, ex);
+                    ExceptionNotifier.notifyDefault(Messages.error_creating_dependency_graph, ex);
                 }
             }
         });
@@ -387,10 +384,11 @@ class CommitPage extends DiffPresentationPane {
                     ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
                     try {
                         proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-                        PgDbParser.getParser(proj.getProject()).getObjFromProject();
                         CommitPage.this.callEgitCommitCommand();
                     } catch (CoreException e) {
                         ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_error_refreshing_project, e);
+                    } finally {
+                        PgDbParser.getParser(proj.getProject()).getObjFromProject();
                     }
                 }
             }
