@@ -8,9 +8,16 @@ public final class Messages extends NLS {
 
 // SONAR-OFF
 
-    // common phrases
-    public static String Database_JDBC_access_error_occured;
-    public static String JDBC_driver_class_not_found;
+    // pgdiff.loader
+    public static String Connection_DatabaseJdbcAccessError;
+    public static String Connection_JdbcDriverClassNotFound;
+    
+    // apgdiff.model.graph
+    public static String RefColumn_CannotFindSchema;
+    public static String RefColumn_CannotFindTable;
+    public static String RefColumn_CannotFindColumn;
+    public static String View_CannotFindSchema;
+    public static String View_CannotFindColumn;
     
 // SONAR-ON
 

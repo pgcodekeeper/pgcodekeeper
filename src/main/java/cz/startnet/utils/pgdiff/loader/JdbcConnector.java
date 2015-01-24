@@ -43,9 +43,9 @@ public class JdbcConnector {
         try{
             return establishConnection();
         } catch (ClassNotFoundException e) {
-            throw new IOException(Messages.JDBC_driver_class_not_found, e);
+            throw new IOException(Messages.Connection_JdbcDriverClassNotFound, e);
         } catch (SQLException e) {
-            throw new IOException(Messages.Database_JDBC_access_error_occured, e);
+            throw new IOException(Messages.Connection_DatabaseJdbcAccessError, e);
         }
     }
     

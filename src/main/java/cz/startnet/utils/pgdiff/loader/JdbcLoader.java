@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.Parser;
@@ -151,7 +152,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (SQLException e) {
-            throw new IOException("Database JDBC access error occured", e);
+            throw new IOException(Messages.Connection_DatabaseJdbcAccessError, e);
         } finally{
             Log.log(Log.LOG_INFO, "Closing used JDBC resources");
             closeResources();
