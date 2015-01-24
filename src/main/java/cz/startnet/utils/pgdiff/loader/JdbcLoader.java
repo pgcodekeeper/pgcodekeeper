@@ -1118,9 +1118,7 @@ public class JdbcLoader implements PgCatalogStrings {
             Map<Integer, String> previousMap = null;
             while (res.next()){
                 Integer columnNumber = res.getInt("attnum");
-                if (columnNumber < 1){
-                    continue;
-                }
+
                 Long tableOid = res.getLong("attrelid");
                 String columnName = res.getString("attname");
                 if (!previousTableOid.equals(tableOid)){
@@ -1157,6 +1155,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 cachedColumnNamesByTableOid.put(tableOid, tableColumns);
             }
         }
+        
         List<String> result = new ArrayList<>();
         for(Integer n : cols){
             result.add(tableColumns.get(n));
