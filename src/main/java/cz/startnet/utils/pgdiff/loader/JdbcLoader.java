@@ -624,7 +624,6 @@ public class JdbcLoader implements PgCatalogStrings {
             PgColumn column = new PgColumn(columnName);
             
             PgType columnType = cachedTypeNamesByOid.get(colTypes[i]);
-            String columnTypeName = getTypeNameByOid(colTypes[i], schemaName);
              
             // pg_catalog.pg_attribute.atttypmod records type-specific data supplied 
             // at table creation time (for example, the maximum length of a varchar column). 
@@ -633,9 +632,9 @@ public class JdbcLoader implements PgCatalogStrings {
             //
             // if column type has it's "Type modifier output function" typmodout and
             // column type has it's atttypmod set up (colTypeMod[i] != -1)
+            String typMod = "";
             if (colTypeMod[i] != -1 && columnType.getTypmodout() != null && 
                     !columnType.getTypmodout().isEmpty()){
-                String typMod = "";
                 
                 // Map of those colTypeMod values that 've been already queried in
                 // form of "SELECT typmodout(colTypeMod)"
@@ -665,10 +664,8 @@ public class JdbcLoader implements PgCatalogStrings {
                         }
                     }
                 }
-                
-                // finally append type modifier
-                columnTypeName = columnTypeName.concat(typMod);
             }
+            String columnTypeName = columnType.getSchemaQualifiedName(schemaName, typMod);
             column.setType(columnTypeName);
             
             tableDef.append("   " + columnName + " " + columnTypeName);
@@ -890,17 +887,20 @@ public class JdbcLoader implements PgCatalogStrings {
                         returnedTableArguments.append(", ");
                     }
                     returnedTableArguments.append(argNames[i]).append(" ");
-                    returnedTableArguments.append(getTypeNameByOid(argTypeOids[i], schemaName));
+                    
+                    PgType returnType = cachedTypeNamesByOid.get(argTypeOids[i]);
+                    returnedTableArguments.append(returnType.getSchemaQualifiedName(schemaName));
                 }
             }            
         }
         
+        PgType returnType = cachedTypeNamesByOid.get(res.getLong("prorettype"));
         if (returnsTable){
             f.setReturns("TABLE(" + returnedTableArguments + ")");
         }else if (res.getBoolean("proretset")){
-            f.setReturns("SETOF " + getTypeNameByOid(res.getLong("prorettype"), schemaName));
+            f.setReturns("SETOF " + returnType.getSchemaQualifiedName(schemaName));
         }else{
-            f.setReturns(getTypeNameByOid(res.getLong("prorettype"), schemaName));
+            f.setReturns(returnType.getSchemaQualifiedName(schemaName));
         }
         
         // ARGUMENTS
@@ -1161,16 +1161,6 @@ public class JdbcLoader implements PgCatalogStrings {
             result.add(tableColumns.get(n));
         }
         return result;
-    }
-    
-    /**
-     * Returns the name of a type, whose <code>oid = typeOid</code>. If the type's schema name 
-     * differs from targetSchemaName, the returned type name is schema-qualified.
-     */
-    private String getTypeNameByOid(Long typeOid, String targetSchemaName) throws SQLException {
-        PgType type = cachedTypeNamesByOid.get(typeOid);
-        return type.getParentSchema().equals("pg_catalog") || (type.getParentSchema().equals(targetSchemaName)) ? 
-                type.getTypeName() : type.getParentSchema().concat(".").concat(type.getTypeName());
     }
     
     /**
