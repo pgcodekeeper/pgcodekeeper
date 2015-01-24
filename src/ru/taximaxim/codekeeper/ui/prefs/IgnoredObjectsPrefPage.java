@@ -48,7 +48,7 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
             try {
                 list = xml.deserializeList(new StringReader(preference));
             } catch (IOException | SAXException ex) {
-                ExceptionNotifier.showErrorDialog(Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, ex);
+                ExceptionNotifier.notifyDefault(Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, ex);
             }
         }
         listEditor.setInputList(list);
@@ -90,7 +90,7 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
             try {
                 xml.serializeList(listEditor.getList(), true, sw);
             } catch (IOException | TransformerException ex) {
-                ExceptionNotifier.showErrorDialog(Messages.IgnoredObjectsPrefPage_error_saving_ignores_list, ex);
+                ExceptionNotifier.notifyDefault(Messages.IgnoredObjectsPrefPage_error_saving_ignores_list, ex);
             }
             getPreferenceStore().setValue(PREF.IGNORE_OBJECTS, sw.toString());
         }

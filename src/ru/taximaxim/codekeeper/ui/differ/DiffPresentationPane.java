@@ -227,10 +227,10 @@ public abstract class DiffPresentationPane extends Composite {
                         saveDBPrefs(projProps);
                     }
                 } catch (PgCodekeeperUIException e1) {
-                    ExceptionNotifier.showErrorDialog(
+                    ExceptionNotifier.notifyDefault(
                             Messages.DiffPresentationPane_error_loading_changes, e1);
                 } catch (BackingStoreException e1) {
-                    ExceptionNotifier.showErrorDialog(
+                    ExceptionNotifier.notifyDefault(
                             Messages.DiffPresentationPane_cannotSaveDbPropToProjProps, e1);
                 }
             }
@@ -442,7 +442,7 @@ public abstract class DiffPresentationPane extends Composite {
                 try {
                     IDE.openEditorOnFileStore( page, fileStore );
                 } catch (PartInitException e) {
-                    ExceptionNotifier.showErrorDialog(
+                    ExceptionNotifier.notifyDefault(
                             Messages.could_not_open_editor_for_file + 
                             file.getAbsolutePath(), e);
                 }

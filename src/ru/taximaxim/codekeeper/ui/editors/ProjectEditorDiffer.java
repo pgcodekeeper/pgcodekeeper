@@ -94,6 +94,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -273,7 +274,11 @@ class CommitPage extends DiffPresentationPane {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                commit();
+                try {
+                    commit();
+                } catch (PgCodekeeperException ex) {
+                    ExceptionNotifier.notifyDefault(Messages.error_creating_dependency_graph, ex);
+                }
             }
         });
         
@@ -296,7 +301,7 @@ class CommitPage extends DiffPresentationPane {
         btnAutoCommitWindow.setEnabled(isCommitCommandAvailable);
     }
     
-    private void commit() {
+    private void commit() throws PgCodekeeperException {
         Log.log(Log.LOG_INFO, "Started project update"); //$NON-NLS-1$
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
             return;
@@ -382,17 +387,18 @@ class CommitPage extends DiffPresentationPane {
                     ConsoleFactory.write(Messages.commitPartDescr_success_project_updated);
                     try {
                         proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-                    } catch (CoreException e) {
-                        ExceptionNotifier.showErrorDialog(Messages.ProjectEditorDiffer_error_refreshing_project, e);
-                    }
-                    PgDbParser.getParser(proj.getProject()).getObjFromProject();
-                    Display.getDefault().asyncExec(new Runnable() {
+                        Display.getDefault().asyncExec(new Runnable() {
                         
-                        @Override
-                        public void run() {
-                            callEgitCommitCommand();
-                        }
-                    });
+                            @Override
+                            public void run() {
+                                callEgitCommitCommand();
+                            }
+                        });
+                    } catch (CoreException e) {
+                        ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_error_refreshing_project, e);
+                    } finally {
+                        PgDbParser.getParser(proj.getProject()).getObjFromProject();
+                    }
                 }
             }
         });
@@ -401,6 +407,13 @@ class CommitPage extends DiffPresentationPane {
         job.schedule();
     }
     
+    /**
+     * Programmatically selects this editor's project in either of Project/Package explorer 
+     * (if any open) and calls EGIT commit command 
+     * (see org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION).
+     * <br><br>
+     * Should be called strictly from the UI thread, otherwise NPE is thrown.
+     */
     private void callEgitCommitCommand(){
         if (!isCommitCommandAvailable || !mainPrefs.getBoolean(PREF.CALL_COMMIT_COMMAND_AFTER_UPDATE)){
             return;
@@ -543,7 +556,7 @@ class DiffPage extends DiffPresentationPane {
                 try {
                     diff();
                 } catch (PgCodekeeperUIException e1) {
-                    ExceptionNotifier.showErrorDialog(Messages.ProjectEditorDiffer_diff_error, e1);
+                    ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_diff_error, e1);
                 }
             }
         });

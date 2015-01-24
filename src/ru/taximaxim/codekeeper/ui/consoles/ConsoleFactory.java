@@ -28,7 +28,7 @@ public class ConsoleFactory implements IConsoleFactory {
             view = (IConsoleView) page.showView(id);
             view.display(myConsole);
         } catch (PartInitException e) {
-            ExceptionNotifier.showErrorDialog(Messages.ConsoleFactory_error_opening_console, e);
+            ExceptionNotifier.notifyDefault(Messages.ConsoleFactory_error_opening_console, e);
         }
     }
 

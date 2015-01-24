@@ -152,14 +152,14 @@ public class NewProjWizard extends Wizard
                                     pageDb.getDumpPath(), pageDb.getDbPass()));
                 } catch (InvocationTargetException ex) {
                     props.deleteFromWorkspace();
-                    ExceptionNotifier.showErrorDialog(
+                    ExceptionNotifier.notifyDefault(
                             Messages.newProjWizard_error_in_initializing_repo_from_source,
                                     ex);
                     return false;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     props.deleteFromWorkspace();
-                    ExceptionNotifier.showErrorDialog(
+                    ExceptionNotifier.notifyDefault(
                             Messages.newProjWizard_project_initializer_thread_interrupted,
                                     ex);
                     return false;
@@ -180,11 +180,11 @@ public class NewProjWizard extends Wizard
                 PgDbProject.addNatureToProject(props.getProject());
                 props.getPrefs().flush();
             } catch (BackingStoreException e) {
-                ExceptionNotifier.showErrorDialog(
+                ExceptionNotifier.notifyDefault(
                         Messages.NewProjWizard_error_saving_projprefs, e);
                 return false;
             } catch (CoreException e) {
-                ExceptionNotifier.showErrorDialog(
+                ExceptionNotifier.notifyDefault(
                         Messages.NewProjWizard_error_adding_nature, e);
                 return false;
             }
@@ -197,7 +197,7 @@ public class NewProjWizard extends Wizard
                     .getActiveWorkbenchWindow().getActivePage(),
                     props.getProject());
         } catch (PgCodekeeperUIException e) {
-            ExceptionNotifier.showErrorDialog(Messages.NewProjWizard_error_creating_project, e);
+            ExceptionNotifier.notifyDefault(Messages.NewProjWizard_error_creating_project, e);
             return false;
         }
         return true;
@@ -233,7 +233,7 @@ public class NewProjWizard extends Wizard
         } else if (pageDb.isSourceJdbc()) {
             src = DBSources.SOURCE_TYPE_JDBC;
         } else {
-            ExceptionNotifier.showErrorDialog(
+            ExceptionNotifier.notifyDefault(
                     Messages.newProjWizard_no_schema_source_selected, null);
             return;
         }
