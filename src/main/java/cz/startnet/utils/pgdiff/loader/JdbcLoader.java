@@ -131,7 +131,7 @@ public class JdbcLoader implements PgCatalogStrings {
                     
                     PgSchema schema = getSchema(res);
                     if (res.getString(NAMESPACE_NSPNAME).equals(ApgdiffConsts.PUBLIC)){
-                        d.replaceSchema(d.getSchema(ApgdiffConsts.PUBLIC), schema);                    
+                        d.replaceSchema(d.getSchema(ApgdiffConsts.PUBLIC), schema);
                     }else{
                         d.addSchema(schema);
                     }
@@ -361,9 +361,39 @@ public class JdbcLoader implements PgCatalogStrings {
                 }
             }
         }
+        
+        setSequencesCacheValue(s);
         return s;
     }
     
+    private void setSequencesCacheValue(PgSchema s) throws SQLException {
+        final String prefix = "SELECT sequence_name, cache_value FROM ";
+        final String postfix = " WHERE cache_value != 1";
+        final String union = "\nUNION \n";
+        
+        StringBuilder unionSeqCache = new StringBuilder();
+        List<PgSequence> seqs = s.getSequences();
+        if (seqs.size() == 0){
+            return;
+        }
+        
+        for (int i = 0; i < seqs.size(); i++){
+            PgSequence seq = seqs.get(i);
+            unionSeqCache.append(prefix).append(seq.getName()).append(postfix);
+            if (i < (seqs.size() - 1)){
+                unionSeqCache.append(union);
+            }
+        }
+        
+        try(Statement stmnt = connection.createStatement()){
+            try(ResultSet res = stmnt.executeQuery(unionSeqCache.toString())){
+                while (res.next()){
+                    s.getSequence(res.getString("sequence_name")).setCache(res.getString("cache_value"));
+                }
+            }
+        }
+    }
+
     private PgExtension getExtension(ResultSet res) throws SQLException {
         PgExtension e = new PgExtension(res.getString("extname"), "");
 //        e.setVersion(res.getString("extversion"));
@@ -396,11 +426,13 @@ public class JdbcLoader implements PgCatalogStrings {
                 definition.append(getStringListAsString(referencedColumnNames, ", ")).append(")");
                 
                 for (String colName : referencedColumnNames){
-                    GenericColumn referencedColumn = new GenericColumn(
-                            res.getString("foreign_schema_name"), 
-                            res.getString("foreign_table_name"), 
-                            colName);
-                    ((PgForeignKey)c).addForeignColumn(referencedColumn);
+                    if (colName != null){
+                        GenericColumn referencedColumn = new GenericColumn(
+                                res.getString("foreign_schema_name"), 
+                                res.getString("foreign_table_name"), 
+                                colName);
+                        ((PgForeignKey)c).addForeignColumn(referencedColumn);                        
+                    }
                 }
                 
                 switch (res.getString("confmatchtype")){
