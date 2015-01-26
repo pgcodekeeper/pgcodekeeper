@@ -1,7 +1,5 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -49,7 +47,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.ISaveablePart2;
+import org.eclipse.ui.IPartListener2;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -74,7 +73,7 @@ import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
-public class RollOnEditor extends SQLEditor {
+public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     public static final String ID = "ru.taximaxim.codekeeper.ui.RollOnEditor";
     
@@ -124,7 +123,6 @@ public class RollOnEditor extends SQLEditor {
                 FILE.DDL_UPDATE_COMMANDS_HIST_FILENAME, 
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT, 
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
-        
     }
     @Override
     protected ISourceViewer createSourceViewer(Composite parent,
@@ -149,29 +147,14 @@ public class RollOnEditor extends SQLEditor {
         }
         // после создания парсера вызвать создание основного редактора
         super.init(site, input);
+        getEditorSite().getWorkbenchWindow().getPartService().addPartListener(this);
     }
     
     @Override
     public void dispose() {
-        if (colorPink != null) {colorPink.dispose();}
-        if (addDepcy != null) {
-            if (isRunning) {
-                MessageBox errorDialog = new MessageBox(this.getEditorSite()
-                        .getShell(), SWT.OK);
-                errorDialog.setMessage(Messages.sqlScriptDialog_stop_script_before_closing_dialog);
-                errorDialog.open();
-            } else {
-                differ.setAdditionalDepciesSource(oldDepcy);
-                try {
-                    // TODO: костыль убрать
-                    if (!cmbScript.isDisposed())
-                        history.addHistoryEntry(cmbScript.getText());
-                } catch (IOException e) {
-                    ExceptionNotifier.notifyDefault(
-                                    Messages.SqlScriptDialog_error_adding_command_history,
-                                    e);
-                }
-            }
+        getEditorSite().getWorkbenchWindow().getPartService().removePartListener(this);
+        if (colorPink != null) {
+            colorPink.dispose();
         }
         super.dispose();
     }
@@ -670,5 +653,61 @@ public class RollOnEditor extends SQLEditor {
                 createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL,
                         true);
         }
+    }
+
+    @Override
+    public void partActivated(IWorkbenchPartReference partRef) {
+        // TODO Auto-generated method stub
+        
+    }
+    @Override
+    public void partBroughtToTop(IWorkbenchPartReference partRef) {
+        // TODO Auto-generated method stub
+        
+    }
+    @Override
+    public void partClosed(IWorkbenchPartReference partRef) {
+        if (addDepcy != null) {
+            if (isRunning) {
+                MessageBox errorDialog = new MessageBox(this.getEditorSite()
+                        .getShell(), SWT.OK);
+                errorDialog.setMessage(Messages.sqlScriptDialog_stop_script_before_closing_dialog);
+                errorDialog.open();
+            } else {
+                differ.setAdditionalDepciesSource(oldDepcy);
+                try {
+                    history.addHistoryEntry(cmbScript.getText());
+                } catch (IOException e) {
+                    ExceptionNotifier.notifyDefault(
+                                    Messages.SqlScriptDialog_error_adding_command_history,
+                                    e);
+                }
+            }
+        }
+    }
+    @Override
+    public void partDeactivated(IWorkbenchPartReference partRef) {
+        // TODO Auto-generated method stub
+        
+    }
+    @Override
+    public void partOpened(IWorkbenchPartReference partRef) {
+        // TODO Auto-generated method stub
+        
+    }
+    @Override
+    public void partHidden(IWorkbenchPartReference partRef) {
+        // TODO Auto-generated method stub
+        
+    }
+    @Override
+    public void partVisible(IWorkbenchPartReference partRef) {
+        // TODO Auto-generated method stub
+        
+    }
+    @Override
+    public void partInputChanged(IWorkbenchPartReference partRef) {
+        // TODO Auto-generated method stub
+        
     }
 }
