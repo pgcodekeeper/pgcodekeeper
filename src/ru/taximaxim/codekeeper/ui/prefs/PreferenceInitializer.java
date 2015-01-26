@@ -126,7 +126,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
             try {
                 ((IPersistentPreferenceStore) mainPrefs).save();
             } catch (IOException ex) {
-                ExceptionNotifier.showErrorDialog(Messages.PreferenceInitializer_error_saving_prefs, ex);
+                ExceptionNotifier.notifyDefault(Messages.PreferenceInitializer_error_saving_prefs, ex);
             }
         }
     }

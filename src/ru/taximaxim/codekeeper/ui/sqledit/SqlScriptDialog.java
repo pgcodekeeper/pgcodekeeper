@@ -305,7 +305,7 @@ public class SqlScriptDialog extends TrayDialog {
         try {
             prev = history.getHistory();
         } catch (IOException e1) {
-            ExceptionNotifier.showErrorDialog(Messages.SqlScriptDialog_error_loading_command_history, e1);
+            ExceptionNotifier.notifyDefault(Messages.SqlScriptDialog_error_loading_command_history, e1);
             prev = new ArrayList<>();
         }
         if (prev != null && !prev.isEmpty()) {
@@ -350,7 +350,7 @@ public class SqlScriptDialog extends TrayDialog {
                         }
                     }
                 } catch (PgCodekeeperUIException e) {
-                    ExceptionNotifier.showErrorDialog(Messages.SqlScriptDialog_error_get_script, e);
+                    ExceptionNotifier.notifyDefault(Messages.SqlScriptDialog_error_get_script, e);
                 }
             }
         });
@@ -400,7 +400,7 @@ public class SqlScriptDialog extends TrayDialog {
         try {
             sqlEditor.setDocument(new Document(differ.getDiffDirect()));
         } catch (PgCodekeeperUIException e) {
-            ExceptionNotifier.showErrorDialog(Messages.SqlScriptDialog_error_get_script, e);
+            ExceptionNotifier.notifyDefault(Messages.SqlScriptDialog_error_get_script, e);
         }
         sqlEditor.activateAutocomplete();
         
@@ -470,7 +470,7 @@ public class SqlScriptDialog extends TrayDialog {
                 
                 @Override
                 public void uncaughtException(Thread t, Throwable e) {
-                    ExceptionNotifier.showErrorDialog(
+                    ExceptionNotifier.notifyDefault(
                             Messages.sqlScriptDialog_exception_during_script_execution,e);
                 }
             });
@@ -501,7 +501,7 @@ public class SqlScriptDialog extends TrayDialog {
                 try (PrintWriter writer = new PrintWriter(script, UIConsts.UTF_8)) {
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
-                    ExceptionNotifier.showErrorDialog(
+                    ExceptionNotifier.notifyDefault(
                             Messages.sqlScriptDialog_error_saving_script_to_file, ex);
                     return;
                 }
@@ -679,7 +679,7 @@ public class SqlScriptDialog extends TrayDialog {
             try {
                 history.addHistoryEntry(cmbScript.getText());
             } catch (IOException e) {
-                ExceptionNotifier.showErrorDialog(Messages.SqlScriptDialog_error_adding_command_history, e);
+                ExceptionNotifier.notifyDefault(Messages.SqlScriptDialog_error_adding_command_history, e);
             }
             return super.close();
         }
@@ -771,7 +771,7 @@ public class SqlScriptDialog extends TrayDialog {
                 sqlEditor.setDocument(new Document(differ.getDiffDirect()));
                 sqlEditor.refresh();
             } catch (PgCodekeeperUIException e) {
-                ExceptionNotifier.showErrorDialog(
+                ExceptionNotifier.notifyDefault(
                         Messages.SqlScriptDialog_error_add_depcies, e);
             }
         }

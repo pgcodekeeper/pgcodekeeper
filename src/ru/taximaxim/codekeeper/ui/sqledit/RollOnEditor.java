@@ -167,7 +167,7 @@ public class RollOnEditor extends SQLEditor {
                     if (!cmbScript.isDisposed())
                         history.addHistoryEntry(cmbScript.getText());
                 } catch (IOException e) {
-                    ExceptionNotifier.showErrorDialog(
+                    ExceptionNotifier.notifyDefault(
                                     Messages.SqlScriptDialog_error_adding_command_history,
                                     e);
                 }
@@ -187,7 +187,7 @@ public class RollOnEditor extends SQLEditor {
                 }
             }
         } catch (PgCodekeeperUIException e) {
-            ExceptionNotifier.showErrorDialog(
+            ExceptionNotifier.notifyDefault(
                     Messages.SqlScriptDialog_error_get_script, e);
         }
         this.oldDepcy = differ.getAdditionalDepciesSource();
@@ -288,7 +288,7 @@ public class RollOnEditor extends SQLEditor {
         try {
             prev = history.getHistory();
         } catch (IOException e1) {
-            ExceptionNotifier.showErrorDialog(Messages.SqlScriptDialog_error_loading_command_history, e1);
+            ExceptionNotifier.notifyDefault(Messages.SqlScriptDialog_error_loading_command_history, e1);
             prev = new ArrayList<>();
         }
         if (prev != null && !prev.isEmpty()) {
@@ -497,7 +497,7 @@ public class RollOnEditor extends SQLEditor {
                     
                     @Override
                     public void uncaughtException(Thread t, Throwable e) {
-                        ExceptionNotifier.showErrorDialog(
+                        ExceptionNotifier.notifyDefault(
                                 Messages.sqlScriptDialog_exception_during_script_execution,e);
                     }
                 });
@@ -532,7 +532,7 @@ public class RollOnEditor extends SQLEditor {
                 try (PrintWriter writer = new PrintWriter(script, UIConsts.UTF_8)) {
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
-                    ExceptionNotifier.showErrorDialog(
+                    ExceptionNotifier.notifyDefault(
                             Messages.sqlScriptDialog_error_saving_script_to_file, ex);
                     return;
                 }
@@ -630,7 +630,7 @@ public class RollOnEditor extends SQLEditor {
                 }
                 
             } catch (PgCodekeeperUIException e) {
-                ExceptionNotifier.showErrorDialog(
+                ExceptionNotifier.notifyDefault(
                         Messages.SqlScriptDialog_error_add_depcies, e);
             }
         }

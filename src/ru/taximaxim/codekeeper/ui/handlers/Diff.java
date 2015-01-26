@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
@@ -17,7 +16,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 public class Diff extends AbstractHandler {
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(ExecutionEvent event) {
         PgDbProject proj = OpenProjectUtils.getProject(event);
         Shell shell = HandlerUtil.getActiveShell(event);
         IPreferenceStore prefStore = Activator.getDefault().getPreferenceStore();  

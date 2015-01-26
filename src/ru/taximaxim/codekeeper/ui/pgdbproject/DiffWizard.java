@@ -121,13 +121,13 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     getContainer().run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
                     e.doit = false;
-                    ExceptionNotifier.showErrorDialog(
+                    ExceptionNotifier.notifyDefault(
                             Messages.error_in_differ_thread, ex);
                     return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     e.doit = false;
-                    ExceptionNotifier.showErrorDialog(
+                    ExceptionNotifier.notifyDefault(
                             Messages.differ_thread_cancelled_shouldnt_happen, ex);
                     return;
                 }
@@ -153,12 +153,12 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     getContainer().run(true, false, differ);
                 } catch (InvocationTargetException ex) {
                     e.doit = false;
-                    ExceptionNotifier.showErrorDialog(Messages.error_in_differ_thread, ex);
+                    ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex);
                     return;
                 } catch (InterruptedException ex) {
                     // assume run() was called as non cancelable
                     e.doit = false;
-                    ExceptionNotifier.showErrorDialog(
+                    ExceptionNotifier.notifyDefault(
                             Messages.differ_thread_cancelled_shouldnt_happen, ex);
                     return;
                 }
@@ -169,7 +169,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             }
         } catch(PgCodekeeperUIException e1) {
             e.doit = false;
-            ExceptionNotifier.showErrorDialog(Messages.DiffWizard_unexpected_error, e1);
+            ExceptionNotifier.notifyDefault(Messages.DiffWizard_unexpected_error, e1);
             return;
         }
     }
@@ -431,7 +431,7 @@ class PageDiff extends WizardPage implements Listener {
                         cmbTimezone.select(cmbTimezone.indexOf(
                                 tmpProj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC)));
                     } catch (PgCodekeeperUIException e1) {
-                        ExceptionNotifier.showErrorDialog(Messages.DiffWizard_error_opening_project, e1);
+                        ExceptionNotifier.notifyDefault(Messages.DiffWizard_error_opening_project, e1);
                     }
                 }
             }
@@ -727,7 +727,7 @@ class PageResult extends WizardPage {
             Text txtDiff = (Text) tabs.getSelection()[0].getControl();
             encodedWriter.println(txtDiff.getText());
         } catch (FileNotFoundException | UnsupportedEncodingException ex) {
-            ExceptionNotifier.showErrorDialog(
+            ExceptionNotifier.notifyDefault(
                     Messages.diffWizard_unexpected_error_while_saving_diff, ex);
         }
     }

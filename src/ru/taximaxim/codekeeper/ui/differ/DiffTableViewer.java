@@ -195,7 +195,7 @@ public class DiffTableViewer extends Composite {
         try {
             prevChecked = prevCheckedHistory.getMapHistory();
         } catch (IOException e1) {
-            ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_load_checked_set, e1);
+            ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_load_checked_set, e1);
             prevChecked = new HashMap<>();
         }
         
@@ -551,7 +551,7 @@ public class DiffTableViewer extends Composite {
                             checkedElements, addEntry);
                 prevChecked = prevCheckedHistory.getMapHistory();
             } catch (IOException e) {
-                ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_save_checked_set, e);
+                ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_save_checked_set, e);
                 prevChecked = new HashMap<>();
             }
             cmbPrevChecked.setInput(prevChecked.keySet());
@@ -600,7 +600,7 @@ public class DiffTableViewer extends Composite {
             this.dbTarget = (differ == null) ? null : 
                 reverseDiffSide ? differ.getDbSource() : differ.getDbTarget();
         } catch (PgCodekeeperUIException e) {
-            ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_setting_input, e);
+            ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_setting_input, e);
             this.treeRoot = null;
             this.dbSource = null;
             this.dbTarget = null;
@@ -825,7 +825,7 @@ public class DiffTableViewer extends Composite {
                     ignoredElements = xml.deserializeList(
                             new StringReader((String) event.getNewValue()));
                 } catch (IOException | SAXException ex) {
-                    ExceptionNotifier.showErrorDialog(Messages.DiffTableViewer_error_reading_ignored_objects, ex);
+                    ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_reading_ignored_objects, ex);
                     return;
                 }
                 viewerRefresh();
