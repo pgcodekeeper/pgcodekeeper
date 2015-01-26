@@ -182,7 +182,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                 return result.toArray(new ICompletionProposal[result.size()]);
             }
         }*/
-        , SQLEditorDocumentProvider.SQL_CODE);
+        , SQLEditorCommonDocumentProvider.SQL_CODE);
         assistant.enableAutoActivation(true);
         assistant.setAutoActivationDelay(500);
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
@@ -192,14 +192,14 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     @Override
     public String getConfiguredDocumentPartitioning(ISourceViewer sourceViewer) {
-        return SQLEditorDocumentProvider.SQL_PARTITIONING;
+        return SQLEditorCommonDocumentProvider.SQL_PARTITIONING;
     }
     
     @Override
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
         return new String[] {
-                SQLEditorDocumentProvider.SQL_CODE,
-                SQLEditorDocumentProvider.SQL_SINGLE_COMMENT
+                SQLEditorCommonDocumentProvider.SQL_CODE,
+                SQLEditorCommonDocumentProvider.SQL_SINGLE_COMMENT
         };
     }
     
@@ -208,10 +208,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         PresentationReconciler reconciler= new PresentationReconciler();
         reconciler.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         
-        addDamagerRepairer(reconciler, createCommentScanner(), SQLEditorDocumentProvider.SQL_SINGLE_COMMENT);
-        addDamagerRepairer(reconciler, createMultiCommentScanner(), SQLEditorDocumentProvider.SQL_MULTI_COMMENT);
-        addDamagerRepairer(reconciler, createCharacterStringLiteralCommentScanner(), SQLEditorDocumentProvider.SQL_CHARACTER_STRING_LITERAL);
-        addDamagerRepairer(reconciler, createRecipeScanner(), SQLEditorDocumentProvider.SQL_CODE);
+        addDamagerRepairer(reconciler, createCommentScanner(), SQLEditorCommonDocumentProvider.SQL_SINGLE_COMMENT);
+        addDamagerRepairer(reconciler, createMultiCommentScanner(), SQLEditorCommonDocumentProvider.SQL_MULTI_COMMENT);
+        addDamagerRepairer(reconciler, createCharacterStringLiteralCommentScanner(), SQLEditorCommonDocumentProvider.SQL_CHARACTER_STRING_LITERAL);
+        addDamagerRepairer(reconciler, createRecipeScanner(), SQLEditorCommonDocumentProvider.SQL_CODE);
         
         return reconciler;
     }

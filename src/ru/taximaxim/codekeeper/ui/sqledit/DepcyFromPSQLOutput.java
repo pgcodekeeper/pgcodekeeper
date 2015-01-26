@@ -201,24 +201,40 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
 
     class StringInput implements IStorageEditorInput {
         private IStorage storage;
-        StringInput(IStorage storage) {this.storage = storage;}
-        public boolean exists() {return true;}
-        public ImageDescriptor getImageDescriptor() {return null;}
+
+        StringInput(IStorage storage) {
+            this.storage = storage;
+        }
+
+        public boolean exists() {
+            return true;
+        }
+
+        public ImageDescriptor getImageDescriptor() {
+            return null;
+        }
+
         public String getName() {
-           return storage.getName();
+            return storage.getName();
         }
-        public IPersistableElement getPersistable() {return null;}
+
+        public IPersistableElement getPersistable() {
+            return null;
+        }
+
         public IStorage getStorage() {
-           return storage;
+            return storage;
         }
+
         public String getToolTipText() {
-           return "String-based file: " + storage.getName();
+            return "String-based file: " + storage.getName();
         }
+
         public Object getAdapter(Class adapter) {
-          return null;
+            return null;
         }
-     }
-    
+    }
+
     class StringStorage implements IStorage {
         String str;
         public StringStorage(String str) {

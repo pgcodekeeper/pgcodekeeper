@@ -49,8 +49,6 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
         super();
         setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(
                 getSharedColors(), getPreferenceStore()));
-        setDocumentProvider(new SQLEditorDocumentProvider());
-        
     }
 
     @Override
@@ -76,7 +74,13 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
     @Override
     public void init(IEditorSite site, IEditorInput input)
             throws PartInitException {
+        if (input instanceof IFileEditorInput) {
+            setDocumentProvider(new SQLEditorFileDocumentProvider());
+        } else {
+            setDocumentProvider(new SQLEditorStorageDocumentProvider());
+        }
         super.init(site, input);
+        
         if (parser == null && input instanceof IFileEditorInput) {
             IProject proj = ((IFileEditorInput)input).getFile().getProject();
             try {

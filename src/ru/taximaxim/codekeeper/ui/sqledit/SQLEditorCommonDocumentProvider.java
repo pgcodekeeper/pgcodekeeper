@@ -9,9 +9,8 @@ import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
-import org.eclipse.ui.editors.text.StorageDocumentProvider;
 
-public class SQLEditorDocumentProvider extends StorageDocumentProvider {
+public class SQLEditorCommonDocumentProvider {
 
     /**
      * The recipe partitioning. It contains two partition types: {@link #SQL_CODE} and
@@ -38,8 +37,8 @@ public class SQLEditorDocumentProvider extends StorageDocumentProvider {
             SQL_MULTI_COMMENT,
             SQL_CHARACTER_STRING_LITERAL
     };
-
-    protected void setupDocument(Object element,IDocument document) {
+    
+    void setupDocument(Object element,IDocument document) {
         if (document instanceof IDocumentExtension3) {
             IDocumentExtension3 ext= (IDocumentExtension3) document;
             IDocumentPartitioner partitioner= createRecipePartitioner();
@@ -48,7 +47,7 @@ public class SQLEditorDocumentProvider extends StorageDocumentProvider {
         }
     }
 
-    private IDocumentPartitioner createRecipePartitioner() {
+    IDocumentPartitioner createRecipePartitioner() {
         IPredicateRule[] rules= { 
                 new SingleLineRule("--", null, new Token(SQL_SINGLE_COMMENT), (char) 0, true, false), //$NON-NLS-1$
                 new MultiLineRule("/**", "*/", new Token(SQL_MULTI_COMMENT), (char) 0, true),  //$NON-NLS-1$ //$NON-NLS-2$
