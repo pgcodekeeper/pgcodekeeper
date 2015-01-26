@@ -56,13 +56,9 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
     @Override
     public Object getAdapter(Class adapter) {
         if (IContentOutlinePage.class.equals(adapter)) {
-            if (fOutlinePage == null) {
-                fOutlinePage= new SQLEditorContentOutlinePage(getDocumentProvider(), this, parser);
-                if (getEditorInput() != null) {
-                    fOutlinePage.setInput(getEditorInput());
-                }
+            if (fOutlinePage != null) {
+                return fOutlinePage;    
             }
-            return fOutlinePage;
         }
         return super.getAdapter(adapter);
     }
@@ -94,6 +90,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
         if (parser != null) {
             parser.addListener(list);
             ((SQLEditorSourceViewerConfiguration)getSourceViewerConfiguration()).setParser(parser);
+            fOutlinePage= new SQLEditorContentOutlinePage(getDocumentProvider(), this, parser);
+            fOutlinePage.setInput(getEditorInput());
         }
     }
     
