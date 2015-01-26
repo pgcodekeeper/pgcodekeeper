@@ -32,9 +32,11 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
     private SqlPostgresSyntax sqlSyntax;
     private String text = "";
+    private PgDbParser parser;
 
-    public SQLEditorCompletionProcessor(SqlPostgresSyntax sqlSyntax) {
+    public SQLEditorCompletionProcessor(SqlPostgresSyntax sqlSyntax, PgDbParser parser) {
         this.sqlSyntax = sqlSyntax;
+        this.parser = parser;
     }
 
     @Override
@@ -74,22 +76,11 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             }    
         }
         
-        IProject proj = null;
-        IFile file = null;
-        IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                .getActivePage().getActiveEditor();
-        if (page instanceof SQLEditor) {
-            SQLEditor edit = (SQLEditor) page;
-            file = ((FileEditorInput) ((edit).getEditorInput())).getFile();
-            if (file != null) {
-                proj = file.getProject();
-            }
-        }
-        if (proj == null) {
+        if (parser == null) {
             return result.toArray(new ICompletionProposal[result.size()]);
         }
         LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources());
-        for (PgObjLocation obj : PgDbParser.getParser(proj).getObjDefinitions()) {
+        for (PgObjLocation obj : parser.getObjDefinitions()) {
             ImageDescriptor iObj = ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(
                             FILE.ICONPGADMIN 

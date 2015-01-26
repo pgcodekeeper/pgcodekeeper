@@ -9,9 +9,9 @@ import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
-import org.eclipse.ui.editors.text.FileDocumentProvider;
+import org.eclipse.ui.editors.text.StorageDocumentProvider;
 
-public class SQLEditorDocumentProvider extends FileDocumentProvider {
+public class SQLEditorDocumentProvider extends StorageDocumentProvider {
 
     /**
      * The recipe partitioning. It contains two partition types: {@link #SQL_CODE} and

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
@@ -14,6 +15,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
+import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
@@ -38,7 +40,11 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
             }
         }
 
-        if (proj == null) {
+        try {
+            if (proj == null || !proj.hasNature(NATURE.ID)) {
+                return null;
+            }
+        } catch (CoreException e) {
             return null;
         }
 

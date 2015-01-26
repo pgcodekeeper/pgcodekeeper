@@ -13,6 +13,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.common.NotDefinedException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -58,6 +59,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ISetSelectionTarget;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageSelectionProvider;
@@ -92,6 +94,8 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
+import ru.taximaxim.codekeeper.ui.sqledit.DepcyFromPSQLOutput;
+import ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -587,7 +591,13 @@ class DiffPage extends DiffPresentationPane {
                             if (DiffPage.this.isDisposed()) {
                                 return;
                             }
-                            showScriptDialog(differ);
+//                            showScriptDialog(differ);
+                            try {
+                                showEditor(differ);
+                            } catch (PartInitException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
                         }
                     });
                 }
@@ -610,6 +620,15 @@ class DiffPage extends DiffPresentationPane {
                     dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText());
         }
         dialog.open();
+    }
+    
+    private void showEditor(Differ differ) throws PartInitException {
+        DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj.getProject(),
+                PgDatabase.listViewsTables(dbSource.getDbObject()));
+        IFile file = proj.getProject().getFile("EXTENSION/pgtap.sql");
+        new FileEditorInput(file);
+        PlatformUI.getWorkbench()
+        .getActiveWorkbenchWindow().getActivePage().openEditor(input, RollOnEditor.ID);
     }
     
     @Override

@@ -38,9 +38,11 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
+    // TODO: нужен метод который будет проверять валидность идентификатора с
+    // точки зрения SQL а не Java
     private static final class WordDetector implements IWordDetector {
         public boolean isWordPart(char c) {
-            return !Character.isWhitespace(c);
+            return Character.isJavaIdentifierPart(c);
         }
 
         public boolean isWordStart(char c) {
@@ -51,11 +53,17 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     private final ISharedTextColors fSharedColors;
     private final SqlPostgresSyntax sqlSyntax = new SqlPostgresSyntax();
     private IPreferenceStore prefs;
+    private PgDbParser parser;
     
-    public SQLEditorSourceViewerConfiguration(ISharedTextColors sharedColors, IPreferenceStore store) {
+    public SQLEditorSourceViewerConfiguration(ISharedTextColors sharedColors,
+            IPreferenceStore store) {
         super(store);
         fSharedColors= sharedColors;
         this.prefs = Activator.getDefault().getPreferenceStore();
+    }
+    
+    void setParser(PgDbParser parser) {
+        this.parser = parser;
     }
     
     @Override
@@ -79,7 +87,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                 if (proj == null) {
                     return new Region(offset, 0);
                 }
-                PgDbParser parser = PgDbParser.getParser(proj);
                 for (PgObjLocation obj : parser.getObjsForPath(file.getLocation()
                         .toFile().toPath())) {
                     if (offset > obj.getOffset()
@@ -131,7 +138,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         ContentAssistant assistant= new ContentAssistant();
-        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(sqlSyntax)
+        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(sqlSyntax, parser)
                 /*new IContentAssistProcessor() {
             
             @Override

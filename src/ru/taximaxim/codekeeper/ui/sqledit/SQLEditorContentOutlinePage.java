@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
@@ -41,8 +40,9 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     private TreeViewer viewer;
 
     public SQLEditorContentOutlinePage(IDocumentProvider fDocumentProvider,
-            AbstractDecoratedTextEditor sqlEditor) {
+            AbstractDecoratedTextEditor sqlEditor, PgDbParser parser) {
         fTextEditor = sqlEditor;
+        this.parser = parser;
         this.fDocumentProvider = fDocumentProvider;
     }
     
@@ -52,10 +52,6 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     
     public void setInput(IEditorInput input) {
         this.fInput = input;
-        IFile file = ((FileEditorInput)input).getFile();
-        if (file != null) {
-            parser = PgDbParser.getParser(file.getProject());
-        }
     }
 
     @Override

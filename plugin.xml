@@ -219,6 +219,7 @@
       <editor
             class="ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor"
             default="false"
+            filenames="*.sql"
             id="ru.taximaxim.codekeeper.ui.RollOnEditor"
             name="RollOnEditor">
       </editor>
