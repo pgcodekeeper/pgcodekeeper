@@ -18,6 +18,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -110,7 +111,7 @@ public class DepcyTreeExtenderTest {
     }
     
     @Test
-    public void testGetDependenciesOfNew() {
+    public void testGetDependenciesOfNew() throws PgCodekeeperException {
         PgDatabase dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
                 ApgdiffConsts.UTF_8, false, false, parserType);
@@ -123,7 +124,7 @@ public class DepcyTreeExtenderTest {
     }
     
     @Test
-    public void testGetTreeCopyWithDepcy() {
+    public void testGetTreeCopyWithDepcy() throws PgCodekeeperException {
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
                 ApgdiffConsts.UTF_8, false, false, parserType);
@@ -142,7 +143,7 @@ public class DepcyTreeExtenderTest {
     }
     
     @Test
-    public void testSumAllDepcies() {
+    public void testSumAllDepcies() throws PgCodekeeperException {
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
                 ApgdiffConsts.UTF_8, false, false, parserType);
@@ -161,7 +162,7 @@ public class DepcyTreeExtenderTest {
     }
     
     @Test
-    public void testGetConflicting() {
+    public void testGetConflicting() throws PgCodekeeperException {
         PgDatabase dbRemote = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename), ApgdiffConsts.UTF_8,
                 false, false, parserType);
