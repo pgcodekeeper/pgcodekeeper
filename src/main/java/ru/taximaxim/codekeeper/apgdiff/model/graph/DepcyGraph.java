@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
@@ -10,6 +11,7 @@ import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -144,7 +146,7 @@ public class DepcyGraph {
             String clmnName = col.column;
             
             // пропускаем системные вещи, например count(*), AVG и т.д.
-            // TODO: вынести "pg_.*" в настройки, сейчас жесток забито
+            // TODO: вынести "pg_.*" в настройки, сейчас жестко забито
             // чтобы пропускать выборку из pg_views - системной таблицы
             if (tblName == null 
                     || col.getType() == ViewReference.SYSTEM 
@@ -155,8 +157,8 @@ public class DepcyGraph {
             
             PgSchema scm = (scmName == null) ? schema : db.getSchema(scmName);
             
-            testNotNull(scm, "View " + view.getName() + " selects from object " + 
-                    tblName + " in schema " + scm.getName() + " that does not exist");
+            testNotNull(scm, MessageFormat.format(Messages.View_CannotFindSchema,
+                            view.getName(), tblName, scm.getName()));
             
             PgTable tbl = scm.getTable(tblName);
             if (tbl != null) {
@@ -167,8 +169,8 @@ public class DepcyGraph {
                 }
                 
                 PgColumn clmn = tbl.getColumn(clmnName);
-                testNotNull(clmn, "View " + view.getName() + " selects from table " + scm.getName() + 
-                        "." + tblName + " column " + clmnName + " that does not exist");
+                testNotNull(scm, MessageFormat.format(Messages.View_CannotFindColumn,
+                        view.getName(), scm.getName(), tblName, clmnName));
                 graph.addEdge(view, clmn);
                 continue;
             }
@@ -242,19 +244,20 @@ public class DepcyGraph {
                     }
                     
                     PgSchema refSchema = db.getSchema(ref.schema);
-                    testNotNull(refSchema, "Table " + table.getName() + " foreign key " +
-                            cons.getName() + " references column from table in schema " + 
-                            ref.schema + " that does not exist");
+                    testNotNull(refSchema, MessageFormat.format(
+                            Messages.RefColumn_CannotFindSchema,
+                            table.getName(), cons.getName(), ref.schema));
+                    
                     
                     PgTable refTable = refSchema.getTable(ref.table);
-                    testNotNull(refTable, "Table " + table.getName() + " foreign key " + 
-                            cons.getName() + " references column from table " + 
-                            ref.schema + "." + ref.table + " that does not exist");
+                    testNotNull(refTable, MessageFormat.format(
+                            Messages.RefColumn_CannotFindTable,
+                            table.getName(), cons.getName(), ref.schema, ref.table));
                     
                     PgColumn refColumn = refTable.getColumn(ref.column);
-                    testNotNull(refColumn, "Table " + table.getName() + " foreign key " + 
-                            cons.getName() + " references column " + ref.column + 
-                            " from table " + ref.schema + "." + ref.table + ", but it does not exist");
+                    testNotNull(refColumn, MessageFormat.format(
+                            Messages.RefColumn_CannotFindColumn,
+                            table.getName(), cons.getName(), ref.column, ref.schema, ref.table));
                     
                     graph.addEdge(cons, refColumn);
                 }
