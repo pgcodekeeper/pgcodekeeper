@@ -7,6 +7,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statement
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 public class AlterFunction extends ParserAbstract {
 
@@ -33,7 +34,8 @@ public class AlterFunction extends ParserAbstract {
         if (ctx.owner_to() != null) {
             func.setOwner(ctx.owner_to().name.getText());
         }
-        addObjReference(schemaName, func.getBareName(), DbObjType.FUNCTION, ctx.function_parameters().name.getStart().getStartIndex());
+        addObjReference(schemaName, func.getSignature(), DbObjType.FUNCTION,
+                StatementActions.ALTER, ctx.function_parameters().name.getStart().getStartIndex(), func.getBareName().length());
         return null;
     }
 

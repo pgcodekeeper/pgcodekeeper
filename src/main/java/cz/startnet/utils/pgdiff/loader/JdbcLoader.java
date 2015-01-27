@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.Parser;
@@ -121,24 +122,24 @@ public class JdbcLoader implements PgCatalogStrings {
                 }
             }
             
-            Log.log(Log.LOG_INFO, "Quering schemas");
+            Log.log(Log.LOG_INFO, "Querying schemas");
             try(Statement stmnt = connection.createStatement(); 
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_SCHEMAS)){
                 
                 while (res.next()) {
-                    Log.log(Log.LOG_INFO, "Quering objects for schema " + res.getString(NAMESPACE_NSPNAME));
+                    Log.log(Log.LOG_INFO, "Querying objects for schema " + res.getString(NAMESPACE_NSPNAME));
                     prepareDataForSchema(res.getLong(OID));
                     
                     PgSchema schema = getSchema(res);
                     if (res.getString(NAMESPACE_NSPNAME).equals(ApgdiffConsts.PUBLIC)){
-                        d.replaceSchema(d.getSchema(ApgdiffConsts.PUBLIC), schema);                    
+                        d.replaceSchema(d.getSchema(ApgdiffConsts.PUBLIC), schema);
                     }else{
                         d.addSchema(schema);
                     }
                 }   
             }
             
-            Log.log(Log.LOG_INFO, "Quering extensions");
+            Log.log(Log.LOG_INFO, "Querying extensions");
             try(Statement stmnt = connection.createStatement(); 
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_EXTENSIONS)){
                 while(res.next()){
@@ -151,7 +152,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (SQLException e) {
-            throw new IOException("Database JDBC access error occured: " + e.getLocalizedMessage(), e);
+            throw new IOException(Messages.Connection_DatabaseJdbcAccessError, e);
         } finally{
             Log.log(Log.LOG_INFO, "Closing used JDBC resources");
             closeResources();
@@ -361,9 +362,39 @@ public class JdbcLoader implements PgCatalogStrings {
                 }
             }
         }
+        
+        setSequencesCacheValue(s);
         return s;
     }
     
+    private void setSequencesCacheValue(PgSchema s) throws SQLException {
+        final String prefix = "SELECT sequence_name, cache_value FROM ";
+        final String postfix = " WHERE cache_value != 1";
+        final String union = "\nUNION \n";
+        
+        StringBuilder unionSeqCache = new StringBuilder();
+        List<PgSequence> seqs = s.getSequences();
+        if (seqs.size() == 0){
+            return;
+        }
+        
+        for (int i = 0; i < seqs.size(); i++){
+            PgSequence seq = seqs.get(i);
+            unionSeqCache.append(prefix).append(seq.getName()).append(postfix);
+            if (i < (seqs.size() - 1)){
+                unionSeqCache.append(union);
+            }
+        }
+        
+        try(Statement stmnt = connection.createStatement()){
+            try(ResultSet res = stmnt.executeQuery(unionSeqCache.toString())){
+                while (res.next()){
+                    s.getSequence(res.getString("sequence_name")).setCache(res.getString("cache_value"));
+                }
+            }
+        }
+    }
+
     private PgExtension getExtension(ResultSet res) throws SQLException {
         PgExtension e = new PgExtension(res.getString("extname"), "");
 //        e.setVersion(res.getString("extversion"));
@@ -396,11 +427,13 @@ public class JdbcLoader implements PgCatalogStrings {
                 definition.append(getStringListAsString(referencedColumnNames, ", ")).append(")");
                 
                 for (String colName : referencedColumnNames){
-                    GenericColumn referencedColumn = new GenericColumn(
-                            res.getString("foreign_schema_name"), 
-                            res.getString("foreign_table_name"), 
-                            colName);
-                    ((PgForeignKey)c).addForeignColumn(referencedColumn);
+                    if (colName != null){
+                        GenericColumn referencedColumn = new GenericColumn(
+                                res.getString("foreign_schema_name"), 
+                                res.getString("foreign_table_name"), 
+                                colName);
+                        ((PgForeignKey)c).addForeignColumn(referencedColumn);                        
+                    }
                 }
                 
                 switch (res.getString("confmatchtype")){
@@ -592,7 +625,6 @@ public class JdbcLoader implements PgCatalogStrings {
             PgColumn column = new PgColumn(columnName);
             
             PgType columnType = cachedTypeNamesByOid.get(colTypes[i]);
-            String columnTypeName = getTypeNameByOid(colTypes[i], schemaName);
              
             // pg_catalog.pg_attribute.atttypmod records type-specific data supplied 
             // at table creation time (for example, the maximum length of a varchar column). 
@@ -601,9 +633,9 @@ public class JdbcLoader implements PgCatalogStrings {
             //
             // if column type has it's "Type modifier output function" typmodout and
             // column type has it's atttypmod set up (colTypeMod[i] != -1)
+            String typMod = "";
             if (colTypeMod[i] != -1 && columnType.getTypmodout() != null && 
                     !columnType.getTypmodout().isEmpty()){
-                String typMod = "";
                 
                 // Map of those colTypeMod values that 've been already queried in
                 // form of "SELECT typmodout(colTypeMod)"
@@ -633,10 +665,8 @@ public class JdbcLoader implements PgCatalogStrings {
                         }
                     }
                 }
-                
-                // finally append type modifier
-                columnTypeName = columnTypeName.concat(typMod);
             }
+            String columnTypeName = columnType.getSchemaQualifiedName(schemaName, typMod);
             column.setType(columnTypeName);
             
             tableDef.append("   " + columnName + " " + columnTypeName);
@@ -858,17 +888,20 @@ public class JdbcLoader implements PgCatalogStrings {
                         returnedTableArguments.append(", ");
                     }
                     returnedTableArguments.append(argNames[i]).append(" ");
-                    returnedTableArguments.append(getTypeNameByOid(argTypeOids[i], schemaName));
+                    
+                    PgType returnType = cachedTypeNamesByOid.get(argTypeOids[i]);
+                    returnedTableArguments.append(returnType.getSchemaQualifiedName(schemaName));
                 }
             }            
         }
         
+        PgType returnType = cachedTypeNamesByOid.get(res.getLong("prorettype"));
         if (returnsTable){
             f.setReturns("TABLE(" + returnedTableArguments + ")");
         }else if (res.getBoolean("proretset")){
-            f.setReturns("SETOF " + getTypeNameByOid(res.getLong("prorettype"), schemaName));
+            f.setReturns("SETOF " + returnType.getSchemaQualifiedName(schemaName));
         }else{
-            f.setReturns(getTypeNameByOid(res.getLong("prorettype"), schemaName));
+            f.setReturns(returnType.getSchemaQualifiedName(schemaName));
         }
         
         // ARGUMENTS
@@ -1086,9 +1119,7 @@ public class JdbcLoader implements PgCatalogStrings {
             Map<Integer, String> previousMap = null;
             while (res.next()){
                 Integer columnNumber = res.getInt("attnum");
-                if (columnNumber < 1){
-                    continue;
-                }
+
                 Long tableOid = res.getLong("attrelid");
                 String columnName = res.getString("attname");
                 if (!previousTableOid.equals(tableOid)){
@@ -1125,21 +1156,12 @@ public class JdbcLoader implements PgCatalogStrings {
                 cachedColumnNamesByTableOid.put(tableOid, tableColumns);
             }
         }
+        
         List<String> result = new ArrayList<>();
         for(Integer n : cols){
             result.add(tableColumns.get(n));
         }
         return result;
-    }
-    
-    /**
-     * Returns the name of a type, whose <code>oid = typeOid</code>. If the type's schema name 
-     * differs from targetSchemaName, the returned type name is schema-qualified.
-     */
-    private String getTypeNameByOid(Long typeOid, String targetSchemaName) throws SQLException {
-        PgType type = cachedTypeNamesByOid.get(typeOid);
-        return type.getParentSchema().equals("pg_catalog") || (type.getParentSchema().equals(targetSchemaName)) ? 
-                type.getTypeName() : type.getParentSchema().concat(".").concat(type.getTypeName());
     }
     
     /**

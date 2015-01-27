@@ -11,6 +11,7 @@ import java.util.Scanner;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 public class JdbcConnector {
     private String host;
@@ -41,10 +42,10 @@ public class JdbcConnector {
     Connection getConnection() throws IOException{
         try{
             return establishConnection();
-        }catch (ClassNotFoundException e) {
-            throw new IOException("JDBC driver class not found", e);
+        } catch (ClassNotFoundException e) {
+            throw new IOException(Messages.Connection_JdbcDriverClassNotFound, e);
         } catch (SQLException e) {
-            throw new IOException("Database JDBC access error occured: " + e.getLocalizedMessage(), e);
+            throw new IOException(Messages.Connection_DatabaseJdbcAccessError, e);
         }
     }
     

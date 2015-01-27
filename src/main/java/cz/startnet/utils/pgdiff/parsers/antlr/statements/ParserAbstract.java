@@ -32,6 +32,7 @@ import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 /**
  * Abstract Class contents common operations for parsing
@@ -62,19 +63,46 @@ public abstract class ParserAbstract {
      * @param obj
      * @param startIndex
      */
-    protected void fillObjDefinition(String schemaName, PgStatement obj, int startIndex) {
-        PgObjLocation loc = new PgObjLocation(schemaName, obj.getBareName(),
-                null, startIndex, filePath);
+    protected void fillObjDefinition(String schemaName, PgStatement obj,
+            int startIndex) {
+        PgObjLocation loc = null;
+        switch (obj.getStatementType()) {
+        case FUNCTION:
+            PgFunction func = (PgFunction) obj;
+            loc = new PgObjLocation(schemaName,
+                    func.getSignature(), null, startIndex,
+                    filePath);
+            loc.setObjNameLength(func.getBareName().length());
+            break;
+        default:
+            loc = new PgObjLocation(schemaName, obj.getBareName(), null,
+                    startIndex, filePath);
+        }
+        loc.setAction(StatementActions.CREATE);
         loc.setObjType(obj.getStatementType());
         db.addObjDefinition(loc);
         db.addObjReference(loc);
     }
     
-    protected void addObjReference(String schemaName, String objName, DbObjType objType, int startIndex) {
-        PgObjLocation loc = new PgObjLocation(schemaName, objName,
-                null, startIndex, filePath);
+    protected void addObjReference(String schemaName, String objName, DbObjType objType,
+            StatementActions action, int startIndex, int nameLength) {
+        PgObjLocation loc = new PgObjLocation(schemaName, objName, null,
+                startIndex, filePath).setAction(action);
+        if (objType == DbObjType.FUNCTION) {
+            loc.setObjNameLength(nameLength);
+        }
         loc.setObjType(objType);
         db.addObjReference(loc);
+    }
+    
+    protected void setCommentToDefinition(String schemaName, String objName,
+            DbObjType objType, String comment) {
+        for (PgObjLocation loc : db.getObjDefinitions()) {
+            if (loc.getObjName().equals(objName)
+                    && loc.getObjType().equals(objType)) {
+                loc.setComment(comment);
+            }
+        }
     }
 
     /**
@@ -226,6 +254,12 @@ public abstract class ParserAbstract {
              GeneralLiteralSearch seq = new GeneralLiteralSearch();
              new ParseTreeWalker().walk(seq, ctx);
              seqName = seq.getSeqName();
+             if (seqName != null &&
+                     !seqName.isEmpty()) {
+                 addObjReference(getDefSchemaName(), seqName, DbObjType.SEQUENCE,
+                         StatementActions.NONE,
+                         seq.getContext().getStart().getStartIndex() + 1, 0);
+             }
          }
         }
         public String getSeqName() {
@@ -235,12 +269,17 @@ public abstract class ParserAbstract {
     
     class GeneralLiteralSearch extends SQLParserBaseListener {
         private String seqName;
+        private General_literalContext ctx;
         @Override
        public void enterGeneral_literal(General_literalContext ctx) {
             seqName = ctx.getText();
+            this.ctx = ctx;
        }
         public String getSeqName() {
             return seqName.substring(1, seqName.length() - 1);
+        }
+        public General_literalContext getContext() {
+            return ctx;
         }
     }
 
@@ -294,9 +333,16 @@ public abstract class ParserAbstract {
 
             String tableName = getName(tblRef.reftable);
             String schemaName = getSchemaName(tblRef.reftable);
+            int count = 0;
             if (schemaName == null) {
                 schemaName = db.getDefaultSchema().getName();
+            } else {
+                count += schemaName.length() + 1;
+                addObjReference(null, schemaName, DbObjType.SCHEMA,
+                        StatementActions.NONE, tblRef.reftable.getStart().getStartIndex(), 0);
             }
+            addObjReference(schemaName, tableName, DbObjType.TABLE,
+                    StatementActions.NONE, tblRef.reftable.getStart().getStartIndex() + count , 0);
             for (Schema_qualified_nameContext name : tblRef.column_references().names_references().name) {
                 ((PgForeignKey)constr).addForeignColumn(
                         new GenericColumn(schemaName, tableName, getName(name)));

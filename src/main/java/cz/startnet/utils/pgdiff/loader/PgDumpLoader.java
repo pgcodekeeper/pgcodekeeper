@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.SubMonitor;
+
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import cz.startnet.utils.pgdiff.Resources;
@@ -271,19 +273,19 @@ public final class PgDumpLoader { //NOPMD
                     Resources.getString("UnsupportedEncoding") + ": "
                     + charsetName, ex);
         } catch(IOException ex) {
-            throw new FileException("Exception while closing dump file: " + ex.getLocalizedMessage(), ex);
+            throw new FileException("Exception while closing dump file", ex);
         }
     }
     
     static PgDatabase loadDatabaseSchemaCoreAntLR(
             InputStream inputStream, String charsetName, 
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers, 
-            PgDatabase database, Path path) {
+            PgDatabase database, Path path, SubMonitor monitor, int monitoringLevel) {
         try {
-            new AntlrParser().parseInputStream(inputStream, charsetName, 
+            new AntlrParser(monitor, monitoringLevel).parseInputStream(inputStream, charsetName, 
                     new CustomSQLParserListener(database, path));
         } catch (IOException e) {
-            throw new FileException("Exception while closing dump file: " + e.getLocalizedMessage(), e);
+            throw new FileException("Exception while closing dump file", e);
         }
         return database;
     }
@@ -329,6 +331,26 @@ public final class PgDumpLoader { //NOPMD
         }
         return db;
     }
+    
+    /**
+     * Uses to parse only one file
+     * @param projPath path to root folder of project
+     * @param filePath path to file
+     * @return database with schemas, extensions and parsed file contents
+     */
+    public static PgDatabase loadSchemasAndFile(
+            String projPath, String filePath, String charsetName,
+            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+            ParserClass parser) {
+        final PgDatabase db = new PgDatabase();
+
+        loadSchemasExtensions(charsetName, outputIgnoredStatements,
+                ignoreSlonyTriggers, parser, db, new File(projPath));
+        parseFile(charsetName, outputIgnoredStatements,
+                ignoreSlonyTriggers, db, parser, new File(filePath));
+        
+        return db;
+    }
 
     private static void loadSchemasExtensions(String charsetName,
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
@@ -353,21 +375,28 @@ public final class PgDumpLoader { //NOPMD
                 Arrays.sort(files);
                 
                 for (File f : files) {
-                    if (f.exists() && !f.isDirectory() && 
-                            f.getName().toLowerCase().endsWith(".sql")) {
-                        try (FileInputStream inputStream = new FileInputStream(f)) {
-                            parser.parse(inputStream, charsetName,
-                                    outputIgnoredStatements, ignoreSlonyTriggers, db, f.toPath());
-                        } catch (FileNotFoundException ex) {
-                            throw new FileException(MessageFormat.format(
-                                    Resources.getString("FileNotFound"),
-                                    f.getAbsolutePath()), ex);
-                        } catch (IOException ex) {
-                            throw new FileException(
-                                    "An unexpected IOException: " + ex.getLocalizedMessage(), ex);
-                        }
-                    }
+                    parseFile(charsetName, outputIgnoredStatements,
+                            ignoreSlonyTriggers, db, parser, f);
                 }
+            }
+        }
+    }
+
+    private static void parseFile(String charsetName,
+            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+            PgDatabase db, ParserClass parser, File f) {
+        if (f.exists() && !f.isDirectory() && 
+                f.getName().toLowerCase().endsWith(".sql")) {
+            try (FileInputStream inputStream = new FileInputStream(f)) {
+                parser.parse(inputStream, charsetName,
+                        outputIgnoredStatements, ignoreSlonyTriggers, db, f.toPath());
+            } catch (FileNotFoundException ex) {
+                throw new FileException(MessageFormat.format(
+                        Resources.getString("FileNotFound"),
+                        f.getAbsolutePath()), ex);
+            } catch (IOException ex) {
+                throw new FileException(
+                        "An unexpected IOException", ex);
             }
         }
     }

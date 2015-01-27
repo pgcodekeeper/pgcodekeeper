@@ -79,11 +79,11 @@ public final class PgDiff {
         PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
                 oldInputStream, arguments.getInCharsetName(),
                 arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers(), ParserClass.LEGACY);
+                arguments.isIgnoreSlonyTriggers(), ParserClass.getLegacy(null, 1));
         PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
                 newInputStream, arguments.getInCharsetName(),
                 arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers(), ParserClass.LEGACY);
+                arguments.isIgnoreSlonyTriggers(), ParserClass.getLegacy(null, 1));
 
         diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase,
                 oldDatabase, newDatabase);
@@ -104,11 +104,11 @@ public final class PgDiff {
         if(format.equals("dump")) {
             return PgDumpLoader.loadDatabaseSchemaFromDump(srcPath,
                     arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
-                    arguments.isIgnoreSlonyTriggers(), ParserClass.LEGACY);
+                    arguments.isIgnoreSlonyTriggers(), ParserClass.getLegacy(null, 1));
         } else if(format.equals("parsed")) {
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
                     arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
-                    arguments.isIgnoreSlonyTriggers(), ParserClass.LEGACY);
+                    arguments.isIgnoreSlonyTriggers(), ParserClass.getLegacy(null, 1));
         } else if(format.equals("db")) {
             throw new UnsupportedOperationException("DB connection is not yet implemented!");
         }
@@ -144,7 +144,12 @@ public final class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
         // since we cannot into OOP here - null the global vars at least
-        depcyOld = depcyNew = null;
+        try {
+            depcyOld = new DepcyGraph(new PgDatabase());
+            depcyNew = new DepcyGraph(new PgDatabase());
+        } catch (PgCodekeeperException e) {
+            throw new IllegalStateException("Error creating dependency graph", e);
+        }
         
         PgDiffScript script = new PgDiffScript();
         
@@ -152,12 +157,17 @@ public final class PgDiff {
             script.addStatement("START TRANSACTION;");
         }
 
+        dbOld = oldDbFull;
+        dbNew = newDbFull;
+        
         // temp solution
         if (oldDbFull != null && newDbFull != null){
-            depcyOld = new DepcyGraph(oldDbFull);
-            depcyNew = new DepcyGraph(newDbFull);
-            dbOld = oldDbFull;
-            dbNew = newDbFull;
+            try {
+                depcyOld = new DepcyGraph(oldDbFull);
+                depcyNew = new DepcyGraph(newDbFull);
+            } catch (PgCodekeeperException e) {
+                throw new IllegalStateException("Error creating dependency graph", e);
+            }
             
             if (additionalDepciesSource != null) {
                 depcyOld.addCustomDepcies(additionalDepciesSource);
@@ -165,9 +175,6 @@ public final class PgDiff {
             if (additionalDepciesTarget != null) {
                 depcyNew.addCustomDepcies(additionalDepciesTarget);
             }
-        }else{
-            depcyOld = new DepcyGraph(new PgDatabase());
-            depcyNew = new DepcyGraph(new PgDatabase());
         }
         
         diffComments(oldDatabase, newDatabase, script);

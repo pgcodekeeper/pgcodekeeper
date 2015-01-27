@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 public class CreateIndex extends ParserAbstract {
     private final Index_statementContext ctx;
@@ -25,7 +26,8 @@ public class CreateIndex extends ParserAbstract {
             schemaName = getDefSchemaName();
         }
         PgIndex ind = new PgIndex(name != null ? name : "", getFullCtxText(ctx.getParent()), db.getDefSearchPath());
-        addObjReference(schemaName, getName(ctx.table_name), DbObjType.TABLE, ctx.table_name.getStart().getStartIndex());
+        addObjReference(schemaName, getName(ctx.table_name), DbObjType.TABLE,
+                StatementActions.NONE, ctx.table_name.getStart().getStartIndex(), 0);
         ind.setTableName(getName(ctx.table_name));
         ind.setDefinition(getFullCtxText(ctx.using_def()));
         ind.setUnique(ctx.UNIQUE() != null);

@@ -89,19 +89,6 @@ public class PgDatabase extends PgStatement {
         }
         return false;
     }
-    /**
-     * May return NULL if objects doesn't determines location
-     * @param objName object name
-     * @return location or null 
-     */
-    public PgObjLocation getObjDefinition(String objName) {
-        for (PgObjLocation location : objDefinitions) {
-            if (location.getObjName().equals(objName)) {
-                return location;
-            }
-        }
-        return null;
-    }
     
     public Set<PgObjLocation> getObjDefinitions() {
         return Collections.unmodifiableSet(objDefinitions);

@@ -18,6 +18,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -91,26 +92,26 @@ public class DepcyTreeExtenderTest {
         return Arrays.asList(
                 new Object[][]{
 // SONAR-OFF
-                    {new Predefined1(), ParserClass.LEGACY},
-                    {new Predefined1(), ParserClass.ANTLR},
+                    {new Predefined1(), ParserClass.getLegacy(null, 1)},
+                    {new Predefined1(), ParserClass.getAntlr(null, 1)},
                     
-                    {new Predefined2(), ParserClass.LEGACY},
-                    {new Predefined2(), ParserClass.ANTLR},
+                    {new Predefined2(), ParserClass.getLegacy(null, 1)},
+                    {new Predefined2(), ParserClass.getAntlr(null, 1)},
                     
-                    {new Predefined3(), ParserClass.LEGACY},
-                    {new Predefined3(), ParserClass.ANTLR},
+                    {new Predefined3(), ParserClass.getLegacy(null, 1)},
+                    {new Predefined3(), ParserClass.getAntlr(null, 1)},
                     
-                    {new Predefined4(), ParserClass.LEGACY},
-                    {new Predefined4(), ParserClass.ANTLR},
+                    {new Predefined4(), ParserClass.getLegacy(null, 1)},
+                    {new Predefined4(), ParserClass.getAntlr(null, 1)},
                     
-                    {new Predefined5(), ParserClass.LEGACY},
-                    {new Predefined5(), ParserClass.ANTLR}
+                    {new Predefined5(), ParserClass.getLegacy(null, 1)},
+                    {new Predefined5(), ParserClass.getAntlr(null, 1)}
 // SONAR-ON
                 });
     }
     
     @Test
-    public void testGetDependenciesOfNew() {
+    public void testGetDependenciesOfNew() throws PgCodekeeperException {
         PgDatabase dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
                 ApgdiffConsts.UTF_8, false, false, parserType);
@@ -123,7 +124,7 @@ public class DepcyTreeExtenderTest {
     }
     
     @Test
-    public void testGetTreeCopyWithDepcy() {
+    public void testGetTreeCopyWithDepcy() throws PgCodekeeperException {
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
                 ApgdiffConsts.UTF_8, false, false, parserType);
@@ -142,7 +143,7 @@ public class DepcyTreeExtenderTest {
     }
     
     @Test
-    public void testSumAllDepcies() {
+    public void testSumAllDepcies() throws PgCodekeeperException {
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
                 ApgdiffConsts.UTF_8, false, false, parserType);
@@ -161,7 +162,7 @@ public class DepcyTreeExtenderTest {
     }
     
     @Test
-    public void testGetConflicting() {
+    public void testGetConflicting() throws PgCodekeeperException {
         PgDatabase dbRemote = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename), ApgdiffConsts.UTF_8,
                 false, false, parserType);
@@ -697,14 +698,6 @@ class Predefined4 extends TreeElementCreator{
     @Override
     public TreeElement getFilteredCopy() {
         TreeElement root = getFilteredTreeForDeletion();
-        TreeElement initialPublicSchema = root.getChild("Database").
-                getChild("Source only").getChild("Schemas").getChild(ApgdiffConsts.PUBLIC);
-        
-        TreeElement contTable = new TreeElement("Tables", DbObjType.CONTAINER, DbObjType.TABLE, DiffSide.LEFT);
-        initialPublicSchema.addChild(contTable);
-        
-        TreeElement table = new TreeElement("t1", DbObjType.TABLE, null, DiffSide.LEFT);
-        contTable.addChild(table);
         return root;
     }
 

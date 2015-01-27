@@ -32,7 +32,8 @@ public class PgType{
     private String typmodout;
     private String typeName;
     private String parentSchema;
-
+    private boolean isArrayType;
+    
     /** 
      * There are types, whose names begin from underscore: they are simple 
      * arrays and have 0 in typarray column. 
@@ -42,9 +43,12 @@ public class PgType{
      */
     public PgType(String typeName, String typelem, Long typarray, int typlen, String typmodout, String parentSchema) {
         if (typlen == -1 && typarray == 0L && !typelem.equals("-")){
-            this.typeName = DATA_TYPE_ALIASES.containsKey(typelem) ? 
-                    DATA_TYPE_ALIASES.get(typelem) : typelem 
-                    + "[]";
+            if (DATA_TYPE_ALIASES.containsKey(typelem)){
+                this.typeName = DATA_TYPE_ALIASES.get(typelem);
+            }else{
+                this.typeName = typelem;
+            }
+            this.isArrayType = true;
         }else{
             this.typeName = DATA_TYPE_ALIASES.containsKey(typeName) ? 
                     DATA_TYPE_ALIASES.get(typeName) : typeName;
@@ -69,5 +73,28 @@ public class PgType{
     
     public String getParentSchema() {
         return parentSchema;
+    }
+    
+    /**
+     * Returns the name of this type. If the type's schema name 
+     * differs from targetSchemaName, the returned type name is schema-qualified.
+     * If this type is of array type, appends "[]" to the end.
+     */
+    public String getSchemaQualifiedName(String targetSchemaName){
+        String schemaQualName = (getParentSchema().equals("pg_catalog") || getParentSchema().equals(targetSchemaName)) ? 
+                getTypeName() : getParentSchema().concat(".").concat(getTypeName());
+        return isArrayType ? schemaQualName + "[]" : schemaQualName;
+    }
+    
+    /**
+     * Returns the name of this type. If the type's schema name 
+     * differs from targetSchemaName, the returned type name is schema-qualified.
+     * Appends typMod after the type name. If this type is of array type, 
+     * appends "[]" to the end.
+     */
+    public String getSchemaQualifiedName(String targetSchemaName, String typMod) {
+        String schemaQualName = (getParentSchema().equals("pg_catalog") || getParentSchema().equals(targetSchemaName)) ? 
+                getTypeName() : getParentSchema().concat(".").concat(getTypeName());
+        return isArrayType ? schemaQualName + typMod + "[]" : schemaQualName + typMod;
     }
 }
