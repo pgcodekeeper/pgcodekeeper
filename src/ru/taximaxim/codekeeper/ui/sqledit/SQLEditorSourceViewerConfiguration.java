@@ -84,7 +84,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                         proj = file.getProject();
                     }
                 }
-                if (proj == null) {
+                if (proj == null || parser == null) {
                     return new Region(offset, 0);
                 }
                 for (PgObjLocation obj : parser.getObjsForPath(file.getLocation()
