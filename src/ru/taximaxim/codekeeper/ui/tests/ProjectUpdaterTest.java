@@ -48,9 +48,9 @@ public class ProjectUpdaterTest {
             Assert.assertNotNull("Could not load resource", isNew); //$NON-NLS-1$
             
             dbOld = PgDumpLoader.loadDatabaseSchemaFromDump(isOld, ENCODING,
-                    false, false, ParserClass.LEGACY);
+                    false, false, ParserClass.getLegacy(null, 1));
             dbNew = PgDumpLoader.loadDatabaseSchemaFromDump(isNew, ENCODING,
-                    false, false, ParserClass.LEGACY);
+                    false, false, ParserClass.getLegacy(null, 1));
         }
         
         workingDir = new TempDir("test_new"); //$NON-NLS-1$

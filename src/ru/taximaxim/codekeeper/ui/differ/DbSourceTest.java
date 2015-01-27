@@ -94,7 +94,7 @@ public class DbSourceTest {
         
         dbPredefined = PgDumpLoader.loadDatabaseSchemaFromDump(
                 JdbcLoaderTest.class.getResourceAsStream(RESOURCE_DUMP),
-                ApgdiffConsts.UTF_8, false, false, ParserClass.LEGACY);
+                ApgdiffConsts.UTF_8, false, false, ParserClass.getLegacy(null, 1));
         
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         workspacePath = workspaceRoot.getLocation().toFile();
@@ -118,7 +118,7 @@ public class DbSourceTest {
         try(TempDir exportDir = new TempDir("pgcodekeeper-test")){
             new ModelExporter(exportDir.get(), dbPredefined, UIConsts.UTF_8).exportFull();
             
-            performTest(DbSource.fromDirTree(ParserClass.LEGACY,
+            performTest(DbSource.fromDirTree(ParserClass.getLegacy(null, 1),
                     exportDir.get().getAbsolutePath(), UIConsts.UTF_8));
         }
     }
@@ -138,7 +138,7 @@ public class DbSourceTest {
     public void testFile () throws IOException, URISyntaxException {
         URL urla = JdbcLoaderTest.class.getResource(RESOURCE_DUMP);
         
-        performTest(DbSource.fromFile(ParserClass.LEGACY, 
+        performTest(DbSource.fromFile(ParserClass.getLegacy(null, 1), 
                 ApgdiffTestUtils.getFileFromRes(urla).getCanonicalPath(), UIConsts.UTF_8));
     }
     
@@ -157,7 +157,7 @@ public class DbSourceTest {
 
             assertEquals("Project name differs", tempDir.get().getName(), proj.getProjectName());
             
-            performTest(DbSource.fromProject(ParserClass.LEGACY, proj));
+            performTest(DbSource.fromProject(ParserClass.getLegacy(null, 1), proj));
             
             proj.deleteFromWorkspace();
         }
