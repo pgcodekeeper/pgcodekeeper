@@ -93,7 +93,7 @@ public class PgDbParser {
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 Paths.get(locationURI).toAbsolutePath().toString(),
                 prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), 
-                false, false, ParserClass.ANTLR);
+                false, false, ParserClass.getAntlr(null, 1));
         objDefinitions.clear();
         objReferences.clear();
         objDefinitions.addAll(db.getObjDefinitions());
@@ -114,7 +114,7 @@ public class PgDbParser {
         String filePath = Paths.get(fileURI).toAbsolutePath().toString();
         PgDatabase db = PgDumpLoader.loadSchemasAndFile(projPath, filePath,
                 prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), false,
-                false, ParserClass.ANTLR);
+                false, ParserClass.getAntlr(null, 1));
         fillRefs(objReferences, db.getObjReferences());
         fillRefs(objDefinitions, db.getObjDefinitions());
         invokeListeners();

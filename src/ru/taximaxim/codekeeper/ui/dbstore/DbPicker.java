@@ -165,9 +165,8 @@ public class DbPicker extends Group {
         lblWarnDbPass = new CLabel(this, SWT.NONE);
         lblWarnDbPass.setImage(lrm.createImage(ImageDescriptor.createFromURL(
                 Activator.getContext().getBundle().getResource(FILE.ICONWARNING))));
-        lblWarnDbPass.setText(Messages.warning
-                + Messages.providing_password_here_is_insecure + "\n" //$NON-NLS-1$
-                + Messages.consider_using_pgpass_file_instead);
+        lblWarnDbPass.setText(
+                Messages.warning_providing_password_here_is_insecure_use_pgpass_instead);
         gd = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
         gd.exclude = true;
         lblWarnDbPass.setLayoutData(gd);

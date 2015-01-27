@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.externalcalls;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -86,7 +87,8 @@ public class PgDumper {
         String version = new StdStreamRedirector().launchAndRedirect(pgdump).trim();
         Matcher m = PATTERN_VERSION.matcher(version);
         if(!m.matches()) {
-            throw new IOException(Messages.pgDumper_bad_pg_dump_version_output + version);
+            throw new IOException(MessageFormat.format(
+                    Messages.pgDumper_bad_pg_dump_version_output, version));
         }
         return m.group(1);
     }

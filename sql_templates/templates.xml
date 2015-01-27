@@ -97,7 +97,7 @@
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtable">CREATE TABLE ${tableName}
     (
-        ${columnName} ${dataType} ${notNull}
+        ${columnName} ${dataType}
     )</template>
 
 <template 
