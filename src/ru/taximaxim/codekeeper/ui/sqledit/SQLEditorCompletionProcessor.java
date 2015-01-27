@@ -101,7 +101,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                 displayText += " - " + obj.getComment();
             }
             if (!text.isEmpty()) {
-                if (obj.getObjName().contains(text)) {
+                if (obj.getObjName().startsWith(text)) {
                     IContextInformation info = new ContextInformation(
                             obj.getObjName(), obj.getComment());
                     result.add(new CompletionProposal(obj.getObjName(), offset
