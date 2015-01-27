@@ -90,10 +90,8 @@ import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
-import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -395,8 +393,6 @@ class CommitPage extends DiffPresentationPane {
                         });
                     } catch (CoreException e) {
                         ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_error_refreshing_project, e);
-                    } finally {
-                        PgDbParser.getParser(proj.getProject()).getObjFromProject();
                     }
                 }
             }

@@ -86,6 +86,13 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
                 syntax.setStrikethrough(false);
                 syntax.setUnderline(false);
                 break;
+            case MULTI_LINE_COMMENTS:
+                syntax.setBold(false);
+                syntax.setColor(new RGB(0, 0, 200));
+                syntax.setItalic(true);
+                syntax.setStrikethrough(false);
+                syntax.setUnderline(false);
+                break;
             case TYPES:
                 syntax.setBold(true);
                 syntax.setColor(new RGB(64, 0, 200));
@@ -96,6 +103,13 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
             case UN_RESERVED_WORDS:
                 syntax.setBold(true);
                 syntax.setColor(new RGB(127, 0, 85));
+                syntax.setItalic(false);
+                syntax.setStrikethrough(false);
+                syntax.setUnderline(false);
+                break;
+            case CHARACTER_STRING_LITERAL:
+                syntax.setBold(false);
+                syntax.setColor(new RGB(0, 0, 200));
                 syntax.setItalic(false);
                 syntax.setStrikethrough(false);
                 syntax.setUnderline(false);

@@ -4,7 +4,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
 
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+import ru.taximaxim.codekeeper.ui.handlers.AddBuilder;
+import ru.taximaxim.codekeeper.ui.handlers.RemoveBuilder;
 
 public class ProjectNature implements IProjectNature {
     
@@ -12,11 +13,12 @@ public class ProjectNature implements IProjectNature {
 
     @Override
     public void configure() throws CoreException {
-        PgDbParser.getParser(proj).getObjFromProject();
+        AddBuilder.addBuilder(proj);
     }
 
     @Override
     public void deconfigure() throws CoreException {
+        RemoveBuilder.removeBuilder(proj);
     }
 
     @Override

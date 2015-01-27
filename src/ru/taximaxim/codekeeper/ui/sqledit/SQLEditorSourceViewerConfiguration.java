@@ -1,10 +1,9 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
@@ -16,7 +15,6 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
-import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
@@ -29,12 +27,14 @@ import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+import org.eclipse.ui.part.FileEditorInput;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
@@ -58,7 +58,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         this.prefs = Activator.getDefault().getPreferenceStore();
     }
     
-    // Всплывающая подсказка пока
     @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer,
             String contentType) {
@@ -66,24 +65,46 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             
             @Override
             public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-                Point selection= textViewer.getSelectedRange();
-                if (selection.x <= offset && offset < selection.x + selection.y)
-                    return new Region(selection.x, selection.y);
+                IProject proj = null;
+                IFile file = null;
+                IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                        .getActivePage().getActiveEditor();
+                if (page instanceof SQLEditor) {
+                    SQLEditor edit = (SQLEditor) page;
+                    file = ((FileEditorInput) ((edit).getEditorInput())).getFile();
+                    if (file != null) {
+                        proj = file.getProject();
+                    }
+                }
+                if (proj == null) {
+                    return new Region(offset, 0);
+                }
+                PgDbParser parser = PgDbParser.getParser(proj);
+                for (PgObjLocation obj : parser.getObjsForPath(file.getLocation()
+                        .toFile().toPath())) {
+                    if (offset > obj.getOffset()
+                            && offset < (obj.getOffset() + obj.getObjLength())) {
+                        PgObjLocation loc = parser.getDefinitionForObj(obj);
+                        if (loc != null) {
+                            SQLEditorMyRegion region = new SQLEditorMyRegion(obj.getOffset(), obj.getObjLength());
+                            region.setComment(loc.getComment());
+                            return region;
+                        }
+                    }
+                }
                 return new Region(offset, 0);
             }
             
             @Override
             public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
                 if (hoverRegion != null) {
-                    try {
-                        if (hoverRegion.getLength() > -1)
-                            return textViewer.getDocument().get(
-                                    hoverRegion.getOffset(),
-                                    hoverRegion.getLength());
-                    } catch (BadLocationException x) {
+                    if (hoverRegion.getLength() > -1
+                            && hoverRegion instanceof SQLEditorMyRegion) {
+                        SQLEditorMyRegion myRegion = (SQLEditorMyRegion) hoverRegion;
+                        return myRegion.getComment();
                     }
                 }
-                return "JavaTextHover.emptySelection"; 
+                return ""; 
             }
         };
     }
@@ -107,11 +128,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         };
     }
     
-    // Автозавершение, не работает при вводе не фильтрует по вводу
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         ContentAssistant assistant= new ContentAssistant();
-        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor()
+        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(sqlSyntax)
                 /*new IContentAssistProcessor() {
             
             @Override
@@ -183,6 +203,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         
         addDamagerRepairer(reconciler, createCommentScanner(), SQLEditorDocumentProvider.SQL_SINGLE_COMMENT);
         addDamagerRepairer(reconciler, createMultiCommentScanner(), SQLEditorDocumentProvider.SQL_MULTI_COMMENT);
+        addDamagerRepairer(reconciler, createCharacterStringLiteralCommentScanner(), SQLEditorDocumentProvider.SQL_CHARACTER_STRING_LITERAL);
         addDamagerRepairer(reconciler, createRecipeScanner(), SQLEditorDocumentProvider.SQL_CODE);
         
         return reconciler;
@@ -190,7 +211,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     
     @Override
     protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
-        // TODO Auto-generated method stub
         Map<String, IAdaptable> targets = super.getHyperlinkDetectorTargets(sourceViewer);
         targets.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", null);
         return targets;
@@ -215,43 +235,33 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     private WordRule sqlSyntaxRules() {
         
         // Define a word rule and add SQL keywords to it.
-        WordRule wordRule = new WordRule(new WordDetector(), Token.WHITESPACE);
+        WordRule wordRule = new WordRule(new WordDetector(), Token.WHITESPACE, true);
         for (String reservedWord : sqlSyntax.getReservedwords()) {
-            wordRule.addWord(reservedWord.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorStatementTypes.RESERVED_WORDS)));
-            wordRule.addWord(reservedWord.toUpperCase(), new Token(
+            wordRule.addWord(reservedWord, new Token(
                     getTextAttribute(prefs, SQLEditorStatementTypes.RESERVED_WORDS)));
         }
         // TODO render unreserved keywords in the same way with reserved
         // keywords, should let user decide via preference
         for (String unreservedWord : sqlSyntax.getUnreservedwords()) {
-            wordRule.addWord(unreservedWord.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorStatementTypes.UN_RESERVED_WORDS)));
-            wordRule.addWord(unreservedWord.toUpperCase(), new Token(
+            wordRule.addWord(unreservedWord, new Token(
                     getTextAttribute(prefs, SQLEditorStatementTypes.UN_RESERVED_WORDS)));
         }
 
         // Add the SQL datatype names to the word rule.
         for (String datatype : sqlSyntax.getTypes()) {
-            wordRule.addWord(datatype.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorStatementTypes.TYPES)));
-            wordRule.addWord(datatype.toUpperCase(), new Token(
+            wordRule.addWord(datatype, new Token(
                     getTextAttribute(prefs, SQLEditorStatementTypes.TYPES)));
         }
 
         // Add the SQL function names to the word rule.
         for (String function : sqlSyntax.getFunctions()) {
-            wordRule.addWord(function.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorStatementTypes.FUNCTIONS)));
-            wordRule.addWord(function.toUpperCase(), new Token(
+            wordRule.addWord(function, new Token(
                     getTextAttribute(prefs, SQLEditorStatementTypes.FUNCTIONS)));
         }
 
         // Add the SQL constants to the word rule.
         for (String constant : sqlSyntax.getConstants()) {
-            wordRule.addWord(constant.toLowerCase(), new Token(
-                    getTextAttribute(prefs, SQLEditorStatementTypes.CONSTANTS)));
-            wordRule.addWord(constant.toUpperCase(), new Token(
+            wordRule.addWord(constant, new Token(
                     getTextAttribute(prefs, SQLEditorStatementTypes.CONSTANTS)));
         }
 
@@ -276,10 +286,17 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     }
     
     private RuleBasedScanner createMultiCommentScanner() {
-        Color blue= fSharedColors.getColor(new RGB(0, 0, 200));
         RuleBasedScanner commentScanner= new RuleBasedScanner();
         commentScanner.setDefaultReturnToken(new Token(
-                new TextAttribute(blue, null, SWT.ITALIC)));
+                getTextAttribute(prefs, SQLEditorStatementTypes.MULTI_LINE_COMMENTS)));
+        return commentScanner;
+    }
+    
+    private RuleBasedScanner createCharacterStringLiteralCommentScanner() {
+        RuleBasedScanner commentScanner= new RuleBasedScanner();
+        commentScanner.setDefaultReturnToken(new Token(
+                getTextAttribute(prefs, SQLEditorStatementTypes.CHARACTER_STRING_LITERAL)));
         return commentScanner;
     }
 }
+

@@ -95,6 +95,10 @@ public interface UIConsts {
         String ID = PLUGIN_ID.THIS + ".nature"; //$NON-NLS-1$
     }
     
+    interface BUILDER {
+        String ID = PLUGIN_ID.THIS + ".builder"; //$NON-NLS-1$
+    }
+    
     interface HELP {
         String MANUAL_DEPCIES = PLUGIN_ID.HELP + ".manual_depcies"; //$NON-NLS-1$
         String MAIN_EDITOR = PLUGIN_ID.HELP + ".pgcodekeeper_editor"; //$NON-NLS-1$
