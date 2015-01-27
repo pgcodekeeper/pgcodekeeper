@@ -121,12 +121,12 @@ public class JdbcLoader implements PgCatalogStrings {
                 }
             }
             
-            Log.log(Log.LOG_INFO, "Quering schemas");
+            Log.log(Log.LOG_INFO, "Querying schemas");
             try(Statement stmnt = connection.createStatement(); 
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_SCHEMAS)){
                 
                 while (res.next()) {
-                    Log.log(Log.LOG_INFO, "Quering objects for schema " + res.getString(NAMESPACE_NSPNAME));
+                    Log.log(Log.LOG_INFO, "Querying objects for schema " + res.getString(NAMESPACE_NSPNAME));
                     prepareDataForSchema(res.getLong(OID));
                     
                     PgSchema schema = getSchema(res);
@@ -138,7 +138,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 }   
             }
             
-            Log.log(Log.LOG_INFO, "Quering extensions");
+            Log.log(Log.LOG_INFO, "Querying extensions");
             try(Statement stmnt = connection.createStatement(); 
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_EXTENSIONS)){
                 while(res.next()){
