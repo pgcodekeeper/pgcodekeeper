@@ -112,10 +112,10 @@ public class PartialExporterTest {
         String targetFilename = "TestPartialExportTarget.sql";
         dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 PartialExporterTest.class.getResourceAsStream(sourceFilename),
-                encoding, false, false, ParserClass.LEGACY);
+                encoding, false, false, ParserClass.getLegacy(null, 1));
         dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
                 PartialExporterTest.class.getResourceAsStream(targetFilename),
-                encoding, false, false, ParserClass.LEGACY);
+                encoding, false, false, ParserClass.getLegacy(null, 1));
         
         Assert.assertNotNull(dbSource);
         Assert.assertNotNull(dbTarget);

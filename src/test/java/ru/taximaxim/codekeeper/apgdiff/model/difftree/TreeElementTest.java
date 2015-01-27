@@ -49,7 +49,7 @@ public class TreeElementTest {
     public void testGetFilteredCopy() {
         PgDatabase dbFull = PgDumpLoader.loadDatabaseSchemaFromDump(
                 PgDumpLoaderTest.class.getResourceAsStream(dbDumpName),
-                "UTF8", false, false, ParserClass.LEGACY);
+                "UTF8", false, false, ParserClass.getLegacy(null, 1));
         PgDatabase dbPartial = new PgDatabase();
         
         if (dbDumpName.equals("schema_6.sql")) {

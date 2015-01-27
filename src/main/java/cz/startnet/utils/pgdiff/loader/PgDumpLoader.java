@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.SubMonitor;
+
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import cz.startnet.utils.pgdiff.Resources;
@@ -278,9 +280,9 @@ public final class PgDumpLoader { //NOPMD
     static PgDatabase loadDatabaseSchemaCoreAntLR(
             InputStream inputStream, String charsetName, 
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers, 
-            PgDatabase database, Path path) {
+            PgDatabase database, Path path, SubMonitor monitor, int monitoringLevel) {
         try {
-            new AntlrParser().parseInputStream(inputStream, charsetName, 
+            new AntlrParser(monitor, monitoringLevel).parseInputStream(inputStream, charsetName, 
                     new CustomSQLParserListener(database, path));
         } catch (IOException e) {
             throw new FileException("Exception while closing dump file", e);

@@ -92,20 +92,20 @@ public class DepcyTreeExtenderTest {
         return Arrays.asList(
                 new Object[][]{
 // SONAR-OFF
-                    {new Predefined1(), ParserClass.LEGACY},
-                    {new Predefined1(), ParserClass.ANTLR},
+                    {new Predefined1(), ParserClass.getLegacy(null, 1)},
+                    {new Predefined1(), ParserClass.getAntlr(null, 1)},
                     
-                    {new Predefined2(), ParserClass.LEGACY},
-                    {new Predefined2(), ParserClass.ANTLR},
+                    {new Predefined2(), ParserClass.getLegacy(null, 1)},
+                    {new Predefined2(), ParserClass.getAntlr(null, 1)},
                     
-                    {new Predefined3(), ParserClass.LEGACY},
-                    {new Predefined3(), ParserClass.ANTLR},
+                    {new Predefined3(), ParserClass.getLegacy(null, 1)},
+                    {new Predefined3(), ParserClass.getAntlr(null, 1)},
                     
-                    {new Predefined4(), ParserClass.LEGACY},
-                    {new Predefined4(), ParserClass.ANTLR},
+                    {new Predefined4(), ParserClass.getLegacy(null, 1)},
+                    {new Predefined4(), ParserClass.getAntlr(null, 1)},
                     
-                    {new Predefined5(), ParserClass.LEGACY},
-                    {new Predefined5(), ParserClass.ANTLR}
+                    {new Predefined5(), ParserClass.getLegacy(null, 1)},
+                    {new Predefined5(), ParserClass.getAntlr(null, 1)}
 // SONAR-ON
                 });
     }

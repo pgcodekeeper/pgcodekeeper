@@ -14,6 +14,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
+import org.eclipse.core.runtime.SubMonitor;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
@@ -74,15 +75,15 @@ public final class PgDiff {
      */
     public static void createDiff(final PrintWriter writer,
             final PgDiffArguments arguments, final InputStream oldInputStream,
-            final InputStream newInputStream) {
+            final InputStream newInputStream, SubMonitor monitor) {
         PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
                 oldInputStream, arguments.getInCharsetName(),
                 arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers(), ParserClass.LEGACY);
+                arguments.isIgnoreSlonyTriggers(), ParserClass.getLegacy(monitor, 1));
         PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
                 newInputStream, arguments.getInCharsetName(),
                 arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers(), ParserClass.LEGACY);
+                arguments.isIgnoreSlonyTriggers(), ParserClass.getLegacy(monitor, 1));
 
         diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase,
                 oldDatabase, newDatabase);
@@ -103,11 +104,11 @@ public final class PgDiff {
         if(format.equals("dump")) {
             return PgDumpLoader.loadDatabaseSchemaFromDump(srcPath,
                     arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
-                    arguments.isIgnoreSlonyTriggers(), ParserClass.LEGACY);
+                    arguments.isIgnoreSlonyTriggers(), ParserClass.getLegacy(null, 1));
         } else if(format.equals("parsed")) {
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
                     arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
-                    arguments.isIgnoreSlonyTriggers(), ParserClass.LEGACY);
+                    arguments.isIgnoreSlonyTriggers(), ParserClass.getLegacy(null, 1));
         } else if(format.equals("db")) {
             throw new UnsupportedOperationException("DB connection is not yet implemented!");
         }
