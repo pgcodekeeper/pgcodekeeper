@@ -183,6 +183,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
         this.connectionTimezone = projPrefs.get(PROJ_PREF.TIMEZONE, UIConsts.UTC);
         this.scriptFileEncoding = projPrefs.get(PROJ_PREF.ENCODING, UIConsts.UTF_8);
+        setDbParams(addDepcy.dbHost, addDepcy.dbPort, addDepcy.dbName,
+                addDepcy.dbUser, addDepcy.dbPass);
     }
     public void setDbParams(String dbHost, String dbPort, String dbName,
             String dbUser, String dbPass) {

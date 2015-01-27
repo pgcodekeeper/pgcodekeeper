@@ -37,6 +37,12 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     List<Entry<PgStatement, PgStatement>> depcyToAdd;
     private IProject proj;
     
+    String dbHost;
+    String dbPort;
+    String dbName;
+    String dbUser;
+    String dbPass;
+    
     public DepcyFromPSQLOutput(Differ differ, IProject proj, List<PgStatement> list) {
         this.differ = differ;
         this.proj = proj;
@@ -152,6 +158,14 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         return sb.toString();
     }
     
+    public void setDbParams(String dbHost, String dbPort, String dbName,
+            String dbUser, String dbPass) {
+        this.dbHost = dbHost;
+        this.dbName = dbName; 
+        this.dbUser = dbUser;
+        this.dbPass = dbPass;
+        this.dbPort = dbPort;
+    }
     
     @Override
     public Object getAdapter(Class adapter) {
