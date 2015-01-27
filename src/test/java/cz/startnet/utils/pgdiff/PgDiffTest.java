@@ -302,7 +302,7 @@ public class PgDiffTest {
                 PgDiffTest.class.getResourceAsStream(
                 fileNameTemplate + "_original.sql"),
                 PgDiffTest.class.getResourceAsStream(
-                fileNameTemplate + "_original.sql"), null);
+                fileNameTemplate + "_original.sql"));
         writer.flush();
 
         Assert.assertEquals("File name template: " + fileNameTemplate,
@@ -321,7 +321,7 @@ public class PgDiffTest {
                 PgDiffTest.class.getResourceAsStream(
                 fileNameTemplate + "_new.sql"),
                 PgDiffTest.class.getResourceAsStream(
-                fileNameTemplate + "_new.sql"), null);
+                fileNameTemplate + "_new.sql"));
         writer.flush();
 
         Assert.assertEquals("File name template: " + fileNameTemplate,
@@ -346,7 +346,7 @@ public class PgDiffTest {
                 PgDiffTest.class.getResourceAsStream(
                 fileNameTemplate + "_original.sql"),
                 PgDiffTest.class.getResourceAsStream(
-                fileNameTemplate + "_new.sql"), null);
+                fileNameTemplate + "_new.sql"));
         writer.flush();
 
         StringBuilder sbExpDiff;
