@@ -69,13 +69,13 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         switch (DBSources.getEnum(props.getPrefs().get(PROJ_PREF.SOURCE, ""))) { //$NON-NLS-1$
         case SOURCE_TYPE_DB:
             db = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.ANTLR : ParserClass.LEGACY,
+                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1),
                     exePgdump, pgdumpCustom, props, password).get(taskpm);
             break;
 
         case SOURCE_TYPE_DUMP:
             db = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.ANTLR : ParserClass.LEGACY, dumpPath,
+                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1), dumpPath,
                     props.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8)).get(taskpm);
             break;
 

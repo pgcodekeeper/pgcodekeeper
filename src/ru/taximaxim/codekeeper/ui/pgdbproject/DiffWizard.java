@@ -115,7 +115,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
                 TreeDiffer treediffer = new TreeDiffer(
                         DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                                ParserClass.ANTLR : ParserClass.LEGACY, proj),
+                                ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1), proj),
                         pageDiff.getTargetDbSource());
 
                 try {
@@ -266,7 +266,7 @@ class PageDiff extends WizardPage implements Listener {
         switch (getTargetType()) {
         case DB:
             dbs = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.ANTLR : ParserClass.LEGACY, 
+                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1), 
                     mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     getDbHost(), getDbPort(), getDbUser(), getDbPass(),
@@ -281,13 +281,13 @@ class PageDiff extends WizardPage implements Listener {
             
         case DUMP:
             dbs = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.ANTLR : ParserClass.LEGACY,
+                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1),
                     getDumpPath(), getTargetEncoding());
             break;
 
         case PROJ:
             dbs = DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.ANTLR : ParserClass.LEGACY,
+                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1),
                     PgDbProject.getProjFromFile(getProjPath()));
             break;
 

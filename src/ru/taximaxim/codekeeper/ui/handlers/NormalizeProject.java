@@ -60,7 +60,7 @@ public class NormalizeProject extends AbstractHandler {
                 try {
                     PgDatabase db = DbSource.fromProject(Activator.getDefault()
                             .getPreferenceStore().getBoolean(PREF.USE_ANTLR) ? 
-                                    ParserClass.ANTLR : ParserClass.LEGACY, proj)
+                                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1), proj)
                                     .get(mon.newChild(1));
                     
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);

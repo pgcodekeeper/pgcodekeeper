@@ -1,7 +1,11 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.SubMonitor;
@@ -152,11 +156,28 @@ class DbSourceProject extends DbSource {
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) {
         monitor.subTask(Messages.dbSource_loading_tree);
-
+        int filesCount = filesInDir(proj.getPathToProject());  
+        monitor.setWorkRemaining(filesCount);
+        parser.setMonitor(monitor);
+        parser.setMonitoringLevel(1);
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 proj.getPathToProject().toString(), 
                 proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
                 false, false, parser);
+    }
+    
+    int filesInDir(Path path){
+        int count = 0;
+        File[] plf = path.toFile().listFiles();
+        if (plf != null)
+            for (File file : plf) {
+                if (!file.isDirectory()) {
+                    count++;
+                } else {
+                    count += filesInDir(file.toPath());
+                }
+            }
+        return count;
     }
 }
 
@@ -177,9 +198,53 @@ class DbSourceFile extends DbSource {
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) {
         monitor.subTask(Messages.dbSource_loading_dump);
-
+        try {
+            int count = countLines(filename);
+            /*
+             * Магическая константа coeff получена эмпирическим путем:
+             * 
+             * Парсинг 2х файлов 2.7 МБ и 2.2 МБ
+             * 
+             * Counted 80478 lines
+             * TOTAL 12631ticks worked
+             * coeff = 6,371467026
+             * 
+             * Counted 65922 lines
+             * TOTAL 10557ticks worked
+             * coeff = 6,24438761
+             */
+            int coeff = 5;
+            monitor.setWorkRemaining(count > 5 ? count/coeff : 1000);
+        } catch (IOException e) {
+            Log.log(Log.LOG_INFO, "Error counting file lines. Setting 1000");
+            monitor.setWorkRemaining(1000);
+        }
+        parser.setMonitor(monitor);
+        parser.setMonitoringLevel(2);
+        
         return PgDumpLoader.loadDatabaseSchemaFromDump(filename, encoding,
                 false, false, parser);
+    }
+    
+    public static int countLines(String filename) throws IOException {
+        InputStream is = new BufferedInputStream(new FileInputStream(filename));
+        try {
+            byte[] c = new byte[1024];
+            int count = 0;
+            int readChars = 0;
+            boolean empty = true;
+            while ((readChars = is.read(c)) != -1) {
+                empty = false;
+                for (int i = 0; i < readChars; ++i) {
+                    if (c[i] == '\n') {
+                        ++count;
+                    }
+                }
+            }
+            return (count == 0 && !empty) ? 1 : count;
+        } finally {
+            is.close();
+        }
     }
 }
 
@@ -302,6 +367,5 @@ class DbSourceFromDbObject extends DbSource {
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
         return db;
-    }
-    
+    } 
 }
