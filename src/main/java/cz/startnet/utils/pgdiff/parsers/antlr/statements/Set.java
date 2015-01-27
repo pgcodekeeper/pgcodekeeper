@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueConte
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSet;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 public class Set extends ParserAbstract {
     private Set_statementContext ctx;
@@ -24,7 +25,8 @@ public class Set extends ParserAbstract {
             set.setParam(ctx.config_param.getText());
             for (Set_statement_valueContext value : ctx.config_param_val){
                 set.addValue(value.getText());
-                addObjReference(null, value.getText(), DbObjType.SCHEMA, value.getStart().getStartIndex());
+                addObjReference(null, value.getText(), DbObjType.SCHEMA,
+                        StatementActions.NONE, value.getStart().getStartIndex(), 0);
             }
         }
         return set;

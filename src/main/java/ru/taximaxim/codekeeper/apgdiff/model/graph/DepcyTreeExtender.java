@@ -124,6 +124,7 @@ public class DepcyTreeExtender {
         // if not a Container and is marked for deletion
         if (filtered.getSide() == DiffSide.LEFT && 
                 filtered.getType() != DbObjType.CONTAINER && 
+                filtered.getType() != DbObjType.SEQUENCE && 
                 (markedToDelete = filtered.getPgStatement(dbSource)) != null){
             PgDiff.getDependantsSet(markedToDelete, dependantsOfDeleted, depcySource);
         }

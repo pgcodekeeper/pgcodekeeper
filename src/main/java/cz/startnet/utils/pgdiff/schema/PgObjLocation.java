@@ -15,7 +15,19 @@ public class PgObjLocation implements Serializable {
     private int offset;
     private String filePath;
     private DbObjType type;
+    private String comment = "";
+    private int objLength;
+    private StatementActions action;
     
+    public StatementActions getAction() {
+        return action;
+    }
+
+    public PgObjLocation setAction(StatementActions action) {
+        this.action = action;
+        return this;
+    }
+
     public GenericColumn getObject() {
         return objName;
     }
@@ -31,6 +43,9 @@ public class PgObjLocation implements Serializable {
     // свитчить по типу в случае с колонкой?
     public int getObjLength() {
         int length = 0;
+        if (type == DbObjType.FUNCTION) {
+            return objLength;
+        }
 //        if (objName.schema != null) {
 //            length += objName.schema.length(); 
 //        }
@@ -53,6 +68,10 @@ public class PgObjLocation implements Serializable {
     
     public void setObjType(DbObjType type) {
         this.type = type;
+    }
+    
+    public void setObjNameLength(int length) {
+        this.objLength = length;
     }
 
     public PgObjLocation(String schema, String name, String column, int offset,
@@ -89,5 +108,13 @@ public class PgObjLocation implements Serializable {
     @Override
     public String toString() {
         return getObjName() + " " + filePath + " " + offset + " " + getObjLength() + " " + type;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }
