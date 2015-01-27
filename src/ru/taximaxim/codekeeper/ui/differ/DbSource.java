@@ -1,7 +1,12 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -150,17 +155,45 @@ class DbSourceProject extends DbSource {
 
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) {
+        int filesCount = countFilesInDir(proj.getPathToProject());  
         monitor.subTask(Messages.dbSource_loading_tree);
-
+        monitor.setWorkRemaining(filesCount);
+        
+        parser.setMonitor(monitor);
+        parser.setMonitoringLevel(1);
+        
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 proj.getPathToProject().toString(), 
                 proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
                 false, false, parser);
     }
+    
+    private int countFilesInDir(Path path) {
+        int count = 0;
+        File[] filesList = path.toFile().listFiles();
+        
+        if (filesList != null){
+            for (File file : filesList) {
+                if (!file.isDirectory()) {
+                    count++;
+                } else {
+                    count += countFilesInDir(file.toPath());
+                }
+            }
+        }
+        return count;
+    }
 }
 
 class DbSourceFile extends DbSource {
-
+    /*
+     * Магическая константа AVERAGE_STATEMENT_LENGTH получена эмпирическим путем. 
+     * Она равна количеству строк в файле sql, поделенному на количество выражений.
+     * 
+     * По подсчетам, это число в районе 6. Для верности берем 5.
+     */
+    final static int AVERAGE_STATEMENT_LENGTH = 5;
+    
     private final ParserClass parser;
     private final String filename;
     private final String encoding;
@@ -176,9 +209,39 @@ class DbSourceFile extends DbSource {
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) {
         monitor.subTask(Messages.dbSource_loading_dump);
-
+        
+        try {
+            int linesCount = countLines(filename);
+            monitor.setWorkRemaining(linesCount > AVERAGE_STATEMENT_LENGTH ? 
+                    linesCount/AVERAGE_STATEMENT_LENGTH : 1);
+        } catch (IOException e) {
+            Log.log(Log.LOG_INFO, "Error counting file lines. Setting 1000");
+            monitor.setWorkRemaining(1000);
+        }
+        parser.setMonitor(monitor);
+        parser.setMonitoringLevel(2);
+        
         return PgDumpLoader.loadDatabaseSchemaFromDump(filename, encoding,
                 false, false, parser);
+    }
+    
+    private int countLines(String filename) throws IOException {
+        try (FileInputStream fis = new FileInputStream(filename); 
+                InputStream is = new BufferedInputStream(fis)){
+            byte[] c = new byte[1024];
+            int count = 0;
+            int readChars = 0;
+            boolean empty = true;
+            while ((readChars = is.read(c)) != -1) {
+                empty = false;
+                for (int i = 0; i < readChars; ++i) {
+                    if (c[i] == '\n') {
+                        ++count;
+                    }
+                }
+            }
+            return (count == 0 && !empty) ? 1 : count;
+        }
     }
 }
 
@@ -251,7 +314,7 @@ class DbSourceFilter extends DbSource {
     final DiffSide side;
 
     DbSourceFilter(DbSource src, TreeElement filter, DiffSide side) {
-        super(Messages.dbSource_filter_on + src.getOrigin());
+        super(MessageFormat.format(Messages.dbSource_filter_on, src.getOrigin()));
         this.src = src;
         this.filter = filter;
         this.side = side;
@@ -301,6 +364,5 @@ class DbSourceFromDbObject extends DbSource {
     @Override
     protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
         return db;
-    }
-    
+    } 
 }
