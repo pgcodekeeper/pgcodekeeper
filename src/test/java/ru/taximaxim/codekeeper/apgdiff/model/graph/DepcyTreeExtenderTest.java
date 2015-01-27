@@ -698,14 +698,6 @@ class Predefined4 extends TreeElementCreator{
     @Override
     public TreeElement getFilteredCopy() {
         TreeElement root = getFilteredTreeForDeletion();
-        TreeElement initialPublicSchema = root.getChild("Database").
-                getChild("Source only").getChild("Schemas").getChild(ApgdiffConsts.PUBLIC);
-        
-        TreeElement contTable = new TreeElement("Tables", DbObjType.CONTAINER, DbObjType.TABLE, DiffSide.LEFT);
-        initialPublicSchema.addChild(contTable);
-        
-        TreeElement table = new TreeElement("t1", DbObjType.TABLE, null, DiffSide.LEFT);
-        contTable.addChild(table);
         return root;
     }
 
