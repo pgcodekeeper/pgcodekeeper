@@ -9,8 +9,8 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public abstract class ParserClass {
 
-    final SubMonitor monitor;
-    final int monitoringLevel;
+    SubMonitor monitor;
+    int monitoringLevel;
     
     public static ParserClass getAntlr(SubMonitor monitor, int monitoringLevel){
         return new ParserClassAntlr(monitor, monitoringLevel);
@@ -28,6 +28,14 @@ public abstract class ParserClass {
     public abstract PgDatabase parse(InputStream inputStream, String charsetName,
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
             PgDatabase database, Path path);
+
+    public void setMonitor(SubMonitor monitor) {
+        this.monitor = monitor;
+    }
+
+    public void setMonitoringLevel(int monitoringLevel) {
+        this.monitoringLevel = monitoringLevel;
+    }
 }
 
 class ParserClassAntlr extends ParserClass {
