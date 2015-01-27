@@ -608,11 +608,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                         RollOnEditor.this.getSourceViewer().getTextWidget().setBackground(colorPink);
                     }
                 }
-                IEditorInput input = RollOnEditor.this.getEditorInput();
-                if (input instanceof DepcyFromPSQLOutput) {
-//                    DepcyFromPSQLOutput dep = (DepcyFromPSQLOutput) dep;
-                    
-                }
+                RollOnEditor.this.setInput(RollOnEditor.this.getEditorInput());
                 
             } catch (PgCodekeeperUIException e) {
                 ExceptionNotifier.notifyDefault(
