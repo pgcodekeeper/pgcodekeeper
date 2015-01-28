@@ -80,13 +80,18 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
             @Override
             public Object[] getElements(Object inputElement) {
                 List<Segments> segments = new ArrayList<>();
+                List<PgObjLocation> refs = new ArrayList<>();
                 if (inputElement instanceof FileEditorInput) {
                     Path inputPath = ((FileEditorInput)inputElement).
                             getFile().getLocation().toFile().toPath();
-                    for (PgObjLocation loc : parser.getObjsForPath(inputPath)) {
-                        if (loc.getAction() != StatementActions.NONE)
-                        segments.add(new Segments(loc));
-                    }
+                    refs = parser.getObjsForPath(inputPath);
+                }
+                if (inputElement instanceof DepcyFromPSQLOutput) {
+                    refs = parser.getObjReferences();
+                }
+                for (PgObjLocation loc : refs) {
+                    if (loc.getAction() != StatementActions.NONE)
+                    segments.add(new Segments(loc));
                 }
                 return segments.toArray();
             }

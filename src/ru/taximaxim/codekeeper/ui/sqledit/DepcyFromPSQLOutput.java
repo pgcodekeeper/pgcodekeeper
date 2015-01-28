@@ -21,6 +21,7 @@ import org.eclipse.ui.IStorageEditorInput;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
@@ -36,6 +37,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     private Differ differ;
     List<Entry<PgStatement, PgStatement>> depcyToAdd;
     private IProject proj;
+    private PgDbParser parser;
     
     String dbHost;
     String dbPort;
@@ -97,6 +99,12 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         return addDepcy.isEmpty();
     }
     
+    public void updateParser() throws CoreException {
+        parser = PgDbParser.getRollOnParser(proj, getStorage().getContents(), null);
+    }
+    public PgDbParser getParser() {
+        return parser;
+    }
     //------------------------------------------
     // From this only parsing from output begins
     //------------------------------------------
@@ -210,42 +218,6 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
             return new StringStorage(differ.getDiffDirect());
         } catch (PgCodekeeperUIException e) {
             return new StringStorage("");
-        }
-    }
-
-    class StringInput implements IStorageEditorInput {
-        private IStorage storage;
-
-        StringInput(IStorage storage) {
-            this.storage = storage;
-        }
-
-        public boolean exists() {
-            return true;
-        }
-
-        public ImageDescriptor getImageDescriptor() {
-            return null;
-        }
-
-        public String getName() {
-            return storage.getName();
-        }
-
-        public IPersistableElement getPersistable() {
-            return null;
-        }
-
-        public IStorage getStorage() {
-            return storage;
-        }
-
-        public String getToolTipText() {
-            return "String-based file: " + storage.getName();
-        }
-
-        public Object getAdapter(Class adapter) {
-            return null;
         }
     }
 

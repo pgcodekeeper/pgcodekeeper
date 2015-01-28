@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,6 +42,10 @@ public class PgDbParser {
         this.proj = proj;
     }
     
+    private PgDbParser() {
+        this(null);
+    }
+
     public void addListener(Listener e) {
         listeners.add(e);
     }
@@ -58,6 +63,24 @@ public class PgDbParser {
         parser.getFullDBFromDirectoryJob(proj.getLocationURI());
         PROJ_PARSERS.put(proj, parser);
         return parser;
+    }
+    
+    public static PgDbParser getRollOnParser(IProject proj, InputStream input,
+            IProgressMonitor monitor) {
+        PgDbParser rollOnParser = new PgDbParser();
+        rollOnParser.fillRefsFromInputStream(input, monitor);
+        if (proj != null) {
+            rollOnParser.addDefinitionsFromProjParser(getParser(proj));
+        }
+        return rollOnParser;
+    }
+
+    private void addDefinitionsFromProjParser(PgDbParser parser) {
+        for (PgObjLocation def : parser.getObjDefinitions()) {
+            if (!objDefinitions.contains(def)) {
+                objDefinitions.add(def);
+            }
+        }
     }
 
     public void getObjFromProject(IProgressMonitor monitor) {
@@ -134,6 +157,16 @@ public class PgDbParser {
         oldRefs.removeAll(remove);
         oldRefs.addAll(newRefs);
     }
+    
+    private void fillRefsFromInputStream(InputStream input, IProgressMonitor monitor) {
+        PgDatabase db = PgDumpLoader.loadRefsFromInputStream(input, Paths.get(""),
+                UIConsts.UTF_8, false, false,
+                ParserClass.getParserAntlrReferences(monitor, 1));
+        objDefinitions.clear();
+        objReferences.clear();
+        objDefinitions.addAll(db.getObjDefinitions());
+        objReferences.addAll(db.getObjReferences());
+    }
 
     public PgObjLocation getDefinitionForObj(PgObjLocation obj) {
         for (PgObjLocation col : objDefinitions) {
@@ -158,6 +191,10 @@ public class PgDbParser {
     
     public List<PgObjLocation> getObjDefinitions() {
         return Collections.unmodifiableList(objDefinitions);
+    }
+    
+    public List<PgObjLocation> getObjReferences() {
+        return Collections.unmodifiableList(objReferences);
     }
     
     private boolean hasDefinition(PgObjLocation obj) {

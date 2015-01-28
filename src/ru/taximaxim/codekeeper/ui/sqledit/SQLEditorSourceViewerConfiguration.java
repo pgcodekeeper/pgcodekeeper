@@ -1,9 +1,9 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
@@ -27,6 +27,7 @@ import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
@@ -73,22 +74,23 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             
             @Override
             public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-                IProject proj = null;
                 IFile file = null;
                 IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
                         .getActivePage().getActiveEditor();
-                if (page instanceof SQLEditor) {
-                    SQLEditor edit = (SQLEditor) page;
-                    file = ((FileEditorInput) ((edit).getEditorInput())).getFile();
-                    if (file != null) {
-                        proj = file.getProject();
-                    }
+                IEditorInput input = page.getEditorInput();
+                if (input instanceof FileEditorInput) {
+                    file = ((FileEditorInput) input).getFile();
                 }
-                if (proj == null || parser == null) {
+                if (parser == null) {
                     return new Region(offset, 0);
                 }
-                for (PgObjLocation obj : parser.getObjsForPath(file.getLocation()
-                        .toFile().toPath())) {
+                List<PgObjLocation> refs;
+                if (file != null) {
+                    refs = parser.getObjsForPath(file.getLocation().toFile().toPath());
+                } else {
+                    refs = parser.getObjReferences();
+                }
+                for (PgObjLocation obj : refs) {
                     if (offset > obj.getOffset()
                             && offset < (obj.getOffset() + obj.getObjLength())) {
                         PgObjLocation loc = parser.getDefinitionForObj(obj);

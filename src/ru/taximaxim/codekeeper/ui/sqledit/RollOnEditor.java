@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -142,8 +143,14 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             throws PartInitException {
         // открыть с помощью кодкипера на каком-то скрипте
         if (input instanceof DepcyFromPSQLOutput) {
-            initializeDepcyInput((DepcyFromPSQLOutput)input);
-            setParserToProj(proj);
+            DepcyFromPSQLOutput in = (DepcyFromPSQLOutput)input;
+            initializeDepcyInput(in);
+            try {
+                in.updateParser();
+                setParserToProj(in.getParser());
+            } catch (CoreException e) {
+               throw new PartInitException(e.getLocalizedMessage(), e);
+            }
         }
         // после создания парсера вызвать создание основного редактора
         super.init(site, input);

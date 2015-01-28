@@ -11,11 +11,12 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
@@ -30,28 +31,36 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         int offset = region.getOffset();
         IProject proj = null;
         IFile file = null;
+        PgDbParser parser = null;
         IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
                 .getActivePage().getActiveEditor();
-        if (page instanceof SQLEditor) {
-            SQLEditor edit = (SQLEditor) page;
-            file = ((FileEditorInput) ((edit).getEditorInput())).getFile();
+        IEditorInput input = page.getEditorInput();
+        if (input instanceof FileEditorInput) {
+            file = ((FileEditorInput) input).getFile();
             if (file != null) {
                 proj = file.getProject();
+                if (proj != null) {
+                    parser = PgDbParser.getParser(proj);
+                }
             }
         }
+        if (input instanceof DepcyFromPSQLOutput) {
+            DepcyFromPSQLOutput dep = (DepcyFromPSQLOutput) input;
+            parser = dep.getParser();
+        }
 
-        try {
-            if (proj == null || !proj.hasNature(NATURE.ID)) {
-                return null;
-            }
-        } catch (CoreException e) {
+        if (parser == null) {
             return null;
         }
-
-        PgDbParser parser = PgDbParser.getParser(proj);
+        
         List<IHyperlink> hyperlinks = new ArrayList<>();
-        for (PgObjLocation obj : parser.getObjsForPath(file.getLocation()
-                .toFile().toPath())) {
+        List<PgObjLocation> refs;
+        if (file != null) {
+            refs = parser.getObjsForPath(file.getLocation().toFile().toPath());
+        } else {
+            refs = parser.getObjReferences();
+        }
+        for (PgObjLocation obj : refs) {
             if (offset > obj.getOffset()
                     && offset < (obj.getOffset() + obj.getObjLength())) {
                 PgObjLocation objDefinition = parser.getDefinitionForObj(obj);
@@ -60,7 +69,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
                             objDefinition.getOffset(), objDefinition
                                     .getObjLength()), new Region(obj
                             .getOffset(), obj.getObjLength()), "Reference",
-                            objDefinition.getFilePath()));
+                            objDefinition.getFilePath(), input));
                 }
             }
         }

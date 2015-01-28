@@ -85,7 +85,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
             IProject proj = ((IFileEditorInput)input).getFile().getProject();
             try {
                 if (proj.hasNature(NATURE.ID)) {
-                    setParserToProj(proj);
+                    setParserToProj(PgDbParser.getParser(proj));
                 }
             } catch (CoreException e) {
                 // do nothing
@@ -99,8 +99,8 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
         }
     }
     
-    protected void setParserToProj(IProject proj) {
-        this.parser = PgDbParser.getParser(proj);
+    protected void setParserToProj(PgDbParser pgDbParser) {
+        this.parser = pgDbParser;
     }
     
     @Override
