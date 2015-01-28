@@ -57,6 +57,18 @@
             id="ru.taximaxim.codekeeper.ui.command.normalizeProject"
             name="%command.name.normalizeProject">
       </command>
+      <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.AddBuilder"
+            id="ru.taximaxim.codekeeper.ui.command.AddBuilder"
+            name="Add Codekeeper Builder">
+      </command>
+      <command
+            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
+            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.RemoveBuilder"
+            id="ru.taximaxim.codekeeper.ui.command.RemoveBuilder"
+            name="Remove Codekeeper Builder">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -104,6 +116,68 @@
                   label="%command.label.normalizeProject"
                   mnemonic="%command.mnemonic.normalizeProject"
                   style="push">
+            </command>
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.command.AddBuilder"
+                  label="Add Builder"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <and>
+                     <count
+                           value="1">
+                     </count>
+                     <iterate
+                           ifEmpty="false"
+                           operator="and">
+                        <test
+                           property="org.eclipse.core.resources.projectNature"
+                           value="ru.taximaxim.codekeeper.ui.nature">
+                     </test>
+                     <adapt
+                           type="org.eclipse.core.resources.IProject">
+                     </adapt>
+                     </iterate>
+                     <iterate>
+                        <not>
+                           <test
+                                 forcePluginActivation="true"
+                                 property="ru.taximaxim.codekeeper.ui.builders.isEnabled">
+                           </test>
+                        </not>
+                     </iterate>
+                  </and>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="ru.taximaxim.codekeeper.ui.command.RemoveBuilder"
+                  label="Remove Builder"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <and>
+                     <count
+                           value="1">
+                     </count>
+                     <iterate
+                           ifEmpty="false"
+                           operator="and">
+                            <test 
+                            property="org.eclipse.core.resources.projectNature"
+                           value="ru.taximaxim.codekeeper.ui.nature">
+                     </test>
+                     <adapt
+                           type="org.eclipse.core.resources.IProject">
+                     </adapt>
+                     </iterate>
+                     <iterate>
+                        <test
+                              forcePluginActivation="true"
+                              property="ru.taximaxim.codekeeper.ui.builders.isEnabled">
+                        </test>
+                     </iterate>
+                  </and>
+               </visibleWhen>
             </command>
          </menu>
       </menuContribution>
@@ -186,6 +260,12 @@
             id="ru.taximaxim.codekeeper.ui.sqlsyntaxcoloring"
             name="Syntax Coloring">
       </page>
+      <page
+            category="ru.taximaxim.codekeeper.ui.sqleditor"
+            class="ru.taximaxim.codekeeper.ui.prefs.SQLEditorTemplatePrefPage"
+            id="ru.taximaxim.codekeeper.ui.sqleditortemplates"
+            name="SQLEditor Templates">
+      </page>
    </extension>
    <extension
          point="org.eclipse.ui.newWizards">
@@ -210,6 +290,9 @@
                class="ru.taximaxim.codekeeper.ui.natures.ProjectNature">
          </run>
       </runtime>
+      <builder
+            id="ru.taximaxim.codekeeper.ui.builder">
+      </builder>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">
@@ -348,11 +431,44 @@
        </perspectiveExtension>
     </extension>
     <extension
+          id="ru.taximaxim.codekeeper.ui.builder"
+          name="pgCodekeeper Builder"
+          point="org.eclipse.core.resources.builders">
+       <builder>
+          <run
+                class="ru.taximaxim.codekeeper.ui.builders.ProjectBuilder">
+          </run>
+       </builder>
+    </extension>
+    <extension
+          point="org.eclipse.core.expressions.propertyTesters">
+       <propertyTester
+             class="ru.taximaxim.codekeeper.ui.builders.BuilderTester"
+             id="ru.taximaxim.codekeeper.ui.BuilderTester"
+             namespace="ru.taximaxim.codekeeper.ui.builders"
+             properties="isEnabled"
+             type="java.lang.Object">
+       </propertyTester>
+    </extension>
+    <extension
+          id="ru.taximaxim.codekeeper.ui.editorTemplates"
+          name="SQLEditor Templates"
+          point="org.eclipse.ui.editors.templates">
+       <contextType
+             class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType"
+             id="ru.taximaxim.codekeeper.ui.sqlEditorContextType"
+             name="SQLEditor Context Type">
+       </contextType>
+       <include
+             file="sql_templates/templates.xml"
+             translations="sql_templates/sqlTemplate.properties">
+       </include>
+    </extension>
+    <extension
           point="org.eclipse.ui.elementFactories">
        <factory
              class="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"
              id="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory">
        </factory>
     </extension>
-
 </plugin>

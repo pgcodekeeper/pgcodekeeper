@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Properties;
 
 import org.eclipse.core.commands.ExecutionEvent;
@@ -91,8 +92,8 @@ public final class OpenProjectUtils {
             }
             
         } catch (FileNotFoundException ex) {
-            message.append(Messages.OpenProjectUtils_file + 
-                    markerFile.getAbsolutePath() + Messages.OpenProjectUtils_is_missing);
+            message.append(MessageFormat.format(Messages.OpenProjectUtils_file,
+                    markerFile.getAbsolutePath()));
             return false;
         } catch (IOException ex) {
             Log.log(ex);

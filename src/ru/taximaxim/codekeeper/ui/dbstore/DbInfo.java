@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
+import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -55,7 +56,8 @@ class DbInfo {
             this.dbport = Integer.parseInt(parts[5]);
 // SONAR-ON
         } catch (ArrayIndexOutOfBoundsException | NumberFormatException ex) {
-            throw new IllegalArgumentException(Messages.dbInfo_bad_dbinfo_string + coords, ex);
+            throw new IllegalArgumentException(
+                    MessageFormat.format(Messages.dbInfo_bad_dbinfo_string, coords), ex);
         }
     }
     

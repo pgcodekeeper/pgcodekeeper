@@ -27,7 +27,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -91,7 +90,6 @@ import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
@@ -241,8 +239,8 @@ class CommitPage extends DiffPresentationPane {
     private final String [] VIEW_IDS_SUPPORTING_EGIT_COMMIT = {
             // project explorer
             IPageLayout.ID_PROJECT_EXPLORER,
-            // package explorer
-            JavaUI.ID_PACKAGES
+            // package explorer (org.eclipse.jdt.ui.JavaUI.ID_PACKAGES)
+            "org.eclipse.jdt.ui.PackageExplorer" //$NON-NLS-1$
     };
 
     private boolean isCommitCommandAvailable;
@@ -396,8 +394,6 @@ class CommitPage extends DiffPresentationPane {
                         });
                     } catch (CoreException e) {
                         ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_error_refreshing_project, e);
-                    } finally {
-                        PgDbParser.getParser(proj.getProject()).getObjFromProject();
                     }
                 }
             }

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+
+<template 
+    name="select"
+    description="%select.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.select">SELECT
+     ${columnName} 
+    FROM
+     ${tableName}</template>
+     
+<template 
+    name="select"
+    description="%select2.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.select2">SELECT
+     *
+    FROM
+     ${tableName}</template>
+     
+<template 
+    name="insert"
+    description="%insert.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.insert">INSERT INTO
+    ${tableName}
+    ( ${columnName} )
+    VALUES
+    ( ${value} )</template>
+    
+<template 
+    name="insert"
+    description="%insert2.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.insert2">INSERT INTO
+    ${tableName}
+    VALUES
+    ( ${value} )</template>
+        
+<template 
+    name="update"
+    description="%update.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.update">UPDATE
+     ${tableName}
+     SET ${columnName} = ${value}</template>
+<template 
+    name="delete"
+    description="%delete.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.delete">DELETE FROM
+     ${tableName}</template>
+    
+<template 
+    name="truncate"
+    description="%truncate.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.truncate">TRUNCATE TABLE
+     ${tableName}</template>
+     
+<template 
+    name="order"
+    description="%order.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.order">ORDER BY 
+     ${columnName} </template>
+
+<template 
+    name="group"
+    description="%group.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.group">GROUP BY 
+     ${columnName} </template>
+     
+
+<template 
+    name="case"
+    description="%case.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.case">CASE ${columnName} 
+    WHEN ${value} THEN ${value} 
+    ELSE ${value} END</template>
+
+<template 
+    name="case"
+    description="%case2.desc)" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.case">CASE
+    WHEN ${columnName} = ${value} THEN ${value} 
+    ELSE ${value} END</template>
+    
+
+<template 
+    name="create"
+    description="%create.table.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.createtable">CREATE TABLE ${tableName}
+    (
+        ${columnName} ${dataType}
+    )</template>
+
+<template 
+    name="drop"
+    description="%drop.table.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.droptable">DROP TABLE ${tableName}</template>
+
+
+<template 
+    name="alter"
+    description="%alter.add.column.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.addcolumn">ALTER TABLE ${tableName}
+     ADD COLUMN ${columnName} ${dataType}</template>
+        
+<template 
+    name="alter"
+    description="%alter.add.column.oracle.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.addcolumn2">ALTER TABLE ${tableName}
+     ADD ${columnName} ${dataType}</template>
+             
+<template 
+    name="alter"
+    description="%alter.drop.column.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.delcolumn">ALTER TABLE ${tableName}
+     DROP COLUMN ${columnName}</template>
+     
+     
+<template 
+    name="alter"
+    description="%alter.add.constraint.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.addconstraint">ALTER TABLE ${tableName}
+     ADD CONSTRAINT ${constraintName} ${constraintType}(${columnName})</template>
+
+
+<template 
+    name="alter"
+    description="%alter.drop.constraint.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.delconstraint">ALTER TABLE ${tableName}
+     DROP CONSTRAINT ${constraintName}</template>
+ 
+<template 
+    name="describe"
+    description="%describe.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.describe">DESCRIBE ${tableName}</template>
+  
+ <template 
+    name="count"
+    description="%count.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType.function" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.count">COUNT(${columnName}) </template>
+
+<template 
+    name="max"
+    description="%max.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType.function" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.max">MAX(${columnName})</template>
+
+<template 
+    name="min"
+    description="%min.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType.function" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.min">MIN(${columnName})</template>
+    
+<template 
+    name="avg"
+    description="%avg.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType.function" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.avg">AVG(${columnName})</template>
+
+<template 
+    name="sum"
+    description="%sum.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType.function" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.sum">SUM(${columnName})</template>
+    
+<template 
+    name="to_char"
+    description="%to_char.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType.function" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.tochar">TO_CHAR(${columnName})</template>
+
+<template 
+    name="to_number"
+    description="%to_number.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType.function" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.tonumber">TO_NUMBER(${columnName})</template>
+    
+<template 
+    name="to_date"
+    description="%to_date.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType.function" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.todate">TO_DATE(${columnName})</template>
+    
+<template 
+    name="decode"
+    description="%decode.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextType.function" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextType.decode">DECODE(${columnName})</template>
+    
+</templates>

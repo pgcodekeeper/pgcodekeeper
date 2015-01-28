@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.text.MessageFormat;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -443,8 +444,8 @@ public abstract class DiffPresentationPane extends Composite {
                     IDE.openEditorOnFileStore( page, fileStore );
                 } catch (PartInitException e) {
                     ExceptionNotifier.notifyDefault(
-                            Messages.could_not_open_editor_for_file + 
-                            file.getAbsolutePath(), e);
+                            MessageFormat.format(Messages.could_not_open_editor_for_file, 
+                            file.getAbsolutePath()), e);
                 }
             } else {
                 Log.log(Log.LOG_WARNING, "Editor will not be opened for file " +  //$NON-NLS-1$
@@ -524,7 +525,7 @@ public abstract class DiffPresentationPane extends Composite {
         
         DbSource dbsProj, dbsRemote;
         dbsProj = DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                ParserClass.ANTLR : ParserClass.LEGACY, proj);
+                ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1), proj);
         switch (selectedDBSource) {
         case SOURCE_TYPE_DUMP:
             FileDialog dialog = new FileDialog(getShell());
@@ -534,7 +535,7 @@ public abstract class DiffPresentationPane extends Composite {
                 return false;
             }
             dbsRemote = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.ANTLR : ParserClass.LEGACY, dumpfile,
+                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1), dumpfile,
                     projProps.get(PROJ_PREF.ENCODING, UIConsts.UTF_8));
             break;
         case SOURCE_TYPE_DB:
@@ -542,7 +543,7 @@ public abstract class DiffPresentationPane extends Composite {
             int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
             dbsRemote = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.ANTLR : ParserClass.LEGACY,
+                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1),
                     mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     dbSrc.getTxtDbHost().getText(), port, dbSrc.getTxtDbUser().getText(),

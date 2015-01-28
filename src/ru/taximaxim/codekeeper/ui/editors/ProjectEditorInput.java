@@ -4,6 +4,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.PlatformObject;
+import java.text.MessageFormat;
+
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IMemento;
@@ -107,7 +109,8 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
 
     @Override
     public String getToolTipText() {
-        return projName + Messages.ProjectEditorInput_pgcodekeeper_project;
+        return MessageFormat.format(
+                Messages.ProjectEditorInput_pgcodekeeper_project, projName);
     }
     
     @Override

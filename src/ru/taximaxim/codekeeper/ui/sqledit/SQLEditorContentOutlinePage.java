@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 // разобраться с вычислением частей документа и выводить части в аутлайн
 public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
@@ -37,13 +38,18 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     private AbstractDecoratedTextEditor fTextEditor;
     private IDocumentProvider fDocumentProvider;
     private PgDbParser parser;
+    private TreeViewer viewer;
 
     public SQLEditorContentOutlinePage(IDocumentProvider fDocumentProvider,
             AbstractDecoratedTextEditor sqlEditor) {
         fTextEditor = sqlEditor;
         this.fDocumentProvider = fDocumentProvider;
     }
-
+    
+    public void externalRefresh() {
+        viewer.refresh();
+    }
+    
     public void setInput(IEditorInput input) {
         this.fInput = input;
         IFile file = ((FileEditorInput)input).getFile();
@@ -55,7 +61,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     @Override
     public void createControl(Composite parent) {
         super.createControl(parent);
-        TreeViewer viewer = getTreeViewer();
+        viewer = getTreeViewer();
         viewer.setContentProvider(new ITreeContentProvider() {
 
             @Override
@@ -81,7 +87,8 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
                 if (inputElement instanceof FileEditorInput) {
                     Path inputPath = ((FileEditorInput)inputElement).
                             getFile().getLocation().toFile().toPath();
-                    for (PgObjLocation loc : parser.getObjDefinitionsByPath(inputPath)) {
+                    for (PgObjLocation loc : parser.getObjsForPath(inputPath)) {
+                        if (loc.getAction() != StatementActions.NONE)
                         segments.add(new Segments(loc));
                     }
                 }
@@ -124,9 +131,9 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         });
         viewer.addSelectionChangedListener(this);
 
-        if (fInput != null)
+        if (fInput != null) {
             viewer.setInput(fInput);
-
+        }
     }
 
     @Override
@@ -134,8 +141,9 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
         super.selectionChanged(event);
 
         ISelection selection = event.getSelection();
-        if (selection.isEmpty())
+        if (selection.isEmpty()) {
             fTextEditor.resetHighlightRange();
+        }
         else {
             Segments segment = (Segments) ((IStructuredSelection) selection)
                     .getFirstElement();
@@ -143,6 +151,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
             int length = segment.getLength();
             try {
                 fTextEditor.setHighlightRange(start, length, true);
+                fTextEditor.selectAndReveal(start, length);
             } catch (IllegalArgumentException x) {
                 fTextEditor.resetHighlightRange();
             }
@@ -153,6 +162,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
 class Segments extends Position {
     private String name;
     private DbObjType type;
+    private StatementActions action;
 
     /**
      * Creates a new segment covering the given range.
@@ -164,6 +174,7 @@ class Segments extends Position {
         super(loc.getOffset(), loc.getObjLength());
         this.name = loc.getObjName();
         this.type = loc.getObjType();
+        this.action = loc.getAction();
     }
     
     public DbObjType getType() {
@@ -172,6 +183,6 @@ class Segments extends Position {
     
     @Override
     public String toString() {
-        return name;
+        return action + " " + name;
     }
 }

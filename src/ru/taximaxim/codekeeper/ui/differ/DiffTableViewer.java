@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -320,7 +321,8 @@ public class DiffTableViewer extends Composite {
                 }
             });
             
-            new Label(contButtons, SWT.NONE).setText(Messages.diffTableViewer_stored_selections);
+            new Label(contButtons, SWT.NONE).setText(
+                    Messages.diffTableViewer_stored_selections);
             
             cmbPrevChecked = new ComboViewer(contButtons, SWT.DROP_DOWN);
             GridData gd = new GridData();
@@ -655,12 +657,15 @@ public class DiffTableViewer extends Composite {
     }
     
     private void updateObjectsLabel() {
-        lblObjectCount.setText(Messages.diffTableViewer_objects + elements.size());
+        lblObjectCount.setText(MessageFormat.format(
+                Messages.diffTableViewer_objects, elements.size()));
         lblObjectCount.getParent().layout();
     }
     
     private void updateCheckedLabel() {
-        lblCheckedCount.setText(Messages.DiffTableViewer_selected + elements.getCheckedElementsCount());
+        lblCheckedCount.setText(MessageFormat.format(
+                Messages.DiffTableViewer_selected,
+                elements.getCheckedElementsCount()));
         lblCheckedCount.getParent().layout();
     }
     

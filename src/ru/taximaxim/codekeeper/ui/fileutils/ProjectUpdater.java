@@ -54,8 +54,10 @@ public class ProjectUpdater {
             
             try {
                 for (WORK_DIR_NAMES subdirName : WORK_DIR_NAMES.values()) {
-                    final Path sourcePath = Paths.get(dirExport.getCanonicalPath(), subdirName.toString());
-                    final Path targetPath = Paths.get(dirTmp.getCanonicalPath(), subdirName.toString());
+                    final Path sourcePath = Paths.get(dirExport.getCanonicalPath(), 
+                            subdirName.toString());
+                    final Path targetPath = Paths.get(dirTmp.getCanonicalPath(), 
+                            subdirName.toString());
                     
                     Files.walkFileTree(sourcePath,new SimpleFileVisitor<Path>() {
                         @Override
@@ -116,8 +118,8 @@ public class ProjectUpdater {
             } catch (Exception ex) {
                 caughtProcessingEx = true;
                 
-                Log.log(Log.LOG_ERROR, "Error while updating project!" //$NON-NLS-1$
-                        + " Trying to restore data from backup", ex); //$NON-NLS-1$
+                Log.log(Log.LOG_ERROR, 
+                        "Error while updating project! Trying to restore data from backup", ex); //$NON-NLS-1$
             
                 try {
                     restoreProjectDir(dirTmp);
