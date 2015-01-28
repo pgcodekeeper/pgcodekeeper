@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -12,7 +11,6 @@ import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 public class AlterTable extends ParserAbstract {
 
@@ -39,22 +37,13 @@ public class AlterTable extends ParserAbstract {
             if (tablAction.owner_to() != null) {
                 if (tabl != null) {
                     tabl.setOwner(tablAction.owner_to().name.getText());
-                    addObjReference(schemaName, name, DbObjType.TABLE,
-                            StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0);
                 } else if (db.getSchema(schemaName).getSequence(name) != null) {
                     db.getSchema(schemaName).getSequence(name)
                             .setOwner(tablAction.owner_to().name.getText());
-                    addObjReference(schemaName, name, DbObjType.SEQUENCE,
-                            StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0);
                 } else if (db.getSchema(schemaName).getView(name) != null) {
                     db.getSchema(schemaName).getView(name)
                             .setOwner(tablAction.owner_to().name.getText());
-                    addObjReference(schemaName, name, DbObjType.VIEW,
-                            StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0);
                 }
-            } else {
-                addObjReference(schemaName, name, DbObjType.TABLE,
-                        StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0);
             }
             if (tabl == null) {
                 continue;

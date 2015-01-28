@@ -3,24 +3,29 @@ package cz.startnet.utils.pgdiff.loader;
 import java.io.InputStream;
 import java.nio.file.Path;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public abstract class ParserClass {
 
-    SubMonitor monitor;
+    IProgressMonitor monitor;
     int monitoringLevel;
     
-    public static ParserClass getAntlr(SubMonitor monitor, int monitoringLevel){
+    public static ParserClass getAntlr(IProgressMonitor monitor, int monitoringLevel){
         return new ParserClassAntlr(monitor, monitoringLevel);
     }
     
-    public static ParserClass getLegacy(SubMonitor monitor, int monitoringLevel){
+    public static ParserClass getLegacy(IProgressMonitor monitor, int monitoringLevel){
         return new ParserClassLegacy(monitor, monitoringLevel);
     }
     
-    public ParserClass(SubMonitor monitor, int monitoringLevel) {
+    public static ParserClass getParserAntlrReferences(IProgressMonitor monitor, int monitoringLevel) {
+        return new ParserAntlrReferences(monitor, monitoringLevel);
+    }
+    
+    public ParserClass(IProgressMonitor monitor, int monitoringLevel) {
         this.monitor = monitor;
         this.monitoringLevel = monitoringLevel > 0 ? monitoringLevel : 1;
     }
@@ -29,7 +34,7 @@ public abstract class ParserClass {
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
             PgDatabase database, Path path);
 
-    public void setMonitor(SubMonitor monitor) {
+    public void setMonitor(IProgressMonitor monitor) {
         this.monitor = monitor;
     }
 
@@ -40,7 +45,7 @@ public abstract class ParserClass {
 
 class ParserClassAntlr extends ParserClass {
     
-    public ParserClassAntlr(SubMonitor monitor, int monitoringLevel) {
+    public ParserClassAntlr(IProgressMonitor monitor, int monitoringLevel) {
         super(monitor, monitoringLevel);
     }
     
@@ -56,7 +61,7 @@ class ParserClassAntlr extends ParserClass {
 
 class ParserClassLegacy extends ParserClass {
     
-    public ParserClassLegacy(SubMonitor monitor, int monitoringLevel) {
+    public ParserClassLegacy(IProgressMonitor monitor, int monitoringLevel) {
         super(monitor, monitoringLevel);
     }
     
@@ -66,5 +71,21 @@ class ParserClassLegacy extends ParserClass {
             PgDatabase database, Path path) {
         return PgDumpLoader.loadDatabaseSchemaCore(inputStream, charsetName,
                 outputIgnoredStatements, ignoreSlonyTriggers, database);
+    }
+}
+
+class ParserAntlrReferences extends ParserClass {
+    
+    public ParserAntlrReferences(IProgressMonitor monitor, int monitoringLevel) {
+        super(monitor, monitoringLevel);
+    }
+    
+    @Override
+    public PgDatabase parse(InputStream inputStream, String charsetName,
+            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+            PgDatabase database, Path path) {
+        return PgDumpLoader.getObjReferences(
+                inputStream, charsetName,
+                outputIgnoredStatements, ignoreSlonyTriggers, database, path, monitor, monitoringLevel);
     }
 }

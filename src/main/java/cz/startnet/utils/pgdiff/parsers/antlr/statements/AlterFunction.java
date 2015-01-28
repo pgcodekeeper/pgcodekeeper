@@ -2,12 +2,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 public class AlterFunction extends ParserAbstract {
 
@@ -34,8 +32,6 @@ public class AlterFunction extends ParserAbstract {
         if (ctx.owner_to() != null) {
             func.setOwner(ctx.owner_to().name.getText());
         }
-        addObjReference(schemaName, func.getSignature(), DbObjType.FUNCTION,
-                StatementActions.ALTER, ctx.function_parameters().name.getStart().getStartIndex(), func.getBareName().length());
         return null;
     }
 

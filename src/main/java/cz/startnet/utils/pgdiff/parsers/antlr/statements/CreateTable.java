@@ -68,7 +68,6 @@ public class CreateTable extends ParserAbstract {
             return null;
         }
         db.getSchema(schemaName).addTable(table);
-        fillObjDefinition(schemaName, table, ctx.name.getStart().getStartIndex());
         return table;
     }
 }

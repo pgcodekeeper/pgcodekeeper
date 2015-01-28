@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -27,11 +28,11 @@ public class AntlrParser {
     }
     
     public void parseInputStream(InputStream inputStream,
-            String charsetName, CustomSQLParserListener listener) throws IOException {
+            String charsetName, SQLParserBaseListener listener, Path path) throws IOException {
 
         SQLLexer lexer = new SQLLexer(new ANTLRInputStream(new InputStreamReader(inputStream, charsetName)));
         lexer.removeErrorListeners();
-        CustomErrorListener.INSTATANCE.setPath(listener.getPath());
+        CustomErrorListener.INSTATANCE.setPath(path);
         lexer.addErrorListener(CustomErrorListener.INSTATANCE);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
 

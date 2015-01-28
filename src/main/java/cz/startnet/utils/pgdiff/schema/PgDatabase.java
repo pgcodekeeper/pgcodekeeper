@@ -78,24 +78,12 @@ public class PgDatabase extends PgStatement {
         ignoredDataStatements.add(ignoredDataStatement);
     }
     
-    public boolean addObjDefinition(PgObjLocation definition) {
-        return objDefinitions.add(definition);
-    }
-    
-    public boolean addObjReference(PgObjLocation reference) {
-        if (!objRefecences.contains(reference)) {
-            objRefecences.add(reference);
-            return true;
-        }
-        return false;
-    }
-    
     public Set<PgObjLocation> getObjDefinitions() {
-        return Collections.unmodifiableSet(objDefinitions);
+        return objDefinitions;
     }
     
     public List<PgObjLocation> getObjReferences() {
-        return Collections.unmodifiableList(objRefecences);
+        return objRefecences;
     }
     
     public List<PgStatement> getObjectsByName(String objName) {
