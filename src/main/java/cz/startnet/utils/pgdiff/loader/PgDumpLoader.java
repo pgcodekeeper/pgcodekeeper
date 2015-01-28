@@ -363,6 +363,15 @@ public final class PgDumpLoader { //NOPMD
         
         return db;
     }
+    
+    public static PgDatabase loadRefsFromInputStream(InputStream inputStream, Path path,
+            String charsetName, boolean outputIgnoredStatements,
+            boolean ignoreSlonyTriggers, ParserClass parser) {
+        final PgDatabase db = new PgDatabase();
+        parser.parse(inputStream, charsetName,
+                outputIgnoredStatements, ignoreSlonyTriggers, db, path);
+        return db;
+    }
 
     private static void loadSchemasExtensions(String charsetName,
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,

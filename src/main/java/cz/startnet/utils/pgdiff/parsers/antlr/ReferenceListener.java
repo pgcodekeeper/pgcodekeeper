@@ -8,7 +8,6 @@ import java.util.Set;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
-import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
