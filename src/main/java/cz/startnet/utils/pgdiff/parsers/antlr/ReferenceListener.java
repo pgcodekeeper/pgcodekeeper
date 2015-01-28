@@ -263,16 +263,14 @@ public class ReferenceListener extends SQLParserBaseListener {
     @Override
     public void exitSet_statement(Set_statementContext ctx) {
         if (ctx.config_param != null) {
-            for (Set_statement_valueContext value : ctx.config_param_val){
-                addObjReference(null, value.getText(), DbObjType.SCHEMA,
-                        StatementActions.NONE, value.getStart().getStartIndex(), 0);
-            }
-        }
-        
-        if (ctx.config_param.getText().equalsIgnoreCase("search_path")) {
-            for (Set_statement_valueContext value : ctx.config_param_val) {
-                defSchema = value.getText(); 
-                break;
+            if (ctx.config_param.getText().equalsIgnoreCase("search_path")) {
+                for (Set_statement_valueContext value : ctx.config_param_val) {
+                    addObjReference(null, value.getText(), DbObjType.SCHEMA,
+                            StatementActions.NONE, value.getStart()
+                                    .getStartIndex(), 0);
+                    defSchema = value.getText();
+                    break;
+                }
             }
         }
     }
