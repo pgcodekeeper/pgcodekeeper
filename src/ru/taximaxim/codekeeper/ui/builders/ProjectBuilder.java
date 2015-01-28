@@ -23,7 +23,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
 
     @Override
     protected IProject[] build(int kind, Map<String, String> args,
-            IProgressMonitor monitor) throws CoreException {
+            final IProgressMonitor monitor) throws CoreException {
         IProject proj = getProject();
         final PgDbParser parser = PgDbParser.getParser(proj);
         if (!proj.hasNature(NATURE.ID)) {
@@ -38,7 +38,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                    public boolean visit(IResourceDelta delta) {
                         if (delta.getResource() instanceof IFile) {
                             parser.getObjFromProjFile(delta.getResource()
-                                    .getLocationURI());
+                                    .getLocationURI(), monitor);
                         }
                         return true;
                     }
@@ -48,7 +48,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
              }
             break;
         case IncrementalProjectBuilder.FULL_BUILD:
-            parser.getObjFromProject();
+            parser.getObjFromProject(monitor);
             break;
         }
         List<IProject> list = new ArrayList<>();

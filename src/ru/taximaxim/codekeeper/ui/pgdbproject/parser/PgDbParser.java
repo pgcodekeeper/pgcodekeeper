@@ -60,12 +60,12 @@ public class PgDbParser {
         return parser;
     }
 
-    public void getObjFromProject() {
-        getFullDBFromDirectory(proj.getLocationURI());
+    public void getObjFromProject(IProgressMonitor monitor) {
+        getFullDBFromDirectory(proj.getLocationURI(), monitor);
     }
     
-    public void getObjFromProjFile(URI fileURI) {
-        getPartialDBFromDirectory(proj.getLocationURI(), fileURI);
+    public void getObjFromProjFile(URI fileURI, IProgressMonitor monitor) {
+        getPartialDBFromDirectory(proj.getLocationURI(), fileURI, monitor);
     }
     
     /**
@@ -78,7 +78,7 @@ public class PgDbParser {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                getFullDBFromDirectory(locationURI);
+                getFullDBFromDirectory(locationURI, monitor);
                 return Status.OK_STATUS;
             }
             
@@ -87,13 +87,13 @@ public class PgDbParser {
         job.schedule();
     }
     
-    private void getFullDBFromDirectory(URI locationURI) {
+    private void getFullDBFromDirectory(URI locationURI, IProgressMonitor monitor) {
         ProjectScope ps = new ProjectScope(proj);
         IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 Paths.get(locationURI).toAbsolutePath().toString(),
                 prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), 
-                false, false, ParserClass.getAntlr(null, 1));
+                false, false, ParserClass.getParserAntlrReferences(monitor, 1));
         objDefinitions.clear();
         objReferences.clear();
         objDefinitions.addAll(db.getObjDefinitions());
@@ -107,14 +107,15 @@ public class PgDbParser {
         }
     }
 
-    private void getPartialDBFromDirectory(final URI projURI, final URI fileURI) {
+    private void getPartialDBFromDirectory(final URI projURI,
+            final URI fileURI, IProgressMonitor monitor) {
         ProjectScope ps = new ProjectScope(proj);
         IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
         String projPath = Paths.get(projURI).toAbsolutePath().toString();
         String filePath = Paths.get(fileURI).toAbsolutePath().toString();
         PgDatabase db = PgDumpLoader.loadSchemasAndFile(projPath, filePath,
                 prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), false,
-                false, ParserClass.getAntlr(null, 1));
+                false, ParserClass.getParserAntlrReferences(monitor, 1));
         fillRefs(objReferences, db.getObjReferences());
         fillRefs(objDefinitions, db.getObjDefinitions());
         invokeListeners();
