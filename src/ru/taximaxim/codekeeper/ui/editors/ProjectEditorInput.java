@@ -77,7 +77,7 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
             };
         }
         
-        if (adapter.isAssignableFrom(org.eclipse.ui.IPersistableElement.class)){
+        if (adapter.isAssignableFrom(IPersistableElement.class)){
             return this;
         }
         

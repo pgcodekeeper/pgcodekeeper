@@ -210,9 +210,8 @@ public class DiffTableViewer extends Composite {
             
             @Override
             public ISelection getSelection() {
-                return new DepcyStructuredSelection(
-                        dbSource, dbTarget,
-                        ((IStructuredSelection) super.getSelection()).toArray());
+                return new DepcyStructuredSelection(dbSource, dbTarget,
+                        (IStructuredSelection) super.getSelection());
             }
         };
         
