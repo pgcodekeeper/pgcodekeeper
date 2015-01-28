@@ -17,13 +17,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
@@ -48,7 +45,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 
 /**
@@ -342,7 +338,7 @@ public final class PgDumpLoader { //NOPMD
             PgDatabase database, Path path, IProgressMonitor monitor, int monitoringLevel) {
         try {
             new AntlrParser(monitor, monitoringLevel).parseInputStream(inputStream, charsetName, 
-                    new ReferenceListener(database.getObjDefinitions(), database.getObjReferences(), path), path);
+                    new ReferenceListener(database, path), path);
         } catch (IOException e) {
             throw new FileException("Exception while closing dump file", e);
         }

@@ -8,6 +8,7 @@ import java.util.Set;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
@@ -36,9 +37,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
+import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 
@@ -53,11 +56,12 @@ public class ReferenceListener extends SQLParserBaseListener {
     private final Path filePath;
     private Set<PgObjLocation> definitions;
     private List<PgObjLocation> references;
+    private PgDatabase db;
     
-    public ReferenceListener(Set<PgObjLocation> definitions,
-            List<PgObjLocation> references, Path filePath) {
-        this.definitions = definitions;
-        this.references = references;
+    public ReferenceListener(PgDatabase db, Path filePath) {
+        this.definitions = db.getObjDefinitions();
+        this.references = db.getObjReferences();
+        this.db = db;
         this.filePath = filePath;
     }
 
@@ -99,7 +103,8 @@ public class ReferenceListener extends SQLParserBaseListener {
             addObjReference(null, ParserAbstract.getName(ctx.schema_with_name().name), DbObjType.SCHEMA,
                     StatementActions.NONE, ctx.schema_with_name().name.getStart().getStartIndex(), 0);
         }
-        fillObjDefinition(null, ParserAbstract.getName(ctx.name), DbObjType.EXTENSION, ctx.name.getStart().getStartIndex(), 0);
+        fillObjDefinition(null, ParserAbstract.getName(ctx.name),
+                DbObjType.EXTENSION, ctx.name.getStart().getStartIndex(), 0);
     }
     
     @Override
@@ -125,7 +130,9 @@ public class ReferenceListener extends SQLParserBaseListener {
         PgFunction func = new PgFunction(funcName, ParserAbstract.getFullCtxText(ctx.func_name), "");
         ParserAbstract.fillArguments(ctx.function_parameters().function_args(), func);
         addObjReference(funcSchema, func.getSignature(), DbObjType.FUNCTION,
-                StatementActions.NONE, ctx.function_parameters().getStart().getStartIndex()+ offset, func.getBareName().length());
+                StatementActions.NONE, ctx.function_parameters().getStart()
+                        .getStartIndex()
+                        + offset, func.getBareName().length());
         
         fillObjDefinition(schemaName, name, DbObjType.TRIGGER, ctx.name.getStart().getStartIndex(), 0);
     }
@@ -141,7 +148,9 @@ public class ReferenceListener extends SQLParserBaseListener {
         PgFunction function = new PgFunction(name, ParserAbstract.getFullCtxText(ctx.getParent()), "");
         ParserAbstract.fillArguments(ctx.function_parameters().function_args(), function);
         
-        fillObjDefinition(schemaName, function.getSignature(), DbObjType.FUNCTION, ctx.function_parameters().name.getStart().getStartIndex(), function.getBareName().length());
+        fillObjDefinition(schemaName, function.getSignature(),
+                DbObjType.FUNCTION, ctx.function_parameters().name.getStart()
+                        .getStartIndex(), function.getBareName().length());
     }
     
     @Override
@@ -155,14 +164,23 @@ public class ReferenceListener extends SQLParserBaseListener {
         fillObjDefinition(schemaName, name, DbObjType.SEQUENCE, ctx.name.getStart().getStartIndex(), 0);
     }
 
-    
     @Override
     public void exitCreate_schema_statement(Create_schema_statementContext ctx) {
+        // So we use interface ParserClass and method loadDatabaseSchemaFromDirTree
+        // we need to fill db just names
         String name = ParserAbstract.getName(ctx.name);
         if (name == null) {
             return;
         }
-        fillObjDefinition(null, name, DbObjType.SCHEMA, ctx.name.getStart().getStartIndex(), 0);
+        PgSchema schema = new PgSchema(name, ParserAbstract.getFullCtxText(ctx.getParent()));
+        PgSchema exists = db.getSchema(schema.getName());
+        if (exists == null) {
+            db.addSchema((PgSchema) schema);
+        } else {
+            db.tryReplacePublicDef((PgSchema) schema);
+        }
+        fillObjDefinition(null, name, DbObjType.SCHEMA, ctx.name.getStart()
+                .getStartIndex(), 0);
     }
     
     
@@ -300,8 +318,10 @@ public class ReferenceListener extends SQLParserBaseListener {
             for (Function_parametersContext functparam : ctx.body_rule.on_function().obj_name) {
                 PgFunction func = new PgFunction(ParserAbstract.getName(functparam.name), null, "");
                 ParserAbstract.fillArguments(functparam.function_args(), func);
-                addObjReference(getDefSchemaName(), func.getSignature(), DbObjType.FUNCTION,
-                        StatementActions.NONE, functparam.name.getStart().getStartIndex(), func.getBareName().length());
+                addObjReference(getDefSchemaName(), func.getSignature(),
+                        DbObjType.FUNCTION, StatementActions.NONE,
+                        functparam.name.getStart().getStartIndex(), func
+                                .getBareName().length());
             }
         } else if (ctx.body_rule.on_large_object() != null) {
             obj_name = ctx.body_rule.on_large_object().obj_name.name;
@@ -356,8 +376,10 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
         PgFunction function = new PgFunction(name, ParserAbstract.getFullCtxText(ctx.getParent()), "");
         ParserAbstract.fillArguments(ctx.function_parameters().function_args(), function);
-        addObjReference(schemaName, function.getSignature(), DbObjType.FUNCTION,
-                StatementActions.ALTER, ctx.function_parameters().name.getStart().getStartIndex(), function.getBareName().length());
+        addObjReference(schemaName, function.getSignature(),
+                DbObjType.FUNCTION, StatementActions.ALTER,
+                ctx.function_parameters().name.getStart().getStartIndex(),
+                function.getBareName().length());
     }
     
     @Override
