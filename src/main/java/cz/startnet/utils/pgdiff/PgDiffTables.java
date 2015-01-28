@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumnUtils;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
@@ -246,8 +247,7 @@ public final class PgDiffTables {
 
             if (newStorage == null && oldStorage != null) {
                 searchPathHelper.outputSearchPath(script);
-                script.addStatement(MessageFormat.format(Resources.getString(
-                        "WarningUnableToDetermineStorageType"),
+                script.addStatement(MessageFormat.format(Messages.Storage_WarningUnableToDetermineStorageType,
                         newTable.getName() + '.' + newColumn.getName()));
 
                 continue;
@@ -375,7 +375,7 @@ public final class PgDiffTables {
                 statements.add(ALTER_COLUMN + newColumnName + " TYPE "
                         + newColumn.getType() + " /* "
                         + MessageFormat.format(
-                        Resources.getString("TypeParameterChange"),
+                        Messages.Table_TypeParameterChange,
                         newTable.getName(), oldColumn.getType(),
                         newColumn.getType()) + " */");
             }

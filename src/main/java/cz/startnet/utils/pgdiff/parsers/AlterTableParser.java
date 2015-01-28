@@ -7,7 +7,7 @@ package cz.startnet.utils.pgdiff.parsers;
 
 import java.text.MessageFormat;
 
-import cz.startnet.utils.pgdiff.Resources;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -49,7 +49,7 @@ public final class AlterTableParser {
 
         if (schema == null) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotFindSchema"), schemaName,
+                    Messages.Parser_CannotFindSchema, schemaName,
                     statement));
         }
 
@@ -72,7 +72,7 @@ public final class AlterTableParser {
             }
 
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotFindObject"), tableName,
+                    Messages.Parser_CannotFindObject, tableName,
                     statement));
         }
 
@@ -246,7 +246,7 @@ public final class AlterTableParser {
             // if table is not inherited throw an error as we're supposed to
             else {
                 throw new ParserException(MessageFormat.format(
-                        Resources.getString("CannotFindTableColumn"),
+                        Messages.Parser_CannotFindTableColumn,
                         columnName, table.getName(), parser.getString()));
             }
         }

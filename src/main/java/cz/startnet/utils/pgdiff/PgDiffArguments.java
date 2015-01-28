@@ -11,6 +11,7 @@ import java.util.SortedMap;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
 
 /**
@@ -569,8 +570,7 @@ public class PgDiffArguments {
             } else if ("--help".equals(args[i])) {
                 setHelp(true);
             } else {
-                writer.print(Resources.getString("ErrorUnknownOption"));
-                writer.print(": ");
+                writer.print(Messages.Argument_ErrorUnknownOption + ": ");
                 writer.println(args[i]);
                 success = false;
 
@@ -630,7 +630,7 @@ public class PgDiffArguments {
      */
     private void printUsage(final PrintWriter writer) {
         writer.println(
-                Resources.getString("UsageHelp").replace("${tab}", "\t"));
+                Messages.UsageHelp.replace("${tab}", "\t"));
     }
 
     /**
@@ -639,9 +639,7 @@ public class PgDiffArguments {
      * @param writer writer to print the usage to
      */
     private void printVersion(final PrintWriter writer) {
-        writer.print(Resources.getString("Version"));
-        writer.print(": ");
-        writer.println(Resources.getString("VersionNumber"));
+        writer.println(Messages.Version + ": " + Messages.VersionNumber);
     }
 
     /**

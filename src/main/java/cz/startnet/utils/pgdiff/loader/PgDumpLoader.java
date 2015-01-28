@@ -23,8 +23,8 @@ import java.util.regex.Pattern;
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
-import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.parsers.AlterFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.AlterSchemaParser;
 import cz.startnet.utils.pgdiff.parsers.AlterSequenceParser;
@@ -270,7 +270,7 @@ public final class PgDumpLoader { //NOPMD
             return database;
         } catch (final UnsupportedEncodingException ex) {
             throw new UnsupportedOperationException(
-                    Resources.getString("UnsupportedEncoding") + ": "
+                    Messages.Loader_UnsupportedEncoding + ": "
                     + charsetName, ex);
         } catch(IOException ex) {
             throw new FileException("Exception while closing dump file", ex);
@@ -362,7 +362,7 @@ public final class PgDumpLoader { //NOPMD
                                     outputIgnoredStatements, ignoreSlonyTriggers, db, f.toPath());
                         } catch (FileNotFoundException ex) {
                             throw new FileException(MessageFormat.format(
-                                    Resources.getString("FileNotFound"),
+                                    Messages.Loader_FileNotFound,
                                     f.getAbsolutePath()), ex);
                         } catch (IOException ex) {
                             throw new FileException(
@@ -415,7 +415,7 @@ public final class PgDumpLoader { //NOPMD
                     outputIgnoredStatements, ignoreSlonyTriggers, parser);
         } catch (final FileNotFoundException ex) {
             throw new FileException(MessageFormat.format(
-                    Resources.getString("FileNotFound"), file), ex);
+                    Messages.Loader_FileNotFound, file), ex);
         }
     }
 
@@ -445,7 +445,7 @@ public final class PgDumpLoader { //NOPMD
                     newLine = reader.readLine();
                 } catch (IOException ex) {
                     throw new FileException(
-                            Resources.getString("CannotReadFile"), ex);
+                            Messages.Loader_CannotReadFile, ex);
                 }
 
                 if (newLine == null) {
@@ -453,7 +453,7 @@ public final class PgDumpLoader { //NOPMD
                         return null;
                     } else {
                         throw new ParserException(MessageFormat.format(
-                                Resources.getString("EndOfStatementNotFound"),
+                                Messages.Loader_EndOfStatementNotFound,
                                 sbStatement.toString()));
                     }
                 }

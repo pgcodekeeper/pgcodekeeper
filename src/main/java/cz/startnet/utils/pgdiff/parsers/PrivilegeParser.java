@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import cz.startnet.utils.pgdiff.Resources;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
@@ -108,7 +108,7 @@ public final class PrivilegeParser {
         // other not found objects should throw in getStatementFromSchema()
         if (obj == null) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotFindObject"), schemaName, statement));
+                    Messages.Parser_CannotFindObject, schemaName, statement));
         }
         
         obj.addPrivilege(privilege);
@@ -122,7 +122,7 @@ public final class PrivilegeParser {
         PgSchema schema = db.getSchema(schemaName);
         if (schema == null) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotFindSchema"), schemaName,
+                    Messages.Parser_CannotFindSchema, schemaName,
                     statement));
         }
         
@@ -158,7 +158,7 @@ public final class PrivilegeParser {
         
         if (obj == null) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotFindObject"), objName, statement));
+                    Messages.Parser_CannotFindObject, objName, statement));
         }
         
         return obj;

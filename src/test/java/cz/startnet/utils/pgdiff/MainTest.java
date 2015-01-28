@@ -26,6 +26,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 @RunWith(value = Parameterized.class)
 public class MainTest {
@@ -207,7 +208,7 @@ class ArgumentsProvider_usage extends ArgumentsProvider{
 
     @Override
     public String output() {
-        return Resources.getString("UsageHelp").replace("${tab}", "\t").concat("\n");
+        return Messages.UsageHelp.replace("${tab}", "\t").concat("\n");
     }
 }
 
@@ -223,7 +224,7 @@ class ArgumentsProvider_2 extends ArgumentsProvider{
 
     @Override
     public String output() {
-        return Resources.getString("Version") + ": " + Resources.getString("VersionNumber") + "\n";
+        return Messages.Version + ": " + Messages.VersionNumber + "\n";
     }
 }
 
