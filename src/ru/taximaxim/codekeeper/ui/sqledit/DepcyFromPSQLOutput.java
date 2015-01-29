@@ -13,6 +13,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
@@ -21,6 +22,7 @@ import org.eclipse.ui.IStorageEditorInput;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -99,8 +101,8 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         return addDepcy.isEmpty();
     }
     
-    public void updateParser() throws CoreException {
-        parser = PgDbParser.getRollOnParser(getStorage().getContents(), null);
+    public void updateParser(IProgressMonitor monitor) throws CoreException {
+        parser = PgDbParser.getRollOnParser(getStorage().getContents(), monitor);
     }
     public PgDbParser getParser() {
         return parser;
@@ -192,8 +194,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     }
     @Override
     public String getName() {
-        // TODO Auto-generated method stub
-        return null;
+        return Messages.diffPartDescr_diff_script;
     }
     @Override
     public IPersistableElement getPersistable() {
@@ -202,8 +203,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     }
     @Override
     public String getToolTipText() {
-        // TODO Auto-generated method stub
-        return null;
+        return Messages.diffPartDescr_this_will_apply_selected_changes_to_your_database;
     }
     public Differ getDiffer() {
         return differ;

@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -136,7 +137,26 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         
         SourceViewer sw = (SourceViewer) super.createSourceViewer(parent, ruler, styles);
         sw.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+        
+        
         return sw;
+    }
+    
+    @Override
+    public void createPartControl(Composite parent) {
+        super.createPartControl(parent);
+        try {
+            if (checkDangerDdl()) {
+                if (showDangerWarning() == SWT.OK) {
+                    getSourceViewer().getTextWidget().setBackground(colorPink);
+                } else {
+                    close(false);
+                }
+            }
+        } catch (PgCodekeeperUIException e) {
+            ExceptionNotifier.notifyDefault(
+                    Messages.SqlScriptDialog_error_get_script, e);
+        }
     }
     @Override
     public void init(IEditorSite site, IEditorInput input)
@@ -146,7 +166,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             DepcyFromPSQLOutput in = (DepcyFromPSQLOutput)input;
             initializeDepcyInput(in);
             try {
-                in.updateParser();
+                in.updateParser(null);
                 setParserToProj(in.getParser());
             } catch (CoreException e) {
                throw new PartInitException(e.getLocalizedMessage(), e);
@@ -156,7 +176,19 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         super.init(site, input);
         getEditorSite().getWorkbenchWindow().getPartService().addPartListener(this);
     }
-    
+    @Override
+    public void doSave(IProgressMonitor progressMonitor) {
+        super.doSave(progressMonitor);
+        IEditorInput input = getEditorInput();
+        if (input instanceof DepcyFromPSQLOutput) {
+            DepcyFromPSQLOutput in = (DepcyFromPSQLOutput) input;
+            try {
+                in.updateParser(progressMonitor);
+            } catch (CoreException e) {
+                Log.log(Log.LOG_ERROR, "Cannot parse Editor input");
+            }
+        }
+    }    
     @Override
     public void dispose() {
         getEditorSite().getWorkbenchWindow().getPartService().removePartListener(this);
@@ -169,17 +201,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private void initializeDepcyInput(DepcyFromPSQLOutput input) {
         addDepcy = (DepcyFromPSQLOutput)input;
         this.differ = addDepcy.getDiffer();
-        try {
-            if (checkDangerDdl()) {
-                if (showDangerWarning() == SWT.OK) {
-                    this.getSourceViewer().getTextWidget()
-                            .setBackground(colorPink);
-                }
-            }
-        } catch (PgCodekeeperUIException e) {
-            ExceptionNotifier.notifyDefault(
-                    Messages.SqlScriptDialog_error_get_script, e);
-        }
+        
         this.oldDepcy = differ.getAdditionalDepciesSource();
         differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
         this.proj = addDepcy.getProject();
@@ -431,6 +453,9 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     }
 
     private boolean checkDangerDdl() throws PgCodekeeperUIException {
+        if (differ == null) {
+            return false;
+        }
         return differ.getScript().isDangerDdl(
                 !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
                 !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),

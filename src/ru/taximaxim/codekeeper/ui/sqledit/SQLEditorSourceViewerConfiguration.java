@@ -50,7 +50,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     public SQLEditorSourceViewerConfiguration(ISharedTextColors sharedColors,
             IPreferenceStore store) {
         super(store);
-        fSharedColors= sharedColors;
+        fSharedColors= sharedColors;        
         this.prefs = Activator.getDefault().getPreferenceStore();
     }
     

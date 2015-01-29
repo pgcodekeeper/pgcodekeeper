@@ -646,8 +646,9 @@ class DiffPage extends DiffPresentationPane {
 //    }
     
     private void showEditor(Differ differ) throws PartInitException {
+        List<PgStatement> list = PgDatabase.listViewsTables(dbSource.getDbObject());
         DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj.getProject(),
-                PgDatabase.listViewsTables(dbSource.getDbObject()));
+                list);
         input.setDbParams(dbSrc.getTxtDbHost().getText(),
                 dbSrc.getTxtDbPort().getText(), dbSrc.getTxtDbName().getText(),
                 dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText());
