@@ -248,7 +248,7 @@ public final class PgDiffTables {
             if (newStorage == null && oldStorage != null) {
                 searchPathHelper.outputSearchPath(script);
                 script.addStatement(MessageFormat.format(Messages.Storage_WarningUnableToDetermineStorageType,
-                        newTable.getName() + '.' + newColumn.getName()));
+                        newTable.getName(), newColumn.getName()));
 
                 continue;
             }

@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff;
 
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.util.SortedMap;
 import java.util.regex.Pattern;
 
@@ -570,8 +571,7 @@ public class PgDiffArguments {
             } else if ("--help".equals(args[i])) {
                 setHelp(true);
             } else {
-                writer.print(Messages.Argument_ErrorUnknownOption + ": ");
-                writer.println(args[i]);
+                writer.println(MessageFormat.format(Messages.Argument_ErrorUnknownOption, args[i]));
                 success = false;
 
                 break;

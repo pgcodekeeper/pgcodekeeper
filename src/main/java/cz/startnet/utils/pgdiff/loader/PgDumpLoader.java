@@ -270,8 +270,8 @@ public final class PgDumpLoader { //NOPMD
             return database;
         } catch (final UnsupportedEncodingException ex) {
             throw new UnsupportedOperationException(
-                    Messages.Loader_UnsupportedEncoding + ": "
-                    + charsetName, ex);
+                    MessageFormat.format(Messages.Loader_UnsupportedEncoding, 
+                            charsetName),ex);
         } catch(IOException ex) {
             throw new FileException("Exception while closing dump file", ex);
         }
