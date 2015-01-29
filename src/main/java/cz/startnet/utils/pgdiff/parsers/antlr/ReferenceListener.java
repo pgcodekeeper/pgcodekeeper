@@ -36,6 +36,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
+import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
@@ -264,9 +265,9 @@ public class ReferenceListener extends SQLParserBaseListener {
             setCommentToDefinition(null, name, DbObjType.SEQUENCE, comment);
             // table
         } else if (ctx.TABLE() != null) {
-            addObjReference(null, name, DbObjType.TABLE,
+            setTableType(addObjReference(null, name, DbObjType.TABLE,
                     StatementActions.COMMENT, ctx.name.getStart()
-                            .getStartIndex(), 0);
+                    .getStartIndex(), 0));
             setCommentToDefinition(null, name, DbObjType.TABLE, comment);
             // view
         } else if (ctx.VIEW() != null) {
@@ -338,17 +339,20 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
     }
     
-    private PgStatement addToDB(Schema_qualified_nameContext name, DbObjType type, PgPrivilege pgPrivilege) {
+    private void addToDB(Schema_qualified_nameContext name, DbObjType type, PgPrivilege pgPrivilege) {
         if (type == null) {
-            return null;
+            return;
         }
         String firstPart = ParserAbstract.getName(name);
         String secondPart = ParserAbstract.getTableName(name);
         String thirdPart = ParserAbstract.getSchemaName(name);
         String schemaName = secondPart == null ? getDefSchemaName() : secondPart; 
-        PgStatement statement = null;
         switch (type) {
         case TABLE:
+            setTableType(
+                    addObjReference(schemaName, firstPart, type,
+                            StatementActions.NONE, name.getStart().getStartIndex(), 0));
+            return;
         case COLUMN:
             if (thirdPart != null && !thirdPart.equals(secondPart)) {
                 schemaName = thirdPart;
@@ -363,7 +367,6 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
         addObjReference(schemaName, firstPart, type,
                 StatementActions.NONE, name.getStart().getStartIndex(), 0);
-        return statement;
     }
     
     @Override
@@ -398,8 +401,8 @@ public class ReferenceListener extends SQLParserBaseListener {
         for (Table_actionContext tablAction : ctx.table_action()) {
 
             if (tablAction.owner_to() != null) {
-                    addObjReference(schemaName, name, DbObjType.TABLE,
-                            StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0);
+                setTableType(addObjReference(schemaName, name, DbObjType.TABLE,
+                            StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0));
             } else {
                 addObjReference(schemaName, name, DbObjType.TABLE,
                         StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0);
@@ -477,7 +480,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         references.add(loc);
     }
     
-    private void addObjReference(String schemaName, String objName, DbObjType objType,
+    private PgObjLocation addObjReference(String schemaName, String objName, DbObjType objType,
             StatementActions action, int startIndex, int nameLength) {
         PgObjLocation loc = new PgObjLocation(schemaName, objName, null,
                 startIndex, filePath).setAction(action);
@@ -486,6 +489,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
         loc.setObjType(objType);
         references.add(loc);
+        return loc;
     }
     
     private void setCommentToDefinition(String schemaName, String objName,
@@ -494,6 +498,13 @@ public class ReferenceListener extends SQLParserBaseListener {
             if (loc.getObjName().equals(objName)
                     && loc.getObjType().equals(objType)) {
                 loc.setComment(comment);
+            }
+        }
+    }
+    private void setTableType(PgObjLocation obj) {
+        for (PgObjLocation loc : definitions) {
+            if (loc.getObject().equals(obj.getObject())) {
+                obj.setObjType(loc.getObjType());
             }
         }
     }
