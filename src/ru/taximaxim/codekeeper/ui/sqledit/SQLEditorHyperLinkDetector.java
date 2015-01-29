@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
@@ -16,7 +15,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
@@ -44,9 +42,11 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
                 }
             }
         }
+        PgDbParser projParser = null;
         if (input instanceof DepcyFromPSQLOutput) {
             DepcyFromPSQLOutput dep = (DepcyFromPSQLOutput) input;
             parser = dep.getParser();
+            projParser = PgDbParser.getParser(dep.getProject());
         }
 
         if (parser == null) {
@@ -63,13 +63,13 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         for (PgObjLocation obj : refs) {
             if (offset > obj.getOffset()
                     && offset < (obj.getOffset() + obj.getObjLength())) {
-                PgObjLocation objDefinition = parser.getDefinitionForObj(obj);
-                if (objDefinition != null) {
-                    hyperlinks.add(new SQLEditorHyperLink(new Region(
-                            objDefinition.getOffset(), objDefinition
-                                    .getObjLength()), new Region(obj
-                            .getOffset(), obj.getObjLength()), "Reference",
-                            objDefinition.getFilePath(), input));
+                String message = "Reference";
+                fillHyperLink(input, hyperlinks, obj,
+                        parser.getDefinitionForObj(obj), message);
+                if (projParser != null) {
+                    message = "Reference to project structure";
+                    fillHyperLink(input, hyperlinks, obj,
+                            projParser.getDefinitionForObj(obj), message);
                 }
             }
         }
@@ -78,5 +78,16 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
             return null;
         }
         return hyperlinks.toArray(new IHyperlink[hyperlinks.size()]);
+    }
+
+    private void fillHyperLink(IEditorInput input, List<IHyperlink> hyperlinks,
+            PgObjLocation obj, PgObjLocation objDefinition, String text) {
+        if (objDefinition != null) {
+            hyperlinks.add(new SQLEditorHyperLink(new Region(
+                    objDefinition.getOffset(), objDefinition
+                            .getObjLength()), new Region(obj
+                    .getOffset(), obj.getObjLength()), text,
+                    objDefinition.getFilePath(), input));
+        }
     }
 }

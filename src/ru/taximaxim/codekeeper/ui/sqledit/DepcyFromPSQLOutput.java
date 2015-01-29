@@ -100,7 +100,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     }
     
     public void updateParser() throws CoreException {
-        parser = PgDbParser.getRollOnParser(proj, getStorage().getContents(), null);
+        parser = PgDbParser.getRollOnParser(getStorage().getContents(), null);
     }
     public PgDbParser getParser() {
         return parser;

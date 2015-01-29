@@ -65,22 +65,11 @@ public class PgDbParser {
         return parser;
     }
     
-    public static PgDbParser getRollOnParser(IProject proj, InputStream input,
+    public static PgDbParser getRollOnParser(InputStream input,
             IProgressMonitor monitor) {
         PgDbParser rollOnParser = new PgDbParser();
         rollOnParser.fillRefsFromInputStream(input, monitor);
-        if (proj != null) {
-            rollOnParser.addDefinitionsFromProjParser(getParser(proj));
-        }
         return rollOnParser;
-    }
-
-    private void addDefinitionsFromProjParser(PgDbParser parser) {
-        for (PgObjLocation def : parser.getObjDefinitions()) {
-            if (!objDefinitions.contains(def)) {
-                objDefinitions.add(def);
-            }
-        }
     }
 
     public void getObjFromProject(IProgressMonitor monitor) {
