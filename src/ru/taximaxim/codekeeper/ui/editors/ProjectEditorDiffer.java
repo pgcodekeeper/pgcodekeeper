@@ -35,7 +35,6 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -50,16 +49,12 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IPageLayout;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.part.ISetSelectionTarget;
 import org.eclipse.ui.part.MultiPageEditorPart;
-import org.eclipse.ui.part.MultiPageSelectionProvider;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
@@ -137,20 +132,26 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         setPageText(i, Messages.ProjectEditorDiffer_page_text_diff);
         setPageImage(i, iDiff);
         
-        final MultiPageSelectionProvider mpsp = new MultiPageSelectionProvider(this);
-        
-        ISelectionChangedListener selectionChangedListener = new ISelectionChangedListener() {
+        final ProjectEditorSelectionProvider sp = new ProjectEditorSelectionProvider(proj.getProject());
+        ISelectionChangedListener selectionListener = new ISelectionChangedListener() {
             
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                mpsp.firePostSelectionChanged(event);
+                sp.fireSelectionChanged(event);
             }
         };
-        
-        diff.getDiffTable().getViewer().addPostSelectionChangedListener(selectionChangedListener);
-        commit.getDiffTable().getViewer().addPostSelectionChangedListener(selectionChangedListener);
-        
-        getSite().setSelectionProvider(mpsp);
+        ISelectionChangedListener postSelectionListener = new ISelectionChangedListener() {
+            
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+               sp.firePostSelectionChanged(event);
+            }
+        };
+        diff.getDiffTable().getViewer().addSelectionChangedListener(selectionListener);
+        diff.getDiffTable().getViewer().addPostSelectionChangedListener(postSelectionListener);
+        commit.getDiffTable().getViewer().addSelectionChangedListener(selectionListener);
+        commit.getDiffTable().getViewer().addPostSelectionChangedListener(postSelectionListener);
+        getSite().setSelectionProvider(sp);
     }
 
     @Override
@@ -236,17 +237,9 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 
 class CommitPage extends DiffPresentationPane {
 
-    private final String [] VIEW_IDS_SUPPORTING_EGIT_COMMIT = {
-            // project explorer
-            IPageLayout.ID_PROJECT_EXPLORER,
-            // package explorer (org.eclipse.jdt.ui.JavaUI.ID_PACKAGES)
-            "org.eclipse.jdt.ui.PackageExplorer" //$NON-NLS-1$
-    };
-
     private boolean isCommitCommandAvailable;
     
     private LocalResourceManager lrm;
-
     private Button btnSave;
     
     public CommitPage(Composite parent, IPreferenceStore mainPrefs, PgDbProject proj) {
@@ -415,42 +408,6 @@ class CommitPage extends DiffPresentationPane {
             return;
         }
         
-        /*
-         * TODO make this editor a selection provider
-         * that always has the IProject as a selection element
-         * so that Commit command is available with the focus anywhere in this editor
-         * 
-         * wrap the Depcy selections that we pass through into the parent selection
-         * as an element next to IProject and extract it in the depcy view
-         * 
-         * ProjectEditorSelectionProvider is the WIP
-         * impl examples are:
-         * ==================
-         * org.eclipse.jface.viewers.Viewer
-         * org.eclipse.jdt.internal.ui.viewsupport.SelectionProviderMediator
-         */
-
-        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();                
-        IViewPart view = null;
-        
-        for (int i = 0; i < VIEW_IDS_SUPPORTING_EGIT_COMMIT.length && view == null; i++){
-            String id = VIEW_IDS_SUPPORTING_EGIT_COMMIT[i];
-            view = page.findView(id);
-        }
-        
-        if (view == null){
-            Log.log(Log.LOG_WARNING, "Any of the following views should be open "
-                    + "to execute command " + COMMAND.COMMIT_COMMAND_ID + ":\n"
-                            + "\tProject explorer\n"
-                            + "\tPackage explorer\n");
-            return;
-        }
-        
-        // focus on view and select current project
-        page.activate(view);
-        ((ISetSelectionTarget)view).selectReveal(new StructuredSelection(proj.getProject()));
-
-        // execute command
         try {
             ((IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class))
                     .executeCommand(COMMAND.COMMIT_COMMAND_ID, null);

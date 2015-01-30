@@ -1,28 +1,39 @@
 package ru.taximaxim.codekeeper.ui.editors;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.viewers.IPostSelectionProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+
+import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.views.DepcyStructuredSelection;
 
 public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
 
-    private final StructuredSelection projectSelection;
-    private IStructuredSelection currentSelection;
+    private final IProject proj;
+    private final SelectionChangedEvent defaultSelectionEvent;
+    private ISelection currentSelection;
     
     private final ListenerList listeners = new ListenerList();
     private final ListenerList postListeners = new ListenerList();
     
     public ProjectEditorSelectionProvider(IProject proj) {
-        projectSelection = new StructuredSelection(proj);
-        currentSelection = projectSelection;
+        this.proj = proj;
+        currentSelection = new StructuredSelection(proj);
+        defaultSelectionEvent = new SelectionChangedEvent(this, currentSelection);
     }
     
     @Override
     public ISelection getSelection() {
+        // maybe refactor to call ProjectEditorDiffer.getActivePage.getViewer.getSelection() and modify the result
         return currentSelection;
     }
 
@@ -53,18 +64,49 @@ public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
         postListeners.remove(listener);
     }
     
-    public void changeSelection(IStructuredSelection selection) {
-        // in these methods modify the incoming selection
-        // to include the IProject this provider is attached to
-        // and notify respective listeners
+    public void fireSelectionChanged(SelectionChangedEvent event) {
+        modifyAndFireEvent(listeners, event);
+    }
+
+    public void firePostSelectionChanged(SelectionChangedEvent event) {
+        modifyAndFireEvent(postListeners, event);
     }
     
-    public void postChangeSelection(IStructuredSelection selection) {
+    private void modifyAndFireEvent(ListenerList listeners, SelectionChangedEvent event) {
+        SelectionChangedEvent newEvent = modifyEvent(event);
+        for(Object l : listeners.getListeners()) {
+            ((ISelectionChangedListener) l).selectionChanged(newEvent);
+        }
+        currentSelection = newEvent.getSelection();
+    }
+    
+    /**
+     * Ensures that IProject is present as first element of the selection.
+     * Special handling for {@link DepcyStructuredSelection}
+     */
+    private SelectionChangedEvent modifyEvent(SelectionChangedEvent event) {
+        ISelection selection = event.getSelection();
+        if (selection.isEmpty()) {
+            return defaultSelectionEvent;
+        }
+        if (!(selection instanceof IStructuredSelection)) {
+            Log.log(Log.LOG_WARNING, "Cannot handle this selection type: " + selection.toString());
+            // no way to deal with empty/other types of selections
+            return defaultSelectionEvent;
+        }
         
-    }
-    
-    private void modifyIncomingSelection(IStructuredSelection selection) {
-        // here either add the IProject element into the IStructuredSelection list
-        // or wrap the incoming selection into a new one (probably bad idea)
+        IStructuredSelection sel = (IStructuredSelection) selection;
+        List<?> elements = sel.toList();
+        
+        boolean isDepcySel = sel instanceof DepcyStructuredSelection;
+        List<Object> newElements = new ArrayList<>(elements.size() + (isDepcySel ? 2 : 1));
+        newElements.add(proj);
+        if (isDepcySel) {
+            newElements.add(sel);
+        }
+        newElements.addAll(elements);
+        
+        return new SelectionChangedEvent((ISelectionProvider) event.getSource(),
+                new StructuredSelection(newElements));
     }
 }

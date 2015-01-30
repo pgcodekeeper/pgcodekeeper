@@ -17,7 +17,6 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.viewers.AbstractZoomableViewer;
@@ -81,7 +80,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         getSite().getPage().addPostSelectionListener(this);
         
         // register this as listener to command state
-        ICommandService service = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
+        ICommandService service = (ICommandService) getSite().getService(ICommandService.class);
         service.getCommand(COMMAND.DEPCY_SRC).getState(COMMAND.DEPCY_SRC_STATE).addListener(this);
     }
 
@@ -111,9 +110,13 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         }
         
         DepcyStructuredSelection dss = null;
-        for (Object selected : ((IStructuredSelection) selection).toList()) {
-            if (selected instanceof DepcyStructuredSelection) {
-                dss = (DepcyStructuredSelection) selected;
+        if (selection instanceof DepcyStructuredSelection) {
+            dss = (DepcyStructuredSelection) selection;
+        } else {
+            for (Object selected : ((IStructuredSelection) selection).toList()) {
+                if (selected instanceof DepcyStructuredSelection) {
+                    dss = (DepcyStructuredSelection) selected;
+                }
             }
         }
         if (dss == null) {
@@ -124,6 +127,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         DbSource newDbSource = isSource == isCommit ? dss.getSource() : dss.getTarget();
         PgDatabase newDb = newDbSource.getDbObject();
         // TODO expensive check, == instead?
+        // test how often new db is received here
         if (!Objects.equals(currentDb, newDb)){
             currentDb = newDb;
             currentGraph = null;
@@ -147,7 +151,6 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                 continue;
             }
             TreeElement el = (TreeElement) selected;
-            
             if (el.getSide() == DiffSide.RIGHT && isSource || el.getSide() == DiffSide.LEFT && !isSource){
                 continue;
             }
