@@ -20,15 +20,17 @@ public class SQLEditorHyperLink implements IHyperlink {
     private String label;
     private IRegion regionHightLight;
     private IEditorInput input;
+    private int lineNumber;
 
     public SQLEditorHyperLink(IRegion region, IRegion regionHightLight,
-            String label, Path path, IEditorInput input) {
+            String label, Path path, IEditorInput input, int lineNumber) {
 
         this.region= region;
         this.regionHightLight = regionHightLight;
         this.location = path;
         this.label = label;
         this.input = input;
+        this.lineNumber = lineNumber;
     }
     
     @Override
@@ -43,7 +45,7 @@ public class SQLEditorHyperLink implements IHyperlink {
 
     @Override
     public String getHyperlinkText() {
-        return label;
+        return label + " - " + location.toString() + " (" + lineNumber + ")";
     }
 
     @Override

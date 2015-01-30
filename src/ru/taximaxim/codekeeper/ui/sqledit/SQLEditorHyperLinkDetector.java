@@ -63,13 +63,18 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         for (PgObjLocation obj : refs) {
             if (offset > obj.getOffset()
                     && offset < (obj.getOffset() + obj.getObjLength())) {
-                String message = "Reference";
-                fillHyperLink(input, hyperlinks, obj,
-                        parser.getDefinitionForObj(obj), message);
+                String message = obj.getObjName();
+                PgObjLocation def = parser.getDefinitionForObj(obj);
+                if (def != null) {
+                    fillHyperLink(input, hyperlinks, obj, def, message,
+                            def.getLineNumber());
+                }
                 if (projParser != null) {
-                    message = "Reference to project structure";
-                    fillHyperLink(input, hyperlinks, obj,
-                            projParser.getDefinitionForObj(obj), message);
+                    PgObjLocation projDef = projParser.getDefinitionForObj(obj);
+                    if (projDef != null) {
+                        fillHyperLink(input, hyperlinks, obj, projDef, message,
+                                projDef.getLineNumber());
+                    }
                 }
             }
         }
@@ -81,13 +86,11 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
     }
 
     private void fillHyperLink(IEditorInput input, List<IHyperlink> hyperlinks,
-            PgObjLocation obj, PgObjLocation objDefinition, String text) {
-        if (objDefinition != null) {
-            hyperlinks.add(new SQLEditorHyperLink(new Region(
-                    objDefinition.getOffset(), objDefinition
-                            .getObjLength()), new Region(obj
-                    .getOffset(), obj.getObjLength()), text,
-                    objDefinition.getFilePath(), input));
-        }
+            PgObjLocation obj, PgObjLocation objDefinition, String text,
+            int lineNumber) {
+        hyperlinks.add(new SQLEditorHyperLink(new Region(objDefinition
+                .getOffset(), objDefinition.getObjLength()), new Region(obj
+                .getOffset(), obj.getObjLength()), text, objDefinition
+                .getFilePath(), input, lineNumber));
     }
 }
