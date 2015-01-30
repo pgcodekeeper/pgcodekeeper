@@ -166,6 +166,9 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             DepcyFromPSQLOutput in = (DepcyFromPSQLOutput)input;
             initializeDepcyInput(in);
             try {
+                if (this.getSourceViewer() != null) {
+                    in.updateScript(this.getSourceViewer().getDocument().get());
+                }
                 in.updateParser(null);
                 setParserToProj(in.getParser());
             } catch (CoreException e) {
@@ -183,7 +186,9 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         if (input instanceof DepcyFromPSQLOutput) {
             DepcyFromPSQLOutput in = (DepcyFromPSQLOutput) input;
             try {
+                in.updateScript(this.getSourceViewer().getDocument().get());
                 in.updateParser(progressMonitor);
+                setParserToProj(in.getParser());
             } catch (CoreException e) {
                 Log.log(Log.LOG_ERROR, "Cannot parse Editor input");
             }

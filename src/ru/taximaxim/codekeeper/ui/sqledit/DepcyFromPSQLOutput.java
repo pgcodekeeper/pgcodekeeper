@@ -40,6 +40,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     List<Entry<PgStatement, PgStatement>> depcyToAdd;
     private IProject proj;
     private PgDbParser parser;
+    private String script;
     
     String dbHost;
     String dbPort;
@@ -212,10 +213,16 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         return proj;
     }
 
+    public void updateScript(String newScript) {
+        script = newScript;
+    }
     @Override
     public IStorage getStorage() throws CoreException {
         try {
-            return new StringStorage(differ.getDiffDirect());
+            if (script == null) {
+                script = differ.getDiffDirect();
+            }
+            return new StringStorage(script);
         } catch (PgCodekeeperUIException e) {
             return new StringStorage("");
         }
