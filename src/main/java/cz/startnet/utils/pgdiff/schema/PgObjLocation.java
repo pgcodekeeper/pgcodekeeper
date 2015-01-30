@@ -18,6 +18,7 @@ public class PgObjLocation implements Serializable {
     private String comment = "";
     private int objLength;
     private StatementActions action;
+    private int lineNumber;
     
     public StatementActions getAction() {
         return action;
@@ -57,6 +58,10 @@ public class PgObjLocation implements Serializable {
 //        }
         return length;
     }
+    
+    public int getLineNumber() {
+        return lineNumber;
+    }
 
     public Path getFilePath() {
         return Paths.get(filePath);
@@ -75,10 +80,11 @@ public class PgObjLocation implements Serializable {
     }
 
     public PgObjLocation(String schema, String name, String column, int offset,
-            Path filePath) {
+            Path filePath, int lineNumber) {
         this.objName = new GenericColumn(schema, name, column);
         this.offset = offset;
         this.filePath = filePath.toString();
+        this.lineNumber = lineNumber;
     }
     
     @Override
