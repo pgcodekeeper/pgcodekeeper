@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -112,7 +113,8 @@ public final class PgDiff {
             throw new UnsupportedOperationException("DB connection is not yet implemented!");
         }
         
-        throw new UnsupportedOperationException("Unknown DB format!");
+        throw new UnsupportedOperationException(
+                MessageFormat.format(Resources.getString("UnknownDBFormat"), format));
     }
     
     /**
