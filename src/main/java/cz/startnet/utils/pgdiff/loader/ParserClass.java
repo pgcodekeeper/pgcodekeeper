@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.nio.file.Path;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
 
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 

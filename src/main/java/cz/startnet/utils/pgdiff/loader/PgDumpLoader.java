@@ -350,14 +350,11 @@ public final class PgDumpLoader { //NOPMD
      * @param filePath path to file
      * @return database with schemas, extensions and parsed file contents
      */
-    public static PgDatabase loadSchemasAndFile(
-            String projPath, String filePath, String charsetName,
+    public static PgDatabase loadSchemasAndFile(String filePath, String charsetName,
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
             ParserClass parser) {
         final PgDatabase db = new PgDatabase();
-
-        loadSchemasExtensions(charsetName, outputIgnoredStatements,
-                ignoreSlonyTriggers, parser, db, new File(projPath));
+        
         parseFile(charsetName, outputIgnoredStatements,
                 ignoreSlonyTriggers, db, parser, new File(filePath));
         

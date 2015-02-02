@@ -265,12 +265,9 @@ public abstract class ParserAbstract {
 
             String tableName = getName(tblRef.reftable);
             String schemaName = getSchemaName(tblRef.reftable);
-            int count = 0;
             if (schemaName == null) {
                 schemaName = db.getDefaultSchema().getName();
-            } else {
-                count += schemaName.length() + 1;
-            }
+            } 
             for (Schema_qualified_nameContext name : tblRef.column_references().names_references().name) {
                 ((PgForeignKey)constr).addForeignColumn(
                         new GenericColumn(schemaName, tableName, getName(name)));
