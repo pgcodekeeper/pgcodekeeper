@@ -13,7 +13,7 @@ public class PgObjLocation implements Serializable {
     private static final long serialVersionUID = -7110926210150404390L;
     private GenericColumn objName;
     private int offset;
-    private String filePath;
+    private Path filePath;
     private DbObjType type;
     private String comment = "";
     private int objLength;
@@ -59,7 +59,7 @@ public class PgObjLocation implements Serializable {
     }
 
     public Path getFilePath() {
-        return Paths.get(filePath);
+        return filePath;
     }
     
     public DbObjType getObjType() {
@@ -78,7 +78,7 @@ public class PgObjLocation implements Serializable {
             Path filePath) {
         this.objName = new GenericColumn(schema, name, column);
         this.offset = offset;
-        this.filePath = filePath.toString();
+        this.filePath = filePath;
     }
     
     @Override
