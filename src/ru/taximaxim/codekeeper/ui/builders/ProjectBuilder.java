@@ -11,6 +11,7 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -20,10 +21,12 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
 
     public ProjectBuilder() {
     }
+    
+    int count = 0;
 
     @Override
     protected IProject[] build(int kind, Map<String, String> args,
-            final IProgressMonitor monitor) throws CoreException {
+            IProgressMonitor monitor) throws CoreException {
         IProject proj = getProject();
         final PgDbParser parser = PgDbParser.getParser(proj);
         if (!proj.hasNature(NATURE.ID)) {
@@ -34,15 +37,33 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
         case IncrementalProjectBuilder.INCREMENTAL_BUILD:
             IResourceDelta delta = getDelta(getProject());
             try {
+                count = 0;
                 delta.accept(new IResourceDeltaVisitor() {
-                   public boolean visit(IResourceDelta delta) {
+                    
+                    @Override
+                    public boolean visit(IResourceDelta delta) throws CoreException {
                         if (delta.getResource() instanceof IFile) {
-                            parser.getObjFromProjFile(delta.getResource()
-                                    .getLocationURI(), monitor);
+                            count++;
                         }
                         return true;
                     }
                 });
+                if (count > 10) {
+                    parser.getObjFromProject(monitor);
+                } else {
+                    final SubMonitor sub = SubMonitor.convert(monitor, count);
+                    delta.accept(new IResourceDeltaVisitor() {
+                        public boolean visit(IResourceDelta delta) {
+                            if (delta.getResource() instanceof IFile) {
+                                sub.worked(1);
+                                parser.getObjFromProjFile(delta.getResource()
+                                        .getLocationURI());
+                            }
+                            return true;
+                        }
+                    });
+                    parser.notifyListeners();
+                }
              } catch (CoreException e) {
                 Log.log(Log.LOG_ERROR, "Cannot get delta from incremental or auto build");
              }
