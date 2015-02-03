@@ -45,7 +45,9 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     }
     
     public void externalRefresh() {
-        viewer.refresh();
+        if (viewer != null) {
+            viewer.refresh();
+        }
     }
     
     public void setInput(IEditorInput input) {
