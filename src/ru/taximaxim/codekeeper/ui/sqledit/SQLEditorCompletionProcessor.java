@@ -72,10 +72,9 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         }
         IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
                 .getActivePage().getActiveEditor();
-        PgDbParser parser = null;
         List<PgObjLocation> loc = new ArrayList<>();
         if (page instanceof SQLEditor) {
-            parser = ((SQLEditor)page).getParser();
+            PgDbParser parser = ((SQLEditor)page).getParser();
             loc.addAll(parser.getObjDefinitions());
             if (page instanceof RollOnEditor) {
                 loc.addAll(PgDbParser.getParser(
