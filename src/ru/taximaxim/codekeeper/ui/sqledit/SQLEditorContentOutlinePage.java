@@ -97,8 +97,9 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
                     refs = parser.getObjReferences();
                 }
                 for (PgObjLocation loc : refs) {
-                    if (loc.getAction() != StatementActions.NONE)
-                    segments.add(new Segments(loc));
+                    if (loc.getAction() != StatementActions.NONE) {
+                        segments.add(new Segments(loc));
+                    }
                 }
                 return segments.toArray();
             }
