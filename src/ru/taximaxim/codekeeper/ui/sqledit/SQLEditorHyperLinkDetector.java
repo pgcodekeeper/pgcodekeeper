@@ -16,6 +16,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
@@ -43,10 +44,12 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
             }
         }
         PgDbParser projParser = null;
+        List<FunctionBodyContainer> funcBodyes = new ArrayList<>();
         if (input instanceof DepcyFromPSQLOutput) {
             DepcyFromPSQLOutput dep = (DepcyFromPSQLOutput) input;
             parser = dep.getParser();
             projParser = PgDbParser.getParser(dep.getProject());
+            funcBodyes.addAll(dep.getFuncBodyes());
         }
 
         if (parser == null) {
@@ -54,11 +57,12 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         }
         
         List<IHyperlink> hyperlinks = new ArrayList<>();
-        List<PgObjLocation> refs;
+        List<PgObjLocation> refs = new ArrayList<>();
         if (file != null) {
-            refs = parser.getObjsForPath(file.getLocation().toFile().toPath());
+            refs.addAll(parser.getObjsForPath(file.getLocation().toFile().toPath()));
         } else {
-            refs = parser.getObjReferences();
+            refs.addAll(parser.getObjReferences());
+            PgDbParser.fillFunctionBodies(projParser.getObjDefinitions(), refs, funcBodyes);
         }
         for (PgObjLocation obj : refs) {
             if (offset > obj.getOffset()

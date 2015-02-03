@@ -27,8 +27,10 @@ import org.eclipse.swt.widgets.Listener;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 public class PgDbParser {
 
@@ -54,6 +56,7 @@ public class PgDbParser {
         objReferences = refs;
     }
     
+    
     public void addListener(Listener e) {
         listeners.add(e);
     }
@@ -74,9 +77,9 @@ public class PgDbParser {
     }
     
     public static PgDbParser getRollOnParser(InputStream input,
-            IProgressMonitor monitor) {
+            IProgressMonitor monitor, List<FunctionBodyContainer> funcBodyes) {
         PgDbParser rollOnParser = new PgDbParser();
-        rollOnParser.fillRefsFromInputStream(input, monitor);
+        rollOnParser.fillRefsFromInputStream(input, monitor, funcBodyes);
         return rollOnParser;
     }
 
@@ -89,13 +92,34 @@ public class PgDbParser {
         IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
         Path path = Paths.get(fileURI);
         String filePath = path.toAbsolutePath().toString();
+        List<FunctionBodyContainer> funcBodyes = new ArrayList<>();
         PgDatabase db = PgDumpLoader.loadSchemasAndFile(filePath,
                 prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), false,
-                false, ParserClass.getParserAntlrReferences(null, 1));
+                false, ParserClass.getParserAntlrReferences(null, 1, funcBodyes));
         updateReferences(fillRefs(objDefinitions, db.getObjDefinitions()),
                 fillRefs(objReferences, db.getObjReferences()));
+        fillFunctionBodies(objDefinitions, objReferences, funcBodyes);
     }
-    
+
+    public static void fillFunctionBodies(List<PgObjLocation> objDefinitions,
+            List<PgObjLocation> objReferences,
+            List<FunctionBodyContainer> funcBodyes) {
+        for (FunctionBodyContainer funcBody : funcBodyes) {
+            String body = funcBody.getBody();
+            for (PgObjLocation def : objDefinitions) {
+                int index = body.indexOf(def.getObjName());
+                while (index > 0) {
+                    PgObjLocation loc = new PgObjLocation(def.getObject().schema,
+                            def.getObjName(), null, funcBody.getOffset() + index,
+                            funcBody.getPath(), funcBody.getLineNumber());
+                    loc.setObjType(def.getObjType());
+                    loc.setAction(StatementActions.NONE);
+                    objReferences.add(loc);
+                    index = body.indexOf(def.getObjName(), index + 1);
+                }
+            }
+        }
+    }
     /**
      * This method used instead serialize objects
      * Need to remember references
@@ -118,11 +142,13 @@ public class PgDbParser {
     private void getFullDBFromDirectory(URI locationURI, IProgressMonitor monitor) {
         ProjectScope ps = new ProjectScope(proj);
         IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
+        List<FunctionBodyContainer> funcBodyes = new ArrayList<>();
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 Paths.get(locationURI).toAbsolutePath().toString(),
                 prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), 
-                false, false, ParserClass.getParserAntlrReferences(monitor, 1));
+                false, false, ParserClass.getParserAntlrReferences(monitor, 1, funcBodyes));
         updateReferences(new ArrayList<>(db.getObjDefinitions()), db.getObjReferences());
+        fillFunctionBodies(objDefinitions, objReferences, funcBodyes);
         notifyListeners();
     }
 
@@ -154,10 +180,11 @@ public class PgDbParser {
                 removePathFromRefs(objReferences, paths));
     }
     
-    private void fillRefsFromInputStream(InputStream input, IProgressMonitor monitor) {
+    private void fillRefsFromInputStream(InputStream input,
+            IProgressMonitor monitor, List<FunctionBodyContainer> funcBodyes) {
         PgDatabase db = PgDumpLoader.loadRefsFromInputStream(input, Paths.get(""),
                 UIConsts.UTF_8, false, false,
-                ParserClass.getParserAntlrReferences(monitor, 1));
+                ParserClass.getParserAntlrReferences(monitor, 1, funcBodyes));
         updateReferences(new ArrayList<>(db.getObjDefinitions()), db.getObjReferences());
     }
 

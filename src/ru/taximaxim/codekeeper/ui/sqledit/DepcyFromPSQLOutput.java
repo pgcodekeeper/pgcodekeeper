@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
@@ -41,6 +42,11 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     List<Entry<PgStatement, PgStatement>> depcyToAdd;
     private IProject proj;
     private PgDbParser parser;
+    private List<FunctionBodyContainer> funcBodyes = new ArrayList<>();
+    public List<FunctionBodyContainer> getFuncBodyes() {
+        return funcBodyes;
+    }
+
     private String script;
     
     String dbHost;
@@ -108,7 +114,8 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         if (parser != null) {
             listener.addAll(parser.getListeners());
         }
-        parser = PgDbParser.getRollOnParser(getStorage().getContents(), monitor);
+        funcBodyes.clear();
+        parser = PgDbParser.getRollOnParser(getStorage().getContents(), monitor, funcBodyes);
         for (Listener e : listener) {
             parser.addListener(e);
         }
