@@ -40,6 +40,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
@@ -238,22 +239,25 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         
         btnJdbcToggle = new Button(buttons, SWT.CHECK);
         btnJdbcToggle.setText(Messages.sqlScriptDialog_use_jdbc_for_ddl_update);
-        boolean isDdlUpdateOverJdbc = 
-                Activator.getDefault().getPreferenceStore().getBoolean(PREF.IS_DDL_UPDATE_OVER_JDBC);
-        btnJdbcToggle.setSelection(isDdlUpdateOverJdbc);
+        btnJdbcToggle.setSelection(Activator.getDefault().getPreferenceStore()
+                .getBoolean(PREF.IS_DDL_UPDATE_OVER_JDBC));
         
         btnHidePicker = new Button(buttons, SWT.CHECK); 
         btnHidePicker.setText(Messages.sqlScriptDialog_hide_picker);
-        btnHidePicker.setSelection(false);
         btnHidePicker.addSelectionListener(new SelectionAdapter() {
-        
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
                 picker.setVisible(!btnHidePicker.getSelection());
                 ((GridData)picker.getLayoutData()).exclude = btnHidePicker.getSelection();
+                PreferenceInitializer.savePreference(Activator.getDefault().getPreferenceStore(), 
+                        PREF.IS_DDL_UPDATE_OVER_JDBC_INFO, String.valueOf(btnHidePicker.getSelection()));
                 parent.layout();
             }
         });
+        btnHidePicker.setSelection(Activator.getDefault().getPreferenceStore()
+                .getBoolean(PREF.IS_DDL_UPDATE_OVER_JDBC_INFO));
+        
         // picker
         picker = new DbPicker(parent, SWT.BORDER, mainPrefs, false);
         picker.setText(Messages.SqlScriptDialog_jdbc_connection_details);
@@ -264,17 +268,13 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         picker.getTxtDbPort().setText(dbPort == null || dbPort.isEmpty() ? "0" : dbPort); //$NON-NLS-1$
         
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        gd.exclude = !isDdlUpdateOverJdbc;
         gd.heightHint = 230;
         gd.minimumHeight = 230;
         picker.setLayoutData(gd);
-        picker.setVisible(isDdlUpdateOverJdbc);
         
         final Composite notJdbc = new Composite(parent, SWT.NONE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.exclude = isDdlUpdateOverJdbc;
         notJdbc.setLayoutData(gd);
-        notJdbc.setVisible(!isDdlUpdateOverJdbc);
         
         gl = new GridLayout();
         gl.marginHeight = gl.marginWidth = 0;
@@ -352,7 +352,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 parent.layout();
                 
                 PreferenceInitializer.savePreference(Activator.getDefault().getPreferenceStore(), 
-                        PREF.IS_DDL_UPDATE_OVER_JDBC, String.valueOf(btnJdbcToggle.getSelection()));
+                        PREF.IS_DDL_UPDATE_OVER_JDBC, String.valueOf(isJdbc));
             }
             
             @Override
@@ -360,6 +360,10 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             }
         });
         createButtonsForButtonBar(parent);
+        btnJdbcToggle.notifyListeners(SWT.Selection, new Event());
+        if (btnHidePicker.isVisible()) {
+            btnHidePicker.notifyListeners(SWT.Selection, new Event());
+        }
 //        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), HELP.SQL_SCRIPT_DIALOG);
         return parent;
     }

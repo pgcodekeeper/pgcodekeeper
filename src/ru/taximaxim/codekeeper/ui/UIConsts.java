@@ -38,6 +38,7 @@ public interface UIConsts {
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
         String IS_DDL_UPDATE_OVER_JDBC = "isDdlUpdateOverJdbc"; //$NON-NLS-1$
+        String IS_DDL_UPDATE_OVER_JDBC_INFO = "isDDLUpdateOverJDBCInfo"; //$NON-NLS-1$
         
         String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate";
     }
