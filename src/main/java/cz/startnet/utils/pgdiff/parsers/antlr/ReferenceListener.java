@@ -686,17 +686,13 @@ public class ReferenceListener extends SQLParserBaseListener {
 
         @Override
         public void enterName_or_func_calls(Name_or_func_callsContext ctx) {
-            if (ParserAbstract.getName(ctx.schema_qualified_name()).equals(
-                    "nextval")) {
-                GeneralLiteralSearch seq = new GeneralLiteralSearch();
-                new ParseTreeWalker().walk(seq, ctx);
-                String seqName = seq.getSeqName();
-                if (seqName != null && !seqName.isEmpty()) {
-                    addObjReference(getDefSchemaName(), seqName,
-                            DbObjType.SEQUENCE, StatementActions.NONE,
-                            seq.getContext().getStart().getStartIndex() + 1, 0,
-                            seq.getContext().getStart().getLine());
-                }
+            GeneralLiteralSearch seq = new GeneralLiteralSearch();
+            new ParseTreeWalker().walk(seq, ctx);
+            if (seq.isFound()) {
+                addObjReference(getDefSchemaName(), seq.getSeqName(),
+                        DbObjType.SEQUENCE, StatementActions.NONE, seq
+                                .getContext().getStart().getStartIndex() + 1,
+                        0, seq.getContext().getStart().getLine());
             }
         }
     }

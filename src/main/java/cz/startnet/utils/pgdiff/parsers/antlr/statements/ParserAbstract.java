@@ -204,9 +204,8 @@ public abstract class ParserAbstract {
          if (getName(ctx.schema_qualified_name()).equals("nextval")) {
              GeneralLiteralSearch seq = new GeneralLiteralSearch();
              new ParseTreeWalker().walk(seq, ctx);
-             seqName = seq.getSeqName();
-             if (seqName != null &&
-                     !seqName.isEmpty()) {
+             if (seq.isFound()) {
+                 seqName = seq.getSeqName();
              }
          }
         }
