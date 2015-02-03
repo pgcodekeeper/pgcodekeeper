@@ -36,13 +36,11 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionC
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Value_expressionContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 /**
@@ -57,6 +55,7 @@ public class ReferenceListener extends SQLParserBaseListener {
     private Set<PgObjLocation> definitions;
     private List<PgObjLocation> references;
     private PgDatabase db;
+    private List<FunctionBodyContainer> funcBodyes = new ArrayList<>();
     
     public ReferenceListener(PgDatabase db, Path filePath) {
         this.definitions = db.getObjDefinitions();
@@ -162,6 +161,10 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
         PgFunction function = new PgFunction(name, ParserAbstract.getFullCtxText(ctx.getParent()), "");
         ParserAbstract.fillArguments(ctx.function_parameters().function_args(), function);
+        funcBodyes.add(new FunctionBodyContainer(filePath, ctx.funct_body
+                .getStart().getStartIndex(), ctx.funct_body
+                .getStart().getLine(), ParserAbstract
+                .getFullCtxText(ctx.funct_body)));
         
         fillObjDefinition(schemaName, function.getSignature(),
                 DbObjType.FUNCTION, ctx.function_parameters().name.getStart()
@@ -215,8 +218,12 @@ public class ReferenceListener extends SQLParserBaseListener {
     
     @Override
     public void exitComment_on_statement(Comment_on_statementContext ctx) {
+        
         String name = ParserAbstract.getName(ctx.name);
-        String comment = ctx.comment_text.getText();
+        String comment = "";
+        if (ctx.comment_text != null) {
+            comment = ctx.comment_text.getText();
+        }
         String schemaName = ParserAbstract.getSchemaName(ctx.name);
         if (schemaName == null) {
             schemaName = getDefSchemaName();
@@ -587,6 +594,10 @@ public class ReferenceListener extends SQLParserBaseListener {
     private void getSequence(Value_expressionContext default_expr) {
         SeqName name = new SeqName();
         new ParseTreeWalker().walk(name, default_expr);
+    }
+    
+    public List<FunctionBodyContainer> getFunctionBodyes() {
+        return funcBodyes;
     }
 
     class SeqName extends SQLParserBaseListener {

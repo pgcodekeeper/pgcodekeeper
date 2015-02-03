@@ -17,6 +17,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,9 +45,12 @@ import cz.startnet.utils.pgdiff.parsers.ParserException;
 import cz.startnet.utils.pgdiff.parsers.PrivilegeParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -335,10 +340,12 @@ public final class PgDumpLoader { //NOPMD
     
     public static PgDatabase getObjReferences(InputStream inputStream, String charsetName, 
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
-            PgDatabase database, Path path, IProgressMonitor monitor, int monitoringLevel) {
+            PgDatabase database, Path path, IProgressMonitor monitor, int monitoringLevel, List<FunctionBodyContainer> funcBodyes) {
         try {
+            ReferenceListener refListener = new ReferenceListener(database, path);
             new AntlrParser(monitor, monitoringLevel).parseInputStream(inputStream, charsetName, 
-                    new ReferenceListener(database, path), path);
+                    refListener, path);
+            funcBodyes.addAll(refListener.getFunctionBodyes());
         } catch (IOException e) {
             throw new FileException("Exception while closing dump file", e);
         }

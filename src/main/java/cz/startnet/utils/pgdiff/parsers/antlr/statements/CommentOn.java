@@ -19,6 +19,10 @@ public class CommentOn extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
+        if (ctx.comment_text == null) {
+         // maybe NULL if drop comment
+            return null;
+        }
         String name = getName(ctx.name);
         String comment = ctx.comment_text.getText();
         String schemaName = getSchemaName(ctx.name);

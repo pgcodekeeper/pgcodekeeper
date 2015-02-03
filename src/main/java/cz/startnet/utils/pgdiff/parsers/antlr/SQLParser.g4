@@ -437,7 +437,7 @@ comment_on_statement
             | COLLATION| SCHEMA| SEQUENCE| SERVER| TABLE | TABLESPACE 
             | TYPE | VIEW)
           ) name=schema_qualified_name
-        ) IS comment_text=Character_String_Literal
+        ) IS (comment_text=Character_String_Literal | NULL)
     ;
 
 /*

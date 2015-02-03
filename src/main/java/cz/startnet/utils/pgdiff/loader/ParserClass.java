@@ -2,9 +2,11 @@ package cz.startnet.utils.pgdiff.loader;
 
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public abstract class ParserClass {
@@ -20,8 +22,8 @@ public abstract class ParserClass {
         return new ParserClassLegacy(monitor, monitoringLevel);
     }
     
-    public static ParserClass getParserAntlrReferences(IProgressMonitor monitor, int monitoringLevel) {
-        return new ParserAntlrReferences(monitor, monitoringLevel);
+    public static ParserClass getParserAntlrReferences(IProgressMonitor monitor, int monitoringLevel, List<FunctionBodyContainer> funcBodyes) {
+        return new ParserAntlrReferences(monitor, monitoringLevel, funcBodyes);
     }
     
     public ParserClass(IProgressMonitor monitor, int monitoringLevel) {
@@ -75,8 +77,11 @@ class ParserClassLegacy extends ParserClass {
 
 class ParserAntlrReferences extends ParserClass {
     
-    public ParserAntlrReferences(IProgressMonitor monitor, int monitoringLevel) {
+    private List<FunctionBodyContainer> funcBodyes;
+
+    public ParserAntlrReferences(IProgressMonitor monitor, int monitoringLevel, List<FunctionBodyContainer> funcBodyes) {
         super(monitor, monitoringLevel);
+        this.funcBodyes = funcBodyes;
     }
     
     @Override
@@ -85,6 +90,6 @@ class ParserAntlrReferences extends ParserClass {
             PgDatabase database, Path path) {
         return PgDumpLoader.getObjReferences(
                 inputStream, charsetName,
-                outputIgnoredStatements, ignoreSlonyTriggers, database, path, monitor, monitoringLevel);
+                outputIgnoredStatements, ignoreSlonyTriggers, database, path, monitor, monitoringLevel, funcBodyes);
     }
 }
