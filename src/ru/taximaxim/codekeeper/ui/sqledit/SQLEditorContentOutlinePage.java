@@ -36,13 +36,11 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     private IEditorInput fInput;
     private AbstractDecoratedTextEditor fTextEditor;
     private IDocumentProvider fDocumentProvider;
-    private PgDbParser parser;
     private TreeViewer viewer;
 
     public SQLEditorContentOutlinePage(IDocumentProvider fDocumentProvider,
-            AbstractDecoratedTextEditor sqlEditor, PgDbParser parser) {
+            AbstractDecoratedTextEditor sqlEditor) {
         fTextEditor = sqlEditor;
-        this.parser = parser;
         this.fDocumentProvider = fDocumentProvider;
     }
     
@@ -81,6 +79,13 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
             public Object[] getElements(Object inputElement) {
                 List<Segments> segments = new ArrayList<>();
                 List<PgObjLocation> refs = new ArrayList<>();
+                PgDbParser parser = null;
+                if (fTextEditor instanceof SQLEditor) {
+                    parser  = ((SQLEditor)fTextEditor).getParser(); 
+                }
+                if (parser == null) {
+                    return segments.toArray();
+                }
                 if (inputElement instanceof FileEditorInput) {
                     Path inputPath = ((FileEditorInput)inputElement).
                             getFile().getLocation().toFile().toPath();

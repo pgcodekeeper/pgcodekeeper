@@ -16,41 +16,33 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 final class SQLEditorTextHover implements ITextHover {
-    /**
-     * 
-     */
-    private final SQLEditorSourceViewerConfiguration sqlEditorSourceViewerConfiguration;
-
-    /**
-     * @param sqlEditorSourceViewerConfiguration
-     */
-    SQLEditorTextHover(
-            SQLEditorSourceViewerConfiguration sqlEditorSourceViewerConfiguration) {
-        this.sqlEditorSourceViewerConfiguration = sqlEditorSourceViewerConfiguration;
-    }
 
     @Override
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
         IFile file = null;
         IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
                 .getActivePage().getActiveEditor();
+        PgDbParser parser = null;
+        if (page instanceof SQLEditor) {
+            parser = ((SQLEditor)page).getParser();
+        }
         IEditorInput input = page.getEditorInput();
         if (input instanceof FileEditorInput) {
             file = ((FileEditorInput) input).getFile();
         }
-        if (this.sqlEditorSourceViewerConfiguration.parser == null) {
+        if (parser == null) {
             return new Region(offset, 0);
         }
         List<PgObjLocation> refs;
         if (file != null) {
-            refs = this.sqlEditorSourceViewerConfiguration.parser.getObjsForPath(file.getLocation().toFile().toPath());
+            refs = parser.getObjsForPath(file.getLocation().toFile().toPath());
         } else {
-            refs = this.sqlEditorSourceViewerConfiguration.parser.getObjReferences();
+            refs = parser.getObjReferences();
         }
         for (PgObjLocation obj : refs) {
             if (offset > obj.getOffset()
                     && offset < (obj.getOffset() + obj.getObjLength())) {
-                PgObjLocation loc = this.sqlEditorSourceViewerConfiguration.parser.getDefinitionForObj(obj);
+                PgObjLocation loc = parser.getDefinitionForObj(obj);
                 if (loc != null) {
                     SQLEditorMyRegion region = new SQLEditorMyRegion(obj.getOffset(), obj.getObjLength());
                     region.setComment(loc.getComment());

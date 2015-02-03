@@ -11,7 +11,6 @@ import java.util.ListIterator;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -118,8 +117,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     private Button runScriptBtn;
     private Button saveAsBtn;
 
-    private IProject proj;
-
     public RollOnEditor() {
         this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED, 
                 FILE.DDL_UPDATE_COMMANDS_HIST_FILENAME, 
@@ -170,7 +167,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                     in.updateScript(this.getSourceViewer().getDocument().get());
                 }
                 in.updateParser(null);
-                setParserToProj(in.getParser());
             } catch (CoreException e) {
                throw new PartInitException(e.getLocalizedMessage(), e);
             }
@@ -188,7 +184,6 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             try {
                 in.updateScript(this.getSourceViewer().getDocument().get());
                 in.updateParser(progressMonitor);
-                setParserToProj(in.getParser());
             } catch (CoreException e) {
                 Log.log(Log.LOG_ERROR, "Cannot parse Editor input");
             }
@@ -209,8 +204,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         
         this.oldDepcy = differ.getAdditionalDepciesSource();
         differ.setAdditionalDepciesSource(new ArrayList<>(oldDepcy));
-        this.proj = addDepcy.getProject();
-        IEclipsePreferences projPrefs = new ProjectScope(proj).getNode(UIConsts.PLUGIN_ID.THIS);
+        IEclipsePreferences projPrefs = new ProjectScope(addDepcy.getProject())
+                .getNode(UIConsts.PLUGIN_ID.THIS);
         this.history = new XmlHistory.Builder(XML_TAGS.DDL_UPDATE_COMMANDS_MAX_STORED, 
                 FILE.DDL_UPDATE_COMMANDS_HIST_FILENAME, 
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT, 

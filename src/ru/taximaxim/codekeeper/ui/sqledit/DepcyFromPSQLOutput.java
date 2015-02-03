@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IStorageEditorInput;
@@ -103,7 +104,16 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     }
     
     public void updateParser(IProgressMonitor monitor) throws CoreException {
+        List<Listener> listener = new ArrayList<>();
+        if (parser != null) {
+            listener.addAll(parser.getListeners());
+        }
         parser = PgDbParser.getRollOnParser(getStorage().getContents(), monitor);
+        for (Listener e : listener) {
+            parser.addListener(e);
+        }
+        listener.clear();
+        parser.notifyListeners();
     }
     public PgDbParser getParser() {
         return parser;

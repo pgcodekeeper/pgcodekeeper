@@ -3,8 +3,6 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
@@ -20,7 +18,6 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.FileEditorInput;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -32,11 +29,9 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
     private SqlPostgresSyntax sqlSyntax;
     private String text = "";
-    private PgDbParser parser;
 
-    public SQLEditorCompletionProcessor(SqlPostgresSyntax sqlSyntax, PgDbParser parser) {
+    public SQLEditorCompletionProcessor(SqlPostgresSyntax sqlSyntax) {
         this.sqlSyntax = sqlSyntax;
-        this.parser = parser;
     }
 
     @Override
@@ -75,7 +70,12 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                 }
             }    
         }
-        
+        IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                .getActivePage().getActiveEditor();
+        PgDbParser parser = null;
+        if (page instanceof SQLEditor) {
+            parser = ((SQLEditor)page).getParser();
+        }
         if (parser == null) {
             return result.toArray(new ICompletionProposal[result.size()]);
         }

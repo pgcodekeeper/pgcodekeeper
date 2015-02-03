@@ -215,4 +215,7 @@ public class PgDbParser {
             e.handleEvent(new Event());
         }      
     }
+    public List<Listener> getListeners() {
+        return listeners;
+    }
 }

@@ -26,6 +26,7 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
     static final String CONTENT_ASSIST= "ContentAssist"; //$NON-NLS-1$
 
     private SQLEditorContentOutlinePage fOutlinePage;
+    private IEditorInput input;
     
     private Listener list = new Listener() {
 
@@ -42,8 +43,6 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
             });
         }
     };
-
-    private PgDbParser parser;
 
     public SQLEditor() {
         super();
@@ -74,37 +73,40 @@ public class SQLEditor extends AbstractDecoratedTextEditor {
     @Override
     public void init(IEditorSite site, IEditorInput input)
             throws PartInitException {
+        this.input = input;
         if (input instanceof IFileEditorInput) {
             setDocumentProvider(new SQLEditorFileDocumentProvider());
         } else {
             setDocumentProvider(new SQLEditorStorageDocumentProvider());
         }
         super.init(site, input);
-        
-        if (parser == null && input instanceof IFileEditorInput) {
+        PgDbParser parser = getParser();
+        if (parser != null) {
+            parser.addListener(list);
+            fOutlinePage= new SQLEditorContentOutlinePage(getDocumentProvider(), this);
+            fOutlinePage.setInput(getEditorInput());
+        }
+    }
+    
+    PgDbParser getParser() {
+        if (input instanceof DepcyFromPSQLOutput) {
+            return ((DepcyFromPSQLOutput) input).getParser();
+        } else if (input instanceof IFileEditorInput) {
             IProject proj = ((IFileEditorInput)input).getFile().getProject();
             try {
                 if (proj.hasNature(NATURE.ID)) {
-                    setParserToProj(PgDbParser.getParser(proj));
+                    return PgDbParser.getParser(proj);
                 }
             } catch (CoreException e) {
                 // do nothing
             }
         }
-        if (parser != null) {
-            parser.addListener(list);
-            ((SQLEditorSourceViewerConfiguration)getSourceViewerConfiguration()).setParser(parser);
-            fOutlinePage= new SQLEditorContentOutlinePage(getDocumentProvider(), this, parser);
-            fOutlinePage.setInput(getEditorInput());
-        }
-    }
-    
-    protected void setParserToProj(PgDbParser pgDbParser) {
-        this.parser = pgDbParser;
+        return null;
     }
     
     @Override
     public void dispose() {
+        PgDbParser parser = getParser();
         if (parser != null) {
             parser.removeListener(list);
         }

@@ -26,7 +26,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
@@ -45,7 +44,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     private final ISharedTextColors fSharedColors;
     private final SqlPostgresSyntax sqlSyntax = new SqlPostgresSyntax();
     private IPreferenceStore prefs;
-    PgDbParser parser;
     
     public SQLEditorSourceViewerConfiguration(ISharedTextColors sharedColors,
             IPreferenceStore store) {
@@ -54,14 +52,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         this.prefs = Activator.getDefault().getPreferenceStore();
     }
     
-    void setParser(PgDbParser parser) {
-        this.parser = parser;
-    }
-    
     @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer,
             String contentType) {
-        return new SQLEditorTextHover(this);
+        return new SQLEditorTextHover();
     }
     
     // Отображает всю строку при наведении на левую полосу редактора
@@ -86,7 +80,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         ContentAssistant assistant= new ContentAssistant();
-        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(sqlSyntax, parser)
+        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(sqlSyntax)
                 /*new IContentAssistProcessor() {
             
             @Override
