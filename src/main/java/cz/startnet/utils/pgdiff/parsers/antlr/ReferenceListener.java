@@ -22,9 +22,13 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_sequence_statemen
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_table_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_function_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_statementsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_trigger_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Name_or_func_callsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
@@ -496,6 +500,84 @@ public class ReferenceListener extends SQLParserBaseListener {
         addObjReference(schemaName, name, DbObjType.VIEW,
                 StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0,
                 ctx.name.getStart().getLine());
+    }
+    
+    @Override
+    public void exitDrop_statements(Drop_statementsContext ctx) {
+        DbObjType type = null;
+        if (ctx.DATABASE()!= null) {
+            type = DbObjType.DATABASE;
+        } else if (ctx.TABLE() != null) {
+            type = DbObjType.TABLE;
+        } else if (ctx.EXTENSION() != null) {
+            type = DbObjType.EXTENSION;
+        } else if (ctx.SCHEMA() != null) {
+            type = DbObjType.SCHEMA;
+        } else if (ctx.SEQUENCE() != null) {
+            type = DbObjType.SEQUENCE;
+        } else if (ctx.VIEW() != null) {
+            type = DbObjType.VIEW;
+        } else if (ctx.INDEX() != null) {
+            type = DbObjType.INDEX;
+        }
+        for (Schema_qualified_nameContext objName : ctx
+                .if_exist_names_restrict_cascade().names_references().name) {
+            int offset=0;
+            String schemaName = ParserAbstract.getSchemaName(objName);
+            if (schemaName == null) {
+                if (type != DbObjType.EXTENSION 
+                        && type != DbObjType.SCHEMA)
+                schemaName = getDefSchemaName();
+            } else {
+                offset = schemaName.length() + 1;
+                addObjReference(null, schemaName, DbObjType.SCHEMA,
+                        StatementActions.NONE, objName.getStart()
+                                .getStartIndex(), 0, objName.getStart()
+                                .getLine());
+            }
+            addObjReference(schemaName, ParserAbstract.getName(objName), type,
+                    StatementActions.DROP, objName.getStart().getStartIndex()
+                            + offset, 0, objName.getStart().getLine());
+        }
+    }
+    
+    @Override
+    public void exitDrop_trigger_statement(Drop_trigger_statementContext ctx) {
+        int offset=0;
+        String schemaName = ParserAbstract.getSchemaName(ctx.name);
+        if (schemaName == null) {
+            schemaName = getDefSchemaName();
+        } else {
+            offset = schemaName.length() + 1;
+            addObjReference(null, schemaName, DbObjType.SCHEMA,
+                    StatementActions.NONE, ctx.name.getStart()
+                            .getStartIndex(), 0, ctx.name.getStart()
+                            .getLine());
+        }
+        addObjReference(schemaName, ParserAbstract.getName(ctx.name), DbObjType.TRIGGER,
+                StatementActions.DROP, ctx.name.getStart().getStartIndex()
+                        + offset, 0, ctx.name.getStart().getLine());
+    }
+    
+    @Override
+    public void exitDrop_function_statement(Drop_function_statementContext ctx) {
+        Schema_qualified_nameContext name = ctx.function_parameters().name;
+        int offset=0;
+        String schemaName = ParserAbstract.getSchemaName(name);
+        if (schemaName == null) {
+            schemaName = getDefSchemaName();
+        } else {
+            offset = schemaName.length() + 1;
+            addObjReference(null, schemaName, DbObjType.SCHEMA,
+                    StatementActions.NONE, name.getStart()
+                            .getStartIndex(), 0, name.getStart()
+                            .getLine());
+        }
+        PgFunction func = new PgFunction(ParserAbstract.getName(name), "", "");
+        ParserAbstract.fillArguments(ctx.function_parameters().function_args(), func);
+        addObjReference(schemaName, func.getSignature(), DbObjType.FUNCTION,
+                StatementActions.DROP, name.getStart().getStartIndex()
+                        + offset, func.getBareName().length(), name.getStart().getLine());
     }
     
     private String getDefSchemaName() {

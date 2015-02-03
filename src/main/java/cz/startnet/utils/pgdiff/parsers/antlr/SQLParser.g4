@@ -76,7 +76,7 @@ copy_option:
 schema_statement
   : schema_create
     | schema_alter
-    | drop_table_statement 
+    | schema_drop
   ;
   
 schema_create
@@ -107,6 +107,12 @@ schema_alter
     | alter_view_statement
     | alter_type_statement)
     ;
+
+schema_drop
+    : DROP (drop_function_statement 
+    | drop_trigger_statement 
+    | drop_statements)
+    ;
     
 alter_function_statement
     : FUNCTION function_parameters 
@@ -134,7 +140,7 @@ alter_table_statement
 
 table_action
     : ADD COLUMN? table_column_definition
-    | DROP COLUMN? (IF EXISTS)? column=schema_qualified_name (RESTRICT | CASCADE)?
+    | DROP COLUMN? (IF EXISTS)? column=schema_qualified_name cascade_restrict?
     | ALTER COLUMN? column=schema_qualified_name 
       ((SET DATA)? TYPE datatype=data_type (COLLATE collation=identifier)? (USING expression=value_expression)?
       | (set_def_column
@@ -147,7 +153,7 @@ table_action
     | ADD tabl_constraint=constraint_common (NOT VALID)?
     | ADD tabl_constraint_using_index=table_constraint_using_index
     | VALIDATE CONSTRAINT constraint_name=schema_qualified_name
-    | DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name (RESTRICT | CASCADE)
+    | DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name cascade_restrict?
     | (DISABLE | ENABLE) TRIGGER (trigger_name=schema_qualified_name | (ALL | USER))?
     | ENABLE (REPLICA | ALWAYS) TRIGGER trigger_name=schema_qualified_name 
     | (DISABLE | ENABLE) RULE rewrite_rule_name=schema_qualified_name 
@@ -357,7 +363,7 @@ body_rules
       (grant_to_rule | revoke_from_cascade_restrict)
       | GRANT obj_name=names_references TO role_name=names_references (WITH ADMIN OPTION)?
       | REVOKE (ADMIN OPTION FOR)? obj_name=names_references FROM role_name=names_references
-        (CASCADE | RESTRICT)?
+        cascade_restrict?
     ;
     
 grant_to_rule
@@ -365,7 +371,7 @@ grant_to_rule
     ;
     
 revoke_from_cascade_restrict
-    : FROM roles_names (CASCADE | RESTRICT)?
+    : FROM roles_names cascade_restrict?
     ;
 
 on_table
@@ -616,7 +622,7 @@ table_space
     ;
     
 action
-    : (RESTRICT | CASCADE) 
+    : cascade_restrict
       | SET (NULL | DEFAULT)
     ;
     
@@ -671,16 +677,31 @@ partition_by_columns
     : PARTITION BY names_references
     ;
 
+cascade_restrict
+    : CASCADE | RESTRICT
+    ;
+
 /*
 ===============================================================================
   11.21 <data types>
 ===============================================================================
 */
 
-drop_table_statement
-  : DROP explicit_table PURGE?
-  ;
+drop_function_statement
+    : FUNCTION (IF EXISTS)? function_parameters cascade_restrict?
+    ;
 
+drop_trigger_statement
+    : TRIGGER (IF EXISTS)? name=schema_qualified_name ON schema_qualified_name cascade_restrict?
+    ;
+
+drop_statements
+    :((DATABASE | TABLE| EXTENSION | SCHEMA | SEQUENCE | VIEW) | INDEX (CONCURRENTLY)?) if_exist_names_restrict_cascade
+    ;
+
+if_exist_names_restrict_cascade
+    : (IF EXISTS)? names_references cascade_restrict?
+    ;
 /*
 ===============================================================================
   5.2 <token and separator>
