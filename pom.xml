@@ -84,7 +84,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
         <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
-                <version>4.3</version>
+                <version>4.5</version>
                 <configuration>
                     <visitor>true</visitor>
                     <sourceDirectory>${project.basedir}/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr</sourceDirectory>
@@ -282,7 +282,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-maven-plugin</artifactId>
-            <version>4.3</version>
+            <version>4.5</version>
         </dependency>
                 
     </dependencies>
