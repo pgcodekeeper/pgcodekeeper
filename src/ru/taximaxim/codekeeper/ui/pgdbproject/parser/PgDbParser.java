@@ -7,7 +7,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -82,16 +85,15 @@ public class PgDbParser {
     }
     
     public void getObjFromProjFile(URI fileURI) {
-        URI projURI = proj.getLocationURI();
         ProjectScope ps = new ProjectScope(proj);
         IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
-        String projPath = Paths.get(projURI).toAbsolutePath().toString();
-        String filePath = Paths.get(fileURI).toAbsolutePath().toString();
-        PgDatabase db = PgDumpLoader.loadSchemasAndFile(projPath, filePath,
+        Path path = Paths.get(fileURI);
+        String filePath = path.toAbsolutePath().toString();
+        PgDatabase db = PgDumpLoader.loadSchemasAndFile(filePath,
                 prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), false,
-                false, ParserClass.getAntlr(null, 1));
-        updateReferences(fillRefs(objReferences, db.getObjReferences()), 
-                fillRefs(objDefinitions, db.getObjDefinitions()));
+                false, ParserClass.getParserAntlrReferences(null, 1));
+        updateReferences(fillRefs(objDefinitions, db.getObjDefinitions()),
+                fillRefs(objReferences, db.getObjReferences()));
     }
     
     /**
@@ -119,29 +121,38 @@ public class PgDbParser {
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 Paths.get(locationURI).toAbsolutePath().toString(),
                 prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), 
-                false, false, ParserClass.getAntlr(monitor, 1));
+                false, false, ParserClass.getParserAntlrReferences(monitor, 1));
         updateReferences(new ArrayList<>(db.getObjDefinitions()), db.getObjReferences());
         notifyListeners();
     }
 
-    protected List<PgObjLocation> fillRefs(List<PgObjLocation> oldRefs,
+    protected List<PgObjLocation> fillRefs(Collection<PgObjLocation> oldRefs,
             Collection<PgObjLocation> newRefs) {
-        List<PgObjLocation> newList = new ArrayList<>(oldRefs.size());
-        for (PgObjLocation oldRef : oldRefs) {
-            PgObjLocation foundLoc = null;
-            for (PgObjLocation ref : newRefs) {
-                if (oldRef.getFilePath().equals(ref.getFilePath())) {
-                    foundLoc = ref;
-                   break;
-                }
-            }
-            if (foundLoc != null) {
-                newList.add(foundLoc);
-            } else {
-                newList.add(oldRef);
+        List<PgObjLocation> newList = new ArrayList<>(oldRefs);
+        Set<Path> paths = new HashSet<>();
+        for (PgObjLocation newRef :newRefs) {
+            paths.add(newRef.getFilePath());
+        }
+        removePathFromRefs(newList, paths);
+        newList.addAll(newRefs);
+        return newList;
+    }
+
+    private List<PgObjLocation> removePathFromRefs(List<PgObjLocation> newList, Set<Path> paths) {
+        List<PgObjLocation> copy = new ArrayList<>(newList);
+        Iterator<PgObjLocation> iter = copy.iterator();
+        while (iter.hasNext()) {
+            if (paths.contains(iter.next().getFilePath())) {
+                iter.remove();
             }
         }
-        return newList;
+        return copy;
+    }
+    public void removePathFromRefs(Path path) {
+        Set<Path> paths = new HashSet<>();
+        paths.add(path);
+        updateReferences(removePathFromRefs(objDefinitions, paths),
+                removePathFromRefs(objReferences, paths));
     }
     
     private void fillRefsFromInputStream(InputStream input, IProgressMonitor monitor) {
@@ -173,7 +184,7 @@ public class PgDbParser {
     }
     
     public List<PgObjLocation> getObjDefinitions() {
-        return objDefinitions;
+        return Collections.unmodifiableList(objDefinitions);
     }
     
     public List<PgObjLocation> getObjReferences() {

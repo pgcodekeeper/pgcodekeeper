@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.builders;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -55,9 +56,21 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                     delta.accept(new IResourceDeltaVisitor() {
                         public boolean visit(IResourceDelta delta) {
                             if (delta.getResource() instanceof IFile) {
-                                sub.worked(1);
-                                parser.getObjFromProjFile(delta.getResource()
-                                        .getLocationURI());
+                                switch (delta.getKind()) {
+                                case IResourceDelta.REMOVED:
+                                case IResourceDelta.REMOVED_PHANTOM:
+                                case IResourceDelta.REPLACED:
+                                    parser.removePathFromRefs(Paths.get(delta
+                                            .getResource().getLocationURI()));
+                                    break;
+                                default:
+
+                                    sub.worked(1);
+                                    parser.getObjFromProjFile(delta
+                                            .getResource().getLocationURI());
+
+                                    break;
+                                }
                             }
                             return true;
                         }
