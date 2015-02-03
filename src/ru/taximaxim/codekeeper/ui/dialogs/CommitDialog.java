@@ -6,8 +6,11 @@ import java.util.Set;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
@@ -15,29 +18,35 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 
 public class CommitDialog extends TrayDialog {
     
-    private TreeElement filtered;
-    private IPreferenceStore prefs;
-    private DiffTableViewer dtvTop;
-    private DiffTableViewer dtvBottom;
-    private TreeDiffer treeDiffer;
+    private final TreeElement filtered;
+    private final IPreferenceStore prefs;
+    private final boolean egitCommitAvailable;
+    
+    private final TreeDiffer treeDiffer;
     private final Set<TreeElement> depcyElementsSet;
     private Set<?> conflictingElementsSet = Collections.EMPTY_SET;
     
+    private DiffTableViewer dtvTop;
+    private DiffTableViewer dtvBottom;
+    private Button btnAutocommit;
+    
     public CommitDialog(Shell parentShell, TreeElement filtered,
             Set<TreeElement> depcyElementsSet, IPreferenceStore mainPrefs,
-            TreeDiffer treeDiffer) {
+            TreeDiffer treeDiffer, boolean egitCommitAvailable) {
         super(parentShell);
         
         this.filtered = filtered;
         this.prefs = mainPrefs;
+        this.egitCommitAvailable = egitCommitAvailable;
         this.treeDiffer = treeDiffer;
-        this.prefs = mainPrefs;
         this.depcyElementsSet = depcyElementsSet;
         
         setShellStyle(getShellStyle() | SWT.RESIZE);
@@ -92,6 +101,19 @@ public class CommitDialog extends TrayDialog {
             dtvBottom.setCheckedElements(conflictingElementsSet.toArray(), false);
             dtvBottom.redraw();
         }
+        
+        btnAutocommit = new Button(container, SWT.CHECK);
+        btnAutocommit.setText(Messages.commitPartDescr_show_commit_window);
+        btnAutocommit.setSelection(prefs.getBoolean(PREF.CALL_COMMIT_COMMAND_AFTER_UPDATE));
+        btnAutocommit.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                PreferenceInitializer.savePreference(prefs, 
+                        PREF.CALL_COMMIT_COMMAND_AFTER_UPDATE, String.valueOf(btnAutocommit.getSelection()));
+            }
+        });
+        btnAutocommit.setEnabled(egitCommitAvailable);
         return area;
     }
     

@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.views;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import org.eclipse.core.commands.IStateListener;
@@ -12,8 +11,7 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
@@ -47,33 +45,19 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     private DepcyGraph currentGraph;
     private PgDatabase currentDb;
     private GraphViewer gv;
-    private Boolean isSource = true;
+    private boolean isSource = true;
     
     @Override
     public void createPartControl(Composite parent) {
         gv = new GraphViewer(parent, SWT.NONE);
         gv.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
         gv.setLayoutAlgorithm(new SpringLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING), true);
-
-        /*
-         * Setting own lable/figure provider
-         */
-        gv.setLabelProvider(new DepcyGraphLabelProvider(isSource));
         
+        gv.setLabelProvider(new DepcyGraphLabelProvider(isSource));
         gv.setContentProvider(new DepcyGraphViewContentProvider());
         
         // listen to node/connection selection events
-        gv.getGraphControl().addSelectionListener(new SelectionListener() {
-            
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                // stub
-            }
-            
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                // stub
-            }
+        gv.getGraphControl().addSelectionListener(new SelectionAdapter() {
         });
 
         // register listener to pages post selection 
@@ -126,14 +110,15 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         boolean isCommit = ((ProjectEditorDiffer) part).getActivePage() == 0;
         DbSource newDbSource = isSource == isCommit ? dss.getSource() : dss.getTarget();
         PgDatabase newDb = newDbSource.getDbObject();
-        // TODO expensive check, == instead?
-        // test how often new db is received here
-        if (!Objects.equals(currentDb, newDb)){
+        if (currentDb != newDb){
             currentDb = newDb;
             currentGraph = null;
             try {
                 if (currentDb != null) {
+                    System.err.println("regenerating graph");
+                    long t = System.nanoTime();
                     currentGraph = new DepcyGraph(currentDb);
+                    System.err.println("done: " + (System.nanoTime() - t)/1000000);
                 }
             } catch (PgCodekeeperException e) {
                 Log.log(Log.LOG_WARNING, "Error creating dependency graph", e);
@@ -171,7 +156,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     @Override
     public void handleStateChange(State state, Object oldValue) {
         this.isSource = (boolean) state.getValue();
-        ((DepcyGraphLabelProvider)gv.getLabelProvider()).setIsSource(isSource);
+        ((DepcyGraphLabelProvider) gv.getLabelProvider()).setIsSource(isSource);
     }
     
     private class DepcyGraphViewContentProvider extends ArrayContentProvider

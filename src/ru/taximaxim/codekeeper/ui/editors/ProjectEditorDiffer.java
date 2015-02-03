@@ -85,7 +85,6 @@ import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlScriptDialog;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -119,7 +118,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         iCommit = ImageDescriptor.createFromURL(Activator.getContext().
                 getBundle().getResource(FILE.ICONBALLBLUE)).createImage();
         commit = new CommitPage(getContainer(), 
-                Activator.getDefault().getPreferenceStore(), proj);
+                Activator.getDefault().getPreferenceStore(), proj, this);
         i = addPage(commit);
         setPageText(i, Messages.ProjectEditorDiffer_page_text_commit);
         setPageImage(i, iCommit);
@@ -237,13 +236,16 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 
 class CommitPage extends DiffPresentationPane {
 
+    private final ProjectEditorDiffer editor;
     private boolean isCommitCommandAvailable;
     
     private LocalResourceManager lrm;
     private Button btnSave;
     
-    public CommitPage(Composite parent, IPreferenceStore mainPrefs, PgDbProject proj) {
+    public CommitPage(Composite parent, IPreferenceStore mainPrefs, PgDbProject proj,
+            ProjectEditorDiffer editor) {
         super(parent, true, mainPrefs, proj);
+        this.editor = editor;
         
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
     }
@@ -273,23 +275,11 @@ class CommitPage extends DiffPresentationPane {
             }
         });
         
-        final Button btnAutoCommitWindow = new Button(container, SWT.CHECK);
-        btnAutoCommitWindow.setText(Messages.commitPartDescr_show_commit_window);
-        btnAutoCommitWindow.setSelection(mainPrefs.getBoolean(PREF.CALL_COMMIT_COMMAND_AFTER_UPDATE));
-        btnAutoCommitWindow.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                PreferenceInitializer.savePreference(mainPrefs, 
-                        PREF.CALL_COMMIT_COMMAND_AFTER_UPDATE, String.valueOf(btnAutoCommitWindow.getSelection()));
-            }
-        });
-        
-        Object commandService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getService(ICommandService.class);
+        ICommandService commandService =
+                (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
         @SuppressWarnings("unchecked")
-        Collection<String> commandIds = ((ICommandService)commandService).getDefinedCommandIds();
+        Collection<String> commandIds = commandService.getDefinedCommandIds();
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
-        btnAutoCommitWindow.setEnabled(isCommitCommandAvailable);
     }
     
     private void commit() throws PgCodekeeperException {
@@ -344,7 +334,7 @@ class CommitPage extends DiffPresentationPane {
         Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
         // display commit dialog
         CommitDialog cd = new CommitDialog(getShell(), filtered, sumNewAndDelete,
-                mainPrefs, treeDiffer);
+                mainPrefs, treeDiffer, isCommitCommandAvailable);
         cd.setConflictingElements(considerDepcy ? dte.getConflicting() : Collections.EMPTY_SET);
         if (cd.open() != CommitDialog.OK) {
             return;
@@ -382,7 +372,9 @@ class CommitPage extends DiffPresentationPane {
                         
                             @Override
                             public void run() {
-                                callEgitCommitCommand();
+                                if (!isDisposed()) {
+                                    callEgitCommitCommand();
+                                }
                             }
                         });
                     } catch (CoreException e) {
@@ -409,7 +401,9 @@ class CommitPage extends DiffPresentationPane {
         }
         
         try {
-            ((IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class))
+            // in case user switched to a different window while update was working
+            editor.getSite().getPage().activate(editor);
+            ((IHandlerService) editor.getSite().getService(IHandlerService.class))
                     .executeCommand(COMMAND.COMMIT_COMMAND_ID, null);
         } catch (ExecutionException | NotDefinedException | NotEnabledException
                 | NotHandledException e) {
