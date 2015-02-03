@@ -73,14 +73,18 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
                 .getActivePage().getActiveEditor();
         PgDbParser parser = null;
+        List<PgObjLocation> loc = new ArrayList<>();
         if (page instanceof SQLEditor) {
             parser = ((SQLEditor)page).getParser();
-        }
-        if (parser == null) {
-            return result.toArray(new ICompletionProposal[result.size()]);
+            loc.addAll(parser.getObjDefinitions());
+            if (page instanceof RollOnEditor) {
+                loc.addAll(PgDbParser.getParser(
+                        ((DepcyFromPSQLOutput) page.getEditorInput())
+                                .getProject()).getObjDefinitions());    
+            }
         }
         LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources());
-        for (PgObjLocation obj : parser.getObjDefinitions()) {
+        for (PgObjLocation obj : loc) {
             ImageDescriptor iObj = ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(
                             FILE.ICONPGADMIN 
