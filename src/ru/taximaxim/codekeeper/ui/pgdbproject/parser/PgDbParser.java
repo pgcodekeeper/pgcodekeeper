@@ -128,17 +128,16 @@ public class PgDbParser {
 
     protected List<PgObjLocation> fillRefs(Collection<PgObjLocation> oldRefs,
             Collection<PgObjLocation> newRefs) {
-        List<PgObjLocation> newList = new ArrayList<>(oldRefs);
         Set<Path> paths = new HashSet<>();
         for (PgObjLocation newRef :newRefs) {
             paths.add(newRef.getFilePath());
         }
-        removePathFromRefs(newList, paths);
+        List<PgObjLocation> newList = removePathFromRefs(oldRefs, paths);
         newList.addAll(newRefs);
         return newList;
     }
 
-    private List<PgObjLocation> removePathFromRefs(List<PgObjLocation> newList, Set<Path> paths) {
+    private List<PgObjLocation> removePathFromRefs(Collection<PgObjLocation> newList, Set<Path> paths) {
         List<PgObjLocation> copy = new ArrayList<>(newList);
         Iterator<PgObjLocation> iter = copy.iterator();
         while (iter.hasNext()) {
