@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -45,7 +46,9 @@ public class JdbcConnector {
         } catch (ClassNotFoundException e) {
             throw new IOException(Messages.Connection_JdbcDriverClassNotFound, e);
         } catch (SQLException e) {
-            throw new IOException(Messages.Connection_DatabaseJdbcAccessError, e);
+            throw new IOException(MessageFormat.format(
+                    Messages.Connection_DatabaseJdbcAccessError,
+                    e.getLocalizedMessage()), e);
         }
     }
     
@@ -101,7 +104,8 @@ public class JdbcConnector {
                 sc.nextLine();
             }
         } catch (FileNotFoundException e) {
-            throw new IllegalStateException("Error reading pgpass file", e);
+            throw new IllegalStateException("Error reading pgpass file: "
+                    + e.getLocalizedMessage(), e);
         }
         Log.log(Log.LOG_INFO, "Using empty password, because no password has been found "
                 + "in pgpass file for " + host + ":" + port + ":" + dbName + ":" + user);

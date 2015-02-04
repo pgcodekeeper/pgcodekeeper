@@ -273,7 +273,9 @@ public final class PgDumpLoader { //NOPMD
                     Resources.getString("UnsupportedEncoding") + ": "
                     + charsetName, ex);
         } catch(IOException ex) {
-            throw new FileException("Exception while closing dump file", ex);
+            throw new FileException(MessageFormat.format(
+                    "Exception while closing dump file: {0}",
+                    ex.getLocalizedMessage()), ex);
         }
     }
     
@@ -285,7 +287,9 @@ public final class PgDumpLoader { //NOPMD
             new AntlrParser(monitor, monitoringLevel).parseInputStream(inputStream, charsetName, 
                     new CustomSQLParserListener(database, path));
         } catch (IOException e) {
-            throw new FileException("Exception while closing dump file", e);
+            throw new FileException(MessageFormat.format(
+                    "Exception while closing dump file: {0}",
+                    e.getLocalizedMessage()), e);
         }
         return database;
     }
@@ -395,8 +399,9 @@ public final class PgDumpLoader { //NOPMD
                         Resources.getString("FileNotFound"),
                         f.getAbsolutePath()), ex);
             } catch (IOException ex) {
-                throw new FileException(
-                        "An unexpected IOException", ex);
+                throw new FileException(MessageFormat.format(
+                        "An unexpected IOException: {0}",
+                        ex.getLocalizedMessage()), ex);
             }
         }
     }
@@ -471,8 +476,9 @@ public final class PgDumpLoader { //NOPMD
                 try {
                     newLine = reader.readLine();
                 } catch (IOException ex) {
-                    throw new FileException(
-                            Resources.getString("CannotReadFile"), ex);
+                    throw new FileException(MessageFormat.format(
+                            Resources.getString("CannotReadFile"),
+                            ex.getLocalizedMessage()), ex);
                 }
 
                 if (newLine == null) {
