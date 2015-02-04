@@ -347,7 +347,10 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 ((GridData)picker.getLayoutData()).exclude = !isJdbc || btnHidePicker.getSelection();
                 
                 btnHidePicker.setVisible(isJdbc);
-                ((GridData)btnHidePicker.getLayoutData()).exclude = !isJdbc;
+                GridData gd = (GridData)btnHidePicker.getLayoutData();
+                if (gd != null) {
+                    gd.exclude = !isJdbc;
+                }
                 
                 parent.layout();
                 
