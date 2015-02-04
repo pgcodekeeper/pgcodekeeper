@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.MessageFormat;
 import java.util.List;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.WORK_DIR_NAMES;
@@ -95,7 +96,9 @@ public class ProjectUpdater {
                     exNew.addSuppressed(ex);
                     throw exNew;
                 }
-                throw new IOException(Messages.ProjectUpdater_error_update, ex);
+                throw new IOException(MessageFormat.format(
+                        Messages.ProjectUpdater_error_update,
+                        ex.getLocalizedMessage()), ex);
             }
         } catch (IOException ex) {
             if (caughtProcessingEx) {
@@ -132,7 +135,9 @@ public class ProjectUpdater {
                     exNew.addSuppressed(ex);
                     throw exNew;
                 }
-                throw new IOException(Messages.ProjectUpdater_error_update, ex);
+                throw new IOException(MessageFormat.format(
+                        Messages.ProjectUpdater_error_update,
+                        ex.getLocalizedMessage()), ex);
             }
         } catch (IOException ex) {
             if (caughtProcessingEx) {

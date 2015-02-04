@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.properties;
 
 
 import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TimeZone;
@@ -117,8 +118,9 @@ public class ProjectProperties extends PropertyPage implements
         try {
             fillPrefs();
         } catch (BackingStoreException e) {
-            setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties
-                    + e.getLocalizedMessage());
+            setErrorMessage(MessageFormat.format(
+                    Messages.projectProperties_error_occurs_while_saving_properties,
+                    e.getLocalizedMessage()));
             setValid(false);
         }
     }
@@ -128,8 +130,9 @@ public class ProjectProperties extends PropertyPage implements
         try {
             fillPrefs();
         } catch (BackingStoreException e) {
-            setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties
-                    + e.getLocalizedMessage());
+            setErrorMessage(MessageFormat.format(
+                    Messages.projectProperties_error_occurs_while_saving_properties,
+                    e.getLocalizedMessage()));
             setValid(false);
             return false;
         }
