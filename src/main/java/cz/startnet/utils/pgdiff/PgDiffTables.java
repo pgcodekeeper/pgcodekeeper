@@ -537,7 +537,7 @@ public final class PgDiffTables {
                         PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, fullTable);
                 
                 searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, table);
+                PgDiff.writeCreationSql(script, null, table, true);
                 
                 for(PgStatement depcy : specialDepcies){
                     if (depcy instanceof PgSequence && ((PgSequence)depcy).getOwnedBy() != null){
@@ -703,7 +703,7 @@ public final class PgDiffTables {
                 PgDiff.tempSwitchSearchPath(view.getParent().getName(),
                         searchPathHelper, script);
                 PgDiff.writeCreationSql(script, "-- DEPCY: recreating dropped dependant"
-                        + " object: " + reason, view);
+                        + " object: " + reason, view, false);
             }
         }// end write dependent PgViews create sql code after table altering
     }
@@ -713,7 +713,7 @@ public final class PgDiffTables {
             final List<String> statements, final String quotedTableName) {
         if (!statements.isEmpty()) {
             searchPathHelper.outputSearchPath(script);
-            script.addCreate(table, null, getAlterTableStatements(statements, quotedTableName));
+            script.addCreate(table, null, getAlterTableStatements(statements, quotedTableName), true);
         }
     }
     

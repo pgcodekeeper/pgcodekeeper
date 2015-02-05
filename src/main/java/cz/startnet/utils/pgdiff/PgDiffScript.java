@@ -1,11 +1,11 @@
 package cz.startnet.utils.pgdiff;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
-import ru.taximaxim.codekeeper.apgdiff.Log;
 import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
 import cz.startnet.utils.pgdiff.PgDiffStatement.DiffStatementType;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -19,7 +19,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
  */
 public class PgDiffScript {
 
-    private final LinkedList<PgDiffStatement> statements = new LinkedList<>();
+    private final List<PgDiffStatement> statements = new ArrayList<>();
     
     // this is faster because HashSet.contains() is O(1)
     // List.contains() is O(n)
@@ -45,23 +45,27 @@ public class PgDiffScript {
     
     public void addStatement(String statement) {
         PgDiffStatement st = new PgDiffStatement(DiffStatementType.OTHER, null, statement);
-        if (statements.isEmpty() || !st.equals(statements.getLast())){
+        PgDiffStatement last = statements.isEmpty() ? null : statements.get(statements.size() - 1);
+        if (statements.isEmpty() || !st.equals(last)){
             statements.add(st);
         }
     }
     
     public void addDrop(PgStatement obj, String comment, String statement) {
-        addStatementUnique(DiffStatementType.DROP, obj, comment, statement);
+        addStatementUnique(DiffStatementType.DROP, obj, comment, statement, false);
     }
     
-    public void addCreate(PgStatement obj, String comment, String statement) {
-        addStatementUnique(DiffStatementType.CREATE, obj, comment, statement);
+    public void addCreate(PgStatement obj, String comment, String statement,
+            boolean replaceExisting) {
+        addStatementUnique(DiffStatementType.CREATE, obj, comment, statement,
+                replaceExisting);
     }
     
     /**
      * Adds statement only if it's not present in the statements list.
      */
-    private void addStatementUnique(DiffStatementType type, PgStatement obj, String comment, String statement) {
+    private void addStatementUnique(DiffStatementType type, PgStatement obj,
+            String comment, String statement, boolean replaceExisting) {
         if (type != DiffStatementType.DROP && type != DiffStatementType.CREATE) {
             throw new IllegalArgumentException(
                     "Only DROPs and CREATEs can be tracked as unique statements!");
@@ -75,11 +79,7 @@ public class PgDiffScript {
             statements.add(st);
             unique.add(st);
         } else {
-            Log.log(Log.LOG_DEBUG, "PgDiffScript: ignoring unique statement:\n"
-                    + statement);
-            
-            // update CREATEs to the most recent version
-            if (type == DiffStatementType.CREATE) {
+            if (replaceExisting) {
                 statements.set(statements.indexOf(st), st);
             }
         }

@@ -44,7 +44,7 @@ public final class PgDiffTriggers {
                 PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, trigger);
                 
                 searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, trigger);
+                PgDiff.writeCreationSql(script, null, trigger, true);
             }
         }
     }

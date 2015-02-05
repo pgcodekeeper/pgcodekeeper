@@ -50,7 +50,7 @@ public final class PgDiffFunctions {
                 PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newFunction);
                 
                 searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, newFunction);
+                PgDiff.writeCreationSql(script, null, newFunction, true);
             }
         }
     }

@@ -39,14 +39,14 @@ public final class PgDiffIndexes {
                     PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, index);
                     
                     searchPathHelper.outputSearchPath(script);
-                    PgDiff.writeCreationSql(script, null, index);
+                    PgDiff.writeCreationSql(script, null, index, true);
                 }
             } else {
                 for (PgIndex index : getNewIndexes(oldSchema.getTable(newTableName), newTable)) {
                     PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, index);
                     
                     searchPathHelper.outputSearchPath(script);
-                    PgDiff.writeCreationSql(script, null, index);
+                    PgDiff.writeCreationSql(script, null, index, true);
                 }
             }
         }

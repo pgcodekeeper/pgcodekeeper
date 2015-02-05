@@ -34,7 +34,7 @@ public final class PgDiffSequences {
                 PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, sequence);
                 
                 searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, sequence);
+                PgDiff.writeCreationSql(script, null, sequence, true);
             }
         }
     }

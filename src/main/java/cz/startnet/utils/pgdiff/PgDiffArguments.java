@@ -10,6 +10,9 @@ import java.nio.charset.Charset;
 import java.util.SortedMap;
 import java.util.regex.Pattern;
 
+import org.osgi.framework.BundleContext;
+
+import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
 
@@ -641,7 +644,8 @@ public class PgDiffArguments {
     private void printVersion(final PrintWriter writer) {
         writer.print(Resources.getString("Version"));
         writer.print(": ");
-        writer.println(Resources.getString("VersionNumber"));
+        BundleContext ctx = Activator.getContext();
+        writer.println(ctx == null ? "error: no OSGI running" : ctx.getBundle().getVersion());
     }
 
     /**
