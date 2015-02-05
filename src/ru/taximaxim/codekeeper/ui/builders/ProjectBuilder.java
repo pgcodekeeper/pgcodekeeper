@@ -22,7 +22,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
 
     public ProjectBuilder() {
     }
-    
+
     int count = 0;
 
     @Override
@@ -40,46 +40,43 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             try {
                 count = 0;
                 delta.accept(new IResourceDeltaVisitor() {
-                    
+
                     @Override
-                    public boolean visit(IResourceDelta delta) throws CoreException {
+                    public boolean visit(IResourceDelta delta)
+                            throws CoreException {
                         if (delta.getResource() instanceof IFile) {
                             count++;
                         }
                         return true;
                     }
                 });
-                if (count > 10) {
-                    parser.getObjFromProject(monitor);
-                } else {
-                    final SubMonitor sub = SubMonitor.convert(monitor, count);
-                    delta.accept(new IResourceDeltaVisitor() {
-                        public boolean visit(IResourceDelta delta) {
-                            if (delta.getResource() instanceof IFile) {
-                                switch (delta.getKind()) {
-                                case IResourceDelta.REMOVED:
-                                case IResourceDelta.REMOVED_PHANTOM:
-                                case IResourceDelta.REPLACED:
-                                    parser.removePathFromRefs(Paths.get(delta
-                                            .getResource().getLocationURI()));
-                                    break;
-                                default:
+                final SubMonitor sub = SubMonitor.convert(monitor, count);
+                delta.accept(new IResourceDeltaVisitor() {
+                    public boolean visit(IResourceDelta delta) {
+                        if (delta.getResource() instanceof IFile) {
+                            switch (delta.getKind()) {
+                            case IResourceDelta.REMOVED:
+                            case IResourceDelta.REMOVED_PHANTOM:
+                            case IResourceDelta.REPLACED:
+                                parser.removePathFromRefs(Paths.get(delta
+                                        .getResource().getLocationURI()));
+                                break;
+                            default:
+                                sub.worked(1);
+                                parser.getObjFromProjFile(delta.getResource()
+                                        .getLocationURI());
 
-                                    sub.worked(1);
-                                    parser.getObjFromProjFile(delta
-                                            .getResource().getLocationURI());
-
-                                    break;
-                                }
+                                break;
                             }
-                            return true;
                         }
-                    });
-                    parser.notifyListeners();
-                }
-             } catch (CoreException e) {
-                Log.log(Log.LOG_ERROR, "Cannot get delta from incremental or auto build");
-             }
+                        return true;
+                    }
+                });
+                parser.notifyListeners();
+            } catch (CoreException e) {
+                Log.log(Log.LOG_ERROR,
+                        "Cannot get delta from incremental or auto build");
+            }
             break;
         case IncrementalProjectBuilder.FULL_BUILD:
             parser.getObjFromProject(monitor);
