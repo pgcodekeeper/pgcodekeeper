@@ -5,12 +5,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -35,27 +31,20 @@ import cz.startnet.utils.pgdiff.schema.StatementActions;
 public class PgDbParser {
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
-    private volatile List<PgObjLocation> objDefinitions;
-    private volatile List<PgObjLocation> objReferences;
+    private volatile ConcurrentMap<Path, List<PgObjLocation>> objDefinitions;
+    private volatile ConcurrentMap<Path, List<PgObjLocation>> objReferences;
     private IProject proj;
     private List<Listener> listeners = new ArrayList<>();
 
     private PgDbParser(IProject proj) {
-        objDefinitions = new ArrayList<>();
-        objReferences = new ArrayList<>();
+        objDefinitions = new ConcurrentHashMap<>();
+        objReferences = new ConcurrentHashMap<>();
         this.proj = proj;
     }
     
     private PgDbParser() {
         this(null);
     }
-    
-    private void updateReferences(List<PgObjLocation> defs,
-            List<PgObjLocation> refs) {
-        objDefinitions = defs;
-        objReferences = refs;
-    }
-    
     
     public void addListener(Listener e) {
         listeners.add(e);
@@ -96,17 +85,21 @@ public class PgDbParser {
         PgDatabase db = PgDumpLoader.loadSchemasAndFile(filePath,
                 prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), false,
                 false, ParserClass.getParserAntlrReferences(null, 1, funcBodyes));
-        updateReferences(fillRefs(objDefinitions, db.getObjDefinitions()),
-                fillRefs(objReferences, db.getObjReferences()));
+        for (Path key : db.getObjDefinitions().keySet()) {
+            objDefinitions.put(key, db.getObjDefinitions().get(key));
+        }
+        for (Path key : db.getObjReferences().keySet()) {
+            objReferences.put(key, db.getObjReferences().get(key));
+        }
         fillFunctionBodies(objDefinitions, objReferences, funcBodyes);
     }
 
-    public static void fillFunctionBodies(List<PgObjLocation> objDefinitions,
-            List<PgObjLocation> objReferences,
+    public static void fillFunctionBodies(Map<Path, List<PgObjLocation>> objDefinitions2,
+            Map<Path, List<PgObjLocation>> objReferences2,
             List<FunctionBodyContainer> funcBodyes) {
         for (FunctionBodyContainer funcBody : funcBodyes) {
             String body = funcBody.getBody();
-            for (PgObjLocation def : objDefinitions) {
+            for (PgObjLocation def : getAll(objDefinitions2)) {
                 int index = body.indexOf(def.getObjName());
                 while (index > 0) {
                     PgObjLocation loc = new PgObjLocation(def.getObject().schema,
@@ -114,7 +107,12 @@ public class PgDbParser {
                             funcBody.getPath(), funcBody.getLineNumber());
                     loc.setObjType(def.getObjType());
                     loc.setAction(StatementActions.NONE);
-                    objReferences.add(loc);
+                    List<PgObjLocation> refs = objReferences2.get(funcBody.getPath());
+                    if (refs == null) {
+                        refs = new ArrayList<>();
+                        objReferences2.put(funcBody.getPath(), refs);
+                    }
+                    refs.add(loc);
                     index = body.indexOf(def.getObjName(), index + 1);
                 }
             }
@@ -147,37 +145,15 @@ public class PgDbParser {
                 Paths.get(locationURI).toAbsolutePath().toString(),
                 prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), 
                 false, false, ParserClass.getParserAntlrReferences(monitor, 1, funcBodyes));
-        updateReferences(new ArrayList<>(db.getObjDefinitions()), db.getObjReferences());
+        objDefinitions = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjDefinitions());
+        objReferences = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjReferences());
         fillFunctionBodies(objDefinitions, objReferences, funcBodyes);
         notifyListeners();
     }
 
-    protected List<PgObjLocation> fillRefs(Collection<PgObjLocation> oldRefs,
-            Collection<PgObjLocation> newRefs) {
-        Set<Path> paths = new HashSet<>();
-        for (PgObjLocation newRef :newRefs) {
-            paths.add(newRef.getFilePath());
-        }
-        List<PgObjLocation> newList = removePathFromRefs(oldRefs, paths);
-        newList.addAll(newRefs);
-        return newList;
-    }
-
-    private List<PgObjLocation> removePathFromRefs(Collection<PgObjLocation> newList, Set<Path> paths) {
-        List<PgObjLocation> copy = new ArrayList<>(newList);
-        Iterator<PgObjLocation> iter = copy.iterator();
-        while (iter.hasNext()) {
-            if (paths.contains(iter.next().getFilePath())) {
-                iter.remove();
-            }
-        }
-        return copy;
-    }
     public void removePathFromRefs(Path path) {
-        Set<Path> paths = new HashSet<>();
-        paths.add(path);
-        updateReferences(removePathFromRefs(objDefinitions, paths),
-                removePathFromRefs(objReferences, paths));
+        objDefinitions.remove(path);
+        objReferences.remove(path);
     }
     
     private void fillRefsFromInputStream(InputStream input,
@@ -185,11 +161,12 @@ public class PgDbParser {
         PgDatabase db = PgDumpLoader.loadRefsFromInputStream(input, Paths.get(""),
                 scriptFileEncoding, false, false,
                 ParserClass.getParserAntlrReferences(monitor, 1, funcBodyes));
-        updateReferences(new ArrayList<>(db.getObjDefinitions()), db.getObjReferences());
+        objDefinitions = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjDefinitions());
+        objReferences = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjReferences());
     }
 
     public PgObjLocation getDefinitionForObj(PgObjLocation obj) {
-        for (PgObjLocation col : objDefinitions) {
+        for (PgObjLocation col : getAll(objDefinitions)) {
             if (col.getObject().equals(obj.getObject())
                     && col.getObjType().equals(obj.getObjType())) {
                 return col;
@@ -200,7 +177,11 @@ public class PgDbParser {
     
     public List<PgObjLocation> getObjsForPath(Path pathToFile) {
         List<PgObjLocation> locations = new ArrayList<>();
-        for (PgObjLocation loc : objReferences) {
+        List<PgObjLocation> refs = objReferences.get(pathToFile);
+        if (refs == null) {
+            return locations;
+        }
+        for (PgObjLocation loc : refs) {
             if (loc.getFilePath().equals(pathToFile) 
                     && hasDefinition(loc)) {
                 locations.add(loc);
@@ -209,16 +190,32 @@ public class PgDbParser {
         return locations;
     }
     
-    public List<PgObjLocation> getObjDefinitions() {
-        return Collections.unmodifiableList(objDefinitions);
+    public List<PgObjLocation> getAllObjDefinitions() {
+        return getAll(objDefinitions);
     }
     
-    public List<PgObjLocation> getObjReferences() {
-        return Collections.unmodifiableList(objReferences);
+    public List<PgObjLocation> getAllObjReferences() {
+        return getAll(objReferences);
+    }
+    
+    public ConcurrentMap<Path, List<PgObjLocation>> getObjDefinitions() {
+        return objDefinitions;
+    }
+    
+    public ConcurrentMap<Path, List<PgObjLocation>> getObjReferences() {
+        return objReferences;
+    }
+    
+    public static List<PgObjLocation> getAll(Map<Path, List<PgObjLocation>> refs) {
+        List<PgObjLocation> results = new ArrayList<>();
+        for (Path key : refs.keySet()) {
+            results.addAll(refs.get(key));
+        }
+        return results;
     }
     
     private boolean hasDefinition(PgObjLocation obj) {
-        for (PgObjLocation loc : objDefinitions) {
+        for (PgObjLocation loc : getAll(objDefinitions)) {
             if (loc.getObject().table.equals(obj.getObject().table)
                     && loc.getObjType().equals(obj.getObjType())) {
                 return true;
@@ -229,7 +226,11 @@ public class PgDbParser {
     
     public List<PgObjLocation> getObjDefinitionsByPath(Path path) {
         List<PgObjLocation> locations = new ArrayList<>();
-        for (PgObjLocation obj : objDefinitions) {
+        List<PgObjLocation> defs = objDefinitions.get(path);
+        if (defs == null) {
+            return locations;
+        }
+        for (PgObjLocation obj : defs) {
             if (obj.getFilePath().equals(path)) {
                 locations.add(obj);
             }

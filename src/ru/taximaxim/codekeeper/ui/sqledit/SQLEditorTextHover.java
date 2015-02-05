@@ -37,7 +37,7 @@ final class SQLEditorTextHover implements ITextHover {
         if (file != null) {
             refs = parser.getObjsForPath(file.getLocation().toFile().toPath());
         } else {
-            refs = parser.getObjReferences();
+            refs = parser.getAllObjReferences();
         }
         for (PgObjLocation obj : refs) {
             if (offset > obj.getOffset()

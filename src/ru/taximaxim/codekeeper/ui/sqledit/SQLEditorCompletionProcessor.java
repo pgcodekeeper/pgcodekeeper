@@ -75,11 +75,11 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         List<PgObjLocation> loc = new ArrayList<>();
         if (page instanceof SQLEditor) {
             PgDbParser parser = ((SQLEditor)page).getParser();
-            loc.addAll(parser.getObjDefinitions());
+            loc.addAll(parser.getAllObjDefinitions());
             if (page instanceof RollOnEditor) {
                 loc.addAll(PgDbParser.getParser(
                         ((DepcyFromPSQLOutput) page.getEditorInput())
-                                .getProject()).getObjDefinitions());    
+                                .getProject()).getAllObjDefinitions());    
             }
         }
         LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources());

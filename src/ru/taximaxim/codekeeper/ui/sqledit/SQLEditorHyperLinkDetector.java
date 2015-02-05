@@ -1,7 +1,10 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -61,8 +64,9 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         if (file != null) {
             refs.addAll(parser.getObjsForPath(file.getLocation().toFile().toPath()));
         } else {
-            refs.addAll(parser.getObjReferences());
-            PgDbParser.fillFunctionBodies(projParser.getObjDefinitions(), refs, funcBodyes);
+            Map<Path, List<PgObjLocation>> reference = new HashMap<>(parser.getObjReferences());
+            PgDbParser.fillFunctionBodies(projParser.getObjDefinitions(), reference, funcBodyes);
+            refs = PgDbParser.getAll(reference);
         }
         for (PgObjLocation obj : refs) {
             if (offset > obj.getOffset()
