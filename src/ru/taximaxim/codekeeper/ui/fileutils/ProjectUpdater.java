@@ -105,7 +105,9 @@ public class ProjectUpdater {
                 // exception & err msg are already formed in the inner catch
                 throw ex;
             }
-            throw new IOException(Messages.ProjectUpdater_error_no_tempdir, ex);
+            throw new IOException(MessageFormat.format(
+                    Messages.ProjectUpdater_error_no_tempdir,
+                    ex.getLocalizedMessage()), ex);
         }
     }
     
@@ -144,7 +146,9 @@ public class ProjectUpdater {
                 // exception & err msg are already formed in the inner catch
                 throw ex;
             }
-            throw new IOException(Messages.ProjectUpdater_error_no_tempdir, ex);
+            throw new IOException(MessageFormat.format(
+                    Messages.ProjectUpdater_error_no_tempdir,
+                    ex.getLocalizedMessage()), ex);
         }
     }
 
