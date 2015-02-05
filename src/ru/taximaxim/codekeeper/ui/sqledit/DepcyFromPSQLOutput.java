@@ -2,15 +2,17 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.UnsupportedEncodingException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IEncodedStorage;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IStorage;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -20,8 +22,10 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IStorageEditorInput;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
@@ -54,11 +58,14 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     String dbName;
     String dbUser;
     String dbPass;
+    private String scriptFileEncoding = UIConsts.UTF_8;
     
     public DepcyFromPSQLOutput(Differ differ, IProject proj, List<PgStatement> list) {
         this.differ = differ;
         this.proj = proj;
         this.objList = list;
+        this.scriptFileEncoding = new ProjectScope(proj)
+        .getNode(UIConsts.PLUGIN_ID.THIS).get(PROJ_PREF.ENCODING, UIConsts.UTF_8);
     }
     
     public List<Entry<PgStatement, PgStatement>> addAdditionalDepciesSource() {
@@ -115,7 +122,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
             listener.addAll(parser.getListeners());
         }
         funcBodyes.clear();
-        parser = PgDbParser.getRollOnParser(getStorage().getContents(), monitor, funcBodyes);
+        parser = PgDbParser.getRollOnParser(getStorage().getContents(), scriptFileEncoding, monitor, funcBodyes);
         for (Listener e : listener) {
             parser.addListener(e);
         }
@@ -245,7 +252,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         }
     }
 
-    class StringStorage implements IStorage {
+    class StringStorage implements IEncodedStorage {
         String str;
         public StringStorage(String str) {
             this.str = str;
@@ -258,7 +265,12 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
 
         @Override
         public InputStream getContents() throws CoreException {
-            return new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
+            try {
+                return new ByteArrayInputStream(str.getBytes(scriptFileEncoding));
+            } catch (UnsupportedEncodingException e) {
+                Log.log(Log.LOG_ERROR, "Invalid Charset", e);
+                return new ByteArrayInputStream(str.getBytes());
+            }
         }
 
         @Override
@@ -274,6 +286,11 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         @Override
         public boolean isReadOnly() {
             return false;
+        }
+
+        @Override
+        public String getCharset() throws CoreException {
+            return scriptFileEncoding;
         }
     }
 }

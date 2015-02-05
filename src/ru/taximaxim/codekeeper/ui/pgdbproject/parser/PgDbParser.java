@@ -77,9 +77,9 @@ public class PgDbParser {
     }
     
     public static PgDbParser getRollOnParser(InputStream input,
-            IProgressMonitor monitor, List<FunctionBodyContainer> funcBodyes) {
+            String scriptFileEncoding, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodyes) {
         PgDbParser rollOnParser = new PgDbParser();
-        rollOnParser.fillRefsFromInputStream(input, monitor, funcBodyes);
+        rollOnParser.fillRefsFromInputStream(input, monitor, scriptFileEncoding, funcBodyes);
         return rollOnParser;
     }
 
@@ -181,9 +181,9 @@ public class PgDbParser {
     }
     
     private void fillRefsFromInputStream(InputStream input,
-            IProgressMonitor monitor, List<FunctionBodyContainer> funcBodyes) {
+            IProgressMonitor monitor, String scriptFileEncoding, List<FunctionBodyContainer> funcBodyes) {
         PgDatabase db = PgDumpLoader.loadRefsFromInputStream(input, Paths.get(""),
-                UIConsts.UTF_8, false, false,
+                scriptFileEncoding, false, false,
                 ParserClass.getParserAntlrReferences(monitor, 1, funcBodyes));
         updateReferences(new ArrayList<>(db.getObjDefinitions()), db.getObjReferences());
     }
