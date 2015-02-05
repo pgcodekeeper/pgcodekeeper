@@ -5,12 +5,13 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
@@ -34,9 +35,9 @@ public class PgDatabase extends PgStatement {
     
     // Contains object definitions
     // Exclude duplicate and keep order
-    private final Set<PgObjLocation> objDefinitions = new LinkedHashSet<>();
+    private final Map<Path, List<PgObjLocation>> objDefinitions = new HashMap<>();
     // СОдержит ссылки на объекты
-    private final List<PgObjLocation> objRefecences = new ArrayList<>();
+    private final Map<Path, List<PgObjLocation>> objRefecences = new HashMap<>();
     
     @Override
     public DbObjType getStatementType() {
@@ -78,11 +79,11 @@ public class PgDatabase extends PgStatement {
         ignoredDataStatements.add(ignoredDataStatement);
     }
     
-    public Set<PgObjLocation> getObjDefinitions() {
+    public Map<Path, List<PgObjLocation>> getObjDefinitions() {
         return objDefinitions;
     }
     
-    public List<PgObjLocation> getObjReferences() {
+    public Map<Path, List<PgObjLocation>> getObjReferences() {
         return objRefecences;
     }
     

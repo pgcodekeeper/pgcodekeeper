@@ -3,7 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
@@ -28,7 +28,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Drop_trigger_statementCo
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Name_or_func_callsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Names_referencesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Sequence_bodyContext;
@@ -56,8 +55,8 @@ public class ReferenceListener extends SQLParserBaseListener {
 
     private String defSchema = "public";
     private final Path filePath;
-    private Set<PgObjLocation> definitions;
-    private List<PgObjLocation> references;
+    private Map<Path, List<PgObjLocation>> definitions;
+    private Map<Path, List<PgObjLocation>> references;
     private PgDatabase db;
     private List<FunctionBodyContainer> funcBodyes = new ArrayList<>();
     
@@ -600,8 +599,18 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
         loc.setAction(StatementActions.CREATE);
         loc.setObjType(objType);
-        definitions.add(loc);
-        references.add(loc);
+        List<PgObjLocation> defs = definitions.get(filePath);
+        if (defs == null) {
+            defs = new ArrayList<>();
+            definitions.put(filePath, defs);
+        }
+        defs.add(loc);
+        List<PgObjLocation> refs = references.get(filePath);
+        if (refs == null) {
+            refs = new ArrayList<>();
+            references.put(filePath, refs);
+        }
+        refs.add(loc);
     }
     
     private PgObjLocation addObjReference(String schemaName, String objName, DbObjType objType,
@@ -612,13 +621,22 @@ public class ReferenceListener extends SQLParserBaseListener {
             loc.setObjNameLength(nameLength);
         }
         loc.setObjType(objType);
-        references.add(loc);
+        List<PgObjLocation> refs = references.get(filePath);
+        if (refs == null) {
+            refs = new ArrayList<>();
+            references.put(filePath, refs);
+        }
+        refs.add(loc);
         return loc;
     }
     
     private void setCommentToDefinition(String schemaName, String objName,
             DbObjType objType, String comment) {
-        for (PgObjLocation loc : definitions) {
+        List<PgObjLocation> defs = new ArrayList<>();
+        for (Path key : definitions.keySet()) {
+            defs.addAll(definitions.get(key));
+        }
+        for (PgObjLocation loc : defs) {
             if (loc.getObjName().equals(objName)
                     && loc.getObjType().equals(objType)) {
                 loc.setComment(comment);
@@ -626,7 +644,11 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
     }
     private void setTableType(PgObjLocation obj) {
-        for (PgObjLocation loc : definitions) {
+        List<PgObjLocation> defs = new ArrayList<>();
+        for (Path key : definitions.keySet()) {
+            defs.addAll(definitions.get(key));
+        }
+        for (PgObjLocation loc : defs) {
             if (loc.getObject().equals(obj.getObject())) {
                 obj.setObjType(loc.getObjType());
             }
