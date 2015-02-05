@@ -586,12 +586,6 @@ public final class PgDiff {
                 writeDepcyObjToScript(script, searchPathHelper, fullStatement, dep, 
                         "View", newSchemaName, viewOld);                
             }else if (dep instanceof PgSequence){
-                if (    fullStatement instanceof PgSequence && 
-                        dep.getName().equals(fullStatement.getName()) && 
-                        dep.getParent().getName().equals(fullStatement.getParent().getName())){
-                    continue;
-                }
-                
                 if(specialDependencies.contains(dep)){
                     continue;
                 }
@@ -605,11 +599,6 @@ public final class PgDiff {
                     specialDependencies.add(dep);
                 }
             }else if (dep instanceof PgTable){
-                if (    fullStatement instanceof PgTable && 
-                        dep.getName().equals(fullStatement.getName()) && 
-                        dep.getParent().getName().equals(fullStatement.getParent().getName())){
-                    continue;
-                }
                 String newSchemaName = dep.getParent().getName();
                 PgSchema schemaOld = dbOld.getSchema(newSchemaName);
 
@@ -621,7 +610,7 @@ public final class PgDiff {
                 }else if (fullStatement instanceof PgView && !dep.equals(tableOld)){
                     /*
                      *  FIXME !dep.equals(tableOld) on previous line checks 
-                     *  constraints/triggers/indecies too, while PgDiffTables.alterTable() 
+                     *  constraints/triggers/indices too, while PgDiffTables.alterTable() 
                      *  later does not consider changes in named objects
                      *  
                      *  Important: fix will break test DifferTest case DifferData_5
