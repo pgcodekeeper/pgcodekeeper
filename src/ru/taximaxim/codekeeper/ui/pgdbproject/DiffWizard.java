@@ -22,8 +22,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -286,9 +284,9 @@ class PageDiff extends WizardPage implements Listener {
             break;
 
         case PROJ:
-            dbs = DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+            dbs = DbSource.fromDirTree(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
                     ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1),
-                    PgDbProject.getProjFromFile(getProjPath()));
+                    getProjPath(), getTargetEncoding());
             break;
 
         default:
@@ -319,18 +317,8 @@ class PageDiff extends WizardPage implements Listener {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 Button cause = (Button) e.getSource();
-
                 if (cause.getSelection()) {
-                    Group to = (Group) cause.getData();
-
-                    if (!to.equals(grpProj)) {
-                        cmbEncoding.setEnabled(true);
-                        cmbEncoding.select(cmbEncoding.indexOf(UIConsts.UTF_8));
-                    } else {
-                        cmbEncoding.setEnabled(false);
-                        txtProjPath.notifyListeners(SWT.Modify, null);
-                    }
-                    switchTargetGrp(to);
+                    switchTargetGrp((Group) cause.getData());
                 }
             }
         };
@@ -352,9 +340,6 @@ class PageDiff extends WizardPage implements Listener {
         radioProj = new Button(grpRadio, SWT.RADIO);
         radioProj.setText(Messages.diffWizard_project);
         radioProj.addSelectionListener(switcher);
-        // TODO fix diff against another project
-        // cannot create IProject here, it's being added to the workspace
-        radioProj.setEnabled(false);
 
         grpDb = new DbPicker(container, SWT.NONE, mainPrefs);
         grpDb.setText(Messages.diffWizard_db_taget);
@@ -418,30 +403,12 @@ class PageDiff extends WizardPage implements Listener {
 
         txtProjPath = new Text(tmpCont, SWT.BORDER);
         txtProjPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtProjPath.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                String dir = txtProjPath.getText();
-
-                if (!dir.isEmpty() && new File(dir).isDirectory()) {
-                    try {
-                        PgDbProject tmpProj = PgDbProject.getProjFromFile(dir);
-                        cmbEncoding.select(cmbEncoding.indexOf(
-                                tmpProj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8)));
-                        cmbTimezone.select(cmbTimezone.indexOf(
-                                tmpProj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC)));
-                    } catch (PgCodekeeperUIException e1) {
-                        ExceptionNotifier.notifyDefault(Messages.DiffWizard_error_opening_project, e1);
-                    }
-                }
-            }
-        });
         txtProjPath.addListener(SWT.Modify, this);
 
         Button btnBrowseProj = new Button(tmpCont, SWT.PUSH);
         btnBrowseProj.setText(Messages.browse);
         btnBrowseProj.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
                 DirectoryDialog dialog = new DirectoryDialog(container.getShell());
@@ -475,10 +442,10 @@ class PageDiff extends WizardPage implements Listener {
         cmbEncoding.select(
                 cmbEncoding.indexOf(proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8)));
 
-        String [] availableTimezones = TimeZone.getAvailableIDs();
-        Arrays.sort(availableTimezones);
-        
         new Label(grpEncoding, SWT.NONE).setText(Messages.diffWizard_target_timezone);
+        
+        String[] availableTimezones = TimeZone.getAvailableIDs();
+        Arrays.sort(availableTimezones);
         cmbTimezone = new Combo(grpEncoding, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
         cmbTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbTimezone.setItems(availableTimezones);
@@ -511,7 +478,6 @@ class PageDiff extends WizardPage implements Listener {
         try {
             switch (getTargetType()) {
             case DB:
-                break;
             case JDBC:
                 break;
 
@@ -524,11 +490,9 @@ class PageDiff extends WizardPage implements Listener {
 
             case PROJ:
                 String dir = txtProjPath.getText();
-
                 if (dir.isEmpty() || !new File(dir).isDirectory()) {
                     errMsg = Messages.diffWizard_select_valid_project_file;
                 }
-
                 break;
             }
         } catch (PgCodekeeperUIException e) {
