@@ -48,7 +48,7 @@ public final class PgDiffConstraints {
                 PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, constraint);
                 
                 searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, constraint);
+                PgDiff.writeCreationSql(script, null, constraint, true);
             }
         }
     }

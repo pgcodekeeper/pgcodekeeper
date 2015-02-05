@@ -179,25 +179,18 @@ public final class PgDiff {
         
         diffComments(oldDatabase, newDatabase, script);
 
-        
-        
+        dropOldExtensions(script, oldDatabase, newDatabase);
         dropOldSchemas(script, arguments, oldDatabase, newDatabase);
         createNewSchemas(script, oldDatabase, newDatabase);
-        
-        dropOldExtensions(script, oldDatabase, newDatabase);
         createNewExtensions(script, oldDatabase, newDatabase);
         updateExtensions(script, oldDatabase, newDatabase);
-        
         updateSchemas(script, arguments, oldDatabase, newDatabase);
 
-        
-        
         if (arguments.isAddTransaction()) {
             script.addStatement("\nCOMMIT TRANSACTION;");
         }
 
         script.printStatements(writer);
-        
         if (arguments.isOutputIgnoredStatements()) {
             addIgnoredStatements(oldDatabase, "OriginalDatabaseIgnoredStatements", writer);
             addIgnoredStatements(newDatabase, "NewDatabaseIgnoredStatements", writer);
@@ -320,7 +313,7 @@ public final class PgDiff {
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension newExt : newDatabase.getExtensions()) {
             if(oldDatabase.getExtension(newExt.getName()) == null) {
-                writeCreationSql(script, null, newExt);
+                writeCreationSql(script, null, newExt, true);
             }
         }
     }
@@ -377,7 +370,7 @@ public final class PgDiff {
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for (final PgSchema newSchema : newDatabase.getSchemas()) {
             if (oldDatabase.getSchema(newSchema.getName()) == null) {
-                writeCreationSql(script, null, newSchema);
+                writeCreationSql(script, null, newSchema, true);
             }
         }
     }
@@ -551,8 +544,9 @@ public final class PgDiff {
         }
     }
     
-    static void writeCreationSql(PgDiffScript script, String comment, PgStatement pgObject) {
-        script.addCreate(pgObject, comment, pgObject.getCreationSQL());
+    static void writeCreationSql(PgDiffScript script, String comment,
+            PgStatement pgObject, boolean replaceExisting) {
+        script.addCreate(pgObject, comment, pgObject.getCreationSQL(), replaceExisting);
     }
     
     static void writeDropSql(PgDiffScript script, String comment, PgStatement pgObject) {
@@ -607,7 +601,7 @@ public final class PgDiff {
                 if (schemaOld == null || schemaOld.getSequence(dep.getName()) == null){
                     tempSwitchSearchPath(newSchemaName, searchPathHelper, script);
                     writeCreationSql(script, "-- DEPCY: this sequence is in dependency tree of " + 
-                            fullStatement.getBareName(), dep);
+                            fullStatement.getBareName(), dep, true);
                     specialDependencies.add(dep);
                 }
             }else if (dep instanceof PgTable){
@@ -623,7 +617,7 @@ public final class PgDiff {
                 if (tableOld == null){
                     tempSwitchSearchPath(newSchemaName, searchPathHelper, script);
                     writeCreationSql(script, "-- DEPCY: this table is in dependency tree of " + 
-                            fullStatement.getBareName(), dep);
+                            fullStatement.getBareName(), dep, true);
                 }else if (fullStatement instanceof PgView && !dep.equals(tableOld)){
                     /*
                      *  FIXME !dep.equals(tableOld) on previous line checks 
@@ -655,7 +649,7 @@ public final class PgDiff {
                 // never be created here
                 if (dbOld.getSchema(dep.getName()) == null){
                     writeCreationSql(script, "-- DEPCY: this schema is in dependency tree of " + 
-                            fullStatement.getBareName(), dep);
+                            fullStatement.getBareName(), dep, true);
                 }
             } else if (dep instanceof PgFunction) {
                 if (fullStatement instanceof PgTrigger) {
@@ -687,20 +681,18 @@ public final class PgDiff {
             SearchPathHelper searchPathHelper, PgStatement fullStatement,
             PgStatement objNew, String objName, String newSchemaName, PgStatement objOld) {
         if (objOld == null) {
-            tempSwitchSearchPath(objNew.getParent().getName(),
-                    searchPathHelper, script);
+            tempSwitchSearchPath(objNew.getParent().getName(), searchPathHelper, script);
             writeCreationSql(script,
                     "-- DEPCY: this " + objName + " is in dependency tree of "
-                            + fullStatement.getBareName(), objNew);
+                            + fullStatement.getBareName(), objNew, true);
         }else if (!objOld.equals(objNew)){
-            tempSwitchSearchPath(newSchemaName, searchPathHelper,
-                    script);
+            tempSwitchSearchPath(newSchemaName, searchPathHelper, script);
             writeDropSql(script,
                     "-- DEPCY: recreating " + objName + " that is in dependency tree of "
                             + fullStatement.getBareName(), objOld);
             writeCreationSql(script,
                     "-- DEPCY: recreating " + objName + " that is in dependency tree of "
-                            + fullStatement.getBareName(), objNew);
+                            + fullStatement.getBareName(), objNew, true);
         }
     }
     

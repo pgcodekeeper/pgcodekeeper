@@ -43,7 +43,7 @@ public final class PgDiffViews {
                 PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newView);
                 
                 searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, newView);
+                PgDiff.writeCreationSql(script, null, newView, true);
                 
                 if (isModified){
                  // check all dependants, drop them if blocking
@@ -55,7 +55,7 @@ public final class PgDiffViews {
                             PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
                                     searchPathHelper, script);
                             PgDiff.writeCreationSql(script,"-- DEPCY: Following view depends"
-                                    + " on the altered view " + newView.getName(), depnt);
+                                    + " on the altered view " + newView.getName(), depnt, false);
                         }
                     }
                 }

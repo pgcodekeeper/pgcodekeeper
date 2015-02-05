@@ -1,7 +1,7 @@
 
-CREATE SCHEMA other;
-
 DROP EXTENSION testext1;
+
+CREATE SCHEMA other;
 
 CREATE EXTENSION testext3 SCHEMA other VERSION 2;
 
