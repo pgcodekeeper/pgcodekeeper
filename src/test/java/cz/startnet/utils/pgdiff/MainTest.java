@@ -24,7 +24,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.osgi.framework.BundleContext;
 
+import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 
 @RunWith(value = Parameterized.class)
@@ -223,7 +225,10 @@ class ArgumentsProvider_2 extends ArgumentsProvider{
 
     @Override
     public String output() {
-        return Resources.getString("Version") + ": " + Resources.getString("VersionNumber") + "\n";
+        BundleContext ctx = Activator.getContext();
+        return Resources.getString("Version") + ": " +
+                (ctx == null ? "error: no OSGI running" : ctx.getBundle().getVersion())
+                        + "\n";
     }
 }
 
