@@ -34,10 +34,9 @@ public class PgDatabase extends PgStatement {
     private final List<String> ignoredDataStatements = new ArrayList<>();
     
     // Contains object definitions
-    // Exclude duplicate and keep order
     private final Map<Path, List<PgObjLocation>> objDefinitions = new HashMap<>();
-    // СОдержит ссылки на объекты
-    private final Map<Path, List<PgObjLocation>> objRefecences = new HashMap<>();
+    // Содержит ссылки на объекты
+    private final Map<Path, List<PgObjLocation>> objReferences = new HashMap<>();
     
     @Override
     public DbObjType getStatementType() {
@@ -84,7 +83,7 @@ public class PgDatabase extends PgStatement {
     }
     
     public Map<Path, List<PgObjLocation>> getObjReferences() {
-        return objRefecences;
+        return objReferences;
     }
     
     public List<PgStatement> getObjectsByName(String objName) {

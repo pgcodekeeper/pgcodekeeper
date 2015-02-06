@@ -58,7 +58,7 @@ public class ReferenceListener extends SQLParserBaseListener {
     private Map<Path, List<PgObjLocation>> definitions;
     private Map<Path, List<PgObjLocation>> references;
     private PgDatabase db;
-    private List<FunctionBodyContainer> funcBodyes = new ArrayList<>();
+    private List<FunctionBodyContainer> funcBodies = new ArrayList<>();
     
     public ReferenceListener(PgDatabase db, Path filePath) {
         this.definitions = db.getObjDefinitions();
@@ -164,7 +164,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
         PgFunction function = new PgFunction(name, ParserAbstract.getFullCtxText(ctx.getParent()), "");
         ParserAbstract.fillArguments(ctx.function_parameters().function_args(), function);
-        funcBodyes.add(new FunctionBodyContainer(filePath, ctx.funct_body
+        funcBodies.add(new FunctionBodyContainer(filePath, ctx.funct_body
                 .getStart().getStartIndex(), ctx.funct_body
                 .getStart().getLine(), ParserAbstract
                 .getFullCtxText(ctx.funct_body)));
@@ -198,9 +198,9 @@ public class ReferenceListener extends SQLParserBaseListener {
         PgSchema schema = new PgSchema(name, ParserAbstract.getFullCtxText(ctx.getParent()));
         PgSchema exists = db.getSchema(schema.getName());
         if (exists == null) {
-            db.addSchema((PgSchema) schema);
+            db.addSchema(schema);
         } else {
-            db.tryReplacePublicDef((PgSchema) schema);
+            db.tryReplacePublicDef(schema);
         }
         fillObjDefinition(null, name, DbObjType.SCHEMA, ctx.name.getStart()
                 .getStartIndex(), 0, ctx.name.getStart().getLine());
@@ -700,11 +700,11 @@ public class ReferenceListener extends SQLParserBaseListener {
         new ParseTreeWalker().walk(name, default_expr);
     }
     
-    public List<FunctionBodyContainer> getFunctionBodyes() {
-        return funcBodyes;
+    public List<FunctionBodyContainer> getFunctionBodies() {
+        return funcBodies;
     }
 
-    class SeqName extends SQLParserBaseListener {
+    private class SeqName extends SQLParserBaseListener {
 
         @Override
         public void enterName_or_func_calls(Name_or_func_callsContext ctx) {

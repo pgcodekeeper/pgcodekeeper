@@ -11,8 +11,8 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public abstract class ParserClass {
 
-    IProgressMonitor monitor;
-    int monitoringLevel;
+    protected IProgressMonitor monitor;
+    protected int monitoringLevel;
     
     public static ParserClass getAntlr(IProgressMonitor monitor, int monitoringLevel){
         return new ParserClassAntlr(monitor, monitoringLevel);
@@ -22,11 +22,12 @@ public abstract class ParserClass {
         return new ParserClassLegacy(monitor, monitoringLevel);
     }
     
-    public static ParserClass getParserAntlrReferences(IProgressMonitor monitor, int monitoringLevel, List<FunctionBodyContainer> funcBodyes) {
-        return new ParserAntlrReferences(monitor, monitoringLevel, funcBodyes);
+    public static ParserClass getParserAntlrReferences(IProgressMonitor monitor,
+            int monitoringLevel, List<FunctionBodyContainer> funcBodies) {
+        return new ParserAntlrReferences(monitor, monitoringLevel, funcBodies);
     }
     
-    public ParserClass(IProgressMonitor monitor, int monitoringLevel) {
+    protected ParserClass(IProgressMonitor monitor, int monitoringLevel) {
         this.monitor = monitor;
         this.monitoringLevel = monitoringLevel > 0 ? monitoringLevel : 1;
     }
@@ -56,7 +57,8 @@ class ParserClassAntlr extends ParserClass {
             PgDatabase database, Path path) {
         return PgDumpLoader.loadDatabaseSchemaCoreAntLR(
                 inputStream, charsetName,
-                outputIgnoredStatements, ignoreSlonyTriggers, database, path, monitor, monitoringLevel);
+                outputIgnoredStatements, ignoreSlonyTriggers, database, path,
+                monitor, monitoringLevel);
     }
 }
 
@@ -77,19 +79,21 @@ class ParserClassLegacy extends ParserClass {
 
 class ParserAntlrReferences extends ParserClass {
     
-    private List<FunctionBodyContainer> funcBodyes;
+    private List<FunctionBodyContainer> funcBodies;
 
-    public ParserAntlrReferences(IProgressMonitor monitor, int monitoringLevel, List<FunctionBodyContainer> funcBodyes) {
+    public ParserAntlrReferences(IProgressMonitor monitor, int monitoringLevel,
+            List<FunctionBodyContainer> funcBodies) {
         super(monitor, monitoringLevel);
-        this.funcBodyes = funcBodyes;
+        this.funcBodies = funcBodies;
     }
     
     @Override
     public PgDatabase parse(InputStream inputStream, String charsetName,
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
             PgDatabase database, Path path) {
-        return PgDumpLoader.getObjReferences(
+        return PgDumpLoader.loadObjReferences(
                 inputStream, charsetName,
-                outputIgnoredStatements, ignoreSlonyTriggers, database, path, monitor, monitoringLevel, funcBodyes);
+                outputIgnoredStatements, ignoreSlonyTriggers, database, path,
+                monitor, monitoringLevel, funcBodies);
     }
 }

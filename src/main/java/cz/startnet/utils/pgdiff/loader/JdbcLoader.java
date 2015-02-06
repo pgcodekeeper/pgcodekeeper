@@ -581,15 +581,17 @@ public class JdbcLoader implements PgCatalogStrings {
     }
     
     private PgSelect parseAntLrSelect(PgDatabase db, String statement, String searchPath) {
+        CustomErrorListener errListener = new CustomErrorListener();
+        
         PgSelect select = new PgSelect(statement, searchPath);
         SQLLexer lexer = new SQLLexer(new ANTLRInputStream(statement));
         lexer.removeErrorListeners();
-        lexer.addErrorListener(CustomErrorListener.INSTATANCE);
+        lexer.addErrorListener(errListener);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
 
         SQLParser parser = new SQLParser(tokens);
         parser.removeErrorListeners();
-        parser.addErrorListener(CustomErrorListener.INSTATANCE);
+        parser.addErrorListener(errListener);
         CreateView cv = new CreateView(null, db, Paths.get("/"));
         SelectQueryVisitor visitor = cv.getVisitor(select);
         visitor.visit(parser.query_expression());

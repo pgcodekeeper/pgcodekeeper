@@ -4,10 +4,10 @@ import java.nio.file.Path;
 
 public class FunctionBodyContainer {
 
-    private String body;
-    private int offset;
-    private Path path;
-    private int line;
+    private final String body;
+    private final int offset;
+    private final Path path;
+    private final int line;
     
     public FunctionBodyContainer(Path path, int offset, int line, String body) {
         this.body = body;

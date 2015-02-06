@@ -29,16 +29,17 @@ public class AntlrParser {
     
     public void parseInputStream(InputStream inputStream,
             String charsetName, SQLParserBaseListener listener, Path path) throws IOException {
-
+        CustomErrorListener errListener = new CustomErrorListener();
+        errListener.setPath(path);
+        
         SQLLexer lexer = new SQLLexer(new ANTLRInputStream(new InputStreamReader(inputStream, charsetName)));
         lexer.removeErrorListeners();
-        CustomErrorListener.INSTATANCE.setPath(path);
-        lexer.addErrorListener(CustomErrorListener.INSTATANCE);
+        lexer.addErrorListener(errListener);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
 
         SQLParser parser = new SQLParser(tokens);
         parser.removeErrorListeners();
-        parser.addErrorListener(CustomErrorListener.INSTATANCE);
+        parser.addErrorListener(errListener);
         parser.addParseListener(new ParseTreeListener() {
             
             @Override
