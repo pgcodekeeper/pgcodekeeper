@@ -213,7 +213,9 @@ public final class PgDiff {
     private static void addIgnoredStatements(PgDatabase database,
             String messageText, PrintWriter writer) {
         if (!database.getIgnoredStatements().isEmpty()) {
-            writer.println("\n" + "/* " + messageText);
+            writer.println();
+            writer.print("/*");
+            writer.println(messageText);
 
             for (final String statement : database.getIgnoredStatements()) {
                 writer.println();

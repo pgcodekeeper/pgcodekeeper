@@ -639,7 +639,7 @@ public class PgDiffArguments {
      * @param writer writer to print the usage to
      */
     private void printVersion(final PrintWriter writer) {
-        writer.println(Messages.Version + ": " + Messages.VersionNumber);
+        writer.println(MessageFormat.format(Messages.Version, Messages.VersionNumber));
     }
 
     /**

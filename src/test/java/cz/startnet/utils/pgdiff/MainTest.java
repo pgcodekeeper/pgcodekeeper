@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -224,7 +225,7 @@ class ArgumentsProvider_2 extends ArgumentsProvider{
 
     @Override
     public String output() {
-        return Messages.Version + ": " + Messages.VersionNumber + "\n";
+        return MessageFormat.format(Messages.Version, Messages.VersionNumber) + '\n';
     }
 }
 

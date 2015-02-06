@@ -375,9 +375,10 @@ public final class PgDiffTables {
                 statements.add(ALTER_COLUMN + newColumnName + " TYPE "
                         + newColumn.getType() + " /* "
                         + MessageFormat.format(
-                        Messages.Table_TypeParameterChange,
-                        newTable.getName(), oldColumn.getType(),
-                        newColumn.getType()) + " */");
+                                Messages.Table_TypeParameterChange,
+                                newTable.getName(), oldColumn.getType(),
+                                newColumn.getType())
+                        + " */");
             }
 
             final String oldDefault = (oldColumn.getDefaultValue() == null) ? ""
