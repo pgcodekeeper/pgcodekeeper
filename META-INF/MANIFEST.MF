@@ -5,3 +5,6 @@ Bundle-SymbolicName: apgdiff.tests
 Bundle-Version: 1.0.0.qualifier
 Fragment-Host: apgdiff
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Export-Package: cz.startnet.utils.pgdiff.loader,
+ ru.taximaxim.codekeeper.apgdiff,
+ ru.taximaxim.codekeeper.apgdiff.model.exporter
