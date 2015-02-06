@@ -36,7 +36,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
-import cz.startnet.utils.pgdiff.loader.JdbcLoaderTest;
 import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
@@ -63,7 +62,7 @@ public class DbSourceTest {
         
         // remove old schemas
         try(InputStreamReader isr = new InputStreamReader(
-                JdbcLoaderTest.class.getResourceAsStream(RESOURCE_CLEANUP), "UTF-8");
+                DbSourceTest.class.getResourceAsStream(RESOURCE_CLEANUP), "UTF-8");
                 BufferedReader reader = new BufferedReader(isr)){
             
             StringBuilder script = new StringBuilder();
@@ -78,7 +77,7 @@ public class DbSourceTest {
         
         // dump schemas back
         try(InputStreamReader isr = new InputStreamReader(
-                JdbcLoaderTest.class.getResourceAsStream(RESOURCE_DUMP), "UTF-8");
+                DbSourceTest.class.getResourceAsStream(RESOURCE_DUMP), "UTF-8");
                 BufferedReader reader = new BufferedReader(isr)){
             
             StringBuilder script = new StringBuilder();
@@ -93,7 +92,7 @@ public class DbSourceTest {
         }
         
         dbPredefined = PgDumpLoader.loadDatabaseSchemaFromDump(
-                JdbcLoaderTest.class.getResourceAsStream(RESOURCE_DUMP),
+                DbSourceTest.class.getResourceAsStream(RESOURCE_DUMP),
                 ApgdiffConsts.UTF_8, false, false, ParserClass.getLegacy(null, 1));
         
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
@@ -136,7 +135,7 @@ public class DbSourceTest {
     
     @Test
     public void testFile () throws IOException, URISyntaxException {
-        URL urla = JdbcLoaderTest.class.getResource(RESOURCE_DUMP);
+        URL urla = DbSourceTest.class.getResource(RESOURCE_DUMP);
         
         performTest(DbSource.fromFile(ParserClass.getLegacy(null, 1), 
                 ApgdiffTestUtils.getFileFromRes(urla).getCanonicalPath(), UIConsts.UTF_8));

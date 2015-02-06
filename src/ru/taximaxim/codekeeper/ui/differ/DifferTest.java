@@ -32,7 +32,6 @@ import org.junit.runners.Parameterized.Parameters;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.apgdiff.model.exporter.PartialExporterTest;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
@@ -72,11 +71,11 @@ public class DifferTest {
     @Test
     public void testDiffer() throws PgCodekeeperUIException, URISyntaxException, 
             IOException, InvocationTargetException{
-        String sourceFilename = "TestPartialExportSource.sql";
-        String targetFilename = "TestPartialExportTarget.sql";
+        String sourceFilename = "exporter/TestPartialExportSource.sql";
+        String targetFilename = "exporter/TestPartialExportTarget.sql";
         
-        File sourceFile = ApgdiffTestUtils.getFileFromRes(PartialExporterTest.class.getResource(sourceFilename));
-        File targetFile = ApgdiffTestUtils.getFileFromRes(PartialExporterTest.class.getResource(targetFilename));
+        File sourceFile = ApgdiffTestUtils.getFileFromRes(DifferTest.class.getResource(sourceFilename));
+        File targetFile = ApgdiffTestUtils.getFileFromRes(DifferTest.class.getResource(targetFilename));
 
         DbSource dbSource = 
                 DbSource.fromFile(ParserClass.getLegacy(null, 1), sourceFile.getAbsolutePath(), UIConsts.UTF_8);
