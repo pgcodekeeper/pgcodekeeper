@@ -51,7 +51,6 @@ public class MainTest {
                                 {new ArgumentsProvider_DangerAlterCol()},
                                 {new ArgumentsProvider_DangerAlterColOk()},
                                 {new ArgumentsProvider_16()},
-                                {new ArgumentsProvider_17()},
                             });
     }
 
@@ -620,32 +619,5 @@ class ArgumentsProvider_16 extends ArgumentsProvider{
         }
         
         return resFile;
-    }
-}
-
-/**
- * {@link ArgumentsProvider} implementation testing parsing option
- */
-class ArgumentsProvider_17 extends ArgumentsProvider{
-    
-    {
-        super.resName = "loader/remote/testing_dump.sql";
-        super.testType = TestType.TEST_PARSE;
-    }
-    
-    @Override
-    public String[] arguments() throws URISyntaxException, IOException {
-        File db = ApgdiffTestUtils.getFileFromRes(MainTest.class.getResource(resName));
-        
-        return new String[]{"--parse", db.getAbsolutePath(), getParseResultDir().getAbsolutePath()};
-    }
-    
-    @Override
-    public File getParseResultDir() throws IOException {
-        if (resDir == null){
-            resDir = Files.createTempDirectory("pgcodekeeper_standalone_").toFile();
-        }
-        
-        return resDir;
     }
 }
