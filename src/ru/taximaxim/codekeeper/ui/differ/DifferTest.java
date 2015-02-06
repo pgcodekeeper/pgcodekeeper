@@ -72,8 +72,8 @@ public class DifferTest {
     @Test
     public void testDiffer() throws PgCodekeeperUIException, URISyntaxException, 
             IOException, InvocationTargetException{
-        String sourceFilename = "exporter/TestPartialExportSource.sql";
-        String targetFilename = "exporter/TestPartialExportTarget.sql";
+        String sourceFilename = "TestPartialExportSource.sql";
+        String targetFilename = "TestPartialExportTarget.sql";
         
         File sourceFile = ApgdiffTestUtils.getFileFromRes(PartialExporterTest.class.getResource(sourceFilename));
         File targetFile = ApgdiffTestUtils.getFileFromRes(PartialExporterTest.class.getResource(targetFilename));
