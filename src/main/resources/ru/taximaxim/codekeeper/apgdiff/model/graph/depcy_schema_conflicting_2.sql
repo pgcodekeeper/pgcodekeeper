@@ -1,0 +1,21 @@
+
+CREATE TABLE t1 (
+    c1 integer
+);
+
+
+CREATE SEQUENCE s1
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+--ALTER SEQUENCE s1 OWNED BY t1.c1;
+
+
+CREATE TABLE t2 (
+    c2 integer
+);
+
+ALTER TABLE ONLY t2 ALTER COLUMN c2 SET DEFAULT nextval('s1'::regclass);
