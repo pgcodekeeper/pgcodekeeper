@@ -7,7 +7,7 @@ package cz.startnet.utils.pgdiff.parsers;
 
 import java.text.MessageFormat;
 
-import cz.startnet.utils.pgdiff.Resources;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -38,7 +38,7 @@ public final class AlterViewParser {
 
         if (schema == null) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotFindSchema"), schemaName,
+                    Messages.Parser_CannotFindSchema, schemaName,
                     statement));
         }
 
@@ -47,7 +47,7 @@ public final class AlterViewParser {
 
         if (view == null) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotFindView"), viewName,
+                    Messages.Parser_CannotFindView, viewName,
                     statement));
         }
 

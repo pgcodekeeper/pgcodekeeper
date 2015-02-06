@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -28,6 +29,7 @@ import org.osgi.framework.BundleContext;
 
 import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 @RunWith(value = Parameterized.class)
 public class MainTest {
@@ -209,7 +211,7 @@ class ArgumentsProvider_usage extends ArgumentsProvider{
 
     @Override
     public String output() {
-        return Resources.getString("UsageHelp").replace("${tab}", "\t").concat("\n");
+        return Messages.UsageHelp.replace("${tab}", "\t").concat("\n");
     }
 }
 
@@ -226,9 +228,8 @@ class ArgumentsProvider_2 extends ArgumentsProvider{
     @Override
     public String output() {
         BundleContext ctx = Activator.getContext();
-        return Resources.getString("Version") + ": " +
-                (ctx == null ? "error: no OSGI running" : ctx.getBundle().getVersion())
-                        + "\n";
+        return MessageFormat.format(Messages.Version, 
+                ctx == null ? "error: no OSGI running" : ctx.getBundle().getVersion()) + '\n';
     }
 }
 

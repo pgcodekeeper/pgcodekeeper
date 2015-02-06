@@ -248,7 +248,6 @@ public class DepcyGraph {
                             Messages.RefColumn_CannotFindSchema,
                             table.getName(), cons.getName(), ref.schema));
                     
-                    
                     PgTable refTable = refSchema.getTable(ref.table);
                     testNotNull(refTable, MessageFormat.format(
                             Messages.RefColumn_CannotFindTable,

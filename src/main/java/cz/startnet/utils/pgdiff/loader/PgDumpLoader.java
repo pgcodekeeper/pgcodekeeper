@@ -23,8 +23,8 @@ import java.util.regex.Pattern;
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
-import cz.startnet.utils.pgdiff.Resources;
 import cz.startnet.utils.pgdiff.parsers.AlterFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.AlterSchemaParser;
 import cz.startnet.utils.pgdiff.parsers.AlterSequenceParser;
@@ -269,9 +269,8 @@ public final class PgDumpLoader { //NOPMD
     
             return database;
         } catch (final UnsupportedEncodingException ex) {
-            throw new UnsupportedOperationException(
-                    Resources.getString("UnsupportedEncoding") + ": "
-                    + charsetName, ex);
+            throw new UnsupportedOperationException(MessageFormat.format(
+                    Messages.Loader_UnsupportedEncoding, charsetName), ex);
         } catch(IOException ex) {
             throw new FileException("Exception while closing dump file", ex);
         }
@@ -331,7 +330,7 @@ public final class PgDumpLoader { //NOPMD
         }
         return db;
     }
-    
+
     /**
      * Uses to parse only one file
      * @param projPath path to root folder of project
@@ -382,21 +381,17 @@ public final class PgDumpLoader { //NOPMD
         }
     }
 
-    private static void parseFile(String charsetName,
-            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
-            PgDatabase db, ParserClass parser, File f) {
-        if (f.exists() && !f.isDirectory() && 
-                f.getName().toLowerCase().endsWith(".sql")) {
+    private static void parseFile(String charsetName, boolean outputIgnoredStatements,
+            boolean ignoreSlonyTriggers, PgDatabase db, ParserClass parser, File f) {
+        if (f.exists() && !f.isDirectory() && f.getName().toLowerCase().endsWith(".sql")) {
             try (FileInputStream inputStream = new FileInputStream(f)) {
-                parser.parse(inputStream, charsetName,
-                        outputIgnoredStatements, ignoreSlonyTriggers, db, f.toPath());
+                parser.parse(inputStream, charsetName, outputIgnoredStatements,
+                        ignoreSlonyTriggers, db, f.toPath());
             } catch (FileNotFoundException ex) {
                 throw new FileException(MessageFormat.format(
-                        Resources.getString("FileNotFound"),
-                        f.getAbsolutePath()), ex);
+                        Messages.Loader_FileNotFound, f.getAbsolutePath()), ex);
             } catch (IOException ex) {
-                throw new FileException(
-                        "An unexpected IOException", ex);
+                throw new FileException("An unexpected IOException", ex);
             }
         }
     }
@@ -442,7 +437,7 @@ public final class PgDumpLoader { //NOPMD
                     outputIgnoredStatements, ignoreSlonyTriggers, parser);
         } catch (final FileNotFoundException ex) {
             throw new FileException(MessageFormat.format(
-                    Resources.getString("FileNotFound"), file), ex);
+                    Messages.Loader_FileNotFound, file), ex);
         }
     }
 
@@ -472,7 +467,7 @@ public final class PgDumpLoader { //NOPMD
                     newLine = reader.readLine();
                 } catch (IOException ex) {
                     throw new FileException(
-                            Resources.getString("CannotReadFile"), ex);
+                            Messages.Loader_CannotReadFile, ex);
                 }
 
                 if (newLine == null) {
@@ -480,7 +475,7 @@ public final class PgDumpLoader { //NOPMD
                         return null;
                     } else {
                         throw new ParserException(MessageFormat.format(
-                                Resources.getString("EndOfStatementNotFound"),
+                                Messages.Loader_EndOfStatementNotFound,
                                 sbStatement.toString()));
                     }
                 }

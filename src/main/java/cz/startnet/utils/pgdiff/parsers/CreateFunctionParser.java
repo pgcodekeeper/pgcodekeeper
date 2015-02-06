@@ -7,7 +7,7 @@ package cz.startnet.utils.pgdiff.parsers;
 
 import java.text.MessageFormat;
 
-import cz.startnet.utils.pgdiff.Resources;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -51,7 +51,7 @@ public final class CreateFunctionParser {
 
         if (schema == null) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotFindSchema"), schemaName,
+                    Messages.Parser_CannotFindSchema, schemaName,
                     statement));
         }
 

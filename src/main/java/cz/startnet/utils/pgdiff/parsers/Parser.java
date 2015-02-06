@@ -8,7 +8,7 @@ package cz.startnet.utils.pgdiff.parsers;
 import java.text.MessageFormat;
 import java.util.Locale;
 
-import cz.startnet.utils.pgdiff.Resources;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 
 /**
  * Class for parsing strings.
@@ -113,7 +113,7 @@ public final class Parser {
         }
 
         throw new ParserException(MessageFormat.format(
-                Resources.getString("CannotParseStringExpectedWord"), string,
+                Messages.Parser_CannotParseStringExpectedWord, string,
                 word, position + 1, getErrorSubstring()));
     }
 
@@ -279,7 +279,7 @@ public final class Parser {
             return result;
         } catch (final NumberFormatException ex) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotParseStringExpectedInteger"),
+                    Messages.Parser_CannotParseStringExpectedInteger,
                     string, position + 1, getErrorSubstring(), ex));
         }
     }
@@ -339,7 +339,7 @@ public final class Parser {
 
             if (position == endPos) {
                 throw new ParserException(MessageFormat.format(
-                        Resources.getString("CannotParseStringExpectedString"),
+                        Messages.Parser_CannotParseStringExpectedString,
                         string, position + 1));
             }
 
@@ -366,7 +366,7 @@ public final class Parser {
 
         if (position == endPos) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotParseStringExpectedExpression"),
+                    Messages.Parser_CannotParseStringExpectedExpression,
                     string, position + 1, getErrorSubstring()));
         }
 
@@ -475,7 +475,7 @@ public final class Parser {
      */
     public void throwUnsupportedCommand() {
         throw new ParserException(MessageFormat.format(
-                Resources.getString("CannotParseStringUnsupportedCommand"),
+                Messages.Parser_CannotParseStringUnsupportedCommand,
                 string, position + 1, getErrorSubstring()));
     }
 
@@ -539,7 +539,7 @@ public final class Parser {
 
         if (endPos == position) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotParseStringExpectedDataType"),
+                    Messages.Parser_CannotParseStringExpectedDataType,
                     string, position + 1, getErrorSubstring()));
         }
 

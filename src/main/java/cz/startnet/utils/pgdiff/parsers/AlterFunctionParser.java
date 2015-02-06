@@ -2,7 +2,7 @@ package cz.startnet.utils.pgdiff.parsers;
 
 import java.text.MessageFormat;
 
-import cz.startnet.utils.pgdiff.Resources;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -20,7 +20,7 @@ public final class AlterFunctionParser {
         PgSchema schema = database.getSchema(schemaName);
         if (schema == null) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotFindSchema"), schemaName,
+                    Messages.Parser_CannotFindSchema, schemaName,
                     statement));
         }
         
@@ -31,7 +31,7 @@ public final class AlterFunctionParser {
         PgFunction function = schema.getFunction(tmp.getSignature());
         if (function == null) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotFindFunction"), tmp.getSignature(),
+                    Messages.Parser_CannotFindFunction, tmp.getSignature(),
                     statement));
         }
         

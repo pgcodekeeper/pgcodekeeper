@@ -9,7 +9,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.startnet.utils.pgdiff.Resources;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -56,7 +56,7 @@ public final class CreateViewParser {
 
         if (schema == null) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotFindSchema"), schemaName,
+                    Messages.Parser_CannotFindSchema, schemaName,
                     statement));
         }
 

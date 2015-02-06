@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff;
 
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.util.SortedMap;
 import java.util.regex.Pattern;
 
@@ -14,6 +15,7 @@ import org.osgi.framework.BundleContext;
 
 import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgDiffStatement.DangerStatement;
 
 /**
@@ -572,9 +574,7 @@ public class PgDiffArguments {
             } else if ("--help".equals(args[i])) {
                 setHelp(true);
             } else {
-                writer.print(Resources.getString("ErrorUnknownOption"));
-                writer.print(": ");
-                writer.println(args[i]);
+                writer.println(MessageFormat.format(Messages.Argument_ErrorUnknownOption, args[i]));
                 success = false;
 
                 break;
@@ -633,7 +633,7 @@ public class PgDiffArguments {
      */
     private void printUsage(final PrintWriter writer) {
         writer.println(
-                Resources.getString("UsageHelp").replace("${tab}", "\t"));
+                Messages.UsageHelp.replace("${tab}", "\t"));
     }
 
     /**
@@ -642,10 +642,9 @@ public class PgDiffArguments {
      * @param writer writer to print the usage to
      */
     private void printVersion(final PrintWriter writer) {
-        writer.print(Resources.getString("Version"));
-        writer.print(": ");
         BundleContext ctx = Activator.getContext();
-        writer.println(ctx == null ? "error: no OSGI running" : ctx.getBundle().getVersion());
+        writer.println(MessageFormat.format(Messages.Version,
+                ctx == null ? "error: no OSGI running" : ctx.getBundle().getVersion()));
     }
 
     /**

@@ -7,7 +7,7 @@ package cz.startnet.utils.pgdiff.parsers;
 
 import java.text.MessageFormat;
 
-import cz.startnet.utils.pgdiff.Resources;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -49,7 +49,7 @@ public final class CreateIndexParser {
 
         if (schema == null) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotFindSchema"), schemaName,
+                    Messages.Parser_CannotFindSchema, schemaName,
                     statement));
         }
 
@@ -58,7 +58,7 @@ public final class CreateIndexParser {
 
         if (table == null) {
             throw new ParserException(MessageFormat.format(
-                    Resources.getString("CannotFindTable"), tableName,
+                    Messages.Parser_CannotFindTable, tableName,
                     statement));
         }
 

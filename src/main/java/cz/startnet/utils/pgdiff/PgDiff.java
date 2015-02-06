@@ -20,6 +20,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
@@ -114,7 +115,7 @@ public final class PgDiff {
         }
         
         throw new UnsupportedOperationException(
-                MessageFormat.format(Resources.getString("UnknownDBFormat"), format));
+                MessageFormat.format(Messages.UnknownDBFormat, format));
     }
     
     /**
@@ -192,8 +193,8 @@ public final class PgDiff {
 
         script.printStatements(writer);
         if (arguments.isOutputIgnoredStatements()) {
-            addIgnoredStatements(oldDatabase, "OriginalDatabaseIgnoredStatements", writer);
-            addIgnoredStatements(newDatabase, "NewDatabaseIgnoredStatements", writer);
+            addIgnoredStatements(oldDatabase, Messages.Database_OriginalDatabaseIgnoredStatements, writer);
+            addIgnoredStatements(newDatabase, Messages.Database_NewDatabaseIgnoredStatements, writer);
         }
         return script;
     }
@@ -201,15 +202,15 @@ public final class PgDiff {
     /**
      * Adds ignored Statements to script
      * @param database database with ignored statements
-     * @param resourceName resource for localization message
+     * @param messageText resource for localization message
      * @param script script to output statements
      */
     private static void addIgnoredStatements(PgDatabase database,
-            String resourceName, PrintWriter writer) {
+            String messageText, PrintWriter writer) {
         if (!database.getIgnoredStatements().isEmpty()) {
             writer.println();
-            writer.print("/* ");
-            writer.println(Resources.getString(resourceName));
+            writer.print("/*");
+            writer.println(messageText);
 
             for (final String statement : database.getIgnoredStatements()) {
                 writer.println();
