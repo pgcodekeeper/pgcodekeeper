@@ -14,6 +14,11 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
 
+    <properties>
+        <current_version_dir>test_codekeeper</current_version_dir>
+        <old_version_dirs>test_codekeeper_versions</old_version_dirs>
+        <current_proj_version>2.1.1.${buildQualifier}</current_proj_version>
+    </properties>
     <build>
         <extensions>
             <extension>
@@ -55,9 +60,9 @@
                                 </goals>
                                 <configuration>
                                     <serverId>palceholder4</serverId>
-                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/p2/codekeeperplugins</url>
+                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/${current_version_dir}</url>
                                     <commands>
-                                        <command>rm -rf /home/codekeeper/webroot/p2/codekeeperplugins/*</command>
+                                        <command>rm -rf /home/codekeeper/webroot/${current_version_dir}/*</command>
                                     </commands>
                                 </configuration>
                             </execution>
@@ -71,7 +76,23 @@
                                     <serverId>placeholder5</serverId>
                                     <fromDir>${project.build.directory}/repository</fromDir>
                                     <includes>*/**</includes>
-                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/p2/codekeeperplugins</url>
+                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/${current_version_dir}</url>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>upload-p2-version</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>sshexec</goal>
+                                </goals>
+                                <configuration>
+                                    <serverId>palceholder5</serverId>
+                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/${current_version_dir}</url>
+                                    <commands>
+                                        <command>rm -rf /home/codekeeper/webroot/${old_version_dirs}/${current_proj_version}</command>
+                                        <command>mkdir /home/codekeeper/webroot/${old_version_dirs}/${current_proj_version}</command>
+                                        <command>cp -r /home/codekeeper/webroot/${current_version_dir}/* /home/codekeeper/webroot/${old_version_dirs}/${current_proj_version}</command>
+                                    </commands>
                                 </configuration>
                             </execution>
                         </executions>
