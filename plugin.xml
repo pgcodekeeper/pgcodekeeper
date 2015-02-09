@@ -471,4 +471,39 @@
              id="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory">
        </factory>
     </extension>
+    <extension
+          point="org.eclipse.ui.navigator.linkHelper">
+       <linkHelper
+             class="ru.taximaxim.codekeeper.ui.editors.LinkHelper"
+             id="ru.taximaxim.codekeeper.ui.editors.codekeeperlinkHelper">
+          <editorInputEnablement>
+             <or>
+                <instanceof
+                      value="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput">
+                </instanceof>
+             </or></editorInputEnablement>
+          <selectionEnablement>
+             <or>
+                <adapt
+                      type="org.eclipse.core.resources.IProject">
+                   <test
+                         property="org.eclipse.core.resources.projectNature"
+                         value="ru.taximaxim.codekeeper.ui.nature">
+                   </test>
+                </adapt>
+             </or>
+          </selectionEnablement>
+       </linkHelper>
+    </extension>
+    <extension
+          point="org.eclipse.ui.navigator.viewer">
+       <viewerContentBinding
+             viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+          <includes>
+             <contentExtension
+                   pattern="ru.taximaxim.codekeeper.ui.editors.codekeeperlinkHelper">
+             </contentExtension>
+          </includes>
+       </viewerContentBinding>
+    </extension>
 </plugin>
