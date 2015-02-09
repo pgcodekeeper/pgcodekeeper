@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -46,7 +47,9 @@ public class PgDbProject {
         try {
             project.delete(false, true, null);
         } catch (CoreException e) {
-            throw new PgCodekeeperUIException(Messages.PgDbProject_error_deleting_project, e);
+            throw new PgCodekeeperUIException(MessageFormat.format(
+                    Messages.PgDbProject_error_deleting_project,
+                    e.getLocalizedMessage()), e);
         }
     }
     
@@ -54,7 +57,9 @@ public class PgDbProject {
         try {
             project.open(null);
         } catch (CoreException e) {
-            throw new PgCodekeeperUIException(Messages.PgDbProject_error_opening_project, e);
+            throw new PgCodekeeperUIException(MessageFormat.format(
+                    Messages.PgDbProject_error_opening_project,
+                    e.getLocalizedMessage()), e);
         }
     }
     
@@ -73,7 +78,9 @@ public class PgDbProject {
             try {
                 newProject.create(desc, null);
             } catch (CoreException e) {
-                throw new PgCodekeeperUIException(Messages.PgDbProject_error_creating_project, e);
+                throw new PgCodekeeperUIException(MessageFormat.format(
+                        Messages.PgDbProject_error_creating_project,
+                        e.getLocalizedMessage()), e);
             }
         }
         return new PgDbProject(newProject);

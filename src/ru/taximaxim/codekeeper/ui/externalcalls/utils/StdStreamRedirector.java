@@ -57,8 +57,9 @@ public class StdStreamRedirector {
                     // the process was destroyed by us, exit silently
                     return;
                 }
-                throw new IllegalStateException(
-                        Messages.StdStreamRedirector_error_reading_std, ex);
+                throw new IllegalStateException(MessageFormat.format(
+                        Messages.StdStreamRedirector_error_reading_std,
+                        ex.getLocalizedMessage()), ex);
             }
         }
     }
@@ -110,7 +111,9 @@ public class StdStreamRedirector {
                     p.waitFor();
                 } catch (InterruptedException ex2) {
                     throw new IOException(
-                            Messages.StdStreamRedirector_wait_destroy_interrupted_unexpectedly, ex2);
+                            MessageFormat.format(
+                                    Messages.StdStreamRedirector_wait_destroy_interrupted_unexpectedly,
+                                    ex2.getLocalizedMessage()), ex2);
                 }
             }
             
@@ -118,7 +121,9 @@ public class StdStreamRedirector {
                 redirectorThread.join();
             } catch (InterruptedException ex) {
                 throw new IOException(
-                        Messages.StdStreamRedirector_wait_thread_interrupted_unexpectedly, ex);
+                        MessageFormat.format(
+                                Messages.StdStreamRedirector_wait_thread_interrupted_unexpectedly,
+                                ex.getLocalizedMessage()), ex);
             }
             ConsoleFactory.write(MessageFormat.format(
                     Messages.stdStreamRedirector_completed_with_code, pb
@@ -130,8 +135,8 @@ public class StdStreamRedirector {
             }
             
             if (lastException.get() != null){
-                throw new IOException(Messages.StdStreamRedirector_error_reading_std_external,
-                        lastException.get());
+                throw new IOException(MessageFormat.format(Messages.StdStreamRedirector_error_reading_std_external,
+                        lastException.get()), lastException.get());
             }
             return storage.toString();
         } finally {

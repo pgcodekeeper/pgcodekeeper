@@ -44,8 +44,9 @@ public class OpenEditor extends AbstractHandler {
             try {
                 page.openEditor(input, EDITOR.PROJECT);
             } catch (PartInitException e) {
-                throw new PgCodekeeperUIException(
-                        Messages.OpenEditor_error_open_project, e);
+                throw new PgCodekeeperUIException(MessageFormat.format(
+                        Messages.OpenEditor_error_open_project,
+                        e.getLocalizedMessage()), e);
             }
         }
     }

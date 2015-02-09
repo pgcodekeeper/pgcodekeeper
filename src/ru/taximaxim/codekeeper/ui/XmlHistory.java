@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URISyntaxException;
+import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -71,7 +72,8 @@ public final class XmlHistory {
         } catch (FileNotFoundException e) {
             history = new LinkedHashMap<>();
         } catch (IOException | SAXException e) {
-            throw new IOException(Messages.XmlHistory_read_error, e);
+            throw new IOException(MessageFormat.format(
+                    Messages.XmlHistory_read_error, e.getLocalizedMessage()), e);
         }
         return history;
     }
@@ -84,7 +86,8 @@ public final class XmlHistory {
         } catch (FileNotFoundException ex) {
             history = null;
         } catch (IOException | SAXException ex) {
-            throw new IOException(Messages.XmlHistory_read_error, ex);
+            throw new IOException(MessageFormat.format(
+                    Messages.XmlHistory_read_error, ex.getLocalizedMessage()), ex);
         }
         return history;
     }
@@ -136,8 +139,8 @@ public final class XmlHistory {
                 xml.serializeList(listToDump, false, xmlWriter);
             }
         } catch (IOException | TransformerException ex) {
-            throw new IOException(
-                    Messages.XmlHistory_write_error, ex);
+            throw new IOException(MessageFormat.format(
+                    Messages.XmlHistory_write_error, ex.getLocalizedMessage()), ex);
         }
     }
     
@@ -182,8 +185,8 @@ public final class XmlHistory {
                 xml.serializeMap(checkedSets, false, xmlWriter);
             }
         } catch (IOException | TransformerException e) {
-            throw new IOException(
-                    Messages.XmlHistory_write_error, e);
+            throw new IOException(MessageFormat.format(
+                    Messages.XmlHistory_write_error, e.getLocalizedMessage()), e);
         }
         
     }
