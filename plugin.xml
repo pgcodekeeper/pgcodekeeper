@@ -474,24 +474,20 @@
     <extension
           point="org.eclipse.ui.navigator.linkHelper">
        <linkHelper
-             class="ru.taximaxim.codekeeper.ui.editors.LinkHelper"
+             class="ru.taximaxim.codekeeper.ui.editors.CodekeeperLinkHelper"
              id="ru.taximaxim.codekeeper.ui.editors.codekeeperlinkHelper">
-          <editorInputEnablement>
-             <or>
-                <instanceof
-                      value="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput">
-                </instanceof>
-             </or></editorInputEnablement>
+          <editorInputEnablement></editorInputEnablement>
           <selectionEnablement>
-             <or>
-                <adapt
-                      type="org.eclipse.core.resources.IProject">
-                   <test
-                         property="org.eclipse.core.resources.projectNature"
-                         value="ru.taximaxim.codekeeper.ui.nature">
-                   </test>
-                </adapt>
-             </or>
+             <instanceof
+                   value="org.eclipse.core.resources.IResource">
+             </instanceof>
+             <adapt
+                   type="org.eclipse.core.resources.IProject">
+                <test
+                      property="org.eclipse.core.resources.projectNature"
+                      value="ru.taximaxim.codekeeper.ui.nature">
+                </test>
+             </adapt>
           </selectionEnablement>
        </linkHelper>
     </extension>

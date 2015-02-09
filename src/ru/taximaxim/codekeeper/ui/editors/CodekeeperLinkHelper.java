@@ -7,7 +7,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.navigator.ILinkHelper;
 
-public class LinkHelper implements ILinkHelper{
+public class CodekeeperLinkHelper implements ILinkHelper{
 
     @Override
     public IStructuredSelection findSelection(IEditorInput anInput) {
