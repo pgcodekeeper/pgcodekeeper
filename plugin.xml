@@ -476,11 +476,11 @@
        <linkHelper
              class="ru.taximaxim.codekeeper.ui.editors.CodekeeperLinkHelper"
              id="ru.taximaxim.codekeeper.ui.editors.codekeeperlinkHelper">
-          <editorInputEnablement></editorInputEnablement>
-          <selectionEnablement>
+          <editorInputEnablement>
              <instanceof
-                   value="org.eclipse.core.resources.IResource">
-             </instanceof>
+                   value="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput">
+             </instanceof></editorInputEnablement>
+          <selectionEnablement>
              <adapt
                    type="org.eclipse.core.resources.IProject">
                 <test
@@ -497,7 +497,7 @@
              viewerId="org.eclipse.ui.navigator.ProjectExplorer">
           <includes>
              <contentExtension
-                   pattern="ru.taximaxim.codekeeper.ui.editors.codekeeperlinkHelper">
+                   pattern="ru\.taximaxim\.codekeeper\.ui\.editors\.codekeeperlinkHelper">
              </contentExtension>
           </includes>
        </viewerContentBinding>
