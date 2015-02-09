@@ -51,7 +51,6 @@ public class CreateSequence extends ParserAbstract {
             return null;
         }
         db.getSchema(schemaName).addSequence(sequence);
-        fillObjDefinition(schemaName, sequence, ctx.name.getStart().getStartIndex());
         return sequence;
     }
 

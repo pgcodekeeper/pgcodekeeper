@@ -9,13 +9,12 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import ru.taximaxim.codekeeper.apgdiff.Log;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.Parser;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Name_or_func_callsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -30,9 +29,7 @@ import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 /**
  * Abstract Class contents common operations for parsing
@@ -57,53 +54,7 @@ public abstract class ParserAbstract {
         return db.getDefaultSchema().getName();
     }
 
-    /**
-     * Add object with start position to db object location List
-     * 
-     * @param obj
-     * @param startIndex
-     */
-    protected void fillObjDefinition(String schemaName, PgStatement obj,
-            int startIndex) {
-        PgObjLocation loc = null;
-        switch (obj.getStatementType()) {
-        case FUNCTION:
-            PgFunction func = (PgFunction) obj;
-            loc = new PgObjLocation(schemaName,
-                    func.getSignature(), null, startIndex,
-                    filePath);
-            loc.setObjNameLength(func.getBareName().length());
-            break;
-        default:
-            loc = new PgObjLocation(schemaName, obj.getBareName(), null,
-                    startIndex, filePath);
-        }
-        loc.setAction(StatementActions.CREATE);
-        loc.setObjType(obj.getStatementType());
-        db.addObjDefinition(loc);
-        db.addObjReference(loc);
-    }
     
-    protected void addObjReference(String schemaName, String objName, DbObjType objType,
-            StatementActions action, int startIndex, int nameLength) {
-        PgObjLocation loc = new PgObjLocation(schemaName, objName, null,
-                startIndex, filePath).setAction(action);
-        if (objType == DbObjType.FUNCTION) {
-            loc.setObjNameLength(nameLength);
-        }
-        loc.setObjType(objType);
-        db.addObjReference(loc);
-    }
-    
-    protected void setCommentToDefinition(String schemaName, String objName,
-            DbObjType objType, String comment) {
-        for (PgObjLocation loc : db.getObjDefinitions()) {
-            if (loc.getObjName().equals(objName)
-                    && loc.getObjType().equals(objType)) {
-                loc.setComment(comment);
-            }
-        }
-    }
 
     /**
      * Extracts raw text from context
@@ -112,7 +63,7 @@ public abstract class ParserAbstract {
      *            context
      * @return raw string
      */
-    protected String getFullCtxText(ParserRuleContext ctx) {
+    public static String getFullCtxText(ParserRuleContext ctx) {
         Interval interval = new Interval(ctx.start.getStartIndex(),
                 ctx.stop.getStopIndex());
         return ctx.start.getInputStream().getText(interval);
@@ -131,7 +82,7 @@ public abstract class ParserAbstract {
         return result;
     }
 
-    protected String getName(Schema_qualified_nameContext name) {
+    public static String getName(Schema_qualified_nameContext name) {
         int i = 0;
         if (name == null) {
             return null;
@@ -147,14 +98,14 @@ public abstract class ParserAbstract {
      * @param name identifier context
      * @return string name without quotes
      */
-    protected String removeQuotes(IdentifierContext name) {
+    public static String removeQuotes(IdentifierContext name) {
         String identifier = name.getText();
         String unquotedName = ParserUtils.splitNames(identifier)[0];
         
         return (identifier.startsWith("\"")) ? unquotedName : unquotedName.toLowerCase();
     }
 
-    protected String getSchemaName(Schema_qualified_nameContext name) {
+    public static String getSchemaName(Schema_qualified_nameContext name) {
         int i = 0;
         if (name == null) {
             return null;
@@ -171,7 +122,7 @@ public abstract class ParserAbstract {
         }
     }
 
-    protected String getTableName(Schema_qualified_nameContext name) {
+    public static String getTableName(Schema_qualified_nameContext name) {
         int i = 0;
         if (name == null) {
             return null;
@@ -253,12 +204,8 @@ public abstract class ParserAbstract {
          if (getName(ctx.schema_qualified_name()).equals("nextval")) {
              GeneralLiteralSearch seq = new GeneralLiteralSearch();
              new ParseTreeWalker().walk(seq, ctx);
-             seqName = seq.getSeqName();
-             if (seqName != null &&
-                     !seqName.isEmpty()) {
-                 addObjReference(getDefSchemaName(), seqName, DbObjType.SEQUENCE,
-                         StatementActions.NONE,
-                         seq.getContext().getStart().getStartIndex() + 1, 0);
+             if (seq.isFound()) {
+                 seqName = seq.getSeqName();
              }
          }
         }
@@ -267,23 +214,7 @@ public abstract class ParserAbstract {
         }
     }
     
-    class GeneralLiteralSearch extends SQLParserBaseListener {
-        private String seqName;
-        private General_literalContext ctx;
-        @Override
-       public void enterGeneral_literal(General_literalContext ctx) {
-            seqName = ctx.getText();
-            this.ctx = ctx;
-       }
-        public String getSeqName() {
-            return seqName.substring(1, seqName.length() - 1);
-        }
-        public General_literalContext getContext() {
-            return ctx;
-        }
-    }
-
-    protected void fillArguments(Function_argsContext function_argsContext,
+    public static void fillArguments(Function_argsContext function_argsContext,
             PgFunction function) {
         for (Function_argumentsContext argument : function_argsContext
                 .function_arguments()) {
@@ -333,16 +264,9 @@ public abstract class ParserAbstract {
 
             String tableName = getName(tblRef.reftable);
             String schemaName = getSchemaName(tblRef.reftable);
-            int count = 0;
             if (schemaName == null) {
                 schemaName = db.getDefaultSchema().getName();
-            } else {
-                count += schemaName.length() + 1;
-                addObjReference(null, schemaName, DbObjType.SCHEMA,
-                        StatementActions.NONE, tblRef.reftable.getStart().getStartIndex(), 0);
-            }
-            addObjReference(schemaName, tableName, DbObjType.TABLE,
-                    StatementActions.NONE, tblRef.reftable.getStart().getStartIndex() + count , 0);
+            } 
             for (Schema_qualified_nameContext name : tblRef.column_references().names_references().name) {
                 ((PgForeignKey)constr).addForeignColumn(
                         new GenericColumn(schemaName, tableName, getName(name)));

@@ -54,7 +54,6 @@ public class CreateView extends ParserAbstract {
             return null;
         }
         db.getSchema(schemaName).addView(view);
-        fillObjDefinition(schemaName, view, ctx.name.getStart().getStartIndex());
         return view;
     }
     

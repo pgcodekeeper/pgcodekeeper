@@ -17,10 +17,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
@@ -43,6 +44,8 @@ import cz.startnet.utils.pgdiff.parsers.ParserException;
 import cz.startnet.utils.pgdiff.parsers.PrivilegeParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.AntlrParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomSQLParserListener;
+import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
+import cz.startnet.utils.pgdiff.parsers.antlr.ReferenceListener;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 
@@ -279,10 +282,10 @@ public final class PgDumpLoader { //NOPMD
     static PgDatabase loadDatabaseSchemaCoreAntLR(
             InputStream inputStream, String charsetName, 
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers, 
-            PgDatabase database, Path path, SubMonitor monitor, int monitoringLevel) {
+            PgDatabase database, Path path, IProgressMonitor monitor, int monitoringLevel) {
         try {
             new AntlrParser(monitor, monitoringLevel).parseInputStream(inputStream, charsetName, 
-                    new CustomSQLParserListener(database, path));
+                    new CustomSQLParserListener(database, path), path);
         } catch (IOException e) {
             throw new FileException("Exception while closing dump file", e);
         }
@@ -331,23 +334,43 @@ public final class PgDumpLoader { //NOPMD
         return db;
     }
 
+    static PgDatabase loadObjReferences(InputStream inputStream, String charsetName, 
+            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+            PgDatabase database, Path path, IProgressMonitor monitor, int monitoringLevel,
+            List<FunctionBodyContainer> funcBodies) {
+        try {
+            ReferenceListener refListener = new ReferenceListener(database, path);
+            new AntlrParser(monitor, monitoringLevel).parseInputStream(inputStream, charsetName, 
+                    refListener, path);
+            funcBodies.addAll(refListener.getFunctionBodies());
+        } catch (IOException e) {
+            throw new FileException("Exception while closing dump file", e);
+        }
+        return database;
+    }
     /**
      * Uses to parse only one file
      * @param projPath path to root folder of project
      * @param filePath path to file
      * @return database with schemas, extensions and parsed file contents
      */
-    public static PgDatabase loadSchemasAndFile(
-            String projPath, String filePath, String charsetName,
+    public static PgDatabase loadSchemasAndFile(String filePath, String charsetName,
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
             ParserClass parser) {
         final PgDatabase db = new PgDatabase();
 
-        loadSchemasExtensions(charsetName, outputIgnoredStatements,
-                ignoreSlonyTriggers, parser, db, new File(projPath));
         parseFile(charsetName, outputIgnoredStatements,
                 ignoreSlonyTriggers, db, parser, new File(filePath));
         
+        return db;
+    }
+
+    public static PgDatabase loadRefsFromInputStream(InputStream inputStream, Path path,
+            String charsetName, boolean outputIgnoredStatements,
+            boolean ignoreSlonyTriggers, ParserClass parser) {
+        final PgDatabase db = new PgDatabase();
+        parser.parse(inputStream, charsetName,
+                outputIgnoredStatements, ignoreSlonyTriggers, db, path);
         return db;
     }
 

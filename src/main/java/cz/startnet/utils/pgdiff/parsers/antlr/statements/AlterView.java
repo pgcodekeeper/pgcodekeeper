@@ -2,12 +2,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 public class AlterView extends ParserAbstract {
     private Alter_view_statementContext ctx;
@@ -40,8 +38,6 @@ public class AlterView extends ParserAbstract {
         if (ctx.drop_def() != null) {
             dbView.removeColumnDefaultValue(getFullCtxText(ctx.column_name));
         }
-        addObjReference(schemaName, name, DbObjType.VIEW,
-                StatementActions.ALTER, ctx.name.getStart().getStartIndex(), 0);
         return null;
     }
 

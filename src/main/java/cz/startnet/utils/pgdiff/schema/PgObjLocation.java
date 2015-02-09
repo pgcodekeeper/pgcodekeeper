@@ -2,7 +2,6 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.io.Serializable;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 
@@ -11,9 +10,11 @@ public class PgObjLocation implements Serializable {
      * 
      */
     private static final long serialVersionUID = -7110926210150404390L;
-    private GenericColumn objName;
-    private int offset;
-    private Path filePath;
+    private final GenericColumn objName;
+    private final int offset;
+    private final Path filePath;
+    private final int lineNumber;
+    
     private DbObjType type;
     private String comment = "";
     private int objLength;
@@ -57,6 +58,10 @@ public class PgObjLocation implements Serializable {
 //        }
         return length;
     }
+    
+    public int getLineNumber() {
+        return lineNumber;
+    }
 
     public Path getFilePath() {
         return filePath;
@@ -75,18 +80,21 @@ public class PgObjLocation implements Serializable {
     }
 
     public PgObjLocation(String schema, String name, String column, int offset,
-            Path filePath) {
+            Path filePath, int lineNumber) {
         this.objName = new GenericColumn(schema, name, column);
         this.offset = offset;
         this.filePath = filePath;
+        this.lineNumber = lineNumber;
     }
     
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof PgObjLocation) {
-            PgObjLocation loc = (PgObjLocation)obj;
+            PgObjLocation loc = (PgObjLocation) obj;
             return loc.getObject().equals(getObject())
-                    && loc.getObjName().equals(getObjName())
                     && loc.getOffset() == getOffset()
                     && loc.getFilePath().equals(getFilePath())
                     && loc.getObjType().equals(getObjType());

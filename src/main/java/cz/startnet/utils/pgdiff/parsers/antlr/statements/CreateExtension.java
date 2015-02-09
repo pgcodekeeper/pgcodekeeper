@@ -2,12 +2,10 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 public class CreateExtension extends ParserAbstract {
     private Create_extension_statementContext ctx;
@@ -25,14 +23,11 @@ public class CreateExtension extends ParserAbstract {
         }
         if (ctx.schema_with_name() != null) {
             ext.setSchema(getName(ctx.schema_with_name().name));
-            addObjReference(null, getName(ctx.schema_with_name().name), DbObjType.SCHEMA,
-                    StatementActions.NONE, ctx.schema_with_name().name.getStart().getStartIndex(), 0);
         }
         if (ctx.version!= null) {
             ext.setVersion(ctx.version.getText());
         }
         db.addExtension(ext);
-        fillObjDefinition(null, ext, ctx.name.getStart().getStartIndex());
         return ext;
     }
 

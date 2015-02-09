@@ -12,7 +12,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 public class CreateRule extends ParserAbstract {
     private Rule_commonContext ctx;
@@ -53,8 +52,6 @@ public class CreateRule extends ParserAbstract {
                                 new PgPrivilege(ctx.REVOKE() != null,
                                         getFullCtxText(ctx.body_rule),
                                         getFullCtxText(ctx)));
-                addObjReference(getDefSchemaName(), func.getSignature(), DbObjType.FUNCTION,
-                        StatementActions.NONE, functparam.name.getStart().getStartIndex(), func.getBareName().length());
             }
         } else if (ctx.body_rule.on_large_object() != null) {
             obj_name = ctx.body_rule.on_large_object().obj_name.name;
@@ -114,8 +111,6 @@ public class CreateRule extends ParserAbstract {
         }
         if (statement != null) {
             statement.addPrivilege(pgPrivilege);
-            addObjReference(schemaName, statement.getBareName(), statement.getStatementType(),
-                    StatementActions.NONE, name.getStart().getStartIndex(), 0);
             return statement;
         }
         return null;

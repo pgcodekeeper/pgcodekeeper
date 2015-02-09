@@ -37,7 +37,6 @@ public class CreateFunction extends ParserAbstract {
             return null;
         }
         db.getSchema(schemaName).addFunction(function);
-        fillObjDefinition(schemaName, function, ctx.function_parameters().name.getStart().getStartIndex());
         return function;
     }
 }

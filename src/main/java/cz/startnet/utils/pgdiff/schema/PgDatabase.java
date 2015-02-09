@@ -5,12 +5,13 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
@@ -33,10 +34,9 @@ public class PgDatabase extends PgStatement {
     private final List<String> ignoredDataStatements = new ArrayList<>();
     
     // Contains object definitions
-    // Exclude duplicate and keep order
-    private final Set<PgObjLocation> objDefinitions = new LinkedHashSet<>();
-    // СОдержит ссылки на объекты
-    private final List<PgObjLocation> objRefecences = new ArrayList<>();
+    private final Map<Path, List<PgObjLocation>> objDefinitions = new HashMap<>();
+    // Содержит ссылки на объекты
+    private final Map<Path, List<PgObjLocation>> objReferences = new HashMap<>();
     
     @Override
     public DbObjType getStatementType() {
@@ -78,24 +78,12 @@ public class PgDatabase extends PgStatement {
         ignoredDataStatements.add(ignoredDataStatement);
     }
     
-    public boolean addObjDefinition(PgObjLocation definition) {
-        return objDefinitions.add(definition);
+    public Map<Path, List<PgObjLocation>> getObjDefinitions() {
+        return objDefinitions;
     }
     
-    public boolean addObjReference(PgObjLocation reference) {
-        if (!objRefecences.contains(reference)) {
-            objRefecences.add(reference);
-            return true;
-        }
-        return false;
-    }
-    
-    public Set<PgObjLocation> getObjDefinitions() {
-        return Collections.unmodifiableSet(objDefinitions);
-    }
-    
-    public List<PgObjLocation> getObjReferences() {
-        return Collections.unmodifiableList(objRefecences);
+    public Map<Path, List<PgObjLocation>> getObjReferences() {
+        return objReferences;
     }
     
     public List<PgStatement> getObjectsByName(String objName) {
