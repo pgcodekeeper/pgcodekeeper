@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -72,6 +73,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
+import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -123,7 +125,7 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         iCommit = ImageDescriptor.createFromURL(Activator.getContext().
                 getBundle().getResource(FILE.ICONBALLBLUE)).createImage();
         commit = new CommitPage(getContainer(), 
-                Activator.getDefault().getPreferenceStore(), proj);
+                Activator.getDefault().getPreferenceStore(), proj, this);
         i = addPage(commit);
         setPageText(i, Messages.ProjectEditorDiffer_page_text_commit);
         setPageImage(i, iCommit);
@@ -136,20 +138,26 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
         setPageText(i, Messages.ProjectEditorDiffer_page_text_diff);
         setPageImage(i, iDiff);
         
-        final MultiPageSelectionProvider mpsp = new MultiPageSelectionProvider(this);
-        
-        ISelectionChangedListener selectionChangedListener = new ISelectionChangedListener() {
+        final ProjectEditorSelectionProvider sp = new ProjectEditorSelectionProvider(proj.getProject());
+        ISelectionChangedListener selectionListener = new ISelectionChangedListener() {
             
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                mpsp.firePostSelectionChanged(event);
+                sp.fireSelectionChanged(event);
             }
         };
+        ISelectionChangedListener postSelectionListener = new ISelectionChangedListener() {
         
-        diff.getDiffTable().getViewer().addPostSelectionChangedListener(selectionChangedListener);
-        commit.getDiffTable().getViewer().addPostSelectionChangedListener(selectionChangedListener);
-        
-        getSite().setSelectionProvider(mpsp);
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+               sp.firePostSelectionChanged(event);
+            }
+        };
+        diff.getDiffTable().getViewer().addSelectionChangedListener(selectionListener);
+        diff.getDiffTable().getViewer().addPostSelectionChangedListener(postSelectionListener);
+        commit.getDiffTable().getViewer().addSelectionChangedListener(selectionListener);
+        commit.getDiffTable().getViewer().addPostSelectionChangedListener(postSelectionListener);
+        getSite().setSelectionProvider(sp);
     }
 
     @Override
@@ -235,21 +243,16 @@ public class ProjectEditorDiffer extends MultiPageEditorPart implements IResourc
 
 class CommitPage extends DiffPresentationPane {
 
-    private final String [] VIEW_IDS_SUPPORTING_EGIT_COMMIT = {
-            // project explorer
-            IPageLayout.ID_PROJECT_EXPLORER,
-            // package explorer (org.eclipse.jdt.ui.JavaUI.ID_PACKAGES)
-            "org.eclipse.jdt.ui.PackageExplorer" //$NON-NLS-1$
-    };
-
+    private final ProjectEditorDiffer editor;
     private boolean isCommitCommandAvailable;
     
     private LocalResourceManager lrm;
-
     private Button btnSave;
     
-    public CommitPage(Composite parent, IPreferenceStore mainPrefs, PgDbProject proj) {
+    public CommitPage(Composite parent, IPreferenceStore mainPrefs, PgDbProject proj,
+            ProjectEditorDiffer editor) {
         super(parent, true, mainPrefs, proj);
+        this.editor = editor;
         
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this, HELP.MAIN_EDITOR);
     }
@@ -279,23 +282,11 @@ class CommitPage extends DiffPresentationPane {
             }
         });
         
-        final Button btnAutoCommitWindow = new Button(container, SWT.CHECK);
-        btnAutoCommitWindow.setText(Messages.commitPartDescr_show_commit_window);
-        btnAutoCommitWindow.setSelection(mainPrefs.getBoolean(PREF.CALL_COMMIT_COMMAND_AFTER_UPDATE));
-        btnAutoCommitWindow.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                PreferenceInitializer.savePreference(mainPrefs, 
-                        PREF.CALL_COMMIT_COMMAND_AFTER_UPDATE, String.valueOf(btnAutoCommitWindow.getSelection()));
-            }
-        });
-        
-        Object commandService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getService(ICommandService.class);
+        ICommandService commandService =
+                (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
         @SuppressWarnings("unchecked")
-        Collection<String> commandIds = ((ICommandService)commandService).getDefinedCommandIds();
+        Collection<String> commandIds = commandService.getDefinedCommandIds();
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
-        btnAutoCommitWindow.setEnabled(isCommitCommandAvailable);
     }
     
     private void commit() throws PgCodekeeperException {
@@ -347,10 +338,10 @@ class CommitPage extends DiffPresentationPane {
             sumNewAndDelete = dte.sumAllDepcies(elementsNewEditDependentFrom);
         }
         
-        Log.log(Log.LOG_INFO, "Quering user for project update"); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
         // display commit dialog
         CommitDialog cd = new CommitDialog(getShell(), filtered, sumNewAndDelete,
-                mainPrefs, treeDiffer);
+                mainPrefs, treeDiffer, isCommitCommandAvailable);
         cd.setConflictingElements(considerDepcy ? dte.getConflicting() : Collections.EMPTY_SET);
         if (cd.open() != CommitDialog.OK) {
             return;
@@ -388,7 +379,9 @@ class CommitPage extends DiffPresentationPane {
                         
                             @Override
                             public void run() {
-                                callEgitCommitCommand();
+                                if (!isDisposed()) {
+                                    callEgitCommitCommand();
+                                }
                             }
                         });
                     } catch (CoreException e) {
@@ -414,44 +407,10 @@ class CommitPage extends DiffPresentationPane {
             return;
         }
         
-        /*
-         * TODO make this editor a selection provider
-         * that always has the IProject as a selection element
-         * so that Commit command is available with the focus anywhere in this editor
-         * 
-         * wrap the Depcy selections that we pass through into the parent selection
-         * as an element next to IProject and extract it in the depcy view
-         * 
-         * ProjectEditorSelectionProvider is the WIP
-         * impl examples are:
-         * ==================
-         * org.eclipse.jface.viewers.Viewer
-         * org.eclipse.jdt.internal.ui.viewsupport.SelectionProviderMediator
-         */
-
-        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();                
-        IViewPart view = null;
-        
-        for (int i = 0; i < VIEW_IDS_SUPPORTING_EGIT_COMMIT.length && view == null; i++){
-            String id = VIEW_IDS_SUPPORTING_EGIT_COMMIT[i];
-            view = page.findView(id);
-        }
-        
-        if (view == null){
-            Log.log(Log.LOG_WARNING, "Any of the following views should be open "
-                    + "to execute command " + COMMAND.COMMIT_COMMAND_ID + ":\n"
-                            + "\tProject explorer\n"
-                            + "\tPackage explorer\n");
-            return;
-        }
-        
-        // focus on view and select current project
-        page.activate(view);
-        ((ISetSelectionTarget)view).selectReveal(new StructuredSelection(proj.getProject()));
-
-        // execute command
         try {
-            ((IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class))
+            // in case user switched to a different window while update was working
+            editor.getSite().getPage().activate(editor);
+            ((IHandlerService) editor.getSite().getService(IHandlerService.class))
                     .executeCommand(COMMAND.COMMIT_COMMAND_ID, null);
         } catch (ExecutionException | NotDefinedException | NotEnabledException
                 | NotHandledException e) {

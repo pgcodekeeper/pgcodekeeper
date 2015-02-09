@@ -35,7 +35,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
         this.isSource  = isSource;
     }
     
-    public void setIsSource(Boolean isSource) {
+    public void setIsSource(boolean isSource) {
         this.isSource = isSource;
     }
     
