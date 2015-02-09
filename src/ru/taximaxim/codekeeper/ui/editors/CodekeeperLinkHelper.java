@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.ui.editors;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IEditorInput;
@@ -26,8 +27,9 @@ public class CodekeeperLinkHelper implements ILinkHelper{
             return;
         }
         Object element= aSelection.getFirstElement();
-        if (element instanceof ProjectEditorInput) {
-            ProjectEditorInput in = (ProjectEditorInput)element;
+        if (element instanceof IProject) {
+            IProject proj = (IProject)element;
+            ProjectEditorInput in = new ProjectEditorInput(proj.getName());
             IEditorPart editor = aPage.findEditor(in);
             if (editor != null) {
                 aPage.bringToTop(editor);
