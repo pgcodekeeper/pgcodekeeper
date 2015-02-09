@@ -5,11 +5,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.navigator.ILinkHelper;
-
-import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class LinkHelper implements ILinkHelper{
 
@@ -35,13 +31,7 @@ public class LinkHelper implements ILinkHelper{
             IEditorPart editor = aPage.findEditor(in);
             if (editor != null) {
                 aPage.bringToTop(editor);
-            } else {
-                try {
-                    aPage.openEditor(in, UIConsts.EDITOR.PROJECT);
-                } catch (PartInitException e) {
-                    Log.log(Log.LOG_ERROR, "Cannot open editor on input", e);
-                }
-            }
+            }   
         }
     }
 
