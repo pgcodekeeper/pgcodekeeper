@@ -2,6 +2,8 @@ package ru.taximaxim.codekeeper.ui;
 
 public interface UIConsts {
 
+    String _NL = System.lineSeparator();
+    
     String UTF_8 = "UTF-8"; //$NON-NLS-1$
     String UTC = "UTC"; //$NON-NLS-1$
 
@@ -12,8 +14,10 @@ public interface UIConsts {
     
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
-        String PROJECT_EDITOR_FACTORY_ID = "ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"; //$NON-NLS-1$
+        String PROJECT_EDITOR_FACTORY_ID = PLUGIN_ID.THIS + ".editors.ProjectEditorInputFactory"; //$NON-NLS-1$
         String PROJECT_EDITOR_FACTORY_TAG_PROJECT = "project"; //$NON-NLS-1$
+        
+        String ROLLON = PLUGIN_ID.THIS + ".RollOnEditor"; //$NON-NLS-1$
     }
     
     interface COMMAND {
@@ -37,6 +41,7 @@ public interface UIConsts {
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
         String IS_DDL_UPDATE_OVER_JDBC = "isDdlUpdateOverJdbc"; //$NON-NLS-1$
+        String IS_DDL_UPDATE_OVER_JDBC_INFO = "isDDLUpdateOverJDBCInfo"; //$NON-NLS-1$
         
         String CALL_COMMIT_COMMAND_AFTER_UPDATE = "callCommitCommandAfterUpdate";
     }

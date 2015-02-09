@@ -3,8 +3,6 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
@@ -20,7 +18,6 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.FileEditorInput;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -73,23 +70,20 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                 }
             }    
         }
-        
-        IProject proj = null;
-        IFile file = null;
         IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
                 .getActivePage().getActiveEditor();
+        List<PgObjLocation> loc = new ArrayList<>();
         if (page instanceof SQLEditor) {
-            SQLEditor edit = (SQLEditor) page;
-            file = ((FileEditorInput) ((edit).getEditorInput())).getFile();
-            if (file != null) {
-                proj = file.getProject();
+            PgDbParser parser = ((SQLEditor)page).getParser();
+            loc.addAll(parser.getAllObjDefinitions());
+            if (page instanceof RollOnEditor) {
+                loc.addAll(PgDbParser.getParser(
+                        ((DepcyFromPSQLOutput) page.getEditorInput())
+                                .getProject()).getAllObjDefinitions());    
             }
         }
-        if (proj == null) {
-            return result.toArray(new ICompletionProposal[result.size()]);
-        }
         LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources());
-        for (PgObjLocation obj : PgDbParser.getParser(proj).getObjDefinitions()) {
+        for (PgObjLocation obj : loc) {
             ImageDescriptor iObj = ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(
                             FILE.ICONPGADMIN 

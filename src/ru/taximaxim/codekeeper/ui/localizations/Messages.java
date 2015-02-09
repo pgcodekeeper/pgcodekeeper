@@ -290,6 +290,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_diff_error;
     public static String ProjectEditorDiffer_error_bad_input_type;
 
+    public static String ProjectEditorDiffer_error_opening_script_editor;
+
     public static String ProjectEditorDiffer_error_refreshing_project;
     public static String ProjectEditorDiffer_page_text_commit;
     public static String ProjectEditorDiffer_page_text_diff;

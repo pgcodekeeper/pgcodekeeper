@@ -1,7 +1,6 @@
 package ru.taximaxim.codekeeper.ui.builders;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -11,6 +10,7 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
@@ -18,41 +18,71 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class ProjectBuilder extends IncrementalProjectBuilder {
 
-    public ProjectBuilder() {
-    }
-
     @Override
     protected IProject[] build(int kind, Map<String, String> args,
             IProgressMonitor monitor) throws CoreException {
         IProject proj = getProject();
-        final PgDbParser parser = PgDbParser.getParser(proj);
         if (!proj.hasNature(NATURE.ID)) {
             return null;
         }
+        final PgDbParser parser = PgDbParser.getParser(proj);
+        
         switch (kind) {
         case IncrementalProjectBuilder.AUTO_BUILD:
         case IncrementalProjectBuilder.INCREMENTAL_BUILD:
             IResourceDelta delta = getDelta(getProject());
             try {
-                delta.accept(new IResourceDeltaVisitor() {
-                   public boolean visit(IResourceDelta delta) {
-                        if (delta.getResource() instanceof IFile) {
-                            parser.getObjFromProjFile(delta.getResource()
-                                    .getLocationURI());
-                        }
-                        return true;
-                    }
-                });
-             } catch (CoreException e) {
-                Log.log(Log.LOG_ERROR, "Cannot get delta from incremental or auto build");
-             }
+                buildIncrement(delta, parser, monitor);
+            } catch (CoreException ex) {
+                Log.log(Log.LOG_ERROR, "Error processing build delta", ex);
+            }
             break;
+            
         case IncrementalProjectBuilder.FULL_BUILD:
-            parser.getObjFromProject();
+            parser.getObjFromProject(monitor);
             break;
         }
-        List<IProject> list = new ArrayList<>();
-        list.add(proj);
-        return list.toArray(new IProject[list.size()]);
+        return new IProject[] { proj };
+    }
+    
+    private void buildIncrement(IResourceDelta delta, final PgDbParser parser,
+            IProgressMonitor monitor) throws CoreException {
+        final int[] count = new int[1];
+        delta.accept(new IResourceDeltaVisitor() {
+
+            @Override
+            public boolean visit(IResourceDelta delta) throws CoreException {
+                if (delta.getResource() instanceof IFile) {
+                    ++count[0];
+                }
+                return true;
+            }
+        });
+        final SubMonitor sub = SubMonitor.convert(monitor, count[0]);
+        
+        delta.accept(new IResourceDeltaVisitor() {
+            
+            @Override
+            public boolean visit(IResourceDelta delta) {
+                if (!(delta.getResource() instanceof IFile)) {
+                    return true;
+                }
+                sub.worked(1);
+                
+                switch (delta.getKind()) {
+                case IResourceDelta.REMOVED:
+                case IResourceDelta.REMOVED_PHANTOM:
+                case IResourceDelta.REPLACED:
+                    parser.removePathFromRefs(Paths.get(delta.getResource().getLocationURI()));
+                    break;
+                    
+                default:
+                    parser.getObjFromProjFile(delta.getResource().getLocationURI());
+                    break;
+                }
+                return true;
+            }
+        });
+        parser.notifyListeners();
     }
 }

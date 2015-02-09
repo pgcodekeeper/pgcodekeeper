@@ -5,18 +5,21 @@ Bundle-SymbolicName: ru.taximaxim.codekeeper.ui;singleton:=true
 Bundle-Version: 1.2.1.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.ui.Activator
 Require-Bundle: org.eclipse.compare;bundle-version="[3.5.0,4.0.0)",
+ org.eclipse.core.expressions,
  org.eclipse.core.filesystem;bundle-version="[1.3.0,2.0.0)",
  org.eclipse.core.resources;bundle-version="[3.7.0,4.0.0)",
  org.eclipse.core.runtime;bundle-version="[3.4.0,4.0.0)",
- org.eclipse.datatools.sqltools.sql,
- org.eclipse.datatools.sqltools.sqlbuilder,
+ org.eclipse.jface.text,
+ org.eclipse.text,
  org.eclipse.ui;bundle-version="[3.0.0,4.0.0)",
  org.eclipse.ui.console;bundle-version="[3.5.0,4.0.0)",
+ org.eclipse.ui.editors,
  org.eclipse.ui.ide;bundle-version="[3.7.0,4.0.0)",
+ org.eclipse.ui.views,
+ org.eclipse.ui.workbench.texteditor,
  org.eclipse.zest.core,
  org.eclipse.zest.layouts,
- apgdiff;bundle-version="[1.1.0,2.0.0)",
- org.eclipse.core.expressions
+ apgdiff;bundle-version="[1.1.0,2.0.0)"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: org.jgrapht,
  org.osgi.framework;version="[1.6.0,2.0.0)"

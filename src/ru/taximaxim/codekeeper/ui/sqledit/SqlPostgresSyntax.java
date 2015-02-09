@@ -1,8 +1,6 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import org.eclipse.datatools.sqltools.sql.ISQLSyntax;
-
-public class SqlPostgresSyntax implements ISQLSyntax {
+public class SqlPostgresSyntax {
     
     private static final String EMPTY[] = {};
     
@@ -2541,39 +2539,32 @@ public class SqlPostgresSyntax implements ISQLSyntax {
             "xpath_exists" //$NON-NLS-1$
     };
 
-    @Override
     public String[] getFunctions() {
         return functions;
     }
 
-    @Override
     public String[] getPredicates() {
         // not used by the api anyway
         // no clear idea what to put here either
         return EMPTY;
     }
 
-    @Override
     public String[] getReservedwords() {
         return reserved;
     }
 
-    @Override
     public String[] getUnreservedwords() {
         return unreserved;
     }
 
-    @Override
     public String[] getTypes() {
         return types;
     }
 
-    @Override
     public String[] getConstants() {
         return EMPTY;
     }
 
-    @Override
     public Object[] getAllWords() {
         return new Object[] {
                 getConstants(), getFunctions(), getGlobalVariables(), getPredicates(),
@@ -2581,14 +2572,11 @@ public class SqlPostgresSyntax implements ISQLSyntax {
         };
     }
 
-    @Override
     public String[] getSingleLineComments() {
         return comment;
     }
 
-    @Override
     public String[] getGlobalVariables() {
         return EMPTY;
     }
-
 }
