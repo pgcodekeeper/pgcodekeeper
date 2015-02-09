@@ -46,9 +46,9 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     List<Entry<PgStatement, PgStatement>> depcyToAdd;
     private IProject proj;
     private PgDbParser parser;
-    private List<FunctionBodyContainer> funcBodyes = new ArrayList<>();
-    public List<FunctionBodyContainer> getFuncBodyes() {
-        return funcBodyes;
+    private List<FunctionBodyContainer> funcBodies = new ArrayList<>();
+    public List<FunctionBodyContainer> getFuncBodies() {
+        return funcBodies;
     }
 
     private String script;
@@ -84,7 +84,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
                 sb.append(entry.getKey().getName())
                     .append(" -> ") //$NON-NLS-1$
                     .append(entry.getValue().getName())
-                    .append(UIConsts.LINE_SEP);
+                    .append(UIConsts._NL);
             }
         }
         return sb.toString();
@@ -121,8 +121,8 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         if (parser != null) {
             listener.addAll(parser.getListeners());
         }
-        funcBodyes.clear();
-        parser = PgDbParser.getRollOnParser(getStorage().getContents(), scriptFileEncoding, monitor, funcBodyes);
+        funcBodies.clear();
+        parser = PgDbParser.getRollOnParser(getStorage().getContents(), scriptFileEncoding, monitor, funcBodies);
         for (Listener e : listener) {
             parser.addListener(e);
         }
@@ -188,7 +188,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
             sb.append(entry.getKey());
             sb.append(" -> "); //$NON-NLS-1$
             sb.append(entry.getValue());
-            sb.append(UIConsts.LINE_SEP); 
+            sb.append(UIConsts._NL); 
         }
         return sb.toString();
     }
@@ -252,8 +252,10 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         }
     }
 
-    class StringStorage implements IEncodedStorage {
-        String str;
+    private class StringStorage implements IEncodedStorage {
+        
+        private String str;
+        
         public StringStorage(String str) {
             this.str = str;
         }

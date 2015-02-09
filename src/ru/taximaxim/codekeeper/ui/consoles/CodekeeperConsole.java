@@ -10,6 +10,7 @@ import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 
 class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
@@ -53,7 +54,7 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
                 outer.setActivateOnWrite(Activator.getDefault()
                         .getPreferenceStore().getBoolean(PREF.FORCE_SHOW_CONSOLE));
             }
-            outer.write(msg + System.lineSeparator());
+            outer.write(msg + UIConsts._NL);
         } catch (IOException e) {
             ConsolePlugin.log(e);
         }

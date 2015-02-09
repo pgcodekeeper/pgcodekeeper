@@ -47,12 +47,12 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
             }
         }
         PgDbParser projParser = null;
-        List<FunctionBodyContainer> funcBodyes = new ArrayList<>();
+        List<FunctionBodyContainer> funcBodies = new ArrayList<>();
         if (input instanceof DepcyFromPSQLOutput) {
             DepcyFromPSQLOutput dep = (DepcyFromPSQLOutput) input;
             parser = dep.getParser();
             projParser = PgDbParser.getParser(dep.getProject());
-            funcBodyes.addAll(dep.getFuncBodyes());
+            funcBodies.addAll(dep.getFuncBodies());
         }
 
         if (parser == null) {
@@ -65,7 +65,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
             refs.addAll(parser.getObjsForPath(file.getLocation().toFile().toPath()));
         } else {
             Map<Path, List<PgObjLocation>> reference = new HashMap<>(parser.getObjReferences());
-            PgDbParser.fillFunctionBodies(projParser.getObjDefinitions(), reference, funcBodyes);
+            PgDbParser.fillFunctionBodies(projParser.getObjDefinitions(), reference, funcBodies);
             refs = PgDbParser.getAll(reference);
         }
         for (PgObjLocation obj : refs) {

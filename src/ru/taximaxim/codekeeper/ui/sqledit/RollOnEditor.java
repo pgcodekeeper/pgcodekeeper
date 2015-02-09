@@ -77,8 +77,6 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
-    public static final String ID = "ru.taximaxim.codekeeper.ui.RollOnEditor";
-    
     private static final String SCRIPT_PLACEHOLDER = "%script"; //$NON-NLS-1$
     private static final String DB_HOST_PLACEHOLDER = "%host"; //$NON-NLS-1$
     private static final String DB_PORT_PLACEHOLDER = "%port"; //$NON-NLS-1$
@@ -200,7 +198,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     }
     
     private void initializeDepcyInput(DepcyFromPSQLOutput input) {
-        addDepcy = (DepcyFromPSQLOutput)input;
+        addDepcy = input;
         this.differ = addDepcy.getDiffer();
         
         this.oldDepcy = differ.getAdditionalDepciesSource();
@@ -292,10 +290,10 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         
         cmbScript = new Combo(notJdbc, SWT.DROP_DOWN);
         cmbScript.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        cmbScript.setToolTipText(DB_NAME_PLACEHOLDER + '=' +dbName + UIConsts.LINE_SEP +
-                DB_HOST_PLACEHOLDER + '=' + dbHost + UIConsts.LINE_SEP + 
-                DB_PORT_PLACEHOLDER + '=' + dbPort + UIConsts.LINE_SEP + 
-                DB_USER_PLACEHOLDER + '=' + dbUser + UIConsts.LINE_SEP + 
+        cmbScript.setToolTipText(DB_NAME_PLACEHOLDER + '=' +dbName + UIConsts._NL +
+                DB_HOST_PLACEHOLDER + '=' + dbHost + UIConsts._NL + 
+                DB_PORT_PLACEHOLDER + '=' + dbPort + UIConsts._NL + 
+                DB_USER_PLACEHOLDER + '=' + dbUser + UIConsts._NL + 
                 DB_PASS_PLACEHOLDER + '=' + dbPass);
 
         List<String> prev;
@@ -440,13 +438,13 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                     SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
             mb.setText(Messages.sqlScriptDialog_psql_dependencies);
             mb.setMessage(Messages.SqlScriptDialog__results_of_script_revealed_dependent_objects +
-                    addDepcy.depcyToString() + UIConsts.LINE_SEP);
+                    addDepcy.depcyToString() + UIConsts._NL);
             String repeats = addDepcy.getRepeatedDepcy();
             if (repeats.length() > 0) {
                 mb.setMessage(mb.getMessage() + 
                         Messages.sqlScriptDialog_this_dependencies_have_been_added_already_check_order + repeats);  
             }
-            mb.setMessage(mb.getMessage() + UIConsts.LINE_SEP +
+            mb.setMessage(mb.getMessage() + UIConsts._NL +
                     Messages.SqlScriptDialog_add_it_to_script);
             if (mb.open() == SWT.OK) {
                 List<Entry<PgStatement, PgStatement>> saveToRestore = addDepcy
@@ -470,6 +468,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     }
     
     private class RunButtonHandler extends SelectionAdapter{
+        
         @Override
         public void widgetSelected(SelectionEvent e) {
          // case Run script
@@ -542,6 +541,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     }
     
     private class SaveButtonHandler extends SelectionAdapter {
+        
         @Override
         public void widgetSelected(SelectionEvent e) {
             String textRetrieved = RollOnEditor.this.getSourceViewer().getDocument().get();
@@ -565,6 +565,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             }
         }
     }
+    
     private class RunScriptExternal implements Runnable {
 
         private final String textRetrieved;
@@ -681,7 +682,9 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             filed.setBackground(getShell().getDisplay().getSystemColor(
                     SWT.COLOR_LIST_BACKGROUND));
             filed.setFont(JFaceResources.getTextFont());
-            filed.setLayoutData(new GridData(GridData.FILL_BOTH));
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.widthHint = 1024;
+            filed.setLayoutData(gd);
             return comp;
         }
 
@@ -694,22 +697,18 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
 
     @Override
     public void partActivated(IWorkbenchPartReference partRef) {
-        // TODO Auto-generated method stub
-        
     }
     @Override
     public void partBroughtToTop(IWorkbenchPartReference partRef) {
-        // TODO Auto-generated method stub
-        
     }
     @Override
     public void partClosed(IWorkbenchPartReference partRef) {
         if (addDepcy != null) {
             if (isRunning) {
-                MessageBox errorDialog = new MessageBox(this.getEditorSite()
+                /*MessageBox errorDialog = new MessageBox(this.getEditorSite()
                         .getShell(), SWT.OK);
                 errorDialog.setMessage(Messages.sqlScriptDialog_stop_script_before_closing_dialog);
-                errorDialog.open();
+                errorDialog.open();*/
             } else {
                 differ.setAdditionalDepciesSource(oldDepcy);
                 try {
@@ -724,27 +723,17 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     }
     @Override
     public void partDeactivated(IWorkbenchPartReference partRef) {
-        // TODO Auto-generated method stub
-        
     }
     @Override
     public void partOpened(IWorkbenchPartReference partRef) {
-        // TODO Auto-generated method stub
-        
     }
     @Override
     public void partHidden(IWorkbenchPartReference partRef) {
-        // TODO Auto-generated method stub
-        
     }
     @Override
     public void partVisible(IWorkbenchPartReference partRef) {
-        // TODO Auto-generated method stub
-        
     }
     @Override
     public void partInputChanged(IWorkbenchPartReference partRef) {
-        // TODO Auto-generated method stub
-        
     }
 }

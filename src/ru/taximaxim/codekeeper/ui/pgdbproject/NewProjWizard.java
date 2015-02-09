@@ -206,9 +206,9 @@ public class NewProjWizard extends Wizard
     private void displayNoMarkerDialog(){
         MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
         mb.setMessage(Messages.missing_marker_file_in_working_directory
-                + System.lineSeparator()
+                + UIConsts._NL
                 + pageRepo.getLocationURI()
-                + System.lineSeparator() + System.lineSeparator()
+                + UIConsts._NL + UIConsts._NL
                 + Messages.NewProjWizard_demand_init_project);
         mb.setText(Messages.newProjWizard_missing_marker_file);
         mb.open();

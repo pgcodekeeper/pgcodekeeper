@@ -31,14 +31,12 @@ import cz.startnet.utils.pgdiff.schema.StatementActions;
 public class PgDbParser {
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
-    private volatile ConcurrentMap<Path, List<PgObjLocation>> objDefinitions;
-    private volatile ConcurrentMap<Path, List<PgObjLocation>> objReferences;
+    private volatile ConcurrentMap<Path, List<PgObjLocation>> objDefinitions = new ConcurrentHashMap<>();
+    private volatile ConcurrentMap<Path, List<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
     private IProject proj;
     private List<Listener> listeners = new ArrayList<>();
 
     private PgDbParser(IProject proj) {
-        objDefinitions = new ConcurrentHashMap<>();
-        objReferences = new ConcurrentHashMap<>();
         this.proj = proj;
     }
     
@@ -66,9 +64,9 @@ public class PgDbParser {
     }
     
     public static PgDbParser getRollOnParser(InputStream input,
-            String scriptFileEncoding, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodyes) {
+            String scriptFileEncoding, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies) {
         PgDbParser rollOnParser = new PgDbParser();
-        rollOnParser.fillRefsFromInputStream(input, monitor, scriptFileEncoding, funcBodyes);
+        rollOnParser.fillRefsFromInputStream(input, monitor, scriptFileEncoding, funcBodies);
         return rollOnParser;
     }
 
@@ -81,23 +79,23 @@ public class PgDbParser {
         IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
         Path path = Paths.get(fileURI);
         String filePath = path.toAbsolutePath().toString();
-        List<FunctionBodyContainer> funcBodyes = new ArrayList<>();
+        List<FunctionBodyContainer> funcBodies = new ArrayList<>();
         PgDatabase db = PgDumpLoader.loadSchemasAndFile(filePath,
                 prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), false,
-                false, ParserClass.getParserAntlrReferences(null, 1, funcBodyes));
+                false, ParserClass.getParserAntlrReferences(null, 1, funcBodies));
         for (Path key : db.getObjDefinitions().keySet()) {
             objDefinitions.put(key, db.getObjDefinitions().get(key));
         }
         for (Path key : db.getObjReferences().keySet()) {
             objReferences.put(key, db.getObjReferences().get(key));
         }
-        fillFunctionBodies(objDefinitions, objReferences, funcBodyes);
+        fillFunctionBodies(objDefinitions, objReferences, funcBodies);
     }
 
     public static void fillFunctionBodies(Map<Path, List<PgObjLocation>> objDefinitions2,
             Map<Path, List<PgObjLocation>> objReferences2,
-            List<FunctionBodyContainer> funcBodyes) {
-        for (FunctionBodyContainer funcBody : funcBodyes) {
+            List<FunctionBodyContainer> funcBodies) {
+        for (FunctionBodyContainer funcBody : funcBodies) {
             String body = funcBody.getBody();
             for (PgObjLocation def : getAll(objDefinitions2)) {
                 int index = body.indexOf(def.getObjName());
@@ -140,14 +138,14 @@ public class PgDbParser {
     private void getFullDBFromDirectory(URI locationURI, IProgressMonitor monitor) {
         ProjectScope ps = new ProjectScope(proj);
         IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
-        List<FunctionBodyContainer> funcBodyes = new ArrayList<>();
+        List<FunctionBodyContainer> funcBodies = new ArrayList<>();
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 Paths.get(locationURI).toAbsolutePath().toString(),
                 prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), 
-                false, false, ParserClass.getParserAntlrReferences(monitor, 1, funcBodyes));
+                false, false, ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
         objDefinitions = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjDefinitions());
         objReferences = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjReferences());
-        fillFunctionBodies(objDefinitions, objReferences, funcBodyes);
+        fillFunctionBodies(objDefinitions, objReferences, funcBodies);
         notifyListeners();
     }
 
@@ -157,10 +155,10 @@ public class PgDbParser {
     }
     
     private void fillRefsFromInputStream(InputStream input,
-            IProgressMonitor monitor, String scriptFileEncoding, List<FunctionBodyContainer> funcBodyes) {
+            IProgressMonitor monitor, String scriptFileEncoding, List<FunctionBodyContainer> funcBodies) {
         PgDatabase db = PgDumpLoader.loadRefsFromInputStream(input, Paths.get(""),
                 scriptFileEncoding, false, false,
-                ParserClass.getParserAntlrReferences(monitor, 1, funcBodyes));
+                ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
         objDefinitions = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjDefinitions());
         objReferences = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjReferences());
     }

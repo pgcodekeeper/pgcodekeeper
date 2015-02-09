@@ -2,9 +2,10 @@ package ru.taximaxim.codekeeper.ui;
 
 public interface UIConsts {
 
+    String _NL = System.lineSeparator();
+    
     String UTF_8 = "UTF-8"; //$NON-NLS-1$
     String UTC = "UTC"; //$NON-NLS-1$
-    String LINE_SEP = System.lineSeparator();
 
     interface PLUGIN_ID {
         String THIS = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
@@ -13,8 +14,10 @@ public interface UIConsts {
     
     interface EDITOR {
         String PROJECT = PLUGIN_ID.THIS + ".projectEditorDiffer"; //$NON-NLS-1$
-        String PROJECT_EDITOR_FACTORY_ID = "ru.taximaxim.codekeeper.ui.editors.ProjectEditorInputFactory"; //$NON-NLS-1$
+        String PROJECT_EDITOR_FACTORY_ID = PLUGIN_ID.THIS + ".editors.ProjectEditorInputFactory"; //$NON-NLS-1$
         String PROJECT_EDITOR_FACTORY_TAG_PROJECT = "project"; //$NON-NLS-1$
+        
+        String ROLLON = PLUGIN_ID.THIS + ".RollOnEditor"; //$NON-NLS-1$
     }
     
     interface COMMAND {
