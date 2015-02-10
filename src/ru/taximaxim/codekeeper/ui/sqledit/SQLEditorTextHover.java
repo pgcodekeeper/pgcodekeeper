@@ -74,6 +74,6 @@ final class SQLEditorTextHover implements ITextHover {
                 return myRegion.getComment();
             }
         }
-        return ""; 
+        return "";  //$NON-NLS-1$
     }
 }

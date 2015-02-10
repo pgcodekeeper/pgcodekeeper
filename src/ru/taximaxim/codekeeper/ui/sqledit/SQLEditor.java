@@ -22,7 +22,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class SQLEditor extends AbstractDecoratedTextEditor {
 
-    public static final String ID = "ru.taximaxim.codekeeper.ui.SQLEditor";
+    public static final String ID = "ru.taximaxim.codekeeper.ui.SQLEditor"; //$NON-NLS-1$
     static final String CONTENT_ASSIST= "ContentAssist"; //$NON-NLS-1$
 
     private SQLEditorContentOutlinePage fOutlinePage;

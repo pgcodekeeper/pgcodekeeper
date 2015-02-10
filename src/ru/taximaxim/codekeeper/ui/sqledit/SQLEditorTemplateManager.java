@@ -13,7 +13,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class SQLEditorTemplateManager {
     private static final String CUSTOM_TEMPLATES_KEY = UIConsts.PLUGIN_ID.THIS
-            + ".customtemplates";
+            + ".customtemplates"; //$NON-NLS-1$
     private static SQLEditorTemplateManager instance;
     private TemplateStore fStore;
     private ContributionContextTypeRegistry fRegistry;

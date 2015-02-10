@@ -215,7 +215,7 @@ class DbSourceFile extends DbSource {
             monitor.setWorkRemaining(linesCount > AVERAGE_STATEMENT_LENGTH ? 
                     linesCount/AVERAGE_STATEMENT_LENGTH : 1);
         } catch (IOException e) {
-            Log.log(Log.LOG_INFO, "Error counting file lines. Setting 1000");
+            Log.log(Log.LOG_INFO, "Error counting file lines. Setting 1000"); //$NON-NLS-1$
             monitor.setWorkRemaining(1000);
         }
         parser.setMonitor(monitor);

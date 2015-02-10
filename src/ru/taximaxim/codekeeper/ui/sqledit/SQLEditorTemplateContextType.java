@@ -8,7 +8,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 public class SQLEditorTemplateContextType extends TemplateContextType {
 
     public static final String CONTEXT_TYPE 
-    = UIConsts.PLUGIN_ID.THIS + ".sqlEditorContextType";
+    = UIConsts.PLUGIN_ID.THIS + ".sqlEditorContextType"; //$NON-NLS-1$
     
     public SQLEditorTemplateContextType() {
         addResolver(new GlobalTemplateVariables.Cursor());

@@ -122,7 +122,7 @@ public class PgDbParser {
      * @param locationURI project location
      */
     private void getFullDBFromDirectoryJob(final URI locationURI) {
-        Job job = new Job("getDatabaseReferences") {
+        Job job = new Job("getDatabaseReferences") { //$NON-NLS-1$
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -156,7 +156,7 @@ public class PgDbParser {
     
     private void fillRefsFromInputStream(InputStream input,
             IProgressMonitor monitor, String scriptFileEncoding, List<FunctionBodyContainer> funcBodies) {
-        PgDatabase db = PgDumpLoader.loadRefsFromInputStream(input, Paths.get(""),
+        PgDatabase db = PgDumpLoader.loadRefsFromInputStream(input, Paths.get(""), //$NON-NLS-1$
                 scriptFileEncoding, false, false,
                 ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
         objDefinitions = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjDefinitions());

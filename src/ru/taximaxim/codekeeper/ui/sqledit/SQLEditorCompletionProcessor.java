@@ -28,7 +28,7 @@ import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
     private SqlPostgresSyntax sqlSyntax;
-    private String text = "";
+    private String text = ""; //$NON-NLS-1$
 
     public SQLEditorCompletionProcessor(SqlPostgresSyntax sqlSyntax) {
         this.sqlSyntax = sqlSyntax;
@@ -38,7 +38,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
             int offset) {
         IDocument document = viewer.getDocument();
-        text = "";
+        text = ""; //$NON-NLS-1$
         try {
             int length = 1;
             text = document.get(offset - length, length);
@@ -50,10 +50,10 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                 }
             }
             if (length == 1) {
-                text = "";
+                text = ""; //$NON-NLS-1$
             }
         } catch (BadLocationException e) {
-            Log.log(Log.LOG_ERROR, "Document doesn't contain such offset", e);
+            Log.log(Log.LOG_ERROR, "Document doesn't contain such offset", e); //$NON-NLS-1$
         }
 
         List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
@@ -82,7 +82,8 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                                 .getProject()).getAllObjDefinitions());    
             }
         }
-        LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources());
+        LocalResourceManager lrm = new LocalResourceManager(
+                JFaceResources.getResources(), viewer.getTextWidget());
         for (PgObjLocation obj : loc) {
             ImageDescriptor iObj = ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(
@@ -92,7 +93,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             Image img = lrm.createImage(iObj);
             String displayText = obj.getObjName();
             if (!obj.getComment().isEmpty()) {
-                displayText += " - " + obj.getComment();
+                displayText += " - " + obj.getComment(); //$NON-NLS-1$
             }
             if (!text.isEmpty()) {
                 if (obj.getObjName().startsWith(text)) {
@@ -133,7 +134,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
 
     @Override
     public String getErrorMessage() {
-        return "Error Message";
+        return null;
     }
 
     @Override

@@ -118,7 +118,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                     currentGraph = new DepcyGraph(currentDb);
                 }
             } catch (PgCodekeeperException e) {
-                Log.log(Log.LOG_WARNING, "Error creating dependency graph", e);
+                Log.log(Log.LOG_WARNING, "Error creating dependency graph", e); //$NON-NLS-1$
             }
         }
 

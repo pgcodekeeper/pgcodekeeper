@@ -30,6 +30,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorStatementTypes;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorSyntaxModel;
 
@@ -92,9 +93,10 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
         
         group = new Group(composite, SWT.NONE);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
-        group.setText("Font and color preference");
+        group.setText(Messages.SQLEditorSytaxColoring_font_and_color_prefs);
         SQLEditorStatementTypes first = SQLEditorStatementTypes.CONSTANTS;
-        colorFieldEditor = new ColorFieldEditor(first.getPrefName() + ".Color", "Color:", group);
+        colorFieldEditor = new ColorFieldEditor(first.getPrefName() + 
+                SQLEditorSyntaxModel.PREF_COLOR, Messages.SQLEditorSytaxColoring_color, group);
         colorFieldEditor.setPreferenceStore(store);
         colorFieldEditor.getColorSelector().addListener(new IPropertyChangeListener() {
             
@@ -105,7 +107,8 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
         });
         addField(colorFieldEditor);
         
-        boldField = new BooleanFieldEditor(first.getPrefName() + ".Bold", "Bold:", group);
+        boldField = new BooleanFieldEditor(first.getPrefName() + 
+                SQLEditorSyntaxModel.PREF_BOLD, Messages.SQLEditorSytaxColoring_bold, group);
         ((Button)boldField.getDescriptionControl(group)).addSelectionListener(new SelectionAdapter() {
             
             @Override
@@ -115,7 +118,8 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
         });
         addField(boldField);
         
-        italicField = new BooleanFieldEditor(first.getPrefName() + ".Italic", "Italic", group);
+        italicField = new BooleanFieldEditor(first.getPrefName() +
+                SQLEditorSyntaxModel.PREF_ITALIC, Messages.SQLEditorSytaxColoring_italic, group);
         ((Button)italicField.getDescriptionControl(group)).addSelectionListener(new SelectionAdapter() {
             
             @Override
@@ -124,7 +128,8 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
             }
         });
         addField(italicField);
-        strikethroughField = new BooleanFieldEditor(first.getPrefName() + ".strikethrough", "Strikethrough", group);
+        strikethroughField = new BooleanFieldEditor(first.getPrefName() + 
+                SQLEditorSyntaxModel.PREF_ITALIC, Messages.SQLEditorSytaxColoring_strikethrough, group);
         ((Button)strikethroughField.getDescriptionControl(group)).addSelectionListener(new SelectionAdapter() {
             
             @Override
@@ -133,7 +138,8 @@ public class SQLEditorSytaxColoring extends FieldEditorPreferencePage implements
             }
         });
         addField(strikethroughField);
-        underlineField = new BooleanFieldEditor(first.getPrefName() + ".underline", "Underline", group);
+        underlineField = new BooleanFieldEditor(first.getPrefName() + 
+                SQLEditorSyntaxModel.PREF_UNDERLINE, Messages.SQLEditorSytaxColoring_underline, group);
         ((Button)underlineField.getDescriptionControl(group)).addSelectionListener(new SelectionAdapter() {
             
             @Override
