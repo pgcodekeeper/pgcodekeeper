@@ -140,6 +140,8 @@ public class ModelExporter {
                     break;
             }
         }
+        writeProjVersion(new File(outDir.getPath(), 
+                ApgdiffConsts.FILENAME_WORKING_DIR_MARKER));
     }
     
     /**
