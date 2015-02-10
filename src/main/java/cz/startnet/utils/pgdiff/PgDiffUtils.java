@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
 import java.util.Locale;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
@@ -609,11 +610,13 @@ public final class PgDiffUtils {
             }
             return sb.toString();
         } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(
-                    "UnsupportedEncodingException thrown while getting hash", e);
+            throw new IllegalStateException(MessageFormat.format(
+                            "UnsupportedEncodingException thrown while getting hash: {0}",
+                            e.getLocalizedMessage()), e);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(
-                    "NoSuchAlgorithmException thrown while getting hash",e);
+            throw new IllegalStateException(MessageFormat.format(
+                    "NoSuchAlgorithmException thrown while getting hash: {0}", 
+                    e.getLocalizedMessage()),e);
         }
     }
     

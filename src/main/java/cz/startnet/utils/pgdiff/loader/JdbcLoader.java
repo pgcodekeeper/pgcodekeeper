@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -152,7 +153,9 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (SQLException e) {
-            throw new IOException(Messages.Connection_DatabaseJdbcAccessError, e);
+            throw new IOException(MessageFormat.format(
+                    Messages.Connection_DatabaseJdbcAccessError,
+                    e.getLocalizedMessage()), e);
         } finally{
             Log.log(Log.LOG_INFO, "Closing used JDBC resources");
             closeResources();

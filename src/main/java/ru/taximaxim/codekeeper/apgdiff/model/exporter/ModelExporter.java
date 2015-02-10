@@ -9,6 +9,7 @@ import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.DosFileAttributeView;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -122,8 +123,9 @@ public class ModelExporter {
             throw new IOException("Old database should not be null for partial export.");
         }
         if(!outDir.exists() || !outDir.isDirectory()) {
-            throw new DirectoryException("Output directory does not exist: " + 
-                    outDir.getAbsolutePath());
+            throw new DirectoryException(MessageFormat.format(
+                    "Output directory does not exist: {0}",
+                    outDir.getAbsolutePath()));
         }
         for (TreeElement el : changedObjects){
             switch(el.getSide()){
@@ -326,7 +328,8 @@ public class ModelExporter {
             break;
             
         default:
-            throw new IOException("Wrong TreeElement type: " + el.getType());
+            throw new IOException(MessageFormat.format(
+                    "Wrong TreeElement type: {0}", el.getType()));
         }
     }
     
@@ -338,8 +341,8 @@ public class ModelExporter {
     private void testParentSchema(TreeElement el) throws IOException{
         if (el.getSide() == DiffSide.RIGHT && !changedObjects.contains(el) 
                 || el.getSide() == DiffSide.LEFT && changedObjects.contains(el)){
-            throw new IOException("Parent schema either will not be created (NEW) "
-                    + "or is deleted already along with its schema folder");
+            throw new IOException(
+                    "Parent schema either will not be created (NEW) or is deleted already along with its schema folder");
         }
     }
     
@@ -356,21 +359,24 @@ public class ModelExporter {
             
             for (ApgdiffConsts.WORK_DIR_NAMES subdirName : ApgdiffConsts.WORK_DIR_NAMES.values()) {
                 if (new File(outDir, subdirName.toString()).exists()) {
-                    throw new DirectoryException("Output directory already contains "
-                            + subdirName + " directory.");
+                    throw new DirectoryException(MessageFormat.format(
+                            "Output directory already contains {0} directory.",
+                            subdirName));
                 }
             }
         } else if(!outDir.mkdirs()) {
-                throw new DirectoryException("Could not create output directory:"
-                        + outDir.getAbsolutePath());
+            throw new DirectoryException(MessageFormat.format(
+                    "Could not create output directory: {0}",
+                    outDir.getAbsolutePath()));
         }
         
         // exporting schemas
         File schemasSharedDir = new File(outDir, 
                 ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.toString());
         if(!schemasSharedDir.mkdir()) {
-            throw new DirectoryException("Could not create schemas directory:"
-                    + schemasSharedDir.getAbsolutePath());
+            throw new DirectoryException(MessageFormat.format(
+                    "Could not create schemas directory: {0}",
+                    schemasSharedDir.getAbsolutePath()));
         }
         
         for(PgSchema schema : newDb.getSchemas()) {
@@ -382,8 +388,9 @@ public class ModelExporter {
         File extensionsDir = new File(outDir, 
                 ApgdiffConsts.WORK_DIR_NAMES.EXTENSION.toString());
         if(!extensionsDir.mkdir()) {
-            throw new DirectoryException("Could not create extensions directory:"
-                    + extensionsDir.getAbsolutePath());
+            throw new DirectoryException(MessageFormat.format(
+                    "Could not create extensions directory: {0}",
+                    extensionsDir.getAbsolutePath()));
         }
         
         for(PgExtension ext : newDb.getExtensions()) {
@@ -395,8 +402,9 @@ public class ModelExporter {
         for(PgSchema schema : newDb.getSchemas()) {
             File schemaDir = new File(schemasSharedDir, getExportedFilename(schema));
             if(!schemaDir.mkdir()) {
-                throw new DirectoryException("Could not create schema directory:"
-                        + schemaDir.getAbsolutePath());
+                throw new DirectoryException(MessageFormat.format(
+                        "Could not create schema directory: {0}",
+                        schemaDir.getAbsolutePath()));
             }
             dumpFunctions(schema.getFunctions(), schemaDir);
             dumpObjects(schema.getSequences(), schemaDir, "SEQUENCE");
@@ -481,8 +489,9 @@ public class ModelExporter {
             }
         } else {
             if(!objectDir.mkdir()) {
-                throw new DirectoryException("Could not create objects directory:"
-                        + objectDir.getAbsolutePath());
+                throw new DirectoryException(MessageFormat.format(
+                        "Could not create objects directory: {0}",
+                        objectDir.getAbsolutePath()));
             }
         }
         return objectDir;
@@ -494,8 +503,9 @@ public class ModelExporter {
         }
         
         if(!file.createNewFile()) {
-            throw new FileException("Cannot create sql output file:"
-                    + file.getAbsolutePath());
+            throw new FileException(MessageFormat.format(
+                    "Cannot create sql output file: {0}",
+                    file.getAbsolutePath()));
         }
         
         try(PrintWriter outFile = new UnixPrintWriter(file, sqlEncoding)) {

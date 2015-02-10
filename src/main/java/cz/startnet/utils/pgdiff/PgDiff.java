@@ -149,7 +149,9 @@ public final class PgDiff {
             depcyOld = new DepcyGraph(new PgDatabase());
             depcyNew = new DepcyGraph(new PgDatabase());
         } catch (PgCodekeeperException e) {
-            throw new IllegalStateException("Error creating dependency graph", e);
+            throw new IllegalStateException(MessageFormat.format(
+                    "Error creating dependency graph: {0}",
+                    e.getLocalizedMessage()), e);
         }
         
         PgDiffScript script = new PgDiffScript();
@@ -167,7 +169,9 @@ public final class PgDiff {
                 depcyOld = new DepcyGraph(oldDbFull);
                 depcyNew = new DepcyGraph(newDbFull);
             } catch (PgCodekeeperException e) {
-                throw new IllegalStateException("Error creating dependency graph", e);
+                throw new IllegalStateException(MessageFormat.format(
+                        "Error creating dependency graph: {0}",
+                        e.getLocalizedMessage()), e);
             }
             
             if (additionalDepciesSource != null) {
