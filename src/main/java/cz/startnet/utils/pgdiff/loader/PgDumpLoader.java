@@ -348,7 +348,8 @@ public final class PgDumpLoader { //NOPMD
                     refListener, path);
             funcBodies.addAll(refListener.getFunctionBodies());
         } catch (IOException e) {
-            throw new FileException("Exception while closing dump file", e);
+            throw new FileException(MessageFormat.format(
+                    "Exception while parsing dump file: {0}", e.getLocalizedMessage()), e);
         }
         return database;
     }
@@ -419,8 +420,7 @@ public final class PgDumpLoader { //NOPMD
                         Messages.Loader_FileNotFound, f.getAbsolutePath()), ex);
             } catch (IOException ex) {
                 throw new FileException(MessageFormat.format(
-                        "An unexpected IOException: {0}",
-                        ex.getLocalizedMessage()), ex);
+                        Messages.Loader_CannotReadFile, ex.getLocalizedMessage()), ex);
             }
         }
     }
@@ -496,7 +496,7 @@ public final class PgDumpLoader { //NOPMD
                     newLine = reader.readLine();
                 } catch (IOException ex) {
                     throw new FileException(MessageFormat.format(
-                            "Cannot read file: {0}",
+                            Messages.Loader_CannotReadFile,
                             ex.getLocalizedMessage()), ex);
                 }
 

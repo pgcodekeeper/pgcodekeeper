@@ -9,7 +9,6 @@ public final class Messages extends NLS {
 // SONAR-OFF
 
     // common 
-    public static String HelpOption;
     public static String UsageHelp;
     public static String Version;
     public static String UnknownDBFormat;
