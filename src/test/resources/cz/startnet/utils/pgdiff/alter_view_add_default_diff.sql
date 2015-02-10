@@ -1,1 +1,0 @@
-ALTER TABLE test ALTER COLUMN test_col SET DEFAULT now();

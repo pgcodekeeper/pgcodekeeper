@@ -1,3 +1,0 @@
-
-ALTER TABLE testtable
-	SET WITHOUT OIDS;
