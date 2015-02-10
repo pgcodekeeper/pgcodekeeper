@@ -20,7 +20,7 @@
       <plugin>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
-        <version>4.3</version>
+        <version>4.5</version>
         <configuration>
             <visitor>true</visitor>
             <sourceDirectory>${project.basedir}/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr</sourceDirectory>
