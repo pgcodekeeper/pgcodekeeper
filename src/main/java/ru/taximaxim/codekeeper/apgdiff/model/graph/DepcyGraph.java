@@ -204,7 +204,7 @@ public class DepcyGraph {
             graph.addVertex(trigger);
             graph.addEdge(trigger, table);
             
-            String funcDef = trigger.getFunction();
+            String funcDef = trigger.getFunctionSignature();
             PgFunction func = getSchemaForObject(schema, funcDef).getFunction(
                     ParserUtils.getObjectName(funcDef));
             if (func != null) {

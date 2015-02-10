@@ -142,12 +142,10 @@ public class ReferenceListener extends SQLParserBaseListener {
                             .getStartIndex(), 0, ctx.function_parameters()
                             .getStart().getLine());
         }
-        PgFunction func = new PgFunction(funcName, ParserAbstract.getFullCtxText(ctx.func_name), "");
-        ParserAbstract.fillArguments(ctx.function_parameters().function_args(), func);
-        addObjReference(funcSchema, func.getSignature(), DbObjType.FUNCTION,
+        addObjReference(funcSchema, funcName+"()", DbObjType.FUNCTION,
                 StatementActions.NONE, ctx.function_parameters().getStart()
                         .getStartIndex()
-                        + offset, func.getBareName().length(),
+                        + offset, funcName.length(),
                 ctx.function_parameters().name.getStart().getLine());
         
         fillObjDefinition(schemaName, name, DbObjType.TRIGGER, ctx.name

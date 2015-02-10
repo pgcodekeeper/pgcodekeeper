@@ -800,7 +800,11 @@ public class JdbcLoader implements PgCatalogStrings {
         String tableName = res.getString("tgrelid");
         t.setTableName(tableName);
         
-        String functionName = res.getString("proname").concat("(");
+        String funcName = res.getString("proname");
+        if (!res.getString(NAMESPACE_NSPNAME).equals(schemaName)){
+            funcName = res.getString(NAMESPACE_NSPNAME).concat(".").concat(funcName);
+        }
+        String functionName = funcName.concat("(");
         byte[] args = res.getBytes("tgargs");
         if (args.length > 0){
             StringBuilder sbArgs = new StringBuilder();
@@ -819,11 +823,8 @@ public class JdbcLoader implements PgCatalogStrings {
             functionName = functionName.concat('\'' + sbArgs.toString() + '\'');
         }
         functionName = functionName.concat(")");
-        if (!res.getString(NAMESPACE_NSPNAME).equals(schemaName)){
-            functionName = res.getString(NAMESPACE_NSPNAME).concat(".").concat(functionName);
-        }
         
-        t.setFunction(functionName);
+        t.setFunction(functionName, funcName+ "()");
         return t;
     }
     

@@ -37,7 +37,7 @@ public class CreateTrigger extends ParserAbstract {
         trigger.setOnInsert(ctx.insert_true!= null);
         trigger.setOnUpdate(ctx.update_true != null);
         trigger.setOnTruncate(ctx.truncate_true != null);
-        trigger.setFunction(getFullCtxText(ctx.func_name));
+        trigger.setFunction(getFullCtxText(ctx.func_name), getFullCtxText(ctx.func_name.name) + "()");
         for (Names_referencesContext column : ctx.names_references()) {
             for (Schema_qualified_nameContext nameCol : column.name){
             trigger.addUpdateColumn(getName(nameCol));

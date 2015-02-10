@@ -21,7 +21,8 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  */
 public class PgTrigger extends PgStatementWithSearchPath {
 
-    private String function;
+    private String function_full;
+    private String func_signature;
     private String tableName;
     /**
      * Whether the trigger should be fired BEFORE or AFTER action. Default is
@@ -131,7 +132,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         }
 
         sbSQL.append("\n\tEXECUTE PROCEDURE ");
-        sbSQL.append(getFunction());
+        sbSQL.append(getFullFunction());
         sbSQL.append(';');
 
         if (comment != null && !comment.isEmpty()) {
@@ -157,13 +158,25 @@ public class PgTrigger extends PgStatementWithSearchPath {
         return forEachRow;
     }
 
-    public void setFunction(final String function) {
-        this.function = function;
+    /**
+     * @param full_func_def
+     *            full function calls with parameters and others
+     * @param func_signature
+     *            only name with "()" cause triggers can use only functions
+     *            without parameters
+     */
+    public void setFunction(final String full_func_def, String func_signature) {
+        this.function_full = full_func_def;
+        this.func_signature = func_signature;
         resetHash();
     }
 
-    public String getFunction() {
-        return function;
+    private String getFullFunction() {
+        return function_full;
+    }
+    
+    public String getFunctionSignature() {
+        return func_signature;
     }
 
     public void setOnDelete(final boolean onDelete) {
@@ -247,7 +260,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
     public boolean compareWithoutComments(PgTrigger trigger) {
         return (before == trigger.isBefore())
                 && (forEachRow == trigger.isForEachRow())
-                && Objects.equals(function, trigger.getFunction())
+                && Objects.equals(function_full, trigger.getFullFunction())
+                && Objects.equals(getFunctionSignature(), trigger.getFunctionSignature())
                 && Objects.equals(name, trigger.getName())
                 && (onDelete == trigger.isOnDelete())
                 && (onInsert == trigger.isOnInsert())
@@ -266,7 +280,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
         int result = 1;
         result = prime * result + (before ? itrue : ifalse);
         result = prime * result + (forEachRow ? itrue : ifalse);
-        result = prime * result + ((function == null) ? 0 : function.hashCode());
+        result = prime * result + ((function_full == null) ? 0 : function_full.hashCode());
+        result = prime * result + ((getFunctionSignature() == null) ? 0 : getFunctionSignature().hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + (onDelete ? itrue : ifalse);
         result = prime * result + (onInsert ? itrue : ifalse);
@@ -285,7 +300,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
                 new PgTrigger(getName(), getRawStatement(), getSearchPath());
         triggerDst.setBefore(isBefore());
         triggerDst.setForEachRow(isForEachRow());
-        triggerDst.setFunction(getFunction());
+        triggerDst.setFunction(getFullFunction(), getFunctionSignature());
         triggerDst.setOnDelete(isOnDelete());
         triggerDst.setOnInsert(isOnInsert());
         triggerDst.setOnTruncate(isOnTruncate());

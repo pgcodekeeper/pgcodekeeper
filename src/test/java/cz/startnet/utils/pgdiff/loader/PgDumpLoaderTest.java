@@ -985,7 +985,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
     trigger.setOnUpdate(true);
     trigger.setTableName("test");
     trigger.setForEachRow(false);
-    trigger.setFunction("trigger_fnc()");
+    trigger.setFunction("trigger_fnc()", "trigger_fnc()");
     table.addTrigger(trigger);
     
     trigger.setComment("'test trigger'");

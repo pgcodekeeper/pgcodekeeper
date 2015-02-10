@@ -94,7 +94,8 @@ public final class CreateTriggerParser {
         }
 
         parser.expect("EXECUTE", "PROCEDURE");
-        trigger.setFunction(parser.getRest());
+        String func_name = parser.parseIdentifier();
+        trigger.setFunction(func_name + parser.getRest(), func_name + "()");
 
         final boolean ignoreSlonyTrigger = ignoreSlonyTriggers
                 && ("_slony_logtrigger".equals(trigger.getName())
