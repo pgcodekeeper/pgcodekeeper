@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
@@ -37,7 +36,6 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     private IEditorInput fInput;
     private AbstractDecoratedTextEditor fTextEditor;
     private IDocumentProvider fDocumentProvider;
-    private PgDbParser parser;
     private TreeViewer viewer;
 
     public SQLEditorContentOutlinePage(IDocumentProvider fDocumentProvider,
@@ -47,15 +45,13 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
     }
     
     public void externalRefresh() {
-        viewer.refresh();
+        if (viewer != null) {
+            viewer.refresh();
+        }
     }
     
     public void setInput(IEditorInput input) {
         this.fInput = input;
-        IFile file = ((FileEditorInput)input).getFile();
-        if (file != null) {
-            parser = PgDbParser.getParser(file.getProject());
-        }
     }
 
     @Override
@@ -84,11 +80,24 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
             @Override
             public Object[] getElements(Object inputElement) {
                 List<Segments> segments = new ArrayList<>();
+                List<PgObjLocation> refs = new ArrayList<>();
+                PgDbParser parser = null;
+                if (fTextEditor instanceof SQLEditor) {
+                    parser  = ((SQLEditor)fTextEditor).getParser(); 
+                }
+                if (parser == null) {
+                    return segments.toArray();
+                }
                 if (inputElement instanceof FileEditorInput) {
                     Path inputPath = ((FileEditorInput)inputElement).
                             getFile().getLocation().toFile().toPath();
-                    for (PgObjLocation loc : parser.getObjsForPath(inputPath)) {
-                        if (loc.getAction() != StatementActions.NONE)
+                    refs = parser.getObjsForPath(inputPath);
+                }
+                if (inputElement instanceof DepcyFromPSQLOutput) {
+                    refs = parser.getAllObjReferences();
+                }
+                for (PgObjLocation loc : refs) {
+                    if (loc.getAction() != StatementActions.NONE) {
                         segments.add(new Segments(loc));
                     }
                 }

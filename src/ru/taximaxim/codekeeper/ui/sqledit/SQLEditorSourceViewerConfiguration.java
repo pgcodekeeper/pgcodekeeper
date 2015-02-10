@@ -2,16 +2,12 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.Map;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
-import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
@@ -27,20 +23,17 @@ import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
-import org.eclipse.ui.part.FileEditorInput;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
-import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
+    // TODO: нужен метод который будет проверять валидность идентификатора с
+    // точки зрения SQL а не Java
     private static final class WordDetector implements IWordDetector {
         public boolean isWordPart(char c) {
-            return !Character.isWhitespace(c);
+            return Character.isJavaIdentifierPart(c);
         }
 
         public boolean isWordStart(char c) {
@@ -52,61 +45,17 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     private final SqlPostgresSyntax sqlSyntax = new SqlPostgresSyntax();
     private IPreferenceStore prefs;
     
-    public SQLEditorSourceViewerConfiguration(ISharedTextColors sharedColors, IPreferenceStore store) {
+    public SQLEditorSourceViewerConfiguration(ISharedTextColors sharedColors,
+            IPreferenceStore store) {
         super(store);
-        fSharedColors= sharedColors;
+        fSharedColors= sharedColors;        
         this.prefs = Activator.getDefault().getPreferenceStore();
     }
     
     @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer,
             String contentType) {
-        return new ITextHover() {
-            
-            @Override
-            public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-                IProject proj = null;
-                IFile file = null;
-                IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                        .getActivePage().getActiveEditor();
-                if (page instanceof SQLEditor) {
-                    SQLEditor edit = (SQLEditor) page;
-                    file = ((FileEditorInput) ((edit).getEditorInput())).getFile();
-                    if (file != null) {
-                        proj = file.getProject();
-                    }
-                }
-                if (proj == null) {
-                    return new Region(offset, 0);
-                }
-                PgDbParser parser = PgDbParser.getParser(proj);
-                for (PgObjLocation obj : parser.getObjsForPath(file.getLocation()
-                        .toFile().toPath())) {
-                    if (offset > obj.getOffset()
-                            && offset < (obj.getOffset() + obj.getObjLength())) {
-                        PgObjLocation loc = parser.getDefinitionForObj(obj);
-                        if (loc != null) {
-                            SQLEditorMyRegion region = new SQLEditorMyRegion(obj.getOffset(), obj.getObjLength());
-                            region.setComment(loc.getComment());
-                            return region;
-                        }
-                    }
-                }
-                return new Region(offset, 0);
-            }
-            
-            @Override
-            public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-                if (hoverRegion != null) {
-                    if (hoverRegion.getLength() > -1
-                            && hoverRegion instanceof SQLEditorMyRegion) {
-                        SQLEditorMyRegion myRegion = (SQLEditorMyRegion) hoverRegion;
-                        return myRegion.getComment();
-                    }
-                }
-                return ""; 
-            }
-        };
+        return new SQLEditorTextHover();
     }
     
     // Отображает всю строку при наведении на левую полосу редактора
@@ -175,7 +124,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                 return result.toArray(new ICompletionProposal[result.size()]);
             }
         }*/
-        , SQLEditorDocumentProvider.SQL_CODE);
+        , SQLEditorCommonDocumentProvider.SQL_CODE);
         assistant.enableAutoActivation(true);
         assistant.setAutoActivationDelay(500);
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
@@ -185,14 +134,14 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     @Override
     public String getConfiguredDocumentPartitioning(ISourceViewer sourceViewer) {
-        return SQLEditorDocumentProvider.SQL_PARTITIONING;
+        return SQLEditorCommonDocumentProvider.SQL_PARTITIONING;
     }
     
     @Override
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
         return new String[] {
-                SQLEditorDocumentProvider.SQL_CODE,
-                SQLEditorDocumentProvider.SQL_SINGLE_COMMENT
+                SQLEditorCommonDocumentProvider.SQL_CODE,
+                SQLEditorCommonDocumentProvider.SQL_SINGLE_COMMENT
         };
     }
     
@@ -201,10 +150,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         PresentationReconciler reconciler= new PresentationReconciler();
         reconciler.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
         
-        addDamagerRepairer(reconciler, createCommentScanner(), SQLEditorDocumentProvider.SQL_SINGLE_COMMENT);
-        addDamagerRepairer(reconciler, createMultiCommentScanner(), SQLEditorDocumentProvider.SQL_MULTI_COMMENT);
-        addDamagerRepairer(reconciler, createCharacterStringLiteralCommentScanner(), SQLEditorDocumentProvider.SQL_CHARACTER_STRING_LITERAL);
-        addDamagerRepairer(reconciler, createRecipeScanner(), SQLEditorDocumentProvider.SQL_CODE);
+        addDamagerRepairer(reconciler, createCommentScanner(), SQLEditorCommonDocumentProvider.SQL_SINGLE_COMMENT);
+        addDamagerRepairer(reconciler, createMultiCommentScanner(), SQLEditorCommonDocumentProvider.SQL_MULTI_COMMENT);
+        addDamagerRepairer(reconciler, createCharacterStringLiteralCommentScanner(), SQLEditorCommonDocumentProvider.SQL_CHARACTER_STRING_LITERAL);
+        addDamagerRepairer(reconciler, createRecipeScanner(), SQLEditorCommonDocumentProvider.SQL_CODE);
         
         return reconciler;
     }

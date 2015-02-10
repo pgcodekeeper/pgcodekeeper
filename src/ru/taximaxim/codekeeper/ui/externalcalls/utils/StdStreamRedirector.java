@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -49,15 +50,16 @@ public class StdStreamRedirector {
                 while((line = in.readLine()) != null) {
                     ConsoleFactory.write(line);
                     storage.append(line);
-                    storage.append(System.lineSeparator());
+                    storage.append(UIConsts._NL);
                 }
             } catch(IOException ex) {
                 if (isDestroyed.get()) {
                     // the process was destroyed by us, exit silently
                     return;
                 }
-                throw new IllegalStateException(
-                        Messages.StdStreamRedirector_error_reading_std, ex);
+                throw new IllegalStateException(MessageFormat.format(
+                        Messages.StdStreamRedirector_error_reading_std,
+                        ex.getLocalizedMessage()), ex);
             }
         }
     }
@@ -109,7 +111,9 @@ public class StdStreamRedirector {
                     p.waitFor();
                 } catch (InterruptedException ex2) {
                     throw new IOException(
-                            Messages.StdStreamRedirector_wait_destroy_interrupted_unexpectedly, ex2);
+                            MessageFormat.format(
+                                    Messages.StdStreamRedirector_wait_destroy_interrupted_unexpectedly,
+                                    ex2.getLocalizedMessage()), ex2);
                 }
             }
             
@@ -117,7 +121,9 @@ public class StdStreamRedirector {
                 redirectorThread.join();
             } catch (InterruptedException ex) {
                 throw new IOException(
-                        Messages.StdStreamRedirector_wait_thread_interrupted_unexpectedly, ex);
+                        MessageFormat.format(
+                                Messages.StdStreamRedirector_wait_thread_interrupted_unexpectedly,
+                                ex.getLocalizedMessage()), ex);
             }
             ConsoleFactory.write(MessageFormat.format(
                     Messages.stdStreamRedirector_completed_with_code, pb
@@ -129,18 +135,18 @@ public class StdStreamRedirector {
             }
             
             if (lastException.get() != null){
-                throw new IOException(Messages.StdStreamRedirector_error_reading_std_external,
-                        lastException.get());
+                throw new IOException(MessageFormat.format(Messages.StdStreamRedirector_error_reading_std_external,
+                        lastException.get()), lastException.get());
             }
             return storage.toString();
         } finally {
             StringBuilder msg = new StringBuilder(cmd.length() + storage.length() + 128);
             msg.append("External command:") //$NON-NLS-1$
-                .append(System.lineSeparator())
+                .append(UIConsts._NL)
                 .append(cmd)
-                .append(System.lineSeparator())
+                .append(UIConsts._NL)
                 .append("Output: ") //$NON-NLS-1$
-                .append(System.lineSeparator())
+                .append(UIConsts._NL)
                 .append(storage);
             
             Log.log(Log.LOG_INFO, msg.toString());

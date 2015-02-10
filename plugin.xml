@@ -216,6 +216,13 @@
             id="ru.taximaxim.codekeeper.ui.SQLEditor"
             name="PgCodeKeeper SQL Editor">
       </editor>
+      <editor
+            class="ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor"
+            default="false"
+            filenames="*.sql"
+            id="ru.taximaxim.codekeeper.ui.RollOnEditor"
+            name="RollOnEditor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">

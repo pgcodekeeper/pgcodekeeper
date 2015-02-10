@@ -135,7 +135,7 @@ public class Differ implements IRunnableWithProgress {
             dbSrc = this.dbSource.get(pm.newChild(25)); // 25
             dbTgt = this.dbTarget.get(pm.newChild(25)); // 50
         } catch(IOException ex) {
-            throw new InvocationTargetException(ex);
+            throw new InvocationTargetException(ex, ex.getLocalizedMessage());
         }
         
         Log.log(Log.LOG_INFO, "Diff from: " + this.dbSource.getOrigin() //$NON-NLS-1$
@@ -166,7 +166,7 @@ public class Differ implements IRunnableWithProgress {
                 diffReverse = prependTimezone(diffOut.toString(UIConsts.UTF_8).trim());
             }
         } catch (UnsupportedEncodingException ex) {
-            throw new InvocationTargetException(ex);
+            throw new InvocationTargetException(ex, ex.getLocalizedMessage());
         }
         pm.done();
         finished = true;

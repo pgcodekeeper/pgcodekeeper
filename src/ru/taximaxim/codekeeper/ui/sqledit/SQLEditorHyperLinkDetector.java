@@ -1,7 +1,10 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -10,11 +13,13 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 
 public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
@@ -28,33 +33,56 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         int offset = region.getOffset();
         IProject proj = null;
         IFile file = null;
+        PgDbParser parser = null;
         IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
                 .getActivePage().getActiveEditor();
-        if (page instanceof SQLEditor) {
-            SQLEditor edit = (SQLEditor) page;
-            file = ((FileEditorInput) ((edit).getEditorInput())).getFile();
+        IEditorInput input = page.getEditorInput();
+        if (input instanceof FileEditorInput) {
+            file = ((FileEditorInput) input).getFile();
             if (file != null) {
                 proj = file.getProject();
+                if (proj != null) {
+                    parser = PgDbParser.getParser(proj);
+                }
             }
         }
-
-        if (proj == null) {
-            return null;
+        PgDbParser projParser = null;
+        List<FunctionBodyContainer> funcBodies = new ArrayList<>();
+        if (input instanceof DepcyFromPSQLOutput) {
+            DepcyFromPSQLOutput dep = (DepcyFromPSQLOutput) input;
+            parser = dep.getParser();
+            projParser = PgDbParser.getParser(dep.getProject());
+            funcBodies.addAll(dep.getFuncBodies());
         }
 
-        PgDbParser parser = PgDbParser.getParser(proj);
+        if (parser == null) {
+            return null;
+        }
+        
         List<IHyperlink> hyperlinks = new ArrayList<>();
-        for (PgObjLocation obj : parser.getObjsForPath(file.getLocation()
-                .toFile().toPath())) {
+        List<PgObjLocation> refs = new ArrayList<>();
+        if (file != null) {
+            refs.addAll(parser.getObjsForPath(file.getLocation().toFile().toPath()));
+        } else {
+            Map<Path, List<PgObjLocation>> reference = new HashMap<>(parser.getObjReferences());
+            PgDbParser.fillFunctionBodies(projParser.getObjDefinitions(), reference, funcBodies);
+            refs = PgDbParser.getAll(reference);
+        }
+        for (PgObjLocation obj : refs) {
             if (offset > obj.getOffset()
                     && offset < (obj.getOffset() + obj.getObjLength())) {
-                PgObjLocation objDefinition = parser.getDefinitionForObj(obj);
-                if (objDefinition != null) {
-                    hyperlinks.add(new SQLEditorHyperLink(new Region(
-                            objDefinition.getOffset(), objDefinition
-                                    .getObjLength()), new Region(obj
-                            .getOffset(), obj.getObjLength()), "Reference",
-                            objDefinition.getFilePath()));
+                String message = obj.getObjName();
+                PgObjLocation def = parser.getDefinitionForObj(obj);
+                if (def != null) {
+                    fillHyperLink(input, hyperlinks, obj, def, message,
+                            def.getLineNumber());
+                }
+                if (projParser != null) {
+                    PgObjLocation projDef = projParser.getDefinitionForObj(obj);
+                    if (projDef != null) {
+                        fillHyperLink(input, hyperlinks, obj, projDef, message,
+                                projDef.getLineNumber());
+                    }
                 }
             }
         }
@@ -63,5 +91,14 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
             return null;
         }
         return hyperlinks.toArray(new IHyperlink[hyperlinks.size()]);
+    }
+
+    private void fillHyperLink(IEditorInput input, List<IHyperlink> hyperlinks,
+            PgObjLocation obj, PgObjLocation objDefinition, String text,
+            int lineNumber) {
+        hyperlinks.add(new SQLEditorHyperLink(new Region(objDefinition
+                .getOffset(), objDefinition.getObjLength()), new Region(obj
+                .getOffset(), obj.getObjLength()), text, objDefinition
+                .getFilePath(), input, lineNumber));
     }
 }

@@ -6,9 +6,9 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.commands.IElementUpdater;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
@@ -18,7 +18,9 @@ public class ToggleSourceHandler extends AbstractHandler implements IElementUpda
     
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        ICommandService service = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
+        ICommandService service =
+                (ICommandService) HandlerUtil.getActiveWorkbenchWindow(event)
+                        .getService(ICommandService.class);
         
         stateOf = !stateOf;
         Command command = service.getCommand(COMMAND.DEPCY_SRC);

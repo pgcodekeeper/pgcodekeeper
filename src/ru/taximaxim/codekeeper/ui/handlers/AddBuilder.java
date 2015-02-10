@@ -81,6 +81,7 @@ public class AddBuilder extends AbstractHandler implements IHandler {
                     return true;
             }
         } catch (final CoreException e) {
+            Log.log(Log.LOG_ERROR, "Cannot determine project builder", e);
         }
 
         return false;

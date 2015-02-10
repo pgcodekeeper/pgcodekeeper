@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -52,8 +53,9 @@ public class InitProjectFromSource implements IRunnableWithProgress {
             
             pm.done();
         } catch (IOException ex) {
-            throw new InvocationTargetException(ex, 
-                    Messages.initProjectFromSource_ioexception_while_creating_project);
+            throw new InvocationTargetException(ex, MessageFormat.format(
+                            Messages.initProjectFromSource_ioexception_while_creating_project,
+                                    ex.getLocalizedMessage()));
         }
     }
 

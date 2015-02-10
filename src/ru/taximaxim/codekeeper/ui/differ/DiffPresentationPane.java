@@ -256,7 +256,7 @@ public abstract class DiffPresentationPane extends Composite {
 
         diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs, false);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        diffTable.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+        diffTable.getViewer().addPostSelectionChangedListener(new ISelectionChangedListener() {
 
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
