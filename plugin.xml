@@ -214,7 +214,7 @@
             default="false"
             filenames="*.sql"
             id="ru.taximaxim.codekeeper.ui.SQLEditor"
-            name="PgCodeKeeper SQL Editor">
+            name="pgCodeKeeper SQL Editor">
       </editor>
       <editor
             class="ru.taximaxim.codekeeper.ui.sqledit.RollOnEditor"
@@ -335,7 +335,7 @@
             activate="true"
             class="ru.taximaxim.codekeeper.ui.sqledit.SQLEditorHyperLinkDetector"
             id="ru.taximaxim.codekeeper.ui.pgcodekeeperhyperlinkDetector"
-            name="PgCodeKeeper HyperLink Detector"
+            name="pgCodeKeeper SQL HyperLink Detector"
             targetId="ru.taximaxim.codekeeper.ui.SQLEditorTarget">
       </hyperlinkDetector>
    </extension>
