@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 import org.eclipse.core.resources.IEncodedStorage;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IStorage;
-import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -25,9 +24,9 @@ import org.eclipse.ui.IStorageEditorInput;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -60,12 +59,19 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     String dbPass;
     private String scriptFileEncoding = UIConsts.UTF_8;
     
-    public DepcyFromPSQLOutput(Differ differ, IProject proj, List<PgStatement> list) {
+    public String getScriptFileEncoding() {
+        return scriptFileEncoding;
+    }
+
+    public DepcyFromPSQLOutput(Differ differ, PgDbProject proj2, List<PgStatement> list) {
         this.differ = differ;
-        this.proj = proj;
+        this.proj = proj2.getProject();
         this.objList = list;
-        this.scriptFileEncoding = new ProjectScope(proj)
-        .getNode(UIConsts.PLUGIN_ID.THIS).get(PROJ_PREF.ENCODING, UIConsts.UTF_8);
+        try {
+            this.scriptFileEncoding = proj2.getProjectCharset();
+        } catch (CoreException e) {
+            // Use UTF-8
+        }
     }
     
     public List<Entry<PgStatement, PgStatement>> addAdditionalDepciesSource() {

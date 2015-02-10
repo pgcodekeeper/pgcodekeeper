@@ -144,7 +144,7 @@ public class NewProjWizard extends Wizard
             Log.log(Log.LOG_INFO, "Creating new project properties"); //$NON-NLS-1$
 
             fillProjProps();
-
+            
             if (pageRepo.isDoInit()) {
                 try {
                     getContainer().run(false, false,
@@ -176,6 +176,12 @@ public class NewProjWizard extends Wizard
                     workbench.getActiveWorkbenchWindow());
 
             props.openProject();
+            try {
+                props.getProject().setDefaultCharset(pageMisc.getEncoding(), null);
+            } catch (CoreException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
             try {
                 PgDbProject.addNatureToProject(props.getProject());
                 props.getPrefs().flush();
@@ -217,7 +223,6 @@ public class NewProjWizard extends Wizard
     private void fillProjProps() {
         IEclipsePreferences newPrefs = props.getPrefs();
         setDbSource(newPrefs);
-        newPrefs.put(PROJ_PREF.ENCODING, pageMisc.getEncoding());
         newPrefs.put(PROJ_PREF.DB_NAME, pageDb.getDbName());
         newPrefs.put(PROJ_PREF.DB_USER, pageDb.getDbUser());
         newPrefs.put(PROJ_PREF.DB_HOST, pageDb.getDbHost());

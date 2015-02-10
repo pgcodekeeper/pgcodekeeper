@@ -28,14 +28,12 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -50,16 +48,12 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IPageLayout;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.part.ISetSelectionTarget;
 import org.eclipse.ui.part.MultiPageEditorPart;
-import org.eclipse.ui.part.MultiPageSelectionProvider;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
@@ -73,7 +67,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
-import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.HELP;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -91,7 +84,6 @@ import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 import ru.taximaxim.codekeeper.ui.sqledit.DepcyFromPSQLOutput;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -461,7 +453,7 @@ class CommitPage extends DiffPresentationPane {
                     new ProjectUpdater(dbNew, null, null, proj).updateFull();
                 }
                 pm.done();
-            } catch (IOException e) {
+            } catch (IOException | CoreException e) {
                 return new Status(Status.ERROR, PLUGIN_ID.THIS, 
                         Messages.ProjectEditorDiffer_commit_error, e);
             }
@@ -590,7 +582,7 @@ class DiffPage extends DiffPresentationPane {
     
     private void showEditor(Differ differ) throws PartInitException {
         List<PgStatement> list = PgDatabase.listViewsTables(dbSource.getDbObject());
-        DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj.getProject(),
+        DepcyFromPSQLOutput input = new DepcyFromPSQLOutput(differ, proj,
                 list);
         input.setDbParams(dbSrc.getTxtDbHost().getText(),
                 dbSrc.getTxtDbPort().getText(), dbSrc.getTxtDbName().getText(),

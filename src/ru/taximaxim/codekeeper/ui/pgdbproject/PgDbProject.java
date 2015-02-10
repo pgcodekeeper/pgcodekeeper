@@ -35,6 +35,14 @@ public class PgDbProject {
         return project.getName();
     }
     
+    public void setProjectCharset(String charset) throws CoreException {
+        project.setDefaultCharset(charset, null);
+    }
+    
+    public String getProjectCharset() throws CoreException {
+        return project.getDefaultCharset(true);
+    }
+    
     public Path getPathToProject() {
         return Paths.get(project.getLocationURI());
     }

@@ -1,10 +1,8 @@
 package ru.taximaxim.codekeeper.ui.properties;
 
 
-import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.Set;
 import java.util.TimeZone;
 
 import org.eclipse.core.resources.IProject;
@@ -39,7 +37,6 @@ public class ProjectProperties extends PropertyPage implements
 
     private static String[] availableTimezones;
     
-    private Combo cmbEncoding;
     private Combo cmbTimezone;
     private CLabel lblWarn;
     
@@ -64,15 +61,6 @@ public class ProjectProperties extends PropertyPage implements
         lrm = new LocalResourceManager(JFaceResources.getResources(), panel);
         
         Label label = new Label(panel, SWT.NONE);
-        label.setText(Messages.projectProperties_encoding_for_all_operation_with_project);
-        
-        cmbEncoding = new Combo(panel, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
-        cmbEncoding.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        Set<String> charsets = Charset.availableCharsets().keySet();
-        cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
-        cmbEncoding.select(cmbEncoding.indexOf(prefs.get(PROJ_PREF.ENCODING, UIConsts.UTF_8)));
-        
-        label = new Label(panel, SWT.NONE);
         label.setText(Messages.projectProperties_timezone_for_all_db_connections);
         
         cmbTimezone = new Combo(panel, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
@@ -87,7 +75,6 @@ public class ProjectProperties extends PropertyPage implements
                 checkSwitchWarnLbl();
             }
         };
-        cmbEncoding.addModifyListener(ml);
         cmbTimezone.addModifyListener(ml);
         
         lblWarn = new CLabel(panel, SWT.NONE);
@@ -104,7 +91,6 @@ public class ProjectProperties extends PropertyPage implements
     
     private void checkSwitchWarnLbl() {
         boolean show = 
-                !cmbEncoding.getText().equals(prefs.get(PROJ_PREF.ENCODING, UIConsts.UTF_8)) ||
                 !cmbTimezone.getText().equals(prefs.get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
         ((GridData) lblWarn.getLayoutData()).exclude = !show;
         lblWarn.setVisible(show);
@@ -113,7 +99,6 @@ public class ProjectProperties extends PropertyPage implements
     
     @Override
     protected void performDefaults() {
-        cmbEncoding.select(cmbEncoding.indexOf(UIConsts.UTF_8));
         cmbTimezone.select(cmbTimezone.indexOf(UIConsts.UTC));
         try {
             fillPrefs();
@@ -140,7 +125,6 @@ public class ProjectProperties extends PropertyPage implements
     }
     
     private void fillPrefs() throws BackingStoreException {
-        prefs.put(PROJ_PREF.ENCODING, cmbEncoding.getText());
         prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
         prefs.flush();
         setValid(true);
