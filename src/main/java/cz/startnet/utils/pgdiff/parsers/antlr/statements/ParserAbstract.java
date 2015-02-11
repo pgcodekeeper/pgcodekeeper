@@ -102,7 +102,7 @@ public abstract class ParserAbstract {
         String identifier = name.getText();
         String unquotedName = ParserUtils.splitNames(identifier)[0];
         
-        return (identifier.startsWith("\"")) ? unquotedName : unquotedName.toLowerCase();
+        return (identifier.charAt(0) == '"') ? unquotedName : unquotedName.toLowerCase();
     }
 
     public static String getSchemaName(Schema_qualified_nameContext name) {
@@ -192,13 +192,15 @@ public abstract class ParserAbstract {
     }
 
     protected String getSequence(Value_expressionContext default_expr) {
-        SeqName name = new SeqName();
+        SeqNameListener name = new SeqNameListener();
         new ParseTreeWalker().walk(name, default_expr);
         return name.getSeqName();
     }
     
-    class SeqName extends SQLParserBaseListener {
+    private static class SeqNameListener extends SQLParserBaseListener {
+        
         private String seqName;
+        
         @Override
         public void enterName_or_func_calls(Name_or_func_callsContext ctx) {
          if (getName(ctx.schema_qualified_name()).equals("nextval")) {

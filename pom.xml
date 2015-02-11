@@ -1,344 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <groupId>cz.startnet</groupId>
-    <artifactId>apgdiff</artifactId>
-    <name>Another PostgreSQL Diff Tool</name>
-    <version>2.4</version>
-    <description>Simple PostgreSQL diff tool that is useful for schema upgrades. The tool compares two schema dump files and creates output file that is (after some hand-made modifications) suitable for upgrade of old schema.</description>
-
-    <url>http://apgdiff.startnet.biz/</url>
-
-    <issueManagement>
-        <system>SouceForge Tracker</system>
-        <url>http://sourceforge.net/tracker/?group_id=163508</url>
-    </issueManagement>
-
-    <inceptionYear>2006</inceptionYear>
-
-    <developers>
-        <developer>
-            <id>fordfrog</id>
-            <name>Miroslav Šulc</name>
-            <email>miroslav.sulc@startnet.cz</email>
-            <organization>StartNet s.r.o.</organization>
-            <organizationUrl>http://www.startnet.biz/</organizationUrl>
-            <roles>
-                <role>main developer</role>
-            </roles>
-            <timezone>+1</timezone>
-        </developer>
-    </developers>
-
-    <contributors>
-        <contributor>
-            <name>Matthieu Patou</name>
-            <roles>
-                <role>CLUSTER and STATISTICS support + ordering of columns according to source DDL</role>
-            </roles>
-        </contributor>
-        <contributor>
-            <name>Jure Mercun</name>
-            <roles>
-                <role>Case insensitivity of parsers + correct handling of quoted names</role>
-            </roles>
-        </contributor>
-        <contributor>
-            <name>Hans Idink</name>
-            <roles>
-                <role>Initial help with support of FUNCTIONs</role>
-            </roles>
-        </contributor>
-        <contributor>
-            <name>Anders Semb Hermansen </name>
-            <roles>
-                <role>Ignoring multiple whitespace while comparing content of functions </role>
-            </roles>
-        </contributor>
-    </contributors>
-
-    <licenses>
-        <license>
-            <name>MIT</name>
-            <url>license.txt</url>
-            <distribution>repo</distribution>
-            <comments>A business-friendly OSS license</comments>
-        </license>
-    </licenses>
-
-    <scm>
-        <connection>scm:hg:http://apgdiff.hg.sourceforge.net:8000/hgroot/apgdiff/apgdiff</connection>
-        <developerConnection>scm:hg:ssh://apgdiff.hg.sourceforge.net/hgroot/apgdiff/apgdiff</developerConnection>
-        <url>http://apgdiff.hg.sourceforge.net/hgweb/apgdiff/</url>
-    </scm>
-
-    <organization>
-        <name>StartNet s.r.o.</name>
-        <url>http://www.startnet.biz</url>
-    </organization>
-
-    <build>
-        <plugins>
-        <plugin>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-maven-plugin</artifactId>
-                <version>4.5</version>
-                <configuration>
-                    <visitor>true</visitor>
-                    <sourceDirectory>${project.basedir}/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr</sourceDirectory>
-                    <outputDirectory>${project.build.outputDirectory}/cz/startnet/utils/pgdiff/parsers/antlr</outputDirectory>
-                </configuration>
-                <executions>
-                  <execution>
-                    <id>antlr</id>
-                    <goals>
-                      <goal>antlr4</goal>
-                    </goals>
-                  </execution>
-                </executions>
-              </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <!-- classpathPrefix>lib</classpathPrefix -->
-                            <mainClass>cz.startnet.utils.pgdiff.Main</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-javadoc</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <show>private</show>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <descriptors>
-                        <descriptor>${basedir}/src/main/assembly/bin.xml</descriptor>
-                        <descriptor>${basedir}/src/main/assembly/src.xml</descriptor>
-                    </descriptors>
-                </configuration>
-            </plugin>
-            <plugin>
-            	<groupId>org.apache.maven.plugins</groupId>
-            	<artifactId>maven-dependency-plugin</artifactId>
-            	<executions>
-            	   <execution>
-            	       <phase>package</phase>
-            	       <goals>
-            	           <goal>copy</goal>
-           	           </goals>
-            	   </execution>
-            	</executions>
-                <configuration>
-                    <artifactItems>
-                        <artifactItem>
-                            <groupId>org.jgrapht</groupId>
-				            <artifactId>jgrapht-core</artifactId>
-				            <version>0.9.0</version>
-				            <type>jar</type>
-                            <outputDirectory>${project.build.directory}</outputDirectory>    
-                        </artifactItem>
-                    </artifactItems>
-                </configuration>
-            </plugin>
-            
-            <plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.7.0.201403182114</version>
-				<executions>
-					<execution>
-						<id>prepare-agent</id>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-        </plugins>
-        
-    </build>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <releases />
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>codehaus-plugins</id>
-            <name>codehaus-plugins</name>
-            <url>http://repository.codehaus.org/</url>
-        </pluginRepository>
-        <pluginRepository>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots />
-            <id>codehaus-snapshot-plugins</id>
-            <name>codehaus-shapshot-plugins</name>
-            <url>http://snapshots.repository.codehaus.org/</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>unto.net</id>
-            <url>http://repository.unto.net/maven/</url>
-            <releases>
-                <updatePolicy>daily</updatePolicy>
-                <checksumPolicy>warn</checksumPolicy>
-            </releases>
-            <snapshots>
-                <updatePolicy>daily</updatePolicy>
-                <checksumPolicy>warn</checksumPolicy>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>stat-scm-sourceforge</id>
-            <url>http://stat-scm.sourceforge.net/maven2</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>stat-scm-sourceforge-snapshot</id>
-            <url>http://stat-scm.sourceforge.net/maven2-snapshots</url>
-        </pluginRepository>
-    </pluginRepositories>
-
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-all</artifactId>
-            <version>1.3</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-	        <groupId>org.jgrapht</groupId>
-	        <artifactId>jgrapht-core</artifactId>
-	        <version>0.9.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.tycho</groupId>
-            <artifactId>org.eclipse.osgi</artifactId>
-            <version>3.10.0.v20140606-1445</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.core</groupId>
-            <artifactId>runtime</artifactId>
-            <version>3.10.0-v20140318-2214</version>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>9.3-1102-jdbc41</version>
-        </dependency>
-        <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr4-maven-plugin</artifactId>
-            <version>4.5</version>
-        </dependency>
-                
-    </dependencies>
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <minmemory>128m</minmemory>
-                    <maxmemory>512</maxmemory>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                    <tags>
-                        <tag>
-                            <name>todo</name>
-                            <placement>a</placement>
-                            <head>To do something:</head>
-                        </tag>
-                    </tags>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>net.sf</groupId>
-                <artifactId>stat-scm</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-pmd-plugin</artifactId>
-                <configuration>
-                    <sourceEncoding>utf-8</sourceEncoding>
-                    <targetJdk>1.7</targetJdk>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>taglist-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-jxr-plugin</artifactId>
-                <configuration>
-                    <inputEncoding>UTF-8</inputEncoding>
-                    <outputEncoding>UTF-8</outputEncoding>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <configuration>
-                    <threshold>Ignore</threshold>
-                    <effort>Max</effort>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
-
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+    <groupId>ru.taximaxim.codeKeeper</groupId>
+    <artifactId>ru.taximaxim.codeKeeper</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../ru.taximaxim.codekeeper.mainapp/ru.taximaxim.codeKeeper/</relativePath>
+  </parent>
+  
+  <groupId>ru.taximaxim.codeKeeper</groupId>
+  <artifactId>apgdiff</artifactId>
+  <version>1.1.2-SNAPSHOT</version>
+  <packaging>eclipse-plugin</packaging>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <version>4.5</version>
+        <configuration>
+            <visitor>true</visitor>
+            <sourceDirectory>${project.basedir}/src/main/java/cz/startnet/utils/pgdiff/parsers/antlr</sourceDirectory>
+            <outputDirectory>${project.build.outputDirectory}/cz/startnet/utils/pgdiff/parsers/antlr</outputDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <id>antlr</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

@@ -1,6 +1,5 @@
 package cz.startnet.utils.pgdiff;
 
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
@@ -84,7 +83,7 @@ class PgDiffStatement {
             } else {
                 eq = type == st.type
                         && objname.equals(st.objname)
-                        && Objects.equals(statementType, st.statementType);
+                        && statementType == st.statementType;
             }
         }
         
