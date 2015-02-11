@@ -122,7 +122,8 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
 
         viewer.setLabelProvider(new LabelProvider() {
             
-            private LocalResourceManager lrm = new LocalResourceManager(JFaceResources.getResources());
+            private LocalResourceManager lrm = new LocalResourceManager(
+                    JFaceResources.getResources(), getControl());
             
             @Override
             public Image getImage(Object element) {
@@ -192,6 +193,6 @@ class Segments extends Position {
     
     @Override
     public String toString() {
-        return action + " " + name;
+        return action.toString() + ' ' + name;
     }
 }

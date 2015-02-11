@@ -6,7 +6,7 @@ public class SQLEditorMyRegion implements IRegion {
     
     private int length;
     private int offset;
-    private String comment = "";
+    private String comment = ""; //$NON-NLS-1$
     
     public SQLEditorMyRegion(int offset, int length) {
         this.offset = offset;

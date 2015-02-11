@@ -184,7 +184,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 in.updateScript(this.getSourceViewer().getDocument().get());
                 in.updateParser(progressMonitor);
             } catch (CoreException e) {
-                Log.log(Log.LOG_ERROR, "Cannot parse Editor input");
+                Log.log(Log.LOG_ERROR, "Cannot parse Editor input"); //$NON-NLS-1$
             }
         }
     }    

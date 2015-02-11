@@ -52,12 +52,41 @@ public final class Messages extends NLS {
     public static String error_creating_dependency_graph;
     
     // ui
-    public static String exceptionNotifier_copy_stack_trace;
-    public static String exceptionNotifier_string_reader_ioexception_world_ends;
-    public static String exceptionNotifier_unhandled_exception;
     public static String sqlScriptDialog_Enter_cmd_to_update_ddl_with_sql_script;
     public static String sqlScriptDialog_error_saving_script_to_file;
     public static String sqlScriptDialog_exception_during_script_execution;
+    public static String SQLEditorStatementTypes_consts;
+
+    public static String SQLEditorStatementTypes_funcs;
+
+    public static String SQLEditorStatementTypes_global_vars;
+
+    public static String SQLEditorStatementTypes_multi_comments;
+
+    public static String SQLEditorStatementTypes_predicates;
+
+    public static String SQLEditorStatementTypes_reserved;
+
+    public static String SQLEditorStatementTypes_single_comments;
+
+    public static String SQLEditorStatementTypes_string_literals;
+
+    public static String SQLEditorStatementTypes_types;
+
+    public static String SQLEditorStatementTypes_unreserved;
+
+    public static String SQLEditorSytaxColoring_bold;
+
+    public static String SQLEditorSytaxColoring_color;
+
+    public static String SQLEditorSytaxColoring_font_and_color_prefs;
+
+    public static String SQLEditorSytaxColoring_italic;
+
+    public static String SQLEditorSytaxColoring_strikethrough;
+
+    public static String SQLEditorSytaxColoring_underline;
+
     public static String SqlScriptDialog_jdbc_connection_details;
     public static String sqlScriptDialog_hide_picker;
     public static String sqlScriptDialog_psql_dependencies;
@@ -68,7 +97,6 @@ public final class Messages extends NLS {
     public static String sqlScriptDialog_script_output;
     public static String sqlScriptDialog_script_saved_to_file;
     public static String sqlScriptDialog_stop_script;
-    public static String sqlScriptDialog_stop_script_before_closing_dialog;
     public static String sqlScriptDialog_this_dependencies_have_been_added_already_check_order;
     public static String sqlScriptDialog_warning;
     public static String sqlScriptDialog_use_jdbc_for_ddl_update;
@@ -231,7 +259,6 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_error_setting_input;
     public static String DiffTableViewer_selected;
     public static String DiffWizard_bad_target_db;
-    public static String DiffWizard_error_opening_project;
     public static String DiffWizard_unexpected_error;
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
     public static String generalPrefPage_pg_dump_custom_parameters;

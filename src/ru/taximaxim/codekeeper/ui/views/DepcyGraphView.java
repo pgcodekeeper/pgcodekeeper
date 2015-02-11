@@ -115,13 +115,10 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             currentGraph = null;
             try {
                 if (currentDb != null) {
-                    System.err.println("regenerating graph");
-                    long t = System.nanoTime();
                     currentGraph = new DepcyGraph(currentDb);
-                    System.err.println("done: " + (System.nanoTime() - t)/1000000);
                 }
             } catch (PgCodekeeperException e) {
-                Log.log(Log.LOG_WARNING, "Error creating dependency graph", e);
+                Log.log(Log.LOG_WARNING, "Error creating dependency graph", e); //$NON-NLS-1$
             }
         }
 

@@ -56,7 +56,7 @@ public class AddBuilder extends AbstractHandler implements IHandler {
                     .size()]));
             project.setDescription(description, null);
         } catch (final CoreException e) {
-            Log.log(Log.LOG_ERROR, "Cannot add builder", e);
+            Log.log(Log.LOG_ERROR, "Cannot add builder", e); //$NON-NLS-1$
         }
     }
 
@@ -81,7 +81,7 @@ public class AddBuilder extends AbstractHandler implements IHandler {
                     return true;
             }
         } catch (final CoreException e) {
-            Log.log(Log.LOG_ERROR, "Cannot determine project builder", e);
+            Log.log(Log.LOG_ERROR, "Cannot determine project builder", e); //$NON-NLS-1$
         }
 
         return false;

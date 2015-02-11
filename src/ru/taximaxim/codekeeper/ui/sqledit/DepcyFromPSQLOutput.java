@@ -248,7 +248,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
             }
             return new StringStorage(script);
         } catch (PgCodekeeperUIException e) {
-            return new StringStorage("");
+            return new StringStorage(""); //$NON-NLS-1$
         }
     }
 
@@ -270,7 +270,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
             try {
                 return new ByteArrayInputStream(str.getBytes(scriptFileEncoding));
             } catch (UnsupportedEncodingException e) {
-                Log.log(Log.LOG_ERROR, "Invalid Charset", e);
+                Log.log(Log.LOG_ERROR, "Invalid Charset", e); //$NON-NLS-1$
                 return new ByteArrayInputStream(str.getBytes());
             }
         }

@@ -31,6 +31,7 @@ import cz.startnet.utils.pgdiff.schema.StatementActions;
 public class PgDbParser {
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
+    
     private volatile ConcurrentMap<Path, List<PgObjLocation>> objDefinitions = new ConcurrentHashMap<>();
     private volatile ConcurrentMap<Path, List<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
     private IProject proj;
@@ -110,6 +111,7 @@ public class PgDbParser {
                         refs = new ArrayList<>();
                         objReferences2.put(funcBody.getPath(), refs);
                     }
+                    // FIXME Concurrency problem
                     refs.add(loc);
                     index = body.indexOf(def.getObjName(), index + 1);
                 }
@@ -122,7 +124,7 @@ public class PgDbParser {
      * @param locationURI project location
      */
     private void getFullDBFromDirectoryJob(final URI locationURI) {
-        Job job = new Job("getDatabaseReferences") {
+        Job job = new Job("getDatabaseReferences") { //$NON-NLS-1$
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -156,7 +158,7 @@ public class PgDbParser {
     
     private void fillRefsFromInputStream(InputStream input,
             IProgressMonitor monitor, String scriptFileEncoding, List<FunctionBodyContainer> funcBodies) {
-        PgDatabase db = PgDumpLoader.loadRefsFromInputStream(input, Paths.get(""),
+        PgDatabase db = PgDumpLoader.loadRefsFromInputStream(input, Paths.get(""), //$NON-NLS-1$
                 scriptFileEncoding, false, false,
                 ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
         objDefinitions = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjDefinitions());
@@ -196,11 +198,11 @@ public class PgDbParser {
         return getAll(objReferences);
     }
     
-    public ConcurrentMap<Path, List<PgObjLocation>> getObjDefinitions() {
+    public Map<Path, List<PgObjLocation>> getObjDefinitions() {
         return objDefinitions;
     }
     
-    public ConcurrentMap<Path, List<PgObjLocation>> getObjReferences() {
+    public Map<Path, List<PgObjLocation>> getObjReferences() {
         return objReferences;
     }
     

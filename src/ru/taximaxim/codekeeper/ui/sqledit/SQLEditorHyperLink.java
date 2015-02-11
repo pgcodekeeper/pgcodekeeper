@@ -47,7 +47,7 @@ public class SQLEditorHyperLink implements IHyperlink {
 
     @Override
     public String getHyperlinkText() {
-        return label + " - " + location.toString() + " (" + lineNumber + ")";
+        return label + " - " + location.toString() + " (" + lineNumber + ')'; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
@@ -55,7 +55,7 @@ public class SQLEditorHyperLink implements IHyperlink {
         IWorkbenchPage page = PlatformUI.getWorkbench()
                 .getActiveWorkbenchWindow().getActivePage();
         
-        if (!location.startsWith("")) {
+        if (!location.startsWith("")) { //$NON-NLS-1$
             try {
                 ITextEditor editor = (ITextEditor) IDE.openEditor(page,
                         location.toUri(), SQLEditor.ID, true);

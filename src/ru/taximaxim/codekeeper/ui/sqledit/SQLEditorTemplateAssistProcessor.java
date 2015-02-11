@@ -49,7 +49,7 @@ public class SQLEditorTemplateAssistProcessor extends
         int i = offset;
         IDocument document = viewer.getDocument();
         if (i > document.getLength())
-            return "";
+            return ""; //$NON-NLS-1$
         try {
             while (i > 0) {
                 char ch = document.getChar(i - 1);
@@ -64,7 +64,7 @@ public class SQLEditorTemplateAssistProcessor extends
             }
             return document.get(i, offset - i);
         } catch (BadLocationException e) {
-            return "";
+            return ""; //$NON-NLS-1$
         }
     }
 
@@ -93,10 +93,10 @@ public class SQLEditorTemplateAssistProcessor extends
             } catch (TemplateException e) {
                 continue;
             }
-            if (!prefix.equals("") && prefix.charAt(0) == '<') {
+            if (!prefix.equals("") && prefix.charAt(0) == '<') { //$NON-NLS-1$
                 prefix = prefix.substring(1);
             }
-            if (!prefix.equals("")
+            if (!prefix.equals("") //$NON-NLS-1$
                     && (template.getName().startsWith(prefix) && template
                             .matches(prefix, context.getContextType().getId()))) {
                 matches.add(createProposal(template, context, (IRegion) region,

@@ -90,7 +90,7 @@ public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
             return defaultSelectionEvent;
         }
         if (!(selection instanceof IStructuredSelection)) {
-            Log.log(Log.LOG_WARNING, "Cannot handle this selection type: " + selection.toString());
+            Log.log(Log.LOG_WARNING, "Cannot handle this selection type: " + selection.toString()); //$NON-NLS-1$
             // no way to deal with empty/other types of selections
             return defaultSelectionEvent;
         }

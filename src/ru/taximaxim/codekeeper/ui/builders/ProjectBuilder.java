@@ -34,7 +34,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             try {
                 buildIncrement(delta, parser, monitor);
             } catch (CoreException ex) {
-                Log.log(Log.LOG_ERROR, "Error processing build delta", ex);
+                Log.log(Log.LOG_ERROR, "Error processing build delta", ex); //$NON-NLS-1$
             }
             break;
             

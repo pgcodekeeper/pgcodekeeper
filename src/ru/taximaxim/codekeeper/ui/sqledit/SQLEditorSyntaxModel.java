@@ -6,11 +6,11 @@ import org.eclipse.swt.graphics.RGB;
 
 public class SQLEditorSyntaxModel {
     
-    private static final String PREF_COLOR = ".Color";
-    private static final String PREF_UNDERLINE = ".underline";
-    private static final String PREF_STRIKETHROUGH = ".strikethrough";
-    private static final String PREF_ITALIC = ".Italic";
-    private static final String PREF_BOLD = ".Bold";
+    public static final String PREF_COLOR = ".Color"; //$NON-NLS-1$
+    public static final String PREF_UNDERLINE = ".underline"; //$NON-NLS-1$
+    public static final String PREF_STRIKETHROUGH = ".strikethrough"; //$NON-NLS-1$
+    public static final String PREF_ITALIC = ".Italic"; //$NON-NLS-1$
+    public static final String PREF_BOLD = ".Bold"; //$NON-NLS-1$
 
     public SQLEditorSyntaxModel(SQLEditorStatementTypes type, IPreferenceStore prefStore) {
         this.type = type;

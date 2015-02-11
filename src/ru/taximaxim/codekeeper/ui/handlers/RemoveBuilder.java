@@ -51,7 +51,7 @@ public class RemoveBuilder extends AbstractHandler implements IHandler {
                     .size()]));
             project.setDescription(description, null);
         } catch (final CoreException e) {
-            Log.log(Log.LOG_ERROR, "Cannot remove builder", e);
+            Log.log(Log.LOG_ERROR, "Cannot remove builder", e); //$NON-NLS-1$
         }
     }
 }

@@ -161,7 +161,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
         Map<String, IAdaptable> targets = super.getHyperlinkDetectorTargets(sourceViewer);
-        targets.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", null);
+        targets.put("ru.taximaxim.codekeeper.ui.SQLEditorTarget", null); //$NON-NLS-1$
         return targets;
     }
 

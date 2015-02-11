@@ -20,7 +20,7 @@ public class SQLEditorTemplatePrefPage extends TemplatePreferencePage implements
             setContextTypeRegistry(SQLEditorTemplateManager.getInstance()
                     .getContextTypeRegistry());
         } catch (Exception ex) {
-            Log.log(Log.LOG_ERROR, "Cannot get sql templates", ex);
+            Log.log(Log.LOG_ERROR, "Cannot get sql templates", ex); //$NON-NLS-1$
         }
     }
 
