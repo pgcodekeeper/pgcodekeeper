@@ -151,8 +151,9 @@ public class PgFunction extends PgStatementWithSearchPath {
             Argument arg1 = skipOutArgs(it1);
             Argument arg2 = skipOutArgs(it2);
             if (arg1 == null || arg2 == null) {
-                // exit into the final hasNext() check
-                break;
+                // if both are null then both params lists are exausted and are same
+                // else one param list is exausted and the other one is not lists are different
+                return arg1 == arg2;
             }
             if (!Objects.equals(arg1.getDataType(), arg2.getDataType())) {
                 return false;
