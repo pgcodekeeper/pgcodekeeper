@@ -9,7 +9,6 @@ public final class Messages extends NLS {
 // SONAR-OFF
 
     // common 
-    public static String HelpOption;
     public static String UsageHelp;
     public static String Version;
     public static String UnknownDBFormat;
@@ -17,6 +16,8 @@ public final class Messages extends NLS {
     // pgdiff.loader
     public static String Connection_DatabaseJdbcAccessError;
     public static String Connection_JdbcDriverClassNotFound;
+
+    public static String jdbcConnector_error_reading_pgpass_file;
     
     // apgdiff.model.graph
     public static String RefColumn_CannotFindSchema;

@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff;
 
 import java.util.regex.Pattern;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 /**
@@ -16,6 +17,7 @@ class PgDiffStatement {
     final DiffStatementType type;
     final String objname;
     final String statement;
+    final DbObjType statementType;
     
     public enum DiffStatementType {
         DROP, CREATE, OTHER
@@ -61,6 +63,7 @@ class PgDiffStatement {
         this.type = type;
         this.objname = (obj == null) ? null : obj.getQualifiedName();
         this.statement = statement;
+        this.statementType = (obj == null) ? null : obj.getStatementType();
     }
     
     public boolean isDangerStatement(DangerStatement dst) {
@@ -79,7 +82,8 @@ class PgDiffStatement {
                 eq = statement.equals(st.statement);
             } else {
                 eq = type == st.type
-                        && objname.equals(st.objname);
+                        && objname.equals(st.objname)
+                        && statementType == st.statementType;
             }
         }
         
@@ -95,6 +99,7 @@ class PgDiffStatement {
         } else {
             result = prime * result + ((type == null) ? 0 : type.hashCode());
             result = prime * result + ((objname == null) ? 0 : objname.hashCode());
+            result = prime * result + ((statementType == null) ? 0 : statementType.hashCode());
         }
         return result;
     }

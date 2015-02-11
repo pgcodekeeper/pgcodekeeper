@@ -275,7 +275,9 @@ public final class PgDumpLoader { //NOPMD
             throw new UnsupportedOperationException(MessageFormat.format(
                     Messages.Loader_UnsupportedEncoding, charsetName), ex);
         } catch(IOException ex) {
-            throw new FileException("Exception while closing dump file", ex);
+            throw new FileException(MessageFormat.format(
+                    "Exception while closing dump file: {0}",
+                    ex.getLocalizedMessage()), ex);
         }
     }
     
@@ -287,7 +289,9 @@ public final class PgDumpLoader { //NOPMD
             new AntlrParser(monitor, monitoringLevel).parseInputStream(inputStream, charsetName, 
                     new CustomSQLParserListener(database, path), path);
         } catch (IOException e) {
-            throw new FileException("Exception while closing dump file", e);
+            throw new FileException(MessageFormat.format(
+                    "Exception while closing dump file: {0}",
+                    e.getLocalizedMessage()), e);
         }
         return database;
     }
@@ -344,7 +348,8 @@ public final class PgDumpLoader { //NOPMD
                     refListener, path);
             funcBodies.addAll(refListener.getFunctionBodies());
         } catch (IOException e) {
-            throw new FileException("Exception while closing dump file", e);
+            throw new FileException(MessageFormat.format(
+                    "Exception while parsing dump file: {0}", e.getLocalizedMessage()), e);
         }
         return database;
     }
@@ -414,7 +419,8 @@ public final class PgDumpLoader { //NOPMD
                 throw new FileException(MessageFormat.format(
                         Messages.Loader_FileNotFound, f.getAbsolutePath()), ex);
             } catch (IOException ex) {
-                throw new FileException("An unexpected IOException", ex);
+                throw new FileException(MessageFormat.format(
+                        Messages.Loader_CannotReadFile, ex.getLocalizedMessage()), ex);
             }
         }
     }
@@ -489,8 +495,9 @@ public final class PgDumpLoader { //NOPMD
                 try {
                     newLine = reader.readLine();
                 } catch (IOException ex) {
-                    throw new FileException(
-                            Messages.Loader_CannotReadFile, ex);
+                    throw new FileException(MessageFormat.format(
+                            Messages.Loader_CannotReadFile,
+                            ex.getLocalizedMessage()), ex);
                 }
 
                 if (newLine == null) {

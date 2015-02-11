@@ -162,9 +162,8 @@ public class DepcyTreeExtender {
 
                 if(elementInEmptyTree == null){
                     if (elementInCopy.getSide() != DiffSide.LEFT){
-                        throw new IllegalStateException("Какой-то странный объект в"
-                                + " дереве при добавлении удаляемых зависимостей:"
-                                + " объект не с левой стороны");
+                        throw new IllegalStateException(
+                                "Какой-то странный объект в  дереве при добавлении удаляемых зависимостей: объект не с левой стороны");
                     }
                     break;
                 }
@@ -313,9 +312,8 @@ public class DepcyTreeExtender {
      */
     public Set<TreeElement> sumAllDepcies(Set<TreeElement> elementsDepcyNew) {
         if (copy == null){
-            throw new IllegalStateException("Root (filtered) tree has not been "
-                    + "copyed yet and no DELETED dependants 've been found! "
-                    + "Call getTreeCopyWithDepcy() first.");
+            throw new IllegalStateException(
+                    "Root (filtered) tree has not been copyed yet and no DELETED dependants 've been found! Call getTreeCopyWithDepcy() first.");
         }
         Set<TreeElement> sumNewAndDelete = new HashSet<>();
         sumNewAndDelete.addAll(newlyDeletedDependants);
