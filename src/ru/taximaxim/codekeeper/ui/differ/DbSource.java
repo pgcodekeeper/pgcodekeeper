@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
@@ -79,7 +80,7 @@ public abstract class DbSource {
 
     public static DbSource fromDb(ParserClass parser,
             String exePgdump, String customParams,
-            PgDbProject proj, String password) {
+            PgDbProject proj, String password) throws CoreException {
         return new DbSourceDb(parser, exePgdump, customParams, proj, password);
     }
 
@@ -96,13 +97,13 @@ public abstract class DbSource {
     }
     
     public static DbSource fromJdbc(PgDbProject proj, String password,
-            boolean useAntrlForViews){
+            boolean useAntrlForViews) throws CoreException{
         return fromJdbc(proj.getPrefs().get(PROJ_PREF.DB_HOST, ""),  //$NON-NLS-1$
                 proj.getPrefs().getInt(PROJ_PREF.DB_PORT, JDBC_CONSTS.JDBC_DEFAULT_PORT),
                 proj.getPrefs().get(PROJ_PREF.DB_USER, ""),  //$NON-NLS-1$
                 password,
                 proj.getPrefs().get(PROJ_PREF.DB_NAME, ""),  //$NON-NLS-1$
-                proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                proj.getProjectCharset(), 
                 proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC),
                 useAntrlForViews);
     }
@@ -154,7 +155,7 @@ class DbSourceProject extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) {
+    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
         int filesCount = countFilesInDir(proj.getPathToProject());  
         monitor.subTask(Messages.dbSource_loading_tree);
         monitor.setWorkRemaining(filesCount);
@@ -162,9 +163,15 @@ class DbSourceProject extends DbSource {
         parser.setMonitor(monitor);
         parser.setMonitoringLevel(1);
         
+        String charset;
+        try {
+            charset = proj.getProjectCharset();
+        } catch (CoreException e) {
+            throw new IOException(e.getLocalizedMessage(), e);
+        }
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 proj.getPathToProject().toString(), 
-                proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                charset, 
                 false, false, parser);
     }
     
@@ -255,14 +262,14 @@ class DbSourceDb extends DbSource {
     private final int port;
 
     DbSourceDb(ParserClass parser, String exePgdump, String customParams,
-            PgDbProject props, String password) {
+            PgDbProject props, String password) throws CoreException {
         this(parser, exePgdump, customParams,
                 props.getPrefs().get(PROJ_PREF.DB_HOST, ""), //$NON-NLS-1$
                 props.getPrefs().getInt(PROJ_PREF.DB_PORT, JDBC_CONSTS.JDBC_DEFAULT_PORT),
                 props.getPrefs().get(PROJ_PREF.DB_USER, ""), //$NON-NLS-1$
                 password,
                 props.getPrefs().get(PROJ_PREF.DB_NAME, ""), //$NON-NLS-1$
-                props.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                props.getProjectCharset(), 
                 props.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
     }
 

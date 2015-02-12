@@ -65,7 +65,7 @@ public class NormalizeProject extends AbstractHandler {
                     
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
                     new ProjectUpdater(db, null, null, proj).updateFull();
-                } catch (IOException ex) {
+                } catch (IOException | CoreException ex) {
                     return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                             Messages.NormalizeProject_error_while_updating_project, ex);
                 }

@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.TimeZone;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -45,6 +46,7 @@ import org.eclipse.swt.widgets.Text;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -439,8 +441,15 @@ class PageDiff extends WizardPage implements Listener {
         cmbEncoding = new Combo(grpEncoding,  SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
-        cmbEncoding.select(
-                cmbEncoding.indexOf(proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8)));
+        try {
+            cmbEncoding.select(
+                    cmbEncoding.indexOf(proj.getProjectCharset()));
+        } catch (CoreException e1) {
+            setErrorMessage("Cannot get project charset, will use default");
+            Log.log(Log.LOG_ERROR, "Cannot get project charset", e1);
+            cmbEncoding.select(
+                    cmbEncoding.indexOf(UIConsts.UTF_8));
+        }
 
         new Label(grpEncoding, SWT.NONE).setText(Messages.diffWizard_target_timezone);
         
@@ -685,11 +694,18 @@ class PageResult extends WizardPage {
     }
 
     private void saveScript(String saveTo) {
+        String charset = UIConsts.UTF_8;
+        try {
+            charset = proj.getProjectCharset();
+        } catch (CoreException e) {
+            setErrorMessage("Cannot get project charset, will use default");
+            Log.log(Log.LOG_ERROR, "Cannot get project charset", e);
+        }
         try (PrintWriter encodedWriter = new UnixPrintWriter(
                 // TODO save to proj encoding can be incorrect. 
                 // Consider saving to unicode if proj and PageDiff encodings differ
                 new OutputStreamWriter(new FileOutputStream(saveTo),
-                        proj.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8)))) {
+                        charset))) {
             Text txtDiff = (Text) tabs.getSelection()[0].getControl();
             encodedWriter.println(txtDiff.getText());
         } catch (FileNotFoundException | UnsupportedEncodingException ex) {

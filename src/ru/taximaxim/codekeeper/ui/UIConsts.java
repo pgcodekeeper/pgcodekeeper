@@ -85,7 +85,6 @@ public interface UIConsts {
     }
     
     interface PROJ_PREF {
-        String ENCODING = "prefGeneralEncoding"; //$NON-NLS-1$
         String TIMEZONE = "prefGeneralTimezone"; //$NON-NLS-1$
         String SOURCE = "prefGeneralSource"; //$NON-NLS-1$
         String DB_NAME = "prefDbName"; //$NON-NLS-1$

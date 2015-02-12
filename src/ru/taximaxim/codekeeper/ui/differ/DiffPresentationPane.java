@@ -6,6 +6,7 @@ import java.text.MessageFormat;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -227,7 +228,7 @@ public abstract class DiffPresentationPane extends Composite {
                         loadChanges();
                         saveDBPrefs(projProps);
                     }
-                } catch (PgCodekeeperUIException e1) {
+                } catch (PgCodekeeperUIException | CoreException e1) {
                     ExceptionNotifier.notifyDefault(
                             Messages.DiffPresentationPane_error_loading_changes, e1);
                 } catch (BackingStoreException e1) {
@@ -518,7 +519,7 @@ public abstract class DiffPresentationPane extends Composite {
     }
 
     private boolean fillDbSources(PgDbProject proj, IEclipsePreferences projProps)
-            throws PgCodekeeperUIException {
+            throws PgCodekeeperUIException, CoreException {
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
             return false;
         }
@@ -536,7 +537,7 @@ public abstract class DiffPresentationPane extends Composite {
             }
             dbsRemote = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
                     ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1), dumpfile,
-                    projProps.get(PROJ_PREF.ENCODING, UIConsts.UTF_8));
+                    proj.getProjectCharset());
             break;
         case SOURCE_TYPE_DB:
             String sPort = dbSrc.getTxtDbPort().getText();
@@ -548,7 +549,7 @@ public abstract class DiffPresentationPane extends Composite {
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     dbSrc.getTxtDbHost().getText(), port, dbSrc.getTxtDbUser().getText(),
                     dbSrc.getTxtDbPass().getText(), dbSrc.getTxtDbName().getText(),
-                    projProps.get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                    proj.getProjectCharset(), 
                     projProps.get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
             break;
         case SOURCE_TYPE_JDBC:
@@ -558,7 +559,7 @@ public abstract class DiffPresentationPane extends Composite {
             dbsRemote = DbSource.fromJdbc(dbSrc.getTxtDbHost().getText(), port,
                     dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText(),
                     dbSrc.getTxtDbName().getText(), 
-                    projProps.get(PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                    proj.getProjectCharset(), 
                     projProps.get(PROJ_PREF.TIMEZONE, UIConsts.UTC),
                     mainPrefs.getBoolean(PREF.USE_ANTLR));
             break;

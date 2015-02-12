@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -52,7 +52,7 @@ public class InitProjectFromSource implements IRunnableWithProgress {
             initRepoFromSource(pm);
             
             pm.done();
-        } catch (IOException ex) {
+        } catch (IOException | CoreException ex) {
             throw new InvocationTargetException(ex, MessageFormat.format(
                             Messages.initProjectFromSource_ioexception_while_creating_project,
                                     ex.getLocalizedMessage()));
@@ -62,9 +62,10 @@ public class InitProjectFromSource implements IRunnableWithProgress {
     /**
      * clean repository, generate new file structure, preserve and fix repo
      * metadata, repo rm/add, commit new revision
+     * @throws CoreException 
      */
     private void initRepoFromSource(SubMonitor pm)
-            throws IOException, InvocationTargetException {
+            throws IOException, InvocationTargetException, CoreException {
         SubMonitor taskpm = pm.newChild(25); // 50
 
         PgDatabase db;
@@ -78,7 +79,7 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         case SOURCE_TYPE_DUMP:
             db = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
                     ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1), dumpPath,
-                    props.getPrefs().get(PROJ_PREF.ENCODING, UIConsts.UTF_8)).get(taskpm);
+                    props.getProjectCharset()).get(taskpm);
             break;
 
         case SOURCE_TYPE_JDBC:

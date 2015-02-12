@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -76,13 +77,16 @@ public class PgDbParser {
     }
     
     public void getObjFromProjFile(URI fileURI) {
-        ProjectScope ps = new ProjectScope(proj);
-        IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
         Path path = Paths.get(fileURI);
         String filePath = path.toAbsolutePath().toString();
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
-        PgDatabase db = PgDumpLoader.loadSchemasAndFile(filePath,
-                prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), false,
+        String charset = UIConsts.UTF_8;
+        try {
+            charset = proj.getDefaultCharset(true);
+        } catch (CoreException e) {
+            // ignore
+        }
+        PgDatabase db = PgDumpLoader.loadSchemasAndFile(filePath, charset, false,
                 false, ParserClass.getParserAntlrReferences(null, 1, funcBodies));
         for (Path key : db.getObjDefinitions().keySet()) {
             objDefinitions.put(key, db.getObjDefinitions().get(key));
@@ -138,12 +142,16 @@ public class PgDbParser {
     }
     
     private void getFullDBFromDirectory(URI locationURI, IProgressMonitor monitor) {
-        ProjectScope ps = new ProjectScope(proj);
-        IEclipsePreferences prefs = ps.getNode(UIConsts.PLUGIN_ID.THIS);
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
+        String charset = UIConsts.UTF_8;
+        try {
+            charset = proj.getDefaultCharset(true);
+        } catch (CoreException e) {
+            // ignore
+        }
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 Paths.get(locationURI).toAbsolutePath().toString(),
-                prefs.get(UIConsts.PROJ_PREF.ENCODING, UIConsts.UTF_8), 
+                charset, 
                 false, false, ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
         objDefinitions = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjDefinitions());
         objReferences = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjReferences());
