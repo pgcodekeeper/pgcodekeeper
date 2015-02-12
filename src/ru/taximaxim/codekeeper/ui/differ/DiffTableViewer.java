@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -26,6 +27,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -41,11 +43,14 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.ModifyEvent;
@@ -57,6 +62,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -465,12 +471,39 @@ public class DiffTableViewer extends Composite {
             
         updateColumnsWidth();
         
-        columnName.setLabelProvider(new ColumnLabelProvider(){
-            
+        columnName.setLabelProvider(new StyledCellLabelProvider(){
             @Override
-            public String getText(Object element) {
-                return ((TreeElement) element).getName();
+            public void update(ViewerCell cell) {
+                String filter = txtFilterName.getText();
+                Pattern regExPattern = null;
+                if (useRegEx.getSelection()) {
+                    regExPattern = Pattern.compile(filter, Pattern.CASE_INSENSITIVE);
+                }
+                String name = ((TreeElement)cell.getElement()).getName();
+                cell.setText(name);
+                if (filter != null) {
+                    filter = filter.toLowerCase();
+                }
+                Region loc = getLocation(name, filter, regExPattern);
+                if (loc != null) {
+                    List<StyleRange> styleRange = new ArrayList<StyleRange>();
+                    StyleRange myStyledRange = new StyleRange(loc.getOffset(),
+                            loc.getLength(), null, Display.getCurrent()
+                                    .getSystemColor(SWT.COLOR_GRAY));
+                    styleRange.add(myStyledRange);
+                    cell.setStyleRanges(styleRange
+                            .toArray(new StyleRange[styleRange.size()]));
+                } else {
+                    cell.setStyleRanges(null);
+                }
+                super.update(cell);
             }
+            
+             
+//            @Override
+//            public String getText(Object element) {
+//                return ((TreeElement) element).getName();
+//            }
         });
 
         columnType.setLabelProvider(new ColumnLabelProvider() {
@@ -515,7 +548,31 @@ public class DiffTableViewer extends Composite {
         viewer.getTable().setSortColumn(columnName.getColumn());
         viewer.getTable().setSortDirection(SWT.UP);
     }
-
+    
+    private static Region getLocation(String text, String filter, Pattern regExPattern) {
+        if (filter != null 
+                && !filter.isEmpty()
+                && text != null) {
+            text = text.toLowerCase();
+            int offset = -1;
+            int length = 0;
+            if (regExPattern != null) {
+                Matcher matcher = regExPattern.matcher(text);
+                if (matcher.find()) {
+                    offset = matcher.start();
+                    length = matcher.end() - offset;
+                }
+            } else {
+                offset = text.indexOf(filter);
+                length = filter.length();
+            }
+            if (offset >= 0) {
+                return new Region(offset, length);
+            }
+        }
+        return null;
+    }
+    
     private String getLocationColumnText(Object element) {
         TreeElement e = (TreeElement) element;
         if (e.getType() == DbObjType.EXTENSION || e.getType() == DbObjType.SCHEMA){
@@ -970,6 +1027,7 @@ public class DiffTableViewer extends Composite {
                     regExPattern = Pattern.compile(value, Pattern.CASE_INSENSITIVE);
                 } catch (PatternSyntaxException e) {
                     regExPattern = null;
+                    
                 }
             }
         }
@@ -979,18 +1037,21 @@ public class DiffTableViewer extends Composite {
         }
         
         @Override
-        public boolean select(Viewer viewer, Object parentElement, Object element) {
+        public boolean select(Viewer viewer, Object parentElement,
+                Object element) {
             if (filterName == null) {
                 return true;
             }
             if (useRegEx) {
                 if (regExPattern != null) {
-                    return regExPattern.matcher(((TreeElement) element).getName()).find();
+                    return getLocation(((TreeElement) element).getName(),
+                            filterName, regExPattern) != null;
                 } else {
                     return false;
                 }
             } else {
-                return ((TreeElement) element).getName().toLowerCase().contains(filterName);
+                return getLocation(((TreeElement) element).getName(),
+                        filterName, null) != null;
             }
         }
     }
