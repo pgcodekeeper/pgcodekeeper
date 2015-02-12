@@ -49,8 +49,7 @@ public class CodekeeperLinkHelper implements ILinkHelper{
         }
         IEditorPart editor = aPage.findEditor(input);
         if (editor != null) {
-            aPage.bringToTop(editor);
+            aPage.activate(editor);
         }   
     }
-
 }

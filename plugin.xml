@@ -486,7 +486,8 @@
           <editorInputEnablement>
              <instanceof
                    value="ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput">
-             </instanceof></editorInputEnablement>
+             </instanceof>
+          </editorInputEnablement>
           <selectionEnablement>
              <adapt
                    type="org.eclipse.core.resources.IProject">
