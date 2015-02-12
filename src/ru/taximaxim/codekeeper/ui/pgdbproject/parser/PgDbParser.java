@@ -11,7 +11,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ProjectScope;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -28,7 +31,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 
-public class PgDbParser {
+public class PgDbParser implements IResourceChangeListener {
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
     
@@ -39,6 +42,7 @@ public class PgDbParser {
 
     private PgDbParser(IProject proj) {
         this.proj = proj;
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
     
     private PgDbParser() {
@@ -106,13 +110,13 @@ public class PgDbParser {
                             funcBody.getPath(), funcBody.getLineNumber());
                     loc.setObjType(def.getObjType());
                     loc.setAction(StatementActions.NONE);
+                    List<PgObjLocation> newRefs = new ArrayList<>();
+                    newRefs.add(loc);
                     List<PgObjLocation> refs = objReferences2.get(funcBody.getPath());
-                    if (refs == null) {
-                        refs = new ArrayList<>();
-                        objReferences2.put(funcBody.getPath(), refs);
+                    if (refs != null) {
+                        newRefs.addAll(refs);
                     }
-                    // FIXME Concurrency problem
-                    refs.add(loc);
+                    objReferences2.put(funcBody.getPath(), newRefs);
                     index = body.indexOf(def.getObjName(), index + 1);
                 }
             }
@@ -245,5 +249,18 @@ public class PgDbParser {
     }
     public List<Listener> getListeners() {
         return listeners;
+    }
+
+    @Override
+    public void resourceChanged(IResourceChangeEvent event) {
+        switch (event.getType()) {
+        case IResourceChangeEvent.PRE_CLOSE:
+        case IResourceChangeEvent.PRE_DELETE:
+            if (event.getResource() instanceof IProject) {
+                PROJ_PARSERS.remove(event.getResource());
+                ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+            }
+            break;
+        }
     }
 }
