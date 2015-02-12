@@ -5,8 +5,10 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -110,13 +112,13 @@ public class PgDbParser implements IResourceChangeListener {
                             funcBody.getPath(), funcBody.getLineNumber());
                     loc.setObjType(def.getObjType());
                     loc.setAction(StatementActions.NONE);
-                    List<PgObjLocation> newRefs = new ArrayList<>();
+                    Set<PgObjLocation> newRefs = new HashSet<>();
                     newRefs.add(loc);
                     List<PgObjLocation> refs = objReferences2.get(funcBody.getPath());
                     if (refs != null) {
                         newRefs.addAll(refs);
                     }
-                    objReferences2.put(funcBody.getPath(), newRefs);
+                    objReferences2.put(funcBody.getPath(), new ArrayList<>(newRefs));
                     index = body.indexOf(def.getObjName(), index + 1);
                 }
             }
