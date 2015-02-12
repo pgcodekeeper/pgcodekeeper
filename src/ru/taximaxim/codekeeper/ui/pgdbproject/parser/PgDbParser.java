@@ -156,8 +156,8 @@ public class PgDbParser implements IResourceChangeListener {
     }
 
     public void removePathFromRefs(Path path) {
-        objDefinitions.remove(path);
         objReferences.remove(path);
+        objDefinitions.remove(path);
     }
     
     private void fillRefsFromInputStream(InputStream input,
