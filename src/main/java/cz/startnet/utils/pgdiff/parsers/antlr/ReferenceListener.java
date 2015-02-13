@@ -125,7 +125,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         if (schemaName==null) {
             schemaName = getDefSchemaName();
         }
-        addObjReference(schemaName, ctx.tabl_name.getText(), DbObjType.TABLE,
+        addObjReference(schemaName, ParserAbstract.getFullCtxText(ctx.tabl_name), DbObjType.TABLE,
                 StatementActions.NONE,
                 ctx.tabl_name.getStart().getStartIndex(), 0, ctx.tabl_name
                         .getStart().getLine());
@@ -223,7 +223,7 @@ public class ReferenceListener extends SQLParserBaseListener {
         String name = ParserAbstract.getName(ctx.name);
         String comment = "";
         if (ctx.comment_text != null) {
-            comment = ctx.comment_text.getText();
+            comment = ctx.comment_text.getText().replaceAll("\r", "");
         }
         String schemaName = ParserAbstract.getSchemaName(ctx.name);
         if (schemaName == null) {

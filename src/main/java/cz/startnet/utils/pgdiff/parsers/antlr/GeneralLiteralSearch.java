@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.General_literalContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Predefined_typeContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 
 
 public class GeneralLiteralSearch extends SQLParserBaseListener {
@@ -12,7 +13,7 @@ public class GeneralLiteralSearch extends SQLParserBaseListener {
 
     @Override
     public void enterGeneral_literal(General_literalContext ctx) {
-        seqName = ctx.getText();
+        seqName = ParserAbstract.getFullCtxText(ctx);
         this.ctx = ctx;
     }
 

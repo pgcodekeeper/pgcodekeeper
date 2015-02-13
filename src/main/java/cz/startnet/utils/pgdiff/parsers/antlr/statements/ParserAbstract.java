@@ -66,7 +66,7 @@ public abstract class ParserAbstract {
     public static String getFullCtxText(ParserRuleContext ctx) {
         Interval interval = new Interval(ctx.start.getStartIndex(),
                 ctx.stop.getStopIndex());
-        return ctx.start.getInputStream().getText(interval);
+        return ctx.start.getInputStream().getText(interval).replaceAll("\r", "");
     }
 
     /**

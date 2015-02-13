@@ -24,7 +24,7 @@ public class CommentOn extends ParserAbstract {
             return null;
         }
         String name = getName(ctx.name);
-        String comment = ctx.comment_text.getText();
+        String comment = ctx.comment_text.getText().replaceAll("\r", "");
         String schemaName = getSchemaName(ctx.name);
         if (schemaName == null) {
             schemaName = getDefSchemaName();
