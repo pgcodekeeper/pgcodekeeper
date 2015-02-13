@@ -203,13 +203,11 @@ public abstract class ParserAbstract {
         
         @Override
         public void enterName_or_func_calls(Name_or_func_callsContext ctx) {
-         if (getName(ctx.schema_qualified_name()).equals("nextval")) {
-             GeneralLiteralSearch seq = new GeneralLiteralSearch();
-             new ParseTreeWalker().walk(seq, ctx);
-             if (seq.isFound()) {
-                 seqName = seq.getSeqName();
-             }
-         }
+            GeneralLiteralSearch seq = new GeneralLiteralSearch();
+            new ParseTreeWalker().walk(seq, ctx);
+            if (seq.isFound()) {
+                seqName = seq.getSeqName();
+            }
         }
         public String getSeqName() {
             return seqName;

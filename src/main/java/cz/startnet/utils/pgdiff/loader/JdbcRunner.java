@@ -17,7 +17,8 @@ public class JdbcRunner {
     }
     
     public String runScript(final String script) throws IOException{
-        try(Connection connection = connector.getConnection(); Statement stmnt = connection.createStatement();){
+        try (Connection connection = connector.getConnection();
+                Statement stmnt = connection.createStatement();) {
             
             Future<String> queryFuture = Executors.newCachedThreadPool().submit(
                     new Callable<String>() {
