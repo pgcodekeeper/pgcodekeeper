@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.core.runtime.CoreException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -60,18 +61,21 @@ public class ProjectUpdaterTest {
     }
     
     @Test
-    public void updateSuccessTest() throws IOException, PgCodekeeperUIException{
+    public void updateSuccessTest() throws IOException, PgCodekeeperUIException, CoreException{
         PgDbProject proj = PgDbProject.getProjFromFile(workingDir.get().getAbsolutePath());
-        proj.getPrefs().put(UIConsts.PROJ_PREF.ENCODING, ENCODING);
+        proj.getProject().open(null);
+        proj.getProject().setDefaultCharset(ENCODING, null);
         new ProjectUpdater(dbNew, null, null, proj).updateFull();
 
         new ModelExporter(referenceDir.get(), dbOld, ENCODING).exportFull();
         if (compareFilesInPaths(workingDir.get().toPath(), referenceDir.get().toPath())){
             fail("ProjectUpdate fail: expected bases to differ");
         }
+        proj.getProject().close(null);
     }
     
-    @Test
+    // Commented cause now encoding should get from container and wouldn't be empty
+    /*@Test
     public void updateFailTest() throws IOException, PgCodekeeperUIException{
         try{
             PgDbProject proj = PgDbProject.getProjFromFile(workingDir.get().getAbsolutePath());
@@ -85,7 +89,7 @@ public class ProjectUpdaterTest {
         if (!compareFilesInPaths(workingDir.get().toPath(), referenceDir.get().toPath())){
             fail("ProjectUpdate fail: expected bases to be the same");
         }
-    }
+    }*/
     
     @After
     public void after(){
