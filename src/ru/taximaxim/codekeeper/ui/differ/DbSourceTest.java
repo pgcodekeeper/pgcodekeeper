@@ -6,13 +6,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Random;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -20,6 +20,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.osgi.service.prefs.BackingStoreException;
@@ -35,65 +36,26 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import cz.startnet.utils.pgdiff.TEST;
-import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoaderTest;
-import cz.startnet.utils.pgdiff.loader.JdbcRunner;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class DbSourceTest {
 
-    private static JdbcConnector connector;
-    private static final String RESOURCE_DUMP = "remote/testing_dump.sql";
-    private static final String RESOURCE_CLEANUP = "remote/testing_cleanup.sql";
+    private static final String dbName = MessageFormat.format(
+            TEST.REMOTE_DB_PATTERN, new Random().nextInt(Integer.MAX_VALUE));
     private static PgDatabase dbPredefined;
     private static File workspacePath;
     private static IWorkspaceRoot workspaceRoot;
     
     @BeforeClass
     public static void initDb() throws IOException{
-        connector = new JdbcConnector(  TEST.REMOTE_HOST, 
-                                        TEST.REMOTE_PORT, 
-                                        TEST.REMOTE_USERNAME, 
-                                        TEST.REMOTE_PASSWORD, 
-                                        TEST.REMOTE_DB, 
-                                        ApgdiffConsts.UTF_8, 
-                                        ApgdiffConsts.UTC);
-        
-        // remove old schemas
-        try(InputStreamReader isr = new InputStreamReader(
-                JdbcLoaderTest.class.getResourceAsStream(RESOURCE_CLEANUP), "UTF-8");
-                BufferedReader reader = new BufferedReader(isr)){
-            
-            StringBuilder script = new StringBuilder();
-            String line;
-            while((line = reader.readLine()) != null) {
-                script.append(line);
-            }
-            
-            String res = new JdbcRunner(connector).runScript(script.toString());
-            assertEquals("DB cleanup script returned an error: " + res, "success", res);
-        }
-        
-        // dump schemas back
-        try(InputStreamReader isr = new InputStreamReader(
-                JdbcLoaderTest.class.getResourceAsStream(RESOURCE_DUMP), "UTF-8");
-                BufferedReader reader = new BufferedReader(isr)){
-            
-            StringBuilder script = new StringBuilder();
-            String line;
-            while((line = reader.readLine()) != null) {
-                script.append(line);
-                script.append("\n");
-            }
-            
-            String res = new JdbcRunner(connector).runScript(script.toString());
-            assertEquals("DDL update over JDBC exited with an error: " + res, "success", res);
-        }
+        ApgdiffTestUtils.createDB(dbName);
+        ApgdiffTestUtils.fillDB(dbName);
         
         dbPredefined = PgDumpLoader.loadDatabaseSchemaFromDump(
-                JdbcLoaderTest.class.getResourceAsStream(RESOURCE_DUMP),
+                JdbcLoaderTest.class.getResourceAsStream(TEST.RESOURCE_DUMP),
                 ApgdiffConsts.UTF_8, false, false, ParserClass.getLegacy(null, 1));
         
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
@@ -107,7 +69,7 @@ public class DbSourceTest {
                                             TEST.REMOTE_PORT, 
                                             TEST.REMOTE_USERNAME, 
                                             TEST.REMOTE_PASSWORD, 
-                                            TEST.REMOTE_DB, 
+                                            dbName, 
                                             UIConsts.UTF_8, 
                                             UIConsts.UTC, false));
         
@@ -136,7 +98,7 @@ public class DbSourceTest {
     
     @Test
     public void testFile () throws IOException, URISyntaxException {
-        URL urla = JdbcLoaderTest.class.getResource(RESOURCE_DUMP);
+        URL urla = JdbcLoaderTest.class.getResource(TEST.RESOURCE_DUMP);
         
         performTest(DbSource.fromFile(ParserClass.getLegacy(null, 1), 
                 ApgdiffTestUtils.getFileFromRes(urla).getCanonicalPath(), UIConsts.UTF_8));
@@ -176,7 +138,7 @@ public class DbSourceTest {
             PgDbProject proj = new PgDbProject(project);
             proj.openProject();
             
-            proj.getPrefs().put(PROJ_PREF.DB_NAME, TEST.REMOTE_DB);
+            proj.getPrefs().put(PROJ_PREF.DB_NAME, dbName);
             proj.getPrefs().put(PROJ_PREF.DB_USER, TEST.REMOTE_USERNAME);
             proj.getPrefs().put(PROJ_PREF.DB_HOST, TEST.REMOTE_HOST);
             proj.getPrefs().putInt(PROJ_PREF.DB_PORT, TEST.REMOTE_PORT);
@@ -188,6 +150,12 @@ public class DbSourceTest {
             
             proj.deleteFromWorkspace();
         }
+    }
+    
+    @AfterClass
+    public static void complete() throws IOException {
+        ApgdiffTestUtils.dropContents(dbName);
+        ApgdiffTestUtils.dropDB(dbName);
     }
     
     private void performTest(DbSource source) throws IOException{
