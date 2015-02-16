@@ -36,7 +36,7 @@ public class PgType extends PgStatementWithSearchPath {
     private String typmodInputFunction;
     private String typmodOutputFunction;
     private String analyzeFunction;
-    private int internalLength;
+    private String internalLength;
     private boolean passedByValue;
     private String alignment;
     private String storage;
@@ -178,11 +178,11 @@ public class PgType extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public int getInternalLength() {
+    public String getInternalLength() {
         return internalLength;
     }
 
-    public void setInternalLength(int internalLength) {
+    public void setInternalLength(String internalLength) {
         this.internalLength = internalLength;
         resetHash();
     }
@@ -381,7 +381,9 @@ public class PgType extends PgStatementWithSearchPath {
         if (analyzeFunction != null && !analyzeFunction.isEmpty()) {
             sb.append(",\n\tANALYZE = ").append(analyzeFunction);
         }
-        sb.append(",\n\tINTERNALLENGTH = ").append(internalLength);
+        if (internalLength != null && !internalLength.isEmpty()) {
+            sb.append(",\n\tINTERNALLENGTH = ").append(internalLength);
+        }
         if (passedByValue) {
             sb.append(",\n\tPASSEDBYVALUE");
         }
@@ -411,30 +413,6 @@ public class PgType extends PgStatementWithSearchPath {
         }
         if (collatable != null && !collatable.isEmpty()) {
             sb.append(",\n\tCOLLATABLE = ").append(collatable);
-        }
-        if (collation != null && !collation.isEmpty()) {
-            sb.append(",\n\tcollation = ").append(collation);
-        }
-        if (collation != null && !collation.isEmpty()) {
-            sb.append(",\n\tcollation = ").append(collation);
-        }
-        if (collation != null && !collation.isEmpty()) {
-            sb.append(",\n\tcollation = ").append(collation);
-        }
-        if (collation != null && !collation.isEmpty()) {
-            sb.append(",\n\tcollation = ").append(collation);
-        }
-        if (collation != null && !collation.isEmpty()) {
-            sb.append(",\n\tcollation = ").append(collation);
-        }
-        if (collation != null && !collation.isEmpty()) {
-            sb.append(",\n\tcollation = ").append(collation);
-        }
-        if (collation != null && !collation.isEmpty()) {
-            sb.append(",\n\tcollation = ").append(collation);
-        }
-        if (collation != null && !collation.isEmpty()) {
-            sb.append(",\n\tcollation = ").append(collation);
         }
     }
 
@@ -507,7 +485,7 @@ public class PgType extends PgStatementWithSearchPath {
                 && Objects.equals(typmodInputFunction, type.getTypmodInputFunction())
                 && Objects.equals(typmodOutputFunction, type.getTypmodOutputFunction())
                 && Objects.equals(analyzeFunction, type.getAnalyzeFunction())
-                && internalLength == type.getInternalLength()
+                && Objects.equals(internalLength, type.getInternalLength())
                 && passedByValue == type.isPassedByValue()
                 && Objects.equals(alignment, type.getAlignment())
                 && Objects.equals(storage, type.getStorage())
@@ -541,7 +519,7 @@ public class PgType extends PgStatementWithSearchPath {
         result = prime * result + ((typmodInputFunction == null) ? 0 : typmodInputFunction.hashCode());
         result = prime * result + ((typmodOutputFunction == null) ? 0 : typmodOutputFunction.hashCode());
         result = prime * result + ((analyzeFunction == null) ? 0 : analyzeFunction.hashCode());
-        result = prime * result + internalLength;
+        result = prime * result + ((internalLength == null) ? 0 : internalLength.hashCode());
         result = prime * result + (passedByValue ? itrue : ifalse);
         result = prime * result + ((alignment == null) ? 0 : alignment.hashCode());
         result = prime * result + ((storage == null) ? 0 : storage.hashCode());
