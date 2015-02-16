@@ -3,7 +3,7 @@ package cz.startnet.utils.pgdiff.loader;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PgType{
+public class JdbcType{
     
     private static final Map<String, String> DATA_TYPE_ALIASES = new HashMap<>();
     static {
@@ -41,7 +41,7 @@ public class PgType{
      * There are also vector types - their typarray column values are not 0, 
      * we do not convert those to simple arrays
      */
-    public PgType(String typeName, String typelem, Long typarray, int typlen, String typmodout, String parentSchema) {
+    public JdbcType(String typeName, String typelem, Long typarray, int typlen, String typmodout, String parentSchema) {
         if (typlen == -1 && typarray == 0L && !typelem.equals("-")){
             if (DATA_TYPE_ALIASES.containsKey(typelem)){
                 this.typeName = DATA_TYPE_ALIASES.get(typelem);

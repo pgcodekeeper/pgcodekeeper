@@ -81,7 +81,7 @@ public class JdbcLoader implements PgCatalogStrings {
     private PreparedStatement prepStatColumnsOfSchema;
     
     private Map<Long, String> cachedRolesNamesByOid = new HashMap<>();
-    private Map<Long, PgType> cachedTypeNamesByOid = new HashMap<>();
+    private Map<Long, JdbcType> cachedTypeNamesByOid = new HashMap<>();
     /*
      * Stores cached results of query "SELECT typmodout(colTypeMod)" for types.<br>
      * Key is the oid of pg_catalog.pg_type table. Inner map stores pairs of colTypeMod 
@@ -186,7 +186,7 @@ public class JdbcLoader implements PgCatalogStrings {
                     + "LEFT JOIN pg_catalog.pg_proc proc ON proc.oid = t.typmodout "
                     + "LEFT JOIN pg_catalog.pg_namespace nsp ON t.typnamespace = nsp.oid")){
                 while (res.next()){
-                    PgType type = new PgType(res.getString("typname"), res.getString("castedType"), 
+                    JdbcType type = new JdbcType(res.getString("typname"), res.getString("castedType"), 
                             res.getLong("typarray"), res.getInt("typlen"), res.getString("proname"),
                             res.getString(NAMESPACE_NSPNAME));
                     cachedTypeNamesByOid.put(res.getLong(OID), type);
@@ -629,7 +629,7 @@ public class JdbcLoader implements PgCatalogStrings {
             String columnName = colNames[i];
             PgColumn column = new PgColumn(columnName);
             
-            PgType columnType = cachedTypeNamesByOid.get(colTypes[i]);
+            JdbcType columnType = cachedTypeNamesByOid.get(colTypes[i]);
              
             // pg_catalog.pg_attribute.atttypmod records type-specific data supplied 
             // at table creation time (for example, the maximum length of a varchar column). 
@@ -895,13 +895,13 @@ public class JdbcLoader implements PgCatalogStrings {
                     }
                     returnedTableArguments.append(argNames[i]).append(" ");
                     
-                    PgType returnType = cachedTypeNamesByOid.get(argTypeOids[i]);
+                    JdbcType returnType = cachedTypeNamesByOid.get(argTypeOids[i]);
                     returnedTableArguments.append(returnType.getSchemaQualifiedName(schemaName));
                 }
             }            
         }
         
-        PgType returnType = cachedTypeNamesByOid.get(res.getLong("prorettype"));
+        JdbcType returnType = cachedTypeNamesByOid.get(res.getLong("prorettype"));
         if (returnsTable){
             f.setReturns("TABLE(" + returnedTableArguments + ")");
         }else if (res.getBoolean("proretset")){
