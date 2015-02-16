@@ -117,6 +117,8 @@ public interface UIConsts {
         String ICONPGADMIN = "/icons/pgadmin/"; //$NON-NLS-1$
         String ICONWARNING = "/icons/warning.gif"; //$NON-NLS-1$
         String ICONADD = "/icons/add_obj.gif"; //$NON-NLS-1$
+        String ICONUP = "/icons/up.png"; //$NON-NLS-1$
+        String ICONDOWN = "/icons/down.png"; //$NON-NLS-1$
         String ICONSAVE = "/icons/save_edit.gif"; //$NON-NLS-1$
         String ICONDEL = "/icons/delete_obj.gif"; //$NON-NLS-1$
         String ICONEDIT = "/icons/editor.gif"; //$NON-NLS-1$

@@ -1,16 +1,15 @@
 package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.text.MessageFormat;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-class DbInfo {
+public class DbInfo {
     
     private static final int DBINFO_LINE_PARTS_COUNT = 6;
     /**
@@ -113,17 +112,15 @@ class DbInfo {
         return store;
     }
     
-    public static String storeToPreference(Map<String, DbInfo> store) {
+    public static String storeToPreference(Map<String, DbInfo> store, List<String> list) {
         StringBuilder sb = new StringBuilder();
-        
-        Iterator<Entry<String, DbInfo>> it = store.entrySet().iterator();
-        while(it.hasNext()) {
-            sb.append(it.next().getValue());
-            if(it.hasNext()) {
-                sb.append(DELIM_ENTRY);
-            }
+        int count = 0;
+        for (String entry : list) {
+        	sb.append(store.get(entry));
+        	if (count++ < list.size() - 1) {
+        		sb.append(DELIM_ENTRY);
+        	}
         }
-        
         return sb.toString();
     }
 }
