@@ -369,7 +369,8 @@ body_rules
         | on_function
         | on_large_object
         | on_schema
-        | on_tablespace)
+        | on_tablespace
+        | on_type)
       (grant_to_rule | revoke_from_cascade_restrict)
       | GRANT obj_name=names_references TO role_name=names_references (WITH ADMIN OPTION)?
       | REVOKE (ADMIN OPTION FOR)? obj_name=names_references FROM role_name=names_references
@@ -431,6 +432,11 @@ on_schema
 on_tablespace
     : (CREATE | ALL PRIVILEGES?)
         ON TABLESPACE obj_name=names_references
+    ;
+
+on_type
+    : (USAGE | ALL PRIVILEGES?)
+      ON TYPE obj_name=names_references 
     ;
 
 roles_names
