@@ -17,7 +17,7 @@ public class TreeElement {
         CONTAINER, // not a DB object, just a container for further tree elements
         DATABASE,
         SCHEMA, EXTENSION,
-        TYPE, FUNCTION, SEQUENCE, TABLE, VIEW,
+        TYPE, DOMAIN, FUNCTION, SEQUENCE, TABLE, VIEW,
         INDEX, TRIGGER, CONSTRAINT, COLUMN
     }
     
