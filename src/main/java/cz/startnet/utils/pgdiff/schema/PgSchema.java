@@ -28,6 +28,7 @@ public class PgSchema extends PgStatement {
     private final List<PgSequence> sequences = new ArrayList<>();
     private final List<PgTable> tables = new ArrayList<>();
     private final List<PgView> views = new ArrayList<>();
+    private final List<PgType> types = new ArrayList<>();
 
     private String authorization;
     private String definition;
@@ -199,6 +200,30 @@ public class PgSchema extends PgStatement {
     public List<PgView> getViews() {
         return Collections.unmodifiableList(views);
     }
+    
+    /**
+     * Finds type according to specified type {@code name}.
+     *
+     * @param name name of the type to be searched
+     *
+     * @return found type or null if no such type has been found
+     */
+    public PgType getType(final String name) {
+    	for (PgType type : types) {
+    		if (type.getName().equals(name)) {
+    			return type;
+    		}
+    	}
+    	return null;
+    }
+    /**
+     * Getter for {@link #types}. The list cannot be modified.
+     *
+     * @return {@link #types}
+     */
+    public List<PgType> getTypes() {
+    	return Collections.unmodifiableList(types);
+    }
 
     public void addFunction(final PgFunction function) {
         functions.add(function);
@@ -222,6 +247,12 @@ public class PgSchema extends PgStatement {
         views.add(view);
         view.setParent(this);
         resetHash();
+    }
+    
+    public void addType(final PgType type) {
+    	types.add(type);
+    	type.setParent(this);
+    	resetHash();
     }
 
     public boolean containsFunction(final String signature) {
@@ -288,7 +319,8 @@ public class PgSchema extends PgStatement {
                     && new HashSet<>(sequences).equals(new HashSet<>(schema.sequences))
                     && new HashSet<>(functions).equals(new HashSet<>(schema.functions))
                     && new HashSet<>(views).equals(new HashSet<>(schema.views))
-                    && new HashSet<>(tables).equals(new HashSet<>(schema.tables));
+                    && new HashSet<>(tables).equals(new HashSet<>(schema.tables))
+                    && new HashSet<>(types).equals(new HashSet<>(schema.types));
         }
         
         return eq;
@@ -311,6 +343,7 @@ public class PgSchema extends PgStatement {
         result = prime * result + new HashSet<>(sequences).hashCode();
         result = prime * result + new HashSet<>(tables).hashCode();
         result = prime * result + new HashSet<>(views).hashCode();
+        result = prime * result + new HashSet<>(types).hashCode();
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
@@ -344,7 +377,9 @@ public class PgSchema extends PgStatement {
         for(PgTable table : tables) {
             copy.addTable(table.deepCopy());
         }
-        
+		for (PgType type : types) {
+        	copy.addType(type);
+        }
         return copy;
     }
 }

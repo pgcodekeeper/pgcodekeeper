@@ -8,6 +8,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_language_statement
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_sequence_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_event_triggerContext;
@@ -27,6 +28,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSchema;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSequence;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CommentOn;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateExtension;
@@ -165,5 +167,10 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitAlter_view_statement(Alter_view_statementContext ctx) {
         new AlterView(ctx, db, filePath).getObject();
+    }
+    
+    @Override
+    public void exitAlter_type_statement(Alter_type_statementContext ctx) {
+    	new AlterType(ctx, db, filePath).getObject();
     }
 }

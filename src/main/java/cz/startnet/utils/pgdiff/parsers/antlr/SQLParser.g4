@@ -248,7 +248,7 @@ alter_view_statement
     | SET LEFT_PAREN view_option_name=identifier (EQUAL view_option_value=value_expression)?(COMMA view_option_name=identifier (EQUAL view_option_value=value_expression)?)*  RIGHT_PAREN
     | RESET LEFT_PAREN view_option_name=identifier (COMMA view_option_name=identifier)*  RIGHT_PAREN)
     ;
-// TODO дописать для остальных алтеров
+
 alter_type_statement
     : TYPE name=schema_qualified_name 
       (set_schema 

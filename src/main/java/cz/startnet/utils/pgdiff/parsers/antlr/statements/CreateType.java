@@ -24,6 +24,10 @@ public class CreateType extends ParserAbstract {
 	@Override
 	public PgStatement getObject() {
 		String name = getName(ctx.name);
+		String schemaName = getSchemaName(ctx.name);
+		if (schemaName == null) {
+			schemaName = getDefSchemaName();
+		}
 		PgTypeForm form = PgTypeForm.SHELL;
 		if (ctx.RANGE() != null) {
 			form = PgTypeForm.RANGE;
@@ -110,6 +114,11 @@ public class CreateType extends ParserAbstract {
 		if (ctx.collatable != null) {
 			type.setCollatable(getFullCtxText(ctx.collatable));
 		}
+		if (db.getSchema(schemaName) == null) {
+			logSkipedObject(schemaName, "TYPE", name);
+            return null;
+		}
+		db.getSchema(schemaName).addType(type);
 		return type;
 	}
 
