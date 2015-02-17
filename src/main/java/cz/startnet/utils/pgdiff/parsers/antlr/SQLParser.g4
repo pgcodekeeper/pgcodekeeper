@@ -142,7 +142,7 @@ table_action
     : ADD COLUMN? table_column_definition
     | DROP COLUMN? (IF EXISTS)? column=schema_qualified_name cascade_restrict?
     | ALTER COLUMN? column=schema_qualified_name 
-      ((SET DATA)? TYPE datatype=data_type (COLLATE collation=identifier)? (USING expression=value_expression)?
+      ((SET DATA)? TYPE datatype=data_type collate_identifier? (USING expression=value_expression)?
       | (set_def_column
         | drop_def
         | ((SET | DROP) NOT NULL) 
@@ -251,7 +251,18 @@ alter_view_statement
 // TODO дописать для остальных алтеров
 alter_type_statement
     : TYPE name=schema_qualified_name 
-      (set_schema | owner_to)
+      (set_schema 
+      | owner_to 
+      | rename_to
+      | ADD VALUE (IF NOT EXISTS)? new_enum_value=Character_String_Literal ((BEFORE | AFTER) existing_enum_value=Character_String_Literal)?
+      | RENAME ATTRIBUTE attribute_name=identifier TO new_attribute_name=identifier cascade_restrict?
+      | type_action (COMMA type_action)*)
+    ;
+
+type_action
+    :ADD ATTRIBUTE attribute_name=identifier data_type collate_identifier? cascade_restrict?
+    | DROP ATTRIBUTE (IF EXISTS)? attribute_name=identifier cascade_restrict?
+    | ALTER ATTRIBUTE attribute_name=identifier (SET DATA)? TYPE data_type collate_identifier? cascade_restrict?
     ;
 
 set_def_column
@@ -293,35 +304,34 @@ create_event_trigger
 
 create_type_statement
     :TYPE name=schema_qualified_name (AS(
-        LEFT_PAREN (attribute_name+=identifier dt_type+=data_type (COLLATE collation=identifier)? 
-                    (COMMA attribute_name+=identifier dt_type+=data_type (COLLATE collation=identifier)?)*)? RIGHT_PAREN
-    | ENUM LEFT_PAREN ( Character_String_Literal (COMMA Character_String_Literal)* )? RIGHT_PAREN
-    | RANGE LEFT_PAREN SUBTYPE EQUAL schema_qualified_name
+        LEFT_PAREN (attrs+=table_column_definition (COMMA attrs+=table_column_definition)*)? RIGHT_PAREN
+    | ENUM LEFT_PAREN ( enums+=Character_String_Literal (COMMA enums+=Character_String_Literal)* )? RIGHT_PAREN
+    | RANGE LEFT_PAREN SUBTYPE EQUAL subtype_name=schema_qualified_name
             ( COMMA SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier)?
             ( COMMA COLLATION EQUAL collation=identifier )?
             ( COMMA CANONICAL EQUAL canonical_function=identifier )?
             ( COMMA SUBTYPE_DIFF EQUAL subtype_diff_function=identifier )?
         RIGHT_PAREN)
     | LEFT_PAREN
-            INPUT EQUAL input_function=identifier COMMA
-            OUTPUT EQUAL output_function=identifier
-            ( COMMA RECEIVE EQUAL receive_function=identifier )?
-            ( COMMA SEND EQUAL send_function=identifier )?
-            ( COMMA TYPMOD_IN EQUAL type_modifier_input_function=identifier )?
-            ( COMMA TYPMOD_OUT EQUAL type_modifier_output_function=identifier )?
-            ( COMMA ANALYZE EQUAL analyze_function=identifier )?
+            INPUT EQUAL input_function=schema_qualified_name COMMA
+            OUTPUT EQUAL output_function=schema_qualified_name
+            ( COMMA RECEIVE EQUAL receive_function=schema_qualified_name )?
+            ( COMMA SEND EQUAL send_function=schema_qualified_name )?
+            ( COMMA TYPMOD_IN EQUAL type_modifier_input_function=schema_qualified_name )?
+            ( COMMA TYPMOD_OUT EQUAL type_modifier_output_function=schema_qualified_name )?
+            ( COMMA ANALYZE EQUAL analyze_function=schema_qualified_name )?
             ( COMMA INTERNALLENGTH EQUAL (internallength=signed_numerical_literal | VARIABLE ) )?
             ( COMMA PASSEDBYVALUE )?
             ( COMMA ALIGNMENT EQUAL alignment=identifier )?
             ( COMMA STORAGE EQUAL storage=identifier )?
             ( COMMA LIKE EQUAL like_type=identifier )?
-            ( COMMA CATEGORY EQUAL category=identifier )?
+            ( COMMA CATEGORY EQUAL category=Character_String_Literal )?
             ( COMMA PREFERRED EQUAL preferred=identifier )?
-            ( COMMA DEFAULT EQUAL default_value=identifier )?
+            ( COMMA DEFAULT EQUAL default_value=Character_String_Literal )?
             ( COMMA ELEMENT EQUAL element=identifier )?
-            ( COMMA DELIMITER EQUAL delimiter=identifier )?
-            ( COMMA COLLATABLE EQUAL collatable=identifier )?
-        RIGHT_PAREN)
+            ( COMMA DELIMITER EQUAL delimiter=Character_String_Literal )?
+            ( COMMA COLLATABLE EQUAL collatable=truth_value )?
+        RIGHT_PAREN)?
     ;
 
 set_statement
@@ -543,7 +553,7 @@ table_column_def
     ;
 
 table_column_definition
-    : column_name=identifier datatype=data_type? (COLLATE collation=identifier)? (WITH OPTIONS)? (colmn_constraint+=constraint_common)*
+    : column_name=identifier datatype=data_type? collate_identifier? (WITH OPTIONS)? (colmn_constraint+=constraint_common)*
     ;
   
 like_option
@@ -681,6 +691,10 @@ cascade_restrict
     : CASCADE | RESTRICT
     ;
 
+collate_identifier
+    : COLLATE collation=identifier
+    ;
+
 /*
 ===============================================================================
   11.21 <data types>
@@ -696,7 +710,7 @@ drop_trigger_statement
     ;
 
 drop_statements
-    :((DATABASE | TABLE| EXTENSION | SCHEMA | SEQUENCE | VIEW) | INDEX (CONCURRENTLY)?) if_exist_names_restrict_cascade
+    :((DATABASE | TABLE| EXTENSION | SCHEMA | SEQUENCE | VIEW | TYPE) | INDEX (CONCURRENTLY)?) if_exist_names_restrict_cascade
     ;
 
 if_exist_names_restrict_cascade
@@ -720,6 +734,7 @@ nonreserved_keywords
   : ADMIN
   | ALWAYS
   | ARRAY
+  | ATTRIBUTE
   | AVG
   | BETWEEN
   | BY
@@ -857,6 +872,7 @@ nonreserved_keywords
   | USER
   | VALID
   | VALIDATE
+  | VALUE
   | VALUES
   | VAR_POP
   | VAR_SAMP
