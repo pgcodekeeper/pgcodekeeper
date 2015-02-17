@@ -101,6 +101,9 @@ public class CommentOn extends ParserAbstract {
             // view
         } else if (ctx.VIEW() != null) {
             db.getSchema(schemaName).getView(name).setComment(comment);
+            // type
+        } else if (ctx.TYPE() != null) {
+        	db.getSchema(schemaName).getType(name).setComment(comment);
         }
         return null;
     }
