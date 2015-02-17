@@ -422,7 +422,7 @@ public class PgType extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgStatement shallowCopy() {
+    public PgType shallowCopy() {
         PgType copy = new PgType(getName(), getForm(), getRawStatement(), getSearchPath());
         for (PgColumn attr : attrs) {
             copy.addAttr(attr.shallowCopy());
@@ -457,7 +457,7 @@ public class PgType extends PgStatementWithSearchPath {
     }
 
     @Override
-    public PgStatement deepCopy() {
+    public PgType deepCopy() {
         return shallowCopy();
     }
 

@@ -45,7 +45,7 @@ public class CreateType extends ParserAbstract {
 			type.addAttr(getColumn(attr, new ArrayList<String>()));
 		}
 		for (Token enume : ctx.enums) {
-			type.addEnum(enume.getText().replace("\r", ""));
+			type.addEnum(enume.getText());
 		}
 		if (ctx.subtype_name != null) {
 			type.setSubtype(getFullCtxText(ctx.subtype_name));
@@ -97,19 +97,19 @@ public class CreateType extends ParserAbstract {
 			type.setLikeType(getFullCtxText(ctx.like_type));
 		}
 		if (ctx.category != null) {
-			type.setCategory(ctx.category.getText().replace("\r", ""));
+			type.setCategory(ctx.category.getText());
 		}
 		if (ctx.preferred != null) {
 			type.setPreferred(getFullCtxText(ctx.preferred));
 		}
 		if (ctx.default_value != null) {
-			type.setDefaultValue(ctx.default_value.getText().replace("\r", ""));
+			type.setDefaultValue(ctx.default_value.getText());
 		}
 		if (ctx.element != null) {
 			type.setElement(getFullCtxText(ctx.element));
 		}
 		if (ctx.delimiter != null) {
-			type.setDelimiter(ctx.delimiter.getText().replace("\r", ""));
+			type.setDelimiter(ctx.delimiter.getText());
 		}
 		if (ctx.collatable != null) {
 			type.setCollatable(getFullCtxText(ctx.collatable));

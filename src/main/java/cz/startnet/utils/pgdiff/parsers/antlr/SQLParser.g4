@@ -305,13 +305,13 @@ create_event_trigger
 create_type_statement
     :TYPE name=schema_qualified_name (AS(
         LEFT_PAREN (attrs+=table_column_definition (COMMA attrs+=table_column_definition)*)? RIGHT_PAREN
-    | ENUM LEFT_PAREN ( enums+=Character_String_Literal (COMMA enums+=Character_String_Literal)* )? RIGHT_PAREN
-    | RANGE LEFT_PAREN SUBTYPE EQUAL subtype_name=schema_qualified_name
-            ( COMMA SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier)?
-            ( COMMA COLLATION EQUAL collation=identifier )?
-            ( COMMA CANONICAL EQUAL canonical_function=identifier )?
-            ( COMMA SUBTYPE_DIFF EQUAL subtype_diff_function=identifier )?
-        RIGHT_PAREN)
+        | ENUM LEFT_PAREN ( enums+=Character_String_Literal (COMMA enums+=Character_String_Literal)* )? RIGHT_PAREN
+        | RANGE LEFT_PAREN SUBTYPE EQUAL subtype_name=schema_qualified_name
+                ( COMMA SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier)?
+                ( COMMA COLLATION EQUAL collation=identifier )?
+                ( COMMA CANONICAL EQUAL canonical_function=identifier )?
+                ( COMMA SUBTYPE_DIFF EQUAL subtype_diff_function=identifier )?
+            RIGHT_PAREN)
     | LEFT_PAREN
             INPUT EQUAL input_function=schema_qualified_name COMMA
             OUTPUT EQUAL output_function=schema_qualified_name
@@ -322,11 +322,11 @@ create_type_statement
             ( COMMA ANALYZE EQUAL analyze_function=schema_qualified_name )?
             ( COMMA INTERNALLENGTH EQUAL (internallength=signed_numerical_literal | VARIABLE ) )?
             ( COMMA PASSEDBYVALUE )?
-            ( COMMA ALIGNMENT EQUAL alignment=identifier )?
+            ( COMMA ALIGNMENT EQUAL alignment=data_type )?
             ( COMMA STORAGE EQUAL storage=identifier )?
             ( COMMA LIKE EQUAL like_type=identifier )?
             ( COMMA CATEGORY EQUAL category=Character_String_Literal )?
-            ( COMMA PREFERRED EQUAL preferred=identifier )?
+            ( COMMA PREFERRED EQUAL preferred=truth_value )?
             ( COMMA DEFAULT EQUAL default_value=Character_String_Literal )?
             ( COMMA ELEMENT EQUAL element=identifier )?
             ( COMMA DELIMITER EQUAL delimiter=Character_String_Literal )?

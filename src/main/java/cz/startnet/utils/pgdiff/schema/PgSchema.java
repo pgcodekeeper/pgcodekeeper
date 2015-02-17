@@ -378,7 +378,7 @@ public class PgSchema extends PgStatement {
             copy.addTable(table.deepCopy());
         }
 		for (PgType type : types) {
-        	copy.addType(type);
+        	copy.addType(type.deepCopy());
         }
         return copy;
     }
