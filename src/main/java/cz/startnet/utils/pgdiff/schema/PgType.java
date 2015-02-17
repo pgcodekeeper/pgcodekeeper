@@ -58,6 +58,7 @@ public class PgType extends PgStatementWithSearchPath {
 
     public void addAttr(PgColumn attr) {
         attrs.add(attr);
+        attr.setParent(this);
         resetHash();
     }
 
