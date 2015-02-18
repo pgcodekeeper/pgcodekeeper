@@ -50,7 +50,7 @@ public class SQLEditorCommonDocumentProvider {
     IDocumentPartitioner createRecipePartitioner() {
         IPredicateRule[] rules= { 
                 new SingleLineRule("--", null, new Token(SQL_SINGLE_COMMENT), (char) 0, true, false), //$NON-NLS-1$
-                new MultiLineRule("/**", "*/", new Token(SQL_MULTI_COMMENT), (char) 0, true),  //$NON-NLS-1$ //$NON-NLS-2$
+                new MultiLineRule("/*", "*/", new Token(SQL_MULTI_COMMENT), (char) 0, true),  //$NON-NLS-1$ //$NON-NLS-2$
                 new SingleLineRule( "'", "'", new Token(SQL_CHARACTER_STRING_LITERAL), (char) 0 ) //$NON-NLS-1$ //$NON-NLS-2$
                 };
 
