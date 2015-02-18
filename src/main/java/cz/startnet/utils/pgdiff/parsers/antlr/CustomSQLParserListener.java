@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr;
 import java.nio.file.Path;
 
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_language_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
@@ -11,6 +12,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_table_statementCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_type_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_view_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Comment_on_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_domain_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_event_triggerContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_extension_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
@@ -24,6 +26,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSchema;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSequence;
@@ -31,6 +34,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CommentOn;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateExtension;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateIndex;
@@ -108,6 +112,11 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     }
     
     @Override
+    public void exitCreate_domain_statement(Create_domain_statementContext ctx) {
+    	new CreateDomain(ctx, db, filePath).getObject();
+    }
+    
+    @Override
     public void exitCreate_language_statement(
             Create_language_statementContext ctx) {
 //        objects.add(new CreateLanguage(ctx, db, filePath).setDefSchemaName(searchPath).getObject());
@@ -172,5 +181,10 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     @Override
     public void exitAlter_type_statement(Alter_type_statementContext ctx) {
     	new AlterType(ctx, db, filePath).getObject();
+    }
+    
+    @Override
+    public void exitAlter_domain_statement(Alter_domain_statementContext ctx) {
+    	new AlterDomain(ctx, db, filePath).getObject();
     }
 }

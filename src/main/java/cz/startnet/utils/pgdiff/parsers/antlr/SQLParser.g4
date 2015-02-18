@@ -90,7 +90,8 @@ schema_create
     | create_view_statement
     | create_language_statement
     | create_event_trigger
-    | create_type_statement)
+    | create_type_statement
+    | create_domain_statement)
      
     | comment_on_statement
     | rule_common
@@ -105,7 +106,8 @@ schema_alter
     | alter_default_privileges
     | alter_sequence_statement
     | alter_view_statement
-    | alter_type_statement)
+    | alter_type_statement
+    | alter_domain_statement)
     ;
 
 schema_drop
@@ -152,8 +154,8 @@ table_action
         | SET STORAGE (PLAIN | EXTERNAL | EXTENDED | MAIN)))
     | ADD tabl_constraint=constraint_common (NOT VALID)?
     | ADD tabl_constraint_using_index=table_constraint_using_index
-    | VALIDATE CONSTRAINT constraint_name=schema_qualified_name
-    | DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name cascade_restrict?
+    | validate_constraint
+    | drop_constraint
     | (DISABLE | ENABLE) TRIGGER (trigger_name=schema_qualified_name | (ALL | USER))?
     | ENABLE (REPLICA | ALWAYS) TRIGGER trigger_name=schema_qualified_name 
     | (DISABLE | ENABLE) RULE rewrite_rule_name=schema_qualified_name 
@@ -169,6 +171,14 @@ table_action
     | NOT OF
     | owner_to
     | SET table_space
+    ;
+
+validate_constraint
+    : VALIDATE CONSTRAINT constraint_name=schema_qualified_name
+    ;
+
+drop_constraint
+    : DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name cascade_restrict?
     ;
 
 attribute_option_value
@@ -259,6 +269,20 @@ alter_type_statement
       | type_action (COMMA type_action)*)
     ;
 
+alter_domain_statement
+    : DOMAIN name=schema_qualified_name
+    (set_def_column
+    | drop_def
+    | (SET | DROP) NOT NULL
+    | ADD dom_constraint=domain_constraint (NOT not_valid=VALID)?
+    | drop_constraint
+    | RENAME CONSTRAINT dom_old_constraint=schema_qualified_name TO dom_new_constraint=schema_qualified_name
+    | validate_constraint
+    | owner_to
+    | rename_to
+    | set_schema)
+    ;
+
 type_action
     :ADD ATTRIBUTE attribute_name=identifier data_type collate_identifier? cascade_restrict?
     | DROP ATTRIBUTE (IF EXISTS)? attribute_name=identifier cascade_restrict?
@@ -334,6 +358,18 @@ create_type_statement
         RIGHT_PAREN)?
     ;
 
+create_domain_statement
+    : DOMAIN name=schema_qualified_name (AS)? dat_type=data_type 
+      (collate_identifier
+      | DEFAULT def_value=value_expression
+      | dom_constraint+=domain_constraint)*
+    ;
+
+domain_constraint
+    :(CONSTRAINT name=schema_qualified_name)?
+     common_constraint
+    ;
+
 set_statement
     : SET (SESSION | LOCAL)? 
       (config_param=identifier (TO |EQUAL) config_param_val+=set_statement_value (COMMA config_param_val+=set_statement_value)*
@@ -362,19 +398,20 @@ rule_common
 
 body_rules
     :(on_table 
-        | on_column 
-        | on_sequence
-        | on_database
-        | on_datawrapper_server_lang
-        | on_function
-        | on_large_object
-        | on_schema
-        | on_tablespace
-        | on_type)
-      (grant_to_rule | revoke_from_cascade_restrict)
-      | GRANT obj_name=names_references TO role_name=names_references (WITH ADMIN OPTION)?
-      | REVOKE (ADMIN OPTION FOR)? obj_name=names_references FROM role_name=names_references
-        cascade_restrict?
+    | on_column 
+    | on_sequence
+    | on_database
+    | on_datawrapper_server_lang
+    | on_function
+    | on_large_object
+    | on_schema
+    | on_tablespace
+    | on_type
+    | on_domain)
+    (grant_to_rule | revoke_from_cascade_restrict)
+    | GRANT obj_name=names_references TO role_name=names_references (WITH ADMIN OPTION)?
+    | REVOKE (ADMIN OPTION FOR)? obj_name=names_references FROM role_name=names_references
+      cascade_restrict?
     ;
     
 grant_to_rule
@@ -436,7 +473,12 @@ on_tablespace
 
 on_type
     : (USAGE | ALL PRIVILEGES?)
-      ON TYPE obj_name=names_references 
+        ON TYPE obj_name=names_references 
+    ;
+
+on_domain
+    : (USAGE | ALL PRIVILEGES?)
+        ON DOMAIN obj_name=names_references
     ;
 
 roles_names
@@ -579,7 +621,7 @@ constr_body
             index_parameters where_clause?) 
        | (FOREIGN KEY column_references)? table_references
        | common_constraint
-       | null_false=NOT? null_value=NULL
+       | table_unique_prkey
        | DEFAULT (default_expr_data=data_type | default_expr=value_expression)
       )
       table_deferrable? table_initialy_immed?
@@ -587,7 +629,7 @@ constr_body
 
 common_constraint
     :check_boolean_expression 
-    | table_unique_prkey
+    | null_false=NOT? null_value=NULL
     ;
 
 table_unique_prkey
@@ -698,7 +740,7 @@ cascade_restrict
     ;
 
 collate_identifier
-    : COLLATE collation=identifier
+    : COLLATE collation=schema_qualified_name
     ;
 
 /*
@@ -716,7 +758,7 @@ drop_trigger_statement
     ;
 
 drop_statements
-    :((DATABASE | TABLE| EXTENSION | SCHEMA | SEQUENCE | VIEW | TYPE) | INDEX (CONCURRENTLY)?) if_exist_names_restrict_cascade
+    :((DATABASE | DOMAIN | TABLE| EXTENSION | SCHEMA | SEQUENCE | VIEW | TYPE) | INDEX (CONCURRENTLY)?) if_exist_names_restrict_cascade
     ;
 
 if_exist_names_restrict_cascade
