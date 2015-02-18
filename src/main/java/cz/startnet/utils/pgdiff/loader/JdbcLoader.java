@@ -77,7 +77,7 @@ public class JdbcLoader implements PgCatalogStrings {
     private PreparedStatement prepStatFunctions;
     private PreparedStatement prepStatSequences;
     private PreparedStatement prepStatConstraints;
-    private PreparedStatement prepStatIndecies;
+    private PreparedStatement prepStatIndices;
     private PreparedStatement prepStatColumnsOfSchema;
     
     private Map<Long, String> cachedRolesNamesByOid = new HashMap<>();
@@ -202,7 +202,7 @@ public class JdbcLoader implements PgCatalogStrings {
         prepStatFunctions = connection.prepareStatement(JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA);
         prepStatSequences = connection.prepareStatement(JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA);
         prepStatConstraints = connection.prepareStatement(JdbcQueries.QUERY_CONSTRAINTS_PER_SCHEMA);
-        prepStatIndecies = connection.prepareStatement(JdbcQueries.QUERY_INDECIES_PER_SCHEMA);
+        prepStatIndices = connection.prepareStatement(JdbcQueries.QUERY_INDICES_PER_SCHEMA);
         prepStatColumnsOfSchema = connection.prepareStatement(JdbcQueries.QUERY_COLUMNS_PER_SCHEMA);
     }
 
@@ -243,7 +243,7 @@ public class JdbcLoader implements PgCatalogStrings {
             Log.log(Log.LOG_WARNING, "Could not close prepared statement for constraints", e);
         }
         try {
-            prepStatIndecies.close();
+            prepStatIndices.close();
         } catch (Exception e) {
             Log.log(Log.LOG_WARNING, "Could not close prepared statement for indecies", e);
         }
@@ -302,8 +302,8 @@ public class JdbcLoader implements PgCatalogStrings {
         }
         
         // INDECIES
-        prepStatIndecies.setLong(1, schemaOid);
-        try(ResultSet resIndecies = prepStatIndecies.executeQuery()){
+        prepStatIndices.setLong(1, schemaOid);
+        try(ResultSet resIndecies = prepStatIndices.executeQuery()){
             while (resIndecies.next()){
                 table = s.getTable(resIndecies.getString("table_name"));
                 if (table != null){
