@@ -500,7 +500,13 @@ public final class PgDiff {
                 script, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.dropSequences(
                 script, oldSchema, newSchema, searchPathHelper);
-
+		PgDiffTypes.dropTypes(
+				script, oldSchema, newSchema, searchPathHelper);
+        
+		PgDiffTypes.createTypes(
+				script, oldSchema, newSchema, searchPathHelper);
+		PgDiffTypes.alterTypes(
+				script, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.createSequences(
                 script, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.alterSequences(

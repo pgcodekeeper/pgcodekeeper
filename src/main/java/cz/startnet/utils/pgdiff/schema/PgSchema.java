@@ -303,6 +303,14 @@ public class PgSchema extends PgStatement {
         return getView(name) != null;
     }
     
+    public boolean containsType(final String name) {
+    	return getType(name) != null;
+    }
+    
+    public boolean containsDomain(final String name) {
+    	return getDomain(name) != null;
+    }
+    
     void replaceDef(PgSchema newSchema) {
         if (!getName().equals(newSchema.getName())) {
             throw new IllegalStateException("Replacing schema must have the same name");

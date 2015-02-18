@@ -55,6 +55,15 @@ public class PgType extends PgStatementWithSearchPath {
     public List<PgColumn> getAttrs() {
         return Collections.unmodifiableList(attrs);
     }
+    
+	public PgColumn getAtt(String name) {
+		for (PgColumn att : attrs) {
+			if (att.getName().equals(name)) {
+				return att;
+			}
+		}
+		return null;
+	}
 
     public void addAttr(PgColumn attr) {
         attrs.add(attr);
@@ -320,6 +329,16 @@ public class PgType extends PgStatementWithSearchPath {
         if (form != PgTypeForm.SHELL) {
             sb.append("\n)");
         }
+		sb.append(';');
+		
+		appendOwnerSQL(sb);
+		appendPrivileges(sb);
+		
+		if (comment != null && !comment.isEmpty()) {
+			sb.append("\n\n");
+			appendCommentSql(sb);
+		}
+
         return sb.append(';').toString();
     }
 
