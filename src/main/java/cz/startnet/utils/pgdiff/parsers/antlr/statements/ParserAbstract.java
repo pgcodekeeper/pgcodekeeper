@@ -162,13 +162,12 @@ public abstract class ParserAbstract {
                             .constr_body().default_expr_data));
                 }
 
-                if (column_constraint.constr_body().common_constraint().null_value != null) {
-                    if (column_constraint.constr_body().common_constraint().null_false != null) {
-                        col.setNullValue(false);
-                    } else {
-                        col.setNullValue(true);
-                    }
-                }
+				if (column_constraint.constr_body().common_constraint() != null) {
+					if (column_constraint.constr_body().common_constraint().null_value != null) {
+						col.setNullValue(column_constraint.constr_body()
+								.common_constraint().null_false == null);
+					}
+				}
             }
             if (colCtx.datatype != null) {
 //                col.setType(getFullCtxText(colCtx.datatype));
