@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.PartialExporterTest;
@@ -75,8 +75,8 @@ public class DifferTest {
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
         
-        File sourceFile = ApgdiffTestUtils.getFileFromRes(PartialExporterTest.class.getResource(sourceFilename));
-        File targetFile = ApgdiffTestUtils.getFileFromRes(PartialExporterTest.class.getResource(targetFilename));
+        File sourceFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(sourceFilename));
+        File targetFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(targetFilename));
 
         DbSource dbSource = 
                 DbSource.fromFile(ParserClass.getLegacy(null, 1), sourceFile.getAbsolutePath(), UIConsts.UTF_8);
