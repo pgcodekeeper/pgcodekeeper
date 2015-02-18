@@ -188,10 +188,11 @@ public abstract class PgStatement {
         case TABLE:
         case VIEW:
         case FUNCTION:
+        case TYPE:
             break;
         default:
             throw new IllegalStateException("OWNERs allowed only for SCHEMA, "
-                    + "SEQUENCE, TABLE, VIEW, FUNCTION objects.");
+                    + "SEQUENCE, TABLE, TYPE, VIEW, FUNCTION objects.");
         }
         sb.append("\n\nALTER ")
             .append(type)

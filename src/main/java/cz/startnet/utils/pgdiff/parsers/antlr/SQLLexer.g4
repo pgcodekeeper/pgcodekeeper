@@ -217,8 +217,6 @@ IS : I S;
 
 JOIN : J O I N;
 
-KEY: K E Y;
-
 LEADING : L E A D I N G;
 LEFT : L E F T;
 LIKE : L I K E;
@@ -378,6 +376,8 @@ ISODOW : I S O D O W;
 ISOYEAR : I S O Y E A R;
 ISSTRICT: I S S T R I C T;
 
+KEY: K E Y;
+
 LANGUAGE: L A N G U A G E;
 LARGE: L A R G E;
 LAST : L A S T;
@@ -525,7 +525,6 @@ DECIMAL : D E C I M A L; // alias for number
 CHAR : C H A R;
 VARCHAR : V A R C H A R;
 NCHAR : N C H A R;
-NVARCHAR : N V A R C H A R;
 
 DATE : D A T E;
 TIME : T I M E;

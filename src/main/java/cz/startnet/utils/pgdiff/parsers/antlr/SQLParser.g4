@@ -698,7 +698,7 @@ cascade_restrict
     ;
 
 collate_identifier
-    : COLLATE collation=identifier
+    : COLLATE collation=schema_qualified_name
     ;
 
 /*
@@ -799,6 +799,7 @@ nonreserved_keywords
   | ISODOW
   | ISOYEAR
   | ISSTRICT
+  | KEY
   | LANGUAGE
   | LARGE
   | LAST
@@ -915,7 +916,6 @@ nonreserved_keywords
   | INTERVAL
   | NCHAR
   | NUMERIC
-  | NVARCHAR
   | REAL
   | SMALLINT
   | TEXT
@@ -1002,7 +1002,7 @@ network_type
 character_string_type
   : NATIONAL? (CHARACTER | CHAR) VARYING? type_length?
   | NCHAR VARYING? type_length?
-  | (NVARCHAR | VARCHAR) type_length?
+  | VARCHAR type_length?
   | (TEXT | INTERVAL)
   ;
 
