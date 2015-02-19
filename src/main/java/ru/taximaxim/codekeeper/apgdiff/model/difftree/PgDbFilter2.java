@@ -4,6 +4,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -12,6 +13,7 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class PgDbFilter2 {
@@ -107,6 +109,16 @@ public class PgDbFilter2 {
             case SEQUENCE:
                 PgSequence sequenceSrc = ((PgSchema) src).getSequence(el.getName());
                 ((PgSchema) dst).addSequence(sequenceSrc.shallowCopy());
+                break;
+                
+            case TYPE:
+            	PgType typeSrc = ((PgSchema) src).getType(el.getName());
+                ((PgSchema) dst).addType(typeSrc.shallowCopy());
+                break;
+                
+            case DOMAIN:
+            	PgDomain domainSrc = ((PgSchema) src).getDomain(el.getName());
+                ((PgSchema) dst).addDomain(domainSrc.shallowCopy());
                 break;
                 
             case VIEW:

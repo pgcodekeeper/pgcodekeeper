@@ -109,6 +109,12 @@ public class TreeElement {
         case SEQUENCE:
             name = "Sequences";
             break;
+        case TYPE:
+        	name = "Types";
+            break;
+        case DOMAIN:
+        	name = "Domains";
+            break;
         case VIEW:
             name = "Views";
             break;
@@ -204,6 +210,8 @@ public class TreeElement {
         
         case FUNCTION:   return ((PgSchema) parent.getPgStatement(db)).getFunction(name);
         case SEQUENCE:   return ((PgSchema) parent.getPgStatement(db)).getSequence(name);
+        case TYPE: 		 return ((PgSchema) parent.getPgStatement(db)).getType(name);
+        case DOMAIN: 	 return ((PgSchema) parent.getPgStatement(db)).getDomain(name);
         case VIEW:       return ((PgSchema) parent.getPgStatement(db)).getView(name);
         case TABLE:      return ((PgSchema) parent.getPgStatement(db)).getTable(name);
         

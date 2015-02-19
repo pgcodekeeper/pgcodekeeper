@@ -7,6 +7,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -15,6 +16,7 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
@@ -77,6 +79,16 @@ public class DiffTreeApplier {
             for(PgSequence seq : schema.getSequences()) {
                 if(!dstSchema.containsSequence(seq.getName()) && !isNoCopy(seq)) {
                     dstSchema.addSequence(seq.shallowCopy());
+                }
+            }
+            for (PgType type : schema.getTypes()) {
+            	if(!dstSchema.containsType(type.getName()) && !isNoCopy(type)) {
+                    dstSchema.addType(type.shallowCopy());
+                }
+            }
+            for (PgDomain domain : schema.getDomains()) {
+            	if(!dstSchema.containsDomain(domain.getName()) && !isNoCopy(domain)) {
+                    dstSchema.addDomain(domain.shallowCopy());
                 }
             }
             for(PgView view : schema.getViews()) {

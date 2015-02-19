@@ -115,6 +115,38 @@ public final class DiffTree {
             elSchemaRight.addChildNotEmpty(schemaSubRight);
             elSchemaBoth.addChildNotEmpty(schemaSubBoth);
             
+            // types
+            if(schemaLeft != null) {
+                leftSub = schemaLeft.getTypes();
+            }
+            if(schemaRight != null) {
+                rightSub = schemaRight.getTypes();
+            }
+            schemaSubLeft = TreeElement.createContainer(DbObjType.TYPE, DiffSide.LEFT);
+            schemaSubRight = TreeElement.createContainer(DbObjType.TYPE, DiffSide.RIGHT);
+            schemaSubBoth = TreeElement.createContainer(DbObjType.TYPE, DiffSide.BOTH);
+            
+            compareLists(leftSub, rightSub, schemaSubLeft, schemaSubRight, schemaSubBoth);
+            elSchemaLeft.addChildNotEmpty(schemaSubLeft);
+            elSchemaRight.addChildNotEmpty(schemaSubRight);
+            elSchemaBoth.addChildNotEmpty(schemaSubBoth);
+            
+            // domains
+            if(schemaLeft != null) {
+                leftSub = schemaLeft.getDomains();
+            }
+            if(schemaRight != null) {
+                rightSub = schemaRight.getDomains();
+            }
+            schemaSubLeft = TreeElement.createContainer(DbObjType.DOMAIN, DiffSide.LEFT);
+            schemaSubRight = TreeElement.createContainer(DbObjType.DOMAIN, DiffSide.RIGHT);
+            schemaSubBoth = TreeElement.createContainer(DbObjType.DOMAIN, DiffSide.BOTH);
+            
+            compareLists(leftSub, rightSub, schemaSubLeft, schemaSubRight, schemaSubBoth);
+            elSchemaLeft.addChildNotEmpty(schemaSubLeft);
+            elSchemaRight.addChildNotEmpty(schemaSubRight);
+            elSchemaBoth.addChildNotEmpty(schemaSubBoth);
+            
             // view
             if(schemaLeft != null) {
                 leftSub = schemaLeft.getViews();
