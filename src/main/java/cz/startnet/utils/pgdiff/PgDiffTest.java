@@ -258,7 +258,20 @@ public class PgDiffTest {
                     {"add_type_range", false, false, false, false},
                     {"drop_type_range", false, false, false, false},
                     {"type_range_chg", false, false, false, false},
-                    
+                    //Test domain
+                    {"add_domain", false, false, false, false},
+                    {"drop_domain", false, false, false, false},
+                    {"alter_domain_drop_def", false, false, false, false},
+                    {"alter_domain_set_def", false, false, false, false},
+                    {"alter_domain_chg_def", false, false, false, false},
+                    {"alter_domain_set_not_null", false, false, false, false},
+                    {"alter_domain_drop_not_null", false, false, false, false},
+                    {"alter_domain_add_constr", false, false, false, false},
+                    {"alter_domain_drop_constr", false, false, false, false},
+                    {"alter_domain_add_not_valid_constr", false, false, false, false},
+                    {"alter_domain_drop_not_valid_constr", false, false, false, false},
+                    {"drop_domain_data_type", false, false, false, false},
+                    {"drop_domain_collation", false, false, false, false},
                 });
     }
     
