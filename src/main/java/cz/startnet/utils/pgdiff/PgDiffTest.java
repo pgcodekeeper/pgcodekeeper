@@ -243,6 +243,22 @@ public class PgDiffTest {
                     // Test changes in the middle and tail of a simple dependency chain
                     {"depcy_simple2", false, false, false, false},
                     {"dropped_view_recreation", false, false, false, false},
+                    // Test composite type
+                    {"add_type_composite", false, false, false, false},
+                    {"drop_type_composite", false, false, false, false},
+                    {"alter_type_composite_add_attr", false, false, false, false},
+                    {"alter_type_composite_drop_attr", false, false, false, false},
+                    {"alter_type_composite_alter_attr", false, false, false, false},
+                    //Test enum type
+                    {"add_type_enum", false, false, false, false},
+                    {"drop_type_enum", false, false, false, false},
+                    {"type_enum_add_value", false, false, false, false},
+                    {"type_enum_drop_value", false, false, false, false},
+                    //Test range type
+                    {"add_type_range", false, false, false, false},
+                    {"drop_type_range", false, false, false, false},
+                    {"type_range_chg", false, false, false, false},
+                    
                 });
     }
     
@@ -331,7 +347,7 @@ public class PgDiffTest {
     /**
      * Runs single test using class member variables.
      */
-    @Test/*(timeout = 5000)*/
+    @Test(timeout = 5000)
     public void runDiff() throws IOException {
         
         Assume.assumeThat(RUN_DIFF_SKIP_FILES, not(hasItem(fileNameTemplate)));
