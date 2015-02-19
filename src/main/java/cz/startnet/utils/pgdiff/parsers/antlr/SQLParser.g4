@@ -306,31 +306,37 @@ create_type_statement
     :TYPE name=schema_qualified_name (AS(
         LEFT_PAREN (attrs+=table_column_definition (COMMA attrs+=table_column_definition)*)? RIGHT_PAREN
         | ENUM LEFT_PAREN ( enums+=Character_String_Literal (COMMA enums+=Character_String_Literal)* )? RIGHT_PAREN
-        | RANGE LEFT_PAREN SUBTYPE EQUAL subtype_name=schema_qualified_name
-                ( COMMA SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier)?
-                ( COMMA COLLATION EQUAL collation=identifier )?
-                ( COMMA CANONICAL EQUAL canonical_function=identifier )?
-                ( COMMA SUBTYPE_DIFF EQUAL subtype_diff_function=identifier )?
+        | RANGE LEFT_PAREN 
+                (SUBTYPE EQUAL subtype_name=data_type
+                | SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier
+                | COLLATION EQUAL collation=schema_qualified_name
+                | CANONICAL EQUAL canonical_function=schema_qualified_name
+                | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name)? 
+                (COMMA (SUBTYPE EQUAL subtype_name=data_type
+                | SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier
+                | COLLATION EQUAL collation=schema_qualified_name
+                | CANONICAL EQUAL canonical_function=schema_qualified_name
+                | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name))*
             RIGHT_PAREN)
     | LEFT_PAREN
             INPUT EQUAL input_function=schema_qualified_name COMMA
             OUTPUT EQUAL output_function=schema_qualified_name
-            ( COMMA RECEIVE EQUAL receive_function=schema_qualified_name )?
-            ( COMMA SEND EQUAL send_function=schema_qualified_name )?
-            ( COMMA TYPMOD_IN EQUAL type_modifier_input_function=schema_qualified_name )?
-            ( COMMA TYPMOD_OUT EQUAL type_modifier_output_function=schema_qualified_name )?
-            ( COMMA ANALYZE EQUAL analyze_function=schema_qualified_name )?
-            ( COMMA INTERNALLENGTH EQUAL (internallength=signed_numerical_literal | VARIABLE ) )?
-            ( COMMA PASSEDBYVALUE )?
-            ( COMMA ALIGNMENT EQUAL alignment=data_type )?
-            ( COMMA STORAGE EQUAL storage=identifier )?
-            ( COMMA LIKE EQUAL like_type=identifier )?
-            ( COMMA CATEGORY EQUAL category=Character_String_Literal )?
-            ( COMMA PREFERRED EQUAL preferred=truth_value )?
-            ( COMMA DEFAULT EQUAL default_value=Character_String_Literal )?
-            ( COMMA ELEMENT EQUAL element=identifier )?
-            ( COMMA DELIMITER EQUAL delimiter=Character_String_Literal )?
-            ( COMMA COLLATABLE EQUAL collatable=truth_value )?
+            (COMMA (RECEIVE EQUAL receive_function=schema_qualified_name
+            | SEND EQUAL send_function=schema_qualified_name
+            | TYPMOD_IN EQUAL type_modifier_input_function=schema_qualified_name
+            | TYPMOD_OUT EQUAL type_modifier_output_function=schema_qualified_name
+            | ANALYZE EQUAL analyze_function=schema_qualified_name
+            | INTERNALLENGTH EQUAL (internallength=signed_numerical_literal | VARIABLE )
+            | PASSEDBYVALUE
+            | ALIGNMENT EQUAL alignment=data_type
+            | STORAGE EQUAL storage=identifier
+            | LIKE EQUAL like_type=identifier
+            | CATEGORY EQUAL category=Character_String_Literal
+            | PREFERRED EQUAL preferred=truth_value
+            | DEFAULT EQUAL default_value=Character_String_Literal
+            | ELEMENT EQUAL element=identifier
+            | DELIMITER EQUAL delimiter=Character_String_Literal
+            | COLLATABLE EQUAL collatable=truth_value))*
         RIGHT_PAREN)?
     ;
 

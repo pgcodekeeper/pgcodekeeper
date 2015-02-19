@@ -80,11 +80,11 @@ public final class PgDiff {
         PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
                 oldInputStream, arguments.getInCharsetName(),
                 arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers(), ParserClass.getLegacy(null, 1));
+                arguments.isIgnoreSlonyTriggers(), ParserClass.getAntlr(null, 1));
         PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
                 newInputStream, arguments.getInCharsetName(),
                 arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers(), ParserClass.getLegacy(null, 1));
+                arguments.isIgnoreSlonyTriggers(), ParserClass.getAntlr(null, 1));
 
         diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase,
                 oldDatabase, newDatabase);

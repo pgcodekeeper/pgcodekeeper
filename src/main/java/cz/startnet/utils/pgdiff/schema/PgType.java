@@ -108,7 +108,7 @@ public class PgType extends PgStatementWithSearchPath {
     }
 
     public String getCanonical() {
-        return collation;
+        return canonical;
     }
 
     public void setCanonical(String canonical) {
@@ -339,7 +339,7 @@ public class PgType extends PgStatementWithSearchPath {
 			appendCommentSql(sb);
 		}
 
-        return sb.append(';').toString();
+        return sb.toString();
     }
 
     private void appendCompositeDef(StringBuilder sb) {

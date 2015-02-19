@@ -81,45 +81,51 @@ public final class PgDiffTypes {
                 continue;
             }
             sbSQL.setLength(0);
-            
-            StringBuilder atrrSb = new StringBuilder();
-            for (PgColumn attr : newType.getAttrs()) {
-				if (oldType.getAtt(attr.getName()) != null
-						&& !oldType.getAttrs().contains(attr)) {
-					atrrSb.append("\nALTER ATTRIBUTE ").append(attr.getName())
-							.append(" TYPE ")
-							.append(attr.getFullDefinition(false, null))
-							.append(", ");
-            	} else {
-					atrrSb.append("\nADD ATTRIBUTE ").append(attr.getName())
-							.append(" ")
-							.append(attr.getFullDefinition(false, null))
-							.append(", ");
-            	}
-            }
-            for (PgColumn attr : oldType.getAttrs()) {
-            	if (!newType.getAttrs().contains(attr)) {
-            		atrrSb.append("\nDROP ATTRIBUTE ").append(attr.getName())
-							.append(", ");
-            	}
-            }
-            
-            if (atrrSb.length() > 0) {
-				sbSQL.append("\nALTER TYPE ").append(newType.getName())
-						.append(atrrSb).append(";");
-            }
-            
-            for (String enume : newType.getEnums()) {
-            	if (!oldType.getEnums().contains(enume)) {
+            if (newType.getForm().equals(oldType.getForm())) {
+	            StringBuilder atrrSb = new StringBuilder();
+	            for (PgColumn attr : newType.getAttrs()) {
+					PgColumn oldAttr = oldType.getAtt(attr.getName());
+					if (oldAttr != null) {
+						if (!oldAttr.getType().equals(attr.getType())) {
+							atrrSb.append("\n\tALTER ATTRIBUTE ")
+									.append(attr.getName())
+									.append(" TYPE ")
+									.append(attr.getFullDefinition(false, null))
+									.append(", ");
+						}
+					} else {
+						atrrSb.append("\n\tADD ATTRIBUTE ").append(attr.getName())
+								.append(" ")
+								.append(attr.getFullDefinition(false, null))
+								.append(", ");
+	            	}
+	            }
+	            for (PgColumn attr : oldType.getAttrs()) {
+	            	if (newType.getAtt(attr.getName()) == null) {
+	            		atrrSb.append("\n\tDROP ATTRIBUTE ").append(attr.getName())
+								.append(", ");
+	            	}
+	            }
+	            
+	            if (atrrSb.length() > 0) {
+	            	atrrSb.setLength(atrrSb.length() - 2);
 					sbSQL.append("\nALTER TYPE ").append(newType.getName())
-							.append(" ADD VALUE ").append(enume).append(";");
-            	}
+							.append(atrrSb).append(";");
+	            }
+	            
+	            for (String enume : newType.getEnums()) {
+	            	if (!oldType.getEnums().contains(enume)) {
+						sbSQL.append("\nALTER TYPE ").append(newType.getName())
+								.append("\n\tADD VALUE ").append(enume).append(";");
+	            	}
+	            }
             }
-            
-            if (sbSQL.length() == 0) {
+            if (!oldType.equals(newType)
+            		&& sbSQL.length() == 0) {
             	script.addDrop(oldType, null, oldType.getDropSQL());
             	script.addCreate(newType, null, newType.getCreationSQL(), true);
 			} else {
+				script.addStatement(sbSQL.toString());
 				if (!Objects.equals(oldType.getOwner(), newType.getOwner())) {
 					searchPathHelper.outputSearchPath(script);
 					script.addStatement(newType.getOwnerSQL());
