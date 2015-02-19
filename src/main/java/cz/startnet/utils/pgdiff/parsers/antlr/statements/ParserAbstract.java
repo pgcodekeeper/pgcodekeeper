@@ -313,7 +313,7 @@ public abstract class ParserAbstract {
 		}
 		PgConstraint constraint = new PgConstraint(constr_name,
 				getFullCtxText(constr), db.getDefSearchPath());
-		if (constr.common_constraint().check_boolean_expression() != null) {
+		if (constr.common_constraint().check_boolean_expression() != null) {			
 			constraint
 					.setDefinition(getFullCtxText(constr.common_constraint()));
 			return constraint;

@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 import java.nio.file.Path;
 
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_domain_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_def_columnContext;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
@@ -35,6 +36,7 @@ public class AlterDomain extends ParserAbstract {
 			PgConstraint contraint = parseDomainConstraint(ctx.dom_constraint);
 			if (contraint != null) {
 				if (ctx.not_valid != null) {
+					contraint.setDefinition(contraint.getDefinition()+ " NOT VALID");
 					domain.addConstrNotValid(contraint);
 				} else {
 					domain.addConstraint(contraint);
