@@ -83,9 +83,10 @@ public class JdbcLoader implements PgCatalogStrings {
     private Map<Long, String> cachedRolesNamesByOid = new HashMap<>();
     private Map<Long, JdbcType> cachedTypeNamesByOid = new HashMap<>();
     /*
-     * Stores cached results of query "SELECT typmodout(colTypeMod)" for types.<br>
+     * Stores cached results of query "SELECT typmodout(colTypeMod)" for types.
      * Key is the oid of pg_catalog.pg_type table. Inner map stores pairs of colTypeMod 
      * and result of "SELECT typmodout(colTypeMod)" query.
+     * typmodout is type-defined function that converts (colTypeMod) into the value we need.
      */
     private Map<Long, Map<Integer,String>> cachedTypesTypmodouts = new HashMap<>();
     private Map<Long, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<>();
@@ -180,11 +181,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             
             // fill in data types
-            try(ResultSet res = stmnt.executeQuery("SELECT t.oid::bigint, t.typname, t.typlen, "
-                    + "t.typelem::regtype AS castedType, t.typarray, n.nspname, proc.proname, nsp.nspname  "
-                    + "FROM pg_catalog.pg_type t LEFT JOIN pg_catalog.pg_namespace n ON t.typnamespace = n.oid "
-                    + "LEFT JOIN pg_catalog.pg_proc proc ON proc.oid = t.typmodout "
-                    + "LEFT JOIN pg_catalog.pg_namespace nsp ON t.typnamespace = nsp.oid")){
+            try(ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_TYPES_FOR_CACHE_ALL)){
                 while (res.next()){
                     JdbcType type = new JdbcType(res.getString("typname"), res.getString("castedType"), 
                             res.getLong("typarray"), res.getInt("typlen"), res.getString("proname"),
