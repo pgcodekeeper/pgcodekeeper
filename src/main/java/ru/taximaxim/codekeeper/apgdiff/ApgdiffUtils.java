@@ -10,10 +10,6 @@ import org.eclipse.core.runtime.FileLocator;
 
 public class ApgdiffUtils {
 
-    
-    private ApgdiffUtils() {
-    }
-
     public static File getFileFromOsgiRes(URL resourceUrl) throws URISyntaxException, IOException{
         URI uri;
         if (resourceUrl.getProtocol().equals("file")){
@@ -23,5 +19,8 @@ public class ApgdiffUtils {
         }
         
         return new File(uri);
+    }
+
+    private ApgdiffUtils() {
     }
 }

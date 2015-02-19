@@ -8,6 +8,14 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 
+/**
+ * For every field in this class that starts with 'QUERY_'
+ * the static initializer tries to find a file named
+ * %FIELD_NAME%.sql in this package and assign its contents to the field.<br>
+ * Similar to {@link org.eclipse.osgi.util.NLS}, OSGi localization classes.
+ * 
+ * @author levsha_aa
+ */
 public final class JdbcQueries {
     
     private final static String RES_ENCODING = ApgdiffConsts.UTF_8;
@@ -28,7 +36,7 @@ public final class JdbcQueries {
     
     static {
         for (Field f : JdbcQueries.class.getFields()) {
-            if (!f.getName().startsWith("QUERY_")) {
+            if (!f.getName().startsWith("QUERY_") || !f.isAccessible()) {
                 continue;
             }
             
@@ -38,7 +46,8 @@ public final class JdbcQueries {
                         Charset.forName(RES_ENCODING));
                 f.set(null, query);
             } catch (Exception ex) {
-                Log.log(Log.LOG_ERROR, "Error while loading JDBC SQL Queries resources!", ex);
+                Log.log(Log.LOG_ERROR,
+                        "Error while loading JDBC SQL Queries resource: " + f.getName(), ex);
             }
         }
     }
