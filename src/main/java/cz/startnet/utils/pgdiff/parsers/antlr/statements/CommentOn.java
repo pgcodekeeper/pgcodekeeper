@@ -104,6 +104,9 @@ public class CommentOn extends ParserAbstract {
             // type
         } else if (ctx.TYPE() != null) {
         	db.getSchema(schemaName).getType(name).setComment(comment);
+        	// domain
+        } else if (ctx.DOMAIN() != null) {
+        	db.getSchema(schemaName).getDomain(name).setComment(comment);
         }
         return null;
     }

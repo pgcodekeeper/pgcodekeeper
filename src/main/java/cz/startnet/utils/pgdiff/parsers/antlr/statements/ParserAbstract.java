@@ -13,6 +13,7 @@ import cz.startnet.utils.pgdiff.parsers.Parser;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Domain_constraintContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
@@ -161,13 +162,12 @@ public abstract class ParserAbstract {
                             .constr_body().default_expr_data));
                 }
 
-                if (column_constraint.constr_body().null_value != null) {
-                    if (column_constraint.constr_body().null_false != null) {
-                        col.setNullValue(false);
-                    } else {
-                        col.setNullValue(true);
-                    }
-                }
+				if (column_constraint.constr_body().common_constraint() != null) {
+					if (column_constraint.constr_body().common_constraint().null_value != null) {
+						col.setNullValue(column_constraint.constr_body()
+								.common_constraint().null_false == null);
+					}
+				}
             }
             if (colCtx.datatype != null) {
 //                col.setType(getFullCtxText(colCtx.datatype));
@@ -297,7 +297,7 @@ public abstract class ParserAbstract {
             List<PgConstraint> result) {
         PgConstraint constr = null;
         // skip null and def values, it parsed to column def
-        if (column_constraint.constr_body().null_value != null
+        if (column_constraint.constr_body().common_constraint().null_value != null
                 || column_constraint.constr_body().default_expr != null
                 || column_constraint.constr_body().default_expr_data != null) {
             return;
@@ -305,4 +305,19 @@ public abstract class ParserAbstract {
         constr = getTableConstraint(column_constraint);
         result.add(constr);
     }
+    
+    public PgConstraint parseDomainConstraint(Domain_constraintContext constr) {
+		String constr_name = "";
+		if (constr.name != null) {
+			constr_name = getName(constr.name);
+		}
+		PgConstraint constraint = new PgConstraint(constr_name,
+				getFullCtxText(constr), db.getDefSearchPath());
+		if (constr.common_constraint().check_boolean_expression() != null) {
+			constraint
+					.setDefinition(getFullCtxText(constr.common_constraint()));
+			return constraint;
+		}
+		return null;
+	}
 }

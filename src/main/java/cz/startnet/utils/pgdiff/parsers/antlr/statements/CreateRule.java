@@ -63,6 +63,9 @@ public class CreateRule extends ParserAbstract {
         } else if (ctx.body_rule.on_type() != null) {
         	type = DbObjType.TYPE;
         	obj_name = ctx.body_rule.on_type().obj_name.name;
+        } else if (ctx.body_rule.on_domain() != null) {
+        	type = DbObjType.DOMAIN;
+        	obj_name = ctx.body_rule.on_domain().obj_name.name;
         }
 
         
@@ -111,6 +114,9 @@ public class CreateRule extends ParserAbstract {
             break;
         case TYPE:
         	statement = db.getSchema(schemaName).getType(firstPart);
+        	break;
+        case DOMAIN:
+        	statement = db.getSchema(schemaName).getDomain(firstPart);
         	break;
         default:
             break;
