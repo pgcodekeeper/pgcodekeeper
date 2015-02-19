@@ -189,6 +189,7 @@ public abstract class PgStatement {
         case VIEW:
         case FUNCTION:
         case TYPE:
+        case DOMAIN:
             break;
         default:
             throw new IllegalStateException("OWNERs allowed only for SCHEMA, "

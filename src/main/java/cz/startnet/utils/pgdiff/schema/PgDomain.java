@@ -109,6 +109,14 @@ public class PgDomain extends PgStatementWithSearchPath {
                     .append(' ').append(constr.getDefinition()).append(';');
         }
         
+        appendOwnerSQL(sb);
+		appendPrivileges(sb);
+		
+		if (comment != null && !comment.isEmpty()) {
+			sb.append("\n\n");
+			appendCommentSql(sb);
+		}
+		
         return sb.toString();
     }
 

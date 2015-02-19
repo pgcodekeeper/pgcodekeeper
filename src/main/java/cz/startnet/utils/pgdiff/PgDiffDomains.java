@@ -30,6 +30,14 @@ public final class PgDiffDomains {
                 
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeCreationSql(script, null, domain, true);
+            } else {
+            	PgDomain oldDomain = oldSchema.getDomain(domain.getName());
+            	if (oldDomain != null 
+            			&& (!Objects.equals(oldDomain.getDataType(), domain.getDataType())
+    					|| !Objects.equals(oldDomain.getCollation(), domain.getCollation()))) {
+            		searchPathHelper.outputSearchPath(script);
+            		PgDiff.writeCreationSql(script, null, domain, true);
+            	}
             }
         }
 	}
@@ -54,6 +62,14 @@ public final class PgDiffDomains {
             if (!newSchema.containsDomain(domain.getName())) {
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeDropSql(script, null, domain);
+            } else {
+            	PgDomain newDomain = newSchema.getDomain(domain.getName());
+            	if (newDomain != null 
+            			&& (!Objects.equals(newDomain.getDataType(), domain.getDataType())
+            			|| !Objects.equals(newDomain.getCollation(), domain.getCollation()))) {
+            		searchPathHelper.outputSearchPath(script);
+            		PgDiff.writeDropSql(script, null, domain);
+            	}
             }
         }
 	}
@@ -80,6 +96,10 @@ public final class PgDiffDomains {
 
             if (oldDomain == null) {
                 continue;
+            }
+            if (!Objects.equals(newDomain.getDataType(), oldDomain.getDataType())
+        			|| !Objects.equals(newDomain.getCollation(), oldDomain.getCollation())) {
+            	continue;
             }
             sbSQL.setLength(0);
             
