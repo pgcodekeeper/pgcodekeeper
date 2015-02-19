@@ -43,6 +43,8 @@ import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgType;
+import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
@@ -666,6 +668,16 @@ class PgDB8 extends PgDatabaseObjectCreator {
     PgDatabase d = new PgDatabase();
     PgSchema schema = d.getDefaultSchema();
     schema.setComment("'Standard public schema'");
+    
+    PgType type = new PgType("testtt", PgTypeForm.COMPOSITE, "", "SET search_path = public, pg_catalog;");
+    PgColumn col = new PgColumn("a");
+    col.setType("integer");
+    type.addAttr(col);
+    col = new PgColumn("b");
+    col.setType("text");
+    type.addAttr(col);
+    type.setOwner("madej");
+    schema.addType(type);
     
     schema = new PgSchema("``54'253-=9!@#$%^&*()__<>?:\"{}[];',./", "");
     d.addSchema(schema);
