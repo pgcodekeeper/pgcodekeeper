@@ -86,7 +86,7 @@ public class CreateType extends ParserAbstract {
 		if (ctx.internallength != null) {
 			type.setInternalLength(getFullCtxText(ctx.internallength));
 		}
-		type.setPassedByValue(ctx.PASSEDBYVALUE() != null);
+		type.setPassedByValue(!ctx.PASSEDBYVALUE().isEmpty());
 		if (ctx.alignment != null) {
 			type.setAlignment(getFullCtxText(ctx.alignment));
 		}
