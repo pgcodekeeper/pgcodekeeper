@@ -517,11 +517,6 @@ public class JdbcLoader implements PgCatalogStrings {
     }
     
     private PgView getView(ResultSet res, String schemaName) throws SQLException {
-        for(String depType : (String[]) res.getArray("deptype").getArray()){
-            if (depType.equals("e")){
-                return null;
-            }
-        }
         String viewName = res.getString(CLASS_RELNAME);
         
         String viewDef = res.getString("definition").trim();
@@ -602,11 +597,6 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private PgTable getTable(ResultSet res, String schemaName) throws SQLException{
-        for(String depType : (String[]) res.getArray("deptype").getArray()){
-            if (depType.equals("e")){
-                return null;
-            }
-        }
         String tableName = res.getString(CLASS_RELNAME);
         String tableOwner = getRoleNameByOid(res.getLong(CLASS_RELOWNER));
         StringBuilder tableDef = new StringBuilder(); 
@@ -867,12 +857,6 @@ public class JdbcLoader implements PgCatalogStrings {
      *         proisstrict AS isnullonnull FROM pg_catalog.pg_proc WHERE pronamespace = ?"
      */
     private PgFunction getFunction(ResultSet res, String schemaName) throws SQLException{
-        for(String depType : (String[]) res.getArray("deps").getArray()){
-            if (depType.equals("e")){
-                return null;
-            }
-        }
-        
         String functionName = res.getString("proname");
         PgFunction f = new PgFunction(functionName, "", getSearchPath(schemaName));
         

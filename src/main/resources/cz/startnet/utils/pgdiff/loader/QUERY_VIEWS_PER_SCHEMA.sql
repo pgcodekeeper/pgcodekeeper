@@ -1,9 +1,15 @@
+WITH extension_deps AS (
+    SELECT dep.objid 
+    FROM pg_catalog.pg_depend dep 
+    WHERE refclassid = 'pg_extension'::regclass 
+        AND dep.deptype = 'e'
+)
+
 SELECT relname,
        relacl,
        relowner::bigint,
        pg_get_viewdef(c.oid) AS definition,
        d.description AS comment,
-       array_agg(dep.deptype) AS deptype,
        subselect.column_names,
        subselect.column_comments,
        subselect.column_defaults
@@ -28,14 +34,6 @@ LEFT JOIN
      GROUP BY attrelid) subselect ON subselect.attrelid = c.oid
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid
     AND d.objsubid = 0
-LEFT JOIN pg_catalog.pg_depend dep ON dep.objid = c.oid
-WHERE relkind = 'v'
-    AND relnamespace = ?
-GROUP BY relname,
-         relowner,
-         definition,
-         comment,
-         relacl,
-         subselect.column_names,
-         subselect.column_comments,
-         subselect.column_defaults
+WHERE relnamespace = ?
+    AND relkind = 'v'
+    AND c.oid NOT IN (SELECT objid FROM extension_deps)

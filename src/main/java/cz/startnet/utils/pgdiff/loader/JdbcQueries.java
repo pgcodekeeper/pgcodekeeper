@@ -36,7 +36,7 @@ public final class JdbcQueries {
     
     static {
         for (Field f : JdbcQueries.class.getFields()) {
-            if (!f.getName().startsWith("QUERY_") || !f.isAccessible()) {
+            if (!f.getName().startsWith("QUERY_")) {
                 continue;
             }
             

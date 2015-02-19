@@ -1,3 +1,10 @@
+WITH extension_deps AS (
+    SELECT dep.objid 
+    FROM pg_catalog.pg_depend dep 
+    WHERE refclassid = 'pg_extension'::regclass 
+        AND dep.deptype = 'e'
+)
+
 SELECT subselectColumns.oid::bigint,
        subselectColumns.relname,
        subselectColumns.relowner::bigint,
@@ -13,8 +20,7 @@ SELECT subselectColumns.oid::bigint,
        subselectColumns.col_acl,
        comments.description AS table_comment,
        subselectInherits.inherited,
-       subselectColumns.reloptions,
-       array_agg(dep.deptype) AS deptype
+       subselectColumns.reloptions
 FROM
     (SELECT columnsData.oid,
             columnsData.relname,
@@ -59,7 +65,7 @@ FROM
               AND depseq.refobjid != c.oid
           WHERE c.relnamespace = ?
               AND c.relkind = 'r'
-              AND c.oid = attr.attrelid
+              AND c.oid NOT IN (SELECT objid FROM extension_deps)
           ORDER BY attr.attnum) columnsData
      GROUP BY columnsData.oid,
               columnsData.relname,
@@ -78,20 +84,3 @@ LEFT JOIN
           FROM pg_catalog.pg_inherits inh
           ORDER BY inhrelid, inh.inhseqno ) subinh
      GROUP BY subinh.inhrelid ) subselectInherits ON subselectInherits.inhrelid = subselectColumns.oid
-JOIN pg_catalog.pg_depend dep ON subselectColumns.oid = dep.objid
-GROUP BY subselectColumns.oid,
-         subselectColumns.relname,
-         subselectColumns.relowner,
-         subselectColumns.aclArray,
-         subselectColumns.col_numbers,
-         subselectColumns.col_names,
-         subselectColumns.col_types,
-         subselectColumns.col_defaults,
-         subselectColumns.col_comments,
-         subselectColumns.col_typemod,
-         subselectColumns.col_notnull,
-         subselectColumns.seqs,
-         subselectColumns.col_acl,
-         table_comment,
-         inherited,
-         subselectColumns.reloptions

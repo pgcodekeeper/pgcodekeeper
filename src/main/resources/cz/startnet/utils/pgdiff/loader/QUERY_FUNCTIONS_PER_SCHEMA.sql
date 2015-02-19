@@ -1,8 +1,13 @@
+WITH extension_deps AS (
+    SELECT dep.objid 
+    FROM pg_catalog.pg_depend dep 
+    WHERE refclassid = 'pg_extension'::regclass 
+        AND dep.deptype = 'e'
+)
+
 SELECT proname,
         proowner,
-        (SELECT lanname
-         FROM pg_catalog.pg_language l
-         WHERE l.oid = prolang) lang_name,
+        l.lanname AS lang_name,
         prosrc,
         proiswindow,
         provolatile,
@@ -22,34 +27,10 @@ SELECT proname,
         proargdefaults,
         proacl AS aclArray,
         d.description AS comment,
-        proretset,
-        array_agg(dep.deptype) AS deps
+        proretset
 FROM pg_catalog.pg_proc p
 LEFT JOIN pg_catalog.pg_description d ON d.objoid = p.oid
-LEFT JOIN pg_catalog.pg_depend dep ON p.oid = dep.objid
+LEFT JOIN pg_catalog.pg_language l ON l.oid = p.prolang
 WHERE pronamespace = ?
     AND proisagg = FALSE
-GROUP BY p.oid,
-         proname,
-         proowner,
-         lang_name,
-         prosrc,
-         proiswindow,
-         provolatile,
-         proleakproof,
-         proisstrict,
-         prosecdef,
-         procost,
-         prorows,
-         proconfig,
-         probin,
-         prorettype,
-         proowner,
-         proallargtypes,
-         proargmodes,
-         proargnames,
-         proarguments,
-         proargdefaults,
-         comment,
-         aclArray,
-         proretset
+    AND p.oid NOT IN (SELECT objid FROM extension_deps)
