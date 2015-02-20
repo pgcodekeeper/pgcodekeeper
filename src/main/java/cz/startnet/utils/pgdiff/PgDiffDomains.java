@@ -133,24 +133,18 @@ public final class PgDiffDomains {
 			compareConstraints(newDomain.getName(), oldDomain.getConstrsNotValid(),
 					newDomain.getConstrsNotValid(), sbSQL);
 			
-			if (!oldDomain.equals(newDomain)
-            		&& sbSQL.length() == 0) {
-            	script.addDrop(oldDomain, null, oldDomain.getDropSQL());
-            	script.addCreate(newDomain, null, newDomain.getCreationSQL(), true);
-			} else {
-				if (sbSQL.length() > 0) {
-					script.addStatement(sbSQL.toString());
-				}
-				if (!Objects.equals(oldDomain.getOwner(), newDomain.getOwner())) {
-					searchPathHelper.outputSearchPath(script);
-					script.addStatement(newDomain.getOwnerSQL());
-				}
-				if (!oldDomain.getPrivileges().equals(newDomain.getPrivileges())) {
-					searchPathHelper.outputSearchPath(script);
-					script.addStatement(newDomain.getPrivilegesSQL());
-				}
-				PgDiff.diffComments(oldDomain, newDomain, script);
-			}			
+			if (sbSQL.length() > 0) {
+				script.addStatement(sbSQL.toString());
+			}
+			if (!Objects.equals(oldDomain.getOwner(), newDomain.getOwner())) {
+				searchPathHelper.outputSearchPath(script);
+				script.addStatement(newDomain.getOwnerSQL());
+			}
+			if (!oldDomain.getPrivileges().equals(newDomain.getPrivileges())) {
+				searchPathHelper.outputSearchPath(script);
+				script.addStatement(newDomain.getPrivilegesSQL());
+			}
+			PgDiff.diffComments(oldDomain, newDomain, script);
 		}
 	}
 	
