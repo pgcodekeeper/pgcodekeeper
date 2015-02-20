@@ -138,7 +138,9 @@ public final class PgDiffDomains {
             	script.addDrop(oldDomain, null, oldDomain.getDropSQL());
             	script.addCreate(newDomain, null, newDomain.getCreationSQL(), true);
 			} else {
-				script.addStatement(sbSQL.toString());
+				if (sbSQL.length() > 0) {
+					script.addStatement(sbSQL.toString());
+				}
 				if (!Objects.equals(oldDomain.getOwner(), newDomain.getOwner())) {
 					searchPathHelper.outputSearchPath(script);
 					script.addStatement(newDomain.getOwnerSQL());

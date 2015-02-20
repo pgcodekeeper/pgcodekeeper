@@ -125,7 +125,9 @@ public final class PgDiffTypes {
             	script.addDrop(oldType, null, oldType.getDropSQL());
             	script.addCreate(newType, null, newType.getCreationSQL(), true);
 			} else {
-				script.addStatement(sbSQL.toString());
+				if (sbSQL.length() > 0) {
+					script.addStatement(sbSQL.toString());
+				}
 				if (!Objects.equals(oldType.getOwner(), newType.getOwner())) {
 					searchPathHelper.outputSearchPath(script);
 					script.addStatement(newType.getOwnerSQL());

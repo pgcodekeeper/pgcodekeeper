@@ -317,6 +317,20 @@ public class ModelExporter {
                     "SEQUENCE");
             break;
             
+        case TYPE:
+        	testParentSchema(elParent);
+            dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew), 
+                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
+                    "TYPE");
+        	break;
+        	
+        case DOMAIN:
+        	testParentSchema(elParent);
+            dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew), 
+                    new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
+                    "DOMAIN");
+        	break;
+            
         case VIEW:
             testParentSchema(elParent);
             dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew), 
@@ -410,6 +424,8 @@ public class ModelExporter {
             }
             dumpFunctions(schema.getFunctions(), schemaDir);
             dumpObjects(schema.getSequences(), schemaDir, "SEQUENCE");
+            dumpObjects(schema.getTypes(), schemaDir, "TYPE");
+            dumpObjects(schema.getDomains(), schemaDir, "DOMAIN");
             dumpTables(schema.getTables(), schemaDir);
             dumpObjects(schema.getViews(), schemaDir, "VIEW");
 
@@ -568,6 +584,8 @@ public class ModelExporter {
             break;
             
         case SEQUENCE:
+        case TYPE:
+        case DOMAIN:
         case VIEW:
         case TABLE:
         case FUNCTION:
