@@ -19,6 +19,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn.ViewReference;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -28,6 +29,7 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class DepcyGraph {
@@ -90,6 +92,16 @@ public class DepcyGraph {
             for(PgSequence seq : schema.getSequences()) {
                 graph.addVertex(seq);
                 graph.addEdge(seq, schema);
+            }
+            
+            for (PgType type : schema.getTypes()) {
+            	graph.addVertex(type);
+                graph.addEdge(type, schema);
+            }
+            
+            for (PgDomain domain : schema.getDomains()) {
+            	graph.addVertex(domain);
+                graph.addEdge(domain, schema);
             }
             
             for(PgTable table : schema.getTables()) {
