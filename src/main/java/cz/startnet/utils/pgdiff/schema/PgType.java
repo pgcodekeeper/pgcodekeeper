@@ -450,6 +450,9 @@ public class PgType extends PgStatementWithSearchPath {
         for (String enum_ : enums) {
             copy.addEnum(enum_);
         }
+        for (PgPrivilege priv : privileges) {
+        	copy.addPrivilege(priv.shallowCopy());
+        }
         copy.setSubtype(getSubtype());
         copy.setSubtypeOpClass(getSubtypeOpClass());
         copy.setCollation(getCollation());
@@ -473,6 +476,8 @@ public class PgType extends PgStatementWithSearchPath {
         copy.setElement(getElement());
         copy.setDelimiter(getDelimiter());
         copy.setCollatable(getCollatable());
+        copy.setOwner(getOwner());
+        copy.setComment(getComment());
         return copy;
     }
 
@@ -515,7 +520,10 @@ public class PgType extends PgStatementWithSearchPath {
                 && Objects.equals(defaultValue, type.getDefaultValue())
                 && Objects.equals(element, type.getElement())
                 && Objects.equals(delimiter, type.getDelimiter())
-                && Objects.equals(collatable, type.getCollatable());
+                && Objects.equals(collatable, type.getCollatable())
+                && Objects.equals(owner, type.getOwner())
+                && privileges.equals(type.privileges)
+                && Objects.equals(comment, type.getComment());
     }
 
     @Override
@@ -550,6 +558,9 @@ public class PgType extends PgStatementWithSearchPath {
         result = prime * result + ((element == null) ? 0 : element.hashCode());
         result = prime * result + ((delimiter == null) ? 0 : delimiter.hashCode());
         result = prime * result + ((collatable == null) ? 0 : collatable.hashCode());
+        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
+        result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
 }

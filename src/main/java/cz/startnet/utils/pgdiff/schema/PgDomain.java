@@ -132,11 +132,16 @@ public class PgDomain extends PgStatementWithSearchPath {
         copy.setCollation(getCollation());
         copy.setDefaultValue(getDefaultValue());
         copy.setNotNull(isNotNull());
+        copy.setOwner(getOwner());
+        copy.setComment(getComment());
         for (PgConstraint constr : constraints) {
             copy.addConstraint(constr.shallowCopy());
         }
         for (PgConstraint constr : constrsNotValid) {
             copy.addConstrNotValid(constr.shallowCopy());
+        }
+        for (PgPrivilege priv : privileges) {
+        	copy.addPrivilege(priv.shallowCopy());
         }
         return copy;
     }
@@ -160,7 +165,10 @@ public class PgDomain extends PgStatementWithSearchPath {
                 && Objects.equals(defaultValue, dom.getDefaultValue())
                 && notNull == dom.isNotNull()
                 && constraints.equals(dom.constraints)
-                && constrsNotValid.equals(dom.constrsNotValid);
+                && constrsNotValid.equals(dom.constrsNotValid)
+                && Objects.equals(owner, dom.getOwner())
+                && privileges.equals(dom.privileges)
+                && Objects.equals(comment, dom.getComment());
     }
 
     @Override
@@ -175,6 +183,9 @@ public class PgDomain extends PgStatementWithSearchPath {
         result = prime * result + (notNull ? itrue : ifalse);
         result = prime * result + ((constraints == null) ? 0 : constraints.hashCode());
         result = prime * result + ((constrsNotValid == null) ? 0 : constrsNotValid.hashCode());
+        result = prime * result + ((owner == null) ? 0 : owner.hashCode());
+        result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
 }
