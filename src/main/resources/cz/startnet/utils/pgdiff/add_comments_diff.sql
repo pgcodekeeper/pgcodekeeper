@@ -2,6 +2,10 @@ COMMENT ON DATABASE current_database() IS 'comments database';
 
 COMMENT ON SCHEMA "public" IS 'public schema';
 
+COMMENT ON TYPE typ_composite IS 'test type';
+
+COMMENT ON DOMAIN dom IS 'test domain';
+
 COMMENT ON SEQUENCE test_id_seq IS 'test table sequence';
 
 COMMENT ON TABLE test IS 'test table';

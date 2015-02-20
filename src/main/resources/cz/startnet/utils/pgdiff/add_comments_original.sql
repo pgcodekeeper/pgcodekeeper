@@ -5,6 +5,17 @@ ALTER PROCEDURAL LANGUAGE plpgsql OWNER TO postgres;
 
 SET search_path = public, pg_catalog;
 
+CREATE TYPE typ_composite AS (
+    key character varying(80) COLLATE pg_catalog."ru_RU.utf8",
+    val text COLLATE pg_catalog."en_GB"
+);
+
+ALTER TYPE typ_composite OWNER TO fordfrog;
+
+CREATE DOMAIN dom AS integer NOT NULL DEFAULT (-1)
+	CONSTRAINT dom_check CHECK ((VALUE <> 0));
+	
+ALTER DOMAIN dom OWNER TO fordfrog;
 
 CREATE FUNCTION test_fnc(arg character varying) RETURNS boolean
     LANGUAGE plpgsql
