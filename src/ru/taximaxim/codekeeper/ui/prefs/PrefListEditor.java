@@ -1,19 +1,17 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.ListViewer;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
@@ -23,7 +21,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
@@ -33,7 +30,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class PrefListEditor extends Composite {
     private ListViewer listViewerObjs;
-    private List<String> objsList = new LinkedList<>();
+    private LinkedList<String> objsList = new LinkedList<>();
     private final boolean doSorting;
     private Button upBtn;
     private Button downBtn;
@@ -53,10 +50,6 @@ public class PrefListEditor extends Composite {
         this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         
         populateUiContent(this);
-    }
-    
-    public void addListener(Listener e) {
-        listeners.add(e);
     }
     
     private void populateUiContent(Composite parent){
@@ -90,26 +83,12 @@ public class PrefListEditor extends Composite {
         listViewerObjs.setContentProvider(new ArrayContentProvider());
         listViewerObjs.setLabelProvider(new LabelProvider());
 
-        listViewerObjs.addSelectionChangedListener(new ISelectionChangedListener() {
-            
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                for (Listener list: listeners) {
-                    Event ev = new Event();
-                    ev.data = ((IStructuredSelection)event.getSelection()).getFirstElement();
-                    list.handleEvent(ev);
-                }
-            }
-        });
-        
         Composite comp = new Composite(parent, SWT.NONE);
         GridLayout gridLayout = new GridLayout(3, false);
         gridLayout.marginHeight = 0;
         gridLayout.marginWidth = 0;
         comp.setLayout(gridLayout);
         comp.setLayoutData(new GridData());
-        
-        
         
         btnDelete = new Button(comp, SWT.PUSH);
         btnDelete.setLayoutData(new GridData());
@@ -123,8 +102,6 @@ public class PrefListEditor extends Composite {
             public void widgetSelected(SelectionEvent e) {
                 deleteSelected();
             }
-
-			
         });
         
         upBtn = new Button(comp, SWT.PUSH);
@@ -133,16 +110,29 @@ public class PrefListEditor extends Composite {
                         FILE.ICONUP))));
         upBtn.setLayoutData(new GridData(GridData.END));
         upBtn.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
+                if (listViewerObjs.getSelection().isEmpty()) {
+                    return;
+                }
                 IStructuredSelection selection = (IStructuredSelection) listViewerObjs
                         .getSelection();
-                Object objToMove = selection.getFirstElement();
-                if (objToMove != null) {
-                    int i = objsList.indexOf(objToMove);
-                    if (i > 0) {
-                        Collections.rotate(objsList.subList(i - 1, i + 1), 1);
-                        listViewerObjs.refresh();
+                String sel = (String) selection.getFirstElement();
+                ListIterator<String> it = objsList.listIterator();
+                while (it.hasNext()) {
+                    String match = it.next();
+                    if (match == sel) {
+                        it.previous();
+                        if (it.hasPrevious()) {
+                            String prev = it.previous();
+                            it.set(sel);
+                            it.next();
+                            it.next();
+                            it.set(prev);
+                            listViewerObjs.refresh();
+                        }
+                        return;
                     }
                 }
             }
@@ -154,16 +144,28 @@ public class PrefListEditor extends Composite {
                         FILE.ICONDOWN))));
         downBtn.setLayoutData(new GridData(GridData.END));
         downBtn.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
+                if (listViewerObjs.getSelection().isEmpty()) {
+                    return;
+                }
                 IStructuredSelection selection = (IStructuredSelection) listViewerObjs
                         .getSelection();
-                Object objToMove = selection.getFirstElement();
-                if (objToMove != null) {
-                    int i = objsList.indexOf(objToMove);
-                    if (i < objsList.size() - 1) {
-                        Collections.rotate(objsList.subList(i, i + 2), 1);
-                        listViewerObjs.refresh();
+                String sel = (String) selection.getFirstElement();
+                ListIterator<String> it = objsList.listIterator();
+                while (it.hasNext()) {
+                    String match = it.next();
+                    if (match == sel) {
+                        if (it.hasNext()) {
+                            String next = it.next();
+                            it.set(sel);
+                            it.previous();
+                            it.previous();
+                            it.set(next);
+                            listViewerObjs.refresh();
+                        }
+                        return;
                     }
                 }
             }
@@ -196,6 +198,10 @@ public class PrefListEditor extends Composite {
         return objsList;
     }
     
+    public ListViewer getListViewer() {
+        return listViewerObjs;
+    }
+    
     public Button getDelDtn() {
     	return btnDelete;
     }
@@ -204,7 +210,7 @@ public class PrefListEditor extends Composite {
     	return btnAdd;
     }
     
-    public void setInputList(List<String> list){
+    public void setInputList(LinkedList<String> list){
         objsList = list;
         listViewerObjs.setInput(objsList);
         listViewerObjs.refresh();

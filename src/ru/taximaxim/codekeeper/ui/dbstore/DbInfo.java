@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class DbInfo {
+class DbInfo {
     
     private static final int DBINFO_LINE_PARTS_COUNT = 6;
     /**

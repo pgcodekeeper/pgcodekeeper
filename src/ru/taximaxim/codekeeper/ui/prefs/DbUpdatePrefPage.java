@@ -1,9 +1,8 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
@@ -105,7 +104,7 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
     }
     
     private void updateList() {
-        List<String> list = new ArrayList<>();
+        LinkedList<String> list = new LinkedList<>();
         try {
             list = history.getHistory();
         } catch (IOException e) {

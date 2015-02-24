@@ -2,7 +2,7 @@ package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -11,6 +11,10 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -23,8 +27,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
@@ -40,7 +42,8 @@ public class DbStoreEditorDialog extends TrayDialog {
     private final Map<String, DbInfo> store;
     
     private final IPreferenceStore prefStore;
-    
+
+    private PrefListEditor listEdit;
     private Button btnSave;
     private DbPicker grpDbData;
     
@@ -53,8 +56,6 @@ public class DbStoreEditorDialog extends TrayDialog {
         }
     };
 
-	private PrefListEditor listEdit;
-    
     public String getPreferenceString() {
         return DbInfo.storeToPreference(store, listEdit.getList());
     }
@@ -130,31 +131,34 @@ public class DbStoreEditorDialog extends TrayDialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 150;
         listEdit.setLayoutData(gd);
-        listEdit.setInputList(new ArrayList<String>(store.keySet()));
-        listEdit.addListener(new Listener() {
-
+        listEdit.getListViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+            
             @Override
-            public void handleEvent(Event event) {
-                if (event.data != null) {
-                    DbInfo db = store.get(event.data);
-                    if(db == null) {
-                        db = DbInfo.getEmpty(""); //$NON-NLS-1$
-                    }
-                    grpDbData.getLblName().setText(db.name);
-                    grpDbData.getTxtDbName().setText(db.dbname);
-                    grpDbData.getTxtDbName().selectAll();
-                    grpDbData.getTxtDbName().setFocus();
-                    grpDbData.getTxtDbUser().setText(db.dbuser);
-                    grpDbData.getTxtDbPass().setText(db.dbpass);
-                    grpDbData.getTxtDbHost().setText(db.dbhost);
-                    grpDbData.getTxtDbPort().setText(String.valueOf(db.dbport));
-                    
-                    btnSave.setEnabled(false);
-                    listEdit.getDelDtn().setEnabled(event.data != null);
+            public void selectionChanged(SelectionChangedEvent event) {
+                ISelection s = event.getSelection();
+                if (s.isEmpty() || !(s instanceof IStructuredSelection)) {
+                    listEdit.getDelDtn().setEnabled(false);
+                    return;
                 }
+                
+                DbInfo db = store.get(((IStructuredSelection) s).getFirstElement());
+                if(db == null) {
+                    db = DbInfo.getEmpty(""); //$NON-NLS-1$
+                }
+                grpDbData.getLblName().setText(db.name);
+                grpDbData.getTxtDbName().setText(db.dbname);
+                grpDbData.getTxtDbName().selectAll();
+                grpDbData.getTxtDbName().setFocus();
+                grpDbData.getTxtDbUser().setText(db.dbuser);
+                grpDbData.getTxtDbPass().setText(db.dbpass);
+                grpDbData.getTxtDbHost().setText(db.dbhost);
+                grpDbData.getTxtDbPort().setText(String.valueOf(db.dbport));
+                
+                btnSave.setEnabled(false);
+                listEdit.getDelDtn().setEnabled(true);
             }
         });
-        
+        listEdit.setInputList(new LinkedList<>(store.keySet()));
         
         listEdit.getAddBtn().addSelectionListener(new SelectionAdapter() {
             
@@ -171,6 +175,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 Activator.getContext().getBundle().getResource(
                         FILE.ICONSAVE))));
         btnSave.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
                 saveEntry();
