@@ -44,7 +44,9 @@ public class PgDbParser implements IResourceChangeListener {
 
     private PgDbParser(IProject proj) {
         this.proj = proj;
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+        if (proj != null) {
+            ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+        }
     }
     
     private PgDbParser() {
@@ -258,7 +260,7 @@ public class PgDbParser implements IResourceChangeListener {
         switch (event.getType()) {
         case IResourceChangeEvent.PRE_CLOSE:
         case IResourceChangeEvent.PRE_DELETE:
-            if (event.getResource() instanceof IProject) {
+            if (event.getResource().equals(proj)) {
                 PROJ_PARSERS.remove(event.getResource());
                 ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
             }
