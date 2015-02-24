@@ -62,7 +62,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -465,45 +464,31 @@ public class DiffTableViewer extends Composite {
         
         columnChange.getColumn().addSelectionListener(
                 getHeaderSelectionAdapter(columnChange.getColumn(), Columns.CHANGE));
-            
+        
         columnLocation.getColumn().addSelectionListener(
                 getHeaderSelectionAdapter(columnLocation.getColumn(), Columns.LOCATION));
-            
+        
         updateColumnsWidth();
         
         columnName.setLabelProvider(new StyledCellLabelProvider(){
+            
             @Override
             public void update(ViewerCell cell) {
-                String filter = txtFilterName.getText();
-                Pattern regExPattern = null;
-                if (useRegEx.getSelection()) {
-                    regExPattern = Pattern.compile(filter, Pattern.CASE_INSENSITIVE);
-                }
                 String name = ((TreeElement)cell.getElement()).getName();
                 cell.setText(name);
-                if (filter != null) {
-                    filter = filter.toLowerCase();
-                }
-                Region loc = getLocation(name, filter, regExPattern);
+                
+                Region loc = viewerFilter.getMatchingLocation(name, viewerFilter.filterName,
+                        (viewerFilter.useRegEx) ? viewerFilter.regExPattern : null);
                 if (loc != null) {
-                    List<StyleRange> styleRange = new ArrayList<StyleRange>();
-                    StyleRange myStyledRange = new StyleRange(loc.getOffset(),
-                            loc.getLength(), null, Display.getCurrent()
-                                    .getSystemColor(SWT.COLOR_GRAY));
-                    styleRange.add(myStyledRange);
-                    cell.setStyleRanges(styleRange
-                            .toArray(new StyleRange[styleRange.size()]));
+                    StyleRange highlightMatch = new StyleRange(loc.getOffset(),
+                            loc.getLength(), null, 
+                            getDisplay().getSystemColor(SWT.COLOR_YELLOW));
+                    cell.setStyleRanges(new StyleRange[] { highlightMatch });
                 } else {
                     cell.setStyleRanges(null);
                 }
                 super.update(cell);
             }
-            
-             
-//            @Override
-//            public String getText(Object element) {
-//                return ((TreeElement) element).getName();
-//            }
         });
 
         columnType.setLabelProvider(new ColumnLabelProvider() {
@@ -547,30 +532,6 @@ public class DiffTableViewer extends Composite {
         
         viewer.getTable().setSortColumn(columnName.getColumn());
         viewer.getTable().setSortDirection(SWT.UP);
-    }
-    
-    private static Region getLocation(String text, String filter, Pattern regExPattern) {
-        if (filter != null 
-                && !filter.isEmpty()
-                && text != null) {
-            text = text.toLowerCase();
-            int offset = -1;
-            int length = 0;
-            if (regExPattern != null) {
-                Matcher matcher = regExPattern.matcher(text);
-                if (matcher.find()) {
-                    offset = matcher.start();
-                    length = matcher.end() - offset;
-                }
-            } else {
-                offset = text.indexOf(filter);
-                length = filter.length();
-            }
-            if (offset >= 0) {
-                return new Region(offset, length);
-            }
-        }
-        return null;
     }
     
     private String getLocationColumnText(Object element) {
@@ -1027,7 +988,6 @@ public class DiffTableViewer extends Composite {
                     regExPattern = Pattern.compile(value, Pattern.CASE_INSENSITIVE);
                 } catch (PatternSyntaxException e) {
                     regExPattern = null;
-                    
                 }
             }
         }
@@ -1044,15 +1004,39 @@ public class DiffTableViewer extends Composite {
             }
             if (useRegEx) {
                 if (regExPattern != null) {
-                    return getLocation(((TreeElement) element).getName(),
+                    return getMatchingLocation(((TreeElement) element).getName(),
                             filterName, regExPattern) != null;
                 } else {
                     return false;
                 }
             } else {
-                return getLocation(((TreeElement) element).getName(),
+                return getMatchingLocation(((TreeElement) element).getName(),
                         filterName, null) != null;
             }
+        }
+
+        private Region getMatchingLocation(String text, String filter, Pattern regExPattern) {
+            if (filter != null 
+                    && !filter.isEmpty()
+                    && text != null) {
+                text = text.toLowerCase();
+                int offset = -1;
+                int length = 0;
+                if (regExPattern != null) {
+                    Matcher matcher = regExPattern.matcher(text);
+                    if (matcher.find()) {
+                        offset = matcher.start();
+                        length = matcher.end() - offset;
+                    }
+                } else {
+                    offset = text.indexOf(filter);
+                    length = filter.length();
+                }
+                if (offset >= 0) {
+                    return new Region(offset, length);
+                }
+            }
+            return null;
         }
     }
 
