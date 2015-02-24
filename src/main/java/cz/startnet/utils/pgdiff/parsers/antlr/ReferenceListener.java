@@ -250,8 +250,8 @@ public class ReferenceListener extends SQLParserBaseListener {
             addObjReference(schemaName, tableName, DbObjType.TABLE,
                     StatementActions.COMMENT, ctx.name.getStart()
                             .getStartIndex(), 0, ctx.name.getStart().getLine());
-            setCommentToDefinition(schemaName, tableName, DbObjType.TABLE,
-                    comment);
+//            setCommentToDefinition(schemaName, tableName, DbObjType.TABLE,
+//                    comment);
             // extension
         } else if (ctx.EXTENSION() != null) {
             addObjReference(null, name, DbObjType.EXTENSION,
@@ -286,19 +286,19 @@ public class ReferenceListener extends SQLParserBaseListener {
             setCommentToDefinition(null, name, DbObjType.SCHEMA, comment);
             // sequence
         } else if (ctx.SEQUENCE() != null) {
-            addObjReference(null, name, DbObjType.SEQUENCE,
+            addObjReference(schemaName, name, DbObjType.SEQUENCE,
                     StatementActions.COMMENT, ctx.name.getStart()
                             .getStartIndex(), 0, ctx.name.getStart().getLine());
             setCommentToDefinition(null, name, DbObjType.SEQUENCE, comment);
             // table
         } else if (ctx.TABLE() != null) {
-            setTableType(addObjReference(null, name, DbObjType.TABLE,
+            setTableType(addObjReference(schemaName, name, DbObjType.TABLE,
                     StatementActions.COMMENT, ctx.name.getStart()
                     .getStartIndex(), 0, ctx.name.getStart().getLine()));
             setCommentToDefinition(null, name, DbObjType.TABLE, comment);
             // view
         } else if (ctx.VIEW() != null) {
-            addObjReference(null, name, DbObjType.VIEW,
+            addObjReference(schemaName, name, DbObjType.VIEW,
                     StatementActions.COMMENT, ctx.name.getStart()
                             .getStartIndex(), 0, ctx.name.getStart().getLine());
             setCommentToDefinition(null, name, DbObjType.VIEW, comment);
