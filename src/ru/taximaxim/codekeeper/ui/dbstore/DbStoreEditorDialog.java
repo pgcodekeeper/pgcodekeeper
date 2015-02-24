@@ -2,16 +2,19 @@ package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.LinkedList;
 import java.util.Map;
 
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -22,7 +25,6 @@ import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.MessageBox;
@@ -33,15 +35,16 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
 
 public class DbStoreEditorDialog extends TrayDialog {
 
     private final Map<String, DbInfo> store;
     
     private final IPreferenceStore prefStore;
-    
-    private Combo cmbDbNames;
-    private Button btnSave, btnDel;
+
+    private PrefListEditor listEdit;
+    private Button btnSave;
     private DbPicker grpDbData;
     
     private LocalResourceManager lrm;
@@ -49,12 +52,12 @@ public class DbStoreEditorDialog extends TrayDialog {
     private ModifyListener dbModified = new ModifyListener() {
         @Override
         public void modifyText(ModifyEvent e) {
-            btnSave.setEnabled(!cmbDbNames.getText().isEmpty());
+            btnSave.setEnabled(listEdit.getSelected() != null);
         }
     };
-    
+
     public String getPreferenceString() {
-        return DbInfo.storeToPreference(store);
+        return DbInfo.storeToPreference(store, listEdit.getList());
     }
     
     /**
@@ -105,10 +108,8 @@ public class DbStoreEditorDialog extends TrayDialog {
                 
                 grpDbData.setStoreEditMode();
                 
-                if(cmbDbNames.getItemCount() > 0) {
-                    // select an element and trigger modify event
-                    cmbDbNames.select(0);
-                }
+                // select an element and trigger modify event
+            	listEdit.select(0);
             }
         });
     }
@@ -120,20 +121,27 @@ public class DbStoreEditorDialog extends TrayDialog {
         this.lrm = new LocalResourceManager(JFaceResources.getResources(), area);
         
         Composite container = new Composite(area, SWT.NONE);
-        GridLayout gridLayout = new GridLayout(4, false);
+        GridLayout gridLayout = new GridLayout(2, false);
         gridLayout.marginWidth = 0;
         gridLayout.marginHeight = 0;
         container.setLayout(gridLayout);
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
         
-        cmbDbNames = new Combo(container, SWT.READ_ONLY | SWT.DROP_DOWN);
-        cmbDbNames.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        cmbDbNames.setItems(store.keySet().toArray(new String[store.size()]));
-        cmbDbNames.addModifyListener(new ModifyListener() {
+        listEdit = new PrefListEditor(container, false);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 150;
+        listEdit.setLayoutData(gd);
+        listEdit.getListViewer().addSelectionChangedListener(new ISelectionChangedListener() {
             
             @Override
-            public void modifyText(ModifyEvent e) {
-                DbInfo db = store.get(cmbDbNames.getText());
+            public void selectionChanged(SelectionChangedEvent event) {
+                ISelection s = event.getSelection();
+                if (s.isEmpty() || !(s instanceof IStructuredSelection)) {
+                    listEdit.getDelDtn().setEnabled(false);
+                    return;
+                }
+                
+                DbInfo db = store.get(((IStructuredSelection) s).getFirstElement());
                 if(db == null) {
                     db = DbInfo.getEmpty(""); //$NON-NLS-1$
                 }
@@ -147,22 +155,17 @@ public class DbStoreEditorDialog extends TrayDialog {
                 grpDbData.getTxtDbPort().setText(String.valueOf(db.dbport));
                 
                 btnSave.setEnabled(false);
-                btnDel.setEnabled(!cmbDbNames.getText().isEmpty());
+                listEdit.getDelDtn().setEnabled(true);
             }
         });
+        listEdit.setInputList(new LinkedList<>(store.keySet()));
         
-        Button btnAdd = new Button(container, SWT.PUSH);
-        btnAdd.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(FILE.ICONADD))));
-        btnAdd.addSelectionListener(new SelectionAdapter() {
+        listEdit.getAddBtn().addSelectionListener(new SelectionAdapter() {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                InputDialog dialog = new InputDialog(
-                        getShell(), Messages.dbStoreEditorDialog_new_entry, 
-                        Messages.entry_name, null, null);
-                if(dialog.open() == Dialog.OK) {
-                    addEntry(dialog.getValue().trim());
+                if(!listEdit.getNewEntry().isEmpty()) {
+                    addEntry(listEdit.getNewEntry().trim());
                 }
             }
         });
@@ -172,41 +175,17 @@ public class DbStoreEditorDialog extends TrayDialog {
                 Activator.getContext().getBundle().getResource(
                         FILE.ICONSAVE))));
         btnSave.addSelectionListener(new SelectionAdapter() {
+            
             @Override
             public void widgetSelected(SelectionEvent e) {
                 saveEntry();
             }
         });
+        
         btnSave.setEnabled(false);
         
-        btnDel = new Button(container, SWT.PUSH);
-        btnDel.setImage(lrm.createImage(ImageDescriptor.createFromURL(
-                Activator.getContext().getBundle().getResource(
-                        FILE.ICONDEL))));
-        btnDel.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                String del = cmbDbNames.getText();
-                
-                int indexDel = cmbDbNames.getSelectionIndex();
-                if(indexDel < 0) {
-                    btnDel.setEnabled(false);
-                    return;
-                }
-                
-                cmbDbNames.remove(indexDel);
-                while(cmbDbNames.getItemCount() <= indexDel) {
-                    indexDel--;
-                }
-                cmbDbNames.select(indexDel);
-                
-                store.remove(del);
-            }
-        });
-        btnDel.setEnabled(false);
-        
         grpDbData = new DbPicker(container, SWT.NONE, null);
-        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1);
         gd.widthHint = 480;
         grpDbData.setLayoutData(gd);
         grpDbData.setText(Messages.dbStoreEditorDialog_db_info);
@@ -238,7 +217,7 @@ public class DbStoreEditorDialog extends TrayDialog {
             return;
         }
         
-        DbInfo db = store.get(cmbDbNames.getText());
+        DbInfo db = store.get(listEdit.getSelected());
         
         db.dbname = grpDbData.getTxtDbName().getText();
         db.dbuser = grpDbData.getTxtDbUser().getText();
@@ -297,7 +276,6 @@ public class DbStoreEditorDialog extends TrayDialog {
         }
         
         store.put(name, DbInfo.getEmptyNamed(name));
-        cmbDbNames.add(name);
-        cmbDbNames.select(cmbDbNames.indexOf(name));
+        listEdit.select(name);
     }
 }

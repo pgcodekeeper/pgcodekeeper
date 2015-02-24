@@ -3,8 +3,7 @@ package ru.taximaxim.codekeeper.ui.prefs;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
 
 import javax.xml.transform.TransformerException;
 
@@ -42,7 +41,7 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
     private void updateList() {
         String preference = getPreferenceStore().getString(PREF.IGNORE_OBJECTS);
 
-        List<String> list = new ArrayList<>();
+        LinkedList<String> list = new LinkedList<>();
         if (!preference.isEmpty()) {
             XmlStringList xml = new XmlStringList(XML_TAGS.IGNORED_OBJS_ROOT, XML_TAGS.IGNORED_OBJS_ELEMENT);
             try {
