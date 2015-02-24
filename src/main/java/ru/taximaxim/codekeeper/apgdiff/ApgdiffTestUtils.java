@@ -54,8 +54,7 @@ public class ApgdiffTestUtils {
                 script.append(line);
                 script.append("\n");
             }
-            String scr = MessageFormat.format(script.toString(), dbName);
-            System.err.println(scr);
+            String scr = MessageFormat.format(script.toString(), dbName, TEST.REMOTE_DB);
             String res = new JdbcRunner(connector).runScript(scr);
             Assert.assertEquals("Create DB over JDBC exited with an error: "
                     + res, "success", res);
