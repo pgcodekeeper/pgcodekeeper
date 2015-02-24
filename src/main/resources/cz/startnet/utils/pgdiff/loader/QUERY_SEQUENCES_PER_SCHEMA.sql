@@ -19,15 +19,3 @@ LEFT JOIN pg_catalog.pg_attribute a ON a.attrelid = d.refobjid
 pg_sequence_parameters(c.oid) p(start_value, minimum_value, maximum_value, increment, cycle_option)
 WHERE c.relnamespace = ?
     AND c.relkind = 'S'
-GROUP BY sequence_oid,
-         relowner,
-         relname,
-         start_value,
-         minimum_value,
-         maximum_value,
-         increment,
-         cycle_option,
-         referenced_column,
-         referenced_table_name,
-         ref_col_name,
-         aclArray

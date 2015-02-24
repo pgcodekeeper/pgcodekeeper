@@ -29,7 +29,7 @@ LEFT JOIN
               AND attr.attrelid = def.adrelid
               AND attr.attisdropped IS FALSE
           LEFT JOIN pg_catalog.pg_description des ON des.objoid = attr.attrelid
-            AND des.objsubid = attr.attnum
+              AND des.objsubid = attr.attnum
           ORDER BY attr.attnum) columnsData
      GROUP BY attrelid) subselect ON subselect.attrelid = c.oid
 LEFT JOIN pg_catalog.pg_description d ON c.oid = d.objoid

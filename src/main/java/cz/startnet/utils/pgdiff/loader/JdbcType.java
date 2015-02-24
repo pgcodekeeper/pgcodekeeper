@@ -35,7 +35,7 @@ public class JdbcType{
     private boolean isArrayType;
     
     /** 
-     * There are types, whose names begin from underscore: they are simple 
+     * There are types, which names begin from underscore: they are simple 
      * arrays and have 0 in typarray column. 
      * <br><br>
      * There are also vector types - their typarray column values are not 0, 
