@@ -5,19 +5,22 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ProjectScope;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
@@ -29,7 +32,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgObjLocation;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 
-public class PgDbParser {
+public class PgDbParser implements IResourceChangeListener {
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
     
@@ -40,6 +43,9 @@ public class PgDbParser {
 
     private PgDbParser(IProject proj) {
         this.proj = proj;
+        if (proj != null) {
+            ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+        }
     }
     
     private PgDbParser() {
@@ -110,13 +116,13 @@ public class PgDbParser {
                             funcBody.getPath(), funcBody.getLineNumber());
                     loc.setObjType(def.getObjType());
                     loc.setAction(StatementActions.NONE);
+                    Set<PgObjLocation> newRefs = new HashSet<>();
+                    newRefs.add(loc);
                     List<PgObjLocation> refs = objReferences2.get(funcBody.getPath());
-                    if (refs == null) {
-                        refs = new ArrayList<>();
-                        objReferences2.put(funcBody.getPath(), refs);
+                    if (refs != null) {
+                        newRefs.addAll(refs);
                     }
-                    // FIXME Concurrency problem
-                    refs.add(loc);
+                    objReferences2.put(funcBody.getPath(), new ArrayList<>(newRefs));
                     index = body.indexOf(def.getObjName(), index + 1);
                 }
             }
@@ -160,8 +166,8 @@ public class PgDbParser {
     }
 
     public void removePathFromRefs(Path path) {
-        objDefinitions.remove(path);
         objReferences.remove(path);
+        objDefinitions.remove(path);
     }
     
     private void fillRefsFromInputStream(InputStream input,
@@ -253,5 +259,18 @@ public class PgDbParser {
     }
     public List<Listener> getListeners() {
         return listeners;
+    }
+
+    @Override
+    public void resourceChanged(IResourceChangeEvent event) {
+        switch (event.getType()) {
+        case IResourceChangeEvent.PRE_CLOSE:
+        case IResourceChangeEvent.PRE_DELETE:
+            if (event.getResource().equals(proj)) {
+                PROJ_PARSERS.remove(event.getResource());
+                ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+            }
+            break;
+        }
     }
 }
