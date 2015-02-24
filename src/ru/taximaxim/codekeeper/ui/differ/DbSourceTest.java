@@ -44,7 +44,8 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 public class DbSourceTest {
 
     private static final String dbName = MessageFormat.format(
-            TEST.REMOTE_DB_PATTERN, new Random().nextInt(Integer.MAX_VALUE));
+            TEST.REMOTE_DB_PATTERN,
+            String.valueOf(new Random().nextInt(Integer.MAX_VALUE)));
     private static PgDatabase dbPredefined;
     private static File workspacePath;
     private static IWorkspaceRoot workspaceRoot;
@@ -154,7 +155,7 @@ public class DbSourceTest {
     
     @AfterClass
     public static void complete() throws IOException {
-        ApgdiffTestUtils.dropContents(dbName);
+        // ApgdiffTestUtils.dropContents(dbName);
         ApgdiffTestUtils.dropDB(dbName);
     }
     
