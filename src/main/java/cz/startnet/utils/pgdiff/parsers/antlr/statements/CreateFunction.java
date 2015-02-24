@@ -23,7 +23,7 @@ public class CreateFunction extends ParserAbstract {
         }
         PgFunction function = new PgFunction(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
         fillArguments(ctx.function_parameters().function_args(), function);
-        function.setBody(getFullCtxText(ctx.funct_body));
+        function.setBody(getFullCtxText(ctx.funct_body).replace("\r", ""));
         
         if (ctx.function_ret_table()!= null) {
             function.setReturns(getFullCtxText(ctx.function_ret_table()));
