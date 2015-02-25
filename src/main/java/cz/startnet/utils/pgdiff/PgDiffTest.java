@@ -272,6 +272,16 @@ public class PgDiffTest {
                     {"alter_domain_drop_not_valid_constr", false, false, false, false},
                     {"drop_domain_data_type", false, false, false, false},
                     {"drop_domain_collation", false, false, false, false},
+                    // Test function type depcy
+                    {"create_func_type", false, false, false, false},
+                    {"drop_func_type", false, false, false, false},
+                    {"chg_type_func", false, false, false, false},
+                    {"drop_create_type_func", false, false, false, false},
+                    // Test table type depcy
+                    {"drop_create_type_tbl", false, false, false, false},
+                    // Test table domain depcy
+                    {"create_dom_tbl", false, false, false, false},
+                    {"drop_dom_tbl", false, false, false, false},
                 });
     }
     
