@@ -1,11 +1,16 @@
 package cz.startnet.utils.pgdiff;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDomain;
+import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 
 /**
  * Diff Domains
@@ -35,6 +40,7 @@ public final class PgDiffDomains {
             	if (oldDomain != null 
             			&& (!Objects.equals(oldDomain.getDataType(), domain.getDataType())
     					|| !Objects.equals(oldDomain.getCollation(), domain.getCollation()))) {
+            		PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, domain);
             		searchPathHelper.outputSearchPath(script);
             		PgDiff.writeCreationSql(script, null, domain, true);
             	}
@@ -58,18 +64,51 @@ public final class PgDiffDomains {
         }
 
         // Drop domains that do not exist in new schema
-        for (final PgDomain domain : oldSchema.getDomains()) {
-            if (!newSchema.containsDomain(domain.getName())) {
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeDropSql(script, null, domain);
-            } else {
-            	PgDomain newDomain = newSchema.getDomain(domain.getName());
-            	if (newDomain != null 
-            			&& (!Objects.equals(newDomain.getDataType(), domain.getDataType())
-            			|| !Objects.equals(newDomain.getCollation(), domain.getCollation()))) {
-            		searchPathHelper.outputSearchPath(script);
-            		PgDiff.writeDropSql(script, null, domain);
-            	}
+        for (final PgDomain oldDomain : oldSchema.getDomains()) {
+			PgDomain newDomain = newSchema.getDomain(oldDomain.getName());
+			if (!newSchema.containsDomain(oldDomain.getName())
+					|| (newDomain != null && (!Objects.equals(
+							newDomain.getDataType(), oldDomain.getDataType()) || !Objects
+							.equals(newDomain.getCollation(),
+									oldDomain.getCollation())))) {
+				Set<PgStatement> dependantsSet = new LinkedHashSet<>();
+                PgDiff.getDependantsSet(oldDomain, dependantsSet);
+                PgStatement[] dependants = dependantsSet.toArray(
+                        new PgStatement[dependantsSet.size()]);
+
+                // drop dependants in reverse first
+                for (int i = dependants.length - 1; i >= 0; --i) {
+                    PgStatement depnt = dependants[i];
+                    
+                    if (depnt instanceof PgFunction
+                    		|| depnt instanceof PgTable) {
+                        PgDiff.tempSwitchSearchPath(
+                                depnt.getParent().getName(),
+                                searchPathHelper, script);
+                        PgDiff.writeDropSql(script,
+                                "-- DEPCY: This object depends on the domain"
+                                + " we are about to drop: " + oldDomain.getName(),
+                                depnt);
+                    }
+                }
+                
+				searchPathHelper.outputSearchPath(script);
+				PgDiff.writeDropSql(script, null, oldDomain);
+				
+				// create dependants
+                for (PgStatement depnt : dependants) {
+                    
+                    if (depnt instanceof PgFunction
+                    		|| depnt instanceof PgTable) {
+                        PgDiff.tempSwitchSearchPath(
+                                depnt.getParent().getName(),
+                                searchPathHelper, script);
+                        PgDiff.writeCreationSql(script,
+                                "-- DEPCY: This object depends on the domain"
+                                + " we are about to create: " + oldDomain.getName(),
+                                depnt, true);
+                    }
+                }
             }
         }
 	}

@@ -1,9 +1,14 @@
 package cz.startnet.utils.pgdiff;
 
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import cz.startnet.utils.pgdiff.schema.PgColumn;
+import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgType;
 
 /**
@@ -59,17 +64,50 @@ public final class PgDiffTypes {
 		}
 
 		// Drop types that do not exist in new schema
-		for (final PgType type : oldSchema.getTypes()) {
-			if (!newSchema.containsType(type.getName())) {
+		for (final PgType oldType : oldSchema.getTypes()) {
+			PgType newType = newSchema.getType(oldType.getName());
+			if (!newSchema.containsType(oldType.getName())
+					|| !oldType.getForm().equals(newType.getForm())
+					|| (!oldType.equals(newType) && !canAlter(oldType, newType))) {
+				
+				Set<PgStatement> dependantsSet = new LinkedHashSet<>();
+                PgDiff.getDependantsSet(oldType, dependantsSet);
+                PgStatement[] dependants = dependantsSet.toArray(
+                        new PgStatement[dependantsSet.size()]);
+
+                // drop dependants in reverse first
+                for (int i = dependants.length - 1; i >= 0; --i) {
+                    PgStatement depnt = dependants[i];
+                    
+                    if (depnt instanceof PgFunction
+                    		|| depnt instanceof PgTable) {
+                        PgDiff.tempSwitchSearchPath(
+                                depnt.getParent().getName(),
+                                searchPathHelper, script);
+                        PgDiff.writeDropSql(script,
+                                "-- DEPCY: This object depends on the type"
+                                + " we are about to drop: " + oldType.getName(),
+                                depnt);
+                    }
+                }
+
 				searchPathHelper.outputSearchPath(script);
-				PgDiff.writeDropSql(script, null, type);
-			} else {
-				PgType newType = newSchema.getType(type.getName());
-				if (!type.getForm().equals(newType.getForm())
-						|| (!type.equals(newType) && !canAlter(type, newType))) {
-					searchPathHelper.outputSearchPath(script);
-					PgDiff.writeDropSql(script, null, type);
-				}
+				PgDiff.writeDropSql(script, null, oldType);
+				
+				// create dependants
+                for (PgStatement depnt : dependants) {
+                    
+                    if (depnt instanceof PgFunction
+                    		|| depnt instanceof PgTable) {
+                        PgDiff.tempSwitchSearchPath(
+                                depnt.getParent().getName(),
+                                searchPathHelper, script);
+                        PgDiff.writeCreationSql(script,
+                                "-- DEPCY: This object depends on the type"
+                                + " we are about to create: " + oldType.getName(),
+                                depnt, true);
+                    }
+                }
 			}
 		}
 	}
