@@ -785,7 +785,8 @@ identifier
   ;
 
 nonreserved_keywords
-  : ADMIN
+  : ADD
+  | ADMIN
   | ALWAYS
   | ARRAY
   | ATTRIBUTE

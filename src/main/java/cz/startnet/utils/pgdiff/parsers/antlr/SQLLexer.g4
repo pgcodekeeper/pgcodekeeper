@@ -120,7 +120,6 @@ fragment Z
 ===============================================================================
 */
 
-ADD: A D D;
 AGGREGATE: A G G R E G A T E;
 AFTER: A F T E R;
 AS : A S;
@@ -303,6 +302,7 @@ WITHOUT: W I T H O U T;
 ===============================================================================
 */
 
+ADD: A D D;
 ADMIN: A D M I N;
 ALWAYS: A L W A Y S;
 ARRAY: A R R A Y;
