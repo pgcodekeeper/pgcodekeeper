@@ -161,7 +161,8 @@ public final class PgDiffViews {
                 script.addStatement(newView.getOwnerSQL());
             }
             
-            if (!oldView.getPrivileges().equals(newView.getPrivileges())) {
+            if (!oldView.getGrants().equals(newView.getGrants())
+            		|| !oldView.getRevokes().equals(newView.getRevokes())) {
                 searchPathHelper.outputSearchPath(script);
                 script.addStatement(newView.getPrivilegesSQL());
             }

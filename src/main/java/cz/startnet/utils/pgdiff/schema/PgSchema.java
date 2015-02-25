@@ -244,9 +244,12 @@ public class PgSchema extends PgStatement {
         if (!getName().equals(newSchema.getName())) {
             throw new IllegalStateException("Replacing schema must have the same name");
         }
-        
-        privileges.clear();
-        for (PgPrivilege priv : newSchema.privileges) {
+        revokes.clear();
+        for (PgPrivilege priv : newSchema.revokes) {
+            addPrivilege(priv.shallowCopy());
+        }
+        grants.clear();
+        for (PgPrivilege priv : newSchema.grants) {
             addPrivilege(priv.shallowCopy());
         }
         
@@ -267,7 +270,8 @@ public class PgSchema extends PgStatement {
             eq = Objects.equals(name, schema.getName())
                     && Objects.equals(authorization, schema.getAuthorization())
                     && Objects.equals(definition, schema.getDefinition())
-                    && privileges.equals(schema.privileges)
+                    && grants.equals(schema.grants)
+                    && revokes.equals(schema.revokes)
                     && Objects.equals(comment, schema.getComment());
         }
         
@@ -303,7 +307,8 @@ public class PgSchema extends PgStatement {
     public int computeHash() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
+        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
+        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((authorization == null) ? 0 : authorization.hashCode());
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
         result = prime * result + new HashSet<>(functions).hashCode();
@@ -321,7 +326,10 @@ public class PgSchema extends PgStatement {
         schemaDst.setAuthorization(getAuthorization());
         schemaDst.setDefinition(getDefinition());
         schemaDst.setComment(getComment());
-        for (PgPrivilege priv : privileges) {
+        for (PgPrivilege priv : revokes) {
+            schemaDst.addPrivilege(priv.shallowCopy());
+        }
+        for (PgPrivilege priv : grants) {
             schemaDst.addPrivilege(priv.shallowCopy());
         }
         schemaDst.setOwner(getOwner());

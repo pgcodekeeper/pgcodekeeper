@@ -200,7 +200,8 @@ public class PgFunction extends PgStatementWithSearchPath {
         } else {
             equals = Objects.equals(name, func.getBareName())
                     && arguments.equals(func.arguments)
-                    && privileges.equals(func.privileges)
+                    && grants.equals(func.grants)
+                    && revokes.equals(func.revokes)
                     && Objects.equals(owner, func.getOwner());
             
             if(equals) {
@@ -237,7 +238,8 @@ public class PgFunction extends PgStatementWithSearchPath {
     public int computeHash() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
+        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
+        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((arguments == null) ? 0 : arguments.hashCode());
         result = prime * result + ((returns == null) ? 0 : returns.hashCode());
         result = prime * result + ((body == null) ? 0 : body.hashCode());
@@ -355,7 +357,10 @@ public class PgFunction extends PgStatementWithSearchPath {
             argDst.setDefaultExpression(argSrc.getDefaultExpression());
             functionDst.addArgument(argDst);
         }
-        for (PgPrivilege priv : privileges) {
+        for (PgPrivilege priv : revokes) {
+            functionDst.addPrivilege(priv.shallowCopy());
+        }
+        for (PgPrivilege priv : grants) {
             functionDst.addPrivilege(priv.shallowCopy());
         }
         functionDst.setOwner(getOwner());

@@ -402,7 +402,8 @@ public class PgTable extends PgStatementWithSearchPath {
                     
                     && inherits.equals(table.inherits)
                     && columns.equals(table.columns)
-                    && privileges.equals(table.privileges)
+                    && grants.equals(table.grants)
+                    && revokes.equals(table.revokes)
                     && sequences.equals(table.sequences)
                     && Objects.equals(owner, table.getOwner())
                     && Objects.equals(comment, table.getComment());
@@ -439,7 +440,8 @@ public class PgTable extends PgStatementWithSearchPath {
     public int computeHash() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
+        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
+        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((clusterIndexName == null) ? 0 : clusterIndexName.hashCode());
         result = prime * result + ((columns == null) ? 0 : columns.hashCode());
         result = prime * result + new HashSet<>(constraints).hashCode();
@@ -468,7 +470,10 @@ public class PgTable extends PgStatementWithSearchPath {
             tableDst.addColumn(colSrc.shallowCopy());
         }
         tableDst.setComment(getComment());
-        for (PgPrivilege priv : privileges) {
+        for (PgPrivilege priv : revokes) {
+            tableDst.addPrivilege(priv.shallowCopy());
+        }
+        for (PgPrivilege priv : grants) {
             tableDst.addPrivilege(priv.shallowCopy());
         }
         for (String segName : sequences) {

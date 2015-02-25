@@ -206,7 +206,8 @@ public class PgSequence extends PgStatementWithSearchPath {
                     && Objects.equals(cache, seq.getCache())
                     && cycle == seq.isCycle()
                     && Objects.equals(ownedBy, seq.getOwnedBy())
-                    && privileges.equals(seq.privileges)
+                    && grants.equals(seq.grants)
+                    && revokes.equals(seq.revokes)
                     && Objects.equals(owner, seq.getOwner())
                     && Objects.equals(comment, seq.getComment());
         }
@@ -220,7 +221,8 @@ public class PgSequence extends PgStatementWithSearchPath {
         final int itrue = 1231;
         final int ifalse = 1237;
         int result = 1;
-        result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
+        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
+        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((cache == null) ? 0 : cache.hashCode());
         result = prime * result + (cycle ? itrue : ifalse);
         result = prime * result + ((increment == null) ? 0 : increment.hashCode());
@@ -245,7 +247,10 @@ public class PgSequence extends PgStatementWithSearchPath {
         sequenceDst.setOwnedBy(getOwnedBy());
         sequenceDst.setStartWith(getStartWith());
         sequenceDst.setComment(getComment());
-        for (PgPrivilege priv : privileges) {
+        for (PgPrivilege priv : revokes) {
+            sequenceDst.addPrivilege(priv.shallowCopy());
+        }
+        for (PgPrivilege priv : grants) {
             sequenceDst.addPrivilege(priv.shallowCopy());
         }
         sequenceDst.setOwner(getOwner());

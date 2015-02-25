@@ -164,7 +164,8 @@ public final class PgDiffTables {
             script.addStatement(newTable.getOwnerSQL());
         }
         
-        if (!oldTable.getPrivileges().equals(newTable.getPrivileges())) {
+        if (!oldTable.getGrants().equals(newTable.getGrants())
+        		|| !oldTable.getRevokes().equals(newTable.getRevokes())) {
             searchPathHelper.outputSearchPath(script);
             script.addStatement(newTable.getPrivilegesSQL());
         }

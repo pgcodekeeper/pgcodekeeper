@@ -194,7 +194,8 @@ public final class PgDiffSequences {
                 script.addStatement(newSequence.getOwnerSQL());
             }
             
-            if (!oldSequence.getPrivileges().equals(newSequence.getPrivileges())) {
+            if (!oldSequence.getGrants().equals(newSequence.getGrants())
+            		|| !oldSequence.getRevokes().equals(newSequence.getRevokes())) {
                 searchPathHelper.outputSearchPath(script);
                 script.addStatement(newSequence.getPrivilegesSQL());
             }

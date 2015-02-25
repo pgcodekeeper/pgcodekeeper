@@ -211,7 +211,8 @@ public class PgView extends PgStatementWithSearchPath {
                     && Objects.equals(select, view.getSelect())
                     && columnNames.equals(view.columnNames)
                     && new HashSet<>(defaultValues).equals(new HashSet<>(view.defaultValues))
-                    && privileges.equals(view.privileges)
+                    && grants.equals(view.grants)
+                    && revokes.equals(view.revokes)
                     && Objects.equals(owner, view.getOwner())
                     && Objects.equals(comment, view.getComment())
                     && Objects.equals(columnComments, view.getColumnComments());
@@ -224,7 +225,8 @@ public class PgView extends PgStatementWithSearchPath {
     public int computeHash() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
+        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
+        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((columnNames == null) ? 0 : columnNames.hashCode());
         result = prime * result + new HashSet<>(defaultValues).hashCode();
         result = prime * result + ((name == null) ? 0 : name.hashCode());
@@ -249,7 +251,10 @@ public class PgView extends PgStatementWithSearchPath {
         for(ColumnComment colcomment : columnComments) {
             viewDst.addColumnComment(colcomment.getColumnName(), colcomment.getComment());
         }
-        for (PgPrivilege priv : privileges) {
+        for (PgPrivilege priv : revokes) {
+            viewDst.addPrivilege(priv.shallowCopy());
+        }
+        for (PgPrivilege priv : grants) {
             viewDst.addPrivilege(priv.shallowCopy());
         }
         viewDst.setOwner(getOwner());
