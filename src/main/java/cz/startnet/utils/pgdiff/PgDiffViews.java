@@ -6,13 +6,11 @@
 package cz.startnet.utils.pgdiff;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
@@ -30,7 +28,7 @@ public final class PgDiffViews {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void createViews(final PgDiffScript script, PgDiffArguments arguments,
+    public static void createViews(final DepcyResolver depRes, PgDiffArguments arguments,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgView newView : newSchema.getViews()) {
@@ -40,25 +38,7 @@ public final class PgDiffViews {
             if (oldSchema == null
                     || !oldSchema.containsView(newView.getName())
                     || isModified) {
-                PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newView);
-                
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, newView, true);
-                
-                if (isModified){
-                 // check all dependants, drop them if blocking
-                    Set<PgStatement> dependantsSet = new LinkedHashSet<>();
-                    PgDiff.getDependantsSet(oldSchema.getView(newView.getName()), dependantsSet);
-                    
-                    for (PgStatement depnt : dependantsSet){
-                        if (depnt instanceof PgView){
-                            PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
-                                    searchPathHelper, script);
-                            PgDiff.writeCreationSql(script,"-- DEPCY: Following view depends"
-                                    + " on the altered view " + newView.getName(), depnt, false);
-                        }
-                    }
-                }
+                depRes.addCreateStatements(newView);
             }
         }
     }
@@ -71,7 +51,7 @@ public final class PgDiffViews {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropViews(final PgDiffScript script,
+    public static void dropViews(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -82,28 +62,7 @@ public final class PgDiffViews {
             final PgView newView = newSchema.getView(oldView.getName());
             boolean isModified = newView != null && isViewModified(oldView, newView);
             if (newView == null || isModified) {
-                
-                // check all dependants, drop them if blocking
-                Set<PgStatement> dependantsSet = new LinkedHashSet<>();
-                PgDiff.getDependantsSet(oldView, dependantsSet);
-                // wrap Set into array for reverse iteration
-                PgStatement[] dependants = dependantsSet.toArray(
-                        new PgStatement[dependantsSet.size()]);
-                
-                for (int i = dependants.length - 1; i >= 0; i--){
-                    PgStatement depnt = dependants[i];
-                    
-                    if (depnt instanceof PgView) {
-                        PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
-                                searchPathHelper, script);
-                        PgDiff.writeDropSql(script, "-- DEPCY: This view depends on the "
-                                + "view we are about to drop: " + oldView.getName(), depnt);
-                    }
-                }
-                
-                // output initial view drop
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeDropSql(script, null, oldView);
+            	depRes.addDropStatements(oldView);
             }
         }
     }

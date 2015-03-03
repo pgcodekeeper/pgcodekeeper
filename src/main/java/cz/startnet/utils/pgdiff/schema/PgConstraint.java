@@ -136,4 +136,9 @@ public class PgConstraint extends PgStatementWithSearchPath {
     public PgConstraint deepCopy() {
         return shallowCopy();
     }
+    
+    @Override
+    public PgStatement getContainerSchema() {
+    	return this.getParent().getParent();
+    }
 }

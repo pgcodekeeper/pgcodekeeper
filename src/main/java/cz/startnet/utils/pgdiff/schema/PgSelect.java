@@ -80,4 +80,9 @@ public class PgSelect extends PgStatementWithSearchPath {
         result = prime * result + ((columns == null) ? 0 : columns.hashCode());
         return result;
     }
+    
+    @Override
+    public PgStatement getContainerSchema() {
+    	return null;
+    }
 }

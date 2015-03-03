@@ -318,4 +318,10 @@ public class PgTrigger extends PgStatementWithSearchPath {
     public PgTrigger deepCopy() {
         return shallowCopy();
     }
+    
+    @Override
+    public PgStatement getContainerSchema() {
+    	// TODO Auto-generated method stub
+    	return null;
+    }
 }

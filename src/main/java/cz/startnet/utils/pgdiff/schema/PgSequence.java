@@ -256,4 +256,9 @@ public class PgSequence extends PgStatementWithSearchPath {
     public PgSequence deepCopy() {
         return shallowCopy();
     }
+    
+    @Override
+    public PgStatement getContainerSchema() {
+    	return this.getParent();
+    }
 }

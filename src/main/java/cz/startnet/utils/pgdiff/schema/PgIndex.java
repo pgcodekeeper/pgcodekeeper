@@ -139,4 +139,9 @@ public class PgIndex extends PgStatementWithSearchPath {
     public PgIndex deepCopy() {
         return shallowCopy();
     }
+    
+    @Override
+    public PgStatement getContainerSchema() {
+    	return this.getParent().getParent();
+    }
 }

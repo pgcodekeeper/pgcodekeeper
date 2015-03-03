@@ -21,4 +21,6 @@ public abstract class PgStatementWithSearchPath extends PgStatement {
     public String getSearchPath() {
         return searchPath;
     }
+    
+    abstract public PgStatement getContainerSchema();
 }

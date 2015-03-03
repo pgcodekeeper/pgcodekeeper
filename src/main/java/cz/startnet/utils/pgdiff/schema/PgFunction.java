@@ -366,4 +366,9 @@ public class PgFunction extends PgStatementWithSearchPath {
     public PgFunction deepCopy() {
         return shallowCopy();
     }
+    
+    @Override
+    public PgStatement getContainerSchema() {
+    	return this.getParent();
+    }
 }

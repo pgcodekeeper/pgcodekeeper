@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
@@ -27,7 +28,7 @@ public final class PgDiffTriggers {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void createTriggers(final PgDiffScript script,
+    public static void createTriggers(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgTable newTable : newSchema.getTables()) {
@@ -41,10 +42,7 @@ public final class PgDiffTriggers {
 
             // Add new triggers
             for (final PgTrigger trigger : getNewTriggers(oldTable, newTable)) {
-                PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, trigger);
-                
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, trigger, true);
+            	depRes.addCreateStatements(trigger);
             }
         }
     }
@@ -57,7 +55,7 @@ public final class PgDiffTriggers {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropTriggers(final PgDiffScript script,
+    public static void dropTriggers(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgTable newTable : newSchema.getTables()) {
@@ -72,25 +70,9 @@ public final class PgDiffTriggers {
             // Drop triggers that no more exist or are modified
             for (final PgTrigger trigger :
                     getDropTriggers(oldTable, newTable)) {
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeDropSql(script, null, trigger);
+            	depRes.addDropStatements(trigger);
             }
         }
-        
-        // КОСТЫЛЬ
-        if (oldSchema == null){
-            return;
-        }
-        
-        for (final PgTable oldTable : oldSchema.getTables()) {
-            if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
-                PgTable newTable = new PgTable(oldTable.getName(), null, null);
-                for (final PgTrigger trigger : getDropTriggers(oldTable, newTable)) {
-                    searchPathHelper.outputSearchPath(script);
-                    PgDiff.writeDropSql(script, null, trigger);
-                }
-            }
-        }// КОСТЫЛЬ
     }
 
     /**

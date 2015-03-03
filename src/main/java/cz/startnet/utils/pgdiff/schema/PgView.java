@@ -352,4 +352,9 @@ public class PgView extends PgStatementWithSearchPath {
             return result;
         }
     }
+    
+    @Override
+    public PgStatement getContainerSchema() {
+    	return this.getParent();
+    }
 }

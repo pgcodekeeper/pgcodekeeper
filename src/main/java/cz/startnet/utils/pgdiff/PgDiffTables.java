@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumnUtils;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
@@ -519,45 +520,34 @@ public final class PgDiffTables {
                 + "\n\tTABLESPACE " + newTable.getTablespace() + ';');
     }
 
-    /**
-     * Outputs statements for creation of new tables.
-     *
-     * @param writer           writer the output should be written to
-     * @param oldSchema        original schema
-     * @param newSchema        new schema
-     * @param searchPathHelper search path helper
-     */
-    public static void createTables(final PgDiffScript script,
-            final PgSchema oldSchema, final PgSchema newSchema,
-            final SearchPathHelper searchPathHelper) {
-        for (final PgTable table : newSchema.getTables()) {
-            if (oldSchema == null || !oldSchema.containsTable(table.getName())) {
-                PgTable fullTable = PgDiff.getFullDbNew().getSchema(
-                        newSchema.getName()).getTable(table.getName());
-                List<PgStatement> specialDepcies = 
-                        PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, fullTable);
-                
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, table, true);
-                
-                for(PgStatement depcy : specialDepcies){
-                    if (depcy instanceof PgSequence && ((PgSequence)depcy).getOwnedBy() != null){
-                        script.addStatement(((PgSequence)depcy).getOwnedBySQL());
-                    }
-                }
-            }
-        }
-    }
+	/**
+	 * Outputs statements for creation of new tables.
+	 *
+	 * @param writer writer the output should be written to
+	 * @param oldSchema original schema
+	 * @param newSchema new schema
+	 * @param searchPathHelper search path helper
+	 */
+	public static void createTables(final DepcyResolver depRes,
+			final PgSchema oldSchema, final PgSchema newSchema,
+			final SearchPathHelper searchPathHelper) {
+		for (final PgTable table : newSchema.getTables()) {
+			if (oldSchema == null || !oldSchema.containsTable(table.getName())) {
+				depRes.addCreateStatements(table);
+			}
+		}
+	}
 
     /**
      * Outputs statements for dropping tables.
+     * @param depRes 
      *
      * @param writer           writer the output should be written to
      * @param oldSchema        original schema
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropTables(final PgDiffScript script,
+    public static void dropTables(DepcyResolver depRes, final PgDiffScript script,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         
@@ -572,41 +562,7 @@ public final class PgDiffTables {
                             + "dropped because it was not selected entirely");
                     continue;
                 }
-                // check all dependants, drop them if blocking
-                // output search path, if necessary
-                Set<PgStatement> dependantsSet = new LinkedHashSet<>();
-                PgDiff.getDependantsSet(table, dependantsSet);
-                // wrap Set into array for reverse iteration
-                PgStatement[] dependants = dependantsSet.toArray(
-                        new PgStatement[dependantsSet.size()]);
-                
-                for (int i = dependants.length - 1; i >= 0; i--){
-                    PgStatement depnt = dependants[i];
-                    
-                    if (depnt instanceof PgView) {
-                        PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
-                                searchPathHelper, script);
-                    } else if (depnt instanceof PgForeignKey) {
-                        if (depnt.getParent().compare(table)
-                                && depnt.getParent().getParent().compare(table.getParent())) {
-                            // if this fkey is a direct descendant of the table we're dropping
-                            // skip it, postgres handles direct descendants itself
-                            continue;
-                        }
-                        
-                        PgDiff.tempSwitchSearchPath(depnt.getParent().getParent().getName(),
-                                searchPathHelper, script);
-                    } else {
-                        // explicitly specify objects to work on in the ifs above
-                        // skip everything else (i.e. columns)
-                        continue;
-                    }
-                    PgDiff.writeDropSql(script, "-- DEPCY: Dropping an object that depends"
-                            + " on the table we are about to drop: " + table.getName(), depnt);
-                }
-                
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeDropSql(script, null, table);
+                depRes.addDropStatements(table);
             }
         }
     }

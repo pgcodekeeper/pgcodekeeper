@@ -7,6 +7,7 @@ package cz.startnet.utils.pgdiff;
 
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 
@@ -25,16 +26,13 @@ public final class PgDiffSequences {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void createSequences(final PgDiffScript script,
+    public static void createSequences(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgSequence sequence : newSchema.getSequences()) {
             if (oldSchema == null
                     || !oldSchema.containsSequence(sequence.getName())) {
-                PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, sequence);
-                
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, sequence, true);
+            	depRes.addCreateStatements(sequence);
             }
         }
     }
@@ -70,7 +68,7 @@ public final class PgDiffSequences {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropSequences(final PgDiffScript script,
+    public static void dropSequences(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -80,8 +78,7 @@ public final class PgDiffSequences {
         // Drop sequences that do not exist in new schema
         for (final PgSequence sequence : oldSchema.getSequences()) {
             if (!newSchema.containsSequence(sequence.getName())) {
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeDropSql(script, null, sequence);
+            	depRes.addDropStatements(sequence);
             }
         }
     }

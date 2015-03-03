@@ -494,4 +494,9 @@ public class PgTable extends PgStatementWithSearchPath {
         
         return copy;
     }
+    
+    @Override
+    public PgStatement getContainerSchema() {
+    	return this.getParent();
+    }
 }

@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -32,7 +33,7 @@ public final class PgDiffFunctions {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void createFunctions(final PgDiffScript script,
+    public static void createFunctions(final DepcyResolver depRes,
             final PgDiffArguments arguments, final PgSchema oldSchema,
             final PgSchema newSchema, final SearchPathHelper searchPathHelper) {
         // Add new functions and replace modified functions
@@ -47,10 +48,7 @@ public final class PgDiffFunctions {
 
             if ((oldFunction == null) || !newFunction.equalsWhitespace(
                     oldFunction, arguments.isIgnoreFunctionWhitespace())) {
-                PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newFunction);
-                
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, newFunction, true);
+            	depRes.addCreateStatements(newFunction);
             }
         }
     }
@@ -63,7 +61,7 @@ public final class PgDiffFunctions {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropFunctions(final PgDiffScript script,
+    public static void dropFunctions(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -73,29 +71,9 @@ public final class PgDiffFunctions {
         // Drop functions that exist no more
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
             if (needsDrop(oldFunction, newSchema)) {
-                Set<PgStatement> dependantsSet = new LinkedHashSet<>();
-                PgDiff.getDependantsSet(oldFunction, dependantsSet);
-                PgStatement[] dependants = dependantsSet.toArray(
-                        new PgStatement[dependantsSet.size()]);
-
-                // drop dependants in reverse first
-                for (int i = dependants.length - 1; i >= 0; --i) {
-                    PgStatement depnt = dependants[i];
-                    
-                    if (depnt instanceof PgTrigger) {
-                        PgDiff.tempSwitchSearchPath(
-                                depnt.getParent().getParent().getName(),
-                                searchPathHelper, script);
-                        PgDiff.writeDropSql(script,
-                                "-- DEPCY: This trigger depends on the function"
-                                + " we are about to drop: " + oldFunction.getName(),
-                                depnt);
-                    }
-                }
-                
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeDropSql(script, null, oldFunction);
-                
+            	
+            	depRes.addDropStatements(oldFunction);
+            	
                 // no re-creation because the only dependants we have so far are triggers
                 // trigger funcs cannot change in a way that will require a drop+create
                 // that is they never have arguments and always have the return type of TRIGGER

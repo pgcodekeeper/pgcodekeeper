@@ -22,6 +22,7 @@ import org.jgrapht.traverse.DepthFirstIterator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
@@ -47,6 +48,8 @@ public final class PgDiff {
     
     private static PgDatabase dbNew;
     private static PgDatabase dbOld;
+    
+    private static DepcyResolver depRes;
 
     /**
      * Creates diff on the two database schemas.
@@ -168,6 +171,7 @@ public final class PgDiff {
             try {
                 depcyOld = new DepcyGraph(oldDbFull);
                 depcyNew = new DepcyGraph(newDbFull);
+                depRes = new DepcyResolver(oldDbFull, newDbFull);
             } catch (PgCodekeeperException e) {
                 throw new IllegalStateException(MessageFormat.format(
                         "Error creating dependency graph: {0}",
@@ -176,21 +180,24 @@ public final class PgDiff {
             
             if (additionalDepciesSource != null) {
                 depcyOld.addCustomDepcies(additionalDepciesSource);
+                depRes.addCustomDepciesToOld(additionalDepciesSource);
             }
             if (additionalDepciesTarget != null) {
                 depcyNew.addCustomDepcies(additionalDepciesTarget);
+                depRes.addCustomDepciesToNew(additionalDepciesTarget);
             }
         }
         
         diffComments(oldDatabase, newDatabase, script);
 
-        dropOldExtensions(script, oldDatabase, newDatabase);
-        dropOldSchemas(script, arguments, oldDatabase, newDatabase);
-        createNewSchemas(script, oldDatabase, newDatabase);
-        createNewExtensions(script, oldDatabase, newDatabase);
+        dropOldExtensions(depRes, oldDatabase, newDatabase);
+        dropOldSchemas(script, depRes, arguments, oldDatabase, newDatabase);
+        createNewSchemas(depRes, oldDatabase, newDatabase);
+        createNewExtensions(depRes, oldDatabase, newDatabase);
         updateExtensions(script, oldDatabase, newDatabase);
         updateSchemas(script, arguments, oldDatabase, newDatabase);
 
+        depRes.fillScript(script);
         if (arguments.isAddTransaction()) {
             script.addStatement("\nCOMMIT TRANSACTION;");
         }
@@ -314,11 +321,11 @@ public final class PgDiff {
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
-    private static void createNewExtensions(final PgDiffScript script, 
+    private static void createNewExtensions(final DepcyResolver depRes, 
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension newExt : newDatabase.getExtensions()) {
             if(oldDatabase.getExtension(newExt.getName()) == null) {
-                writeCreationSql(script, null, newExt, true);
+            	depRes.addCreateStatements(newExt);
             }
         }
     }
@@ -330,11 +337,11 @@ public final class PgDiff {
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
-    private static void dropOldExtensions(final PgDiffScript script, 
+    private static void dropOldExtensions(final DepcyResolver depRes, 
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension oldExt : oldDatabase.getExtensions()) {
             if(newDatabase.getExtension(oldExt.getName()) == null) {
-                writeDropSql(script, null, oldExt);
+            	depRes.addDropStatements(oldExt);
             }
         }
     }
@@ -371,25 +378,25 @@ public final class PgDiff {
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
-    private static void createNewSchemas(final PgDiffScript script,
+    private static void createNewSchemas(final DepcyResolver depRes,
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for (final PgSchema newSchema : newDatabase.getSchemas()) {
             if (oldDatabase.getSchema(newSchema.getName()) == null) {
-                writeCreationSql(script, null, newSchema, true);
+            	depRes.addCreateStatements(newSchema);
             }
         }
     }
 
     /**
      * Drops old schemas that do not exist anymore.
-     *
+     * @param depRes 
      * @param writer      writer the output should be written to
      * @param arguments 
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
     private static void dropOldSchemas(final PgDiffScript script,
-            PgDiffArguments arguments, final PgDatabase oldDatabase, final PgDatabase newDatabase) {
+            DepcyResolver depRes, PgDiffArguments arguments, final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for (final PgSchema oldSchema : oldDatabase.getSchemas()) {
             if (newDatabase.getSchema(oldSchema.getName()) == null) {
                 if (!isFullSelection(oldSchema)){
@@ -398,12 +405,7 @@ public final class PgDiff {
                     continue;
                 }
                 // drop all contents of the schema
-                PgSchema newSchema = new PgSchema(oldSchema.getName(),
-                        "CREATE SCHEMA " + oldSchema.getName());
-                updateSchemaContent(script,
-                        depcyOld.getDb().getSchema(oldSchema.getName()), newSchema,
-                        new SearchPathHelper(oldSchema.getName()), arguments);
-                writeDropSql(script, null, oldSchema);
+                depRes.addDropStatements(oldSchema);
             }
         }
     }
@@ -483,48 +485,50 @@ public final class PgDiff {
     private static void updateSchemaContent(PgDiffScript script, PgSchema oldSchema,
             PgSchema newSchema, SearchPathHelper searchPathHelper, PgDiffArguments arguments) {
         PgDiffTriggers.dropTriggers(
-                script, oldSchema, newSchema, searchPathHelper);
+        		depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffFunctions.dropFunctions(
-                script, oldSchema, newSchema, searchPathHelper);
+        		depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffViews.dropViews(
-                script, oldSchema, newSchema, searchPathHelper);
+        		depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffConstraints.dropConstraints(
-                script, oldSchema, newSchema, true, searchPathHelper);
+        		depRes, oldSchema, newSchema, true, searchPathHelper);
         PgDiffConstraints.dropConstraints(
-                script, oldSchema, newSchema, false, searchPathHelper);
+        		depRes, oldSchema, newSchema, false, searchPathHelper);
         PgDiffIndexes.dropIndexes(
-                script, oldSchema, newSchema, searchPathHelper);
+        		depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.dropClusters(
                 script, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.dropTables(
-                script, oldSchema, newSchema, searchPathHelper);
+        		depRes, script, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.dropSequences(
-                script, oldSchema, newSchema, searchPathHelper);
+        		depRes, oldSchema, newSchema, searchPathHelper);
+        
+        depRes.recreateDrops();
 
         PgDiffSequences.createSequences(
-                script, oldSchema, newSchema, searchPathHelper);
+        		depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.alterSequences(
                 script, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.createTables(
-                script, oldSchema, newSchema, searchPathHelper);
+        		depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.alterTables(
                 script, arguments, oldSchema, newSchema, searchPathHelper);
-        PgDiffSequences.alterCreatedSequences(
-                script, oldSchema, newSchema, searchPathHelper);
+//        PgDiffSequences.alterCreatedSequences(
+//                script, oldSchema, newSchema, searchPathHelper);
         PgDiffFunctions.createFunctions(
-                script, arguments, oldSchema, newSchema, searchPathHelper);
+        		depRes, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffConstraints.createConstraints(
-                script, oldSchema, newSchema, true, searchPathHelper);
+        		depRes, oldSchema, newSchema, true, searchPathHelper);
         PgDiffConstraints.createConstraints(
-                script, oldSchema, newSchema, false, searchPathHelper);
+        		depRes, oldSchema, newSchema, false, searchPathHelper);
         PgDiffIndexes.createIndexes(
-                script, oldSchema, newSchema, searchPathHelper);
+        		depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.createClusters(
                 script, oldSchema, newSchema, searchPathHelper);
         PgDiffTriggers.createTriggers(
-                script, oldSchema, newSchema, searchPathHelper);
+        		depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffViews.createViews(
-                script, arguments, oldSchema, newSchema, searchPathHelper);
+        		depRes, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffViews.alterViews(
                 script, arguments, oldSchema, newSchema, searchPathHelper);
 
@@ -551,6 +555,7 @@ public final class PgDiff {
     
     static void writeCreationSql(PgDiffScript script, String comment,
             PgStatement pgObject, boolean replaceExisting) {
+    	
         script.addCreate(pgObject, comment, pgObject.getCreationSQL(), replaceExisting);
     }
     
