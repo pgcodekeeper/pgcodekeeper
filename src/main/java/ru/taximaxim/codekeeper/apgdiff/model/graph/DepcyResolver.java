@@ -35,8 +35,6 @@ public class DepcyResolver {
 	private DepcyGraph oldDepcyGraph;
 	private DepcyGraph newDepcyGraph;
 	private Set<ActionContainer> actions = new LinkedHashSet<>();
-	private Set<PgStatement> drops = new LinkedHashSet<>();
-	private Set<PgStatement> creates = new LinkedHashSet<>();
 	private List<PgSequence> sequencesOwnedBy = new ArrayList<>();
 
 	public DepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase) throws PgCodekeeperException {
@@ -58,7 +56,7 @@ public class DepcyResolver {
 		if (oldDepcyGraph.getReversedGraph().containsVertex(toDrop)) {
 			DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
 					oldDepcyGraph.getReversedGraph(), toDrop);
-			customIteration(dfi, new DropTraversalAdapter(drops));
+			customIteration(dfi, new DropTraversalAdapter(actions));
 		}
 	}
 	
@@ -75,7 +73,7 @@ public class DepcyResolver {
 		if (newDepcyGraph.getGraph().containsVertex(toCreate)) {
 			DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
 					newDepcyGraph.getGraph(), toCreate);
-			customIteration(dfi, new CreateTraversalAdapter(creates));
+			customIteration(dfi, new CreateTraversalAdapter(actions));
 		}
 	}
 	
@@ -103,14 +101,20 @@ public class DepcyResolver {
 
 	public void fillScript(PgDiffScript script) {
 		String currentSearchPath = "";
-		for (PgStatement drop : drops) {
-			currentSearchPath = setSearchPath(currentSearchPath, drop, script);
-			script.addDrop(drop, null, drop.getDropSQL());
-		}
-		
-		for (PgStatement create : creates) {
-			currentSearchPath = setSearchPath(currentSearchPath, create, script);
-			script.addCreate(create, null, create.getCreationSQL(), true);
+		for (ActionContainer action : actions) {
+			PgStatement st = action.getOldObj();
+			currentSearchPath = setSearchPath(currentSearchPath, st, script);
+			switch(action.getAction()) {
+			case CREATE:
+				script.addCreate(st, null, st.getCreationSQL(), true);
+				break;
+			case DROP:
+				script.addDrop(st, null, st.getDropSQL());
+				break;
+			case ALTER:
+				// TODO дописать
+				break;
+			}
 		}
 		
 		for (PgSequence sequence : sequencesOwnedBy) {
@@ -120,7 +124,11 @@ public class DepcyResolver {
 	}
 	
 	private boolean inDropsList(PgStatement statement) {
-		for (PgStatement drop : drops) {
+		for (ActionContainer action : actions) {
+			if (action.getAction() != StatementActions.DROP) {
+				continue;
+			}
+			PgStatement drop = action.getOldObj();
 			if (drop.getStatementType() == statement.getStatementType()
 					&& drop.getQualifiedName().equals(statement.getQualifiedName())) {
 				return true;
@@ -130,7 +138,14 @@ public class DepcyResolver {
 	}
 	
 	public void recreateDrops() {
-		for (PgStatement drop : drops) {
+		List<PgStatement> toRecreate = new ArrayList<>();
+		for (ActionContainer action : actions) {
+			if (action.getAction() != StatementActions.DROP) {
+				continue;
+			}
+			toRecreate.add(action.getOldObj());
+		}
+		for (PgStatement drop : toRecreate) {
 			PgSchema newSchema = null;
 			if (drop instanceof PgStatementWithSearchPath) {
 				newSchema = newDb.getSchema(((PgStatementWithSearchPath) drop)
@@ -223,8 +238,8 @@ public class DepcyResolver {
 	
 	private class CreateTraversalAdapter extends CustomTraversalListenerAdapter {
 
-		CreateTraversalAdapter(Set<PgStatement> action) {
-			super(action);
+		CreateTraversalAdapter(Set<ActionContainer> action) {
+			super(action, StatementActions.CREATE);
 		}
 
 		@Override
@@ -314,8 +329,8 @@ public class DepcyResolver {
 	
 	private class DropTraversalAdapter extends CustomTraversalListenerAdapter {
 
-		DropTraversalAdapter(Set<PgStatement> action) {
-			super(action);
+		DropTraversalAdapter(Set<ActionContainer> action) {
+			super(action, StatementActions.DROP);
 		}
 
 		@Override
@@ -325,9 +340,11 @@ public class DepcyResolver {
 	}
 	
 	private abstract class CustomTraversalListenerAdapter extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
-		private Set<PgStatement> action;
+		private Set<ActionContainer> actions;
+		private StatementActions action;
 
-		CustomTraversalListenerAdapter(Set<PgStatement> action) {
+		CustomTraversalListenerAdapter(Set<ActionContainer> actions, StatementActions action) {
+			this.actions = actions;
 			this.action = action;
 		}
 		@Override
@@ -344,7 +361,7 @@ public class DepcyResolver {
 					sequencesOwnedBy.add((PgSequence)statement);	
 				}
 			default:
-				action.add(statement);
+				addToList(statement);
 				break;
 			}
 		}
@@ -354,7 +371,98 @@ public class DepcyResolver {
 				return true;
 			}
 			return false;
-		};
+		}
+		
+		protected void addToList(PgStatement statement) {
+			PgDatabase db =  null;
+			switch (action) {
+			case CREATE:
+				db = oldDb;
+				break;
+			case ALTER:
+			case DROP:
+				db = newDb;
+				break;
+				default:
+					throw new IllegalStateException("DataBase is not selected");
+			}
+			if (db == null) {
+				return;
+			}
+			PgStatement otherSt = null;
+			switch (statement.getStatementType()) {
+			case EXTENSION:
+				otherSt = db.getExtension(statement.getName());
+				break;
+			case SCHEMA:
+				otherSt = db.getSchema(statement.getName());
+				break;
+			case FUNCTION:
+				otherSt = db.getSchema(
+						((PgStatementWithSearchPath) statement)
+								.getContainerSchema().getName()).getFunction(
+						statement.getName());
+				break;
+			case SEQUENCE:
+				otherSt = db.getSchema(
+						((PgStatementWithSearchPath) statement)
+								.getContainerSchema().getName()).getSequence(
+						statement.getName());
+				break;
+			case VIEW:
+				otherSt = db.getSchema(
+						((PgStatementWithSearchPath) statement)
+								.getContainerSchema().getName()).getView(
+						statement.getName());
+				break;
+			case TABLE:
+				otherSt = db.getSchema(
+						((PgStatementWithSearchPath) statement)
+								.getContainerSchema().getName()).getTable(
+						statement.getName());
+				break;
+			case CONSTRAINT:
+				PgTable otherTable = db.getSchema(
+						((PgStatementWithSearchPath) statement)
+								.getContainerSchema().getName()).getTable(
+						((PgConstraint) statement).getTableName());
+				if (otherTable != null) {
+					otherSt = otherTable.getConstraint(statement.getName());
+				}
+				break;
+			case INDEX:
+				otherTable = db.getSchema(
+						((PgStatementWithSearchPath) statement)
+								.getContainerSchema().getName()).getTable(
+						((PgIndex) statement).getTableName());
+				if (otherTable != null) {
+					otherSt = otherTable.getIndex(statement.getName());
+				}
+				break;
+			case TRIGGER:
+				otherTable = db.getSchema(
+						((PgStatementWithSearchPath) statement)
+								.getContainerSchema().getName()).getTable(
+						((PgTrigger) statement).getTableName());
+				if (otherTable != null) {
+					otherSt = otherTable.getTrigger(statement.getName());
+				}
+				break;
+			}
+			switch (action) {
+			case CREATE:
+				actions.add(new ActionContainer(statement, statement, StatementActions.CREATE));
+				break;
+			case DROP:
+				actions.add(new ActionContainer(statement, statement, StatementActions.DROP));
+				break;
+			case ALTER:
+				actions.add(new ActionContainer(statement, otherSt, StatementActions.ALTER));
+				break;
+			default:
+				break;
+			}
+		}
 	}
 	private class ActionContainer {
 		private PgStatement oldObj;
