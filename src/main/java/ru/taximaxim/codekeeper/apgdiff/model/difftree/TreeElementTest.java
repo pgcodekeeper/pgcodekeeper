@@ -63,8 +63,8 @@ public class TreeElementTest {
         
         for (String function : FUNC_NAMES){
             String name = function.substring(0, function.length()-2);
-            dbFull.getSchema(ApgdiffConsts.PUBLIC).addFunction(new PgFunction(name, "", ""));
-            dbPartial.getSchema(ApgdiffConsts.PUBLIC).addFunction(new PgFunction(name, "", ""));
+            dbFull.getSchema(ApgdiffConsts.PUBLIC).addFunction(new PgFunction(name, ""));
+            dbPartial.getSchema(ApgdiffConsts.PUBLIC).addFunction(new PgFunction(name, ""));
         }
 
         TreeElement treeFull = DiffTree.create(dbFull, new PgDatabase());
