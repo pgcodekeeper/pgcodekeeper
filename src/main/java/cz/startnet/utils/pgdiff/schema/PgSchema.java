@@ -89,6 +89,11 @@ public class PgSchema extends PgStatement {
                 + PgDiffUtils.getQuotedName(getName()) + ';';
     }
     
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb) {
+    	return false;
+    }
+    
     /**
      * Finds function according to specified function {@code signature}.
      *

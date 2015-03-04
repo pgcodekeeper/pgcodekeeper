@@ -5,10 +5,15 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -74,6 +79,25 @@ public class PgConstraint extends PgStatementWithSearchPath {
         sbSQL.append(';');
 
         return sbSQL.toString();
+    }
+    
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb) {
+    	PgConstraint newFunction = null;
+    	if (newCondition instanceof PgConstraint) {
+    		newFunction = (PgConstraint)newCondition; 
+    	} else {
+    		return false;
+		}
+    	PgConstraint oldFunction = this;
+    	PgDiffScript script = new PgDiffScript();
+    	PgDiff.diffComments(oldFunction, newFunction, script);
+    	
+    	final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+        script.printStatements(writer);
+        sb.append(diffInput.toString().trim());
+        return false;
     }
 
     public boolean isPrimaryKeyConstraint() {

@@ -5,9 +5,14 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -68,6 +73,25 @@ public class PgIndex extends PgStatementWithSearchPath {
     @Override
     public String getDropSQL() {
         return "DROP INDEX " + PgDiffUtils.getQuotedName(getName()) + ";";
+    }
+    
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb) {
+    	PgIndex newFunction = null;
+    	if (newCondition instanceof PgIndex) {
+    		newFunction = (PgIndex)newCondition; 
+    	} else {
+    		return false;
+		}
+    	PgIndex oldFunction = this;
+    	PgDiffScript script = new PgDiffScript();
+    	PgDiff.diffComments(oldFunction, newFunction, script);
+    	
+    	final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+        script.printStatements(writer);
+        sb.append(diffInput.toString().trim());
+        return false;
     }
 
     public void setTableName(final String tableName) {

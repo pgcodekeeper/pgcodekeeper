@@ -627,7 +627,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             
             String columnName = colNames[i];
-            PgColumn column = new PgColumn(columnName);
+            PgColumn column = new PgColumn(columnName, "");
             
             PgType columnType = cachedTypeNamesByOid.get(colTypes[i]);
              

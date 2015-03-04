@@ -5,9 +5,7 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -99,7 +97,7 @@ public final class PgDiffViews {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterViews(final PgDiffScript script,
+    public static void alterViews(final DepcyResolver depRes,
             PgDiffArguments arguments, final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -107,85 +105,9 @@ public final class PgDiffViews {
         }
 
         for (final PgView oldView : oldSchema.getViews()) {
-            final PgView newView = newSchema.getView(oldView.getName());
-
-            if (newView == null) {
-                continue;
-            }
-            
-            diffDefaultValues(script, oldView, newView, searchPathHelper);
-
-            if (!Objects.equals(oldView.getOwner(), newView.getOwner())) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement(newView.getOwnerSQL());
-            }
-            
-            if (!oldView.getPrivileges().equals(newView.getPrivileges())) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement(newView.getPrivilegesSQL());
-            }
-
-            PgDiff.diffComments(oldView, newView, script);
-            
-            final List<String> columnNames =
-                    new ArrayList<>(newView.getColumnComments().size());
-
-            for (final PgView.ColumnComment columnComment :
-                    newView.getColumnComments()) {
-                columnNames.add(columnComment.getColumnName());
-            }
-
-            for (final PgView.ColumnComment columnComment :
-                    oldView.getColumnComments()) {
-                if (!columnNames.contains(columnComment.getColumnName())) {
-                    columnNames.add(columnComment.getColumnName());
-                }
-            }
-
-            for (final String columnName : columnNames) {
-                PgView.ColumnComment oldColumnComment = null;
-                PgView.ColumnComment newColumnComment = null;
-
-                for (final PgView.ColumnComment columnComment :
-                        oldView.getColumnComments()) {
-                    if (columnName.equals(columnComment.getColumnName())) {
-                        oldColumnComment = columnComment;
-                        break;
-                    }
-                }
-
-                for (final PgView.ColumnComment columnComment :
-                        newView.getColumnComments()) {
-                    if (columnName.equals(columnComment.getColumnName())) {
-                        newColumnComment = columnComment;
-                        break;
-                    }
-                }
-
-                if (oldColumnComment == null && newColumnComment != null
-                        || oldColumnComment != null && newColumnComment != null
-                        && !oldColumnComment.getComment().equals(
-                        newColumnComment.getComment())) {
-                    searchPathHelper.outputSearchPath(script);
-
-                    script.addStatement("COMMENT ON COLUMN "
-                            + PgDiffUtils.getQuotedName(newView.getName())
-                            + '.'
-                            + PgDiffUtils.getQuotedName(newColumnComment.getColumnName())
-                            + " IS "
-                            + newColumnComment.getComment()
-                            + ';');
-                } else if (oldColumnComment != null
-                        && newColumnComment == null) {
-                    searchPathHelper.outputSearchPath(script);
-
-                    script.addStatement("COMMENT ON COLUMN "
-                            + PgDiffUtils.getQuotedName(newView.getName())
-                            + '.'
-                            + PgDiffUtils.getQuotedName(oldColumnComment.getColumnName())
-                            + " IS NULL;");
-                }
-            }
+        	if (newSchema.containsView(oldView.getName())) {
+        		depRes.addAlterStatements(oldView);
+        	}
         }
     }
 
@@ -197,7 +119,7 @@ public final class PgDiffViews {
      * @param newView          new view
      * @param searchPathHelper search path helper
      */
-    private static void diffDefaultValues(final PgDiffScript script,
+    public static void diffDefaultValues(final PgDiffScript script,
             final PgView oldView, final PgView newView,
             final SearchPathHelper searchPathHelper) {
         final List<PgView.DefaultValue> oldValues =

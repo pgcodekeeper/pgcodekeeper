@@ -222,12 +222,12 @@ public class DepcyGraph {
                 graph.addVertex(seq);
                 graph.addEdge(table, seq);
                  
-                String owned = seq.getOwnedBy();
-                if (owned != null) {
-                    if (table.getName().equals(ParserUtils.getSecondObjectName(owned))) {
-                        graph.addEdge(seq, table);
-                    }
-                }
+//                String owned = seq.getOwnedBy();
+//                if (owned != null) {
+//                    if (table.getName().equals(ParserUtils.getSecondObjectName(owned))) {
+//                        graph.addEdge(seq, table);
+//                    }
+//                }
             }
         }
     }

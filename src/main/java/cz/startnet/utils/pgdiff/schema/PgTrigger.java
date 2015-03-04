@@ -5,13 +5,18 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -147,6 +152,25 @@ public class PgTrigger extends PgStatementWithSearchPath {
     public String getDropSQL() {
         return "DROP TRIGGER " + PgDiffUtils.getQuotedName(getName()) + " ON "
                 + PgDiffUtils.getQuotedName(getTableName()) + ";";
+    }
+    
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb) {
+    	PgTrigger newFunction = null;
+    	if (newCondition instanceof PgTrigger) {
+    		newFunction = (PgTrigger)newCondition; 
+    	} else {
+    		return false;
+		}
+    	PgTrigger oldFunction = this;
+    	PgDiffScript script = new PgDiffScript();
+    	PgDiff.diffComments(oldFunction, newFunction, script);
+    	
+    	final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+        script.printStatements(writer);
+        sb.append(diffInput.toString().trim());
+        return false;
     }
 
     public void setForEachRow(final boolean forEachRow) {
@@ -321,7 +345,6 @@ public class PgTrigger extends PgStatementWithSearchPath {
     
     @Override
     public PgStatement getContainerSchema() {
-    	// TODO Auto-generated method stub
-    	return null;
+    	return this.getParent().getParent();
     }
 }

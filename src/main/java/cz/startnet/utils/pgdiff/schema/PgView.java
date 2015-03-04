@@ -5,14 +5,21 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.PgDiffViews;
+import cz.startnet.utils.pgdiff.SearchPathHelper;
 
 /**
  * Stores view information.
@@ -117,6 +124,97 @@ public class PgView extends PgStatementWithSearchPath {
     @Override
     public String getDropSQL() {
         return "DROP VIEW " + PgDiffUtils.getQuotedName(getName()) + ';';
+    }
+    
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb) {
+    	PgView newView = null;
+    	if (newCondition instanceof PgView) {
+    		newView = (PgView)newCondition; 
+    	} else {
+    		return false;
+		}
+    	PgDiffScript script = new PgDiffScript();
+    	SearchPathHelper searchPathHelper = new SearchPathHelper(this.getContainerSchema().getName());
+        PgView oldView = this;
+        PgDiffViews.diffDefaultValues(script, oldView, newView, searchPathHelper);
+
+        if (!Objects.equals(oldView.getOwner(), newView.getOwner())) {
+            searchPathHelper.outputSearchPath(script);
+            script.addStatement(newView.getOwnerSQL());
+        }
+        
+        if (!oldView.getPrivileges().equals(newView.getPrivileges())) {
+            searchPathHelper.outputSearchPath(script);
+            script.addStatement(newView.getPrivilegesSQL());
+        }
+
+        PgDiff.diffComments(oldView, newView, script);
+        
+        final List<String> columnNames =
+                new ArrayList<>(newView.getColumnComments().size());
+
+        for (final PgView.ColumnComment columnComment :
+                newView.getColumnComments()) {
+            columnNames.add(columnComment.getColumnName());
+        }
+
+        for (final PgView.ColumnComment columnComment :
+                oldView.getColumnComments()) {
+            if (!columnNames.contains(columnComment.getColumnName())) {
+                columnNames.add(columnComment.getColumnName());
+            }
+        }
+
+        for (final String columnName : columnNames) {
+            PgView.ColumnComment oldColumnComment = null;
+            PgView.ColumnComment newColumnComment = null;
+
+            for (final PgView.ColumnComment columnComment :
+                    oldView.getColumnComments()) {
+                if (columnName.equals(columnComment.getColumnName())) {
+                    oldColumnComment = columnComment;
+                    break;
+                }
+            }
+
+            for (final PgView.ColumnComment columnComment :
+                    newView.getColumnComments()) {
+                if (columnName.equals(columnComment.getColumnName())) {
+                    newColumnComment = columnComment;
+                    break;
+                }
+            }
+
+            if (oldColumnComment == null && newColumnComment != null
+                    || oldColumnComment != null && newColumnComment != null
+                    && !oldColumnComment.getComment().equals(
+                    newColumnComment.getComment())) {
+                searchPathHelper.outputSearchPath(script);
+
+                script.addStatement("COMMENT ON COLUMN "
+                        + PgDiffUtils.getQuotedName(newView.getName())
+                        + '.'
+                        + PgDiffUtils.getQuotedName(newColumnComment.getColumnName())
+                        + " IS "
+                        + newColumnComment.getComment()
+                        + ';');
+            } else if (oldColumnComment != null
+                    && newColumnComment == null) {
+                searchPathHelper.outputSearchPath(script);
+
+                script.addStatement("COMMENT ON COLUMN "
+                        + PgDiffUtils.getQuotedName(newView.getName())
+                        + '.'
+                        + PgDiffUtils.getQuotedName(oldColumnComment.getColumnName())
+                        + " IS NULL;");
+            }
+        }
+            final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+            final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+            script.printStatements(writer);
+            sb.append(diffInput.toString().trim());
+            return false;
     }
 
     public void setQuery(final String query) {

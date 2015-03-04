@@ -46,6 +46,11 @@ public class PgSelect extends PgStatementWithSearchPath {
     public String getDropSQL() {
         return null;
     }
+    
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb) {
+    	return false;
+    }
 
     @Override
     public PgSelect shallowCopy() {

@@ -99,7 +99,7 @@ public class AlterTable extends ParserAbstract {
 
     private void fillDefColumn(PgTable table, Table_actionContext tablAction) {
         if (table.getColumn(getName(tablAction.column)) == null) {
-            PgColumn col = new PgColumn(getName(tablAction.column));
+            PgColumn col = new PgColumn(getName(tablAction.column), table.getSearchPath());
             col.setDefaultValue(getFullCtxText(tablAction.set_def_column().expression));
             table.addColumn(col);
         } else {
@@ -110,7 +110,7 @@ public class AlterTable extends ParserAbstract {
 
     private void fillStatictics(PgTable table, Table_actionContext tablAction) {
         if (table.getColumn(getName(tablAction.column)) == null) {
-            PgColumn col = new PgColumn(getName(tablAction.column));
+            PgColumn col = new PgColumn(getName(tablAction.column), table.getSearchPath());
             String number = tablAction.integer.getText();
             col.setStatistics(new Integer(number));
             table.addColumn(col);

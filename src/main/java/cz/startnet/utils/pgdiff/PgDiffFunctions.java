@@ -6,16 +6,12 @@
 package cz.startnet.utils.pgdiff;
 
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.Set;
 
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
 
 /**
  * Diffs functions.
@@ -123,7 +119,7 @@ public final class PgDiffFunctions {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterComments(final PgDiffScript script,
+    public static void alterComments(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -131,14 +127,9 @@ public final class PgDiffFunctions {
         }
 
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
-            final PgFunction newFunction =
-                    newSchema.getFunction(oldFunction.getSignature());
-
-            if (newFunction == null) {
-                continue;
-            }
-
-            PgDiff.diffComments(oldFunction, newFunction, script);
+        	if (newSchema.containsFunction(oldFunction.getSignature())) {
+        		depRes.addAlterStatements(oldFunction);
+        	}
         }
     }
 

@@ -194,7 +194,7 @@ public final class PgDiff {
         dropOldSchemas(script, depRes, arguments, oldDatabase, newDatabase);
         createNewSchemas(depRes, oldDatabase, newDatabase);
         createNewExtensions(depRes, oldDatabase, newDatabase);
-        updateExtensions(script, oldDatabase, newDatabase);
+        updateExtensions(depRes, oldDatabase, newDatabase);
         updateSchemas(script, arguments, oldDatabase, newDatabase);
 
         depRes.fillScript(script);
@@ -353,21 +353,10 @@ public final class PgDiff {
      * @param oldDatabase original database schema
      * @param newDatabase new database schema
      */
-    private static void updateExtensions(final PgDiffScript script,
+    private static void updateExtensions(final DepcyResolver depRes,
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension newExt : newDatabase.getExtensions()) {
-            final PgExtension oldExt = oldDatabase.getExtension(newExt.getName());
-            if(oldExt == null) {
-                continue;
-            }
-            
-            if(!Objects.equals(newExt.getSchema(), oldExt.getSchema())) {
-                script.addStatement("ALTER EXTENSION "
-                        + PgDiffUtils.getQuotedName(oldExt.getName())
-                        + " SET SCHEMA " + newExt.getSchema() + ";");
-            }
-            
-            diffComments(oldExt, newExt, script);
+           depRes.addAlterStatements(newExt);
         }
     }
     
@@ -503,16 +492,14 @@ public final class PgDiff {
         PgDiffSequences.dropSequences(
         		depRes, oldSchema, newSchema, searchPathHelper);
         
-        depRes.recreateDrops();
-
         PgDiffSequences.createSequences(
         		depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.alterSequences(
-                script, arguments, oldSchema, newSchema, searchPathHelper);
+        		depRes, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.createTables(
         		depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.alterTables(
-                script, arguments, oldSchema, newSchema, searchPathHelper);
+        		depRes, arguments, oldSchema, newSchema, searchPathHelper);
 //        PgDiffSequences.alterCreatedSequences(
 //                script, oldSchema, newSchema, searchPathHelper);
         PgDiffFunctions.createFunctions(
@@ -530,16 +517,18 @@ public final class PgDiff {
         PgDiffViews.createViews(
         		depRes, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffViews.alterViews(
-                script, arguments, oldSchema, newSchema, searchPathHelper);
+                depRes, arguments, oldSchema, newSchema, searchPathHelper);
 
         PgDiffFunctions.alterComments(
-                script, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffConstraints.alterComments(
-                script, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffIndexes.alterComments(
-                script, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffTriggers.alterComments(
-                script, oldSchema, newSchema, searchPathHelper);
+        		depRes, oldSchema, newSchema, searchPathHelper);
+        
+        depRes.recreateDrops();
     }
     
     static void tempSwitchSearchPath(String switchTo, 
@@ -699,7 +688,7 @@ public final class PgDiff {
         return dbNew;
     }
     
-    static void diffComments(PgStatement oldStatement, PgStatement newStatement,
+    public static void diffComments(PgStatement oldStatement, PgStatement newStatement,
             PgDiffScript script) {
         String oldComment = oldStatement == null ? null : oldStatement.getComment();
         // new statements are null checked before these calls

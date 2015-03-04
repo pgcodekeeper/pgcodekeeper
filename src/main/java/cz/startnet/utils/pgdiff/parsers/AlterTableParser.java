@@ -240,7 +240,7 @@ public final class AlterTableParser {
             // as they are not correctly supported
             if(!table.getInherits().isEmpty()) {
                 // consume the statement into a fake column object
-                column = new PgColumn(columnName);
+                column = new PgColumn(columnName, "");
             }
             
             // if table is not inherited throw an error as we're supposed to

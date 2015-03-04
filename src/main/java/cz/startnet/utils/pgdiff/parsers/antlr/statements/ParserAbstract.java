@@ -148,7 +148,7 @@ public abstract class ParserAbstract {
     protected PgColumn getColumn(Table_column_definitionContext colCtx, List<String> sequences) {
         PgColumn col = null;
         if (colCtx.column_name != null) {
-            col = new PgColumn(removeQuotes(colCtx.column_name));
+            col = new PgColumn(removeQuotes(colCtx.column_name), db.getDefSearchPath());
             for (Constraint_commonContext column_constraint : colCtx.colmn_constraint) {
                 if (column_constraint.constr_body().default_expr != null) {
                     col.setDefaultValue(getFullCtxText(column_constraint.constr_body().default_expr));
@@ -186,7 +186,7 @@ public abstract class ParserAbstract {
     private String getWrongColumn(String fullCtxText) {
         Parser par = new Parser(fullCtxText);
         par.parseIdentifier();
-        PgColumn col = new PgColumn("");
+        PgColumn col = new PgColumn("", "");
         col.parseDefinition(par.getRest(), new StringBuilder(1));
         return col.getType();
     }

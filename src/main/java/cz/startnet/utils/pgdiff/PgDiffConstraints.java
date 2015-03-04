@@ -79,7 +79,20 @@ public final class PgDiffConstraints {
                     getDropConstraints(oldTable, newTable, primaryKey)) {
             	depRes.addDropStatements(constraint);
             }
+        } 
+        // КОСТЫЛЬ
+        if (oldSchema == null){
+            return;
         }
+        
+        for (final PgTable oldTable : oldSchema.getTables()) {
+            if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
+                PgTable newTable = new PgTable(oldTable.getName(), null, null);
+                for (final PgConstraint constraint : getDropConstraints(oldTable, newTable, primaryKey)) {
+                	depRes.addDropStatements(constraint);
+                }
+            }
+        }// КОСТЫЛЬ
     }
 
     /**
@@ -160,7 +173,7 @@ public final class PgDiffConstraints {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterComments(final PgDiffScript script,
+    public static void alterComments(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -168,21 +181,14 @@ public final class PgDiffConstraints {
         }
 
         for (PgTable oldTable : oldSchema.getTables()) {
-            final PgTable newTable = newSchema.getTable(oldTable.getName());
-
-            if (newTable == null) {
-                continue;
-            }
-
+        	final PgTable newTable = newSchema.getTable(oldTable.getName());
+        	if (newTable == null) {
+        		continue;
+        	}
             for (final PgConstraint oldConstraint : oldTable.getConstraints()) {
-                final PgConstraint newConstraint =
-                        newTable.getConstraint(oldConstraint.getName());
-
-                if (newConstraint == null) {
-                    continue;
-                }
-                
-                PgDiff.diffComments(oldConstraint, newConstraint, script);
+            	if (newTable.containsConstraint(oldConstraint.getName())) {
+            		depRes.addAlterStatements(oldConstraint);	
+            	}
             }
         }
     }

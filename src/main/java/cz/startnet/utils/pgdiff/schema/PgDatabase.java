@@ -237,6 +237,11 @@ public class PgDatabase extends PgStatement {
     }
     
     @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb) {
+    	return false;
+    }
+    
+    @Override
     public boolean compare(PgStatement obj) {
         // for now all instances of PgDatabase considered to be shallow equal
         return obj instanceof PgDatabase;

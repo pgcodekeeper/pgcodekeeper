@@ -5,6 +5,8 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,8 +15,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.SearchPathHelper;
 
 /**
  * Stores table information.
@@ -219,6 +225,102 @@ public class PgTable extends PgStatementWithSearchPath {
     @Override
     public String getDropSQL() {
         return "DROP TABLE " + PgDiffUtils.getQuotedName(getName()) + ';';
+    }
+    
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sbuilder) {
+    	PgTable newTable = null;
+    	if (newCondition instanceof PgTable) {
+    		newTable = (PgTable)newCondition; 
+    	} else {
+    		return false;
+    	}
+    	PgDiffScript script = new PgDiffScript();
+    	SearchPathHelper searchPathHelper = new SearchPathHelper(this.getContainerSchema().getName());
+    	PgTable oldTable = this;
+    	String oldCluster = oldTable.getClusterIndexName();
+    	String newCluster = newTable.getClusterIndexName();
+    	if (oldCluster != null && newCluster == null) {
+            searchPathHelper.outputSearchPath(script);
+            script.addStatement("ALTER TABLE "
+                    + PgDiffUtils.getQuotedName(newTable.getName())
+                    + (newTable.containsIndex(oldCluster)? " SET WITHOUT CLUSTER;" : (" CLUSTER ON "
+                    + PgDiffUtils.getQuotedName(newCluster)
+                    + ';')));
+        }
+    	
+    	for (final Entry<String, String> tableName : oldTable.getInherits()) {
+            if (!newTable.getInherits().contains(tableName)) {
+                searchPathHelper.outputSearchPath(script);
+                script.addStatement("ALTER TABLE "
+                        + PgDiffUtils.getQuotedName(newTable.getName())
+                        + "\n\tNO INHERIT "
+                        + (tableName.getKey() == null ? 
+                                "" : PgDiffUtils.getQuotedName(tableName.getKey()) + ".")
+                        + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
+            }
+        }
+
+        for (final Entry<String, String> tableName : newTable.getInherits()) {
+            if (!oldTable.getInherits().contains(tableName)) {
+                searchPathHelper.outputSearchPath(script);
+                script.addStatement("ALTER TABLE "
+                        + PgDiffUtils.getQuotedName(newTable.getName())
+                        + "\n\tINHERIT "
+                        + (tableName.getKey() == null ? 
+                                "" : PgDiffUtils.getQuotedName(tableName.getKey()) + ".")
+                        + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
+            }
+        }
+    	boolean add = true;
+        if (oldTable.getWith() == null && newTable.getWith() == null
+                || oldTable.getWith() != null
+                && oldTable.getWith().equals(newTable.getWith())) {
+        	add = false;
+        }
+		if (add) {
+			searchPathHelper.outputSearchPath(script);
+
+			StringBuilder sb = new StringBuilder();
+			sb.append("ALTER TABLE ");
+			sb.append(PgDiffUtils.getQuotedName(newTable.getName()));
+
+			if (newTable.getWith() == null
+					|| "OIDS=false".equalsIgnoreCase(newTable.getWith())) {
+				sb.append("\n\tSET WITHOUT OIDS;");
+			} else if ("OIDS".equalsIgnoreCase(newTable.getWith())
+					|| "OIDS=true".equalsIgnoreCase(newTable.getWith())) {
+				sb.append("\n\tSET WITH OIDS;");
+			} else {
+				sb.append("\n\tSET ");
+				sb.append(newTable.getWith());
+				sb.append(';');
+			}
+			script.addStatement(sb.toString());
+		}
+		
+		add = true;
+		if (oldTable.getTablespace() == null && newTable.getTablespace() == null
+                || oldTable.getTablespace() != null
+                && oldTable.getTablespace().equals(newTable.getTablespace())) {
+			add = false;
+        }
+		if (add) {
+			searchPathHelper.outputSearchPath(script);
+			script.addStatement("ALTER TABLE "
+					+ PgDiffUtils.getQuotedName(newTable.getName())
+					+ "\n\tTABLESPACE " + newTable.getTablespace() + ';');
+		}
+		PgDiff.diffComments(oldTable, newTable, script);
+		
+		final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+        script.printStatements(writer);
+        sbuilder.append(diffInput.toString().trim());
+        if (!new HashSet<>(oldTable.getColumns()).equals(new HashSet<>(newTable.getColumns()))) {
+        	return true;
+        }
+        return sbuilder.length() > 0;
     }
     
     private String getClusterSQL() {

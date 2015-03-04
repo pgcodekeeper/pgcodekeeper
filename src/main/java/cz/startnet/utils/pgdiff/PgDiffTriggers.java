@@ -73,6 +73,19 @@ public final class PgDiffTriggers {
             	depRes.addDropStatements(trigger);
             }
         }
+        // КОСТЫЛЬ
+        if (oldSchema == null){
+            return;
+        }
+        
+        for (final PgTable oldTable : oldSchema.getTables()) {
+            if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
+                PgTable newTable = new PgTable(oldTable.getName(), null, null);
+                for (final PgTrigger trigger : getDropTriggers(oldTable, newTable)) {
+                	depRes.addDropStatements(trigger);
+                }
+            }
+        }// КОСТЫЛЬ
     }
 
     /**
@@ -141,7 +154,7 @@ public final class PgDiffTriggers {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterComments(final PgDiffScript script,
+    public static void alterComments(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -156,14 +169,9 @@ public final class PgDiffTriggers {
             }
 
             for (final PgTrigger oldTrigger : oldTable.getTriggers()) {
-                final PgTrigger newTrigger =
-                        newTable.getTrigger(oldTrigger.getName());
-
-                if (newTrigger == null) {
-                    continue;
-                }
-
-                PgDiff.diffComments(oldTrigger, newTrigger, script);
+            	if (newTable.containsTrigger(oldTrigger.getName())) {
+            		depRes.addAlterStatements(oldTrigger);
+            	}
             }
         }
     }

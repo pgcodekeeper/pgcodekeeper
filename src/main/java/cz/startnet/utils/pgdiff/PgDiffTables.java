@@ -129,18 +129,17 @@ public final class PgDiffTables {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterTables(final PgDiffScript script,
+    public static void alterTables(final DepcyResolver depRes,
             final PgDiffArguments arguments, final PgSchema oldSchema,
             final PgSchema newSchema, final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
             return;
         }
         
-        for (final PgTable newTable : newSchema.getTables()) {
-            if (oldSchema.containsTable(newTable.getName())) {
-                PgTable oldTable = oldSchema.getTable(newTable.getName());
-                alterTable(script, arguments, oldTable, newTable, searchPathHelper);
-            }
+        for (final PgTable oldTable : oldSchema.getTables()) {
+        	if (newSchema.containsTable(oldTable.getName())) {
+        		depRes.addAlterStatements(oldTable);
+        	}
         }
     }
 

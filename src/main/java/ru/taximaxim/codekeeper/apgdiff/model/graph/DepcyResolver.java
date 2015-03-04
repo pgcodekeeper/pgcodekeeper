@@ -11,8 +11,10 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.PgDiffScript;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
@@ -53,6 +55,7 @@ public class DepcyResolver {
 	 * @param toDrop объект для удаления из старой базы
 	 */
 	public void addDropStatements(PgStatement toDrop) {
+		toDrop = getObjectFromDB(toDrop, oldDb);
 		if (oldDepcyGraph.getReversedGraph().containsVertex(toDrop)) {
 			DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
 					oldDepcyGraph.getReversedGraph(), toDrop);
@@ -70,10 +73,30 @@ public class DepcyResolver {
 	 * @param toCreate
 	 */
 	public void addCreateStatements(PgStatement toCreate) {
+		toCreate = getObjectFromDB(toCreate, newDb);
 		if (newDepcyGraph.getGraph().containsVertex(toCreate)) {
 			DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
 					newDepcyGraph.getGraph(), toCreate);
 			customIteration(dfi, new CreateTraversalAdapter(actions));
+		}
+	}
+	
+	/**
+	 * При изменении объекта в старой базе, нужно попробовать изменить все
+	 * объекты из старой базы. <br>
+	 * Объект существует в обеих базах, но различается. Нужно попробовать
+	 * привести его к новому виду, при этом все объекты которым он нужен, также
+	 * нужно привести к новому виду. если это не возможно их нужно удалить.
+	 * (Затем создать из нового состояния)
+	 * 
+	 * @param toAlter
+	 */
+	public void addAlterStatements(PgStatement toAlter) {
+		toAlter = getObjectFromDB(toAlter, oldDb);
+		if (oldDepcyGraph.getGraph().containsVertex(toAlter)) {
+			DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
+					oldDepcyGraph.getReversedGraph(), toAlter);
+			customIteration(dfi, new AlterTraversalAdapter(actions));
 		}
 	}
 	
@@ -112,8 +135,14 @@ public class DepcyResolver {
 				script.addDrop(st, null, st.getDropSQL());
 				break;
 			case ALTER:
-				// TODO дописать
+				StringBuilder sb = new StringBuilder();
+				st.appendAlterSQL(action.getNewObj(), sb);
+				if (sb.length() > 0) {
+					script.addStatement(sb.toString());
+				}
 				break;
+			default:
+				throw new IllegalStateException("Not implemented action");
 			}
 		}
 		
@@ -146,81 +175,8 @@ public class DepcyResolver {
 			toRecreate.add(action.getOldObj());
 		}
 		for (PgStatement drop : toRecreate) {
-			PgSchema newSchema = null;
-			if (drop instanceof PgStatementWithSearchPath) {
-				newSchema = newDb.getSchema(((PgStatementWithSearchPath) drop)
-						.getContainerSchema().getName());	
-			}
-			switch (drop.getStatementType()) {
-				case EXTENSION:
-					if (newDb.getExtension(drop.getName()) != null) {
-						addCreateStatements(drop);
-					}
-					break;
-				case SCHEMA:
-					if (newDb.getSchema(drop.getName()) != null) {
-						addCreateStatements(drop);
-					}
-					break;
-			default:
-				break;
-			}
-			if (newSchema == null) {
-				return;
-			}
-			switch (drop.getStatementType()) {
-			case VIEW:
-				if (newSchema.getView(drop.getName()) != null) {
-					addCreateStatements(drop);
-				}
-				break;
-			case SEQUENCE:
-				if (newSchema.getSequence(drop.getName()) != null) {
-					addCreateStatements(drop);
-				}
-				break;
-			case FUNCTION:
-				if (newSchema.getFunction(drop.getName()) != null) {
-					addCreateStatements(drop);
-				}
-				break;
-			case TABLE:
-				if (newSchema.getTable(drop.getName()) != null) {
-					addCreateStatements(drop);
-				}
-				break;
-			case TRIGGER:
-				PgTrigger trig = (PgTrigger)drop; 
-				PgTable table = newSchema.getTable(trig.getTableName());
-				if (table != null) {
-					PgTrigger trigger = table.getTrigger(trig.getName());
-					if (trigger != null) {
-						addCreateStatements(trigger);
-					}
-				}
-				break;
-			case INDEX:
-				PgIndex ind = (PgIndex)drop; 
-				PgTable tableInd = newSchema.getTable(ind.getTableName());
-				if (tableInd != null) {
-					PgIndex index = tableInd.getIndex(ind.getName());
-					if (index != null) {
-						addCreateStatements(index);
-					}
-				}
-				break;
-			case CONSTRAINT:
-				PgConstraint constr = (PgConstraint)drop; 
-				PgTable tableConstr = newSchema.getTable(constr.getTableName());
-				if (tableConstr != null) {
-					PgConstraint constraint = tableConstr.getConstraint(constr.getName());
-					if (constraint != null) {
-						addCreateStatements(constraint);
-					}
-				}
-				break;
-			default:
-				break;
+			if (getObjectFromDB(drop, newDb) != null) {
+				addCreateStatements(drop);
 			}
 		}
 	}
@@ -250,79 +206,15 @@ public class DepcyResolver {
 			if (inDropsList(statement)) {
 				return false;
 			}
-			PgSchema oldSchema = null;
-			
-			switch (statement.getStatementType()) {
-			case EXTENSION:
-				if (statement.equals(oldDb.getExtension(statement.getName()))) {
-					return true;
-				}
-				break;
-			case SCHEMA:
-				if (oldDb.getSchema(statement.getName()) != null) {
-					return true;
-				}
-				break;
-			default:
-				break;
+			if (getObjectFromDB(statement, oldDb) != null) {
+				return true;
 			}
-			if (statement instanceof PgStatementWithSearchPath) {
-				oldSchema = oldDb.getSchema(((PgStatementWithSearchPath)statement).getContainerSchema()
-						.getName());
-			}
-			if (oldSchema == null) {
-				return false;
-			}
-			switch (statement.getStatementType()) {
-			case VIEW:
-				if (statement.equals(oldSchema.getView(statement.getName()))) {
+			if (statement.getStatementType() == DbObjType.COLUMN) {
+				PgStatement oldTable = getObjectFromDB(statement.getParent(), oldDb);
+				if (oldTable == null) {
 					return true;
 				}
-				break;
-			case TABLE:
-				if (statement.equals(oldSchema.getTable(statement.getName()))) {
-					return true;
-				} else {
-					
-				}
-				break;
-			case TRIGGER:
-				PgTrigger trigger = (PgTrigger) statement;
-				PgTrigger trig = oldSchema.getTable(trigger.getTableName()).getTrigger(trigger.getName());
-				if (trigger.equals(trig)) {
-					return true;
-				}
-				break;
-			case INDEX:
-				PgIndex index = (PgIndex) statement;
-				PgIndex ind = oldSchema.getTable(index.getTableName()).getIndex(index.getName());
-				if (index.equals(ind)) {
-					return true;
-				}
-				break;
-			case CONSTRAINT:
-				PgConstraint constraint = (PgConstraint) statement;
-				PgConstraint constr = oldSchema.getTable(constraint.getTableName()).getConstraint(constraint.getName());
-				if (constraint.equals(constr)) {
-					return true;
-				}
-				break;
-			case SEQUENCE:
-				if (statement.equals(oldSchema.getSequence(statement.getName()))) {
-					return true;
-				}
-				break;
-			case FUNCTION:
-				if (statement.equals(oldSchema.getFunction(statement.getName()))) {
-					return true;
-				}
-				break;
-			case COLUMN:
-			case CONTAINER:
-			case DATABASE:
-			default:
-				break;
-			}
+			} 
 			return false;
 		}
 	}
@@ -335,13 +227,52 @@ public class DepcyResolver {
 
 		@Override
 		protected boolean notAllowedToAdd(PgStatement statement) {
-			return super.notAllowedToAdd(statement);
+			if (super.notAllowedToAdd(statement)) {
+				return true;
+			}
+			if (statement.getStatementType() == DbObjType.COLUMN) {
+				PgStatement newTable = getObjectFromDB(statement.getParent(), newDb);
+				if (newTable != null
+						&& newTable.compare(statement.getParent())) {
+					return false;
+				} else {
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 	
+	private class AlterTraversalAdapter extends CustomTraversalListenerAdapter {
+
+		AlterTraversalAdapter(Set<ActionContainer> actions) {
+			super(actions, StatementActions.ALTER);
+		}
+		@Override
+		protected boolean notAllowedToAdd(PgStatement statement) {
+			if (super.notAllowedToAdd(statement)) {
+				return true;
+			}
+			PgStatement newSt = getObjectFromDB(statement, newDb);
+			if (statement.compare(newSt)) {
+				return true;
+			}
+			StringBuilder sb = new StringBuilder();
+			if (statement.appendAlterSQL(newSt, sb)) {
+				action = StatementActions.ALTER;
+				return false;	
+			} else {
+				if (sb.length() == 0) {
+					action = StatementActions.DROP;
+				}
+				return false;
+			}
+			
+		}
+	}
 	private abstract class CustomTraversalListenerAdapter extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
 		private Set<ActionContainer> actions;
-		private StatementActions action;
+		protected StatementActions action;
 
 		CustomTraversalListenerAdapter(Set<ActionContainer> actions, StatementActions action) {
 			this.actions = actions;
@@ -353,16 +284,8 @@ public class DepcyResolver {
 			if (notAllowedToAdd(statement)) {
 				return;
 			}
-			switch (statement.getStatementType()) {
-			case DATABASE:
-				break;
-			case SEQUENCE:
-				if (((PgSequence)statement).getOwnedBy() != null) {
-					sequencesOwnedBy.add((PgSequence)statement);	
-				}
-			default:
+			if (statement.getStatementType() != DbObjType.DATABASE) {
 				addToList(statement);
-				break;
 			}
 		}
 		
@@ -374,96 +297,87 @@ public class DepcyResolver {
 		}
 		
 		protected void addToList(PgStatement statement) {
-			PgDatabase db =  null;
 			switch (action) {
 			case CREATE:
-				db = oldDb;
+				if (statement.getStatementType() == DbObjType.SEQUENCE) {
+					if (((PgSequence)statement).getOwnedBy() != null) {
+						sequencesOwnedBy.add((PgSequence)statement);	
+					}
+				}
+			case DROP:
+				actions.add(new ActionContainer(statement, statement, action));
 				break;
 			case ALTER:
-			case DROP:
-				db = newDb;
-				break;
-				default:
-					throw new IllegalStateException("DataBase is not selected");
-			}
-			if (db == null) {
-				return;
-			}
-			PgStatement otherSt = null;
-			switch (statement.getStatementType()) {
-			case EXTENSION:
-				otherSt = db.getExtension(statement.getName());
-				break;
-			case SCHEMA:
-				otherSt = db.getSchema(statement.getName());
-				break;
-			case FUNCTION:
-				otherSt = db.getSchema(
-						((PgStatementWithSearchPath) statement)
-								.getContainerSchema().getName()).getFunction(
-						statement.getName());
-				break;
-			case SEQUENCE:
-				otherSt = db.getSchema(
-						((PgStatementWithSearchPath) statement)
-								.getContainerSchema().getName()).getSequence(
-						statement.getName());
-				break;
-			case VIEW:
-				otherSt = db.getSchema(
-						((PgStatementWithSearchPath) statement)
-								.getContainerSchema().getName()).getView(
-						statement.getName());
-				break;
-			case TABLE:
-				otherSt = db.getSchema(
-						((PgStatementWithSearchPath) statement)
-								.getContainerSchema().getName()).getTable(
-						statement.getName());
-				break;
-			case CONSTRAINT:
-				PgTable otherTable = db.getSchema(
-						((PgStatementWithSearchPath) statement)
-								.getContainerSchema().getName()).getTable(
-						((PgConstraint) statement).getTableName());
-				if (otherTable != null) {
-					otherSt = otherTable.getConstraint(statement.getName());
-				}
-				break;
-			case INDEX:
-				otherTable = db.getSchema(
-						((PgStatementWithSearchPath) statement)
-								.getContainerSchema().getName()).getTable(
-						((PgIndex) statement).getTableName());
-				if (otherTable != null) {
-					otherSt = otherTable.getIndex(statement.getName());
-				}
-				break;
-			case TRIGGER:
-				otherTable = db.getSchema(
-						((PgStatementWithSearchPath) statement)
-								.getContainerSchema().getName()).getTable(
-						((PgTrigger) statement).getTableName());
-				if (otherTable != null) {
-					otherSt = otherTable.getTrigger(statement.getName());
-				}
-				break;
-			}
-			switch (action) {
-			case CREATE:
-				actions.add(new ActionContainer(statement, statement, StatementActions.CREATE));
-				break;
-			case DROP:
-				actions.add(new ActionContainer(statement, statement, StatementActions.DROP));
-				break;
-			case ALTER:
-				actions.add(new ActionContainer(statement, otherSt, StatementActions.ALTER));
+				actions.add(new ActionContainer(statement, getObjectFromDB(statement, newDb), action));
 				break;
 			default:
-				break;
+				throw new IllegalStateException("Not implemented action");
 			}
 		}
 	}
+	
+	private PgStatement getObjectFromDB(PgStatement statement, PgDatabase db) {
+		PgSchema oldSchema = null;
+		switch (statement.getStatementType()) {
+		case EXTENSION:
+			return db.getExtension(statement.getName());
+		case SCHEMA:
+			return db.getSchema(statement.getName());
+		default:
+			break;
+		}
+		if (statement instanceof PgStatementWithSearchPath) {
+			oldSchema = db.getSchema(((PgStatementWithSearchPath)statement).getContainerSchema()
+					.getName());
+		}
+		if (oldSchema == null) {
+			return null;
+		}
+		switch (statement.getStatementType()) {
+		case VIEW:
+			return oldSchema.getView(statement.getName());
+		case TABLE:
+			return oldSchema.getTable(statement.getName());
+		case TRIGGER:
+			PgTrigger trig = (PgTrigger)statement; 
+			PgTable table = oldSchema.getTable(trig.getTableName());
+			if (table != null) {
+				return table.getTrigger(trig.getName());
+			}
+			break;
+		case INDEX:
+			PgIndex ind = (PgIndex)statement; 
+			PgTable tableInd = oldSchema.getTable(ind.getTableName());
+			if (tableInd != null) {
+				return tableInd.getIndex(ind.getName());
+			}
+			break;
+		case CONSTRAINT:
+			PgConstraint constr = (PgConstraint)statement; 
+			PgTable tableConstr = oldSchema.getTable(constr.getTableName());
+			if (tableConstr != null) {
+				return tableConstr.getConstraint(constr.getName());
+			}
+			break;
+		case COLUMN:
+			PgColumn column = (PgColumn)statement; 
+			PgTable tableCol = oldSchema.getTable(column.getParent().getName());
+			if (tableCol != null) {
+				return tableCol.getColumn(column.getName());
+			}
+			break;
+		case SEQUENCE:
+			return oldSchema.getSequence(statement.getName());
+		case FUNCTION:
+			return oldSchema.getFunction(statement.getName());
+		case CONTAINER:
+		case DATABASE:
+		default:
+			break;
+		}
+		return null;
+	}
+	
 	private class ActionContainer {
 		private PgStatement oldObj;
 		private PgStatement newObj;
