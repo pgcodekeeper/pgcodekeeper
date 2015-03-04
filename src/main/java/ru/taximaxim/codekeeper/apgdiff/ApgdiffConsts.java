@@ -27,4 +27,6 @@ public interface ApgdiffConsts {
         String JDBC_DRIVER = "org.postgresql.Driver";
         int JDBC_DEFAULT_PORT = 5432;
     }
+    
+    String SEARCH_PATH_PATTERN = "SET search_path = {0}, pg_catalog;";
 }

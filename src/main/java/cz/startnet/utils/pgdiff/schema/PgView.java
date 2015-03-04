@@ -40,8 +40,8 @@ public class PgView extends PgStatementWithSearchPath {
         return DbObjType.VIEW;
     }
     
-    public PgView(String name, String rawStatement, String searchPath) {
-        super(name, rawStatement, searchPath);
+    public PgView(String name, String rawStatement) {
+        super(name, rawStatement);
     }
 
     public void addColumnName(String colName) {
@@ -336,7 +336,7 @@ public class PgView extends PgStatementWithSearchPath {
     
     @Override
     public PgView shallowCopy() {
-        PgView viewDst = new PgView(getName(), getRawStatement(), getSearchPath());
+        PgView viewDst = new PgView(getName(), getRawStatement());
         viewDst.setQuery(getQuery());
         viewDst.setSelect(select.shallowCopy());
         viewDst.setComment(getComment());
@@ -452,7 +452,7 @@ public class PgView extends PgStatementWithSearchPath {
     }
     
     @Override
-    public PgStatement getContainerSchema() {
-    	return this.getParent();
+    public PgSchema getContainerSchema() {
+    	return (PgSchema)this.getParent();
     }
 }

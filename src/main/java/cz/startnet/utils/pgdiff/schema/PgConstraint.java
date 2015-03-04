@@ -37,8 +37,8 @@ public class PgConstraint extends PgStatementWithSearchPath {
         return DbObjType.CONSTRAINT;
     }
     
-    public PgConstraint(String name, String rawStatement, String searchPath) {
-        super(name, rawStatement, searchPath);
+    public PgConstraint(String name, String rawStatement) {
+        super(name, rawStatement);
     }
 
     @Override
@@ -149,7 +149,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
     
     @Override
     public PgConstraint shallowCopy() {
-        PgConstraint constraintDst = new PgConstraint(getName(), getRawStatement(), getSearchPath());
+        PgConstraint constraintDst = new PgConstraint(getName(), getRawStatement());
         constraintDst.setDefinition(getDefinition());
         constraintDst.setTableName(getTableName());
         constraintDst.setComment(getComment());
@@ -162,7 +162,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
     }
     
     @Override
-    public PgStatement getContainerSchema() {
-    	return this.getParent().getParent();
+    public PgSchema getContainerSchema() {
+    	return (PgSchema)this.getParent().getParent();
     }
 }

@@ -32,8 +32,8 @@ public class PgIndex extends PgStatementWithSearchPath {
         return DbObjType.INDEX;
     }
     
-    public PgIndex(String name, String rawStatement, String searchPath) {
-        super(name, rawStatement, searchPath);
+    public PgIndex(String name, String rawStatement) {
+        super(name, rawStatement);
     }
 
     @Override
@@ -151,7 +151,7 @@ public class PgIndex extends PgStatementWithSearchPath {
     
     @Override
     public PgIndex shallowCopy() {
-        PgIndex indexDst = new PgIndex(getName(), getRawStatement(), getSearchPath());
+        PgIndex indexDst = new PgIndex(getName(), getRawStatement());
         indexDst.setDefinition(getDefinition());
         indexDst.setTableName(getTableName());
         indexDst.setUnique(isUnique());
@@ -165,7 +165,7 @@ public class PgIndex extends PgStatementWithSearchPath {
     }
     
     @Override
-    public PgStatement getContainerSchema() {
-    	return this.getParent().getParent();
+    public PgSchema getContainerSchema() {
+    	return (PgSchema)this.getParent().getParent();
     }
 }

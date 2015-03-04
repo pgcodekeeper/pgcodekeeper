@@ -39,7 +39,7 @@ public class CreateView extends ParserAbstract {
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         }
-        PgView view = new PgView(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
+        PgView view = new PgView(name, getFullCtxText(ctx.getParent()));
         if (ctx.v_query != null) {
             view.setQuery(getFullCtxText(ctx.v_query));
             view.setSelect(parseSelect(ctx.v_query));
@@ -62,7 +62,7 @@ public class CreateView extends ParserAbstract {
     }
 
     private PgSelect parseSelect(Query_expressionContext ctx) {
-        PgSelect select = new PgSelect(getFullCtxText(ctx), null);
+        PgSelect select = new PgSelect(getFullCtxText(ctx));
         SelectQueryVisitor visitor = new SelectQueryVisitor(select);
         visitor.visit(ctx);
         return visitor.getSelect();
@@ -148,7 +148,7 @@ public class CreateView extends ParserAbstract {
         
         private void addFunction(Name_or_func_callsContext ctx) {
             PgFunction func = new PgFunction(
-                    getName(ctx.schema_qualified_name()), getFullCtxText(ctx), "");
+                    getName(ctx.schema_qualified_name()), getFullCtxText(ctx));
             String schema = getSchemaName(ctx.schema_qualified_name());
             columns.add(new GenericColumn(schema, func.getSignature(), null)
                     .setType(ViewReference.FUNCTION));

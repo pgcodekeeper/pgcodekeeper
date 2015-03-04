@@ -35,8 +35,8 @@ public class PgFunction extends PgStatementWithSearchPath {
         return DbObjType.FUNCTION;
     }
     
-    public PgFunction(String name, String rawStatement, String searchPath) {
-        super(name, rawStatement, searchPath);
+    public PgFunction(String name, String rawStatement) {
+        super(name, rawStatement);
     }
 
     @Override
@@ -367,7 +367,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     @Override
     public PgFunction shallowCopy() {
         PgFunction functionDst =
-                new PgFunction(getBareName(),getRawStatement(), getSearchPath());
+                new PgFunction(getBareName(),getRawStatement());
         functionDst.setReturns(getReturns());
         functionDst.setBody(getBody());
         functionDst.setComment(getComment());
@@ -392,7 +392,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     }
     
     @Override
-    public PgStatement getContainerSchema() {
-    	return this.getParent();
+    public PgSchema getContainerSchema() {
+    	return (PgSchema)this.getParent();
     }
 }

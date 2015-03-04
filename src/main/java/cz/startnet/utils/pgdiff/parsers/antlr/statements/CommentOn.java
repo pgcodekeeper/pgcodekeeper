@@ -31,7 +31,7 @@ public class CommentOn extends ParserAbstract {
         }
         // function
         if (ctx.function_args() != null) {
-            PgFunction func = new PgFunction(getName(ctx.name),null, db.getDefSearchPath());
+            PgFunction func = new PgFunction(getName(ctx.name),null);
             fillArguments(ctx.function_args(), func);
             name = func.getSignature();
             db.getSchema(schemaName).getFunction(name).setComment(comment);

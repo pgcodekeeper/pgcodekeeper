@@ -209,10 +209,10 @@ public final class AlterTableParser {
         final PgConstraint constraint;
         int posBefore = parser.getPosition();
         if (parser.expectOptional("FOREIGN", "KEY")){
-            constraint = new PgForeignKey(constraintName, null, searchPath);
+            constraint = new PgForeignKey(constraintName, null);
             parseAddConstraintForeignKey(parser, table, (PgForeignKey)constraint);
         }else{
-            constraint = new PgConstraint(constraintName, null, searchPath);
+            constraint = new PgConstraint(constraintName, null);
         }
         parser.setPosition(posBefore);
         constraint.setDefinition(parser.getExpression());
@@ -240,7 +240,7 @@ public final class AlterTableParser {
             // as they are not correctly supported
             if(!table.getInherits().isEmpty()) {
                 // consume the statement into a fake column object
-                column = new PgColumn(columnName, "");
+                column = new PgColumn(columnName);
             }
             
             // if table is not inherited throw an error as we're supposed to

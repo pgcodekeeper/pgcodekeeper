@@ -29,7 +29,7 @@ public class CreateTable extends ParserAbstract {
             schemaName = getDefSchemaName();
         }
         
-        PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
+        PgTable table = new PgTable(name, getFullCtxText(ctx.getParent()));
         List<String> sequences = new ArrayList<>();
         for (Table_column_defContext colCtx : ctx.table_col_def) {
             for (PgConstraint constr : getConstraint(colCtx)) {

@@ -25,7 +25,7 @@ public final class AlterFunctionParser {
         }
         
         String functionName = ParserUtils.getObjectName(id);
-        PgFunction tmp = new PgFunction(functionName, null, null);
+        PgFunction tmp = new PgFunction(functionName, null);
         CreateFunctionParser.parseArguments(p, tmp);
         
         PgFunction function = schema.getFunction(tmp.getSignature());

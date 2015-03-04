@@ -54,8 +54,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
         return DbObjType.TRIGGER;
     }
     
-    public PgTrigger(String name, String rawStatement, String searchPath) {
-        super(name, rawStatement, searchPath);        
+    public PgTrigger(String name, String rawStatement) {
+        super(name, rawStatement);        
     }
 
     public void setBefore(final boolean before) {
@@ -321,7 +321,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
     @Override
     public PgTrigger shallowCopy() {
         PgTrigger triggerDst =
-                new PgTrigger(getName(), getRawStatement(), getSearchPath());
+                new PgTrigger(getName(), getRawStatement());
         triggerDst.setBefore(isBefore());
         triggerDst.setForEachRow(isForEachRow());
         triggerDst.setFunction(getFullFunction(), getFunctionSignature());
@@ -344,7 +344,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
     }
     
     @Override
-    public PgStatement getContainerSchema() {
-    	return this.getParent().getParent();
+    public PgSchema getContainerSchema() {
+    	return (PgSchema)this.getParent().getParent();
     }
 }

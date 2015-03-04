@@ -46,7 +46,7 @@ public final class CreateViewParser {
         final String query = parser.getRest();
 
         final PgView view = new PgView(ParserUtils.getObjectName(viewName),
-                statement, searchPath);
+                statement);
         view.setColumnNames(columnNames);
         view.setQuery(query);
         view.setSelect(SelectParser.parse(database, query, searchPath));

@@ -36,8 +36,8 @@ public class PgSequence extends PgStatementWithSearchPath {
         return DbObjType.SEQUENCE;
     }
     
-    public PgSequence(String name, String rawStatement, String searchPath) {
-        super(name, rawStatement, searchPath);
+    public PgSequence(String name, String rawStatement) {
+        super(name, rawStatement);
     }
 
     public void setCache(final String cache) {
@@ -350,7 +350,7 @@ public class PgSequence extends PgStatementWithSearchPath {
 
     @Override
     public PgSequence shallowCopy() {
-        PgSequence sequenceDst = new PgSequence(getName(), getRawStatement(), getSearchPath());
+        PgSequence sequenceDst = new PgSequence(getName(), getRawStatement());
         sequenceDst.setCache(getCache());
         sequenceDst.setCycle(isCycle());
         sequenceDst.setIncrement(getIncrement());
@@ -372,7 +372,7 @@ public class PgSequence extends PgStatementWithSearchPath {
     }
     
     @Override
-    public PgStatement getContainerSchema() {
-    	return this.getParent();
+    public PgSchema getContainerSchema() {
+    	return (PgSchema)this.getParent();
     }
 }

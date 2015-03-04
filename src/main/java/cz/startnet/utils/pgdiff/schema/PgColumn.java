@@ -50,8 +50,8 @@ public class PgColumn extends PgStatementWithSearchPath {
         return DbObjType.COLUMN;
     }
     
-    public PgColumn(String name, String searchPath) {
-        super(name, null, searchPath);
+    public PgColumn(String name) {
+        super(name, null);
     }
 
     public void setDefaultValue(final String defaultValue) {
@@ -351,7 +351,7 @@ public class PgColumn extends PgStatementWithSearchPath {
     
     @Override
     public PgColumn shallowCopy() {
-        PgColumn colDst = new PgColumn(getName(), getSearchPath()); 
+        PgColumn colDst = new PgColumn(getName()); 
         colDst.setDefaultValue(getDefaultValue());
         colDst.setNullValue(getNullValue());
         colDst.setStatistics(getStatistics());
@@ -367,7 +367,7 @@ public class PgColumn extends PgStatementWithSearchPath {
     }
 
 	@Override
-	public PgStatement getContainerSchema() {
-		return this.getParent().getParent();
+	public PgSchema getContainerSchema() {
+		return (PgSchema)this.getParent().getParent();
 	}
 }

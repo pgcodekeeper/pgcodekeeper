@@ -105,7 +105,7 @@ public class PgSchema extends PgStatement {
         Parser p = new Parser(signature);
         // TODO qualified names here?
         PgFunction tmp = new PgFunction(
-                ParserUtils.getObjectName(p.parseIdentifier()), null, null);
+                ParserUtils.getObjectName(p.parseIdentifier()), null);
         CreateFunctionParser.parseArguments(p, tmp);
         
         for (PgFunction function : functions) {

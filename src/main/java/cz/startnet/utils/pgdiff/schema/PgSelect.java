@@ -11,8 +11,8 @@ public class PgSelect extends PgStatementWithSearchPath {
     
     private final List<GenericColumn> columns = new ArrayList<>();
     
-    public PgSelect(String rawStatement, String searchPath) {
-        super(null, rawStatement, searchPath);
+    public PgSelect(String rawStatement) {
+        super(null, rawStatement);
     }
     
     @Override
@@ -54,7 +54,7 @@ public class PgSelect extends PgStatementWithSearchPath {
 
     @Override
     public PgSelect shallowCopy() {
-        PgSelect selectDst = new PgSelect(getRawStatement(), getSearchPath());
+        PgSelect selectDst = new PgSelect(getRawStatement());
         selectDst.columns.addAll(columns);
         return selectDst;
     }
@@ -87,7 +87,7 @@ public class PgSelect extends PgStatementWithSearchPath {
     }
     
     @Override
-    public PgStatement getContainerSchema() {
+    public PgSchema getContainerSchema() {
     	return null;
     }
 }

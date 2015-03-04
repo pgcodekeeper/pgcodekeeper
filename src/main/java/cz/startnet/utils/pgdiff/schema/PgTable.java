@@ -51,8 +51,8 @@ public class PgTable extends PgStatementWithSearchPath {
         return DbObjType.TABLE;
     }
     
-    public PgTable(String name, String rawStatement, String searchPath) {
-        super(name, rawStatement, searchPath);
+    public PgTable(String name, String rawStatement) {
+        super(name, rawStatement);
     }
 
     public void setClusterIndexName(final String name) {
@@ -559,7 +559,7 @@ public class PgTable extends PgStatementWithSearchPath {
 
     @Override
     public PgTable shallowCopy() {
-        PgTable tableDst = new PgTable(getName(), getRawStatement(), getSearchPath());
+        PgTable tableDst = new PgTable(getName(), getRawStatement());
         tableDst.setClusterIndexName(getClusterIndexName());
         tableDst.setTablespace(getTablespace());
         tableDst.setWith(getWith());
@@ -598,7 +598,7 @@ public class PgTable extends PgStatementWithSearchPath {
     }
     
     @Override
-    public PgStatement getContainerSchema() {
-    	return this.getParent();
+    public PgSchema getContainerSchema() {
+    	return (PgSchema)this.getParent();
     }
 }

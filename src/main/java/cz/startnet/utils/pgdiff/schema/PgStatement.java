@@ -221,11 +221,13 @@ public abstract class PgStatement {
     public abstract String getDropSQL();
     
     /**
-     * Метод заполняет sb выражением изменения объекта.
-     * @param newCondition
-     * @param sb
-     * @return необходимость обработки зависящих от него объектов после своего изменения
-     */
+	 * Метод заполняет sb выражением изменения объекта.
+	 * 
+	 * @param newCondition
+	 * @param sb
+	 * @return необходимость добавления этого изменения в список изменений
+	 *         ALTER, иначе нужно добавить в список DROP
+	 */
     public abstract boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb);
     
     /**
