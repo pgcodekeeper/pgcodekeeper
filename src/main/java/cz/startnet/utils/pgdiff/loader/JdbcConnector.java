@@ -8,8 +8,12 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.Scanner;
 
+import org.osgi.framework.BundleContext;
+
+import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
@@ -30,7 +34,7 @@ public class JdbcConnector {
         this.dbName = dbName;
         this.encoding = encoding;
         this.timezone = timezone;
-        this.pass = pass.isEmpty() ? getPgPassPassword() : pass;
+        this.pass = (pass == null || pass.isEmpty()) ? getPgPassPassword() : pass;
     }
     
     /**
@@ -55,11 +59,22 @@ public class JdbcConnector {
     }
     
     private Connection establishConnection() throws SQLException, ClassNotFoundException{
+        Properties props = new Properties();
+        props.setProperty("user", user);
+        props.setProperty("password", pass);
+        String apgdiffVer = "unknown";
+        BundleContext bctx = Activator.getContext();
+        if (bctx != null) {
+            apgdiffVer = bctx.getBundle().getVersion().toString();
+        }
+        props.setProperty("ApplicationName", "pgCodeKeeper apgdiff module, Bundle-Version: "
+                + apgdiffVer);
+        
         Class.forName(ApgdiffConsts.JDBC_CONSTS.JDBC_DRIVER);
         Log.log(Log.LOG_INFO, "Establishing JDBC connection with host:port " +  //$NON-NLS-1$
                 host + ":" + port + ", db name " + dbName + ", username " + user); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         Connection connection = DriverManager.getConnection(
-                "jdbc:postgresql://" + host + ":" + port + "/" + dbName, user, pass); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                "jdbc:postgresql://" + host + ":" + port + "/" + dbName, props); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         return connection;
     }
     

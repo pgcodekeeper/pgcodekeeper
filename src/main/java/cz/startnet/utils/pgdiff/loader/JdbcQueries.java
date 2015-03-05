@@ -33,6 +33,7 @@ public final class JdbcQueries {
     public static String QUERY_VIEWS_PER_SCHEMA;
     public static String QUERY_TOTAL_OBJECTS_COUNT;
     public static String QUERY_TYPES_FOR_CACHE_ALL;
+    public static String QUERY_TYPES_PER_SCHEMA;
 // SONAR-ON
     
     static {
