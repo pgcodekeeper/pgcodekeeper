@@ -47,7 +47,7 @@ SELECT  -- GENERAL
     pg_catalog.pg_get_expr(typdefaultbin, 0) AS typdefaultbin, -- prefer this over typdefault
     t.typdefault, -- if using this, single-quote and escape it
     t.typelem,
-    pg_catalog.format_type(t.typelem, NULL) AS typelem, -- result depends on search_path!
+    pg_catalog.format_type(t.typelem, NULL) AS typelemname, -- result depends on search_path!
     t.typdelim, -- don't output if == ','
     t.typcollation, -- collatable == (collation != 0)
     -- END BASE
@@ -74,7 +74,7 @@ SELECT  -- GENERAL
     -- RANGE
     pg_catalog.format_type(r.rngsubtype, NULL) AS rngsubtype,
     opc.opcname, -- don't output opclass if opcdefault == true; always qualify
-    (SELECT n.nspname FROM nspnames n WHERE n.oid = opc.opcnamespace) AS opcschemaname,
+    (SELECT n.nspname FROM nspnames n WHERE n.oid = opc.opcnamespace) AS opcnspname,
     opc.opcdefault,
     r.rngcollation,
     (SELECT tsub.typcollation FROM pg_catalog.pg_type tsub WHERE tsub.oid = r.rngsubtype) AS rngsubtypcollation,
