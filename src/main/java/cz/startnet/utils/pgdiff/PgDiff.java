@@ -8,16 +8,9 @@ package cz.startnet.utils.pgdiff;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
-
-import org.jgrapht.DirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.traverse.DepthFirstIterator;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
@@ -25,16 +18,11 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
-import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
-import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
  * Creates diff of two database schemas.
@@ -44,10 +32,6 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 public final class PgDiff {
 
     private static DepcyGraph depcyOld;
-    private static DepcyGraph depcyNew;
-    
-    private static PgDatabase dbNew;
-    private static PgDatabase dbOld;
     
     private static DepcyResolver depRes;
 
@@ -142,52 +126,39 @@ public final class PgDiff {
                 oldDatabase, newDatabase, oldDbFull, newDbFull, null, null);
     }
     
-    public static PgDiffScript diffDatabaseSchemasAdditionalDepcies(PrintWriter writer,
-            PgDiffArguments arguments, PgDatabase oldDatabase, PgDatabase newDatabase,
+    public static PgDiffScript diffDatabaseSchemasAdditionalDepcies(
+            PrintWriter writer, PgDiffArguments arguments,
+            PgDatabase oldDatabase, PgDatabase newDatabase,
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
-        // since we cannot into OOP here - null the global vars at least
-        try {
-            depcyOld = new DepcyGraph(new PgDatabase());
-            depcyNew = new DepcyGraph(new PgDatabase());
-        } catch (PgCodekeeperException e) {
-            throw new IllegalStateException(MessageFormat.format(
-                    "Error creating dependency graph: {0}",
-                    e.getLocalizedMessage()), e);
-        }
         
         PgDiffScript script = new PgDiffScript();
-        
+
         if (arguments.isAddTransaction()) {
             script.addStatement("START TRANSACTION;");
         }
-
-        dbOld = oldDbFull;
-        dbNew = newDbFull;
+        depRes = null;
         
         // temp solution
-        if (oldDbFull != null && newDbFull != null){
+        if (oldDbFull != null && newDbFull != null) {
             try {
                 depcyOld = new DepcyGraph(oldDbFull);
-                depcyNew = new DepcyGraph(newDbFull);
                 depRes = new DepcyResolver(oldDbFull, newDbFull);
             } catch (PgCodekeeperException e) {
                 throw new IllegalStateException(MessageFormat.format(
                         "Error creating dependency graph: {0}",
                         e.getLocalizedMessage()), e);
             }
-            
+
             if (additionalDepciesSource != null) {
-                depcyOld.addCustomDepcies(additionalDepciesSource);
                 depRes.addCustomDepciesToOld(additionalDepciesSource);
             }
             if (additionalDepciesTarget != null) {
-                depcyNew.addCustomDepcies(additionalDepciesTarget);
                 depRes.addCustomDepciesToNew(additionalDepciesTarget);
             }
         }
-        
+
         diffComments(oldDatabase, newDatabase, script);
 
         dropOldExtensions(depRes, oldDatabase, newDatabase);
@@ -204,8 +175,10 @@ public final class PgDiff {
 
         script.printStatements(writer);
         if (arguments.isOutputIgnoredStatements()) {
-            addIgnoredStatements(oldDatabase, Messages.Database_OriginalDatabaseIgnoredStatements, writer);
-            addIgnoredStatements(newDatabase, Messages.Database_NewDatabaseIgnoredStatements, writer);
+            addIgnoredStatements(oldDatabase,
+                    Messages.Database_OriginalDatabaseIgnoredStatements, writer);
+            addIgnoredStatements(newDatabase,
+                    Messages.Database_NewDatabaseIgnoredStatements, writer);
         }
         return script;
     }
@@ -230,90 +203,6 @@ public final class PgDiff {
             writer.println("*/");
         }
     }
-    
-    /**
-     * Fills in the result list with all PgStatements, that are 
-     * dependent from parent
-     * <br>
-     * (that is, finds those vertices, that have common edge with parent where 
-     * parent is the target)
-     */
-    public static Set<PgStatement> getDependantsSet(PgStatement parent,
-            Set<PgStatement> result) {
-        return getDependants(parent, result, depcyOld);
-    }
-
-    /**
-     * Fills in the result list with all PgStatements, that are 
-     * dependent from parent <b>based on DepcyGraph</b>
-     * <br>
-     * (that is, finds those vertices, that have common edge with parent where 
-     * parent is the target)
-     */
-    public static Set<PgStatement> getDependantsSet(PgStatement parent,
-            Set<PgStatement> result, DepcyGraph graph) {
-        return getDependants(parent, result, graph);
-    }
-    
-    private static Set<PgStatement> getDependants(PgStatement parent,
-            Set<PgStatement> result, DepcyGraph graph) {
-        DirectedGraph<PgStatement, DefaultEdge> depcyGraph = graph.getGraph();
-        if (depcyGraph.containsVertex(parent)){
-            for (DefaultEdge edge : depcyGraph.incomingEdgesOf(parent)) {
-                PgStatement dependant = depcyGraph.getEdgeSource(edge);
-                boolean alreadyProcessed = result.contains(dependant);
-                if (alreadyProcessed) {
-                    DepthFirstIterator<PgStatement, DefaultEdge> iter = 
-                            new DepthFirstIterator<>(graph.getReversedGraph(), dependant);
-                    while(iter.hasNext()){
-                        PgStatement next = iter.next();
-                        result.remove(next);
-                        result.add(next);
-                    }
-                }else {
-                    result.add(dependant);
-                    getDependants(dependant, result, graph);
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Fills in the result list with all PgStatements, that child is dependent from.
-     * <br>
-     * (that is, finds those vertices, that have common edge with child where 
-     * child is the source)
-     */
-    public static Set<PgStatement> getDependenciesSet(PgStatement child,
-            Set<PgStatement> result, boolean firstLevelSearchOnly){
-        return getDependencies(child, result, firstLevelSearchOnly, depcyNew.getGraph());
-    }
-    
-    /**
-     * Fills in the result list with all PgStatements, that child is dependent from <b>based on depcyGraph</b>.
-     * <br>
-     * (that is, finds those vertices, that have common edge with child where 
-     * child is the source)
-     */
-    public static Set<PgStatement> getDependenciesSet(PgStatement child,
-            Set<PgStatement> result, boolean firstLevelSearchOnly, DirectedGraph<PgStatement, DefaultEdge> depcyGraph){
-        return getDependencies(child, result, firstLevelSearchOnly, depcyGraph);
-    }
-    
-    private static Set<PgStatement> getDependencies(PgStatement child,
-            Set<PgStatement> result, boolean firstLevelSearchOnly, DirectedGraph<PgStatement, DefaultEdge> depcyGraph) {
-        if (depcyGraph.containsVertex(child)){
-            for (DefaultEdge edge : depcyGraph.outgoingEdgesOf(child)){
-                PgStatement dependency = depcyGraph.getEdgeTarget(edge);
-                if (result.add(dependency) && !firstLevelSearchOnly) {
-                    getDependencies(dependency, result, firstLevelSearchOnly, depcyGraph);
-                }
-            }
-        }
-        return result;
-    }
-    
     /**
      * Creates new extensions.
      * 
@@ -551,142 +440,6 @@ public final class PgDiff {
     
     static void writeDropSql(PgDiffScript script, String comment, PgStatement pgObject) {
         script.addDrop(pgObject, comment, pgObject.getDropSQL());
-    }
-    
-    static List<PgStatement> addUniqueDependenciesOnCreateEdit(PgDiffScript script,
-            PgDiffArguments arguments, SearchPathHelper newSearchPathHelper, PgStatement fullStatement){
-        
-        List<PgStatement> specialDependencies = new ArrayList<>();
-        addUniqueDependencies(specialDependencies, script, arguments, newSearchPathHelper, fullStatement, null);
-        return specialDependencies;
-    }
-    
-    private static List<PgStatement> addUniqueDependencies(List<PgStatement> specialDependencies, 
-            PgDiffScript script, PgDiffArguments arguments, SearchPathHelper searchPathHelper,
-            PgStatement fullStatement, PgStatement previous){
-        
-        // order is insignificant, if we do firstLevelSearchOnly
-        Set<PgStatement> dependencies = new HashSet<>();
-        getDependenciesSet(fullStatement, dependencies, true);
-        
-        for (PgStatement dep : dependencies){
-            // специальный случай: так как ТАБЛИЦА <-> ПОСЛЕДОВАТЕЛЬНОСТЬ могут образовывать цикл и привести к StackOverflowError,
-            // мы проверяем объект из предыдущей итерации на равество с зависимыми объектами текущего.
-            // Если равенство выполняется, мы оказались в цикле и пропускаем текущую зависимость - прерываем цикл 
-            if (dep instanceof PgTable && dep.equals(previous)){
-                continue;
-            }
-            addUniqueDependencies(specialDependencies, script, arguments, searchPathHelper,
-                    dep, fullStatement);
-            if (dep instanceof PgView){
-                String newSchemaName = dep.getParent().getName();
-                PgSchema schemaOld = dbOld.getSchema(newSchemaName);
-                
-                PgView viewOld = (schemaOld == null) ? null : schemaOld.getView(dep.getName());
-                writeDepcyObjToScript(script, searchPathHelper, fullStatement, dep, 
-                        "View", newSchemaName, viewOld);                
-            }else if (dep instanceof PgSequence){
-                if(specialDependencies.contains(dep)){
-                    continue;
-                }
-                String newSchemaName = dep.getParent().getName();
-                
-                PgSchema schemaOld = dbOld.getSchema(newSchemaName);
-                if (schemaOld == null || schemaOld.getSequence(dep.getName()) == null){
-                    tempSwitchSearchPath(newSchemaName, searchPathHelper, script);
-                    writeCreationSql(script, "-- DEPCY: this sequence is in dependency tree of " + 
-                            fullStatement.getBareName(), dep, true);
-                    specialDependencies.add(dep);
-                }
-            }else if (dep instanceof PgTable){
-                String newSchemaName = dep.getParent().getName();
-                PgSchema schemaOld = dbOld.getSchema(newSchemaName);
-
-                PgTable tableOld = (schemaOld == null) ? null : schemaOld.getTable(dep.getName());
-                if (tableOld == null){
-                    tempSwitchSearchPath(newSchemaName, searchPathHelper, script);
-                    writeCreationSql(script, "-- DEPCY: this table is in dependency tree of " + 
-                            fullStatement.getBareName(), dep, true);
-                }else if (fullStatement instanceof PgView && !dep.equals(tableOld)){
-                    /*
-                     *  FIXME !dep.equals(tableOld) on previous line checks 
-                     *  constraints/triggers/indices too, while PgDiffTables.alterTable() 
-                     *  later does not consider changes in named objects
-                     *  
-                     *  Important: fix will break test DifferTest case DifferData_5
-                     */
-                    // special case: modified table is required for view creation/edit
-                    // ensure that dependant view is in NEW/EDIT state
-                    PgView viewNew = (PgView) fullStatement;
-                    PgSchema viewSchemaOld = dbOld.getSchema(viewNew.getParent().getName());
-                    if (viewSchemaOld == null || !viewNew.equals(viewSchemaOld.getView(viewNew.getName()))){
-                        for(GenericColumn newColumn : viewNew.getSelect().getColumns()){
-                            if (    tableOld.getParent().getName().equals(newColumn.schema) && 
-                                    tableOld.getName().equals(newColumn.table) && 
-                                    tableOld.getColumn(newColumn.column) == null){
-                                script.addStatement("-- DEPCY: this table is in dependency tree of " + 
-                                    fullStatement.getBareName());
-                                PgDiffTables.alterTable(script, arguments,
-                                        tableOld, (PgTable) dep, searchPathHelper);
-                                break;
-                            }
-                        }
-                    }
-                }// end special case
-            }else if (dep instanceof PgSchema){
-                // NB public schema always exists in dbOld, thus it will 
-                // never be created here
-                if (dbOld.getSchema(dep.getName()) == null){
-                    writeCreationSql(script, "-- DEPCY: this schema is in dependency tree of " + 
-                            fullStatement.getBareName(), dep, true);
-                }
-            } else if (dep instanceof PgFunction) {
-                if (fullStatement instanceof PgTrigger) {
-                    String newSchemaName = dep.getParent().getName();
-                    PgSchema schemaOld = dbOld.getSchema(newSchemaName);
-                    PgStatement funcOld = (schemaOld == null) ? null : schemaOld
-                            .getFunction(dep.getName());
-                    writeDepcyObjToScript(script, searchPathHelper,
-                            fullStatement, dep, "Function", newSchemaName, funcOld);
-                }
-            }
-        }
-
-        return specialDependencies;
-    }
-
-    /**
-     * Пересоздает(DROP - CREATE) зависимость, если она существует и отличается в двух схемах,
-     * иначе просто создает зависимость
-     * @param script скрипт для комманд SQL
-     * @param searchPathHelper 
-     * @param fullStatement зависимый объект
-     * @param objNew зависимость в новой базе
-     * @param objName имя типа объекта зависимости
-     * @param newSchemaName имя схемы в новой базе
-     * @param objOld зависимость в исходной базе
-     */
-    private static void writeDepcyObjToScript(PgDiffScript script,
-            SearchPathHelper searchPathHelper, PgStatement fullStatement,
-            PgStatement objNew, String objName, String newSchemaName, PgStatement objOld) {
-        if (objOld == null) {
-            tempSwitchSearchPath(objNew.getParent().getName(), searchPathHelper, script);
-            writeCreationSql(script,
-                    "-- DEPCY: this " + objName + " is in dependency tree of "
-                            + fullStatement.getBareName(), objNew, true);
-        }else if (!objOld.equals(objNew)){
-            tempSwitchSearchPath(newSchemaName, searchPathHelper, script);
-            writeDropSql(script,
-                    "-- DEPCY: recreating " + objName + " that is in dependency tree of "
-                            + fullStatement.getBareName(), objOld);
-            writeCreationSql(script,
-                    "-- DEPCY: recreating " + objName + " that is in dependency tree of "
-                            + fullStatement.getBareName(), objNew, true);
-        }
-    }
-    
-    static PgDatabase getFullDbNew() {
-        return dbNew;
     }
     
     public static void diffComments(PgStatement oldStatement, PgStatement newStatement,
