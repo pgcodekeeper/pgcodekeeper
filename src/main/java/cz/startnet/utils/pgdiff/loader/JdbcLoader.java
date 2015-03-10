@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.Parser;
@@ -39,6 +40,7 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -50,6 +52,8 @@ import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgType;
+import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class JdbcLoader implements PgCatalogStrings {
@@ -77,15 +81,17 @@ public class JdbcLoader implements PgCatalogStrings {
     private PreparedStatement prepStatFunctions;
     private PreparedStatement prepStatSequences;
     private PreparedStatement prepStatConstraints;
-    private PreparedStatement prepStatIndecies;
+    private PreparedStatement prepStatIndices;
     private PreparedStatement prepStatColumnsOfSchema;
+    private PreparedStatement prepStatTypes;
     
     private Map<Long, String> cachedRolesNamesByOid = new HashMap<>();
     private Map<Long, JdbcType> cachedTypeNamesByOid = new HashMap<>();
     /*
-     * Stores cached results of query "SELECT typmodout(colTypeMod)" for types.<br>
+     * Stores cached results of query "SELECT typmodout(colTypeMod)" for types.
      * Key is the oid of pg_catalog.pg_type table. Inner map stores pairs of colTypeMod 
      * and result of "SELECT typmodout(colTypeMod)" query.
+     * typmodout is type-defined function that converts (colTypeMod) into the value we need.
      */
     private Map<Long, Map<Integer,String>> cachedTypesTypmodouts = new HashMap<>();
     private Map<Long, Map<Integer, String>> cachedColumnNamesByTableOid = new HashMap<>();
@@ -180,11 +186,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             
             // fill in data types
-            try(ResultSet res = stmnt.executeQuery("SELECT t.oid::bigint, t.typname, t.typlen, "
-                    + "t.typelem::regtype AS castedType, t.typarray, n.nspname, proc.proname, nsp.nspname  "
-                    + "FROM pg_catalog.pg_type t LEFT JOIN pg_catalog.pg_namespace n ON t.typnamespace = n.oid "
-                    + "LEFT JOIN pg_catalog.pg_proc proc ON proc.oid = t.typmodout "
-                    + "LEFT JOIN pg_catalog.pg_namespace nsp ON t.typnamespace = nsp.oid")){
+            try(ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_TYPES_FOR_CACHE_ALL)){
                 while (res.next()){
                     JdbcType type = new JdbcType(res.getString("typname"), res.getString("castedType"), 
                             res.getLong("typarray"), res.getInt("typlen"), res.getString("proname"),
@@ -202,8 +204,9 @@ public class JdbcLoader implements PgCatalogStrings {
         prepStatFunctions = connection.prepareStatement(JdbcQueries.QUERY_FUNCTIONS_PER_SCHEMA);
         prepStatSequences = connection.prepareStatement(JdbcQueries.QUERY_SEQUENCES_PER_SCHEMA);
         prepStatConstraints = connection.prepareStatement(JdbcQueries.QUERY_CONSTRAINTS_PER_SCHEMA);
-        prepStatIndecies = connection.prepareStatement(JdbcQueries.QUERY_INDECIES_PER_SCHEMA);
+        prepStatIndices = connection.prepareStatement(JdbcQueries.QUERY_INDICES_PER_SCHEMA);
         prepStatColumnsOfSchema = connection.prepareStatement(JdbcQueries.QUERY_COLUMNS_PER_SCHEMA);
+        prepStatTypes = connection.prepareStatement(JdbcQueries.QUERY_TYPES_PER_SCHEMA);
     }
 
     private void closeResources() {
@@ -243,7 +246,7 @@ public class JdbcLoader implements PgCatalogStrings {
             Log.log(Log.LOG_WARNING, "Could not close prepared statement for constraints", e);
         }
         try {
-            prepStatIndecies.close();
+            prepStatIndices.close();
         } catch (Exception e) {
             Log.log(Log.LOG_WARNING, "Could not close prepared statement for indecies", e);
         }
@@ -251,6 +254,11 @@ public class JdbcLoader implements PgCatalogStrings {
             prepStatColumnsOfSchema.close();
         } catch (Exception e) {
             Log.log(Log.LOG_WARNING, "Could not close prepared statement for schema columns", e);
+        }
+        try {
+            prepStatTypes.close();
+        } catch (Exception e) {
+            Log.log(Log.LOG_WARNING, "Could not close prepared statement for schema types", e);
         }
     }
     
@@ -272,6 +280,23 @@ public class JdbcLoader implements PgCatalogStrings {
         // setting current schema as default
         try(Statement stmnt = connection.createStatement()){
             stmnt.execute("SET search_path TO " + schemaName + ";");
+        }
+        // END SCHEMA
+        
+        // TYPES
+        prepStatTypes.setLong(1, schemaOid);
+        try(ResultSet resTypes = prepStatTypes.executeQuery()){
+            while (resTypes.next()) {                
+                PgStatement typeOrDomain = getTypeDomain(resTypes, schemaName);
+                monitor.worked(1);
+                if (typeOrDomain != null){
+                    if (typeOrDomain.getStatementType() == DbObjType.DOMAIN) {
+                        s.addDomain((PgDomain) typeOrDomain);
+                    } else {
+                        s.addType((PgType) typeOrDomain);
+                    }
+                }
+            }
         }
         
         // TABLES
@@ -302,8 +327,8 @@ public class JdbcLoader implements PgCatalogStrings {
         }
         
         // INDECIES
-        prepStatIndecies.setLong(1, schemaOid);
-        try(ResultSet resIndecies = prepStatIndecies.executeQuery()){
+        prepStatIndices.setLong(1, schemaOid);
+        try(ResultSet resIndecies = prepStatIndices.executeQuery()){
             while (resIndecies.next()){
                 table = s.getTable(resIndecies.getString("table_name"));
                 if (table != null){
@@ -368,6 +393,218 @@ public class JdbcLoader implements PgCatalogStrings {
         
         setSequencesCacheValue(s);
         return s;
+    }
+    
+    private PgStatement getTypeDomain(ResultSet res, String schemaName) throws SQLException {
+        PgStatement st = null;
+        String typtype = res.getString("typtype");
+        if ("d".equals(typtype)) {
+            st = getDomain(res, schemaName);
+        } else {
+            st = getType(res, schemaName, typtype);
+        }
+        if (st != null) {
+            st.setOwner(getRoleNameByOid(res.getLong("typowner")));
+            setPrivileges(st, st.getName(), res.getString("typacl"), st.getOwner(), null);
+            String comment = res.getString("description");
+            if (comment != null && !comment.isEmpty()) {
+                st.setComment(ParserUtils.quoteString(comment));
+            }
+        }
+        return st;
+    }
+    
+    private PgDomain getDomain(ResultSet res, String schemaName) throws SQLException {
+        PgDomain d = new PgDomain(res.getString("typname"), "", getSearchPath(schemaName));
+        
+        d.setDataType(res.getString("dom_basetype"));
+        long collation = res.getLong("typcollation");  
+        if (collation != 0 && collation != res.getLong("dom_basecollation")) {
+            d.setCollation(PgDiffUtils.getQuotedName(res.getString("dom_collationnspname"))
+                    + '.' + PgDiffUtils.getQuotedName(res.getString("dom_collationname")));
+        }
+        
+        String def = res.getString("dom_defaultbin");
+        if (def == null) {
+            def = ParserUtils.quoteString(res.getString("typdefault"));
+        }
+        d.setDefaultValue(def);
+        
+        d.setNotNull(res.getBoolean("dom_notnull"));
+        
+        String[] connames = (String[]) res.getArray("dom_connames").getArray();
+        String[] condefs = (String[]) res.getArray("dom_condefs").getArray();
+        Boolean[] convalids = (Boolean[]) res.getArray("dom_convalidates").getArray();
+        String[] concomments = (String[]) res.getArray("dom_concomments").getArray();
+        
+        for (int i = 0; i < connames.length; ++i) {
+            PgConstraint c = new PgConstraint(connames[i], "", getSearchPath(schemaName));
+            c.setDefinition(condefs[i]);
+            if (convalids[i]) {
+                d.addConstraint(c);
+            } else {
+                d.addConstrNotValid(c);
+            }
+            if (concomments[i] != null && !concomments[i].isEmpty()) {
+                c.setComment(ParserUtils.quoteString(concomments[i]));
+            }
+        }
+        
+        return d;
+    }
+    
+    private PgType getType(ResultSet res, String schemaName, String typtype) throws SQLException {
+        String name = res.getString("typname");
+        PgType t = null;
+        switch (typtype) {
+        case "b":
+            t = new PgType(name, PgTypeForm.BASE, "", getSearchPath(schemaName));
+            
+            t.setInputFunction(res.getString("typinput"));
+            t.setOutputFunction(res.getString("typoutput"));
+            if (res.getBoolean("typreceiveset")) {
+                t.setReceiveFunction(res.getString("typreceive"));
+            }
+            if (res.getBoolean("typsendset")) {
+                t.setSendFunction(res.getString("typsend"));
+            }
+            if (res.getBoolean("typmodinset")) {
+                t.setTypmodInputFunction(res.getString("typmodin"));
+            }
+            if (res.getBoolean("typmodoutset")) {
+                t.setTypmodOutputFunction(res.getString("typmodout"));
+            }
+            if (res.getBoolean("typanalyzeset")) {
+                t.setAnalyzeFunction(res.getString("typanalyze"));
+            }
+            
+            Short len = res.getShort("typlen");
+            t.setInternalLength(len == -1 ? "variable" : len.toString());
+            t.setPassedByValue(res.getBoolean("typbyval"));
+            
+            String align = res.getString("typalign");
+            switch (align) {
+            case "c":
+                align = "char";
+                break;
+            case "s":
+                align = "int2";
+                break;
+            case "i":
+                align = "int4";
+                break;
+            case "d":
+                align = "double";
+                break;
+            }
+            t.setAlignment(align);
+            
+            String storage = res.getString("typstorage");
+            switch (storage) {
+            case "p":
+                storage = "plain";
+                break;
+            case "e":
+                storage = "external";
+                break;
+            case "x":
+                storage = "extended";
+                break;
+            case "m":
+                storage = "main";
+                break;
+            }
+            t.setStorage(storage);
+            
+            String cat = res.getString("typcategory");
+            if (!"U".equals(cat)) {
+                t.setCategory(ParserUtils.quoteString(cat));
+            }
+            
+            if (res.getBoolean("typispreferred")) {
+                t.setPreferred("true");
+            }
+            
+            String def = res.getString("typdefaultbin");
+            if (def == null) {
+                def = ParserUtils.quoteString(res.getString("typdefault"));
+            }
+            t.setDefaultValue(def);
+            
+            if (res.getLong("typelem") != 0) {
+                t.setElement(res.getString("typelemname"));
+            }
+            
+            String delim = res.getString("typdelim");
+            if (!",".equals(delim)) {
+                t.setDelimiter(ParserUtils.quoteString(delim));
+            }
+            
+            if (res.getLong("typcollation") != 0) {
+                t.setCollatable("true");
+            }
+            break;
+            
+        case "c":
+            t = new PgType(name, PgTypeForm.COMPOSITE, "", getSearchPath(schemaName));
+            
+            String[] attnames = (String[]) res.getArray("comp_attnames").getArray();
+            String[] atttypes = (String[]) res.getArray("comp_atttypdefns").getArray();
+            Long[] attcollations = (Long[]) res.getArray("comp_attcollations").getArray();
+            Long[] atttypcollations = (Long[]) res.getArray("comp_atttypcollations").getArray();
+            String[] attcollationnames = (String[]) res.getArray("comp_attcollationnames").getArray();
+            String[] attcollationnspnames = (String[]) res.getArray("comp_attcollationnspnames").getArray();
+            String[] attcomments = (String[]) res.getArray("comp_attcomments").getArray();
+            
+            for (int i = 0; i < attnames.length; ++i) {
+                PgColumn a = new PgColumn(attnames[i]);
+                StringBuilder sbDef = new StringBuilder(atttypes[i]);
+                if (attcollations[i] != 0 && attcollations[i] != atttypcollations[i]) {
+                    sbDef.append(" COLLATE ")
+                            .append(PgDiffUtils.getQuotedName(attcollationnspnames[i]))
+                            .append('.')
+                            .append(PgDiffUtils.getQuotedName(attcollationnames[i]));
+                }
+                t.addAttr(a);
+                if (attcomments[i] != null && !attcomments[i].isEmpty()) {
+                    a.setComment(ParserUtils.quoteString(attcomments[i]));
+                }
+            }
+            break;
+            
+        case "e": 
+            t = new PgType(name, PgTypeForm.ENUM, "", getSearchPath(schemaName));
+            
+            String[] enums = (String[]) res.getArray("enums").getArray();
+            for (String enum_ : enums) {
+                t.addEnum(ParserUtils.quoteString(enum_));
+            }
+            break;
+            
+        case "r":
+            t = new PgType(name, PgTypeForm.RANGE, "", getSearchPath(schemaName));
+            
+            t.setSubtype(res.getString("rngsubtype"));
+            if (!res.getBoolean("opcdefault")) {
+                t.setSubtypeOpClass(PgDiffUtils.getQuotedName(res.getString("opcnspname")
+                        + '.' + PgDiffUtils.getQuotedName(res.getString("opcname"))));
+            }
+            
+            long collation = res.getLong("rngcollation");
+            if (collation != 0 && collation != res.getLong("rngsubtypcollation")) {
+                t.setCollation(PgDiffUtils.getQuotedName(res.getString("rngcollationnspname")
+                        + '.' + PgDiffUtils.getQuotedName(res.getString("rngcollationname"))));
+            }
+            
+            if (res.getBoolean("rngcanonicalset")) {
+                t.setCanonical(res.getString("rngcanonical"));
+            }
+            if (res.getBoolean("rngsubdiffset")) {
+                t.setCanonical(res.getString("rngsubdiff"));
+            }
+            break;
+        }
+        return t;
     }
     
     private void setSequencesCacheValue(PgSchema s) throws SQLException {
@@ -517,11 +754,6 @@ public class JdbcLoader implements PgCatalogStrings {
     }
     
     private PgView getView(ResultSet res, String schemaName) throws SQLException {
-        for(String depType : (String[]) res.getArray("deptype").getArray()){
-            if (depType.equals("e")){
-                return null;
-            }
-        }
         String viewName = res.getString(CLASS_RELNAME);
         
         String viewDef = res.getString("definition").trim();
@@ -529,7 +761,7 @@ public class JdbcLoader implements PgCatalogStrings {
             viewDef = viewDef.substring(0, viewDef.length() - 1);
         }
         
-        PgView v = new PgView(viewName, viewDef, getSearchPath(schemaName));
+        PgView v = new PgView(viewName, "", getSearchPath(schemaName));
         v.setQuery(viewDef);
         
         // TODO костыль: необходимо передавать БД с дефолтной схемой = текущей схеме,
@@ -602,15 +834,8 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private PgTable getTable(ResultSet res, String schemaName) throws SQLException{
-        for(String depType : (String[]) res.getArray("deptype").getArray()){
-            if (depType.equals("e")){
-                return null;
-            }
-        }
         String tableName = res.getString(CLASS_RELNAME);
         String tableOwner = getRoleNameByOid(res.getLong(CLASS_RELOWNER));
-        StringBuilder tableDef = new StringBuilder(); 
-        tableDef.append("CREATE TABLE ".concat(tableName).concat(" (\n"));
         
         List<PgColumn> columns = new ArrayList<>();
         
@@ -674,29 +899,23 @@ public class JdbcLoader implements PgCatalogStrings {
             String columnTypeName = columnType.getSchemaQualifiedName(schemaName, typMod);
             column.setType(columnTypeName);
             
-            tableDef.append("   " + columnName + " " + columnTypeName);
-            
             String columnDefault = colDefaults[i];
             if (columnDefault != null && !columnDefault.isEmpty()){
-                tableDef.append(" DEFAULT ").append(columnDefault);
                 column.setDefaultValue(columnDefault);
             }
             
             if (colNotNull[i]){
-                tableDef.append(" NOT NULL");
                 column.setNullValue(false);
             }
             
-            tableDef.append(",\n");
             String comment = colComments[i];
             if (comment != null && !comment.isEmpty()){
                 column.setComment(ParserUtils.quoteString(comment));                
             }
             columns.add(column);
         }
-        tableDef.append(");");
         
-        PgTable t = new PgTable(tableName, tableDef.toString(), getSearchPath(schemaName));
+        PgTable t = new PgTable(tableName, "", getSearchPath(schemaName));
         // INHERITS
         Array arrInherits = res.getArray("inherited");
         String [] inherits = null;
@@ -867,12 +1086,6 @@ public class JdbcLoader implements PgCatalogStrings {
      *         proisstrict AS isnullonnull FROM pg_catalog.pg_proc WHERE pronamespace = ?"
      */
     private PgFunction getFunction(ResultSet res, String schemaName) throws SQLException{
-        for(String depType : (String[]) res.getArray("deps").getArray()){
-            if (depType.equals("e")){
-                return null;
-            }
-        }
-        
         String functionName = res.getString("proname");
         PgFunction f = new PgFunction(functionName, "", getSearchPath(schemaName));
         
