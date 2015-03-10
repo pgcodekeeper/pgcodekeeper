@@ -33,8 +33,6 @@ public class CreateType extends ParserAbstract {
 			form = PgTypeForm.RANGE;
 		} else if (ctx.ENUM() != null) {
 			form = PgTypeForm.ENUM;
-		} else if (ctx.ENUM() != null) {
-			form = PgTypeForm.ENUM;
 		} else if (ctx.AS() != null) {
 			form = PgTypeForm.COMPOSITE;
 		} else if (ctx.INPUT() != null) {

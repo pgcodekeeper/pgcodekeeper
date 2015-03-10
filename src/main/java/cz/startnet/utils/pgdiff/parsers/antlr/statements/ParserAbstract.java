@@ -307,15 +307,14 @@ public abstract class ParserAbstract {
     }
     
     public PgConstraint parseDomainConstraint(Domain_constraintContext constr) {
-		String constr_name = "";
-		if (constr.name != null) {
-			constr_name = getName(constr.name);
-		}
-		PgConstraint constraint = new PgConstraint(constr_name,
-				getFullCtxText(constr), db.getDefSearchPath());
-		if (constr.common_constraint().check_boolean_expression() != null) {			
-			constraint
-					.setDefinition(getFullCtxText(constr.common_constraint()));
+		if (constr.common_constraint().check_boolean_expression() != null) {
+	        String constr_name = "";
+	        if (constr.name != null) {
+	            constr_name = getName(constr.name);
+	        }
+	        PgConstraint constraint = new PgConstraint(constr_name,
+	                getFullCtxText(constr), db.getDefSearchPath());			
+			constraint.setDefinition(getFullCtxText(constr.common_constraint()));
 			return constraint;
 		}
 		return null;
