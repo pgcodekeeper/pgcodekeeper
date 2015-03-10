@@ -1,6 +1,6 @@
 COMMENT ON DATABASE current_database() IS 'comments database 2';
 
-COMMENT ON SCHEMA "public" IS 'public schema 2';
+COMMENT ON SCHEMA public IS 'public schema 2';
 
 COMMENT ON SEQUENCE test_id_seq IS 'test table sequence 2';
 
