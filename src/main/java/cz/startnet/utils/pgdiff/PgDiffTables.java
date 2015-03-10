@@ -38,89 +38,6 @@ public final class PgDiffTables {
     private static final String ALTER_COLUMN = "\tALTER COLUMN ";
 
     /**
-     * Outputs statements for creation of clusters.
-     *
-     * @param writer           writer the output should be written to
-     * @param oldSchema        original schema
-     * @param newSchema        new schema
-     * @param searchPathHelper search path helper
-     */
-    public static void dropClusters(final PgDiffScript script,
-            final PgSchema oldSchema, final PgSchema newSchema,
-            final SearchPathHelper searchPathHelper) {
-        for (final PgTable newTable : newSchema.getTables()) {
-            final PgTable oldTable;
-
-            if (oldSchema == null) {
-                oldTable = null;
-            } else {
-                oldTable = oldSchema.getTable(newTable.getName());
-            }
-
-            final String oldCluster;
-
-            if (oldTable == null) {
-                oldCluster = null;
-            } else {
-                oldCluster = oldTable.getClusterIndexName();
-            }
-
-            final String newCluster = newTable.getClusterIndexName();
-
-            if (oldCluster != null && newCluster == null
-                    && newTable.containsIndex(oldCluster)) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement(ALTER_TABLE
-                        + PgDiffUtils.getQuotedName(newTable.getName())
-                        + " SET WITHOUT CLUSTER;");
-            }
-        }
-    }
-
-    /**
-     * Outputs statements for dropping of clusters.
-     *
-     * @param writer           writer the output should be written to
-     * @param oldSchema        original schema
-     * @param newSchema        new schema
-     * @param searchPathHelper search path helper
-     */
-    public static void createClusters(final PgDiffScript script,
-            final PgSchema oldSchema, final PgSchema newSchema,
-            final SearchPathHelper searchPathHelper) {
-        for (final PgTable newTable : newSchema.getTables()) {
-            final PgTable oldTable;
-
-            if (oldSchema == null) {
-                oldTable = null;
-            } else {
-                oldTable = oldSchema.getTable(newTable.getName());
-            }
-
-            final String oldCluster;
-
-            if (oldTable == null) {
-                oldCluster = null;
-            } else {
-                oldCluster = oldTable.getClusterIndexName();
-            }
-
-            final String newCluster = newTable.getClusterIndexName();
-
-            if ((oldCluster == null && newCluster != null)
-                    || (oldCluster != null && newCluster != null
-                    && !newCluster.equals(oldCluster))) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement(ALTER_TABLE
-                        + PgDiffUtils.getQuotedName(newTable.getName())
-                        + " CLUSTER ON "
-                        + PgDiffUtils.getQuotedName(newCluster)
-                        + ';');
-            }
-        }
-    }
-
-    /**
      * Outputs statements for altering tables.
      *
      * @param writer           writer the output should be written to
@@ -135,11 +52,9 @@ public final class PgDiffTables {
         if (oldSchema == null) {
             return;
         }
-        
+
         for (final PgTable oldTable : oldSchema.getTables()) {
-        	if (newSchema.containsTable(oldTable.getName())) {
-        		depRes.addAlterStatements(oldTable);
-        	}
+            depRes.appendALter(oldTable, newSchema.getTable(oldTable.getName()));
         }
     }
 

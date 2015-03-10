@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
@@ -82,7 +83,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
     }
     
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb) {
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
     	PgConstraint newFunction = null;
     	if (newCondition instanceof PgConstraint) {
     		newFunction = (PgConstraint)newCondition; 

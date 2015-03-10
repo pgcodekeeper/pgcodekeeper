@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
@@ -94,7 +95,7 @@ public class PgExtension extends PgStatement {
     }
     
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb) {
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
     	PgExtension newExt = null;
     	if (newCondition instanceof PgExtension) {
     		newExt = (PgExtension)newCondition;
@@ -115,6 +116,7 @@ public class PgExtension extends PgStatement {
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
+        isNeedDepcies.set(false);
         return false;
     }
     

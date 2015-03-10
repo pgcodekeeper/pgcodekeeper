@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 
@@ -64,7 +65,14 @@ public class AlterTable extends ParserAbstract {
                 tabl.addConstraint(constr);
             }
             if (tablAction.index_name != null) {
-                tabl.setClusterIndexName(getFullCtxText(tablAction.index_name));
+                String indexName = getName(tablAction.index_name);
+                PgIndex index = tabl.getIndex(indexName);
+                if (index == null) {
+                    logError(indexName, schemaName);
+                } else {
+                    index.setClusterIndex(true);
+                    tabl.setClustered(true);
+                }
             }
 
             if (tablAction.WITHOUT() != null && tablAction.OIDS() != null) {

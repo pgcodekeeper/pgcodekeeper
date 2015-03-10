@@ -81,7 +81,12 @@ public final class PgDiffFunctions {
     private static boolean needsDrop(PgFunction oldFunction, PgSchema newSchema) {
         PgFunction newFunction = newSchema.getFunction(oldFunction.getSignature());
         
-        if (newFunction == null || 
+        return needDrop(oldFunction, newFunction);
+    }
+
+	public static boolean needDrop(PgFunction oldFunction,
+			PgFunction newFunction) {
+		if (newFunction == null || 
                 !Objects.equals(oldFunction.getReturns(), newFunction.getReturns())) {
             return true;
         }
@@ -109,7 +114,7 @@ public final class PgDiffFunctions {
         }
         
         return false;
-    }
+	}
 
     /**
      * Outputs statements for function comments that have changed.
@@ -127,9 +132,8 @@ public final class PgDiffFunctions {
         }
 
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
-        	if (newSchema.containsFunction(oldFunction.getSignature())) {
-        		depRes.addAlterStatements(oldFunction);
-        	}
+            depRes.appendALter(oldFunction,
+                    newSchema.getFunction(oldFunction.getName()));
         }
     }
 

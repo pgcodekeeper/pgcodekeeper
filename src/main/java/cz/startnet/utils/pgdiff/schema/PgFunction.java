@@ -12,10 +12,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffFunctions;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
@@ -115,7 +117,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     }
     
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb) {
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
     	PgFunction newFunction = null;
     	if (newCondition instanceof PgFunction) {
     		newFunction = (PgFunction)newCondition; 
@@ -124,12 +126,22 @@ public class PgFunction extends PgStatementWithSearchPath {
 		}
     	PgFunction oldFunction = this;
     	PgDiffScript script = new PgDiffScript();
+    	
+    	if (!oldFunction.equalsWhitespace(newFunction, false)) {
+    			if (PgDiffFunctions.needDrop(oldFunction, newFunction)) {
+    				isNeedDepcies.set(true);
+    				return true;
+    			} else {
+    				sb.append(newFunction.getCreationSQL());
+    			}
+        }
     	PgDiff.diffComments(oldFunction, newFunction, script);
     	
     	final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
+        
         return sb.length() > 0;
     }
 

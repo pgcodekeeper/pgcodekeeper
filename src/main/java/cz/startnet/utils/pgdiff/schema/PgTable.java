@@ -14,13 +14,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.SearchPathHelper;
 
 /**
  * Stores table information.
@@ -38,7 +38,7 @@ public class PgTable extends PgStatementWithSearchPath {
     // DEFAULT (nextval)('sequenceName'::Type)
     private final List<String> sequences = new ArrayList<>();
 
-    private String clusterIndexName;
+    private boolean isClustered;
     /**
      * WITH clause. If value is null then it is not set, otherwise can be set to
      * OIDS=true, OIDS=false, or storage parameters can be set.
@@ -55,13 +55,12 @@ public class PgTable extends PgStatementWithSearchPath {
         super(name, rawStatement);
     }
 
-    public void setClusterIndexName(final String name) {
-        clusterIndexName = name;
-        resetHash();
+    public void setClustered(boolean value) {
+    	isClustered = value;
     }
 
-    public String getClusterIndexName() {
-        return clusterIndexName;
+    public boolean isClustered() {
+        return isClustered;
     }
 
     /**
@@ -215,20 +214,12 @@ public class PgTable extends PgStatementWithSearchPath {
     }
     
     @Override
-    public String getFullSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append(getCreationSQL()).append(getClusterSQL());
-        
-        return sbSQL.toString();
-    }
-    
-    @Override
     public String getDropSQL() {
         return "DROP TABLE " + PgDiffUtils.getQuotedName(getName()) + ';';
     }
     
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sbuilder) {
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sbuilder, AtomicBoolean isNeedDepcies) {
     	PgTable newTable = null;
     	if (newCondition instanceof PgTable) {
     		newTable = (PgTable)newCondition; 
@@ -236,34 +227,10 @@ public class PgTable extends PgStatementWithSearchPath {
     		return false;
     	}
     	PgDiffScript script = new PgDiffScript();
-    	SearchPathHelper searchPathHelper = new SearchPathHelper(this.getContainerSchema().getName());
     	PgTable oldTable = this;
-    	String oldCluster = oldTable.getClusterIndexName();
-    	String newCluster = newTable.getClusterIndexName();
-    	if (oldCluster != null && newCluster == null) {
-            searchPathHelper.outputSearchPath(script);
-            script.addStatement("ALTER TABLE "
-                    + PgDiffUtils.getQuotedName(newTable.getName())
-                    + (newTable.containsIndex(oldCluster)? " SET WITHOUT CLUSTER;" : (" CLUSTER ON "
-                    + PgDiffUtils.getQuotedName(newCluster)
-                    + ';')));
-        }
-    	
-    	for (final Entry<String, String> tableName : oldTable.getInherits()) {
-            if (!newTable.getInherits().contains(tableName)) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement("ALTER TABLE "
-                        + PgDiffUtils.getQuotedName(newTable.getName())
-                        + "\n\tNO INHERIT "
-                        + (tableName.getKey() == null ? 
-                                "" : PgDiffUtils.getQuotedName(tableName.getKey()) + ".")
-                        + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
-            }
-        }
 
         for (final Entry<String, String> tableName : newTable.getInherits()) {
             if (!oldTable.getInherits().contains(tableName)) {
-                searchPathHelper.outputSearchPath(script);
                 script.addStatement("ALTER TABLE "
                         + PgDiffUtils.getQuotedName(newTable.getName())
                         + "\n\tINHERIT "
@@ -279,8 +246,6 @@ public class PgTable extends PgStatementWithSearchPath {
         	add = false;
         }
 		if (add) {
-			searchPathHelper.outputSearchPath(script);
-
 			StringBuilder sb = new StringBuilder();
 			sb.append("ALTER TABLE ");
 			sb.append(PgDiffUtils.getQuotedName(newTable.getName()));
@@ -306,7 +271,6 @@ public class PgTable extends PgStatementWithSearchPath {
 			add = false;
         }
 		if (add) {
-			searchPathHelper.outputSearchPath(script);
 			script.addStatement("ALTER TABLE "
 					+ PgDiffUtils.getQuotedName(newTable.getName())
 					+ "\n\tTABLESPACE " + newTable.getTablespace() + ';');
@@ -317,22 +281,7 @@ public class PgTable extends PgStatementWithSearchPath {
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sbuilder.append(diffInput.toString().trim());
-        if (!new HashSet<>(oldTable.getColumns()).equals(new HashSet<>(newTable.getColumns()))) {
-        	return true;
-        }
         return sbuilder.length() > 0;
-    }
-    
-    private String getClusterSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
-        if (clusterIndexName != null && !clusterIndexName.isEmpty()) {
-            sbSQL.append("\n\nALTER TABLE ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
-            sbSQL.append(" CLUSTER ON ");
-            sbSQL.append(getClusterIndexName());
-            sbSQL.append(';');
-        }
-        return sbSQL.toString();
     }
 
     /**
@@ -498,7 +447,6 @@ public class PgTable extends PgStatementWithSearchPath {
             PgTable table = (PgTable) obj;
             
             eq = Objects.equals(name, table.getName())
-                    && Objects.equals(clusterIndexName, table.getClusterIndexName())
                     && Objects.equals(tablespace, table.getTablespace())
                     && Objects.equals(with, table.getWith())
                     
@@ -542,7 +490,6 @@ public class PgTable extends PgStatementWithSearchPath {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
-        result = prime * result + ((clusterIndexName == null) ? 0 : clusterIndexName.hashCode());
         result = prime * result + ((columns == null) ? 0 : columns.hashCode());
         result = prime * result + new HashSet<>(constraints).hashCode();
         result = prime * result + new HashSet<>(indexes).hashCode();
@@ -560,7 +507,6 @@ public class PgTable extends PgStatementWithSearchPath {
     @Override
     public PgTable shallowCopy() {
         PgTable tableDst = new PgTable(getName(), getRawStatement());
-        tableDst.setClusterIndexName(getClusterIndexName());
         tableDst.setTablespace(getTablespace());
         tableDst.setWith(getWith());
         for(Entry<String, String> inh : inherits) {

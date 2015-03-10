@@ -181,14 +181,13 @@ public final class PgDiffConstraints {
         }
 
         for (PgTable oldTable : oldSchema.getTables()) {
-        	final PgTable newTable = newSchema.getTable(oldTable.getName());
-        	if (newTable == null) {
-        		continue;
-        	}
+            final PgTable newTable = newSchema.getTable(oldTable.getName());
+            if (newTable == null) {
+                continue;
+            }
             for (final PgConstraint oldConstraint : oldTable.getConstraints()) {
-            	if (newTable.containsConstraint(oldConstraint.getName())) {
-            		depRes.addAlterStatements(oldConstraint);	
-            	}
+                depRes.appendALter(oldConstraint,
+                        newTable.getConstraint(oldConstraint.getName()));
             }
         }
     }

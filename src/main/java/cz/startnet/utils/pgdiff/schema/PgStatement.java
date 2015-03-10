@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -82,38 +83,38 @@ public abstract class PgStatement {
         sb.append("COMMENT ON ");
         DbObjType type = getStatementType();
         if (type == null) {
-            if (this instanceof PgColumn) {
-                sb.append("COLUMN ")
-                    .append(PgDiffUtils.getQuotedName(getParent().getName()))
-                    .append('.')
-                    .append(PgDiffUtils.getQuotedName(getName()));
-            } else {
-                throw new IllegalStateException("Object type is null!");
-            }
+            throw new IllegalStateException("Object type is null!");
         } else {
             sb.append(type).append(' ');
             switch (type) {
+            case COLUMN:
+                sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
+                        .append('.')
+                        .append(PgDiffUtils.getQuotedName(getName()));
+                break;
             case FUNCTION:
                 ((PgFunction) this).appendFunctionSignature(sb, false, true);
                 break;
-                
+
             case CONSTRAINT:
             case TRIGGER:
                 sb.append(PgDiffUtils.getQuotedName(getName()))
-                    .append(" ON ")
-                    .append(PgDiffUtils.getQuotedName(getParent().getName()));
+                        .append(" ON ")
+                        .append(PgDiffUtils
+                                .getQuotedName(getParent().getName()));
                 break;
-                
+
             case DATABASE:
                 sb.append("current_database()");
                 break;
-                
+
             default:
                 sb.append(PgDiffUtils.getQuotedName(getName()));
             }
         }
 
-        return sb.append(" IS ")
+        return sb
+                .append(" IS ")
                 .append(comment == null || comment.isEmpty() ? "NULL" : comment)
                 .append(';');
     }
@@ -221,14 +222,16 @@ public abstract class PgStatement {
     public abstract String getDropSQL();
     
     /**
-	 * Метод заполняет sb выражением изменения объекта.
+	 * Метод заполняет sb выражением изменения объекта, можно ли изменить объект
+	 * ALTER.
 	 * 
 	 * @param newCondition
-	 * @param sb
-	 * @return необходимость добавления этого изменения в список изменений
-	 *         ALTER, иначе нужно добавить в список DROP
+     * @param sb
+     * @param isNeedDepcies TODO
+	 * @return true необходимость удаления объекта DROP, в случае невозможности
+	 *         удаления; false - объект нужно пропустить
 	 */
-    public abstract boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb);
+    public abstract boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies);
     
     /**
      * Copies all object properties into a new object and leaves all its children empty.

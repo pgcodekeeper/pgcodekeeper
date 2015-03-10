@@ -98,9 +98,8 @@ public final class PgDiffSequences {
         }
 
         for (final PgSequence oldSequence : oldSchema.getSequences()) {
-        	if (newSchema.containsSequence(oldSequence.getName())) {
-        		depRes.addAlterStatements(oldSequence);
-        	}
+            depRes.appendALter(oldSequence,
+                    newSchema.getSequence(oldSequence.getName()));
         }
     }
 

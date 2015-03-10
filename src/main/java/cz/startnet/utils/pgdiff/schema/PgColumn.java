@@ -9,15 +9,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.SearchPathHelper;
 
 /**
  * Stores column information.
@@ -37,7 +38,7 @@ public class PgColumn extends PgStatementWithSearchPath {
             + "(?:(?<seq>[\\w&&[^0-9]]\\w*|\"[^\"]+\"))'(?:[\\s]*::[\\s]*[\\w]+)\\)$",
             Pattern.CASE_INSENSITIVE);
     private static final String ALTER_TABLE = "ALTER TABLE ";
-    private static final String ALTER_COLUMN = "\tALTER COLUMN ";
+    private static final String ALTER_COLUMN = "\n\tALTER COLUMN ";
     
     private Integer statistics;
     private String defaultValue;
@@ -183,102 +184,99 @@ public class PgColumn extends PgStatementWithSearchPath {
     
     @Override
     public String getCreationSQL() {
-    	StringBuilder defaultStatement = new StringBuilder();
-    	StringBuilder statements = new StringBuilder();
-    	statements.append(getAlterTable() + "\tADD COLUMN "
-                + getFullDefinition(false, 
-                        defaultStatement));
+        StringBuilder defaultStatement = new StringBuilder();
+        StringBuilder sbSQL = new StringBuilder();
+        sbSQL.append(getAlterTable() + "\n\tADD COLUMN "
+                + getFullDefinition(false, defaultStatement) + ";");
         if (defaultStatement.length() > 0) {
-        	statements.append(getAlterTable() + ALTER_COLUMN + defaultStatement);
+            sbSQL.append("\n\n" + getAlterTable() + ALTER_COLUMN
+                    + defaultStatement + ";");
         }
-        
-        return statements.toString();
+        if (comment != null && !comment.isEmpty()) {
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
+        }
+        return sbSQL.toString();
     }
-    
+
     private String getAlterTable() {
     	return ALTER_TABLE + this.getParent().getName();
     }
     
     @Override
     public String getDropSQL() {
-    	return getAlterTable() + "\tDROP COLUMN "
-                + PgDiffUtils.getQuotedName(getName());
+        return getAlterTable() + "\n\tDROP COLUMN "
+                + PgDiffUtils.getQuotedName(getName()) + ";";
     }
 
-	@Override
-	public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb) {
-		PgColumn newColumn = null;
-		if (newCondition instanceof PgColumn) {
-			newColumn = (PgColumn)newCondition;
-		} else {
-			return false;
-		}
-		boolean needDepcies = false;
-		PgDiffScript script = new PgDiffScript();
-		SearchPathHelper searchPathHelper = new SearchPathHelper(this.getContainerSchema().getName());
-		PgColumn oldColumn = this;
-		final Integer oldStat = oldColumn.getStatistics();
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        PgColumn newColumn = null;
+        if (newCondition instanceof PgColumn) {
+            newColumn = (PgColumn) newCondition;
+        } else {
+            return false;
+        }
+        PgDiffScript script = new PgDiffScript();
+        PgColumn oldColumn = this;
+        final Integer oldStat = oldColumn.getStatistics();
         final Integer newStat = newColumn.getStatistics();
         Integer newStatValue = null;
 
-        if (newStat != null && (oldStat == null
-                || !newStat.equals(oldStat))) {
+        if (newStat != null && (oldStat == null || !newStat.equals(oldStat))) {
             newStatValue = newStat;
         } else if (oldStat != null && newStat == null) {
             newStatValue = Integer.valueOf(-1);
         }
 
         if (newStatValue != null) {
-        	script.addStatement("ALTER TABLE ONLY "
+            script.addStatement(ALTER_TABLE + "ONLY "
                     + PgDiffUtils.getQuotedName(this.getParent().getName())
-                    + " ALTER COLUMN "
-                    + PgDiffUtils.getQuotedName(getName())
-                    + " SET STATISTICS "
-                    + newStatValue
-                    + ';');
+                    + ALTER_COLUMN + PgDiffUtils.getQuotedName(getName())
+                    + " SET STATISTICS " + newStatValue + ';');
         }
         boolean add = true;
         final String oldStorage = (oldColumn == null
-                || oldColumn.getStorage() == null
-                || oldColumn.getStorage().isEmpty()) ? null
-                : oldColumn.getStorage();
-        final String newStorage = (newColumn.getStorage() == null
-                || newColumn.getStorage().isEmpty()) ? null
-                : newColumn.getStorage();
+                || oldColumn.getStorage() == null || oldColumn.getStorage()
+                .isEmpty()) ? null : oldColumn.getStorage();
+        final String newStorage = (newColumn.getStorage() == null || newColumn
+                .getStorage().isEmpty()) ? null : newColumn.getStorage();
 
         if (newStorage == null && oldStorage != null) {
-            searchPathHelper.outputSearchPath(script);
-            script.addStatement(MessageFormat.format(Messages.Storage_WarningUnableToDetermineStorageType,
+            script.addStatement(MessageFormat.format(
+                    Messages.Storage_WarningUnableToDetermineStorageType,
                     newColumn.getParent().getName(), newColumn.getName()));
 
             add = false;
         }
 
         if (newStorage == null || newStorage.equalsIgnoreCase(oldStorage)) {
-        	add = false;
+            add = false;
         }
 
-		if (add) {
-			searchPathHelper.outputSearchPath(script);
-			script.addStatement("ALTER TABLE ONLY "
-					+ PgDiffUtils
-							.getQuotedName(newColumn.getParent().getName())
-					+ " ALTER COLUMN "
-					+ PgDiffUtils.getQuotedName(newColumn.getName())
-					+ " SET STORAGE " + newStorage + ';');
-		}
-		
-		if (!oldColumn.getType().equals(newColumn.getType())) {
-            
-			needDepcies = true;
-            
-			script.addStatement(getAlterTable() + ALTER_COLUMN + newColumn.getName() + " TYPE "
-                    + newColumn.getType() + " /* "
-                    + MessageFormat.format(
-                            Messages.Table_TypeParameterChange,
-                            newColumn.getParent().getName(), oldColumn.getType(),
-                            newColumn.getType())
-                    + " */");
+        if (add) {
+            script.addStatement(ALTER_TABLE
+                    + "ONLY "
+                    + PgDiffUtils
+                            .getQuotedName(newColumn.getParent().getName())
+                    + ALTER_COLUMN
+                    + PgDiffUtils.getQuotedName(newColumn.getName())
+                    + " SET STORAGE " + newStorage + ';');
+        }
+
+        if (!oldColumn.getType().equals(newColumn.getType())) {
+            isNeedDepcies.set(true);
+
+            script.addStatement(getAlterTable()
+                    + ALTER_COLUMN
+                    + newColumn.getName()
+                    + " TYPE "
+                    + newColumn.getType()
+                    + "; /* "
+                    + MessageFormat.format(Messages.Table_TypeParameterChange,
+                            newColumn.getParent().getName(),
+                            oldColumn.getType(), newColumn.getType()) + " */");
         }
 
         final String oldDefault = (oldColumn.getDefaultValue() == null) ? ""
@@ -288,29 +286,31 @@ public class PgColumn extends PgStatementWithSearchPath {
 
         if (!oldDefault.equals(newDefault)) {
             if (newDefault.length() == 0) {
-            	script.addStatement(getAlterTable() + ALTER_COLUMN + newColumn.getName()
-                        + " DROP DEFAULT");
+                script.addStatement(getAlterTable() + ALTER_COLUMN
+                        + newColumn.getName() + " DROP DEFAULT;");
             } else {
-            	script.addStatement(getAlterTable() + ALTER_COLUMN + newColumn.getName()
-                        + " SET DEFAULT " + newDefault);
+                script.addStatement(getAlterTable() + ALTER_COLUMN
+                        + newColumn.getName() + " SET DEFAULT " + newDefault
+                        + ";");
             }
         }
 
         if (oldColumn.getNullValue() != newColumn.getNullValue()) {
             if (newColumn.getNullValue()) {
-            	script.addStatement(getAlterTable() + ALTER_COLUMN + newColumn.getName()
-                        + " DROP NOT NULL");
+                script.addStatement(getAlterTable() + ALTER_COLUMN
+                        + newColumn.getName() + " DROP NOT NULL;");
             } else {
-            	script.addStatement(getAlterTable() + ALTER_COLUMN + newColumn.getName()
-                        + " SET NOT NULL");
+                script.addStatement(getAlterTable() + ALTER_COLUMN
+                        + newColumn.getName() + " SET NOT NULL;");
             }
         }
+        PgDiff.diffComments(oldColumn, newColumn, script);
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
-        return needDepcies;
-	}
+        return sb.length() > 0;
+    }
 	
     @Override
     public boolean compare(PgStatement obj) {

@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
@@ -127,40 +128,42 @@ public class PgView extends PgStatementWithSearchPath {
     }
     
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb) {
-    	PgView newView = null;
-    	if (newCondition instanceof PgView) {
-    		newView = (PgView)newCondition; 
-    	} else {
-    		return false;
-		}
-    	PgDiffScript script = new PgDiffScript();
-    	SearchPathHelper searchPathHelper = new SearchPathHelper(this.getContainerSchema().getName());
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        PgView newView = null;
+        if (newCondition instanceof PgView) {
+            newView = (PgView) newCondition;
+        } else {
+            return false;
+        }
+        PgDiffScript script = new PgDiffScript();
+        SearchPathHelper searchPathHelper = new SearchPathHelper(this
+                .getContainerSchema().getName());
+        searchPathHelper.setWasOutput(true);
         PgView oldView = this;
-        PgDiffViews.diffDefaultValues(script, oldView, newView, searchPathHelper);
+        PgDiffViews.diffDefaultValues(script, oldView, newView,
+                searchPathHelper);
 
         if (!Objects.equals(oldView.getOwner(), newView.getOwner())) {
-            searchPathHelper.outputSearchPath(script);
             script.addStatement(newView.getOwnerSQL());
         }
-        
+
         if (!oldView.getPrivileges().equals(newView.getPrivileges())) {
-            searchPathHelper.outputSearchPath(script);
             script.addStatement(newView.getPrivilegesSQL());
         }
 
         PgDiff.diffComments(oldView, newView, script);
-        
-        final List<String> columnNames =
-                new ArrayList<>(newView.getColumnComments().size());
 
-        for (final PgView.ColumnComment columnComment :
-                newView.getColumnComments()) {
+        final List<String> columnNames = new ArrayList<>(newView
+                .getColumnComments().size());
+
+        for (final PgView.ColumnComment columnComment : newView
+                .getColumnComments()) {
             columnNames.add(columnComment.getColumnName());
         }
 
-        for (final PgView.ColumnComment columnComment :
-                oldView.getColumnComments()) {
+        for (final PgView.ColumnComment columnComment : oldView
+                .getColumnComments()) {
             if (!columnNames.contains(columnComment.getColumnName())) {
                 columnNames.add(columnComment.getColumnName());
             }
@@ -170,51 +173,49 @@ public class PgView extends PgStatementWithSearchPath {
             PgView.ColumnComment oldColumnComment = null;
             PgView.ColumnComment newColumnComment = null;
 
-            for (final PgView.ColumnComment columnComment :
-                    oldView.getColumnComments()) {
+            for (final PgView.ColumnComment columnComment : oldView
+                    .getColumnComments()) {
                 if (columnName.equals(columnComment.getColumnName())) {
                     oldColumnComment = columnComment;
                     break;
                 }
             }
 
-            for (final PgView.ColumnComment columnComment :
-                    newView.getColumnComments()) {
+            for (final PgView.ColumnComment columnComment : newView
+                    .getColumnComments()) {
                 if (columnName.equals(columnComment.getColumnName())) {
                     newColumnComment = columnComment;
                     break;
                 }
             }
 
-            if (oldColumnComment == null && newColumnComment != null
-                    || oldColumnComment != null && newColumnComment != null
+            if (oldColumnComment == null
+                    && newColumnComment != null
+                    || oldColumnComment != null
+                    && newColumnComment != null
                     && !oldColumnComment.getComment().equals(
-                    newColumnComment.getComment())) {
-                searchPathHelper.outputSearchPath(script);
+                            newColumnComment.getComment())) {
 
                 script.addStatement("COMMENT ON COLUMN "
                         + PgDiffUtils.getQuotedName(newView.getName())
                         + '.'
-                        + PgDiffUtils.getQuotedName(newColumnComment.getColumnName())
-                        + " IS "
-                        + newColumnComment.getComment()
-                        + ';');
-            } else if (oldColumnComment != null
-                    && newColumnComment == null) {
-                searchPathHelper.outputSearchPath(script);
+                        + PgDiffUtils.getQuotedName(newColumnComment
+                                .getColumnName()) + " IS "
+                        + newColumnComment.getComment() + ';');
+            } else if (oldColumnComment != null && newColumnComment == null) {
 
                 script.addStatement("COMMENT ON COLUMN "
                         + PgDiffUtils.getQuotedName(newView.getName())
                         + '.'
-                        + PgDiffUtils.getQuotedName(oldColumnComment.getColumnName())
-                        + " IS NULL;");
+                        + PgDiffUtils.getQuotedName(oldColumnComment
+                                .getColumnName()) + " IS NULL;");
             }
         }
-            final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
-            final PrintWriter writer = new UnixPrintWriter(diffInput, true);
-            script.printStatements(writer);
-            sb.append(diffInput.toString().trim());
-            return false;
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+        script.printStatements(writer);
+        sb.append(diffInput.toString().trim());
+        return false;
     }
 
     public void setQuery(final String query) {

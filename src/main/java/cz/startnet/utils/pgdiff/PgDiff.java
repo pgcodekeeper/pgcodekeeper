@@ -355,8 +355,9 @@ public final class PgDiff {
      */
     private static void updateExtensions(final DepcyResolver depRes,
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
-        for(final PgExtension newExt : newDatabase.getExtensions()) {
-           depRes.addAlterStatements(newExt);
+        for(final PgExtension oldExt : oldDatabase.getExtensions()) {
+            depRes.appendALter(oldExt,
+                    newDatabase.getExtension(oldExt.getName()));
         }
     }
     
@@ -485,8 +486,8 @@ public final class PgDiff {
         		depRes, oldSchema, newSchema, false, searchPathHelper);
         PgDiffIndexes.dropIndexes(
         		depRes, oldSchema, newSchema, searchPathHelper);
-        PgDiffTables.dropClusters(
-                script, oldSchema, newSchema, searchPathHelper);
+		PgDiffColumns.dropColumns(
+				depRes, script, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.dropTables(
         		depRes, script, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.dropSequences(
@@ -500,8 +501,10 @@ public final class PgDiff {
         		depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.alterTables(
         		depRes, arguments, oldSchema, newSchema, searchPathHelper);
-//        PgDiffSequences.alterCreatedSequences(
-//                script, oldSchema, newSchema, searchPathHelper);
+        PgDiffColumns.createColumns(
+        		depRes, oldSchema, newSchema, searchPathHelper);
+        PgDiffColumns.alterColumns(
+        		depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffFunctions.createFunctions(
         		depRes, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffConstraints.createConstraints(
@@ -510,8 +513,6 @@ public final class PgDiff {
         		depRes, oldSchema, newSchema, false, searchPathHelper);
         PgDiffIndexes.createIndexes(
         		depRes, oldSchema, newSchema, searchPathHelper);
-        PgDiffTables.createClusters(
-                script, oldSchema, newSchema, searchPathHelper);
         PgDiffTriggers.createTriggers(
         		depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffViews.createViews(

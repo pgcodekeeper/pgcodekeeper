@@ -327,7 +327,7 @@ public final class PgDiffUtils {
         "PRIOR",
         "PRIVILEGES",
         "PROCEDURE",
-        "PUBLIC",
+//        "PUBLIC",
         "RANGE",
         "RANK",
         "READ",

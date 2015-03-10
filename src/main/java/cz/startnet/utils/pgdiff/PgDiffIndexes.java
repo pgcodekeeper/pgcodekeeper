@@ -106,7 +106,7 @@ public final class PgDiffIndexes {
         if (newTable != null && oldTable != null) {
             for (final PgIndex index : oldTable.getIndexes()) {
                 if (!newTable.containsIndex(index.getName())
-                        || !newTable.getIndex(index.getName()).compareWithoutComments(index)) {
+                        /*|| !newTable.getIndex(index.getName()).compareWithoutComments(index)*/) {
                     list.add(index);
                 }
             }
@@ -135,8 +135,8 @@ public final class PgDiffIndexes {
             } else {
                 for (final PgIndex index : newTable.getIndexes()) {
                     if (!oldTable.containsIndex(index.getName())
-                            || !oldTable.getIndex(index.getName()).
-                            compareWithoutComments(index)) {
+                            /*|| !oldTable.getIndex(index.getName()).
+                            compareWithoutComments(index)*/) {
                         list.add(index);
                     }
                 }
@@ -161,15 +161,14 @@ public final class PgDiffIndexes {
             return;
         }
 
-        for(PgTable oldTable : oldSchema.getTables()) {
-        	final PgTable newTable = newSchema.getTable(oldTable.getName());
-			if (newTable == null) {
-				continue;
-			}
+        for (PgTable oldTable : oldSchema.getTables()) {
+            final PgTable newTable = newSchema.getTable(oldTable.getName());
+            if (newTable == null) {
+                continue;
+            }
             for (final PgIndex oldIndex : oldTable.getIndexes()) {
-            	if (newTable.containsIndex(oldIndex.getName())) {
-            		depRes.addAlterStatements(oldIndex);
-            	}
+                depRes.appendALter(oldIndex,
+                        newTable.getIndex(oldIndex.getName()));
             }
         }
     }

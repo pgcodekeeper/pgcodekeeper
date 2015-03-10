@@ -6,10 +6,13 @@
 package cz.startnet.utils.pgdiff;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 /**
  * Diffs views.
@@ -98,16 +101,14 @@ public final class PgDiffViews {
      * @param searchPathHelper search path helper
      */
     public static void alterViews(final DepcyResolver depRes,
-            PgDiffArguments arguments, final PgSchema oldSchema, final PgSchema newSchema,
-            final SearchPathHelper searchPathHelper) {
+            PgDiffArguments arguments, final PgSchema oldSchema,
+            final PgSchema newSchema, final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
             return;
         }
 
         for (final PgView oldView : oldSchema.getViews()) {
-        	if (newSchema.containsView(oldView.getName())) {
-        		depRes.addAlterStatements(oldView);
-        	}
+            depRes.appendALter(oldView, newSchema.getView(oldView.getName()));
         }
     }
 
