@@ -177,6 +177,11 @@ public class DepcyResolver {
                 if (sb.length() > 0) {
                     currentSearchPath = setSearchPath(currentSearchPath,
                             oldObj, script);
+                    if (oldObj instanceof PgSchema) {
+                        currentSearchPath = MessageFormat.format(
+                                ApgdiffConsts.SEARCH_PATH_PATTERN,
+                                oldObj.getName());
+                    }
                     if (depcy != null) {
                         script.addStatement(depcy);
                     }
@@ -231,9 +236,8 @@ public class DepcyResolver {
             String searchPath = ((PgStatementWithSearchPath) st)
                     .getSearchPath();
             if (!currentSearchPath.equals(searchPath)) {
-                currentSearchPath = searchPath;
-                script.addStatement(((PgStatementWithSearchPath) st)
-                        .getSearchPath());
+                script.addStatement(searchPath);
+                return searchPath;
             }
         }
         return currentSearchPath;
@@ -454,7 +458,7 @@ public class DepcyResolver {
     }
 
     public void appendALter(PgStatement oldObj, PgStatement newObj) {
-        if (newObj != null) {
+        if (newObj != null && oldObj != null) {
             StringBuilder sb = new StringBuilder();
             AtomicBoolean isNeedDepcies = new AtomicBoolean(false);
             boolean retVal = oldObj.appendAlterSQL(newObj, sb, isNeedDepcies);

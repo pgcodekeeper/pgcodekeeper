@@ -1,5 +1,6 @@
 package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -10,7 +11,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 public class DepcyTreeExtender {
     private final Set<PgStatement> dependantsOfDeleted = new HashSet<>();
@@ -37,6 +38,7 @@ public class DepcyTreeExtender {
     private final DepcyGraph depcyTarget;
     private final PgDatabase dbSource;
     private final PgDatabase dbTarget;
+    private DepcyResolver depRes;  
     /**
      * Root node of filtered tree (should not be modified)
      */
@@ -45,12 +47,16 @@ public class DepcyTreeExtender {
      * Copy of root, extended by dependent from DELETED elements
      */
     private TreeElement copy;
+    private List<TreeElement> userSelection = new ArrayList<>();
     
-    public DepcyTreeExtender(PgDatabase dbSource, PgDatabase dbTarget, TreeElement root) 
+    public DepcyTreeExtender(PgDatabase dbSource, PgDatabase dbTarget,
+            TreeElement root) 
             throws PgCodekeeperException {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
         this.root = root;
+        root.generateElementsList(userSelection, dbSource, dbTarget);
+        depRes = new DepcyResolver(dbSource, dbTarget);
         
         // depcy graphs
         depcySource = new DepcyGraph(dbSource);
@@ -67,6 +73,11 @@ public class DepcyTreeExtender {
         // заполнить сет зависимыми элементами, которые надо создать
         Set<PgStatement> depcySet = new HashSet<>();
         fillInDependenciesOfNew(root, depcySet);
+        for (TreeElement el : userSelection) {
+            if (el.getSide() != DiffSide.LEFT) {
+        	depcySet.remove(el.getPgStatement(dbTarget));
+            }
+        }
         return depcySet;
     }
     
@@ -78,10 +89,17 @@ public class DepcyTreeExtender {
      */
     public TreeElement getTreeCopyWithDepcy(){
         copy = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        
+        // подготовка данных - заполняем сет dependantsOfDeleted
         fillInDependantsOfDeleted(root);
+        for (TreeElement el : userSelection) {
+            if (el.getSide() == DiffSide.LEFT) {
+        	dependantsOfDeleted.remove(el.getPgStatement(dbSource));
+            }
+        }
         
         // скопировать дерево первоначального выбора пользователя, перемещая 
-        // налево элементы, содержащиеся в сете shouldBeDeleted
+        // налево элементы, содержащиеся в сете dependantsOfDeleted
         copyFilteredToNew(root, copy);
         
         // так же поместить налево элементы, которые не были в первоначальном 
@@ -104,7 +122,13 @@ public class DepcyTreeExtender {
         if (filtered.getSide() != DiffSide.LEFT && 
                 filtered.getType() != DbObjType.CONTAINER && 
                 (markedToCreate = filtered.getPgStatement(dbTarget)) != null){
-            PgDiff.getDependenciesSet(markedToCreate, depcySet, false, depcyTarget.getGraph());
+            if (filtered.getSide() == DiffSide.BOTH) {
+                depRes.addAlterStatements(markedToCreate);
+                depcySet.addAll(depRes.getOrderedDepcies(StatementActions.ALTER));
+            } else {
+                depRes.addCreateStatements(markedToCreate);
+                depcySet.addAll(depRes.getOrderedDepcies(StatementActions.CREATE));
+            }
         }
         
         for(TreeElement child : filtered.getChildren()) {
@@ -126,7 +150,8 @@ public class DepcyTreeExtender {
                 filtered.getType() != DbObjType.CONTAINER && 
                 filtered.getType() != DbObjType.SEQUENCE && 
                 (markedToDelete = filtered.getPgStatement(dbSource)) != null){
-            PgDiff.getDependantsSet(markedToDelete, dependantsOfDeleted, depcySource);
+            depRes.addDropStatements(markedToDelete);
+            dependantsOfDeleted.addAll(depRes.getOrderedDepcies(StatementActions.DROP));
         }
         
         for(TreeElement child : filtered.getChildren()) {

@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
@@ -316,31 +315,12 @@ public final class PgDiff {
     private static void updateSchemas(final PgDiffScript script,
             final PgDiffArguments arguments, final PgDatabase oldDatabase,
             final PgDatabase newDatabase) {
-        final boolean setSearchPath = newDatabase.getSchemas().size() > 1
-                || !newDatabase.getSchemas().get(0).getName().equals(ApgdiffConsts.PUBLIC);
-
         for (final PgSchema newSchema : newDatabase.getSchemas()) {
             final SearchPathHelper searchPathHelper =
                     new SearchPathHelper(newSchema.getName());
-            if (!setSearchPath) {
-                searchPathHelper.setWasOutput(true);
-            }
 
             final PgSchema oldSchema = oldDatabase.getSchema(newSchema.getName());
-
-            if (oldSchema != null) {
-
-                if (!Objects.equals(oldSchema.getOwner(), newSchema.getOwner())) {
-                    searchPathHelper.outputSearchPath(script);
-                    script.addStatement(newSchema.getOwnerSQL());
-                }
-                
-                if (!oldSchema.getPrivileges().equals(newSchema.getPrivileges())) {
-                    script.addStatement(newSchema.getPrivilegesSQL());
-                }
-                
-                diffComments(oldSchema, newSchema, script);
-            }
+            depRes.appendALter(oldSchema, newSchema);
             updateSchemaContent(script, oldSchema, newSchema, searchPathHelper, arguments);
         }
         
