@@ -116,10 +116,10 @@ class DbInfo {
         StringBuilder sb = new StringBuilder();
         int count = 0;
         for (String entry : list) {
-        	sb.append(store.get(entry));
-        	if (count++ < list.size() - 1) {
-        		sb.append(DELIM_ENTRY);
-        	}
+            sb.append(store.get(entry));
+            if (count++ < list.size() - 1) {
+                sb.append(DELIM_ENTRY);
+            }
         }
         return sb.toString();
     }

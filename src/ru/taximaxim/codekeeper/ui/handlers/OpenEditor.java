@@ -28,7 +28,7 @@ public class OpenEditor extends AbstractHandler {
                 openEditor(HandlerUtil.getActiveWorkbenchWindow(event).getActivePage(), proj);
             } catch (PgCodekeeperUIException e) {
                 ExceptionNotifier.notifyDefault(
-					MessageFormat.format(
+                    MessageFormat.format(
                         Messages.OpenEditor_error_open_project_editor, proj.getName()), e);
             }
         }
