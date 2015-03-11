@@ -57,15 +57,32 @@ public class PgDomain extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(constraints);
     }
     
+    public PgConstraint getConstraint(String name) {
+        for (PgConstraint c : constraints) {
+            if (c.getName().equals(name)) {
+                return c;
+            }
+        }
+        return null;
+    }
+    
     public void addConstraint(PgConstraint constraint) {
         constraints.add(constraint);
         constraint.setParent(this);
         resetHash();
     }
     
-
     public List<PgConstraint> getConstrsNotValid() {
         return Collections.unmodifiableList(constrsNotValid);
+    }
+
+    public PgConstraint getConstraintNotValid(String name) {
+        for (PgConstraint c : constrsNotValid) {
+            if (c.getName().equals(name)) {
+                return c;
+            }
+        }
+        return null;
     }
     
     public void addConstrNotValid(PgConstraint constraint) {
@@ -116,6 +133,18 @@ public class PgDomain extends PgStatementWithSearchPath {
 			sb.append("\n\n");
 			appendCommentSql(sb);
 		}
+		for (PgConstraint c : constraints) {
+		    if (c.getComment() != null && !c.getComment().isEmpty()) {
+		        sb.append("\n\n");
+		        c.appendCommentSql(sb);
+		    }
+		}
+		for (PgConstraint c : constrsNotValid) {
+            if (c.getComment() != null && !c.getComment().isEmpty()) {
+                sb.append("\n\n");
+                c.appendCommentSql(sb);
+            }
+        }
 		
         return sb.toString();
     }

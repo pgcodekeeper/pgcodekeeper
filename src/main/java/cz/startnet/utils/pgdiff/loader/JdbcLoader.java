@@ -426,27 +426,33 @@ public class JdbcLoader implements PgCatalogStrings {
         
         String def = res.getString("dom_defaultbin");
         if (def == null) {
-            def = ParserUtils.quoteString(res.getString("typdefault"));
+            def = res.getString("typdefault");
+            if (def != null) {
+                def = ParserUtils.quoteString(def);
+            }
         }
         d.setDefaultValue(def);
         
         d.setNotNull(res.getBoolean("dom_notnull"));
         
-        String[] connames = (String[]) res.getArray("dom_connames").getArray();
-        String[] condefs = (String[]) res.getArray("dom_condefs").getArray();
-        Boolean[] convalids = (Boolean[]) res.getArray("dom_convalidates").getArray();
-        String[] concomments = (String[]) res.getArray("dom_concomments").getArray();
-        
-        for (int i = 0; i < connames.length; ++i) {
-            PgConstraint c = new PgConstraint(connames[i], "", getSearchPath(schemaName));
-            c.setDefinition(condefs[i]);
-            if (convalids[i]) {
-                d.addConstraint(c);
-            } else {
-                d.addConstrNotValid(c);
-            }
-            if (concomments[i] != null && !concomments[i].isEmpty()) {
-                c.setComment(ParserUtils.quoteString(concomments[i]));
+        Array arrConnames = res.getArray("dom_connames");
+        if (arrConnames != null) {
+            String[] connames = (String[]) arrConnames.getArray();
+            String[] condefs = (String[]) res.getArray("dom_condefs").getArray();
+            Boolean[] convalids = (Boolean[]) res.getArray("dom_convalidates").getArray();
+            String[] concomments = (String[]) res.getArray("dom_concomments").getArray();
+            
+            for (int i = 0; i < connames.length; ++i) {
+                PgConstraint c = new PgConstraint(connames[i], "", getSearchPath(schemaName));
+                c.setDefinition(condefs[i]);
+                if (convalids[i]) {
+                    d.addConstraint(c);
+                } else {
+                    d.addConstrNotValid(c);
+                }
+                if (concomments[i] != null && !concomments[i].isEmpty()) {
+                    c.setComment(ParserUtils.quoteString(concomments[i]));
+                }
             }
         }
         
@@ -517,7 +523,7 @@ public class JdbcLoader implements PgCatalogStrings {
             t.setStorage(storage);
             
             String cat = res.getString("typcategory");
-            if (!"U".equals(cat)) {
+            if (cat != null && !"U".equals(cat)) {
                 t.setCategory(ParserUtils.quoteString(cat));
             }
             
@@ -527,7 +533,10 @@ public class JdbcLoader implements PgCatalogStrings {
             
             String def = res.getString("typdefaultbin");
             if (def == null) {
-                def = ParserUtils.quoteString(res.getString("typdefault"));
+                def = res.getString("typdefault");
+                if (def != null) {
+                    def = ParserUtils.quoteString(def);
+                }
             }
             t.setDefaultValue(def);
             
@@ -536,7 +545,7 @@ public class JdbcLoader implements PgCatalogStrings {
             }
             
             String delim = res.getString("typdelim");
-            if (!",".equals(delim)) {
+            if (delim != null && !",".equals(delim)) {
                 t.setDelimiter(ParserUtils.quoteString(delim));
             }
             
@@ -548,7 +557,11 @@ public class JdbcLoader implements PgCatalogStrings {
         case "c":
             t = new PgType(name, PgTypeForm.COMPOSITE, "", getSearchPath(schemaName));
             
-            String[] attnames = (String[]) res.getArray("comp_attnames").getArray();
+            Array arrAttnames = res.getArray("comp_attnames");
+            if (arrAttnames == null) {
+                break;
+            }
+            String[] attnames = (String[]) arrAttnames.getArray();
             String[] atttypes = (String[]) res.getArray("comp_atttypdefns").getArray();
             Long[] attcollations = (Long[]) res.getArray("comp_attcollations").getArray();
             Long[] atttypcollations = (Long[]) res.getArray("comp_atttypcollations").getArray();
@@ -575,7 +588,11 @@ public class JdbcLoader implements PgCatalogStrings {
         case "e": 
             t = new PgType(name, PgTypeForm.ENUM, "", getSearchPath(schemaName));
             
-            String[] enums = (String[]) res.getArray("enums").getArray();
+            Array arrEnums = res.getArray("enums");
+            if (arrEnums == null) {
+                break;
+            }
+            String[] enums = (String[]) arrEnums.getArray();
             for (String enum_ : enums) {
                 t.addEnum(ParserUtils.quoteString(enum_));
             }

@@ -338,6 +338,15 @@ public class PgType extends PgStatementWithSearchPath {
 			sb.append("\n\n");
 			appendCommentSql(sb);
 		}
+		
+		if (form == PgTypeForm.COMPOSITE) {
+		    for (PgColumn c : attrs) {
+		        if (c.getComment() != null && !c.getComment().isEmpty()) {
+		            sb.append("\n\n");
+		            c.appendCommentSql(sb);
+		        }
+		    }
+		}
 
         return sb.toString();
     }
