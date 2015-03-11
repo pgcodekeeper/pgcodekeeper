@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jgrapht.DirectedGraph;
 import org.jgrapht.event.TraversalListenerAdapter;
 import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
@@ -50,6 +51,14 @@ public class DepcyResolver {
         this.newDb = newDatabase;
         this.oldDepcyGraph = new DepcyGraph(oldDatabase);
         this.newDepcyGraph = new DepcyGraph(newDatabase);
+    }
+    
+    public DirectedGraph<PgStatement, DefaultEdge> getOldGraph() {
+        return oldDepcyGraph.getGraph();
+    }
+    
+    public DirectedGraph<PgStatement, DefaultEdge> getNewGraph() {
+        return newDepcyGraph.getGraph();
     }
 
     /**
@@ -141,6 +150,13 @@ public class DepcyResolver {
     public void addCustomDepciesToNew(
             List<Entry<PgStatement, PgStatement>> depcies) {
         newDepcyGraph.addCustomDepcies(depcies);
+    }
+    
+    /**
+     * Очищает список объектов
+     */
+    public void clearDepcies() {
+        actions.clear();
     }
 
     /**
