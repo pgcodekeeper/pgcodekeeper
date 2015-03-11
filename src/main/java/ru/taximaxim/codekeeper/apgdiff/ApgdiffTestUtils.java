@@ -61,28 +61,6 @@ public class ApgdiffTestUtils {
         }
     }
     
-    public static void dropContents(String dbName) throws IOException {
-        JdbcConnector connector = new JdbcConnector(TEST.REMOTE_HOST, TEST.REMOTE_PORT,
-                TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD, dbName,
-                ApgdiffConsts.UTF_8, ApgdiffConsts.UTC);
-        // remove old schemas
-        try (InputStreamReader isr = new InputStreamReader(
-                JdbcLoaderTest.class.getResourceAsStream(TEST.RESOURCE_CLEANUP),
-                "UTF-8");
-                BufferedReader reader = new BufferedReader(isr)) {
-
-            StringBuilder script = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                script.append(line);
-            }
-
-            String res = new JdbcRunner(connector).runScript(script.toString());
-            Assert.assertEquals("DB cleanup script returned an error: " + res,
-                    "success", res);
-        }
-    }
-    
     public static void dropDB(String dbName) throws IOException {
         JdbcConnector connector = new JdbcConnector(TEST.REMOTE_HOST, TEST.REMOTE_PORT,
                 TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD, TEST.REMOTE_DB,
