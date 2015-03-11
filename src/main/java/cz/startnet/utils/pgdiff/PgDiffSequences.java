@@ -195,7 +195,7 @@ public final class PgDiffSequences {
             }
             
             if (!oldSequence.getGrants().equals(newSequence.getGrants())
-            		|| !oldSequence.getRevokes().equals(newSequence.getRevokes())) {
+                    || !oldSequence.getRevokes().equals(newSequence.getRevokes())) {
                 searchPathHelper.outputSearchPath(script);
                 script.addStatement(newSequence.getPrivilegesSQL());
             }

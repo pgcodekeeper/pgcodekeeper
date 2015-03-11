@@ -128,22 +128,22 @@ public abstract class PgStatement {
     }
     
     public Set<PgPrivilege> getRevokes() {
-    	return Collections.unmodifiableSet(revokes); 
+        return Collections.unmodifiableSet(revokes); 
     }
     
     public void addPrivilege(PgPrivilege privilege) {
-    	if (privilege.isRevoke()) {
-    		revokes.add(privilege);
-    	} else {
-    		grants.add(privilege);
-    	}
+        if (privilege.isRevoke()) {
+            revokes.add(privilege);
+        } else {
+            grants.add(privilege);
+        }
         privilege.setParent(this);
         resetHash();
     }
     
     protected StringBuilder appendPrivileges(StringBuilder sb) {
-		if (grants.isEmpty() &&
-				revokes.isEmpty()) {
+        if (grants.isEmpty() &&
+                revokes.isEmpty()) {
             return sb;
         }
         
@@ -174,7 +174,7 @@ public abstract class PgStatement {
         }
         
         return sb;
-	}
+    }
     
     public String getPrivilegesSQL() {
         return appendPrivileges(new StringBuilder()).toString();

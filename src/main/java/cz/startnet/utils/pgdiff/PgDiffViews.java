@@ -162,7 +162,7 @@ public final class PgDiffViews {
             }
             
             if (!oldView.getGrants().equals(newView.getGrants())
-            		|| !oldView.getRevokes().equals(newView.getRevokes())) {
+                    || !oldView.getRevokes().equals(newView.getRevokes())) {
                 searchPathHelper.outputSearchPath(script);
                 script.addStatement(newView.getPrivilegesSQL());
             }

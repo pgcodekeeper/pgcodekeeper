@@ -455,7 +455,7 @@ public final class PgDiff {
                 }
                 
                 if (!oldSchema.getGrants().equals(newSchema.getGrants())
-                		|| !oldSchema.getRevokes().equals(newSchema.getRevokes())) {
+                        || !oldSchema.getRevokes().equals(newSchema.getRevokes())) {
                     script.addStatement(newSchema.getPrivilegesSQL());
                 }
                 

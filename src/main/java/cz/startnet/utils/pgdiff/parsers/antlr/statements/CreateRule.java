@@ -71,8 +71,8 @@ public class CreateRule extends ParserAbstract {
         return null;
     }
 
-	private PgStatement addToDB(Schema_qualified_nameContext name,
-			DbObjType type, PgPrivilege pgPrivilege) {
+    private PgStatement addToDB(Schema_qualified_nameContext name,
+            DbObjType type, PgPrivilege pgPrivilege) {
         if (type == null) {
             return null;
         }
