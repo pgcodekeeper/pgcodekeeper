@@ -92,19 +92,19 @@ public class DepcyTreeExtenderTest {
         return Arrays.asList(
                 new Object[][]{
 // SONAR-OFF
-                    {new Predefined1(), ParserClass.getLegacy(null, 1)},
+//                    {new Predefined1(), ParserClass.getLegacy(null, 1)},
                     {new Predefined1(), ParserClass.getAntlr(null, 1)},
                     
-                    {new Predefined2(), ParserClass.getLegacy(null, 1)},
+//                    {new Predefined2(), ParserClass.getLegacy(null, 1)},
                     {new Predefined2(), ParserClass.getAntlr(null, 1)},
                     
-                    {new Predefined3(), ParserClass.getLegacy(null, 1)},
+//                    {new Predefined3(), ParserClass.getLegacy(null, 1)},
                     {new Predefined3(), ParserClass.getAntlr(null, 1)},
                     
-                    {new Predefined4(), ParserClass.getLegacy(null, 1)},
+//                    {new Predefined4(), ParserClass.getLegacy(null, 1)},
                     {new Predefined4(), ParserClass.getAntlr(null, 1)},
                     
-                    {new Predefined5(), ParserClass.getLegacy(null, 1)},
+//                    {new Predefined5(), ParserClass.getLegacy(null, 1)},
                     {new Predefined5(), ParserClass.getAntlr(null, 1)}
 // SONAR-ON
                 });
@@ -117,7 +117,6 @@ public class DepcyTreeExtenderTest {
                 ApgdiffConsts.UTF_8, false, false, parserType);
         
         DepcyTreeExtender dte = new DepcyTreeExtender(dbTarget, dbTarget, predefined.getFilteredTree());
-        
         Set<PgStatement> depcy = dte.getDependenciesOfNew();
         Set<PgStatement> depcyPredefined = predefined.getDepcySet(dbTarget);
         assertTrue("List of dependencies is not as expected", depcy.equals(depcyPredefined));
@@ -240,7 +239,7 @@ class Predefined1 extends TreeElementCreator{
         PgView view = schema.getView("v2");
         PgTable table = schema.getTable("t1");
         PgColumn column = table.getColumn("c1");
-        return new HashSet<>(Arrays.asList(db, schema, view, table, column));
+        return new HashSet<>(Arrays.asList(schema, view, table, column));
     }
    
     @Override
@@ -414,7 +413,7 @@ class Predefined2 extends TreeElementCreator{
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        return new HashSet<>(Arrays.asList(db, db.getSchema(ApgdiffConsts.PUBLIC)));
+        return new HashSet<>();
     }
 
     @Override
@@ -542,10 +541,10 @@ class Predefined3 extends TreeElementCreator{
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
-        PgTable table = schema.getTable("t1");
-        PgSequence seq = schema.getSequence("s1");
-        return new HashSet<>(Arrays.asList(db, schema, table, seq));
+//        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
+//        PgTable table = schema.getTable("t1");
+//        PgSequence seq = schema.getSequence("s1");
+        return new HashSet<>(/*Arrays.asList(schema, table, seq)*/);
     }
 
     @Override
@@ -589,14 +588,14 @@ class Predefined3 extends TreeElementCreator{
     @Override
     public TreeElement getFilteredCopy() {
         TreeElement root = getFilteredTreeForDeletion();
-        TreeElement initialPublicSchema = root.getChild("Database").
-                getChild("Source only").getChild("Schemas").getChild(ApgdiffConsts.PUBLIC);
-        
-        TreeElement contSeq = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.LEFT);
-        initialPublicSchema.addChild(contSeq);
-
-        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, null, DiffSide.LEFT);
-        contSeq.addChild(seq);
+//        TreeElement initialPublicSchema = root.getChild("Database").
+//                getChild("Source only").getChild("Schemas").getChild(ApgdiffConsts.PUBLIC);
+//        
+//        TreeElement contSeq = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.LEFT);
+//        initialPublicSchema.addChild(contSeq);
+//
+//        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, null, DiffSide.LEFT);
+//        contSeq.addChild(seq);
         
         return root;
     }
@@ -609,12 +608,12 @@ class Predefined3 extends TreeElementCreator{
 
     @Override
     public HashSet<TreeElement> getConflicting(TreeElement copy) {
-        TreeElement contSeq = copy.getChild("Database").getChild("Different").getChild("Schemas").
-                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences");
-        // КОСТЫЛЬ - конфликтующие объекты копируются в одного парента с разными DiffSide 
-        TreeElement seq = contSeq.getChild(1);
-        
-        return new HashSet<>(Arrays.asList(seq));
+//        TreeElement contSeq = copy.getChild("Database").getChild("Different").getChild("Schemas").
+//                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences");
+//        // КОСТЫЛЬ - конфликтующие объекты копируются в одного парента с разными DiffSide 
+//        TreeElement seq = contSeq.getChild(1);
+//        
+        return new HashSet<>(/*Arrays.asList(seq)*/);
     }
 
     @Override
@@ -652,8 +651,7 @@ class Predefined4 extends TreeElementCreator{
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
-        return new HashSet<>(Arrays.asList(db, schema));
+        return new HashSet<>();
     }
 
     @Override
@@ -725,7 +723,7 @@ class Predefined5 extends TreeElementCreator{
         
         TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
         root.addChild(database);
-        
+        // TODO Source or Target ? 
         TreeElement sourceOnly = new TreeElement("Source only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.RIGHT);
         database.addChild(sourceOnly);
         
@@ -752,12 +750,9 @@ class Predefined5 extends TreeElementCreator{
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
-        PgTable table = schema.getTable("t_test2");
-        PgSchema schemaRep = db.getSchema("republic");
-        PgTable tableConstr = schemaRep.getTable("t_test2foreign");
-        PgColumn col = table.getColumn("c_name_t_test2");
-        return new HashSet<>(Arrays.asList(db, schema, table, tableConstr, schemaRep, col));
+        Set<PgStatement> res = new HashSet<>();
+        res.add(db.getSchema("republic"));
+        return res;
     }
    
     @Override
