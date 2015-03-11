@@ -58,7 +58,7 @@ public class DbSourceTest {
         
         dbPredefined = PgDumpLoader.loadDatabaseSchemaFromDump(
                 JdbcLoaderTest.class.getResourceAsStream(TEST.RESOURCE_DUMP),
-                ApgdiffConsts.UTF_8, false, false, ParserClass.getLegacy(null, 1));
+                ApgdiffConsts.UTF_8, false, false, ParserClass.getAntlr(null, 1));
         
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         workspacePath = workspaceRoot.getLocation().toFile();
@@ -73,8 +73,7 @@ public class DbSourceTest {
                                             TEST.REMOTE_PASSWORD, 
                                             dbName, 
                                             UIConsts.UTF_8, 
-                                            UIConsts.UTC, false));
-        
+                                            UIConsts.UTC, true));
     }
     
     @Test
@@ -82,7 +81,7 @@ public class DbSourceTest {
         try(TempDir exportDir = new TempDir("pgcodekeeper-test")){
             new ModelExporter(exportDir.get(), dbPredefined, UIConsts.UTF_8).exportFull();
             
-            performTest(DbSource.fromDirTree(ParserClass.getLegacy(null, 1),
+            performTest(DbSource.fromDirTree(ParserClass.getAntlr(null, 1),
                     exportDir.get().getAbsolutePath(), UIConsts.UTF_8));
         }
     }
@@ -99,10 +98,10 @@ public class DbSourceTest {
     }
     
     @Test
-    public void testFile () throws IOException, URISyntaxException {
+    public void testFile() throws IOException, URISyntaxException {
         URL urla = JdbcLoaderTest.class.getResource(TEST.RESOURCE_DUMP);
         
-        performTest(DbSource.fromFile(ParserClass.getLegacy(null, 1), 
+        performTest(DbSource.fromFile(ParserClass.getAntlr(null, 1), 
                 ApgdiffUtils.getFileFromOsgiRes(urla).getCanonicalPath(), UIConsts.UTF_8));
     }
     
@@ -121,7 +120,7 @@ public class DbSourceTest {
 
             assertEquals("Project name differs", tempDir.get().getName(), proj.getProjectName());
             
-            performTest(DbSource.fromProject(ParserClass.getLegacy(null, 1), proj));
+            performTest(DbSource.fromProject(ParserClass.getAntlr(null, 1), proj));
             
             proj.deleteFromWorkspace();
         }
@@ -148,7 +147,7 @@ public class DbSourceTest {
             assertEquals("Project name differs", tempDir.get().getName(), proj.getProjectName());
             
             // testing itself
-            performTest(DbSource.fromJdbc(proj, TEST.REMOTE_PASSWORD, false));
+            performTest(DbSource.fromJdbc(proj, TEST.REMOTE_PASSWORD, true));
             
             proj.deleteFromWorkspace();
         }
