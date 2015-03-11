@@ -29,23 +29,24 @@ import org.jgrapht.graph.DefaultEdge;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
-import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, ISelectionListener, IStateListener{
     
-    private DepcyGraph currentGraph;
     private PgDatabase currentDb;
     private GraphViewer gv;
     private boolean isSource = true;
+    private DepcyResolver depRes;
+    private boolean isDBSource;
     
     @Override
     public void createPartControl(Composite parent) {
@@ -87,9 +88,9 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     }
 
     @Override
-    public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-        if (!(part instanceof ProjectEditorDiffer) || 
-                !(selection instanceof IStructuredSelection)) {
+    public void selectionChanged(final IWorkbenchPart part, final ISelection selection) {
+        if (!(part instanceof ProjectEditorDiffer)
+                || !(selection instanceof IStructuredSelection)) {
             return;
         }
         
@@ -108,41 +109,42 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         }
         
         boolean isCommit = ((ProjectEditorDiffer) part).getActivePage() == 0;
-        DbSource newDbSource = isSource == isCommit ? dss.getSource() : dss.getTarget();
+        isDBSource = isSource == isCommit;
+        DbSource newDbSource = isDBSource ? dss.getSource() : dss.getTarget();
+        DbSource newDbTarget = isDBSource ? dss.getTarget() : dss.getSource();
         PgDatabase newDb = newDbSource.getDbObject();
-        if (currentDb != newDb){
+
+        if (currentDb != newDb) {
             currentDb = newDb;
-            currentGraph = null;
             try {
-                if (currentDb != null) {
-                    currentGraph = new DepcyGraph(currentDb);
-                }
+                depRes = new DepcyResolver(newDbSource.getDbObject(),
+                        newDbTarget.getDbObject());
             } catch (PgCodekeeperException e) {
                 Log.log(Log.LOG_WARNING, "Error creating dependency graph", e); //$NON-NLS-1$
             }
         }
 
-        if (currentDb == null || currentGraph == null){
+        if (currentDb == null || depRes == null) {
             gv.setInput(null);
             return;
         }
-        
+
         Set<PgStatement> newInput = new HashSet<>();
-        for(Object selected : dss.toArray()){
-            if (!(selected instanceof TreeElement)){
+        for (Object selected : dss.toArray()) {
+            if (!(selected instanceof TreeElement)) {
                 continue;
             }
             TreeElement el = (TreeElement) selected;
-            if (el.getSide() == DiffSide.RIGHT && isSource || el.getSide() == DiffSide.LEFT && !isSource){
+            if (el.getSide() == DiffSide.RIGHT && isSource
+                    || el.getSide() == DiffSide.LEFT && !isSource) {
                 continue;
             }
-            
-            PgStatement dbObject = el.getPgStatement(currentDb);                     
-            newInput.add(dbObject);
-            
-            for(PgStatement dependant : PgDiff.getDependantsSet(
-                    dbObject, new HashSet<PgStatement>(), currentGraph)){
-                if (!(dependant instanceof PgColumn)){
+
+            depRes.clearDepcies();
+            depRes.addDropStatements(el.getPgStatement(currentDb));
+            for (PgStatement dependant : depRes
+                    .getOrderedDepcies(StatementActions.DROP)) {
+                if (!(dependant instanceof PgColumn)) {
                     newInput.add(dependant);
                 }
             }
@@ -162,11 +164,11 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         @Override
         public Object[] getConnectedTo(Object entity) {
             if (entity instanceof PgStatement){
-                DirectedGraph<PgStatement, DefaultEdge> graph = currentGraph.getGraph();
-                if (graph != null){
+                DirectedGraph<PgStatement, DefaultEdge> currentGraph = depRes.getOldGraph();
+                if (currentGraph != null){
                     List<PgStatement> connected = new ArrayList<>();
-                    for (DefaultEdge e : graph.outgoingEdgesOf((PgStatement)entity)){
-                        PgStatement connectedVertex = graph.getEdgeTarget(e);
+                    for (DefaultEdge e : currentGraph.outgoingEdgesOf((PgStatement)entity)){
+                        PgStatement connectedVertex = currentGraph.getEdgeTarget(e);
                         if (!(connectedVertex instanceof PgColumn)){
                             connected.add(connectedVertex);                        
                         }
