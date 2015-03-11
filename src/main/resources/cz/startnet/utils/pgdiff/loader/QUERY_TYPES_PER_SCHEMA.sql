@@ -16,7 +16,7 @@ WITH extension_deps AS (
 )
 SELECT  -- GENERAL
     t.typname,
-    --(SELECT n.nspname FROM nspnames n WHERE n.oid = t.typnamespace),
+    --(SELECT n.nspname FROM nspnames n WHERE n.oid = t.typnamespace) AS typnspname,
     t.typowner,
     t.typacl,
     -- t.typisdefined, -- false == SHELL type; pg_dump ignores those
@@ -102,10 +102,10 @@ LEFT JOIN pg_catalog.pg_opclass opc ON opc.oid = r.rngsubopc
 LEFT JOIN
     (SELECT
          c.contypid,
-         array_agg(c.conname) AS connames,
-         array_agg(pg_catalog.pg_get_constraintdef(c.oid)) AS condefs,
-         array_agg(c.convalidated) AS convalidates,
-         array_agg(cd.description) AS concomments
+         array_agg(c.conname ORDER BY c.conname) AS connames,
+         array_agg(pg_catalog.pg_get_constraintdef(c.oid) ORDER BY c.conname) AS condefs,
+         array_agg(c.convalidated ORDER BY c.conname) AS convalidates,
+         array_agg(cd.description ORDER BY c.conname) AS concomments
      FROM pg_catalog.pg_constraint c
      LEFT JOIN pg_catalog.pg_description cd ON cd.objoid = c.oid
      WHERE c.contypid != 0

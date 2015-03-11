@@ -33,4 +33,5 @@ LEFT JOIN pg_catalog.pg_description d ON d.objoid = p.oid
 LEFT JOIN pg_catalog.pg_language l ON l.oid = p.prolang
 WHERE pronamespace = ?
     AND proisagg = FALSE
+    AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.classid = 'pg_proc'::regclass AND dp.objid = p.oid AND dp.deptype = 'i')
     AND p.oid NOT IN (SELECT objid FROM extension_deps)

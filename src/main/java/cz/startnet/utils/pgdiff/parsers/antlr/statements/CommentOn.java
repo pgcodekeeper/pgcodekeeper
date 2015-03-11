@@ -59,7 +59,7 @@ public class CommentOn extends ParserAbstract {
             }
             //extension
         }else if (ctx.EXTENSION() != null) {
-            schema.setComment(comment);
+            db.getExtension(name).setComment(comment);
             //constraint
         } else if (ctx.CONSTRAINT() != null) {
             String tableName = getName(ctx.table_name);
@@ -110,8 +110,8 @@ public class CommentOn extends ParserAbstract {
                 index.setComment(comment);
             }
             //schema
-        } else if (ctx.SCHEMA() !=null) {
-            schema.setComment(comment);
+        } else if (ctx.SCHEMA() != null) {
+            db.getSchema(name).setComment(comment);
             // sequence
         } else if (ctx.SEQUENCE() != null) {
             schema.getSequence(name).setComment(comment);

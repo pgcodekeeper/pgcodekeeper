@@ -578,6 +578,7 @@ public class JdbcLoader implements PgCatalogStrings {
                             .append('.')
                             .append(PgDiffUtils.getQuotedName(attcollationnames[i]));
                 }
+                a.setType(sbDef.toString());
                 t.addAttr(a);
                 if (attcomments[i] != null && !attcomments[i].isEmpty()) {
                     a.setComment(ParserUtils.quoteString(attcomments[i]));
@@ -609,8 +610,8 @@ public class JdbcLoader implements PgCatalogStrings {
             
             long collation = res.getLong("rngcollation");
             if (collation != 0 && collation != res.getLong("rngsubtypcollation")) {
-                t.setCollation(PgDiffUtils.getQuotedName(res.getString("rngcollationnspname")
-                        + '.' + PgDiffUtils.getQuotedName(res.getString("rngcollationname"))));
+                t.setCollation(PgDiffUtils.getQuotedName(res.getString("rngcollationnspname"))
+                        + '.' + PgDiffUtils.getQuotedName(res.getString("rngcollationname")));
             }
             
             if (res.getBoolean("rngcanonicalset")) {

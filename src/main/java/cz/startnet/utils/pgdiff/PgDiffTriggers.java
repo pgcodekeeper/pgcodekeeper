@@ -138,15 +138,21 @@ public final class PgDiffTriggers {
     private static void checkTrgExists(final PgTable containerToCheck,
             final PgTable containerSrc, final List<PgTrigger> list) {
         List<PgTrigger> oldTriggers = containerToCheck.getTriggers();
+        if (oldTriggers.isEmpty()) {
+            list.addAll(containerSrc.getTriggers());
+            return;
+        }
+        
         for (final PgTrigger newTrigger : containerSrc.getTriggers()) {
-            if (oldTriggers.isEmpty()) {
-                list.add(newTrigger);
-            } else {
-                for (PgTrigger trig : oldTriggers) {
-                    if (!trig.compareWithoutComments(newTrigger)) {
-                        list.add(newTrigger);
-                    }
+            boolean found = false;
+            for (PgTrigger trig : oldTriggers) {
+                if (trig.compareWithoutComments(newTrigger)) {
+                    found = true;
+                    break;
                 }
+            }
+            if (!found) {
+                list.add(newTrigger);
             }
         }
     }

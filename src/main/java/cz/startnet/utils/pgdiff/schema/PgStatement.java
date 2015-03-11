@@ -193,7 +193,7 @@ public abstract class PgStatement {
             break;
         default:
             throw new IllegalStateException("OWNERs allowed only for SCHEMA, "
-                    + "SEQUENCE, TABLE, TYPE, VIEW, FUNCTION objects.");
+                    + "SEQUENCE, TABLE, TYPE, VIEW, FUNCTION, TYPE, DOMAIN objects.");
         }
         sb.append("\n\nALTER ")
             .append(type)

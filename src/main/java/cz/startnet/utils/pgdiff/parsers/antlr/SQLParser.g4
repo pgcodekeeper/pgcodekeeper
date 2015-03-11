@@ -978,6 +978,8 @@ nonreserved_keywords
   | VARCHAR
   | UUID
   | VOID
+  
+  | SCHEMA
   ;
 
 /*
