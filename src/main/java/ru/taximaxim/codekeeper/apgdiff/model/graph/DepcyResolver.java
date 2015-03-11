@@ -42,7 +42,7 @@ public class DepcyResolver {
     private DepcyGraph oldDepcyGraph;
     private DepcyGraph newDepcyGraph;
     private Set<ActionContainer> actions = new LinkedHashSet<>();
-    private List<PgSequence> sequencesOwnedBy = new ArrayList<>();
+    private Set<PgSequence> sequencesOwnedBy = new LinkedHashSet<>();
 
     public DepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase)
             throws PgCodekeeperException {
@@ -125,16 +125,28 @@ public class DepcyResolver {
         }
     }
 
+    /**
+     * Добавить ручную зависимость к старому графу
+     * @param depcies ручная зависимость
+     */
     public void addCustomDepciesToOld(
             List<Entry<PgStatement, PgStatement>> depcies) {
         oldDepcyGraph.addCustomDepcies(depcies);
     }
 
+    /**
+     * Добавить ручную зависимость к новому графу
+     * @param depcies ручная зависимость
+     */
     public void addCustomDepciesToNew(
             List<Entry<PgStatement, PgStatement>> depcies) {
         newDepcyGraph.addCustomDepcies(depcies);
     }
 
+    /**
+     * Заполняет скрипт объектами с учетом их порядка по зависимостям
+     * @param script скрипт для печати
+     */
     public void fillScript(PgDiffScript script) {
         String currentSearchPath = MessageFormat.format(
                 ApgdiffConsts.SEARCH_PATH_PATTERN, "public");
@@ -175,13 +187,19 @@ public class DepcyResolver {
                 oldObj.appendAlterSQL(action.getNewObj(), sb,
                         new AtomicBoolean());
                 if (sb.length() > 0) {
-                    currentSearchPath = setSearchPath(currentSearchPath,
-                            oldObj, script);
                     if (oldObj instanceof PgSchema) {
-                        currentSearchPath = MessageFormat.format(
+                        String schemaPath = MessageFormat.format(
                                 ApgdiffConsts.SEARCH_PATH_PATTERN,
                                 oldObj.getName());
+                        if (!schemaPath.equals(currentSearchPath)) {
+                            currentSearchPath = schemaPath;
+                            script.addStatement(currentSearchPath);
+                        }
+                    } else {
+                    currentSearchPath = setSearchPath(currentSearchPath,
+                            oldObj, script);
                     }
+                    
                     if (depcy != null) {
                         script.addStatement(depcy);
                     }
@@ -200,6 +218,11 @@ public class DepcyResolver {
         }
     }
 
+    /**
+     * Проверяет есть ли объект в списке ранее удаленных объектов
+     * @param statement объект для проверки
+     * @return
+     */
     private boolean inDropsList(PgStatement statement) {
         for (ActionContainer action : actions) {
             if (action.getAction() != StatementActions.DROP) {
@@ -215,6 +238,9 @@ public class DepcyResolver {
         return false;
     }
 
+    /**
+     * Пересоздает ранее удаленные объекты в новое состояние
+     */
     public void recreateDrops() {
         List<PgStatement> toRecreate = new ArrayList<>();
         for (ActionContainer action : actions) {
@@ -230,6 +256,13 @@ public class DepcyResolver {
         }
     }
 
+    /**
+     * Переключает путь для поиска объектов если текущий объект содержится в другой схеме
+     * @param currentSearchPath текущий путь
+     * @param st объект для вывода
+     * @param script скрипт для печати
+     * @return
+     */
     private String setSearchPath(String currentSearchPath, PgStatement st,
             PgDiffScript script) {
         if (st instanceof PgStatementWithSearchPath) {
@@ -246,12 +279,9 @@ public class DepcyResolver {
     /**
      * ДОбавляет в список выражений для скрипта Выражение без зависимостей
      * 
-     * @param action
-     *            Какое действие нужно вызвать {@link StatementActions}
-     * @param oldObj
-     *            Объект из старого состояния
-     * @param starter
-     *            TODO
+     * @param action Какое действие нужно вызвать {@link StatementActions}
+     * @param oldObj Объект из старого состояния
+     * @param starter объект который вызвал действие
      */
     public void addToListWithoutDepcies(StatementActions action,
             PgStatement oldObj, PgStatement starter) {
@@ -273,7 +303,10 @@ public class DepcyResolver {
             throw new IllegalStateException("Not implemented action");
         }
     }
-
+    /**
+     * Используется для прохода по графу зависимостей для формирования
+     * созданных (CREATE) объектов
+     */
     private class CreateTraversalAdapter extends CustomTraversalListenerAdapter {
 
         CreateTraversalAdapter(PgStatement starter) {
@@ -301,7 +334,10 @@ public class DepcyResolver {
             return false;
         }
     }
-
+    /**
+     * Используется для прохода по графу зависимостей для формирования
+     * удаленных (DROP) объектов
+     */
     private class DropTraversalAdapter extends CustomTraversalListenerAdapter {
 
         DropTraversalAdapter(PgStatement starter) {
@@ -326,6 +362,10 @@ public class DepcyResolver {
         }
     }
 
+    /**
+     * Используется для прохода по графу зависимостей для формирования
+     * измененных (ALTER) объектов
+     */
     private class AlterTraversalAdapter extends CustomTraversalListenerAdapter {
 
         AlterTraversalAdapter(PgStatement starter) {
@@ -351,6 +391,9 @@ public class DepcyResolver {
         }
     }
 
+    /**
+     * Используется для прохода по графу зависимостей, содержит общие методы
+     */
     private abstract class CustomTraversalListenerAdapter extends
             TraversalListenerAdapter<PgStatement, DefaultEdge> {
         private PgStatement starter;
@@ -385,6 +428,12 @@ public class DepcyResolver {
         }
     }
 
+    /**
+     * Ищет в переданной базе объетк по имени 
+     * @param statement объект для поиска
+     * @param db база для поиска
+     * @return
+     */
     private PgStatement getObjectFromDB(PgStatement statement, PgDatabase db) {
         PgSchema oldSchema = null;
         switch (statement.getStatementType()) {
@@ -447,6 +496,11 @@ public class DepcyResolver {
         return null;
     }
 
+    /**
+     * Возвращает упорядоченный набор объектов для наката с указанием действия
+     * @param actionType необходимое действие
+     * @return
+     */
     public Set<PgStatement> getOrderedDepcies(StatementActions actionType) {
         Set<PgStatement> result = new LinkedHashSet<>();
         for (ActionContainer obj : actions) {
@@ -457,6 +511,11 @@ public class DepcyResolver {
         return result;
     }
 
+    /**
+     * Добавить выражение для изменения объекта
+     * @param oldObj исходный объект
+     * @param newObj новый объект
+     */
     public void appendALter(PgStatement oldObj, PgStatement newObj) {
         if (newObj != null && oldObj != null) {
             StringBuilder sb = new StringBuilder();
@@ -472,7 +531,26 @@ public class DepcyResolver {
             }
         }
     }
+    /**
+     * Добавляет в список OWNED BY последовательность (SEQUENCE) для вызова в конце скрипта
+     * @param oldObj исходная последовательность
+     * @param newObj новая последовательность
+     */
+    public void appendAlterOwnedBy(PgSequence oldObj, PgSequence newObj) {
+        if (newObj != null && oldObj != null) {
+            StringBuilder sb = new StringBuilder();
+            AtomicBoolean isNeedDepcies = new AtomicBoolean(false);
+            oldObj.alterOwnedBy(newObj, sb, isNeedDepcies);
+            if (sb.length() > 0) {
+                sequencesOwnedBy.add((PgSequence) newObj);
+            }
+        }
+    }
 
+    /**
+     * Класс используется как контейнер для объединения дейсвий с объектом БД
+     * (CREATE ALTER DROP) Также хранит объект, инициировавший действие
+     */
     private class ActionContainer {
         private PgStatement oldObj;
         private PgStatement newObj;

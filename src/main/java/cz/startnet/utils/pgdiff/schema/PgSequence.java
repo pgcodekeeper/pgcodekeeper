@@ -220,16 +220,6 @@ public class PgSequence extends PgStatementWithSearchPath {
             sbSQL.append("\n\tCYCLE");
         }
 
-//        final String oldOwnedBy = oldSequence.getOwnedBy();
-//        final String newOwnedBy = newSequence.getOwnedBy();
-
-//        if (newOwnedBy != null && !newOwnedBy.equals(oldOwnedBy)) {
-//            PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newSequence);
-//            
-//            sbSQL.append("\n\tOWNED BY ");
-//            sbSQL.append(newOwnedBy);
-//        }
-
         if (sbSQL.length() > 0) {
             script.addStatement("ALTER SEQUENCE "
                     + PgDiffUtils.getQuotedName(newSequence.getName())
@@ -250,6 +240,25 @@ public class PgSequence extends PgStatementWithSearchPath {
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
+        return false;
+    }
+
+    public boolean alterOwnedBy(PgStatement newCondition, StringBuilder sbSQL,
+            AtomicBoolean isNeedDepcies) {
+        PgSequence newSequence = null;
+        if (newCondition instanceof PgSequence) {
+            newSequence = (PgSequence) newCondition;
+        } else {
+            return false;
+        }
+        PgSequence oldSequence = this;
+        final String oldOwnedBy = oldSequence.getOwnedBy();
+        final String newOwnedBy = newSequence.getOwnedBy();
+
+        if (newOwnedBy != null && !newOwnedBy.equals(oldOwnedBy)) {
+            sbSQL.append("\n\tOWNED BY ");
+            sbSQL.append(newOwnedBy);
+        }
         return false;
     }
 
