@@ -222,15 +222,15 @@ public abstract class PgStatement {
     public abstract String getDropSQL();
     
     /**
-	 * Метод заполняет sb выражением изменения объекта, можно ли изменить объект
-	 * ALTER.
-	 * 
-	 * @param newCondition
-     * @param sb
-     * @param isNeedDepcies TODO
-	 * @return true необходимость удаления объекта DROP, в случае невозможности
-	 *         удаления; false - объект нужно пропустить
-	 */
+     * Метод заполняет sb выражением изменения объекта, можно ли изменить объект
+     * ALTER.
+     * 
+     * @param newCondition новое состоятние объекта
+     * @param sb скрипт изменения
+     * @param isNeedDepcies нужно ли использовать зависимости объекта
+     * @return true необходимость удаления объекта DROP, в случае невозможности
+     *         удаления; false - объект нужно пропустить
+     */
     public abstract boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies);
     
     /**
