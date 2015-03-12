@@ -397,27 +397,7 @@ public final class PgDiff {
         
         depRes.recreateDrops();
     }
-    
-    static void tempSwitchSearchPath(String switchTo, 
-            final SearchPathHelper searchPathHelper, final PgDiffScript script){
-        
-        if (!searchPathHelper.wasOutput() ||
-                !searchPathHelper.getSchemaName().equals(switchTo)){
-            new SearchPathHelper(switchTo).outputSearchPath(script);
-            
-            searchPathHelper.setWasOutput(false);
-        }
-    }
-    
-    static void writeCreationSql(PgDiffScript script, String comment,
-            PgStatement pgObject, boolean replaceExisting) {
-        script.addCreate(pgObject, comment, pgObject.getCreationSQL(), replaceExisting);
-    }
-    
-    static void writeDropSql(PgDiffScript script, String comment, PgStatement pgObject) {
-        script.addDrop(pgObject, comment, pgObject.getDropSQL());
-    }
-    
+
     public static void diffComments(PgStatement oldStatement, PgStatement newStatement,
             PgDiffScript script) {
         String oldComment = oldStatement == null ? null : oldStatement.getComment();
