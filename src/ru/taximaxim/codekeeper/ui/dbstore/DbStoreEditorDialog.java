@@ -109,7 +109,7 @@ public class DbStoreEditorDialog extends TrayDialog {
                 grpDbData.setStoreEditMode();
                 
                 // select an element and trigger modify event
-            	listEdit.select(0);
+                listEdit.select(0);
             }
         });
     }

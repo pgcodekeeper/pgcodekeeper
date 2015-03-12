@@ -53,30 +53,30 @@ public class PrefListEditor extends Composite {
     }
     
     private void populateUiContent(Composite parent){
-		LocalResourceManager lrm = new LocalResourceManager(
-				JFaceResources.getResources(), this);
-		final Text txtNewValue = new Text(parent, SWT.BORDER);
-		txtNewValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        LocalResourceManager lrm = new LocalResourceManager(
+                JFaceResources.getResources(), this);
+        final Text txtNewValue = new Text(parent, SWT.BORDER);
+        txtNewValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-		btnAdd = new Button(parent, SWT.PUSH);
-		btnAdd.setToolTipText(Messages.add);
-		btnAdd.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator
-				.getContext().getBundle().getResource(FILE.ICONADD))));
-		btnAdd.addSelectionListener(new SelectionAdapter() {
+        btnAdd = new Button(parent, SWT.PUSH);
+        btnAdd.setToolTipText(Messages.add);
+        btnAdd.setImage(lrm.createImage(ImageDescriptor.createFromURL(Activator
+                .getContext().getBundle().getResource(FILE.ICONADD))));
+        btnAdd.addSelectionListener(new SelectionAdapter() {
 
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				String newValue = txtNewValue.getText().trim();
-				if (!newValue.isEmpty() && !objsList.contains(newValue)) {
-					objsList.add(0, newValue);
-					newVal = newValue; 
-					txtNewValue.setText(""); //$NON-NLS-1$
-					listViewerObjs.refresh();
-				} else {
-					newVal = "";
-				}
-			}
-		});
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                String newValue = txtNewValue.getText().trim();
+                if (!newValue.isEmpty() && !objsList.contains(newValue)) {
+                    objsList.add(0, newValue);
+                    newVal = newValue; 
+                    txtNewValue.setText(""); //$NON-NLS-1$
+                    listViewerObjs.refresh();
+                } else {
+                    newVal = "";
+                }
+            }
+        });
         listViewerObjs = new ListViewer(parent);
         listViewerObjs.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
@@ -178,7 +178,7 @@ public class PrefListEditor extends Composite {
     }
     
     public Object deleteSelected() {
-		IStructuredSelection selection = 
+        IStructuredSelection selection = 
                 (IStructuredSelection) listViewerObjs.getSelection();
         Object objToRemove = selection.getFirstElement();
         if (objToRemove == null) {
@@ -188,10 +188,10 @@ public class PrefListEditor extends Composite {
         objsList.remove(objToRemove);
         listViewerObjs.refresh();
         return objToRemove;
-	}
+    }
     
     public Object getSelected() {
-    	return ((IStructuredSelection)listViewerObjs.getSelection()).getFirstElement();
+        return ((IStructuredSelection)listViewerObjs.getSelection()).getFirstElement();
     }
     
     public List<String> getList(){
@@ -203,11 +203,11 @@ public class PrefListEditor extends Composite {
     }
     
     public Button getDelDtn() {
-    	return btnDelete;
+        return btnDelete;
     }
     
     public Button getAddBtn() {
-    	return btnAdd;
+        return btnAdd;
     }
     
     public void setInputList(LinkedList<String> list){
@@ -216,15 +216,15 @@ public class PrefListEditor extends Composite {
         listViewerObjs.refresh();
     }
 
-	public void select(String name) {
-		listViewerObjs.setSelection(new StructuredSelection(name));
-	}
-	
-	public void select(int index) {
-		listViewerObjs.setSelection(new StructuredSelection(objsList.get(index)));
-	}
+    public void select(String name) {
+        listViewerObjs.setSelection(new StructuredSelection(name));
+    }
+    
+    public void select(int index) {
+        listViewerObjs.setSelection(new StructuredSelection(objsList.get(index)));
+    }
 
-	public String getNewEntry() {
-		return newVal;
-	}
+    public String getNewEntry() {
+        return newVal;
+    }
 }
