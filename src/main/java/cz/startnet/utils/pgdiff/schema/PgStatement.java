@@ -1,9 +1,9 @@
 package cz.startnet.utils.pgdiff.schema;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
@@ -24,7 +24,8 @@ public abstract class PgStatement {
     protected final String name;
     protected String owner;
     protected String comment;
-    protected final List<PgPrivilege> privileges = new ArrayList<>();
+    protected final Set<PgPrivilege> grants = new LinkedHashSet<>();
+    protected final Set<PgPrivilege> revokes = new LinkedHashSet<>();  
     
     private PgStatement parent;
     
@@ -99,9 +100,8 @@ public abstract class PgStatement {
             case CONSTRAINT:
             case TRIGGER:
                 sb.append(PgDiffUtils.getQuotedName(getName()))
-                        .append(" ON ")
-                        .append(PgDiffUtils
-                                .getQuotedName(getParent().getName()));
+                    .append(" ON ")
+                    .append(PgDiffUtils.getQuotedName(getParent().getName()));
                 break;
 
             case DATABASE:
@@ -113,8 +113,7 @@ public abstract class PgStatement {
             }
         }
 
-        return sb
-                .append(" IS ")
+        return sb.append(" IS ")
                 .append(comment == null || comment.isEmpty() ? "NULL" : comment)
                 .append(';');
     }
@@ -123,18 +122,27 @@ public abstract class PgStatement {
         return appendCommentSql(new StringBuilder()).toString();
     }
     
-    public List<PgPrivilege> getPrivileges() {
-        return Collections.unmodifiableList(privileges);
+    public Set<PgPrivilege> getGrants() {
+        return Collections.unmodifiableSet(grants);
+    }
+    
+    public Set<PgPrivilege> getRevokes() {
+        return Collections.unmodifiableSet(revokes); 
     }
     
     public void addPrivilege(PgPrivilege privilege) {
-        privileges.add(privilege);
+        if (privilege.isRevoke()) {
+            revokes.add(privilege);
+        } else {
+            grants.add(privilege);
+        }
         privilege.setParent(this);
         resetHash();
     }
     
     protected StringBuilder appendPrivileges(StringBuilder sb) {
-        if (privileges.isEmpty()) {
+        if (grants.isEmpty() &&
+                revokes.isEmpty()) {
             return sb;
         }
         
@@ -157,7 +165,10 @@ public abstract class PgStatement {
             .append(' ')
             .append("GRANT\n");
         
-        for (PgPrivilege priv : privileges) {
+        for (PgPrivilege priv : revokes) {
+            sb.append('\n').append(priv.getCreationSQL());
+        }
+        for (PgPrivilege priv : grants) {
             sb.append('\n').append(priv.getCreationSQL());
         }
         

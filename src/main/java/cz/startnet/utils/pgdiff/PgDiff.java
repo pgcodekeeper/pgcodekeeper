@@ -125,9 +125,8 @@ public final class PgDiff {
                 oldDatabase, newDatabase, oldDbFull, newDbFull, null, null);
     }
     
-    public static PgDiffScript diffDatabaseSchemasAdditionalDepcies(
-            PrintWriter writer, PgDiffArguments arguments,
-            PgDatabase oldDatabase, PgDatabase newDatabase,
+    public static PgDiffScript diffDatabaseSchemasAdditionalDepcies(PrintWriter writer,
+            PgDiffArguments arguments, PgDatabase oldDatabase, PgDatabase newDatabase,
             PgDatabase oldDbFull, PgDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
@@ -174,10 +173,8 @@ public final class PgDiff {
 
         script.printStatements(writer);
         if (arguments.isOutputIgnoredStatements()) {
-            addIgnoredStatements(oldDatabase,
-                    Messages.Database_OriginalDatabaseIgnoredStatements, writer);
-            addIgnoredStatements(newDatabase,
-                    Messages.Database_NewDatabaseIgnoredStatements, writer);
+            addIgnoredStatements(oldDatabase, Messages.Database_OriginalDatabaseIgnoredStatements, writer);
+            addIgnoredStatements(newDatabase, Messages.Database_NewDatabaseIgnoredStatements, writer);
         }
         return script;
     }
@@ -414,7 +411,6 @@ public final class PgDiff {
     
     static void writeCreationSql(PgDiffScript script, String comment,
             PgStatement pgObject, boolean replaceExisting) {
-    	
         script.addCreate(pgObject, comment, pgObject.getCreationSQL(), replaceExisting);
     }
     
