@@ -108,12 +108,12 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     
     @Override
     public void exitCreate_type_statement(Create_type_statementContext ctx) {
-    	new CreateType(ctx, db, filePath).getObject();
+        new CreateType(ctx, db, filePath).getObject();
     }
     
     @Override
     public void exitCreate_domain_statement(Create_domain_statementContext ctx) {
-    	new CreateDomain(ctx, db, filePath).getObject();
+        new CreateDomain(ctx, db, filePath).getObject();
     }
     
     @Override
@@ -180,11 +180,11 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     
     @Override
     public void exitAlter_type_statement(Alter_type_statementContext ctx) {
-    	new AlterType(ctx, db, filePath).getObject();
+        new AlterType(ctx, db, filePath).getObject();
     }
     
     @Override
     public void exitAlter_domain_statement(Alter_domain_statementContext ctx) {
-    	new AlterDomain(ctx, db, filePath).getObject();
+        new AlterDomain(ctx, db, filePath).getObject();
     }
 }

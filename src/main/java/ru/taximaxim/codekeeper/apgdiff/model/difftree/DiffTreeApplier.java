@@ -82,12 +82,12 @@ public class DiffTreeApplier {
                 }
             }
             for (PgType type : schema.getTypes()) {
-            	if(!dstSchema.containsType(type.getName()) && !isNoCopy(type)) {
+                if(!dstSchema.containsType(type.getName()) && !isNoCopy(type)) {
                     dstSchema.addType(type.shallowCopy());
                 }
             }
             for (PgDomain domain : schema.getDomains()) {
-            	if(!dstSchema.containsDomain(domain.getName()) && !isNoCopy(domain)) {
+                if(!dstSchema.containsDomain(domain.getName()) && !isNoCopy(domain)) {
                     dstSchema.addDomain(domain.shallowCopy());
                 }
             }

@@ -318,18 +318,18 @@ public class ModelExporter {
             break;
             
         case TYPE:
-        	testParentSchema(elParent);
+            testParentSchema(elParent);
             dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew), 
                     new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
                     "TYPE");
-        	break;
-        	
+            break;
+            
         case DOMAIN:
-        	testParentSchema(elParent);
+            testParentSchema(elParent);
             dumpObjects(Arrays.asList((PgStatementWithSearchPath)stInNew), 
                     new File(new File(outDir, "SCHEMA"), getExportedFilename(stInNew.getParent())),
                     "DOMAIN");
-        	break;
+            break;
             
         case VIEW:
             testParentSchema(elParent);

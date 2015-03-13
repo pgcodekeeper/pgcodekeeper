@@ -162,12 +162,12 @@ public abstract class ParserAbstract {
                             .constr_body().default_expr_data));
                 }
 
-				if (column_constraint.constr_body().common_constraint() != null) {
-					if (column_constraint.constr_body().common_constraint().null_value != null) {
-						col.setNullValue(column_constraint.constr_body()
-								.common_constraint().null_false == null);
-					}
-				}
+                if (column_constraint.constr_body().common_constraint() != null) {
+                    if (column_constraint.constr_body().common_constraint().null_value != null) {
+                        col.setNullValue(column_constraint.constr_body()
+                                .common_constraint().null_false == null);
+                    }
+                }
             }
             if (colCtx.datatype != null) {
 //                col.setType(getFullCtxText(colCtx.datatype));
@@ -307,16 +307,16 @@ public abstract class ParserAbstract {
     }
     
     protected PgConstraint parseDomainConstraint(Domain_constraintContext constr) {
-		if (constr.common_constraint().check_boolean_expression() != null) {
-	        String constr_name = "";
-	        if (constr.name != null) {
-	            constr_name = getName(constr.name);
-	        }
-	        PgConstraint constraint = new PgConstraint(constr_name,
-	                getFullCtxText(constr), db.getDefSearchPath());			
-			constraint.setDefinition(getFullCtxText(constr.common_constraint()));
-			return constraint;
-		}
-		return null;
-	}
+        if (constr.common_constraint().check_boolean_expression() != null) {
+            String constr_name = "";
+            if (constr.name != null) {
+                constr_name = getName(constr.name);
+            }
+            PgConstraint constraint = new PgConstraint(constr_name,
+                    getFullCtxText(constr), db.getDefSearchPath());            
+            constraint.setDefinition(getFullCtxText(constr.common_constraint()));
+            return constraint;
+        }
+        return null;
+    }
 }

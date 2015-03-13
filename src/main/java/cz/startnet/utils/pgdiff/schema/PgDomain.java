@@ -127,25 +127,25 @@ public class PgDomain extends PgStatementWithSearchPath {
         }
         
         appendOwnerSQL(sb);
-		appendPrivileges(sb);
-		
-		if (comment != null && !comment.isEmpty()) {
-			sb.append("\n\n");
-			appendCommentSql(sb);
-		}
-		for (PgConstraint c : constraints) {
-		    if (c.getComment() != null && !c.getComment().isEmpty()) {
-		        sb.append("\n\n");
-		        c.appendCommentSql(sb);
-		    }
-		}
-		for (PgConstraint c : constrsNotValid) {
+        appendPrivileges(sb);
+        
+        if (comment != null && !comment.isEmpty()) {
+            sb.append("\n\n");
+            appendCommentSql(sb);
+        }
+        for (PgConstraint c : constraints) {
             if (c.getComment() != null && !c.getComment().isEmpty()) {
                 sb.append("\n\n");
                 c.appendCommentSql(sb);
             }
         }
-		
+        for (PgConstraint c : constrsNotValid) {
+            if (c.getComment() != null && !c.getComment().isEmpty()) {
+                sb.append("\n\n");
+                c.appendCommentSql(sb);
+            }
+        }
+        
         return sb.toString();
     }
 
@@ -170,7 +170,7 @@ public class PgDomain extends PgStatementWithSearchPath {
             copy.addConstrNotValid(constr.shallowCopy());
         }
         for (PgPrivilege priv : privileges) {
-        	copy.addPrivilege(priv.shallowCopy());
+            copy.addPrivilege(priv.shallowCopy());
         }
         return copy;
     }

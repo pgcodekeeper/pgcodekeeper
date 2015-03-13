@@ -61,9 +61,9 @@ public final class PgDumpLoader { //NOPMD
      */
     // NOTE: constraints, triggers and indexes are now stored in tables,
     // those directories are here for backward compatibility only
-	private static final String[] DIR_LOAD_ORDER = new String[] { "TYPE",
-			"DOMAIN", "SEQUENCE", "FUNCTION", "TABLE", "CONSTRAINT", "INDEX",
-			"TRIGGER", "VIEW" };
+    private static final String[] DIR_LOAD_ORDER = new String[] { "TYPE",
+            "DOMAIN", "SEQUENCE", "FUNCTION", "TABLE", "CONSTRAINT", "INDEX",
+            "TRIGGER", "VIEW" };
 
     /**
      * Pattern for testing whether it is CREATE SCHEMA statement.

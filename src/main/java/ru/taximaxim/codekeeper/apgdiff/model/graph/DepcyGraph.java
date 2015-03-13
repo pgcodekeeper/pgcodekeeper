@@ -38,8 +38,8 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class DepcyGraph {
 
-	private static final Set<String> SYS_TYPES = new HashSet<>(
-			Arrays.asList(ApgdiffConsts.SYS_TYPES));
+    private static final Set<String> SYS_TYPES = new HashSet<>(
+            Arrays.asList(ApgdiffConsts.SYS_TYPES));
     private static final List<String> SYS_COLUMNS = Arrays.asList(new String[]{
             "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
             });
@@ -100,12 +100,12 @@ public class DepcyGraph {
             }
             
             for (PgType type : schema.getTypes()) {
-            	graph.addVertex(type);
+                graph.addVertex(type);
                 graph.addEdge(type, schema);
             }
             
             for (PgDomain domain : schema.getDomains()) {
-            	graph.addVertex(domain);
+                graph.addVertex(domain);
                 graph.addEdge(domain, schema);
             }
             
@@ -132,18 +132,18 @@ public class DepcyGraph {
 
         // second loop: dependencies of objects from likely different schemas
         for(PgSchema schema : db.getSchemas()) {
-        	for (PgFunction func : schema.getFunctions()) {
-        		for (Argument arg: func.getArguments()) {
-        			addPgStatementToType(arg.getDataType(), schema, func);
-        		}
-        	}
-        	
+            for (PgFunction func : schema.getFunctions()) {
+                for (Argument arg: func.getArguments()) {
+                    addPgStatementToType(arg.getDataType(), schema, func);
+                }
+            }
+            
             for(PgTable table : schema.getTables()) {
                 createTableToConstraints(table);
                 createTableToSequences(table, schema);
                 createTableToTriggers(table, schema);
                 for (PgColumn col : table.getColumns()) {
-                	addPgStatementToType(col.getType(), schema, table);
+                    addPgStatementToType(col.getType(), schema, table);
                 }
             }
             
@@ -158,33 +158,33 @@ public class DepcyGraph {
         }
     }
     
-	private void addPgStatementToType(String dataType, PgSchema schema,
-			PgStatement statement) {
-    	String typeName = extractType(dataType);
-		if (!SYS_TYPES.contains(typeName)) {
-			String name = ParserUtils.getObjectName(typeName);
-			PgStatement type = getSchemaForObject(schema, typeName).getType(name);
-			if (type == null) {
-				type = getSchemaForObject(schema, typeName).getDomain(name);
-			}
-			if (type != null) {
-				graph.addEdge(statement, type);
-			}
-		}
+    private void addPgStatementToType(String dataType, PgSchema schema,
+            PgStatement statement) {
+        String typeName = extractType(dataType);
+        if (!SYS_TYPES.contains(typeName)) {
+            String name = ParserUtils.getObjectName(typeName);
+            PgStatement type = getSchemaForObject(schema, typeName).getType(name);
+            if (type == null) {
+                type = getSchemaForObject(schema, typeName).getDomain(name);
+            }
+            if (type != null) {
+                graph.addEdge(statement, type);
+            }
+        }
     }
     
     private String extractType(String dataType) {
-    	String result = dataType;
-    	if (dataType.lastIndexOf(')') != -1) {
-    		result = dataType.substring(0, dataType.lastIndexOf('('));
-    	}
-    	if (result.lastIndexOf(']') != -1) {
-    		result = result.substring(0, result.lastIndexOf('['));
-    	}
-		return result;
-	}
+        String result = dataType;
+        if (dataType.lastIndexOf(')') != -1) {
+            result = dataType.substring(0, dataType.lastIndexOf('('));
+        }
+        if (result.lastIndexOf(']') != -1) {
+            result = result.substring(0, result.lastIndexOf('['));
+        }
+        return result;
+    }
 
-	private void testNotNull(Object o, String message) throws PgCodekeeperException{
+    private void testNotNull(Object o, String message) throws PgCodekeeperException{
         if (o == null){
             throw new PgCodekeeperException(message);
         }

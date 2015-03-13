@@ -235,12 +235,12 @@ public class PgSchema extends PgStatement {
      * @return found type or null if no such type has been found
      */
     public PgType getType(final String name) {
-    	for (PgType type : types) {
-    		if (type.getName().equals(name)) {
-    			return type;
-    		}
-    	}
-    	return null;
+        for (PgType type : types) {
+            if (type.getName().equals(name)) {
+                return type;
+            }
+        }
+        return null;
     }
     /**
      * Getter for {@link #types}. The list cannot be modified.
@@ -248,7 +248,7 @@ public class PgSchema extends PgStatement {
      * @return {@link #types}
      */
     public List<PgType> getTypes() {
-    	return Collections.unmodifiableList(types);
+        return Collections.unmodifiableList(types);
     }
     
     public void addDomain(PgDomain dom) {
@@ -282,8 +282,8 @@ public class PgSchema extends PgStatement {
     }
 
     public void addType(final PgType type) {
-    	types.add(type);
-    	type.setParent(this);
+        types.add(type);
+        type.setParent(this);
         resetHash();
     }
 
@@ -304,11 +304,11 @@ public class PgSchema extends PgStatement {
     }
     
     public boolean containsType(final String name) {
-    	return getType(name) != null;
+        return getType(name) != null;
     }
     
     public boolean containsDomain(final String name) {
-    	return getDomain(name) != null;
+        return getDomain(name) != null;
     }
     
     void replaceDef(PgSchema newSchema) {
@@ -422,8 +422,8 @@ public class PgSchema extends PgStatement {
         for(PgTable table : tables) {
             copy.addTable(table.deepCopy());
         }
-		for (PgType type : types) {
-        	copy.addType(type.deepCopy());
+        for (PgType type : types) {
+            copy.addType(type.deepCopy());
         }
         return copy;
     }

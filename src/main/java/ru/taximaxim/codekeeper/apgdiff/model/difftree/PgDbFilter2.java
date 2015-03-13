@@ -112,12 +112,12 @@ public class PgDbFilter2 {
                 break;
                 
             case TYPE:
-            	PgType typeSrc = ((PgSchema) src).getType(el.getName());
+                PgType typeSrc = ((PgSchema) src).getType(el.getName());
                 ((PgSchema) dst).addType(typeSrc.shallowCopy());
                 break;
                 
             case DOMAIN:
-            	PgDomain domainSrc = ((PgSchema) src).getDomain(el.getName());
+                PgDomain domainSrc = ((PgSchema) src).getDomain(el.getName());
                 ((PgSchema) dst).addDomain(domainSrc.shallowCopy());
                 break;
                 

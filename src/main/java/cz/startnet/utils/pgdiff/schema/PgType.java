@@ -56,14 +56,14 @@ public class PgType extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(attrs);
     }
     
-	public PgColumn getAttr(String name) {
-		for (PgColumn att : attrs) {
-			if (att.getName().equals(name)) {
-				return att;
-			}
-		}
-		return null;
-	}
+    public PgColumn getAttr(String name) {
+        for (PgColumn att : attrs) {
+            if (att.getName().equals(name)) {
+                return att;
+            }
+        }
+        return null;
+    }
 
     public void addAttr(PgColumn attr) {
         attrs.add(attr);
@@ -329,24 +329,24 @@ public class PgType extends PgStatementWithSearchPath {
         if (form != PgTypeForm.SHELL) {
             sb.append("\n)");
         }
-		sb.append(';');
-		
-		appendOwnerSQL(sb);
-		appendPrivileges(sb);
-		
-		if (comment != null && !comment.isEmpty()) {
-			sb.append("\n\n");
-			appendCommentSql(sb);
-		}
-		
-		if (form == PgTypeForm.COMPOSITE) {
-		    for (PgColumn c : attrs) {
-		        if (c.getComment() != null && !c.getComment().isEmpty()) {
-		            sb.append("\n\n");
-		            c.appendCommentSql(sb);
-		        }
-		    }
-		}
+        sb.append(';');
+        
+        appendOwnerSQL(sb);
+        appendPrivileges(sb);
+        
+        if (comment != null && !comment.isEmpty()) {
+            sb.append("\n\n");
+            appendCommentSql(sb);
+        }
+        
+        if (form == PgTypeForm.COMPOSITE) {
+            for (PgColumn c : attrs) {
+                if (c.getComment() != null && !c.getComment().isEmpty()) {
+                    sb.append("\n\n");
+                    c.appendCommentSql(sb);
+                }
+            }
+        }
 
         return sb.toString();
     }
@@ -460,7 +460,7 @@ public class PgType extends PgStatementWithSearchPath {
             copy.addEnum(enum_);
         }
         for (PgPrivilege priv : privileges) {
-        	copy.addPrivilege(priv.shallowCopy());
+            copy.addPrivilege(priv.shallowCopy());
         }
         copy.setSubtype(getSubtype());
         copy.setSubtypeOpClass(getSubtypeOpClass());
