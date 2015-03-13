@@ -125,6 +125,11 @@ public class DepcyGraph {
             for(PgView view : schema.getViews()) {
                 createViewToQueried(view, schema);
             }
+            for (PgFunction func: schema.getFunctions()) {
+                if (func.getReturnsName() != null) {
+                    createFunctionToObject(func, schema);
+                }
+            }
         }
         
         for(PgExtension ext : db.getExtensions()) {
@@ -133,6 +138,21 @@ public class DepcyGraph {
         }
     }
     
+    private void createFunctionToObject(PgFunction func, PgSchema schema) {
+        GenericColumn objName = func.getReturnsName();
+        if (objName.schema != null) {
+            schema = db.getSchema(objName.schema);
+        }
+        PgTable tabl = schema.getTable(objName.table);
+        PgView view = schema.getView(objName.table);
+        // TODO написать для типов
+        if (tabl != null) {
+            graph.addEdge(func, tabl);
+        } else if (view != null){
+            graph.addEdge(func, view);
+        }
+    }
+
     private void testNotNull(Object o, String message) throws PgCodekeeperException{
         if (o == null){
             throw new PgCodekeeperException(message);

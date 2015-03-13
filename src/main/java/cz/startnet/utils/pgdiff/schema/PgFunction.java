@@ -24,6 +24,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     private final List<Argument> arguments = new ArrayList<>();
     private String body;
     private String returns;
+    private GenericColumn returnsName;
 
     @Override
     public DbObjType getStatementType() {
@@ -97,6 +98,21 @@ public class PgFunction extends PgStatementWithSearchPath {
     public void setReturns(String returns) {
         this.returns = returns;
         resetHash();
+    }
+
+    /**
+     * @return имя типа объекта на который указывает функция 
+     */
+    public GenericColumn getReturnsName() {
+        return returnsName;
+    }
+
+    
+    /**
+     * @param returnsName имя типа объекта на которое указывает функция
+     */
+    public void setReturnsName(GenericColumn returnsName) {
+        this.returnsName = returnsName;
     }
 
     @Override
@@ -347,6 +363,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         PgFunction functionDst =
                 new PgFunction(getBareName(),getRawStatement(), getSearchPath());
         functionDst.setReturns(getReturns());
+        functionDst.setReturnsName(getReturnsName());
         functionDst.setBody(getBody());
         functionDst.setComment(getComment());
         for(Argument argSrc : arguments) {
