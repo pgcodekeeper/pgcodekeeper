@@ -171,7 +171,8 @@ public final class PgDiffDomains {
                 searchPathHelper.outputSearchPath(script);
                 script.addStatement(newDomain.getOwnerSQL());
             }
-            if (!oldDomain.getPrivileges().equals(newDomain.getPrivileges())) {
+            if (!oldDomain.getGrants().equals(newDomain.getGrants()) || 
+                    !oldDomain.getRevokes().equals(newDomain.getRevokes())) {
                 searchPathHelper.outputSearchPath(script);
                 script.addStatement(newDomain.getPrivilegesSQL());
             }

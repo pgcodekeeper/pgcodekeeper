@@ -459,7 +459,10 @@ public class PgType extends PgStatementWithSearchPath {
         for (String enum_ : enums) {
             copy.addEnum(enum_);
         }
-        for (PgPrivilege priv : privileges) {
+        for (PgPrivilege priv : grants) {
+            copy.addPrivilege(priv.shallowCopy());
+        }
+        for (PgPrivilege priv : revokes) {
             copy.addPrivilege(priv.shallowCopy());
         }
         copy.setSubtype(getSubtype());
@@ -531,7 +534,8 @@ public class PgType extends PgStatementWithSearchPath {
                 && Objects.equals(delimiter, type.getDelimiter())
                 && Objects.equals(collatable, type.getCollatable())
                 && Objects.equals(owner, type.getOwner())
-                && privileges.equals(type.privileges)
+                && grants.equals(type.grants)
+                && revokes.equals(type.revokes)
                 && Objects.equals(comment, type.getComment());
     }
 
@@ -568,7 +572,8 @@ public class PgType extends PgStatementWithSearchPath {
         result = prime * result + ((delimiter == null) ? 0 : delimiter.hashCode());
         result = prime * result + ((collatable == null) ? 0 : collatable.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-        result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
+        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
+        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }

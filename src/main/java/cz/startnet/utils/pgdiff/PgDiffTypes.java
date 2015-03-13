@@ -243,7 +243,8 @@ public final class PgDiffTypes {
                 searchPathHelper.outputSearchPath(script);
                 script.addStatement(newType.getOwnerSQL());
             }
-            if (!oldType.getPrivileges().equals(newType.getPrivileges())) {
+            if (!oldType.getGrants().equals(newType.getGrants()) ||
+                    !oldType.getRevokes().equals(newType.getRevokes())) {
                 searchPathHelper.outputSearchPath(script);
                 script.addStatement(newType.getPrivilegesSQL());
             }

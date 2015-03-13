@@ -169,7 +169,10 @@ public class PgDomain extends PgStatementWithSearchPath {
         for (PgConstraint constr : constrsNotValid) {
             copy.addConstrNotValid(constr.shallowCopy());
         }
-        for (PgPrivilege priv : privileges) {
+        for (PgPrivilege priv : grants) {
+            copy.addPrivilege(priv.shallowCopy());
+        }
+        for (PgPrivilege priv : revokes) {
             copy.addPrivilege(priv.shallowCopy());
         }
         return copy;
@@ -196,7 +199,8 @@ public class PgDomain extends PgStatementWithSearchPath {
                 && constraints.equals(dom.constraints)
                 && constrsNotValid.equals(dom.constrsNotValid)
                 && Objects.equals(owner, dom.getOwner())
-                && privileges.equals(dom.privileges)
+                && grants.equals(dom.grants)
+                && revokes.equals(dom.revokes)
                 && Objects.equals(comment, dom.getComment());
     }
 
@@ -213,7 +217,8 @@ public class PgDomain extends PgStatementWithSearchPath {
         result = prime * result + ((constraints == null) ? 0 : constraints.hashCode());
         result = prime * result + ((constrsNotValid == null) ? 0 : constrsNotValid.hashCode());
         result = prime * result + ((owner == null) ? 0 : owner.hashCode());
-        result = prime * result + ((privileges == null) ? 0 : privileges.hashCode());
+        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
+        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
