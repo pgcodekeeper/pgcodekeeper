@@ -9,17 +9,9 @@ import org.eclipse.zest.core.viewers.EntityConnectionData;
 import org.eclipse.zest.core.viewers.IEntityStyleProvider;
 import org.eclipse.zest.core.viewers.IFigureProvider;
 
-import cz.startnet.utils.pgdiff.schema.PgConstraint;
-import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
-import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
-import cz.startnet.utils.pgdiff.schema.PgView;
 
 class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, IEntityStyleProvider{
     
@@ -43,29 +35,40 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
     public String getText(Object element) {
         if (element instanceof PgStatement){
             PgStatement st = (PgStatement) element;
-            if (st instanceof PgSchema){
-                return st.getBareName();
-            }else if (st instanceof PgDatabase){
-                return "DB"; //$NON-NLS-1$
-            }else if (st instanceof PgFunction){
-                return "FUNC " + st.getBareName(); //$NON-NLS-1$
-            }else if (st instanceof PgTable){
-                return "TBL " + st.getBareName(); //$NON-NLS-1$
-            }else if (st instanceof PgForeignKey){
+            if (st instanceof PgForeignKey){
                 return "FK " + st.getBareName(); //$NON-NLS-1$
-            }else if (st instanceof PgConstraint){
-                return "CONSTR " + st.getBareName(); //$NON-NLS-1$
-            }else if (st instanceof PgIndex){
-                return "IDX " + st.getBareName(); //$NON-NLS-1$
-            }else if (st instanceof PgView){
-                return "VIEW " + st.getBareName(); //$NON-NLS-1$
-            }else if (st instanceof PgTrigger){
-                return "TRG " + st.getBareName(); //$NON-NLS-1$
-            }else if (st instanceof PgSequence){
-                return "SEQ " + st.getBareName(); //$NON-NLS-1$
-            }else{
-                return st.getClass() + " " + st.getBareName(); //$NON-NLS-1$
             }
+            switch (st.getStatementType()) {
+			case COLUMN:
+				break;
+			case CONSTRAINT:
+				return "CONSTR " + st.getBareName(); //$NON-NLS-1$
+			case CONTAINER:
+				break;
+			case DATABASE:
+				return "DB"; //$NON-NLS-1$
+			case DOMAIN:
+				return "DOM " + st.getBareName(); //$NON-NLS-1$
+			case EXTENSION:
+				return "EXT " + st.getBareName(); //$NON-NLS-1$
+			case FUNCTION:
+				return "FUNC " + st.getBareName(); //$NON-NLS-1$
+			case INDEX:
+				return "IDX " + st.getBareName(); //$NON-NLS-1$
+			case SCHEMA:
+				return st.getBareName();
+			case SEQUENCE:
+				return "SEQ " + st.getBareName(); //$NON-NLS-1$
+			case TABLE:
+				return "TBL " + st.getBareName(); //$NON-NLS-1$
+			case TRIGGER:
+				return "TRG " + st.getBareName(); //$NON-NLS-1$
+			case TYPE:
+				return "TYPE " + st.getBareName(); //$NON-NLS-1$
+			case VIEW:
+				return "VIEW " + st.getBareName(); //$NON-NLS-1$
+            }
+            return st.getClass() + " " + st.getBareName(); //$NON-NLS-1$
         }else if (element instanceof EntityConnectionData){
             return ""; //$NON-NLS-1$
         }else{
