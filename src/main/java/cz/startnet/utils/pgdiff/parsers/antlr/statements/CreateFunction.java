@@ -28,7 +28,7 @@ public class CreateFunction extends ParserAbstract {
             schemaName = getDefSchemaName();
         }
         PgFunction function = new PgFunction(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
-        fillArguments(ctx.function_parameters().function_args(), function);
+        fillArguments(ctx.function_parameters().function_args(), function, getDefSchemaName());
         function.setBody(getFullCtxText(ctx.funct_body).replace("\r", ""));
         
         if (ctx.function_ret_table()!= null) {

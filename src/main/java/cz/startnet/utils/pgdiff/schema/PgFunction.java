@@ -271,6 +271,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         private String name;
         private String dataType;
         private String defaultExpression;
+        private List<GenericColumn> defaultObjects = new ArrayList<>();
 
         public String getDataType() {
             return dataType;
@@ -302,6 +303,24 @@ public class PgFunction extends PgStatementWithSearchPath {
 
         public void setName(final String name) {
             this.name = name;
+        }
+
+        /**
+         * @return список сигнатур функций использованных в выражении по умолчанию 
+         */
+        public List<GenericColumn> getDefaultObjects() {
+            return defaultObjects;
+        }
+
+        /**
+         * @param defaultObjects сигнатура функции использованная в выражении по умолчанию
+         */
+        public void addDefaultObjects(GenericColumn defaultObject) {
+            defaultObjects.add(defaultObject);
+        }
+        
+        public void setDefaultObjects(List<GenericColumn> defaultObjects) {
+            this.defaultObjects = defaultObjects;
         }
 
         public String getDeclaration(boolean includeDefaultValue, boolean includeArgName) {
@@ -372,6 +391,7 @@ public class PgFunction extends PgStatementWithSearchPath {
             argDst.setMode(argSrc.getMode());
             argDst.setDataType(argSrc.getDataType());
             argDst.setDefaultExpression(argSrc.getDefaultExpression());
+            argDst.setDefaultObjects(argSrc.getDefaultObjects());
             functionDst.addArgument(argDst);
         }
         for (PgPrivilege priv : revokes) {

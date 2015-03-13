@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -150,6 +151,19 @@ public class DepcyGraph {
             graph.addEdge(func, tabl);
         } else if (view != null){
             graph.addEdge(func, view);
+        }
+        
+        for (Argument arg : func.getArguments()) {
+            for (GenericColumn obj : arg.getDefaultObjects()) {
+                PgSchema pgSchema = schema;
+                if (obj.schema != null) {
+                    pgSchema = db.getSchema(obj.schema); 
+                }
+                PgFunction function = pgSchema.getFunction(obj.table);
+                if (function != null) {
+                    graph.addEdge(func, function);
+                }
+            }
         }
     }
 
