@@ -306,7 +306,7 @@ public abstract class ParserAbstract {
         result.add(constr);
     }
     
-    public PgConstraint parseDomainConstraint(Domain_constraintContext constr) {
+    protected PgConstraint parseDomainConstraint(Domain_constraintContext constr) {
 		if (constr.common_constraint().check_boolean_expression() != null) {
 	        String constr_name = "";
 	        if (constr.name != null) {

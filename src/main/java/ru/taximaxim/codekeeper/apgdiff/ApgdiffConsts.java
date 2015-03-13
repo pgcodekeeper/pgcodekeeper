@@ -36,7 +36,7 @@ public interface ApgdiffConsts {
         String REMOTE_PASSWORD = "***REMOVED***";
     }
     
-    String[] types = {
+    String[] SYS_TYPES = {
             "abstime", //$NON-NLS-1$
             "aclitem", //$NON-NLS-1$
             "any", //$NON-NLS-1$

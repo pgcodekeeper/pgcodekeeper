@@ -29,21 +29,15 @@ public final class PgDiffTypes {
 			final PgSchema oldSchema, final PgSchema newSchema,
 			final SearchPathHelper searchPathHelper) {
 		for (final PgType type : newSchema.getTypes()) {
-			if (oldSchema == null || !oldSchema.containsType(type.getName())) {
+            PgType oldType = oldSchema == null ? null : oldSchema.getType(type.getName());
+            
+			if (oldType == null ||
+			        (!type.equals(oldType) && !canAlter(oldType, type))) {
 				PgDiff.addUniqueDependenciesOnCreateEdit(script, null,
 						searchPathHelper, type);
 
 				searchPathHelper.outputSearchPath(script);
 				PgDiff.writeCreationSql(script, null, type, true);
-			} else {
-				PgType oldType = oldSchema.getType(type.getName());
-				if (!oldType.getForm().equals(type.getForm())
-						|| (!type.equals(oldType) && !canAlter(oldType, type))) {
-					PgDiff.addUniqueDependenciesOnCreateEdit(script, null,
-							searchPathHelper, type);
-					searchPathHelper.outputSearchPath(script);
-					PgDiff.writeCreationSql(script, null, type, true);
-				}
 			}
 		}
 	}
@@ -66,9 +60,8 @@ public final class PgDiffTypes {
 		// Drop types that do not exist in new schema
 		for (final PgType oldType : oldSchema.getTypes()) {
 			PgType newType = newSchema.getType(oldType.getName());
-			if (!newSchema.containsType(oldType.getName())
-					|| !oldType.getForm().equals(newType.getForm())
-					|| (!oldType.equals(newType) && !canAlter(oldType, newType))) {
+			if (newType == null ||
+			        (!oldType.equals(newType) && !canAlter(oldType, newType))) {
 				
 				Set<PgStatement> dependantsSet = new LinkedHashSet<>();
                 PgDiff.getDependantsSet(oldType, dependantsSet);
@@ -113,11 +106,10 @@ public final class PgDiffTypes {
 	}
 	
 	private static boolean canAlter(PgType oldType, PgType newType) {
+	    if (oldType.getForm() != newType.getForm()) {
+	        return false;
+	    }
 		switch (oldType.getForm()) {
-		case BASE:
-		case RANGE:
-		case SHELL:
-			return false;
 		case ENUM:
 			for (String enume : newType.getEnums()) {
 				if (!oldType.getEnums().contains(enume)) {
@@ -125,8 +117,10 @@ public final class PgDiffTypes {
 				}
 			}
 			return false;
-		default:
-			return true;
+		case COMPOSITE:
+		    return true;
+        default:
+            return false;
 		}
 	}
 	
@@ -146,78 +140,82 @@ public final class PgDiffTypes {
             return;
         }
 		final StringBuilder sbSQL = new StringBuilder();
+        StringBuilder attrSb = new StringBuilder();
 		for (final PgType newType : newSchema.getTypes()) {
-			final PgType oldType =
-                    oldSchema.getType(newType.getName());
+			PgType oldType = oldSchema.getType(newType.getName());
 
             if (oldType == null) {
                 continue;
             }
-            if (oldType.equals(newType)) {
+            if (oldType.equals(newType) || !canAlter(oldType, newType)) {
             	continue;
             }
             sbSQL.setLength(0);
-            if (newType.getForm().equals(oldType.getForm())
-            		&& canAlter(oldType, newType)) {
-	            StringBuilder atrrSb = new StringBuilder();
-	            for (PgColumn attr : newType.getAttrs()) {
-					PgColumn oldAttr = oldType.getAtt(attr.getName());
-					if (oldAttr != null) {
-						if (!oldAttr.getType().equals(attr.getType())) {
-							atrrSb.append("\n\tALTER ATTRIBUTE ")
-									.append(attr.getName())
-									.append(" TYPE ")
-									.append(attr.getFullDefinition(false, null))
-									.append(", ");
-						}
-					} else {
-						atrrSb.append("\n\tADD ATTRIBUTE ").append(attr.getName())
-								.append(" ")
-								.append(attr.getFullDefinition(false, null))
+            attrSb.setLength(0);
+            
+            for (PgColumn attr : newType.getAttrs()) {
+				PgColumn oldAttr = oldType.getAttr(attr.getName());
+				if (oldAttr != null) {
+					if (!oldAttr.getType().equals(attr.getType())) {
+						attrSb.append("\n\tALTER ATTRIBUTE ")
+								.append(PgDiffUtils.getQuotedName(attr.getName()))
+								.append(" TYPE ")
+								.append(attr.getType())
 								.append(", ");
-	            	}
-	            }
-	            for (PgColumn attr : oldType.getAttrs()) {
-	            	if (newType.getAtt(attr.getName()) == null) {
-	            		atrrSb.append("\n\tDROP ATTRIBUTE ").append(attr.getName())
-								.append(", ");
-	            	}
-	            }
-	            
-	            if (atrrSb.length() > 0) {
-	            	atrrSb.setLength(atrrSb.length() - 2);
-					sbSQL.append("\nALTER TYPE ").append(newType.getName())
-							.append(atrrSb).append(";");
-	            }
-	            
-	            StringBuilder sb = new StringBuilder();
-	            for (String enume : newType.getEnums()) {
-	            	if (!oldType.getEnums().contains(enume)) {
-	            		sb.append("\nALTER TYPE ").append(newType.getName())
-								.append("\n\tADD VALUE ").append(enume).append(";");
-	            	}
-	            }
-	            
-	            sbSQL.append(sb);
-	            if (sbSQL.length() > 0) {
-					script.addStatement(sbSQL.toString());
-				}
-				if (!Objects.equals(oldType.getOwner(), newType.getOwner())) {
-					searchPathHelper.outputSearchPath(script);
-					script.addStatement(newType.getOwnerSQL());
-				}
-				if (!oldType.getPrivileges().equals(newType.getPrivileges())) {
-					searchPathHelper.outputSearchPath(script);
-					script.addStatement(newType.getPrivilegesSQL());
-				}
-				PgDiff.diffComments(oldType, newType, script);
+					}
+				} else {
+					attrSb.append("\n\tADD ATTRIBUTE ")
+					        .append(PgDiffUtils.getQuotedName(attr.getName()))
+							.append(' ')
+							.append(attr.getFullDefinition(false, null))
+							.append(", ");
+            	}
             }
+            for (PgColumn attr : oldType.getAttrs()) {
+            	if (newType.getAttr(attr.getName()) == null) {
+            		attrSb.append("\n\tDROP ATTRIBUTE ").append(attr.getName())
+							.append(", ");
+            	}
+            }
+            
+            if (attrSb.length() > 0) {
+            	attrSb.setLength(attrSb.length() - ", ".length());
+                if (sbSQL.length() != 0) {
+                    sbSQL.append("\n\n");
+                }
+				sbSQL.append("ALTER TYPE ").append(newType.getName())
+						.append(attrSb).append(';');
+            }
+            
+            for (String enume : newType.getEnums()) {
+            	if (!oldType.getEnums().contains(enume)) {
+                    if (sbSQL.length() != 0) {
+                        sbSQL.append("\n\n");
+                    }
+            		sbSQL.append("ALTER TYPE ").append(newType.getName())
+							.append("\n\tADD VALUE ").append(enume).append(';');
+            	}
+            }
+            
+            if (sbSQL.length() > 0) {
+                searchPathHelper.outputSearchPath(script);
+				script.addStatement(sbSQL.toString());
+			}
+			if (!Objects.equals(oldType.getOwner(), newType.getOwner())) {
+				searchPathHelper.outputSearchPath(script);
+				script.addStatement(newType.getOwnerSQL());
+			}
+			if (!oldType.getPrivileges().equals(newType.getPrivileges())) {
+				searchPathHelper.outputSearchPath(script);
+				script.addStatement(newType.getPrivilegesSQL());
+			}
+			PgDiff.diffComments(oldType, newType, script);
 		}
 	}
+	
 	/**
      * Creates a new instance of {@link PgDiffTypes}.
      */
 	private PgDiffTypes() {
 	}
-
 }

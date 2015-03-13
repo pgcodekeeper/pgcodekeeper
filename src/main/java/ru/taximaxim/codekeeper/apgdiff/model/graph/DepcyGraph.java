@@ -38,12 +38,11 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class DepcyGraph {
 
-	private static final Set<String> systemTypes = new HashSet<>(
-			Arrays.asList(ApgdiffConsts.types));
+	private static final Set<String> SYS_TYPES = new HashSet<>(
+			Arrays.asList(ApgdiffConsts.SYS_TYPES));
     private static final List<String> SYS_COLUMNS = Arrays.asList(new String[]{
             "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
             });
-    
     // expect no nulls here
     private static final List<String> SYS_SCHEMAS = Arrays.asList(new String[]{
             "information_schema", "pg_catalog"});
@@ -133,11 +132,6 @@ public class DepcyGraph {
 
         // second loop: dependencies of objects from likely different schemas
         for(PgSchema schema : db.getSchemas()) {
-            
-        	/*for (PgDomain domain : schema.getDomains()) {
-        		addPgStatementToType(domain.getDataType(), schema, domain);
-        	}*/
-        	
         	for (PgFunction func : schema.getFunctions()) {
         		for (Argument arg: func.getArguments()) {
         			addPgStatementToType(arg.getDataType(), schema, func);
@@ -167,7 +161,7 @@ public class DepcyGraph {
 	private void addPgStatementToType(String dataType, PgSchema schema,
 			PgStatement statement) {
     	String typeName = extractType(dataType);
-		if (!systemTypes.contains(typeName)) {
+		if (!SYS_TYPES.contains(typeName)) {
 			String name = ParserUtils.getObjectName(typeName);
 			PgStatement type = getSchemaForObject(schema, typeName).getType(name);
 			if (type == null) {

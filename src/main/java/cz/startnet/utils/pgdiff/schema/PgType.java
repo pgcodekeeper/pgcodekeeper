@@ -56,7 +56,7 @@ public class PgType extends PgStatementWithSearchPath {
         return Collections.unmodifiableList(attrs);
     }
     
-	public PgColumn getAtt(String name) {
+	public PgColumn getAttr(String name) {
 		for (PgColumn att : attrs) {
 			if (att.getName().equals(name)) {
 				return att;

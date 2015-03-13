@@ -29,22 +29,15 @@ public final class PgDiffDomains {
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
 		for (final PgDomain domain : newSchema.getDomains()) {
-            if (oldSchema == null
-                    || !oldSchema.containsDomain(domain.getName())) {
+		    PgDomain oldDomain = oldSchema == null ? null : oldSchema.getDomain(domain.getName());
+		    if (oldDomain == null ||
+		            !Objects.equals(oldDomain.getDataType(), domain.getDataType()) ||
+		            !Objects.equals(oldDomain.getCollation(), domain.getCollation())) {
                 PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, domain);
                 
                 searchPathHelper.outputSearchPath(script);
                 PgDiff.writeCreationSql(script, null, domain, true);
-            } else {
-            	PgDomain oldDomain = oldSchema.getDomain(domain.getName());
-            	if (oldDomain != null 
-            			&& (!Objects.equals(oldDomain.getDataType(), domain.getDataType())
-    					|| !Objects.equals(oldDomain.getCollation(), domain.getCollation()))) {
-            		PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, domain);
-            		searchPathHelper.outputSearchPath(script);
-            		PgDiff.writeCreationSql(script, null, domain, true);
-            	}
-            }
+		    }
         }
 	}
 	
@@ -66,11 +59,9 @@ public final class PgDiffDomains {
         // Drop domains that do not exist in new schema
         for (final PgDomain oldDomain : oldSchema.getDomains()) {
 			PgDomain newDomain = newSchema.getDomain(oldDomain.getName());
-			if (!newSchema.containsDomain(oldDomain.getName())
-					|| (newDomain != null && (!Objects.equals(
-							newDomain.getDataType(), oldDomain.getDataType()) || !Objects
-							.equals(newDomain.getCollation(),
-									oldDomain.getCollation())))) {
+			if (newDomain == null ||
+			        !Objects.equals(newDomain.getDataType(), oldDomain.getDataType()) ||
+			        !Objects.equals(newDomain.getCollation(), oldDomain.getCollation())) {
 				Set<PgStatement> dependantsSet = new LinkedHashSet<>();
                 PgDiff.getDependantsSet(oldDomain, dependantsSet);
                 PgStatement[] dependants = dependantsSet.toArray(
@@ -130,41 +121,41 @@ public final class PgDiffDomains {
         }
 		final StringBuilder sbSQL = new StringBuilder();
 		for (final PgDomain newDomain : newSchema.getDomains()) {
-			final PgDomain oldDomain =
-                    oldSchema.getDomain(newDomain.getName());
+			PgDomain oldDomain = oldSchema.getDomain(newDomain.getName());
 
             if (oldDomain == null) {
                 continue;
             }
-            if (!Objects.equals(newDomain.getDataType(), oldDomain.getDataType())
-        			|| !Objects.equals(newDomain.getCollation(), oldDomain.getCollation())) {
+            if (!Objects.equals(newDomain.getDataType(), oldDomain.getDataType()) ||
+                    !Objects.equals(newDomain.getCollation(), oldDomain.getCollation())) {
             	continue;
             }
             sbSQL.setLength(0);
             
-            StringBuilder sb = new StringBuilder();
-			if (!Objects.equals(newDomain.getDefaultValue(),
-					oldDomain.getDefaultValue())) {
+			if (!Objects.equals(newDomain.getDefaultValue(), oldDomain.getDefaultValue())) {
+                if (sbSQL.length() != 0) {
+                    sbSQL.append("\n\n");
+                }
+			    sbSQL.append("ALTER DOMAIN ").append(PgDiffUtils.getQuotedName(newDomain.getName()));
             	if (newDomain.getDefaultValue() == null) {
-            		sb.append("\n\tDROP DEFAULT");
+            		sbSQL.append("\n\tDROP DEFAULT");
             	} else {
-            		sb.append("\n\tSET DEFAULT ").append(newDomain.getDefaultValue());
+            		sbSQL.append("\n\tSET DEFAULT ").append(newDomain.getDefaultValue());
             	}
+                sbSQL.append(';');
             }
-			if (sb.length() > 0) {
-				sbSQL.append("\nALTER DOMAIN ").append(newDomain.getName()).append(sb).append(";");
-			}
 			
-			sb.setLength(0);
 			if (newDomain.isNotNull() != oldDomain.isNotNull()) {
+			    if (sbSQL.length() != 0) {
+			        sbSQL.append("\n\n");
+			    }
+			    sbSQL.append("ALTER DOMAIN ").append(PgDiffUtils.getQuotedName(newDomain.getName()));
 				if (newDomain.isNotNull()) {
-					sb.append("\n\tSET NOT NULL");
+					sbSQL.append("\n\tSET NOT NULL");
 				} else {
-					sb.append("\n\tDROP NOT NULL");
+					sbSQL.append("\n\tDROP NOT NULL");
 				}
-			}
-			if (sb.length() > 0) {
-				sbSQL.append("\nALTER DOMAIN ").append(newDomain.getName()).append(sb).append(";");
+                sbSQL.append(';');
 			}
 			
 			compareConstraints(newDomain.getName(), oldDomain.getConstraints(),
@@ -173,6 +164,7 @@ public final class PgDiffDomains {
 					newDomain.getConstrsNotValid(), sbSQL);
 			
 			if (sbSQL.length() > 0) {
+                searchPathHelper.outputSearchPath(script);
 				script.addStatement(sbSQL.toString());
 			}
 			if (!Objects.equals(oldDomain.getOwner(), newDomain.getOwner())) {
@@ -191,7 +183,10 @@ public final class PgDiffDomains {
 			List<PgConstraint> newDomain, StringBuilder sbSQL) {
 		for (PgConstraint oldConstr : oldDomain) {
 			if (!newDomain.contains(oldConstr)) {
-				sbSQL.append("\nALTER DOMAIN ").append(domainName)
+	            if (sbSQL.length() != 0) {
+	                sbSQL.append("\n\n");
+	            }
+				sbSQL.append("ALTER DOMAIN ").append(domainName)
 						.append("\n\tDROP CONSTRAINT ")
 						.append(oldConstr.getName()).append(";");
 			}
@@ -199,17 +194,20 @@ public final class PgDiffDomains {
 		
 		for (PgConstraint newConstr : newDomain) {
 			if (!oldDomain.contains(newConstr)) {
-				sbSQL.append("\nALTER DOMAIN ").append(domainName)
+                if (sbSQL.length() != 0) {
+                    sbSQL.append("\n\n");
+                }
+				sbSQL.append("ALTER DOMAIN ").append(domainName)
 						.append("\n\tADD CONSTRAINT ")
 						.append(newConstr.getName()).append(" ")
 						.append(newConstr.getDefinition()).append(";");
 			}
 		}
 	}
+	
 	/**
      * Creates a new instance of {@link PgDiffDomains}.
      */
 	private PgDiffDomains() {
 	}
-
 }

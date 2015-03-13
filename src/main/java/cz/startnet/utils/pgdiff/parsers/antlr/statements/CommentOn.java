@@ -50,7 +50,7 @@ public class CommentOn extends ParserAbstract {
             if (table == null) {
                 PgView view = schema.getView(tableName);
                 if (view == null) {
-                    schema.getType(tableName).getAtt(name).setComment(comment);
+                    schema.getType(tableName).getAttr(name).setComment(comment);
                 } else {
                     view.addColumnComment(name, comment);
                 }

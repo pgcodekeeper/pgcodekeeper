@@ -137,6 +137,7 @@ public abstract class PgStatement {
             return sb;
         }
         
+        // TODO is this check needed at all? we already have isEmpty() above
         DbObjType type = getStatementType();
         switch (type) {
         case SCHEMA:
@@ -144,10 +145,12 @@ public abstract class PgStatement {
         case TABLE:
         case VIEW:
         case FUNCTION:
+        case DOMAIN:
+        case TYPE:
             break;
         default:
             throw new IllegalStateException("GRANTs allowed only for SCHEMA, "
-                    + "SEQUENCE, TABLE, VIEW, FUNCTION objects.");
+                    + "SEQUENCE, TABLE, VIEW, FUNCTION, TYPE, DOMAIN objects.");
         }
         sb.append("\n\n-- ")
             .append(type)
@@ -193,7 +196,7 @@ public abstract class PgStatement {
             break;
         default:
             throw new IllegalStateException("OWNERs allowed only for SCHEMA, "
-                    + "SEQUENCE, TABLE, TYPE, VIEW, FUNCTION, TYPE, DOMAIN objects.");
+                    + "SEQUENCE, TABLE, VIEW, FUNCTION, TYPE, DOMAIN objects.");
         }
         sb.append("\n\nALTER ")
             .append(type)
