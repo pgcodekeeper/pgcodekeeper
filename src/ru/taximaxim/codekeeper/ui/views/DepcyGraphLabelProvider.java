@@ -39,34 +39,34 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
                 return "FK " + st.getBareName(); //$NON-NLS-1$
             }
             switch (st.getStatementType()) {
-			case COLUMN:
-				break;
-			case CONSTRAINT:
-				return "CONSTR " + st.getBareName(); //$NON-NLS-1$
-			case CONTAINER:
-				break;
-			case DATABASE:
-				return "DB"; //$NON-NLS-1$
-			case DOMAIN:
-				return "DOM " + st.getBareName(); //$NON-NLS-1$
-			case EXTENSION:
-				return "EXT " + st.getBareName(); //$NON-NLS-1$
-			case FUNCTION:
-				return "FUNC " + st.getBareName(); //$NON-NLS-1$
-			case INDEX:
-				return "IDX " + st.getBareName(); //$NON-NLS-1$
-			case SCHEMA:
-				return st.getBareName();
-			case SEQUENCE:
-				return "SEQ " + st.getBareName(); //$NON-NLS-1$
-			case TABLE:
-				return "TBL " + st.getBareName(); //$NON-NLS-1$
-			case TRIGGER:
-				return "TRG " + st.getBareName(); //$NON-NLS-1$
-			case TYPE:
-				return "TYPE " + st.getBareName(); //$NON-NLS-1$
-			case VIEW:
-				return "VIEW " + st.getBareName(); //$NON-NLS-1$
+            case COLUMN:
+                break;
+            case CONSTRAINT:
+                return "CONSTR " + st.getBareName(); //$NON-NLS-1$
+            case CONTAINER:
+                break;
+            case DATABASE:
+                return "DB"; //$NON-NLS-1$
+            case DOMAIN:
+                return "DOM " + st.getBareName(); //$NON-NLS-1$
+            case EXTENSION:
+                return "EXT " + st.getBareName(); //$NON-NLS-1$
+            case FUNCTION:
+                return "FUNC " + st.getBareName(); //$NON-NLS-1$
+            case INDEX:
+                return "IDX " + st.getBareName(); //$NON-NLS-1$
+            case SCHEMA:
+                return st.getBareName();
+            case SEQUENCE:
+                return "SEQ " + st.getBareName(); //$NON-NLS-1$
+            case TABLE:
+                return "TBL " + st.getBareName(); //$NON-NLS-1$
+            case TRIGGER:
+                return "TRG " + st.getBareName(); //$NON-NLS-1$
+            case TYPE:
+                return "TYPE " + st.getBareName(); //$NON-NLS-1$
+            case VIEW:
+                return "VIEW " + st.getBareName(); //$NON-NLS-1$
             }
             return st.getClass() + " " + st.getBareName(); //$NON-NLS-1$
         }else if (element instanceof EntityConnectionData){
