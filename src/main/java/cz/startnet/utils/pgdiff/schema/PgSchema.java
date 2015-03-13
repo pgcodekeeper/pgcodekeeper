@@ -24,10 +24,12 @@ import cz.startnet.utils.pgdiff.parsers.ParserUtils;
  */
 public class PgSchema extends PgStatement {
 
+    private final List<PgDomain> domains = new ArrayList<>();
     private final List<PgFunction> functions = new ArrayList<>();
     private final List<PgSequence> sequences = new ArrayList<>();
     private final List<PgTable> tables = new ArrayList<>();
     private final List<PgView> views = new ArrayList<>();
+    private final List<PgType> types = new ArrayList<>();
 
     private String authorization;
     private String definition;
@@ -87,6 +89,31 @@ public class PgSchema extends PgStatement {
     public String getDropSQL() {
         return "DROP SCHEMA "
                 + PgDiffUtils.getQuotedName(getName()) + ';';
+    }
+
+    /**
+     * Finds domain according to specified domain {@code name}.
+     *
+     * @param name name of the domain to be searched
+     *
+     * @return found domain or null if no such domain has been found
+     */
+    public PgDomain getDomain(String name) {
+        for (PgDomain dom : domains) {
+            if (name.equals(dom.getName())) {
+                return dom;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Getter for {@link #domains}. The list cannot be modified.
+     *
+     * @return {@link #domains}
+     */
+    public List<PgDomain> getDomains() {
+        return Collections.unmodifiableList(domains);
     }
     
     /**
@@ -200,6 +227,36 @@ public class PgSchema extends PgStatement {
         return Collections.unmodifiableList(views);
     }
 
+    /**
+     * Finds type according to specified type {@code name}.
+     *
+     * @param name name of the type to be searched
+     *
+     * @return found type or null if no such type has been found
+     */
+    public PgType getType(final String name) {
+        for (PgType type : types) {
+            if (type.getName().equals(name)) {
+                return type;
+            }
+        }
+        return null;
+    }
+    /**
+     * Getter for {@link #types}. The list cannot be modified.
+     *
+     * @return {@link #types}
+     */
+    public List<PgType> getTypes() {
+        return Collections.unmodifiableList(types);
+    }
+    
+    public void addDomain(PgDomain dom) {
+        domains.add(dom);
+        dom.setParent(this);
+        resetHash();
+    }
+
     public void addFunction(final PgFunction function) {
         functions.add(function);
         function.setParent(this);
@@ -224,6 +281,12 @@ public class PgSchema extends PgStatement {
         resetHash();
     }
 
+    public void addType(final PgType type) {
+        types.add(type);
+        type.setParent(this);
+        resetHash();
+    }
+
     public boolean containsFunction(final String signature) {
         return getFunction(signature) != null;
     }
@@ -238,6 +301,14 @@ public class PgSchema extends PgStatement {
 
     public boolean containsView(final String name) {
         return getView(name) != null;
+    }
+    
+    public boolean containsType(final String name) {
+        return getType(name) != null;
+    }
+    
+    public boolean containsDomain(final String name) {
+        return getDomain(name) != null;
     }
     
     void replaceDef(PgSchema newSchema) {
@@ -289,10 +360,12 @@ public class PgSchema extends PgStatement {
             
             eq = super.equals(obj)
                     
+                    && new HashSet<>(domains).equals(new HashSet<>(schema.domains))
                     && new HashSet<>(sequences).equals(new HashSet<>(schema.sequences))
                     && new HashSet<>(functions).equals(new HashSet<>(schema.functions))
                     && new HashSet<>(views).equals(new HashSet<>(schema.views))
-                    && new HashSet<>(tables).equals(new HashSet<>(schema.tables));
+                    && new HashSet<>(tables).equals(new HashSet<>(schema.tables))
+                    && new HashSet<>(types).equals(new HashSet<>(schema.types));
         }
         
         return eq;
@@ -311,11 +384,13 @@ public class PgSchema extends PgStatement {
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((authorization == null) ? 0 : authorization.hashCode());
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
+        result = prime * result + new HashSet<>(domains).hashCode();
         result = prime * result + new HashSet<>(functions).hashCode();
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + new HashSet<>(sequences).hashCode();
         result = prime * result + new HashSet<>(tables).hashCode();
         result = prime * result + new HashSet<>(views).hashCode();
+        result = prime * result + new HashSet<>(types).hashCode();
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
     }
@@ -340,6 +415,9 @@ public class PgSchema extends PgStatement {
     public PgSchema deepCopy() {
         PgSchema copy = shallowCopy();
         
+        for (PgDomain dom : domains) {
+            copy.addDomain(dom.deepCopy());
+        }
         for(PgSequence seq : sequences) {
             copy.addSequence(seq.deepCopy());
         }
@@ -352,7 +430,9 @@ public class PgSchema extends PgStatement {
         for(PgTable table : tables) {
             copy.addTable(table.deepCopy());
         }
-        
+        for (PgType type : types) {
+            copy.addType(type.deepCopy());
+        }
         return copy;
     }
 }

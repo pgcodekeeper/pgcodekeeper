@@ -90,7 +90,8 @@ schema_create
     | create_view_statement
     | create_language_statement
     | create_event_trigger
-    | create_type_statement)
+    | create_type_statement
+    | create_domain_statement)
      
     | comment_on_statement
     | rule_common
@@ -105,7 +106,8 @@ schema_alter
     | alter_default_privileges
     | alter_sequence_statement
     | alter_view_statement
-    | alter_type_statement)
+    | alter_type_statement
+    | alter_domain_statement)
     ;
 
 schema_drop
@@ -142,7 +144,7 @@ table_action
     : ADD COLUMN? table_column_definition
     | DROP COLUMN? (IF EXISTS)? column=schema_qualified_name cascade_restrict?
     | ALTER COLUMN? column=schema_qualified_name 
-      ((SET DATA)? TYPE datatype=data_type (COLLATE collation=identifier)? (USING expression=value_expression)?
+      ((SET DATA)? TYPE datatype=data_type collate_identifier? (USING expression=value_expression)?
       | (set_def_column
         | drop_def
         | ((SET | DROP) NOT NULL) 
@@ -152,8 +154,8 @@ table_action
         | SET STORAGE (PLAIN | EXTERNAL | EXTENDED | MAIN)))
     | ADD tabl_constraint=constraint_common (NOT VALID)?
     | ADD tabl_constraint_using_index=table_constraint_using_index
-    | VALIDATE CONSTRAINT constraint_name=schema_qualified_name
-    | DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name cascade_restrict?
+    | validate_constraint
+    | drop_constraint
     | (DISABLE | ENABLE) TRIGGER (trigger_name=schema_qualified_name | (ALL | USER))?
     | ENABLE (REPLICA | ALWAYS) TRIGGER trigger_name=schema_qualified_name 
     | (DISABLE | ENABLE) RULE rewrite_rule_name=schema_qualified_name 
@@ -169,6 +171,14 @@ table_action
     | NOT OF
     | owner_to
     | SET table_space
+    ;
+
+validate_constraint
+    : VALIDATE CONSTRAINT constraint_name=schema_qualified_name
+    ;
+
+drop_constraint
+    : DROP CONSTRAINT (IF EXISTS)?  constraint_name=schema_qualified_name cascade_restrict?
     ;
 
 attribute_option_value
@@ -248,10 +258,35 @@ alter_view_statement
     | SET LEFT_PAREN view_option_name=identifier (EQUAL view_option_value=value_expression)?(COMMA view_option_name=identifier (EQUAL view_option_value=value_expression)?)*  RIGHT_PAREN
     | RESET LEFT_PAREN view_option_name=identifier (COMMA view_option_name=identifier)*  RIGHT_PAREN)
     ;
-// TODO дописать для остальных алтеров
+
 alter_type_statement
     : TYPE name=schema_qualified_name 
-      (set_schema | owner_to)
+      (set_schema 
+      | owner_to 
+      | rename_to
+      | ADD VALUE (IF NOT EXISTS)? new_enum_value=Character_String_Literal ((BEFORE | AFTER) existing_enum_value=Character_String_Literal)?
+      | RENAME ATTRIBUTE attribute_name=identifier TO new_attribute_name=identifier cascade_restrict?
+      | type_action (COMMA type_action)*)
+    ;
+
+alter_domain_statement
+    : DOMAIN name=schema_qualified_name
+    (set_def_column
+    | drop_def
+    | (SET | DROP) NOT NULL
+    | ADD dom_constraint=domain_constraint (NOT not_valid=VALID)?
+    | drop_constraint
+    | RENAME CONSTRAINT dom_old_constraint=schema_qualified_name TO dom_new_constraint=schema_qualified_name
+    | validate_constraint
+    | owner_to
+    | rename_to
+    | set_schema)
+    ;
+
+type_action
+    :ADD ATTRIBUTE attribute_name=identifier data_type collate_identifier? cascade_restrict?
+    | DROP ATTRIBUTE (IF EXISTS)? attribute_name=identifier cascade_restrict?
+    | ALTER ATTRIBUTE attribute_name=identifier (SET DATA)? TYPE data_type collate_identifier? cascade_restrict?
     ;
 
 set_def_column
@@ -293,35 +328,52 @@ create_event_trigger
 
 create_type_statement
     :TYPE name=schema_qualified_name (AS(
-        LEFT_PAREN (attribute_name+=identifier dt_type+=data_type (COLLATE collation=identifier)? 
-                    (COMMA attribute_name+=identifier dt_type+=data_type (COLLATE collation=identifier)?)*)? RIGHT_PAREN
-    | ENUM LEFT_PAREN ( Character_String_Literal (COMMA Character_String_Literal)* )? RIGHT_PAREN
-    | RANGE LEFT_PAREN SUBTYPE EQUAL schema_qualified_name
-            ( COMMA SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier)?
-            ( COMMA COLLATION EQUAL collation=identifier )?
-            ( COMMA CANONICAL EQUAL canonical_function=identifier )?
-            ( COMMA SUBTYPE_DIFF EQUAL subtype_diff_function=identifier )?
-        RIGHT_PAREN)
+        LEFT_PAREN (attrs+=table_column_definition (COMMA attrs+=table_column_definition)*)? RIGHT_PAREN
+        | ENUM LEFT_PAREN ( enums+=Character_String_Literal (COMMA enums+=Character_String_Literal)* )? RIGHT_PAREN
+        | RANGE LEFT_PAREN 
+                (SUBTYPE EQUAL subtype_name=data_type
+                | SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier
+                | COLLATION EQUAL collation=schema_qualified_name
+                | CANONICAL EQUAL canonical_function=schema_qualified_name
+                | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name)? 
+                (COMMA (SUBTYPE EQUAL subtype_name=data_type
+                | SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier
+                | COLLATION EQUAL collation=schema_qualified_name
+                | CANONICAL EQUAL canonical_function=schema_qualified_name
+                | SUBTYPE_DIFF EQUAL subtype_diff_function=schema_qualified_name))*
+            RIGHT_PAREN)
     | LEFT_PAREN
-            INPUT EQUAL input_function=identifier COMMA
-            OUTPUT EQUAL output_function=identifier
-            ( COMMA RECEIVE EQUAL receive_function=identifier )?
-            ( COMMA SEND EQUAL send_function=identifier )?
-            ( COMMA TYPMOD_IN EQUAL type_modifier_input_function=identifier )?
-            ( COMMA TYPMOD_OUT EQUAL type_modifier_output_function=identifier )?
-            ( COMMA ANALYZE EQUAL analyze_function=identifier )?
-            ( COMMA INTERNALLENGTH EQUAL (internallength=signed_numerical_literal | VARIABLE ) )?
-            ( COMMA PASSEDBYVALUE )?
-            ( COMMA ALIGNMENT EQUAL alignment=identifier )?
-            ( COMMA STORAGE EQUAL storage=identifier )?
-            ( COMMA LIKE EQUAL like_type=identifier )?
-            ( COMMA CATEGORY EQUAL category=identifier )?
-            ( COMMA PREFERRED EQUAL preferred=identifier )?
-            ( COMMA DEFAULT EQUAL default_value=identifier )?
-            ( COMMA ELEMENT EQUAL element=identifier )?
-            ( COMMA DELIMITER EQUAL delimiter=identifier )?
-            ( COMMA COLLATABLE EQUAL collatable=identifier )?
-        RIGHT_PAREN)
+            INPUT EQUAL input_function=schema_qualified_name COMMA
+            OUTPUT EQUAL output_function=schema_qualified_name
+            (COMMA (RECEIVE EQUAL receive_function=schema_qualified_name
+            | SEND EQUAL send_function=schema_qualified_name
+            | TYPMOD_IN EQUAL type_modifier_input_function=schema_qualified_name
+            | TYPMOD_OUT EQUAL type_modifier_output_function=schema_qualified_name
+            | ANALYZE EQUAL analyze_function=schema_qualified_name
+            | INTERNALLENGTH EQUAL (internallength=signed_numerical_literal | VARIABLE )
+            | PASSEDBYVALUE
+            | ALIGNMENT EQUAL alignment=data_type
+            | STORAGE EQUAL storage=identifier
+            | LIKE EQUAL like_type=identifier
+            | CATEGORY EQUAL category=Character_String_Literal
+            | PREFERRED EQUAL preferred=truth_value
+            | DEFAULT EQUAL default_value=Character_String_Literal
+            | ELEMENT EQUAL element=identifier
+            | DELIMITER EQUAL delimiter=Character_String_Literal
+            | COLLATABLE EQUAL collatable=truth_value))*
+        RIGHT_PAREN)?
+    ;
+
+create_domain_statement
+    : DOMAIN name=schema_qualified_name (AS)? dat_type=data_type 
+      (collate_identifier
+      | DEFAULT def_value=value_expression
+      | dom_constraint+=domain_constraint)*
+    ;
+
+domain_constraint
+    :(CONSTRAINT name=schema_qualified_name)?
+     common_constraint
     ;
 
 set_statement
@@ -352,18 +404,20 @@ rule_common
 
 body_rules
     :(on_table 
-        | on_column 
-        | on_sequence
-        | on_database
-        | on_datawrapper_server_lang
-        | on_function
-        | on_large_object
-        | on_schema
-        | on_tablespace)
-      (grant_to_rule | revoke_from_cascade_restrict)
-      | GRANT obj_name=names_references TO role_name=names_references (WITH ADMIN OPTION)?
-      | REVOKE (ADMIN OPTION FOR)? obj_name=names_references FROM role_name=names_references
-        cascade_restrict?
+    | on_column 
+    | on_sequence
+    | on_database
+    | on_datawrapper_server_lang
+    | on_function
+    | on_large_object
+    | on_schema
+    | on_tablespace
+    | on_type
+    | on_domain)
+    (grant_to_rule | revoke_from_cascade_restrict)
+    | GRANT obj_name=names_references TO role_name=names_references (WITH ADMIN OPTION)?
+    | REVOKE (ADMIN OPTION FOR)? obj_name=names_references FROM role_name=names_references
+      cascade_restrict?
     ;
     
 grant_to_rule
@@ -421,6 +475,16 @@ on_schema
 on_tablespace
     : (CREATE | ALL PRIVILEGES?)
         ON TABLESPACE obj_name=names_references
+    ;
+
+on_type
+    : (USAGE | ALL PRIVILEGES?)
+        ON TYPE obj_name=names_references 
+    ;
+
+on_domain
+    : (USAGE | ALL PRIVILEGES?)
+        ON DOMAIN obj_name=names_references
     ;
 
 roles_names
@@ -543,7 +607,7 @@ table_column_def
     ;
 
 table_column_definition
-    : column_name=identifier datatype=data_type? (COLLATE collation=identifier)? (WITH OPTIONS)? (colmn_constraint+=constraint_common)*
+    : column_name=identifier datatype=data_type? collate_identifier? (WITH OPTIONS)? (colmn_constraint+=constraint_common)*
     ;
   
 like_option
@@ -563,7 +627,7 @@ constr_body
             index_parameters where_clause?) 
        | (FOREIGN KEY column_references)? table_references
        | common_constraint
-       | null_false=NOT? null_value=NULL
+       | table_unique_prkey
        | DEFAULT (default_expr_data=data_type | default_expr=value_expression)
       )
       table_deferrable? table_initialy_immed?
@@ -571,7 +635,7 @@ constr_body
 
 common_constraint
     :check_boolean_expression 
-    | table_unique_prkey
+    | null_false=NOT? null_value=NULL
     ;
 
 table_unique_prkey
@@ -681,6 +745,10 @@ cascade_restrict
     : CASCADE | RESTRICT
     ;
 
+collate_identifier
+    : COLLATE collation=schema_qualified_name
+    ;
+
 /*
 ===============================================================================
   11.21 <data types>
@@ -696,7 +764,7 @@ drop_trigger_statement
     ;
 
 drop_statements
-    :((DATABASE | TABLE| EXTENSION | SCHEMA | SEQUENCE | VIEW) | INDEX (CONCURRENTLY)?) if_exist_names_restrict_cascade
+    :((DATABASE | DOMAIN | TABLE| EXTENSION | SCHEMA | SEQUENCE | VIEW | TYPE) | INDEX (CONCURRENTLY)?) if_exist_names_restrict_cascade
     ;
 
 if_exist_names_restrict_cascade
@@ -717,9 +785,11 @@ identifier
   ;
 
 nonreserved_keywords
-  : ADMIN
+  : ADD
+  | ADMIN
   | ALWAYS
   | ARRAY
+  | ATTRIBUTE
   | AVG
   | BETWEEN
   | BY
@@ -778,6 +848,7 @@ nonreserved_keywords
   | ISODOW
   | ISOYEAR
   | ISSTRICT
+  | KEY
   | LANGUAGE
   | LARGE
   | LAST
@@ -857,6 +928,7 @@ nonreserved_keywords
   | USER
   | VALID
   | VALIDATE
+  | VALUE
   | VALUES
   | VAR_POP
   | VAR_SAMP
@@ -893,7 +965,6 @@ nonreserved_keywords
   | INTERVAL
   | NCHAR
   | NUMERIC
-  | NVARCHAR
   | REAL
   | SMALLINT
   | TEXT
@@ -907,6 +978,8 @@ nonreserved_keywords
   | VARCHAR
   | UUID
   | VOID
+  
+  | SCHEMA
   ;
 
 /*
@@ -980,7 +1053,7 @@ network_type
 character_string_type
   : NATIONAL? (CHARACTER | CHAR) VARYING? type_length?
   | NCHAR VARYING? type_length?
-  | (NVARCHAR | VARCHAR) type_length?
+  | VARCHAR type_length?
   | (TEXT | INTERVAL)
   ;
 

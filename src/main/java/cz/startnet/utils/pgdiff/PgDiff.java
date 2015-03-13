@@ -80,11 +80,11 @@ public final class PgDiff {
         PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
                 oldInputStream, arguments.getInCharsetName(),
                 arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers(), ParserClass.getLegacy(null, 1));
+                arguments.isIgnoreSlonyTriggers(), ParserClass.getAntlr(null, 1));
         PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
                 newInputStream, arguments.getInCharsetName(),
                 arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers(), ParserClass.getLegacy(null, 1));
+                arguments.isIgnoreSlonyTriggers(), ParserClass.getAntlr(null, 1));
 
         diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase,
                 oldDatabase, newDatabase);
@@ -105,11 +105,11 @@ public final class PgDiff {
         if(format.equals("dump")) {
             return PgDumpLoader.loadDatabaseSchemaFromDump(srcPath,
                     arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
-                    arguments.isIgnoreSlonyTriggers(), ParserClass.getLegacy(null, 1));
+                    arguments.isIgnoreSlonyTriggers(), ParserClass.getAntlr(null, 1));
         } else if(format.equals("parsed")) {
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
                     arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
-                    arguments.isIgnoreSlonyTriggers(), ParserClass.getLegacy(null, 1));
+                    arguments.isIgnoreSlonyTriggers(), ParserClass.getAntlr(null, 1));
         } else if(format.equals("db")) {
             throw new UnsupportedOperationException("DB connection is not yet implemented!");
         }
@@ -501,7 +501,19 @@ public final class PgDiff {
                 script, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.dropSequences(
                 script, oldSchema, newSchema, searchPathHelper);
-
+        PgDiffDomains.dropDomains(script, oldSchema, newSchema,
+                searchPathHelper);
+        PgDiffTypes.dropTypes(
+                script, oldSchema, newSchema, searchPathHelper);
+        
+        PgDiffTypes.createTypes(
+                script, oldSchema, newSchema, searchPathHelper);
+        PgDiffTypes.alterTypes(
+                script, arguments, oldSchema, newSchema, searchPathHelper);
+        PgDiffDomains.createDomains(script, oldSchema, newSchema,
+                searchPathHelper);
+        PgDiffDomains.alterDomains(script, arguments, oldSchema, newSchema,
+                searchPathHelper);
         PgDiffSequences.createSequences(
                 script, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.alterSequences(

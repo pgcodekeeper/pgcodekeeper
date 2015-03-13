@@ -2,14 +2,17 @@ package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.EdgeReversedGraph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
@@ -19,23 +22,27 @@ import cz.startnet.utils.pgdiff.schema.GenericColumn.ViewReference;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgDomain;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
+import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class DepcyGraph {
 
+    private static final Set<String> SYS_TYPES = new HashSet<>(
+            Arrays.asList(ApgdiffConsts.SYS_TYPES));
     private static final List<String> SYS_COLUMNS = Arrays.asList(new String[]{
             "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
             });
-    
     // expect no nulls here
     private static final List<String> SYS_SCHEMAS = Arrays.asList(new String[]{
             "information_schema", "pg_catalog"});
@@ -92,6 +99,16 @@ public class DepcyGraph {
                 graph.addEdge(seq, schema);
             }
             
+            for (PgType type : schema.getTypes()) {
+                graph.addVertex(type);
+                graph.addEdge(type, schema);
+            }
+            
+            for (PgDomain domain : schema.getDomains()) {
+                graph.addVertex(domain);
+                graph.addEdge(domain, schema);
+            }
+            
             for(PgTable table : schema.getTables()) {
                 graph.addVertex(table);
                 graph.addEdge(table, schema);
@@ -115,11 +132,19 @@ public class DepcyGraph {
 
         // second loop: dependencies of objects from likely different schemas
         for(PgSchema schema : db.getSchemas()) {
+            for (PgFunction func : schema.getFunctions()) {
+                for (Argument arg: func.getArguments()) {
+                    addPgStatementToType(arg.getDataType(), schema, func);
+                }
+            }
             
             for(PgTable table : schema.getTables()) {
                 createTableToConstraints(table);
                 createTableToSequences(table, schema);
                 createTableToTriggers(table, schema);
+                for (PgColumn col : table.getColumns()) {
+                    addPgStatementToType(col.getType(), schema, table);
+                }
             }
             
             for(PgView view : schema.getViews()) {
@@ -133,6 +158,32 @@ public class DepcyGraph {
         }
     }
     
+    private void addPgStatementToType(String dataType, PgSchema schema,
+            PgStatement statement) {
+        String typeName = extractType(dataType);
+        if (!SYS_TYPES.contains(typeName)) {
+            String name = ParserUtils.getObjectName(typeName);
+            PgStatement type = getSchemaForObject(schema, typeName).getType(name);
+            if (type == null) {
+                type = getSchemaForObject(schema, typeName).getDomain(name);
+            }
+            if (type != null) {
+                graph.addEdge(statement, type);
+            }
+        }
+    }
+    
+    private String extractType(String dataType) {
+        String result = dataType;
+        if (dataType.lastIndexOf(')') != -1) {
+            result = dataType.substring(0, dataType.lastIndexOf('('));
+        }
+        if (result.lastIndexOf(']') != -1) {
+            result = result.substring(0, result.lastIndexOf('['));
+        }
+        return result;
+    }
+
     private void testNotNull(Object o, String message) throws PgCodekeeperException{
         if (o == null){
             throw new PgCodekeeperException(message);

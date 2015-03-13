@@ -120,7 +120,6 @@ fragment Z
 ===============================================================================
 */
 
-ADD: A D D;
 AGGREGATE: A G G R E G A T E;
 AFTER: A F T E R;
 AS : A S;
@@ -217,8 +216,6 @@ IS : I S;
 
 JOIN : J O I N;
 
-KEY: K E Y;
-
 LEADING : L E A D I N G;
 LEFT : L E F T;
 LIKE : L I K E;
@@ -305,9 +302,11 @@ WITHOUT: W I T H O U T;
 ===============================================================================
 */
 
+ADD: A D D;
 ADMIN: A D M I N;
 ALWAYS: A L W A Y S;
 ARRAY: A R R A Y;
+ATTRIBUTE: A T T R I B U T E;
 AVG : A V G;
 
 BETWEEN : B E T W E E N;
@@ -376,6 +375,8 @@ ISCACHABLE: I S C A C H A B L E;
 ISODOW : I S O D O W;
 ISOYEAR : I S O Y E A R;
 ISSTRICT: I S S T R I C T;
+
+KEY: K E Y;
 
 LANGUAGE: L A N G U A G E;
 LARGE: L A R G E;
@@ -472,7 +473,8 @@ USER: U S E R;
 
 VALID: V A L I D;
 VALIDATE: V A L I D A T E;
-VALUES : V A L U E S;
+VALUE: V A L U E;
+VALUES : VALUE S;
 VAR_SAMP : V A R UNDERLINE S A M P;
 VAR_POP : V A R UNDERLINE P O P;
 VARYING : V A R Y I N G;
@@ -523,7 +525,6 @@ DECIMAL : D E C I M A L; // alias for number
 CHAR : C H A R;
 VARCHAR : V A R C H A R;
 NCHAR : N C H A R;
-NVARCHAR : N V A R C H A R;
 
 DATE : D A T E;
 TIME : T I M E;

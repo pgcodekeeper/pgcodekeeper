@@ -17,7 +17,7 @@ public class TreeElement {
         CONTAINER, // not a DB object, just a container for further tree elements
         DATABASE,
         SCHEMA, EXTENSION,
-        FUNCTION, SEQUENCE, TABLE, VIEW,
+        TYPE, DOMAIN, FUNCTION, SEQUENCE, TABLE, VIEW,
         INDEX, TRIGGER, CONSTRAINT, COLUMN
     }
     
@@ -108,6 +108,12 @@ public class TreeElement {
             break;
         case SEQUENCE:
             name = "Sequences";
+            break;
+        case TYPE:
+            name = "Types";
+            break;
+        case DOMAIN:
+            name = "Domains";
             break;
         case VIEW:
             name = "Views";
@@ -204,6 +210,8 @@ public class TreeElement {
         
         case FUNCTION:   return ((PgSchema) parent.getPgStatement(db)).getFunction(name);
         case SEQUENCE:   return ((PgSchema) parent.getPgStatement(db)).getSequence(name);
+        case TYPE:          return ((PgSchema) parent.getPgStatement(db)).getType(name);
+        case DOMAIN:      return ((PgSchema) parent.getPgStatement(db)).getDomain(name);
         case VIEW:       return ((PgSchema) parent.getPgStatement(db)).getView(name);
         case TABLE:      return ((PgSchema) parent.getPgStatement(db)).getTable(name);
         
