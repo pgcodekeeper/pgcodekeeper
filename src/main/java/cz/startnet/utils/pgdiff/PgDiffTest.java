@@ -254,6 +254,7 @@ public class PgDiffTest {
                     {"drop_type_enum", false, false, false, false},
                     {"type_enum_add_value", false, false, false, false},
                     {"type_enum_drop_value", false, false, false, false},
+                    {"type_enum_swap_values", false, false, false, false},
                     //Test range type
                     {"add_type_range", false, false, false, false},
                     {"drop_type_range", false, false, false, false},

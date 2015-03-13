@@ -30,9 +30,11 @@ SET search_path = public, pg_catalog;
 --
 
 CREATE TYPE typ_enum AS ENUM (
-    'wat',
-    'wut',
-    'what'
+    'e-1', 'e0',
+    'e1',
+    'e2',
+    'e2.5',
+    'e3'
 );
 
 
