@@ -165,15 +165,14 @@ public final class PgDiffTypes {
                     }
                 } else {
                     attrSb.append("\n\tADD ATTRIBUTE ")
-                            .append(PgDiffUtils.getQuotedName(attr.getName()))
-                            .append(' ')
                             .append(attr.getFullDefinition(false, null))
                             .append(", ");
                 }
             }
             for (PgColumn attr : oldType.getAttrs()) {
                 if (newType.getAttr(attr.getName()) == null) {
-                    attrSb.append("\n\tDROP ATTRIBUTE ").append(attr.getName())
+                    attrSb.append("\n\tDROP ATTRIBUTE ")
+                            .append(PgDiffUtils.getQuotedName(attr.getName()))
                             .append(", ");
                 }
             }
@@ -183,7 +182,8 @@ public final class PgDiffTypes {
                 if (sbSQL.length() != 0) {
                     sbSQL.append("\n\n");
                 }
-                sbSQL.append("ALTER TYPE ").append(newType.getName())
+                sbSQL.append("ALTER TYPE ")
+                        .append(PgDiffUtils.getQuotedName(newType.getName()))
                         .append(attrSb).append(';');
             }
             
@@ -192,7 +192,8 @@ public final class PgDiffTypes {
                     if (sbSQL.length() != 0) {
                         sbSQL.append("\n\n");
                     }
-                    sbSQL.append("ALTER TYPE ").append(newType.getName())
+                    sbSQL.append("ALTER TYPE ")
+                            .append(PgDiffUtils.getQuotedName(newType.getName()))
                             .append("\n\tADD VALUE ").append(enume).append(';');
                 }
             }
