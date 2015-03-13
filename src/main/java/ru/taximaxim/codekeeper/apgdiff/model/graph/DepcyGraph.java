@@ -223,7 +223,6 @@ public class DepcyGraph {
                 // which currently does not get skipped
                 if (func != null) {    
                     graph.addEdge(view, func);
-                    graph.addEdge(view, func);
                 }
             } else {
                 Log.log(Log.LOG_WARNING, "Depcy: View " + view.getName()

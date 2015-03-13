@@ -906,8 +906,10 @@ public class JdbcLoader implements PgCatalogStrings {
             f.setReturns("TABLE(" + returnedTableArguments + ")");
         }else if (res.getBoolean("proretset")){
             f.setReturns("SETOF " + returnType.getSchemaQualifiedName(schemaName));
+            f.setReturnsName(new GenericColumn(returnType.getParentSchema(), returnType.getTypeName(), null));
         }else{
             f.setReturns(returnType.getSchemaQualifiedName(schemaName));
+            f.setReturnsName(new GenericColumn(returnType.getParentSchema(), returnType.getTypeName(), null));
         }
         
         // ARGUMENTS
