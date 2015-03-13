@@ -1,6 +1,8 @@
 package cz.startnet.utils.pgdiff;
 
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -105,18 +107,44 @@ public final class PgDiffTypes {
         }
     }
     
+    /**
+     * This method assumes that its arguments are not equal. 
+     */
     private static boolean canAlter(PgType oldType, PgType newType) {
         if (oldType.getForm() != newType.getForm()) {
             return false;
         }
         switch (oldType.getForm()) {
         case ENUM:
-            for (String enume : newType.getEnums()) {
-                if (!oldType.getEnums().contains(enume)) {
-                    return true;
+            Iterator<String> oi = oldType.getEnums().iterator();
+            Iterator<String> ni = newType.getEnums().iterator();
+            while (oi.hasNext()) {
+                if (!ni.hasNext()) {
+                    // some old members were removed in new, can't alter
+                    return false;
+                }
+                String oldEnum = oi.next();
+                if (!oldEnum.equals(ni.next())) {
+                    // iterate over new enums until old enum is met or end is reached
+                    boolean found = false;
+                    while (ni.hasNext()) {
+                        if (oldEnum.equals(ni.next())) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        return false; // oldEnum is not in the new list
+                    }
+                    // order changes will fail this test as they should
+                    // consider old:(e1, e2), new:(e2, e1)
+                    // we will go over new.e2 while iterating for old.e1
+                    // thus we will fail to find new.e2 while iterating for old.e2
                 }
             }
-            return false;
+            // since old list is exhausted at this point we always return true
+            // since we can create new enum members
+            return true;
         case COMPOSITE:
             return true;
         default:
@@ -187,14 +215,23 @@ public final class PgDiffTypes {
                         .append(attrSb).append(';');
             }
             
-            for (String enume : newType.getEnums()) {
-                if (!oldType.getEnums().contains(enume)) {
+            List<String> enums = newType.getEnums();
+            List<String> oldEnums = oldType.getEnums();
+            for (int i = 0; i < enums.size(); ++i) {
+                String enum_ = enums.get(i);
+                if (!oldEnums.contains(enum_)) {
                     if (sbSQL.length() != 0) {
                         sbSQL.append("\n\n");
                     }
                     sbSQL.append("ALTER TYPE ")
                             .append(PgDiffUtils.getQuotedName(newType.getName()))
-                            .append("\n\tADD VALUE ").append(enume).append(';');
+                            .append("\n\tADD VALUE ").append(enum_);
+                    if (i == 0) {
+                        sbSQL.append(" BEFORE ").append(oldEnums.get(0));
+                    } else {
+                        sbSQL.append(" AFTER ").append(enums.get(i - 1));
+                    }
+                    sbSQL.append(';');
                 }
             }
             
