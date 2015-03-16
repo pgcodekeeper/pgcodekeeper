@@ -26,8 +26,6 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
-import cz.startnet.utils.pgdiff.parsers.Parser;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.SelectParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomErrorListener;
@@ -35,6 +33,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView.SelectQueryVisitor;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -900,12 +899,13 @@ public class JdbcLoader implements PgCatalogStrings {
                 }
             }            
         }
-        
+
         PgType returnType = cachedTypeNamesByOid.get(res.getLong("prorettype"));
         if (returnsTable){
             f.setReturns("TABLE(" + returnedTableArguments + ")");
         }else if (res.getBoolean("proretset")){
             f.setReturns("SETOF " + returnType.getSchemaQualifiedName(schemaName));
+            // TODO поставить проверку на системные типы и не добавлять их
             f.setReturnsName(new GenericColumn(returnType.getParentSchema(), returnType.getTypeName(), null));
         }else{
             f.setReturns(returnType.getSchemaQualifiedName(schemaName));
@@ -915,7 +915,7 @@ public class JdbcLoader implements PgCatalogStrings {
         // ARGUMENTS
         String arguments = res.getString("proarguments");
         if (!arguments.isEmpty()){
-            CreateFunctionParser.parseArguments(new Parser("(" + arguments + ")"), f);
+            parseArguments("(" + arguments + ")", f, schemaName);
         }
         
         // OWNER
@@ -933,6 +933,20 @@ public class JdbcLoader implements PgCatalogStrings {
         return f;
     }
     
+    private void parseArguments(String args, PgFunction f, String schemaName) {
+        CustomErrorListener errListener = new CustomErrorListener();
+        
+        SQLLexer lexer = new SQLLexer(new ANTLRInputStream(args));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errListener);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+        SQLParser parser = new SQLParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(errListener);
+        ParserAbstract.fillArguments(parser.function_args(), f, schemaName);
+    }
+
     private String getFunctionBody(ResultSet res) throws SQLException {
         StringBuilder body = new StringBuilder();
         
