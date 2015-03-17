@@ -36,6 +36,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.TEST;
 import cz.startnet.utils.pgdiff.loader.JdbcLoaderTest;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
@@ -56,9 +57,11 @@ public class DbSourceTest {
         ApgdiffTestUtils.createDB(dbName);
         ApgdiffTestUtils.fillDB(dbName);
         
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(ApgdiffConsts.UTF_8);
         dbPredefined = PgDumpLoader.loadDatabaseSchemaFromDump(
                 JdbcLoaderTest.class.getResourceAsStream(TEST.RESOURCE_DUMP),
-                ApgdiffConsts.UTF_8, false, false, ParserClass.getAntlr(null, 1));
+                args, ParserClass.getAntlr(null, 1));
         
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         workspacePath = workspaceRoot.getLocation().toFile();
