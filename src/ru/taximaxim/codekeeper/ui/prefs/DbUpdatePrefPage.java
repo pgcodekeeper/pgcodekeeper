@@ -64,6 +64,18 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
                 DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY,
                 Messages.dbUpdatePrefPage_show_script_output_in_separate_window, getFieldEditorParent());
         addField(showScriptOutputSeparately);
+        
+        BooleanFieldEditor transaction = new BooleanFieldEditor(
+                DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
+                Messages.dbUpdatePrefPage_conclude_script_in_transaction,
+                getFieldEditorParent());
+        addField(transaction);
+        
+        BooleanFieldEditor functionBodies = new BooleanFieldEditor(
+                DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
+                Messages.dbUpdatePrefPage_check_function_bodies,
+                getFieldEditorParent());
+        addField(functionBodies);
     }
     
     @Override

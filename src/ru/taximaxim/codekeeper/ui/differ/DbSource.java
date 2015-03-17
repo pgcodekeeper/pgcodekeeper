@@ -10,11 +10,13 @@ import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -22,6 +24,7 @@ import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.JdbcConnector;
 import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
@@ -59,6 +62,15 @@ public abstract class DbSource {
     
     protected DbSource(String origin) {
         this.origin = origin;
+    }
+    
+    protected static PgDiffArguments getPgDiffArgs(String charset) {
+        PgDiffArguments args = new PgDiffArguments();
+        IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
+        args.setInCharsetName(charset);
+        args.setAddTransaction(mainPS.getBoolean(UIConsts.DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
+        args.setCheckFunctionBodies(mainPS.getBoolean(UIConsts.DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
+        return args;
     }
 
     protected abstract PgDatabase loadInternal(SubMonitor monitor)
@@ -137,8 +149,8 @@ class DbSourceDirTree extends DbSource {
     protected PgDatabase loadInternal(SubMonitor monitor) {
         monitor.subTask(Messages.dbSource_loading_tree);
 
-        return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath, encoding,
-                false, false, parser);
+        return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
+                getPgDiffArgs(encoding), parser);
     }
 }
 
@@ -171,8 +183,7 @@ class DbSourceProject extends DbSource {
         }
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 proj.getPathToProject().toString(), 
-                charset, 
-                false, false, parser);
+                getPgDiffArgs(charset), parser);
     }
     
     private int countFilesInDir(Path path) {
@@ -228,8 +239,8 @@ class DbSourceFile extends DbSource {
         parser.setMonitor(monitor);
         parser.setMonitoringLevel(2);
         
-        return PgDumpLoader.loadDatabaseSchemaFromDump(filename, encoding,
-                false, false, parser);
+        return PgDumpLoader.loadDatabaseSchemaFromDump(filename, 
+                getPgDiffArgs(encoding), parser);
     }
     
     private int countLines(String filename) throws IOException {
@@ -307,7 +318,7 @@ class DbSourceDb extends DbSource {
             pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
             return PgDumpLoader.loadDatabaseSchemaFromDump(
-                    dump.getAbsolutePath(), encoding, false, false, parser);
+                    dump.getAbsolutePath(), getPgDiffArgs(encoding), parser);
         }
     }
 }
