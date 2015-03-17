@@ -19,6 +19,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
@@ -112,9 +113,11 @@ public class DepcyTreeExtenderTest {
     
     @Test
     public void testGetDependenciesOfNew() throws PgCodekeeperException {
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(ApgdiffConsts.UTF_8);
         PgDatabase dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
-                ApgdiffConsts.UTF_8, false, false, parserType);
+                args, parserType);
         
         DepcyTreeExtender dte = new DepcyTreeExtender(dbTarget, dbTarget, predefined.getFilteredTree());
         
@@ -125,9 +128,11 @@ public class DepcyTreeExtenderTest {
     
     @Test
     public void testGetTreeCopyWithDepcy() throws PgCodekeeperException {
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(ApgdiffConsts.UTF_8);
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
-                ApgdiffConsts.UTF_8, false, false, parserType);
+                args, parserType);
         
         TreeElement filtered = predefined.getFilteredTreeForDeletion();
         
@@ -144,9 +149,11 @@ public class DepcyTreeExtenderTest {
     
     @Test
     public void testSumAllDepcies() throws PgCodekeeperException {
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(ApgdiffConsts.UTF_8);
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 DepcyTreeExtenderTest.class.getResourceAsStream(filename),
-                ApgdiffConsts.UTF_8, false, false, parserType);
+                args, parserType);
         
         TreeElement filtered = predefined.getFilteredTree();
         
@@ -163,13 +170,17 @@ public class DepcyTreeExtenderTest {
     
     @Test
     public void testGetConflicting() throws PgCodekeeperException {
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(ApgdiffConsts.UTF_8);
         PgDatabase dbRemote = PgDumpLoader.loadDatabaseSchemaFromDump(
-                DepcyTreeExtenderTest.class.getResourceAsStream(filename), ApgdiffConsts.UTF_8,
-                false, false, parserType);
+                DepcyTreeExtenderTest.class.getResourceAsStream(filename),
+                args, parserType);
 
+        args = new PgDiffArguments();
+        args.setInCharsetName(ApgdiffConsts.UTF_8);
         PgDatabase dbGit = PgDumpLoader.loadDatabaseSchemaFromDump(
-                DepcyTreeExtenderTest.class.getResourceAsStream(conflictingFilename), ApgdiffConsts.UTF_8,
-                false, false, parserType);
+                DepcyTreeExtenderTest.class.getResourceAsStream(conflictingFilename), args,
+                parserType);
 
         TreeElement filtered = predefined.getFilteredTreeForConflicting();
         DepcyTreeExtender dte = new DepcyTreeExtender(dbGit, dbRemote, filtered);
