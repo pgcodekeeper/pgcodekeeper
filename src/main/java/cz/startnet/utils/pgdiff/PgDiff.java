@@ -78,13 +78,9 @@ public final class PgDiff {
             final PgDiffArguments arguments, final InputStream oldInputStream,
             final InputStream newInputStream) {
         PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
-                oldInputStream, arguments.getInCharsetName(),
-                arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers(), ParserClass.getAntlr(null, 1));
+                oldInputStream, arguments, ParserClass.getAntlr(null, 1));
         PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
-                newInputStream, arguments.getInCharsetName(),
-                arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers(), ParserClass.getAntlr(null, 1));
+                newInputStream, arguments, ParserClass.getAntlr(null, 1));
 
         diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase,
                 oldDatabase, newDatabase);
@@ -104,12 +100,10 @@ public final class PgDiff {
                 final PgDiffArguments arguments) {
         if(format.equals("dump")) {
             return PgDumpLoader.loadDatabaseSchemaFromDump(srcPath,
-                    arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
-                    arguments.isIgnoreSlonyTriggers(), ParserClass.getAntlr(null, 1));
+                    arguments, ParserClass.getAntlr(null, 1));
         } else if(format.equals("parsed")) {
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
-                    arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
-                    arguments.isIgnoreSlonyTriggers(), ParserClass.getAntlr(null, 1));
+                    arguments, ParserClass.getAntlr(null, 1));
         } else if(format.equals("db")) {
             throw new UnsupportedOperationException("DB connection is not yet implemented!");
         }

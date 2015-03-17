@@ -126,6 +126,10 @@ public class PgDiffArguments {
      * Whether Slony triggers should be ignored.
      */
     private boolean ignoreSlonyTriggers;
+    /**
+     * Whether ignore function bodies.
+     */
+    private boolean checkFunctionBodies;
 
     /**
      * Setter for {@link #modeDiff}
@@ -730,5 +734,22 @@ public class PgDiffArguments {
      */
     public void setIgnoreSlonyTriggers(final boolean ignoreSlonyTriggers) {
         this.ignoreSlonyTriggers = ignoreSlonyTriggers;
+    }
+    /**
+     * Setter for {@link #checkFunctionBodies}.
+     *
+     * @param checkFunctionBodies {@link #checkFunctionBodies}
+     */
+    public void setCheckFunctionBodies(boolean checkFunctionBodies) {
+        this.checkFunctionBodies = checkFunctionBodies;
+    }
+   
+    /**
+     * Getter for {@link #checkFunctionBodies}.
+     *
+     * @return {@link #checkFunctionBodies}
+     */
+    public boolean getCheckFunctionBodies() {
+        return checkFunctionBodies;
     }
 }

@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 
@@ -37,6 +38,8 @@ public class PgDatabase extends PgStatement {
     private final Map<Path, List<PgObjLocation>> objDefinitions = new HashMap<>();
     // Содержит ссылки на объекты
     private final Map<Path, List<PgObjLocation>> objReferences = new HashMap<>();
+
+    private PgDiffArguments arguments;
     
     @Override
     public DbObjType getStatementType() {
@@ -307,5 +310,12 @@ public class PgDatabase extends PgStatement {
             statements.addAll(schema.getTables());
         }
         return statements;
+    }
+
+    public void setArguments(PgDiffArguments arguments) {
+        this.arguments = arguments;
+    }
+    public PgDiffArguments getArguments() {
+        return arguments;
     }
 }
