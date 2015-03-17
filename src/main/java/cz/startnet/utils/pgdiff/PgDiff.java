@@ -150,8 +150,12 @@ public final class PgDiff {
         
         PgDiffScript script = new PgDiffScript();
         
+        if (!arguments.isCheckFunctionBodies()) {
+            script.addStatement("SET check_function_bodies = false;");
+        }
+        
         if (arguments.isAddTransaction()) {
-            script.addStatement("START TRANSACTION;");
+            script.addStatement("\nSTART TRANSACTION;");
         }
 
         dbOld = oldDbFull;

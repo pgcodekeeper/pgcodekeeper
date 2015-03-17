@@ -128,6 +128,7 @@ public class PgDiffArguments {
     private boolean ignoreSlonyTriggers;
     /**
      * Whether ignore function bodies.
+     * TODO придумать проверить из командной строки параметр 
      */
     private boolean checkFunctionBodies;
 
@@ -749,7 +750,7 @@ public class PgDiffArguments {
      *
      * @return {@link #checkFunctionBodies}
      */
-    public boolean getCheckFunctionBodies() {
+    public boolean isCheckFunctionBodies() {
         return checkFunctionBodies;
     }
 }
