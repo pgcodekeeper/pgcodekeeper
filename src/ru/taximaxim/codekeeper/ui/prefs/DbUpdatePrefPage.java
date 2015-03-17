@@ -116,13 +116,15 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
     }
     
     private void updateList() {
-        LinkedList<String> list = new LinkedList<>();
+        LinkedList<String> list= null;
         try {
             list = history.getHistory();
         } catch (IOException e) {
             ExceptionNotifier.notifyDefault(Messages.dbUpdatePrefPage_error_getting_commands_list, e);
         }
-        
+        if (list == null) {
+            list = new LinkedList<>();
+        }
         listEditor.setInputList(list);
     }
 }
