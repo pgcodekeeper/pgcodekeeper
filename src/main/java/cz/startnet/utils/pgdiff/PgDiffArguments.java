@@ -130,7 +130,7 @@ public class PgDiffArguments {
      * Whether ignore function bodies.
      * TODO придумать проверить из командной строки параметр 
      */
-    private boolean checkFunctionBodies;
+    private boolean checkFunctionBodies = true;
 
     /**
      * Setter for {@link #modeDiff}
