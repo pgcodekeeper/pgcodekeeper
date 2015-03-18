@@ -492,6 +492,8 @@ public class PgDiffArguments {
                 }
             } else if ("--add-transaction".equals(args[i])) {
                 setAddTransaction(true);
+            } else if ("--don't-check-function-bodies".equals(args[i])) {
+                setCheckFunctionBodies(false);
             } else if ("--ignore-slony-triggers".equals(args[i])) {
                 setIgnoreSlonyTriggers(true);
             } else if ("--in-charset-name".equals(args[i])) {
@@ -501,6 +503,9 @@ public class PgDiffArguments {
                 setListCharsets(true);
             } else if ("--out-charset-name".equals(args[i])) {
                 setOutCharsetName(args[i + 1]);
+                i++;
+            } else if ("--time-zone".equals(args[i])) {
+                setTimeZone(args[i + 1]);
                 i++;
             } else if ("--output-ignored-statements".equals(args[i])) {
                 setOutputIgnoredStatements(true);
