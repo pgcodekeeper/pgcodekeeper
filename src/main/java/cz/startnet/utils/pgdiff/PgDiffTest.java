@@ -247,9 +247,9 @@ public class PgDiffTest {
     }
     
     private static final List<String> RUN_DIFF_SKIP_FILES = Arrays.asList(
-    		"modify_sequence_start_ignore_on",
-    		"function_equal_whitespace",
-    		"add_defaults"
+            "modify_sequence_start_ignore_on",
+            "function_equal_whitespace",
+            "add_defaults"
             );
     /**
      * Template name for file names that should be used for the test. Testing
