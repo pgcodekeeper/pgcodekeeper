@@ -21,6 +21,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IStorageEditorInput;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -57,7 +58,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     String dbName;
     String dbUser;
     String dbPass;
-    private String scriptFileEncoding = UIConsts.UTF_8;
+    private String scriptFileEncoding = ApgdiffConsts.UTF_8;
     
     public String getScriptFileEncoding() {
         return scriptFileEncoding;

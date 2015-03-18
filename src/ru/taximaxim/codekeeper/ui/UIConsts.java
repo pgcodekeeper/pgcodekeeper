@@ -4,9 +4,6 @@ public interface UIConsts {
 
     String _NL = System.lineSeparator();
     
-    String UTF_8 = "UTF-8"; //$NON-NLS-1$
-    String UTC = "UTC"; //$NON-NLS-1$
-
     interface PLUGIN_ID {
         String THIS = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
         String HELP = THIS + ".help"; //$NON-NLS-1$

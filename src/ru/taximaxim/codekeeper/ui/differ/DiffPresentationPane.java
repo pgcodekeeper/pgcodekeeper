@@ -45,13 +45,13 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.osgi.service.prefs.BackingStoreException;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -550,7 +550,7 @@ public abstract class DiffPresentationPane extends Composite {
                     dbSrc.getTxtDbHost().getText(), port, dbSrc.getTxtDbUser().getText(),
                     dbSrc.getTxtDbPass().getText(), dbSrc.getTxtDbName().getText(),
                     proj.getProjectCharset(), 
-                    projProps.get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
+                    projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
             break;
         case SOURCE_TYPE_JDBC:
             sPort = dbSrc.getTxtDbPort().getText();
@@ -560,7 +560,7 @@ public abstract class DiffPresentationPane extends Composite {
                     dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText(),
                     dbSrc.getTxtDbName().getText(), 
                     proj.getProjectCharset(), 
-                    projProps.get(PROJ_PREF.TIMEZONE, UIConsts.UTC),
+                    projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
                     mainPrefs.getBoolean(PREF.USE_ANTLR));
             break;
         default:

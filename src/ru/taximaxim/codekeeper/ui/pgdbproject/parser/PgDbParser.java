@@ -24,7 +24,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
@@ -87,7 +87,7 @@ public class PgDbParser implements IResourceChangeListener {
         Path path = Paths.get(fileURI);
         String filePath = path.toAbsolutePath().toString();
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
-        String charset = UIConsts.UTF_8;
+        String charset = ApgdiffConsts.UTF_8;
         try {
             charset = proj.getDefaultCharset(true);
         } catch (CoreException e) {
@@ -152,7 +152,7 @@ public class PgDbParser implements IResourceChangeListener {
     
     private void getFullDBFromDirectory(URI locationURI, IProgressMonitor monitor) {
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
-        String charset = UIConsts.UTF_8;
+        String charset = ApgdiffConsts.UTF_8;
         try {
             charset = proj.getDefaultCharset(true);
         } catch (CoreException e) {

@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.preference.IPreferenceStore;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts.JDBC_CONSTS;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
@@ -64,12 +65,13 @@ public abstract class DbSource {
         this.origin = origin;
     }
     
-    protected static PgDiffArguments getPgDiffArgs(String charset) {
+    protected static PgDiffArguments getPgDiffArgs(String charset, String timeZone) {
         PgDiffArguments args = new PgDiffArguments();
         IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
         args.setInCharsetName(charset);
         args.setAddTransaction(mainPS.getBoolean(UIConsts.DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
         args.setCheckFunctionBodies(mainPS.getBoolean(UIConsts.DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
+        args.setTimeZone(timeZone);
         return args;
     }
 
@@ -116,7 +118,7 @@ public abstract class DbSource {
                 password,
                 proj.getPrefs().get(PROJ_PREF.DB_NAME, ""),  //$NON-NLS-1$
                 proj.getProjectCharset(), 
-                proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC),
+                proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
                 useAntrlForViews);
     }
     
@@ -150,7 +152,7 @@ class DbSourceDirTree extends DbSource {
         monitor.subTask(Messages.dbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
-                getPgDiffArgs(encoding), parser);
+                getPgDiffArgs(encoding, ApgdiffConsts.UTC), parser);
     }
 }
 
@@ -183,7 +185,7 @@ class DbSourceProject extends DbSource {
         }
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 proj.getPathToProject().toString(), 
-                getPgDiffArgs(charset), parser);
+                getPgDiffArgs(charset, ApgdiffConsts.UTC), parser);
     }
     
     private int countFilesInDir(Path path) {
@@ -240,7 +242,7 @@ class DbSourceFile extends DbSource {
         parser.setMonitoringLevel(2);
         
         return PgDumpLoader.loadDatabaseSchemaFromDump(filename, 
-                getPgDiffArgs(encoding), parser);
+                getPgDiffArgs(encoding, ApgdiffConsts.UTC), parser);
     }
     
     private int countLines(String filename) throws IOException {
@@ -281,7 +283,7 @@ class DbSourceDb extends DbSource {
                 password,
                 props.getPrefs().get(PROJ_PREF.DB_NAME, ""), //$NON-NLS-1$
                 props.getProjectCharset(), 
-                props.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
+                props.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
     }
 
     DbSourceDb(ParserClass parser, String exePgdump, String customParams,
@@ -318,7 +320,7 @@ class DbSourceDb extends DbSource {
             pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
             return PgDumpLoader.loadDatabaseSchemaFromDump(
-                    dump.getAbsolutePath(), getPgDiffArgs(encoding), parser);
+                    dump.getAbsolutePath(), getPgDiffArgs(encoding, timezone), parser);
         }
     }
 }

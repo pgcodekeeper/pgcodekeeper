@@ -524,7 +524,7 @@ class PageMisc extends WizardPage {
     
     void setEncoding(String value) {
         cmbEncoding.select(cmbEncoding.indexOf(value) == -1 ? 
-                cmbEncoding.indexOf(UIConsts.UTF_8) : cmbEncoding.indexOf(value));
+                cmbEncoding.indexOf(ApgdiffConsts.UTF_8) : cmbEncoding.indexOf(value));
     }
 
     PageMisc(String pageName) {
@@ -543,7 +543,7 @@ class PageMisc extends WizardPage {
                 | SWT.READ_ONLY);
         Set<String> charsets = Charset.availableCharsets().keySet();
         cmbEncoding.setItems(charsets.toArray(new String[charsets.size()]));
-        cmbEncoding.select(cmbEncoding.indexOf(UIConsts.UTF_8)); 
+        cmbEncoding.select(cmbEncoding.indexOf(ApgdiffConsts.UTF_8)); 
 
         setControl(container);
     }
