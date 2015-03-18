@@ -145,14 +145,12 @@ public final class PgDiffSequences {
                 sbSQL.append(newMaxValue);
             }
 
-            if (!arguments.isIgnoreStartWith()) {
-                final String oldStart = oldSequence.getStartWith();
-                final String newStart = newSequence.getStartWith();
+            final String oldStart = oldSequence.getStartWith();
+            final String newStart = newSequence.getStartWith();
 
-                if (newStart != null && !newStart.equals(oldStart)) {
-                    sbSQL.append("\n\tRESTART WITH ");
-                    sbSQL.append(newStart);
-                }
+            if (newStart != null && !newStart.equals(oldStart)) {
+                sbSQL.append("\n\tRESTART WITH ");
+                sbSQL.append(newStart);
             }
 
             final String oldCache = oldSequence.getCache();

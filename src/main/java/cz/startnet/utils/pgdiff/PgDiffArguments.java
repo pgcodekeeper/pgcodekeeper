@@ -77,22 +77,9 @@ public class PgDiffArguments {
      */
     private String outCharsetName = ApgdiffConsts.UTF_8;
     /**
-     * Whether DEFAULT ... should be added in case new column has NOT NULL
-     * constraint. The default value is dropped later.
-     */
-    private boolean addDefaults;
-    /**
      * Whether to enclose all statements in transaction.
      */
     private boolean addTransaction;
-    /**
-     * Whether to ignore whitespace while comparing content of functions.
-     */
-    private boolean ignoreFunctionWhitespace;
-    /**
-     * Whether to ignore START WITH on SEQUENCEs.
-     */
-    private boolean ignoreStartWith;
     /**
      * Whether to ignore DROP TABLE on script.
      */
@@ -315,24 +302,6 @@ public class PgDiffArguments {
     public String getParserOutdir() {
         return this.parserOutdir;
     }
-    
-    /**
-     * Setter for {@link #addDefaults}.
-     *
-     * @param addDefaults {@link #addDefaults}
-     */
-    public void setAddDefaults(final boolean addDefaults) {
-        this.addDefaults = addDefaults;
-    }
-
-    /**
-     * Getter for {@link #addDefaults}.
-     *
-     * @return {@link #addDefaults}
-     */
-    public boolean isAddDefaults() {
-        return addDefaults;
-    }
 
     /**
      * Setter for {@link #addTransaction}.
@@ -350,43 +319,6 @@ public class PgDiffArguments {
      */
     public boolean isAddTransaction() {
         return addTransaction;
-    }
-
-    /**
-     * Setter for {@link #ignoreFunctionWhitespace}.
-     *
-     * @param ignoreFunctionWhitespace {@link #ignoreFunctionWhitespace}
-     */
-    public void setIgnoreFunctionWhitespace(
-            final boolean ignoreFunctionWhitespace) {
-        this.ignoreFunctionWhitespace = ignoreFunctionWhitespace;
-    }
-
-    /**
-     * Getter for {@link #ignoreFunctionWhitespace}.
-     *
-     * @return {@link #ignoreFunctionWhitespace}
-     */
-    public boolean isIgnoreFunctionWhitespace() {
-        return ignoreFunctionWhitespace;
-    }
-
-    /**
-     * Setter for {@link #ignoreStartWith}.
-     *
-     * @param ignoreStartWith {@link #ignoreStartWith}
-     */
-    public void setIgnoreStartWith(final boolean ignoreStartWith) {
-        this.ignoreStartWith = ignoreStartWith;
-    }
-
-    /**
-     * Getter for {@link #ignoreStartWith}.
-     *
-     * @return {@link #ignoreStartWith}
-     */
-    public boolean isIgnoreStartWith() {
-        return ignoreStartWith;
     }
 
     /**
@@ -558,16 +490,10 @@ public class PgDiffArguments {
                     writer.println("Unsupported DB format for parsing!");
                     success = false;
                 }
-            } else if ("--add-defaults".equals(args[i])) {
-                setAddDefaults(true);
             } else if ("--add-transaction".equals(args[i])) {
                 setAddTransaction(true);
-            } else if ("--ignore-function-whitespace".equals(args[i])) {
-                setIgnoreFunctionWhitespace(true);
             } else if ("--ignore-slony-triggers".equals(args[i])) {
                 setIgnoreSlonyTriggers(true);
-            } else if ("--ignore-start-with".equals(args[i])) {
-                setIgnoreStartWith(true);
             } else if ("--in-charset-name".equals(args[i])) {
                 setInCharsetName(args[i + 1]);
                 i++;

@@ -46,7 +46,7 @@ public final class PgDiffFunctions {
             }
 
             if ((oldFunction == null) || !newFunction.equalsWhitespace(
-                    oldFunction, arguments.isIgnoreFunctionWhitespace())) {
+                    oldFunction, false)) {
                 PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newFunction);
                 
                 searchPathHelper.outputSearchPath(script);

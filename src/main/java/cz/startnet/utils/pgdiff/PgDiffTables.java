@@ -285,13 +285,13 @@ public final class PgDiffTables {
         for (final PgColumn column : newTable.getColumns()) {
             if (!oldTable.containsColumn(column.getName())) {
                 statements.add("\tADD COLUMN "
-                        + column.getFullDefinition(arguments.isAddDefaults(), 
+                        + column.getFullDefinition(false, 
                                 defaultStatement));
                 if (defaultStatement.length() > 0) {
                     defaultStatements.add(ALTER_COLUMN + defaultStatement);
                     defaultStatement.setLength(0);
                 }
-                if (arguments.isAddDefaults() && !column.getNullValue()
+                if (false && !column.getNullValue()
                         && (column.getDefaultValue() == null
                         || column.getDefaultValue().isEmpty())) {
                     dropDefaultsColumns.add(column);
@@ -402,7 +402,7 @@ public final class PgDiffTables {
                     statements.add(ALTER_COLUMN + newColumnName
                             + " DROP NOT NULL");
                 } else {
-                    if (arguments.isAddDefaults()) {
+                    if (false) {
                         final String defaultValue =
                                 PgColumnUtils.getDefaultValue(
                                 newColumn.getType());
