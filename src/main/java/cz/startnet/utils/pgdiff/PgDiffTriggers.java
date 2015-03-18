@@ -169,7 +169,7 @@ public final class PgDiffTriggers {
             }
 
             for (final PgTrigger oldTrigger : oldTable.getTriggers()) {
-                depRes.appendALter(oldTrigger,
+                depRes.appendAlter(oldTrigger,
                         newTable.getTrigger(oldTrigger.getName()));
             }
         }

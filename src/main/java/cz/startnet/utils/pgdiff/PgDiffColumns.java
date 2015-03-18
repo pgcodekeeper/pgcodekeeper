@@ -96,7 +96,7 @@ public class PgDiffColumns {
             PgTable newTable = newSchema.getTable(oldTable.getName());
             if (newTable != null) {
                 for (PgColumn oldColumn : oldTable.getColumns()) {
-                    depRes.appendALter(oldColumn,
+                    depRes.appendAlter(oldColumn,
                             newTable.getColumn(oldColumn.getName()));
                 }
             }

@@ -88,7 +88,7 @@ public class PgIndex extends PgStatementWithSearchPath {
     
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-    	PgIndex newIndex = null;
+    	PgIndex newIndex;
     	if (newCondition instanceof PgIndex) {
     		newIndex = (PgIndex)newCondition; 
     	} else {
@@ -99,13 +99,11 @@ public class PgIndex extends PgStatementWithSearchPath {
     	
     	boolean oldCluster = oldIndex.isClusterIndex();
     	
-    	if (oldCluster && !newIndex.isClusterIndex()) { 
-    		 if (!((PgTable)newIndex.getParent()).isClustered()) { 
-    			 script.addStatement("ALTER TABLE "
-    	                    + PgDiffUtils.getQuotedName(oldIndex.getTableName())
-    	                    + " SET WITHOUT CLUSTER;");
-    		 }
-    		 
+    	if (oldCluster && !newIndex.isClusterIndex() && 
+    	        !((PgTable)newIndex.getParent()).isClustered()) { 
+			 script.addStatement("ALTER TABLE "
+	                    + PgDiffUtils.getQuotedName(oldIndex.getTableName())
+	                    + " SET WITHOUT CLUSTER;");
     	}
     	
     	PgDiff.diffComments(oldIndex, newIndex, script);
@@ -203,7 +201,7 @@ public class PgIndex extends PgStatementWithSearchPath {
     }
     
     @Override
-    public PgSchema getContainerSchema() {
+    public PgSchema getContainingSchema() {
     	return (PgSchema)this.getParent().getParent();
     }
 }

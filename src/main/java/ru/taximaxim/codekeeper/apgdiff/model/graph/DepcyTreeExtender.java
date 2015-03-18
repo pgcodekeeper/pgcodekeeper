@@ -75,7 +75,7 @@ public class DepcyTreeExtender {
         fillInDependenciesOfNew(root, depcySet);
         for (TreeElement el : userSelection) {
             if (el.getSide() != DiffSide.LEFT) {
-        	depcySet.remove(el.getPgStatement(dbTarget));
+                depcySet.remove(el.getPgStatement(dbTarget));
             }
         }
         return depcySet;
@@ -94,7 +94,7 @@ public class DepcyTreeExtender {
         fillInDependantsOfDeleted(root);
         for (TreeElement el : userSelection) {
             if (el.getSide() == DiffSide.LEFT) {
-        	dependantsOfDeleted.remove(el.getPgStatement(dbSource));
+                dependantsOfDeleted.remove(el.getPgStatement(dbSource));
             }
         }
         

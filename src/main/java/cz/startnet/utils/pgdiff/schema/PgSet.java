@@ -11,6 +11,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
  * This is a support class for comment objects, it doesn't have name and should 
  * not be used in objects database 
  */
+// TODO refactor, this shouldn't extend PgStatement and isn't really needed
+@Deprecated
 public class PgSet extends PgStatement {
     
     private String param;

@@ -20,6 +20,8 @@ public class PgExtension extends PgStatement {
 
     private String schema;
     private String version;
+    @Deprecated
+    // TODO remove oldVersion, not create-able field, old field
     private String oldVersion;
 
     @Override
@@ -96,7 +98,7 @@ public class PgExtension extends PgStatement {
     
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-    	PgExtension newExt = null;
+    	PgExtension newExt;
     	if (newCondition instanceof PgExtension) {
     		newExt = (PgExtension)newCondition;
     	} else {
@@ -110,14 +112,14 @@ public class PgExtension extends PgStatement {
                     + PgDiffUtils.getQuotedName(oldExt.getName())
                     + " SET SCHEMA " + newExt.getSchema() + ";");
         }
+    	// TODO ALTER EXTENSION UPDATE TO ?
     	PgDiff.diffComments(oldExt, newExt, script);
     	
     	final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
-        isNeedDepcies.set(false);
-        return false;
+        return sb.length() > 0;
     }
     
     @Override

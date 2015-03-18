@@ -84,21 +84,21 @@ public class PgConstraint extends PgStatementWithSearchPath {
     
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-    	PgConstraint newFunction = null;
+    	PgConstraint newConstr;
     	if (newCondition instanceof PgConstraint) {
-    		newFunction = (PgConstraint)newCondition; 
+    		newConstr = (PgConstraint)newCondition; 
     	} else {
     		return false;
 		}
-    	PgConstraint oldFunction = this;
+    	PgConstraint oldConstr = this;
     	PgDiffScript script = new PgDiffScript();
-    	PgDiff.diffComments(oldFunction, newFunction, script);
+    	PgDiff.diffComments(oldConstr, newConstr, script);
     	
     	final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
-        return false;
+        return sb.length() > 0;
     }
 
     public boolean isPrimaryKeyConstraint() {
@@ -163,7 +163,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
     }
     
     @Override
-    public PgSchema getContainerSchema() {
+    public PgSchema getContainingSchema() {
     	return (PgSchema)this.getParent().getParent();
     }
 }

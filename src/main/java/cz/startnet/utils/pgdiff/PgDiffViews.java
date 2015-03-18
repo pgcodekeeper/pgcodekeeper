@@ -105,7 +105,7 @@ public final class PgDiffViews {
         }
 
         for (final PgView oldView : oldSchema.getViews()) {
-            depRes.appendALter(oldView, newSchema.getView(oldView.getName()));
+            depRes.appendAlter(oldView, newSchema.getView(oldView.getName()));
         }
     }
 
@@ -118,8 +118,7 @@ public final class PgDiffViews {
      * @param searchPathHelper search path helper
      */
     public static void diffDefaultValues(final PgDiffScript script,
-            final PgView oldView, final PgView newView,
-            final SearchPathHelper searchPathHelper) {
+            final PgView oldView, final PgView newView) {
         final List<PgView.DefaultValue> oldValues =
                 oldView.getDefaultValues();
         final List<PgView.DefaultValue> newValues =
@@ -134,8 +133,6 @@ public final class PgDiffViews {
                     found = true;
 
                     if (!oldValue.getDefaultValue().equals(newValue.getDefaultValue())) {
-                        searchPathHelper.outputSearchPath(script);
-
                         script.addStatement("ALTER TABLE "
                                 + PgDiffUtils.getQuotedName(newView.getName())
                                 + " ALTER COLUMN "
@@ -150,8 +147,6 @@ public final class PgDiffViews {
             }
 
             if (!found) {
-                searchPathHelper.outputSearchPath(script);
-
                 script.addStatement("ALTER TABLE "
                         + PgDiffUtils.getQuotedName(newView.getName())
                         + " ALTER COLUMN "
@@ -174,8 +169,6 @@ public final class PgDiffViews {
             if (found) {
                 continue;
             }
-
-            searchPathHelper.outputSearchPath(script);
 
             script.addStatement("ALTER TABLE "
                     + PgDiffUtils.getQuotedName(newView.getName())

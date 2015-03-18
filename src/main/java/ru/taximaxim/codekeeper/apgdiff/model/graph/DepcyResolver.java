@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -31,12 +32,13 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 /**
- * Служит для отслеживания зависимостей, при этом старое состояние храниться в
+ * Служит для отслеживания зависимостей, при этом старое состояние хранится в
  * oldDb, a новое состояние в newDb, и требуется список объектов для удаления
  * или создания при приведении состояния из старого в новое.
  */
 public class DepcyResolver {
 
+    // TODO this is correct for drops only
     private static final String DEPCY_PATTERN = "-- DEPCY: This {0} depends on the {1}: {2}";
     private PgDatabase oldDb;
     private PgDatabase newDb;
@@ -153,10 +155,11 @@ public class DepcyResolver {
     }
     
     /**
-     * Очищает список объектов
+     * Очищает списки объектов
      */
-    public void clearDepcies() {
+    public void clearLists() {
         actions.clear();
+        sequencesOwnedBy.clear();
     }
 
     /**
@@ -165,7 +168,7 @@ public class DepcyResolver {
      */
     public void fillScript(PgDiffScript script) {
         String currentSearchPath = MessageFormat.format(
-                ApgdiffConsts.SEARCH_PATH_PATTERN, "public");
+                ApgdiffConsts.SEARCH_PATH_PATTERN, ApgdiffConsts.PUBLIC);
         for (ActionContainer action : actions) {
             PgStatement oldObj = action.getOldObj();
             String depcy = null;
@@ -174,7 +177,7 @@ public class DepcyResolver {
                 String objName = "";
                 if (objStarter.getStatementType() == DbObjType.COLUMN) {
                     objName = ((PgColumn) objStarter).getParent().getName()
-                            + ".";
+                            + '.';
                 }
                 objName += objStarter.getName();
                 depcy = MessageFormat.format(DEPCY_PATTERN,
@@ -203,7 +206,8 @@ public class DepcyResolver {
                 oldObj.appendAlterSQL(action.getNewObj(), sb,
                         new AtomicBoolean());
                 if (sb.length() > 0) {
-                    if (oldObj instanceof PgSchema) {
+                    // TODO check schema alters
+                    /*if (oldObj.getStatementType() == DbObjType.SCHEMA) {
                         String schemaPath = MessageFormat.format(
                                 ApgdiffConsts.SEARCH_PATH_PATTERN,
                                 oldObj.getName());
@@ -211,10 +215,10 @@ public class DepcyResolver {
                             currentSearchPath = schemaPath;
                             script.addStatement(currentSearchPath);
                         }
-                    } else {
-                    currentSearchPath = setSearchPath(currentSearchPath,
-                            oldObj, script);
-                    }
+                    } else {*/
+                        currentSearchPath = setSearchPath(currentSearchPath,
+                                oldObj, script);
+                    //}
                     
                     if (depcy != null) {
                         script.addStatement(depcy);
@@ -257,15 +261,19 @@ public class DepcyResolver {
     /**
      * Пересоздает ранее удаленные объекты в новое состояние
      */
+    // TODO comment actions
     public void recreateDrops() {
         List<PgStatement> toRecreate = new ArrayList<>();
         for (ActionContainer action : actions) {
             if (action.getAction() != StatementActions.DROP) {
                 continue;
             }
+            // we need this temp list because we cannot add to actions list
+            // while iterating over it
             toRecreate.add(action.getOldObj());
         }
         for (PgStatement drop : toRecreate) {
+            // TODO check if was recreated?
             if (getObjectFromDB(drop, newDb) != null) {
                 addCreateStatements(drop);
             }
@@ -293,7 +301,7 @@ public class DepcyResolver {
     }
 
     /**
-     * ДОбавляет в список выражений для скрипта Выражение без зависимостей
+     * Добавляет в список выражений для скрипта Выражение без зависимостей
      * 
      * @param action Какое действие нужно вызвать {@link StatementActions}
      * @param oldObj Объект из старого состояния
@@ -319,130 +327,6 @@ public class DepcyResolver {
             throw new IllegalStateException("Not implemented action");
         }
     }
-    /**
-     * Используется для прохода по графу зависимостей для формирования
-     * созданных (CREATE) объектов
-     */
-    private class CreateTraversalAdapter extends CustomTraversalListenerAdapter {
-
-        CreateTraversalAdapter(PgStatement starter) {
-            super(starter, StatementActions.CREATE);
-        }
-
-        @Override
-        protected boolean notAllowedToAdd(PgStatement statement) {
-            if (super.notAllowedToAdd(statement)) {
-                return true;
-            }
-            if (inDropsList(statement)) {
-                return false;
-            }
-            if (getObjectFromDB(statement, oldDb) != null) {
-                return true;
-            }
-            if (statement.getStatementType() == DbObjType.COLUMN) {
-                PgStatement oldTable = getObjectFromDB(statement.getParent(),
-                        oldDb);
-                if (oldTable == null) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-    /**
-     * Используется для прохода по графу зависимостей для формирования
-     * удаленных (DROP) объектов
-     */
-    private class DropTraversalAdapter extends CustomTraversalListenerAdapter {
-
-        DropTraversalAdapter(PgStatement starter) {
-            super(starter, StatementActions.DROP);
-        }
-
-        @Override
-        protected boolean notAllowedToAdd(PgStatement statement) {
-            if (super.notAllowedToAdd(statement)) {
-                return true;
-            }
-            if (statement.getStatementType() == DbObjType.COLUMN) {
-                PgStatement newTable = getObjectFromDB(statement.getParent(),
-                        newDb);
-                if (newTable != null) {
-                    return false;
-                } else {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
-    /**
-     * Используется для прохода по графу зависимостей для формирования
-     * измененных (ALTER) объектов
-     */
-    private class AlterTraversalAdapter extends CustomTraversalListenerAdapter {
-
-        AlterTraversalAdapter(PgStatement starter) {
-            super(starter, StatementActions.ALTER);
-        }
-
-        @Override
-        protected boolean notAllowedToAdd(PgStatement statement) {
-            if (super.notAllowedToAdd(statement)) {
-                return true;
-            }
-            PgStatement newSt = getObjectFromDB(statement, newDb);
-            StringBuilder sb = new StringBuilder();
-            AtomicBoolean isNeedDepcies = new AtomicBoolean(true);
-            statement.appendAlterSQL(newSt, sb, isNeedDepcies);
-            if (sb.length() > 0) {
-                action = StatementActions.ALTER;
-                return false;
-            } else {
-                action = StatementActions.DROP;
-                return false;
-            }
-        }
-    }
-
-    /**
-     * Используется для прохода по графу зависимостей, содержит общие методы
-     */
-    private abstract class CustomTraversalListenerAdapter extends
-            TraversalListenerAdapter<PgStatement, DefaultEdge> {
-        private PgStatement starter;
-        protected StatementActions action;
-
-        CustomTraversalListenerAdapter(PgStatement starter,
-                StatementActions action) {
-            this.starter = starter;
-            this.action = action;
-        }
-
-        @Override
-        public void vertexFinished(VertexTraversalEvent<PgStatement> e) {
-            PgStatement statement = e.getVertex();
-            if (notAllowedToAdd(statement)) {
-                return;
-            }
-            if (statement.getStatementType() != DbObjType.DATABASE) {
-                addToList(statement);
-            }
-        }
-
-        protected boolean notAllowedToAdd(PgStatement statement) {
-            if (statement.getStatementType() == null) {
-                return true;
-            }
-            return false;
-        }
-
-        protected void addToList(PgStatement statement) {
-            addToListWithoutDepcies(action, statement, starter);
-        }
-    }
 
     /**
      * Ищет в переданной базе объетк по имени 
@@ -451,7 +335,6 @@ public class DepcyResolver {
      * @return
      */
     private PgStatement getObjectFromDB(PgStatement statement, PgDatabase db) {
-        PgSchema oldSchema = null;
         switch (statement.getStatementType()) {
         case EXTENSION:
             return db.getExtension(statement.getName());
@@ -460,9 +343,10 @@ public class DepcyResolver {
         default:
             break;
         }
+        PgSchema oldSchema = null;
         if (statement instanceof PgStatementWithSearchPath) {
             oldSchema = db.getSchema(((PgStatementWithSearchPath) statement)
-                    .getContainerSchema().getName());
+                    .getContainingSchema().getName());
         }
         if (oldSchema == null) {
             return null;
@@ -511,7 +395,7 @@ public class DepcyResolver {
         }
         return null;
     }
-
+    
     /**
      * Возвращает упорядоченный набор объектов для наката с указанием действия
      * @param actionType необходимое действие
@@ -532,21 +416,26 @@ public class DepcyResolver {
      * @param oldObj исходный объект
      * @param newObj новый объект
      */
-    public void appendALter(PgStatement oldObj, PgStatement newObj) {
+    public void appendAlter(PgStatement oldObj, PgStatement newObj) {
         if (newObj != null && oldObj != null) {
             StringBuilder sb = new StringBuilder();
-            AtomicBoolean isNeedDepcies = new AtomicBoolean(false);
-            boolean retVal = oldObj.appendAlterSQL(newObj, sb, isNeedDepcies);
-            if (sb.length() > 0 || retVal) {
+            AtomicBoolean isNeedDepcies = new AtomicBoolean();
+            boolean isChanged = oldObj.appendAlterSQL(newObj, sb, isNeedDepcies);
+            
+            if (isChanged) {
                 if (isNeedDepcies.get()) {
+                    // is state alterable (sb.length() > 0) 
+                    // is checked in the depcy tracker in this case
                     addAlterStatements(oldObj);
                 } else {
-                    addToListWithoutDepcies(StatementActions.ALTER, oldObj,
-                            null);
+                    addToListWithoutDepcies(
+                            sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP, 
+                            oldObj, null);
                 }
             }
         }
     }
+    
     /**
      * Добавляет в список OWNED BY последовательность (SEQUENCE) для вызова в конце скрипта
      * @param oldObj исходная последовательность
@@ -555,77 +444,191 @@ public class DepcyResolver {
     public void appendAlterOwnedBy(PgSequence oldObj, PgSequence newObj) {
         if (newObj != null && oldObj != null) {
             StringBuilder sb = new StringBuilder();
-            AtomicBoolean isNeedDepcies = new AtomicBoolean(false);
-            oldObj.alterOwnedBy(newObj, sb, isNeedDepcies);
+            oldObj.alterOwnedBy(newObj, sb);
             if (sb.length() > 0) {
-                sequencesOwnedBy.add((PgSequence) newObj);
+                sequencesOwnedBy.add(newObj);
             }
+        }
+    }
+    
+    /**
+     * Используется для прохода по графу зависимостей для формирования
+     * созданных (CREATE) объектов
+     */
+    private class CreateTraversalAdapter extends CustomTraversalListenerAdapter {
+
+        CreateTraversalAdapter(PgStatement starter) {
+            super(starter, StatementActions.CREATE);
+        }
+
+        @Override
+        protected boolean notAllowedToAdd(PgStatement statement) {
+            if (super.notAllowedToAdd(statement)) {
+                return true;
+            }
+            if (inDropsList(statement)) {
+                // always create if droppped before
+                return false;
+            }
+            if (getObjectFromDB(statement, oldDb) != null) {
+                // delegate to alter
+                return true;
+            }
+            if (statement.getStatementType() == DbObjType.COLUMN) {
+                PgStatement oldTable = getObjectFromDB(statement.getParent(),
+                        oldDb);
+                if (oldTable == null) {
+                    // columns are integrated into CREATE TABLE
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+    /**
+     * Используется для прохода по графу зависимостей для формирования
+     * удаленных (DROP) объектов
+     */
+    private class DropTraversalAdapter extends CustomTraversalListenerAdapter {
+
+        DropTraversalAdapter(PgStatement starter) {
+            super(starter, StatementActions.DROP);
+        }
+
+        @Override
+        protected boolean notAllowedToAdd(PgStatement statement) {
+            if (super.notAllowedToAdd(statement)) {
+                return true;
+            }
+            if (statement.getStatementType() == DbObjType.COLUMN) {
+                PgStatement newTable = getObjectFromDB(statement.getParent(),
+                        newDb);
+                if (newTable == null) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
     /**
-     * Класс используется как контейнер для объединения дейсвий с объектом БД
-     * (CREATE ALTER DROP) Также хранит объект, инициировавший действие
+     * Используется для прохода по графу зависимостей для формирования
+     * измененных (ALTER) объектов
      */
-    private class ActionContainer {
-        private PgStatement oldObj;
-        private PgStatement newObj;
-        private StatementActions action;
-        private PgStatement starter;
+    private class AlterTraversalAdapter extends CustomTraversalListenerAdapter {
 
-        public ActionContainer(PgStatement oldObj, PgStatement newObj,
-                StatementActions action, PgStatement starter) {
-            this.oldObj = oldObj;
-            this.newObj = newObj;
-            this.action = action;
-            this.starter = starter;
-        }
-
-        public PgStatement getOldObj() {
-            return oldObj;
-        }
-
-        public PgStatement getNewObj() {
-            return newObj;
-        }
-
-        public StatementActions getAction() {
-            return action;
-        }
-
-        public PgStatement getStarter() {
-            return starter;
+        AlterTraversalAdapter(PgStatement starter) {
+            super(starter, StatementActions.ALTER);
         }
 
         @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result
-                    + ((action == null) ? 0 : action.hashCode());
-            result = prime * result
-                    + ((newObj == null) ? 0 : newObj.hashCode());
-            result = prime * result
-                    + ((oldObj == null) ? 0 : oldObj.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
+        protected boolean notAllowedToAdd(PgStatement statement) {
+            if (super.notAllowedToAdd(statement)) {
                 return true;
-            if (obj instanceof ActionContainer) {
-                ActionContainer cont = (ActionContainer) obj;
-                boolean eq = action.equals(cont.getAction());
-                if (oldObj != null) {
-                    eq &= oldObj.compare(cont.getOldObj());
-                }
-                if (newObj != null) {
-                    eq &= newObj.compare(cont.getNewObj());
-                }
-                return eq;
+            }
+            PgStatement newSt = getObjectFromDB(statement, newDb);
+            StringBuilder sb = new StringBuilder();
+            AtomicBoolean isNeedDepcies = new AtomicBoolean();
+            statement.appendAlterSQL(newSt, sb, isNeedDepcies);
+            action = sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP;
+            return false;
+        }
+    }
+
+    /**
+     * Используется для прохода по графу зависимостей, содержит общие методы
+     */
+    private abstract class CustomTraversalListenerAdapter extends
+            TraversalListenerAdapter<PgStatement, DefaultEdge> {
+        
+        private PgStatement starter;
+        protected StatementActions action;
+
+        CustomTraversalListenerAdapter(PgStatement starter,
+                StatementActions action) {
+            this.starter = starter;
+            this.action = action;
+        }
+
+        @Override
+        public void vertexFinished(VertexTraversalEvent<PgStatement> e) {
+            PgStatement statement = e.getVertex();
+            if (notAllowedToAdd(statement)) {
+                return;
+            }
+            if (statement.getStatementType() != DbObjType.DATABASE) {
+                addToList(statement);
+            }
+        }
+
+        protected boolean notAllowedToAdd(PgStatement statement) {
+            if (statement.getStatementType() == null) {
+                return true;
             }
             return false;
         }
+
+        protected void addToList(PgStatement statement) {
+            addToListWithoutDepcies(action, statement, starter);
+        }
+    }
+}
+
+/**
+ * Класс используется как контейнер для объединения дейсвий с объектом БД
+ * (CREATE ALTER DROP) Также хранит объект, инициировавший действие
+ */
+class ActionContainer {
+    private PgStatement oldObj;
+    private PgStatement newObj;
+    private StatementActions action;
+    private PgStatement starter;
+
+    public ActionContainer(PgStatement oldObj, PgStatement newObj,
+            StatementActions action, PgStatement starter) {
+        this.oldObj = oldObj;
+        this.newObj = newObj;
+        this.action = action;
+        this.starter = starter;
+    }
+
+    public PgStatement getOldObj() {
+        return oldObj;
+    }
+
+    public PgStatement getNewObj() {
+        return newObj;
+    }
+
+    public StatementActions getAction() {
+        return action;
+    }
+
+    public PgStatement getStarter() {
+        return starter;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((action == null) ? 0 : action.hashCode());
+        result = prime * result + ((oldObj == null) ? 0 : oldObj.hashCode());
+        result = prime * result + ((newObj == null) ? 0 : newObj.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj instanceof ActionContainer) {
+            ActionContainer cont = (ActionContainer) obj;
+            boolean eq = action == cont.getAction() &&
+                    Objects.equals(oldObj, cont.getOldObj()) &&
+                    Objects.equals(newObj, cont.getNewObj());
+            return eq;
+        }
+        return false;
     }
 }

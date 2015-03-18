@@ -186,11 +186,16 @@ public class PgColumn extends PgStatementWithSearchPath {
     public String getCreationSQL() {
         StringBuilder defaultStatement = new StringBuilder();
         StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append(getAlterTable() + "\n\tADD COLUMN "
-                + getFullDefinition(false, defaultStatement) + ";");
+        sbSQL.append(getAlterTable())
+                .append("\n\tADD COLUMN ")
+                .append(getFullDefinition(false, defaultStatement))
+                .append(';');
         if (defaultStatement.length() > 0) {
-            sbSQL.append("\n\n" + getAlterTable() + ALTER_COLUMN
-                    + defaultStatement + ";");
+            sbSQL.append("\n\n")
+                    .append(getAlterTable())
+                    .append(ALTER_COLUMN)
+                    .append(defaultStatement)
+                    .append(';');
         }
         if (comment != null && !comment.isEmpty()) {
             sbSQL.append("\n\n");
@@ -206,13 +211,13 @@ public class PgColumn extends PgStatementWithSearchPath {
     @Override
     public String getDropSQL() {
         return getAlterTable() + "\n\tDROP COLUMN "
-                + PgDiffUtils.getQuotedName(getName()) + ";";
+                + PgDiffUtils.getQuotedName(getName()) + ';';
     }
 
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        PgColumn newColumn = null;
+        PgColumn newColumn;
         if (newCondition instanceof PgColumn) {
             newColumn = (PgColumn) newCondition;
         } else {
@@ -236,30 +241,23 @@ public class PgColumn extends PgStatementWithSearchPath {
                     + ALTER_COLUMN + PgDiffUtils.getQuotedName(getName())
                     + " SET STATISTICS " + newStatValue + ';');
         }
-        boolean add = true;
-        final String oldStorage = (oldColumn == null
-                || oldColumn.getStorage() == null || oldColumn.getStorage()
-                .isEmpty()) ? null : oldColumn.getStorage();
-        final String newStorage = (newColumn.getStorage() == null || newColumn
-                .getStorage().isEmpty()) ? null : newColumn.getStorage();
+        final String oldStorage =
+                (oldColumn.getStorage() == null ||oldColumn.getStorage().isEmpty()) ?
+                        null : oldColumn.getStorage();
+        final String newStorage =
+                (newColumn.getStorage() == null || newColumn .getStorage().isEmpty()) ?
+                        null : newColumn.getStorage();
 
         if (newStorage == null && oldStorage != null) {
             script.addStatement(MessageFormat.format(
                     Messages.Storage_WarningUnableToDetermineStorageType,
                     newColumn.getParent().getName(), newColumn.getName()));
-
-            add = false;
         }
 
-        if (newStorage == null || newStorage.equalsIgnoreCase(oldStorage)) {
-            add = false;
-        }
-
-        if (add) {
+        if (newStorage != null && !newStorage.equalsIgnoreCase(oldStorage)) {
             script.addStatement(ALTER_TABLE
                     + "ONLY "
-                    + PgDiffUtils
-                            .getQuotedName(newColumn.getParent().getName())
+                    + PgDiffUtils.getQuotedName(newColumn.getParent().getName())
                     + ALTER_COLUMN
                     + PgDiffUtils.getQuotedName(newColumn.getName())
                     + " SET STORAGE " + newStorage + ';');
@@ -285,13 +283,13 @@ public class PgColumn extends PgStatementWithSearchPath {
                 : newColumn.getDefaultValue();
 
         if (!oldDefault.equals(newDefault)) {
-            if (newDefault.length() == 0) {
+            if (newDefault.isEmpty()) {
                 script.addStatement(getAlterTable() + ALTER_COLUMN
                         + newColumn.getName() + " DROP DEFAULT;");
             } else {
                 script.addStatement(getAlterTable() + ALTER_COLUMN
                         + newColumn.getName() + " SET DEFAULT " + newDefault
-                        + ";");
+                        + ';');
             }
         }
 
@@ -367,7 +365,7 @@ public class PgColumn extends PgStatementWithSearchPath {
     }
 
 	@Override
-	public PgSchema getContainerSchema() {
+	public PgSchema getContainingSchema() {
 		return (PgSchema)this.getParent().getParent();
 	}
 }

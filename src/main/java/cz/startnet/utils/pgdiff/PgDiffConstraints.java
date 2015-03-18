@@ -186,7 +186,7 @@ public final class PgDiffConstraints {
                 continue;
             }
             for (final PgConstraint oldConstraint : oldTable.getConstraints()) {
-                depRes.appendALter(oldConstraint,
+                depRes.appendAlter(oldConstraint,
                         newTable.getConstraint(oldConstraint.getName()));
             }
         }

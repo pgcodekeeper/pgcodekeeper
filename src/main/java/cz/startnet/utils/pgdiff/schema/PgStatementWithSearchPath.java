@@ -19,8 +19,8 @@ public abstract class PgStatementWithSearchPath extends PgStatement {
 
     public String getSearchPath() {
         return MessageFormat.format(ApgdiffConsts.SEARCH_PATH_PATTERN,
-                PgDiffUtils.getQuotedName(getContainerSchema().getName()));
+                PgDiffUtils.getQuotedName(getContainingSchema().getName()));
     }
 
-    public abstract PgSchema getContainerSchema();
+    public abstract PgSchema getContainingSchema();
 }

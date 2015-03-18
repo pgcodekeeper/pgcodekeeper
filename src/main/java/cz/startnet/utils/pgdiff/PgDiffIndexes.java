@@ -105,8 +105,7 @@ public final class PgDiffIndexes {
 
         if (newTable != null && oldTable != null) {
             for (final PgIndex index : oldTable.getIndexes()) {
-                if (!newTable.containsIndex(index.getName())
-                        /*|| !newTable.getIndex(index.getName()).compareWithoutComments(index)*/) {
+                if (!newTable.containsIndex(index.getName())) {
                     list.add(index);
                 }
             }
@@ -134,9 +133,7 @@ public final class PgDiffIndexes {
                 }
             } else {
                 for (final PgIndex index : newTable.getIndexes()) {
-                    if (!oldTable.containsIndex(index.getName())
-                            /*|| !oldTable.getIndex(index.getName()).
-                            compareWithoutComments(index)*/) {
+                    if (!oldTable.containsIndex(index.getName())) {
                         list.add(index);
                     }
                 }
@@ -167,7 +164,7 @@ public final class PgDiffIndexes {
                 continue;
             }
             for (final PgIndex oldIndex : oldTable.getIndexes()) {
-                depRes.appendALter(oldIndex,
+                depRes.appendAlter(oldIndex,
                         newTable.getIndex(oldIndex.getName()));
             }
         }

@@ -97,7 +97,7 @@ public class PgSchema extends PgStatement {
     
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        PgSchema newSchema = null;
+        PgSchema newSchema;
         if (newCondition instanceof PgSchema) {
             newSchema = (PgSchema) newCondition;
         } else {
@@ -119,7 +119,7 @@ public class PgSchema extends PgStatement {
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
-    	return false;
+    	return sb.length() > 0;
     }
     
     /**

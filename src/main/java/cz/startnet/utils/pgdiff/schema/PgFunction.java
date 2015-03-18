@@ -118,7 +118,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-    	PgFunction newFunction = null;
+    	PgFunction newFunction;
     	if (newCondition instanceof PgFunction) {
     		newFunction = (PgFunction)newCondition; 
     	} else {
@@ -128,12 +128,12 @@ public class PgFunction extends PgStatementWithSearchPath {
     	PgDiffScript script = new PgDiffScript();
     	
     	if (!oldFunction.equalsWhitespace(newFunction, false)) {
-    			if (PgDiffFunctions.needDrop(oldFunction, newFunction)) {
-    				isNeedDepcies.set(true);
-    				return true;
-    			} else {
-    				sb.append(newFunction.getCreationSQL());
-    			}
+			if (PgDiffFunctions.needDrop(oldFunction, newFunction)) {
+				isNeedDepcies.set(true);
+				return true;
+			} else {
+				sb.append(newFunction.getCreationSQL());
+			}
         }
     	PgDiff.diffComments(oldFunction, newFunction, script);
     	
@@ -409,7 +409,7 @@ public class PgFunction extends PgStatementWithSearchPath {
     }
     
     @Override
-    public PgSchema getContainerSchema() {
+    public PgSchema getContainingSchema() {
     	return (PgSchema)this.getParent();
     }
 }

@@ -234,15 +234,27 @@ public abstract class PgStatement {
     
     /**
      * Метод заполняет sb выражением изменения объекта, можно ли изменить объект
-     * ALTER.
+     * ALTER.<br><br>
+     * 
+     * Результат работы метода определяется по паре значений:
+     * возвращаемое значение и длина sb.length().<br>
+     * Возвращаемое значение говорит о статусе объекта: изменился или нет.<br>
+     * sb.length() говорит о возможностиизменить состояние объекта ALTERом
+     * (если объект вообще изменился).<br><br>
+     * 
+     * <code>sb == 0 && rv == false</code> - не требуется действий<br>
+     * <code>sb >  0 && rv == false</code> - illegal state, неизмененный объект с ALTER<br>
+     * <code>sb == 0 && rv == true</code>  - ALTER невозможен, делаем DROP/CREATE<br>
+     * <code>sb >  0 && rv == true</code>  - делаем ALTER
      * 
      * @param newCondition новое состоятние объекта
      * @param sb скрипт изменения
-     * @param isNeedDepcies нужно ли использовать зависимости объекта
-     * @return true необходимость удаления объекта DROP, в случае невозможности
-     *         удаления; false - объект нужно пропустить
+     * @param isNeedDepcies out параметр: нужно ли использовать зависимости объекта
+     * @return true - необходимо изменить объект, используя DROP в случае
+     *                 невозможности ALTER, false - объект не изменился
      */
-    public abstract boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies);
+    public abstract boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies);
     
     /**
      * Copies all object properties into a new object and leaves all its children empty.

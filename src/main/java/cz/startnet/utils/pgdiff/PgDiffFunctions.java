@@ -67,13 +67,7 @@ public final class PgDiffFunctions {
         // Drop functions that exist no more
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
             if (needsDrop(oldFunction, newSchema)) {
-            	
             	depRes.addDropStatements(oldFunction);
-            	
-                // no re-creation because the only dependants we have so far are triggers
-                // trigger funcs cannot change in a way that will require a drop+create
-                // that is they never have arguments and always have the return type of TRIGGER
-                // add dependants re-creation if necessary at a later point
             }
         }
     }
@@ -132,7 +126,7 @@ public final class PgDiffFunctions {
         }
 
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
-            depRes.appendALter(oldFunction,
+            depRes.appendAlter(oldFunction,
                     newSchema.getFunction(oldFunction.getName()));
         }
     }

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
@@ -53,7 +54,7 @@ import cz.startnet.utils.pgdiff.schema.StatementActions;
  */
 public class ReferenceListener extends SQLParserBaseListener {
 
-    private String defSchema = "public";
+    private String defSchema = ApgdiffConsts.PUBLIC;
     private final Path filePath;
     private Map<Path, List<PgObjLocation>> definitions;
     private Map<Path, List<PgObjLocation>> references;

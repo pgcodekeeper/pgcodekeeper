@@ -220,7 +220,7 @@ public class PgTable extends PgStatementWithSearchPath {
     
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sbuilder, AtomicBoolean isNeedDepcies) {
-    	PgTable newTable = null;
+    	PgTable newTable;
     	if (newCondition instanceof PgTable) {
     		newTable = (PgTable)newCondition; 
     	} else {
@@ -229,8 +229,9 @@ public class PgTable extends PgStatementWithSearchPath {
     	PgDiffScript script = new PgDiffScript();
     	PgTable oldTable = this;
 
+    	List<Entry<String, String>> oldInherits = oldTable.getInherits();
         for (final Entry<String, String> tableName : newTable.getInherits()) {
-            if (!oldTable.getInherits().contains(tableName)) {
+            if (!oldInherits.contains(tableName)) {
                 script.addStatement("ALTER TABLE "
                         + PgDiffUtils.getQuotedName(newTable.getName())
                         + "\n\tINHERIT "
@@ -239,13 +240,8 @@ public class PgTable extends PgStatementWithSearchPath {
                         + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
             }
         }
-    	boolean add = true;
-        if (oldTable.getWith() == null && newTable.getWith() == null
-                || oldTable.getWith() != null
-                && oldTable.getWith().equals(newTable.getWith())) {
-        	add = false;
-        }
-		if (add) {
+        
+		if (!Objects.equals(oldTable.getWith(), newTable.getWith())) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("ALTER TABLE ");
 			sb.append(PgDiffUtils.getQuotedName(newTable.getName()));
@@ -264,13 +260,7 @@ public class PgTable extends PgStatementWithSearchPath {
 			script.addStatement(sb.toString());
 		}
 		
-		add = true;
-		if (oldTable.getTablespace() == null && newTable.getTablespace() == null
-                || oldTable.getTablespace() != null
-                && oldTable.getTablespace().equals(newTable.getTablespace())) {
-			add = false;
-        }
-		if (add) {
+		if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
 			script.addStatement("ALTER TABLE "
 					+ PgDiffUtils.getQuotedName(newTable.getName())
 					+ "\n\tTABLESPACE " + newTable.getTablespace() + ';');
@@ -549,7 +539,7 @@ public class PgTable extends PgStatementWithSearchPath {
     }
     
     @Override
-    public PgSchema getContainerSchema() {
+    public PgSchema getContainingSchema() {
     	return (PgSchema)this.getParent();
     }
 }

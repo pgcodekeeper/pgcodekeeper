@@ -153,7 +153,7 @@ public class PgSequence extends PgStatementWithSearchPath {
     
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-    	PgSequence newSequence = null;
+    	PgSequence newSequence;
     	if (newCondition instanceof PgSequence) {
     		newSequence = (PgSequence) newCondition;
     	} else {
@@ -241,12 +241,11 @@ public class PgSequence extends PgStatementWithSearchPath {
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
-        return false;
+        return sb.length() > 0;
     }
 
-    public boolean alterOwnedBy(PgStatement newCondition, StringBuilder sbSQL,
-            AtomicBoolean isNeedDepcies) {
-        PgSequence newSequence = null;
+    public boolean alterOwnedBy(PgStatement newCondition, StringBuilder sbSQL) {
+        PgSequence newSequence;
         if (newCondition instanceof PgSequence) {
             newSequence = (PgSequence) newCondition;
         } else {
@@ -260,7 +259,7 @@ public class PgSequence extends PgStatementWithSearchPath {
             sbSQL.append("\n\tOWNED BY ");
             sbSQL.append(newOwnedBy);
         }
-        return false;
+        return sbSQL.length() > 0;
     }
 
     public void setIncrement(final String increment) {
@@ -381,7 +380,7 @@ public class PgSequence extends PgStatementWithSearchPath {
     }
     
     @Override
-    public PgSchema getContainerSchema() {
+    public PgSchema getContainingSchema() {
     	return (PgSchema)this.getParent();
     }
 }

@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 
-public class PgSelect extends PgStatementWithSearchPath {
+public class PgSelect extends PgStatement {
     
     private final List<GenericColumn> columns = new ArrayList<>();
     
@@ -85,10 +85,5 @@ public class PgSelect extends PgStatementWithSearchPath {
         int result = 1;
         result = prime * result + ((columns == null) ? 0 : columns.hashCode());
         return result;
-    }
-    
-    @Override
-    public PgSchema getContainerSchema() {
-    	return null;
     }
 }

@@ -241,7 +241,7 @@ public final class PgDiff {
     private static void updateExtensions(final DepcyResolver depRes,
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension oldExt : oldDatabase.getExtensions()) {
-            depRes.appendALter(oldExt,
+            depRes.appendAlter(oldExt,
                     newDatabase.getExtension(oldExt.getName()));
         }
     }
@@ -317,7 +317,7 @@ public final class PgDiff {
                     new SearchPathHelper(newSchema.getName());
 
             final PgSchema oldSchema = oldDatabase.getSchema(newSchema.getName());
-            depRes.appendALter(oldSchema, newSchema);
+            depRes.appendAlter(oldSchema, newSchema);
             updateSchemaContent(script, oldSchema, newSchema, searchPathHelper, arguments);
         }
         

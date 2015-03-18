@@ -20,7 +20,6 @@ import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.PgDiffViews;
-import cz.startnet.utils.pgdiff.SearchPathHelper;
 
 /**
  * Stores view information.
@@ -130,19 +129,15 @@ public class PgView extends PgStatementWithSearchPath {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        PgView newView = null;
+        PgView newView;
         if (newCondition instanceof PgView) {
             newView = (PgView) newCondition;
         } else {
             return false;
         }
-        PgDiffScript script = new PgDiffScript();
-        SearchPathHelper searchPathHelper = new SearchPathHelper(this
-                .getContainerSchema().getName());
-        searchPathHelper.setWasOutput(true);
         PgView oldView = this;
-        PgDiffViews.diffDefaultValues(script, oldView, newView,
-                searchPathHelper);
+        PgDiffScript script = new PgDiffScript();
+        PgDiffViews.diffDefaultValues(script, oldView, newView);
 
         if (!Objects.equals(oldView.getOwner(), newView.getOwner())) {
             script.addStatement(newView.getOwnerSQL());
@@ -216,7 +211,7 @@ public class PgView extends PgStatementWithSearchPath {
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
-        return false;
+        return sb.length() > 0;
     }
 
     public void setQuery(final String query) {
@@ -459,7 +454,7 @@ public class PgView extends PgStatementWithSearchPath {
     }
     
     @Override
-    public PgSchema getContainerSchema() {
+    public PgSchema getContainingSchema() {
     	return (PgSchema)this.getParent();
     }
 }
