@@ -365,9 +365,6 @@ public class PgDiffTest {
             }
         }
 
-        if (!sbExpDiff.toString().trim().equals(diffInput.toString().trim())) {
-            System.out.println(fileNameTemplate);
-        }
         Assert.assertEquals("File name template: " + fileNameTemplate,
                 sbExpDiff.toString().trim(),
                 diffInput.toString().trim());
