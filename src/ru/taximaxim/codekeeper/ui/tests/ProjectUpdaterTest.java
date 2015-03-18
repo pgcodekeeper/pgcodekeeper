@@ -24,10 +24,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -38,7 +38,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class ProjectUpdaterTest {
     
-    private static final String ENCODING = UIConsts.UTF_8;
+    private static final String ENCODING = ApgdiffConsts.UTF_8;
     private PgDatabase dbOld, dbNew;
     private TempDir workingDir, referenceDir;
     

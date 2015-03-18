@@ -75,17 +75,17 @@ public class DbSourceTest {
                                             TEST.REMOTE_USERNAME, 
                                             TEST.REMOTE_PASSWORD, 
                                             dbName, 
-                                            UIConsts.UTF_8, 
-                                            UIConsts.UTC, true));
+                                            ApgdiffConsts.UTF_8, 
+                                            ApgdiffConsts.UTC, true));
     }
     
     @Test
     public void testDirTree() throws IOException{
         try(TempDir exportDir = new TempDir("pgcodekeeper-test")){
-            new ModelExporter(exportDir.get(), dbPredefined, UIConsts.UTF_8).exportFull();
+            new ModelExporter(exportDir.get(), dbPredefined, ApgdiffConsts.UTF_8).exportFull();
             
             performTest(DbSource.fromDirTree(ParserClass.getAntlr(null, 1),
-                    exportDir.get().getAbsolutePath(), UIConsts.UTF_8));
+                    exportDir.get().getAbsolutePath(), ApgdiffConsts.UTF_8));
         }
     }
     
@@ -105,7 +105,7 @@ public class DbSourceTest {
         URL urla = JdbcLoaderTest.class.getResource(TEST.RESOURCE_DUMP);
         
         performTest(DbSource.fromFile(ParserClass.getAntlr(null, 1), 
-                ApgdiffUtils.getFileFromOsgiRes(urla).getCanonicalPath(), UIConsts.UTF_8));
+                ApgdiffUtils.getFileFromOsgiRes(urla).getCanonicalPath(), ApgdiffConsts.UTF_8));
     }
     
     @Test
@@ -115,7 +115,7 @@ public class DbSourceTest {
             IProject project = createProjectInWorkspace(tempDir.get());
             
             // populate project with data
-            new ModelExporter(tempDir.get(), dbPredefined, UIConsts.UTF_8).exportFull();
+            new ModelExporter(tempDir.get(), dbPredefined, ApgdiffConsts.UTF_8).exportFull();
             
             // testing itself
             PgDbProject proj = new PgDbProject(project);
@@ -136,7 +136,7 @@ public class DbSourceTest {
             IProject project = createProjectInWorkspace(tempDir.get());
             
             // populate project with data
-            new ModelExporter(tempDir.get(), dbPredefined, UIConsts.UTF_8).exportFull();
+            new ModelExporter(tempDir.get(), dbPredefined, ApgdiffConsts.UTF_8).exportFull();
             
             // set required settings
             PgDbProject proj = new PgDbProject(project);
