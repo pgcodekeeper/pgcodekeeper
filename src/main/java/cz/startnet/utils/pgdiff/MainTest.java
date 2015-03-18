@@ -602,9 +602,9 @@ class ArgumentsProvider_16 extends ArgumentsProvider{
         File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_new.sql"));
         File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_original.sql"));
         
-        return new String[]{"--diff", "--output-ignored-statements", "--ignore-start-with", 
-                "--ignore-slony-triggers", "--ignore-function-whitespace", "--add-transaction", 
-                "--add-defaults", "--allow-danger-ddl", "ALTER_COLUMN", fOriginal.getAbsolutePath(), 
+        return new String[]{"--diff", "--output-ignored-statements", 
+                "--ignore-slony-triggers", "--add-transaction", 
+                "--allow-danger-ddl", "ALTER_COLUMN", fOriginal.getAbsolutePath(), 
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
     
