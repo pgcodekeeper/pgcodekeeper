@@ -140,7 +140,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                 continue;
             }
 
-            depRes.clearDepcies();
+            depRes.clearLists();
             depRes.addDropStatements(el.getPgStatement(currentDb));
             for (PgStatement dependant : depRes
                     .getOrderedDepcies(StatementActions.DROP)) {
