@@ -492,7 +492,7 @@ public class PgDiffArguments {
                 }
             } else if ("--add-transaction".equals(args[i])) {
                 setAddTransaction(true);
-            } else if ("--don't-check-function-bodies".equals(args[i])) {
+            } else if ("--no-check-function-bodies".equals(args[i])) {
                 setCheckFunctionBodies(false);
             } else if ("--ignore-slony-triggers".equals(args[i])) {
                 setIgnoreSlonyTriggers(true);
