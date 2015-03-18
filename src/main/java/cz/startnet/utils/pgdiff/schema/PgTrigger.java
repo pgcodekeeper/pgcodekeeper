@@ -157,17 +157,17 @@ public class PgTrigger extends PgStatementWithSearchPath {
     
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-    	PgTrigger newTrg;
-    	if (newCondition instanceof PgTrigger) {
-    		newTrg = (PgTrigger)newCondition; 
-    	} else {
-    		return false;
-		}
-    	PgTrigger oldTrg = this;
-    	PgDiffScript script = new PgDiffScript();
-    	PgDiff.diffComments(oldTrg, newTrg, script);
-    	
-    	final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        PgTrigger newTrg;
+        if (newCondition instanceof PgTrigger) {
+            newTrg = (PgTrigger)newCondition; 
+        } else {
+            return false;
+        }
+        PgTrigger oldTrg = this;
+        PgDiffScript script = new PgDiffScript();
+        PgDiff.diffComments(oldTrg, newTrg, script);
+        
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
@@ -346,6 +346,6 @@ public class PgTrigger extends PgStatementWithSearchPath {
     
     @Override
     public PgSchema getContainingSchema() {
-    	return (PgSchema)this.getParent().getParent();
+        return (PgSchema)this.getParent().getParent();
     }
 }

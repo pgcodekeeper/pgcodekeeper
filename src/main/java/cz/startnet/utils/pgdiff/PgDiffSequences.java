@@ -30,7 +30,7 @@ public final class PgDiffSequences {
         for (final PgSequence sequence : newSchema.getSequences()) {
             if (oldSchema == null
                     || !oldSchema.containsSequence(sequence.getName())) {
-            	depRes.addCreateStatements(sequence);
+                depRes.addCreateStatements(sequence);
             }
         }
     }
@@ -76,7 +76,7 @@ public final class PgDiffSequences {
         // Drop sequences that do not exist in new schema
         for (final PgSequence sequence : oldSchema.getSequences()) {
             if (!newSchema.containsSequence(sequence.getName())) {
-            	depRes.addDropStatements(sequence);
+                depRes.addDropStatements(sequence);
             }
         }
     }

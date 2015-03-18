@@ -44,7 +44,7 @@ public final class PgDiffFunctions {
 
             if ((oldFunction == null) || !newFunction.equalsWhitespace(
                     oldFunction, arguments.isIgnoreFunctionWhitespace())) {
-            	depRes.addCreateStatements(newFunction);
+                depRes.addCreateStatements(newFunction);
             }
         }
     }
@@ -67,7 +67,7 @@ public final class PgDiffFunctions {
         // Drop functions that exist no more
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
             if (needsDrop(oldFunction, newSchema)) {
-            	depRes.addDropStatements(oldFunction);
+                depRes.addDropStatements(oldFunction);
             }
         }
     }
@@ -78,9 +78,9 @@ public final class PgDiffFunctions {
         return needDrop(oldFunction, newFunction);
     }
 
-	public static boolean needDrop(PgFunction oldFunction,
-			PgFunction newFunction) {
-		if (newFunction == null || 
+    public static boolean needDrop(PgFunction oldFunction,
+            PgFunction newFunction) {
+        if (newFunction == null || 
                 !Objects.equals(oldFunction.getReturns(), newFunction.getReturns())) {
             return true;
         }
@@ -108,7 +108,7 @@ public final class PgDiffFunctions {
         }
         
         return false;
-	}
+    }
 
     /**
      * Outputs statements for function comments that have changed.

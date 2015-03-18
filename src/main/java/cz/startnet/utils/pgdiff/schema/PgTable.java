@@ -56,7 +56,7 @@ public class PgTable extends PgStatementWithSearchPath {
     }
 
     public void setClustered(boolean value) {
-    	isClustered = value;
+        isClustered = value;
     }
 
     public boolean isClustered() {
@@ -220,16 +220,16 @@ public class PgTable extends PgStatementWithSearchPath {
     
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sbuilder, AtomicBoolean isNeedDepcies) {
-    	PgTable newTable;
-    	if (newCondition instanceof PgTable) {
-    		newTable = (PgTable)newCondition; 
-    	} else {
-    		return false;
-    	}
-    	PgDiffScript script = new PgDiffScript();
-    	PgTable oldTable = this;
+        PgTable newTable;
+        if (newCondition instanceof PgTable) {
+            newTable = (PgTable)newCondition; 
+        } else {
+            return false;
+        }
+        PgDiffScript script = new PgDiffScript();
+        PgTable oldTable = this;
 
-    	List<Entry<String, String>> oldInherits = oldTable.getInherits();
+        List<Entry<String, String>> oldInherits = oldTable.getInherits();
         for (final Entry<String, String> tableName : newTable.getInherits()) {
             if (!oldInherits.contains(tableName)) {
                 script.addStatement("ALTER TABLE "
@@ -241,33 +241,33 @@ public class PgTable extends PgStatementWithSearchPath {
             }
         }
         
-		if (!Objects.equals(oldTable.getWith(), newTable.getWith())) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("ALTER TABLE ");
-			sb.append(PgDiffUtils.getQuotedName(newTable.getName()));
+        if (!Objects.equals(oldTable.getWith(), newTable.getWith())) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("ALTER TABLE ");
+            sb.append(PgDiffUtils.getQuotedName(newTable.getName()));
 
-			if (newTable.getWith() == null
-					|| "OIDS=false".equalsIgnoreCase(newTable.getWith())) {
-				sb.append("\n\tSET WITHOUT OIDS;");
-			} else if ("OIDS".equalsIgnoreCase(newTable.getWith())
-					|| "OIDS=true".equalsIgnoreCase(newTable.getWith())) {
-				sb.append("\n\tSET WITH OIDS;");
-			} else {
-				sb.append("\n\tSET ");
-				sb.append(newTable.getWith());
-				sb.append(';');
-			}
-			script.addStatement(sb.toString());
-		}
-		
-		if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
-			script.addStatement("ALTER TABLE "
-					+ PgDiffUtils.getQuotedName(newTable.getName())
-					+ "\n\tTABLESPACE " + newTable.getTablespace() + ';');
-		}
-		PgDiff.diffComments(oldTable, newTable, script);
-		
-		final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+            if (newTable.getWith() == null
+                    || "OIDS=false".equalsIgnoreCase(newTable.getWith())) {
+                sb.append("\n\tSET WITHOUT OIDS;");
+            } else if ("OIDS".equalsIgnoreCase(newTable.getWith())
+                    || "OIDS=true".equalsIgnoreCase(newTable.getWith())) {
+                sb.append("\n\tSET WITH OIDS;");
+            } else {
+                sb.append("\n\tSET ");
+                sb.append(newTable.getWith());
+                sb.append(';');
+            }
+            script.addStatement(sb.toString());
+        }
+        
+        if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
+            script.addStatement("ALTER TABLE "
+                    + PgDiffUtils.getQuotedName(newTable.getName())
+                    + "\n\tTABLESPACE " + newTable.getTablespace() + ';');
+        }
+        PgDiff.diffComments(oldTable, newTable, script);
+        
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sbuilder.append(diffInput.toString().trim());
@@ -540,6 +540,6 @@ public class PgTable extends PgStatementWithSearchPath {
     
     @Override
     public PgSchema getContainingSchema() {
-    	return (PgSchema)this.getParent();
+        return (PgSchema)this.getParent();
     }
 }

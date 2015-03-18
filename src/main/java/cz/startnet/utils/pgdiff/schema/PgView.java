@@ -455,6 +455,6 @@ public class PgView extends PgStatementWithSearchPath {
     
     @Override
     public PgSchema getContainingSchema() {
-    	return (PgSchema)this.getParent();
+        return (PgSchema)this.getParent();
     }
 }

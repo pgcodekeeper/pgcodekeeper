@@ -210,7 +210,7 @@ public final class PgDiff {
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension newExt : newDatabase.getExtensions()) {
             if(oldDatabase.getExtension(newExt.getName()) == null) {
-            	depRes.addCreateStatements(newExt);
+                depRes.addCreateStatements(newExt);
             }
         }
     }
@@ -226,7 +226,7 @@ public final class PgDiff {
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension oldExt : oldDatabase.getExtensions()) {
             if(newDatabase.getExtension(oldExt.getName()) == null) {
-            	depRes.addDropStatements(oldExt);
+                depRes.addDropStatements(oldExt);
             }
         }
     }
@@ -257,7 +257,7 @@ public final class PgDiff {
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for (final PgSchema newSchema : newDatabase.getSchemas()) {
             if (oldDatabase.getSchema(newSchema.getName()) == null) {
-            	depRes.addCreateStatements(newSchema);
+                depRes.addCreateStatements(newSchema);
             }
         }
     }
@@ -341,48 +341,48 @@ public final class PgDiff {
     private static void updateSchemaContent(PgDiffScript script, PgSchema oldSchema,
             PgSchema newSchema, SearchPathHelper searchPathHelper, PgDiffArguments arguments) {
         PgDiffTriggers.dropTriggers(
-        		depRes, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffFunctions.dropFunctions(
-        		depRes, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffViews.dropViews(
-        		depRes, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffConstraints.dropConstraints(
-        		depRes, oldSchema, newSchema, true, searchPathHelper);
+                depRes, oldSchema, newSchema, true, searchPathHelper);
         PgDiffConstraints.dropConstraints(
-        		depRes, oldSchema, newSchema, false, searchPathHelper);
+                depRes, oldSchema, newSchema, false, searchPathHelper);
         PgDiffIndexes.dropIndexes(
-        		depRes, oldSchema, newSchema, searchPathHelper);
-		PgDiffColumns.dropColumns(
-				depRes, script, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
+        PgDiffColumns.dropColumns(
+                depRes, script, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.dropTables(
-        		depRes, script, oldSchema, newSchema, searchPathHelper);
+                depRes, script, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.dropSequences(
-        		depRes, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         
         PgDiffSequences.createSequences(
-        		depRes, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.alterSequences(
-        		depRes, arguments, oldSchema, newSchema, searchPathHelper);
+                depRes, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.createTables(
-        		depRes, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffTables.alterTables(
-        		depRes, arguments, oldSchema, newSchema, searchPathHelper);
+                depRes, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffColumns.createColumns(
-        		depRes, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffColumns.alterColumns(
-        		depRes, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffFunctions.createFunctions(
-        		depRes, arguments, oldSchema, newSchema, searchPathHelper);
+                depRes, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffConstraints.createConstraints(
-        		depRes, oldSchema, newSchema, true, searchPathHelper);
+                depRes, oldSchema, newSchema, true, searchPathHelper);
         PgDiffConstraints.createConstraints(
-        		depRes, oldSchema, newSchema, false, searchPathHelper);
+                depRes, oldSchema, newSchema, false, searchPathHelper);
         PgDiffIndexes.createIndexes(
-        		depRes, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffTriggers.createTriggers(
-        		depRes, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffViews.createViews(
-        		depRes, arguments, oldSchema, newSchema, searchPathHelper);
+                depRes, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffViews.alterViews(
                 depRes, arguments, oldSchema, newSchema, searchPathHelper);
 
@@ -393,7 +393,7 @@ public final class PgDiff {
         PgDiffIndexes.alterComments(
                 depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffTriggers.alterComments(
-        		depRes, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         
         depRes.recreateDrops();
     }

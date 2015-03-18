@@ -57,7 +57,7 @@ public class PgSet extends PgStatement {
     
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-    	return false;
+        return false;
     }
 
     @Override

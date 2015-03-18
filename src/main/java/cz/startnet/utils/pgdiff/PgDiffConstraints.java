@@ -46,7 +46,7 @@ public final class PgDiffConstraints {
             // Add new constraints
             for (final PgConstraint constraint :
                     getNewConstraints(oldTable, newTable, primaryKey)) {
-            	depRes.addCreateStatements(constraint);
+                depRes.addCreateStatements(constraint);
             }
         }
     }
@@ -77,7 +77,7 @@ public final class PgDiffConstraints {
             // Drop constraints that no more exist or are modified
             for (final PgConstraint constraint :
                     getDropConstraints(oldTable, newTable, primaryKey)) {
-            	depRes.addDropStatements(constraint);
+                depRes.addDropStatements(constraint);
             }
         } 
         // КОСТЫЛЬ
@@ -89,7 +89,7 @@ public final class PgDiffConstraints {
             if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
                 PgTable newTable = new PgTable(oldTable.getName(), null);
                 for (final PgConstraint constraint : getDropConstraints(oldTable, newTable, primaryKey)) {
-                	depRes.addDropStatements(constraint);
+                    depRes.addDropStatements(constraint);
                 }
             }
         }// КОСТЫЛЬ

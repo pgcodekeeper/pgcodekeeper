@@ -119,7 +119,7 @@ public class PgSchema extends PgStatement {
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
-    	return sb.length() > 0;
+        return sb.length() > 0;
     }
     
     /**

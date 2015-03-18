@@ -42,7 +42,7 @@ public final class PgDiffTriggers {
 
             // Add new triggers
             for (final PgTrigger trigger : getNewTriggers(oldTable, newTable)) {
-            	depRes.addCreateStatements(trigger);
+                depRes.addCreateStatements(trigger);
             }
         }
     }
@@ -70,7 +70,7 @@ public final class PgDiffTriggers {
             // Drop triggers that no more exist or are modified
             for (final PgTrigger trigger :
                     getDropTriggers(oldTable, newTable)) {
-            	depRes.addDropStatements(trigger);
+                depRes.addDropStatements(trigger);
             }
         }
         // КОСТЫЛЬ
@@ -82,7 +82,7 @@ public final class PgDiffTriggers {
             if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
                 PgTable newTable = new PgTable(oldTable.getName(), null);
                 for (final PgTrigger trigger : getDropTriggers(oldTable, newTable)) {
-                	depRes.addDropStatements(trigger);
+                    depRes.addDropStatements(trigger);
                 }
             }
         }// КОСТЫЛЬ

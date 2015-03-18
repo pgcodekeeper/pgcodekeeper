@@ -98,24 +98,24 @@ public class PgExtension extends PgStatement {
     
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-    	PgExtension newExt;
-    	if (newCondition instanceof PgExtension) {
-    		newExt = (PgExtension)newCondition;
-    	} else {
-    		return false;	
-    	}
-    	PgExtension oldExt = this;
-    	PgDiffScript script = new PgDiffScript();
-    	
-    	if(!Objects.equals(newExt.getSchema(), oldExt.getSchema())) {
+        PgExtension newExt;
+        if (newCondition instanceof PgExtension) {
+            newExt = (PgExtension)newCondition;
+        } else {
+            return false;    
+        }
+        PgExtension oldExt = this;
+        PgDiffScript script = new PgDiffScript();
+        
+        if(!Objects.equals(newExt.getSchema(), oldExt.getSchema())) {
             script.addStatement("ALTER EXTENSION "
                     + PgDiffUtils.getQuotedName(oldExt.getName())
                     + " SET SCHEMA " + newExt.getSchema() + ";");
         }
-    	// TODO ALTER EXTENSION UPDATE TO ?
-    	PgDiff.diffComments(oldExt, newExt, script);
-    	
-    	final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        // TODO ALTER EXTENSION UPDATE TO ?
+        PgDiff.diffComments(oldExt, newExt, script);
+        
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());

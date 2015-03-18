@@ -60,7 +60,7 @@ public final class PgDiffViews {
             final PgView newView = newSchema.getView(oldView.getName());
             boolean isModified = newView != null && isViewModified(oldView, newView);
             if (newView == null || isModified) {
-            	depRes.addDropStatements(oldView);
+                depRes.addDropStatements(oldView);
             }
         }
     }

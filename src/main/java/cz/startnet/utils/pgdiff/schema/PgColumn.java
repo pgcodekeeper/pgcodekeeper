@@ -205,7 +205,7 @@ public class PgColumn extends PgStatementWithSearchPath {
     }
 
     private String getAlterTable() {
-    	return ALTER_TABLE + this.getParent().getName();
+        return ALTER_TABLE + this.getParent().getName();
     }
     
     @Override
@@ -309,7 +309,7 @@ public class PgColumn extends PgStatementWithSearchPath {
         sb.append(diffInput.toString().trim());
         return sb.length() > 0;
     }
-	
+    
     @Override
     public boolean compare(PgStatement obj) {
         boolean eq = false;
@@ -364,8 +364,8 @@ public class PgColumn extends PgStatementWithSearchPath {
         return shallowCopy();
     }
 
-	@Override
-	public PgSchema getContainingSchema() {
-		return (PgSchema)this.getParent().getParent();
-	}
+    @Override
+    public PgSchema getContainingSchema() {
+        return (PgSchema)this.getParent().getParent();
+    }
 }

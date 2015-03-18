@@ -153,15 +153,15 @@ public class PgSequence extends PgStatementWithSearchPath {
     
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-    	PgSequence newSequence;
-    	if (newCondition instanceof PgSequence) {
-    		newSequence = (PgSequence) newCondition;
-    	} else {
-    		return false;
-    	}
-    	PgDiffScript script = new PgDiffScript();
-    	PgSequence oldSequence = this;
-    	StringBuilder sbSQL = new StringBuilder(); 
+        PgSequence newSequence;
+        if (newCondition instanceof PgSequence) {
+            newSequence = (PgSequence) newCondition;
+        } else {
+            return false;
+        }
+        PgDiffScript script = new PgDiffScript();
+        PgSequence oldSequence = this;
+        StringBuilder sbSQL = new StringBuilder(); 
         sbSQL.setLength(0);
 
         final String oldIncrement = oldSequence.getIncrement();
@@ -381,6 +381,6 @@ public class PgSequence extends PgStatementWithSearchPath {
     
     @Override
     public PgSchema getContainingSchema() {
-    	return (PgSchema)this.getParent();
+        return (PgSchema)this.getParent();
     }
 }

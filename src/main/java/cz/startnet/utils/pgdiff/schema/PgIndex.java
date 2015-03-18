@@ -88,27 +88,27 @@ public class PgIndex extends PgStatementWithSearchPath {
     
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-    	PgIndex newIndex;
-    	if (newCondition instanceof PgIndex) {
-    		newIndex = (PgIndex)newCondition; 
-    	} else {
-    		return false;
-		}
-    	PgIndex oldIndex = this;
-    	PgDiffScript script = new PgDiffScript();
-    	
-    	boolean oldCluster = oldIndex.isClusterIndex();
-    	
-    	if (oldCluster && !newIndex.isClusterIndex() && 
-    	        !((PgTable)newIndex.getParent()).isClustered()) { 
-			 script.addStatement("ALTER TABLE "
-	                    + PgDiffUtils.getQuotedName(oldIndex.getTableName())
-	                    + " SET WITHOUT CLUSTER;");
-    	}
-    	
-    	PgDiff.diffComments(oldIndex, newIndex, script);
-    	
-    	final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        PgIndex newIndex;
+        if (newCondition instanceof PgIndex) {
+            newIndex = (PgIndex)newCondition; 
+        } else {
+            return false;
+        }
+        PgIndex oldIndex = this;
+        PgDiffScript script = new PgDiffScript();
+        
+        boolean oldCluster = oldIndex.isClusterIndex();
+        
+        if (oldCluster && !newIndex.isClusterIndex() && 
+                !((PgTable)newIndex.getParent()).isClustered()) { 
+             script.addStatement("ALTER TABLE "
+                        + PgDiffUtils.getQuotedName(oldIndex.getTableName())
+                        + " SET WITHOUT CLUSTER;");
+        }
+        
+        PgDiff.diffComments(oldIndex, newIndex, script);
+        
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
@@ -202,6 +202,6 @@ public class PgIndex extends PgStatementWithSearchPath {
     
     @Override
     public PgSchema getContainingSchema() {
-    	return (PgSchema)this.getParent().getParent();
+        return (PgSchema)this.getParent().getParent();
     }
 }

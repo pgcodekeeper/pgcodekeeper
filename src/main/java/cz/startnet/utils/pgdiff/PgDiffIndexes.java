@@ -37,11 +37,11 @@ public final class PgDiffIndexes {
             // Add new indexes
             if (oldSchema == null) {
                 for (PgIndex index : newTable.getIndexes()) {
-                	depRes.addCreateStatements(index);
+                    depRes.addCreateStatements(index);
                 }
             } else {
                 for (PgIndex index : getNewIndexes(oldSchema.getTable(newTableName), newTable)) {
-                	depRes.addCreateStatements(index);
+                    depRes.addCreateStatements(index);
                 }
             }
         }
@@ -70,7 +70,7 @@ public final class PgDiffIndexes {
 
             // Drop indexes that do not exist in new schema or are modified
             for (final PgIndex index : getDropIndexes(oldTable, newTable)) {
-            	depRes.addDropStatements(index);
+                depRes.addDropStatements(index);
             }
         }
         // КОСТЫЛЬ
@@ -82,7 +82,7 @@ public final class PgDiffIndexes {
             if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
                 PgTable newTable = new PgTable(oldTable.getName(), null);
                 for (final PgIndex index : getDropIndexes(oldTable, newTable)) {
-                	depRes.addDropStatements(index);
+                    depRes.addDropStatements(index);
                 }
             }
         }// КОСТЫЛЬ

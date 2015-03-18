@@ -118,26 +118,26 @@ public class PgFunction extends PgStatementWithSearchPath {
     
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-    	PgFunction newFunction;
-    	if (newCondition instanceof PgFunction) {
-    		newFunction = (PgFunction)newCondition; 
-    	} else {
-    		return false;
-		}
-    	PgFunction oldFunction = this;
-    	PgDiffScript script = new PgDiffScript();
-    	
-    	if (!oldFunction.equalsWhitespace(newFunction, false)) {
-			if (PgDiffFunctions.needDrop(oldFunction, newFunction)) {
-				isNeedDepcies.set(true);
-				return true;
-			} else {
-				sb.append(newFunction.getCreationSQL());
-			}
+        PgFunction newFunction;
+        if (newCondition instanceof PgFunction) {
+            newFunction = (PgFunction)newCondition; 
+        } else {
+            return false;
         }
-    	PgDiff.diffComments(oldFunction, newFunction, script);
-    	
-    	final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        PgFunction oldFunction = this;
+        PgDiffScript script = new PgDiffScript();
+        
+        if (!oldFunction.equalsWhitespace(newFunction, false)) {
+            if (PgDiffFunctions.needDrop(oldFunction, newFunction)) {
+                isNeedDepcies.set(true);
+                return true;
+            } else {
+                sb.append(newFunction.getCreationSQL());
+            }
+        }
+        PgDiff.diffComments(oldFunction, newFunction, script);
+        
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
@@ -410,6 +410,6 @@ public class PgFunction extends PgStatementWithSearchPath {
     
     @Override
     public PgSchema getContainingSchema() {
-    	return (PgSchema)this.getParent();
+        return (PgSchema)this.getParent();
     }
 }
