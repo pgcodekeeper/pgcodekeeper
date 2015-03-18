@@ -131,6 +131,10 @@ public class PgDiffArguments {
      * TODO придумать проверить из командной строки параметр 
      */
     private boolean checkFunctionBodies = true;
+    /**
+     * timeZone for script operations
+     */
+    private String timeZone;
 
     /**
      * Setter for {@link #modeDiff}
@@ -752,5 +756,21 @@ public class PgDiffArguments {
      */
     public boolean isCheckFunctionBodies() {
         return checkFunctionBodies;
+    }
+    /**
+     * Setter for {@link #timeZone}.
+     *
+     * @param timeZone {@link #timeZone}
+     */
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
+    }
+    /**
+     * Getter for {@link #timeZone}.
+     *
+     * @return {@link #timeZone}
+     */
+    public String getTimeZone() {
+        return timeZone;
     }
 }

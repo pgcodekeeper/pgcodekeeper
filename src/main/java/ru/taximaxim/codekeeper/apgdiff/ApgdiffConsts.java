@@ -17,7 +17,7 @@ public interface ApgdiffConsts {
     String VERSION_PROP_NAME = "version";
     String EXPORT_CURRENT_VERSION = "0.4.1";
     String EXPORT_MIN_VERSION = "0.2.9";
-    
+    String SET_TIMEZONE = "SET TIMEZONE TO ''{0}'';";
     enum WORK_DIR_NAMES {
         SCHEMA,
         EXTENSION

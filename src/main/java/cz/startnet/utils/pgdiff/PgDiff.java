@@ -150,6 +150,11 @@ public final class PgDiff {
         
         PgDiffScript script = new PgDiffScript();
         
+        if (arguments.getTimeZone() != null) {
+            script.addStatement(MessageFormat.format(
+                    ApgdiffConsts.SET_TIMEZONE, arguments.getTimeZone()));
+        }
+        
         if (!arguments.isCheckFunctionBodies()) {
             script.addStatement("SET check_function_bodies = false;");
         }
