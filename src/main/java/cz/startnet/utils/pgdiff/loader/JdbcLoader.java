@@ -112,6 +112,9 @@ public class JdbcLoader implements PgCatalogStrings {
         try {
             Log.log(Log.LOG_INFO, "Reading db using JDBC.");
             connection = connector.getConnection();
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+            connection.setReadOnly(true);
             
             setTimeZone(connector.getTimezone());
             prepareStatements();
@@ -157,8 +160,15 @@ public class JdbcLoader implements PgCatalogStrings {
                     }
                 }
             }
+            
+            connection.commit();
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (SQLException e) {
+            try {
+            connection.rollback();
+            } catch (SQLException ex) {
+                Log.log(Log.LOG_ERROR, "Cannot rollBack changes", ex);
+            }
             throw new IOException(MessageFormat.format(
                     Messages.Connection_DatabaseJdbcAccessError,
                     e.getLocalizedMessage()), e);
