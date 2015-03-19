@@ -8,6 +8,9 @@ CREATE TABLE parenttable2 (
 ALTER TABLE parenttable2 OWNER TO fordfrog;
 
 ALTER TABLE testtable
+	NO INHERIT parenttable;
+
+ALTER TABLE testtable
 	INHERIT parenttable2;
 
 ALTER TABLE parenttable

@@ -1,6 +1,6 @@
 SET search_path = another_triggers, pg_catalog;
 
--- DEPCY: This FUNCTION depends on the TRIGGER: test_table_trigger
+-- DEPCY: This FUNCTION is a dependency of TRIGGER: test_table_trigger
 
 CREATE OR REPLACE FUNCTION test_table_trigger_another() RETURNS trigger
     LANGUAGE plpgsql
