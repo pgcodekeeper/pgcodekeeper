@@ -48,7 +48,15 @@ public class DepcyTreeExtender {
      */
     private TreeElement copy;
     private List<TreeElement> userSelection = new ArrayList<>();
-    
+
+    public PgDatabase getDepcyTargetDb() { 
+        return depcyTarget.getDb();
+    }
+
+    public Set<TreeElement> getConflicting(){
+        return conflictingDeletedElements;
+    }
+
     public DepcyTreeExtender(PgDatabase dbSource, PgDatabase dbTarget,
             TreeElement root) 
             throws PgCodekeeperException {
@@ -66,10 +74,8 @@ public class DepcyTreeExtender {
     /**
      * Возвращает список объектов, от которых зависят уже выбранные пользователем
      * элементы EDIT/NEW (объекты в TARGET-базе)
-     * 
-     * @return
      */
-    public Set<PgStatement> getDependenciesOfNew(){
+    public Set<PgStatement> fetchDependenciesOfNewEdit(){
         // заполнить сет зависимыми элементами, которые надо создать
         Set<PgStatement> depcySet = new HashSet<>();
         fillInDependenciesOfNew(root, depcySet);
@@ -82,12 +88,12 @@ public class DepcyTreeExtender {
     }
     
     /**
-     * Возвращает копию дерева <code>root</code>, дополненную зависимостями
+     * Возвращает копию дерева <code>root</code>, дополненную зависимостями от удаляемых объектов
      * 
      * @param filtered
      * @return
      */
-    public TreeElement getTreeCopyWithDepcy(){
+    public TreeElement copyInitialTreeWithDependantsOfDeleted(){
         copy = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
         
         // подготовка данных - заполняем сет dependantsOfDeleted
@@ -322,10 +328,6 @@ public class DepcyTreeExtender {
         }
     }
     
-    public PgDatabase getDepcyTargetDb() { 
-        return depcyTarget.getDb();
-    }
-
     /**
      * Добавляет к существующим зависимостям (зависимым от DELETE-элементов)
      * копии элементов из набора <code>elementsDepcyNew</code>, являющиеся 
@@ -335,7 +337,7 @@ public class DepcyTreeExtender {
      * @param elementsDepcyNew
      * @return
      */
-    public Set<TreeElement> sumAllDepcies(Set<TreeElement> elementsDepcyNew) {
+    public Set<TreeElement> sumNewEditWithInternalDeleted(Set<TreeElement> elementsDepcyNew) {
         if (copy == null){
             throw new IllegalStateException(
                     "Root (filtered) tree has not been copyed yet and no DELETED dependants 've been found! Call getTreeCopyWithDepcy() first.");
@@ -352,21 +354,18 @@ public class DepcyTreeExtender {
         return sumNewAndDelete;
     }
     
-    public Set<TreeElement> getConflicting(){
-        return conflictingDeletedElements;
-    }
-
     /**
-     * 
      * Возвращает поднабор элементов из набора <code>elements</code>, для которых 
      * существует объект бд в базе данных <code>db</code> и если этот объект 
      * так же присутствует в наборе <code>dependencies</code>. 
      * <br>
      * Ожидается, что <code>db</code> не содержит в себе элементы, которые отмечены 
      * как удаляемые (иными словами, она target).
+     * 
+     * @param elements фильтруемый по db и dependencies сет элементов
      */
-    public Set<TreeElement> getDepcyElementsContainedInDb(Set<TreeElement> elements,
-            Set<PgStatement> dependencies, PgDatabase db) {
+    public static Set<TreeElement> filterDepcyElementsContainedInDb(
+            Set<TreeElement> elements, Set<PgStatement> dependencies, PgDatabase db) {
         Set<TreeElement> result = new HashSet<>();
         for (TreeElement element : elements){
             if (element.getSide() == DiffSide.LEFT){
