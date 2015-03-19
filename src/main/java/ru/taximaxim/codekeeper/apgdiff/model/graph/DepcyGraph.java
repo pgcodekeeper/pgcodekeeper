@@ -120,6 +120,7 @@ public class DepcyGraph {
                 createTableToConstraints(table);
                 createTableToSequences(table, schema);
                 createTableToTriggers(table, schema);
+                createTableToTable(table, schema);
             }
             
             for(PgView view : schema.getViews()) {
@@ -133,6 +134,18 @@ public class DepcyGraph {
         }
     }
     
+    private void createTableToTable(PgTable table, PgSchema schema) {
+        for (Entry<String, String> inherit : table.getInherits()) {
+            if (inherit.getKey() != null) {
+                schema = db.getSchema(inherit.getKey());
+            }
+            PgTable tabl = schema.getTable(inherit.getValue());
+            if (tabl != null) {
+                graph.addEdge(table, tabl);
+            }
+        }
+    }
+
     private void testNotNull(Object o, String message) throws PgCodekeeperException{
         if (o == null){
             throw new PgCodekeeperException(message);
