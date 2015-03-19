@@ -230,13 +230,24 @@ public class PgTable extends PgStatementWithSearchPath {
         PgTable oldTable = this;
 
         List<Entry<String, String>> oldInherits = oldTable.getInherits();
-        for (final Entry<String, String> tableName : newTable.getInherits()) {
+        List<Entry<String, String>> newInherits = newTable.getInherits();
+        for (final Entry<String, String> tableName : oldInherits) {
+            if (!newInherits.contains(tableName)) {
+                script.addStatement("ALTER TABLE "
+                        + PgDiffUtils.getQuotedName(newTable.getName())
+                        + "\n\tNO INHERIT "
+                        + (tableName.getKey() == null ? 
+                                "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
+                        + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
+            }
+        }
+        for (final Entry<String, String> tableName : newInherits) {
             if (!oldInherits.contains(tableName)) {
                 script.addStatement("ALTER TABLE "
                         + PgDiffUtils.getQuotedName(newTable.getName())
                         + "\n\tINHERIT "
                         + (tableName.getKey() == null ? 
-                                "" : PgDiffUtils.getQuotedName(tableName.getKey()) + ".")
+                                "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
                         + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
             }
         }

@@ -38,8 +38,8 @@ import cz.startnet.utils.pgdiff.schema.StatementActions;
  */
 public class DepcyResolver {
 
-    // TODO this is correct for drops only
-    private static final String DEPCY_PATTERN = "-- DEPCY: This {0} depends on the {1}: {2}";
+    private static final String DROP_COMMENT = "-- DEPCY: This {0} depends on the {1}: {2}";
+    private static final String CREATE_COMMENT = "-- DEPCY: This {0} is a dependency of {1}: {2}";
     private PgDatabase oldDb;
     private PgDatabase newDb;
     private DepcyGraph oldDepcyGraph;
@@ -180,7 +180,9 @@ public class DepcyResolver {
                             + '.';
                 }
                 objName += objStarter.getName();
-                depcy = MessageFormat.format(DEPCY_PATTERN,
+                depcy = MessageFormat.format(
+                        action.getAction() == StatementActions.CREATE ?
+                                CREATE_COMMENT : DROP_COMMENT,
                         oldObj.getStatementType(),
                         objStarter.getStatementType(), objName);
             }
@@ -261,7 +263,6 @@ public class DepcyResolver {
     /**
      * Пересоздает ранее удаленные объекты в новое состояние
      */
-    // TODO comment actions
     public void recreateDrops() {
         List<PgStatement> toRecreate = new ArrayList<>();
         for (ActionContainer action : actions) {
