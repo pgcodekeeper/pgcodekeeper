@@ -307,27 +307,28 @@ class CommitPage extends DiffPresentationPane {
             // Получить список зависимых от NEW/EDIT элементов
             dte = new DepcyTreeExtender(dbSource.getDbObject(), 
                     dbTarget.getDbObject(), filtered);
-            Set<PgStatement> dependencies = dte.getDependenciesOfNew();
+            Set<PgStatement> dependencies = dte.fetchDependenciesOfNewEdit();
             PgDatabase depcyTargetDb = dte.getDepcyTargetDb();
             
             // Дополнительно пометить в таблице зависимости от NEW/EDIT и
             // получить новое фильтрованное дерево с этими зависимостями
-            Set<TreeElement> elementsNewEditDependentFrom = 
-                    dte.getDepcyElementsContainedInDb(diffTable.getCheckedElements(false),
+            Set<TreeElement> dependenciesUnselectedOnly = 
+                    DepcyTreeExtender.filterDepcyElementsContainedInDb(
+                            diffTable.getCheckedElements(false),
                             dependencies, depcyTargetDb); 
             
-            diffTable.setCheckedElements(elementsNewEditDependentFrom.toArray(), true);
+            diffTable.setCheckedElements(dependenciesUnselectedOnly.toArray(), true);
             TreeElement filteredWithNew = diffTable.filterDiffTree();
-            diffTable.setCheckedElements(elementsNewEditDependentFrom.toArray(), false);
+            diffTable.setCheckedElements(dependenciesUnselectedOnly.toArray(), false);
 
             // Расширить дерево filteredWithNew элементами, зависящими от удаляемых
             dte = new DepcyTreeExtender(dbSource.getDbObject(), 
                     dbTarget.getDbObject(), filteredWithNew);
-            filteredWithNewAndDelete = dte.getTreeCopyWithDepcy();
+            filteredWithNewAndDelete = dte.copyInitialTreeWithDependantsOfDeleted();
             // Получить список всех зависимостей для заполнения нижней 
             // таблицы CommitDialog'a
             // Эти зависимости - потомки filteredWithNewAndDelete
-            sumNewAndDelete = dte.sumAllDepcies(elementsNewEditDependentFrom);
+            sumNewAndDelete = dte.sumNewEditWithInternalDeleted(dependenciesUnselectedOnly);
         }
         
         Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
