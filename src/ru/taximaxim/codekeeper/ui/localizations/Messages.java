@@ -246,6 +246,8 @@ public final class Messages extends NLS {
 
     public static String dbUpdatePrefPage_error_getting_commands_list;
     public static String dbUpdatePrefPage_error_saving_commands_list;
+
+    public static String dbUpdatePrefPage_ignore_privileges;
     public static String DiffPaneViewer_project;
     public static String DiffPresentationPane_attention;
 
