@@ -23,6 +23,9 @@ public class CreateRule extends ParserAbstract {
 
     @Override
     public PgStatement getObject() {
+        if (db.getArguments().isIgnorePrivileges()) {
+            return null;
+        }
         DbObjType type = null;
         List<Schema_qualified_nameContext> obj_name = new ArrayList<>();
         if (ctx.body_rule.obj_name != null) {

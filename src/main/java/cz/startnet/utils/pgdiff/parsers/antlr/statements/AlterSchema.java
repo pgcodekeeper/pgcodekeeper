@@ -24,9 +24,7 @@ public class AlterSchema extends ParserAbstract {
             logError("SCHEMA", name);
             return null;
         }
-        if (ctx.owner_to() != null) {
-            sch.setOwner(removeQuotes(ctx.owner_to().name));
-        }
+        fillOwnerTo(ctx.owner_to(), sch);
         return null;
     }
 
