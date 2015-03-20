@@ -18,7 +18,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseVisitor;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.GenericColumn.ViewReference;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgSelect;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -88,7 +87,7 @@ public class CreateView extends ParserAbstract {
         public Query_expressionContext visitTable_primary(
                 Table_primaryContext ctx) {
             isTableRef = true;
-            return super.visitTable_primary(ctx);
+            return visitChildren(ctx);
         }
         
         @Override
@@ -103,19 +102,17 @@ public class CreateView extends ParserAbstract {
                 tableAliases.putAll(vis.tableAliases);
                 return null;
             }
-            return super.visitSimple_table(ctx);
+            return visitChildren(ctx);
         }
 
         @Override
         public Query_expressionContext visitSet_function_specification(
                 Set_function_specificationContext ctx) {
-            if (ctx.COUNT() != null) {
-                columns.add(new GenericColumn(null, getFullCtxText(ctx), null)
-                        .setType(ViewReference.SYSTEM));
-            } else {
-                columns.add(new GenericColumn(null, getFullCtxText(ctx.general_set_function()), null)
-                        .setType(ViewReference.SYSTEM));
-            }
+            GenericColumn col = new GenericColumn(null, ctx.COUNT() != null ? 
+                    getFullCtxText(ctx) : getFullCtxText(ctx.general_set_function()),
+                    null);
+            col.setType(ViewReference.SYSTEM);
+            columns.add(col);
             return null;
         }
 
@@ -129,9 +126,11 @@ public class CreateView extends ParserAbstract {
             if (isTableRef) {
                 isTableRef = false;
                 String schemaName = getSchemaName(ctx.schema_qualified_name());
-                columns.add(new GenericColumn(
+                GenericColumn col = new GenericColumn(
                         schemaName == null ? getDefSchemaName() : schemaName,
-                        getName(ctx.schema_qualified_name()), null).setType(ViewReference.TABLE));
+                        getName(ctx.schema_qualified_name()), null);
+                col.setType(ViewReference.TABLE);
+                columns.add(col);
                 return null;
             }
             
@@ -147,11 +146,11 @@ public class CreateView extends ParserAbstract {
         }
         
         private void addFunction(Name_or_func_callsContext ctx) {
-            PgFunction func = new PgFunction(
-                    getName(ctx.schema_qualified_name()), getFullCtxText(ctx));
-            String schema = getSchemaName(ctx.schema_qualified_name());
-            columns.add(new GenericColumn(schema, func.getSignature(), null)
-                    .setType(ViewReference.FUNCTION));
+            GenericColumn functionCall = new GenericColumn(
+                    getSchemaName(ctx.schema_qualified_name()),
+                    getName(ctx.schema_qualified_name()), null);
+            functionCall.setType(ViewReference.FUNCTION);
+            columns.add(functionCall);
         }
         
         @Override
@@ -169,7 +168,7 @@ public class CreateView extends ParserAbstract {
             } else {
                 tableAliases.put(aliasName, columns.get(columns.size() - 1));
             }
-            return super.visitAs_clause(ctx);
+            return visitChildren(ctx);
         }
 
         private List<GenericColumn> getColumns() {

@@ -172,7 +172,7 @@ public class DepcyGraph {
                 if (obj.schema != null) {
                     pgSchema = db.getSchema(obj.schema); 
                 }
-                PgFunction function = pgSchema.getFunction(obj.table);
+                PgFunction function = resolveFunctionCall(pgSchema, obj.table);
                 if (function != null) {
                     graph.addEdge(func, function);
                 }
@@ -197,7 +197,7 @@ public class DepcyGraph {
             // чтобы пропускать выборку из pg_views - системной таблицы
             if (tblName == null 
                     || col.getType() == ViewReference.SYSTEM 
-                    || (col.table != null && col.table.matches("pg_.*")) 
+                    || (col.table != null && col.table.startsWith("pg_")) 
                     || SYS_SCHEMAS.contains(scmName)){
                 continue;
             }
@@ -231,7 +231,7 @@ public class DepcyGraph {
                 // replace, toChar, now, что делать либо
                 // редактировать правила на эти функции, либо
                 // вычислять в коде, скорее всего правила
-                PgFunction func = scm.getFunction(tblName);
+                PgFunction func = resolveFunctionCall(scm, tblName);
                 // do not check for (func == null) because it can be a system function
                 // which currently does not get skipped
                 if (func != null) {    
@@ -308,6 +308,20 @@ public class DepcyGraph {
                 }
             }
         }
+    }
+    
+    private PgFunction resolveFunctionCall(PgSchema schema, String funcName) {
+        int found = 0;
+        PgFunction func = null;
+        for (PgFunction f : schema.getFunctions()) {
+            if (f.getBareName().equals(funcName)) {
+                ++found;
+                func = f;
+            }
+        }
+        // TODO right now we don't have means to resolve overloaded function calls
+        // to avoid adding false dependencies skip resolving overloaded calls completely
+        return found == 1 ? func : null;
     }
 
     /**

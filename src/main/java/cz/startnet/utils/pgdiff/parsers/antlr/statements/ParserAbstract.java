@@ -15,7 +15,6 @@ import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_calls_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Name_or_func_callsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -233,7 +232,7 @@ public abstract class ParserAbstract {
                         .function_def_value().def_value));
                 for (GenericColumn objName : parseDefValues(argument
                         .function_def_value().def_value, defSchemaName)) {
-                    arg.addDefaultObjects(objName);
+                    arg.addDefaultObject(objName);
                 }
             }
             if (argument.arg_mode != null) {
@@ -258,16 +257,7 @@ public abstract class ParserAbstract {
                 if (schemaName == null) {
                     schemaName = defSchemaName;
                 }
-                PgFunction func = new PgFunction(objName, "");
-                for (Function_calls_argsContext par : ctx.function_calls_paren().function_calls_args()) {
-                    PgFunction.Argument arg = new PgFunction.Argument();
-                    if (par.argname != null) {
-                        arg.setName(getFullCtxText(par.argname));
-                    }
-                    arg.setDataType(getFullCtxText(par.argtype_expres));
-                    func.addArgument(arg);
-                }
-                funcSignature.add(new GenericColumn(schemaName, func.getSignature(), null));
+                funcSignature.add(new GenericColumn(schemaName, objName, null));
             }
         }, defExpression);
         return funcSignature;
