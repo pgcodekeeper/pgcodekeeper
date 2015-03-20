@@ -106,7 +106,7 @@ public class PgDiffTest {
                     // Tests scenario where TABLE CONSTRAINT is dropped.
                     {"drop_constraint", false, false, false, false},
                     // Tests scenario where UNIQUE TABLE CONSTRAINT is added.
-                    {"add_unique_constraint", false, false, false, true},
+                    {"add_unique_constraint", false, false, false, false},
                     // Tests reading of TABLE with INHERITS.
                     {"read_inherits", false, false, false, false},
                     // Tests scenario where TABLE with INHERITS is added.
@@ -287,6 +287,9 @@ public class PgDiffTest {
     }
     
     private static final List<String> RUN_DIFF_SKIP_FILES = Arrays.asList(
+            "modify_sequence_start_ignore_on",
+            "function_equal_whitespace",
+            "add_defaults"
             );
     /**
      * Template name for file names that should be used for the test. Testing
@@ -402,9 +405,6 @@ public class PgDiffTest {
             }
         }
 
-        if (!sbExpDiff.toString().trim().equals(diffInput.toString().trim())) {
-            System.out.println(fileNameTemplate);
-        }
         Assert.assertEquals("File name template: " + fileNameTemplate,
                 sbExpDiff.toString().trim(),
                 diffInput.toString().trim());

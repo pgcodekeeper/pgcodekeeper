@@ -240,7 +240,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         PgDatabase d = new PgDatabase();
         PgSchema schema = d.getDefaultSchema();
         
-        PgTable table = new PgTable("fax_boxes", "", "");
+        PgTable table = new PgTable("fax_boxes", "");
         schema.addTable(table);
         
         PgColumn col = new PgColumn("fax_box_id");
@@ -252,14 +252,14 @@ class PgDB1 extends PgDatabaseObjectCreator {
         col.setType("text");
         table.addColumn(col);
         
-        PgConstraint constraint = new PgConstraint("fax_boxes_pkey", "", "");
+        PgConstraint constraint = new PgConstraint("fax_boxes_pkey", "");
         table.addConstraint(constraint);
         constraint.setTableName("fax_boxes");
         constraint.setDefinition("PRIMARY KEY (fax_box_id)");
         
         table.setOwner("postgres");
         
-        table = new PgTable("faxes", "", "");
+        table = new PgTable("faxes", "");
         schema.addTable(table);
         
         col = new PgColumn("fax_id");
@@ -305,17 +305,17 @@ class PgDB1 extends PgDatabaseObjectCreator {
         col.setType("text");
         table.addColumn(col);
         
-        constraint = new PgConstraint("faxes_pkey", "", "");
+        constraint = new PgConstraint("faxes_pkey", "");
         constraint.setTableName("faxes");
         constraint.setDefinition("PRIMARY KEY (fax_id)");
         table.addConstraint(constraint);
         
-        constraint = new PgConstraint("faxes_fax_box_id_fkey", "", "");
+        constraint = new PgConstraint("faxes_fax_box_id_fkey", "");
         constraint.setTableName("faxes");
         constraint.setDefinition("FOREIGN KEY (fax_box_id)\n      REFERENCES fax_boxes (fax_box_id) MATCH SIMPLE\n      ON UPDATE RESTRICT ON DELETE CASCADE");
         table.addConstraint(constraint);
 
-        table = new PgTable("extensions", "", "");
+        table = new PgTable("extensions", "");
         schema.addTable(table);
         
         col = new PgColumn("id");
@@ -323,7 +323,7 @@ class PgDB1 extends PgDatabaseObjectCreator {
         col.setNullValue(false);
         table.addColumn(col);
         
-        constraint = new PgConstraint("extensions_fax_box_id_fkey", "", "");
+        constraint = new PgConstraint("extensions_fax_box_id_fkey", "");
         constraint.setDefinition("FOREIGN KEY (fax_box_id) REFERENCES fax_boxes\n(fax_box_id)    ON UPDATE RESTRICT ON DELETE RESTRICT");
         constraint.setTableName("extensions");
         table.addConstraint(constraint);
@@ -352,7 +352,7 @@ class PgDB2 extends PgDatabaseObjectCreator {
         
         schema = d.getSchema(ApgdiffConsts.PUBLIC);
         
-        PgTable table = new PgTable("contacts", "", "");
+        PgTable table = new PgTable("contacts", "");
         schema.addTable(table);
         
         PgColumn col = new PgColumn("id");
@@ -367,7 +367,7 @@ class PgDB2 extends PgDatabaseObjectCreator {
         col.setType("varchar(50)");
         table.addColumn(col);
         
-        PgIndex idx = new PgIndex("contacts_number_pool_id_idx", "", "");
+        PgIndex idx = new PgIndex("contacts_number_pool_id_idx", "");
         table.addIndex(idx);
         idx.setTableName("contacts");
         idx.setDefinition("(number_pool_id)");        
@@ -382,7 +382,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
     PgDatabase d = new PgDatabase();
     PgSchema schema = d.getDefaultSchema();
     
-    PgSequence seq = new PgSequence("admins_aid_seq", "", "");
+    PgSequence seq = new PgSequence("admins_aid_seq", "");
     seq.setStartWith("1");
     seq.setIncrement("1");
     seq.setMaxValue("1000000000");
@@ -390,7 +390,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
     seq.setCache("1");
     schema.addSequence(seq);
     
-    PgTable table = new PgTable("admins", "", "");
+    PgTable table = new PgTable("admins", "");
     schema.addTable(table);
     
     PgColumn col = new PgColumn("aid");
@@ -466,7 +466,7 @@ class PgDB3 extends PgDatabaseObjectCreator {
     col.setDefaultValue("'f'::bool");
     table.addColumn(col);
     
-    PgConstraint constraint = new PgConstraint("admins_pkey", "", "");
+    PgConstraint constraint = new PgConstraint("admins_pkey", "");
     constraint.setTableName("admins");
     constraint.setDefinition("Primary Key (\"aid\")");
     table.addConstraint(constraint);
@@ -481,7 +481,7 @@ class PgDB4 extends PgDatabaseObjectCreator {
     PgDatabase d = new PgDatabase();
     PgSchema schema = d.getDefaultSchema();
     
-    PgTable table = new PgTable("call_logs", "", "");
+    PgTable table = new PgTable("call_logs", "");
     schema.addTable(table);
     
     PgColumn col = new PgColumn("id");
@@ -501,7 +501,7 @@ class PgDB5 extends     PgDatabaseObjectCreator {
     PgDatabase d = new PgDatabase();
     PgSchema schema = d.getDefaultSchema();
     
-    PgFunction func = new PgFunction("gtsq_in", "", "");
+    PgFunction func = new PgFunction("gtsq_in", "");
     func.setBody("AS '$libdir/tsearch2', 'gtsq_in'\n    LANGUAGE c STRICT");
     func.setReturns("gtsq");
     schema.addFunction(func);
@@ -510,7 +510,7 @@ class PgDB5 extends     PgDatabaseObjectCreator {
     arg.setDataType("cstring");
     func.addArgument(arg);
     
-    func = new PgFunction("multiply_numbers", "", "");
+    func = new PgFunction("multiply_numbers", "");
     func.setBody("AS $$\nbegin\n\treturn number1 * number2;\nend;\n$$\n    LANGUAGE plpgsql STRICT");
     func.setReturns("integer");
     schema.addFunction(func);
@@ -525,7 +525,7 @@ class PgDB5 extends     PgDatabaseObjectCreator {
     arg.setDataType("integer");
     func.addArgument(arg);
     
-    func = new PgFunction("select_something", "", "");
+    func = new PgFunction("select_something", "");
     func.setBody("AS $_$SELECT number1 * number2$_$ LANGUAGE plpgsql");
     func.setReturns("integer");
     schema.addFunction(func);
@@ -540,7 +540,7 @@ class PgDB5 extends     PgDatabaseObjectCreator {
     arg.setDataType("integer");
     func.addArgument(arg);
     
-    func = new PgFunction("select_something2", "", "");
+    func = new PgFunction("select_something2", "");
     func.setBody("AS 'SELECT number1 * number2 || ''text''' LANGUAGE plpgsql");
     func.setReturns("integer");
     schema.addFunction(func);
@@ -555,7 +555,7 @@ class PgDB5 extends     PgDatabaseObjectCreator {
     arg.setDataType("integer");
     func.addArgument(arg);
     
-    func = new PgFunction("select_something3", "", "");
+    func = new PgFunction("select_something3", "");
     func.setBody("AS '\nSELECT number1 * number2 || ''text''\n' LANGUAGE plpgsql");
     func.setReturns("integer");
     schema.addFunction(func);
@@ -586,7 +586,7 @@ class PgDB6 extends PgDatabaseObjectCreator {
     schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO postgres", ""));
     schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO PUBLIC", ""));
     
-    PgTable table = new PgTable("test_table", "", "");
+    PgTable table = new PgTable("test_table", "");
     schema.addTable(table);
     
     PgColumn col = new PgColumn("id");
@@ -599,7 +599,7 @@ class PgDB6 extends PgDatabaseObjectCreator {
     
     table.setOwner("postgres");
     
-    PgIndex idx = new PgIndex("test_table_deleted", "", "");
+    PgIndex idx = new PgIndex("test_table_deleted", "");
     idx.setTableName("test_table");
     idx.setDefinition("USING btree (date_deleted) WHERE (date_deleted IS NULL)");
     table.addIndex(idx);
@@ -617,7 +617,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
     d.addSchema(schema);
     d.setDefaultSchema("common");
     
-    PgFunction func = new PgFunction("t_common_casttotext", "", "SET search_path = common, pg_catalog;");
+    PgFunction func = new PgFunction("t_common_casttotext", "");
     func.setBody("AS $_$SELECT textin(timetz_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
     func.setReturns("text");
     schema.addFunction(func);
@@ -626,7 +626,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
     arg.setDataType("time with time zone");
     func.addArgument(arg);
     
-    func = new PgFunction("t_common_casttotext", "", "SET search_path = common, pg_catalog;");
+    func = new PgFunction("t_common_casttotext", "");
     func.setBody("AS $_$SELECT textin(time_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
     func.setReturns("text");
     schema.addFunction(func);
@@ -635,7 +635,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
     arg.setDataType("time without time zone");
     func.addArgument(arg);
     
-    func = new PgFunction("t_common_casttotext", "", "SET search_path = common, pg_catalog;");
+    func = new PgFunction("t_common_casttotext", "");
     func.setBody("AS $_$SELECT textin(timestamptz_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
     func.setReturns("text");
     schema.addFunction(func);
@@ -644,7 +644,7 @@ class PgDB7 extends PgDatabaseObjectCreator {
     arg.setDataType("timestamp with time zone");
     func.addArgument(arg);
     
-    func = new PgFunction("t_common_casttotext", "", "SET search_path = common, pg_catalog;");
+    func = new PgFunction("t_common_casttotext", "");
     func.setBody("AS $_$SELECT textin(timestamp_out($1));$_$\n    LANGUAGE sql IMMUTABLE STRICT");
     func.setReturns("text");
     schema.addFunction(func);
@@ -667,7 +667,7 @@ class PgDB8 extends PgDatabaseObjectCreator {
     schema = new PgSchema("``54'253-=9!@#$%^&*()__<>?:\"{}[];',./", "");
     d.addSchema(schema);
     
-    PgFunction func = new PgFunction(".x\".\"\".", "", "");
+    PgFunction func = new PgFunction(".x\".\"\".", "");
     func.setBody("AS $_$\ndeclare\nbegin\nraise notice 'inside: %', $1;\nreturn true;\nend;\n$_$\n    LANGUAGE plpgsql");
     func.setReturns("boolean");
     schema.addFunction(func);
@@ -688,7 +688,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
     PgDatabase d = new PgDatabase();
     PgSchema schema = d.getDefaultSchema();
     
-    PgTable table = new PgTable("user_data", "", "");
+    PgTable table = new PgTable("user_data", "");
     schema.addTable(table);
     
     PgColumn col = new PgColumn("id");
@@ -710,7 +710,7 @@ class PgDB9 extends PgDatabaseObjectCreator {
     
     table.setOwner("postgres");
     
-    PgSequence seq = new PgSequence("user_id_seq", "", "");
+    PgSequence seq = new PgSequence("user_id_seq", "");
     seq.setIncrement("1");
     seq.setCache("1");
     seq.setOwnedBy("user_data.id");
@@ -718,12 +718,12 @@ class PgDB9 extends PgDatabaseObjectCreator {
     
     seq.setOwner("postgres");
     
-    PgView view = new PgView("user", "", "");
+    PgView view = new PgView("user", "");
     view.setQuery("( SELECT user_data.id, user_data.email, user_data.created FROM user_data)");
     view.addColumnDefaultValue("created", "now()");
     schema.addView(view);
     
-    PgSelect select = new PgSelect("", "");
+    PgSelect select = new PgSelect("");
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "id"));
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "email"));
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "created"));
@@ -732,11 +732,11 @@ class PgDB9 extends PgDatabaseObjectCreator {
     
     view.setOwner("postgres");
     
-    view = new PgView("ws_test", "", "");
+    view = new PgView("ws_test", "");
     view.setQuery("SELECT ud.id \"   i   d   \" FROM user_data ud");
     schema.addView(view);
     
-    select = new PgSelect("", "");
+    select = new PgSelect("");
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "user_data", "id"));
     
     view.setSelect(select);
@@ -755,7 +755,7 @@ class PgDB10 extends PgDatabaseObjectCreator {
     
     schema.setOwner("postgres");
     
-    PgTable table = new PgTable("acl_role", "", "SET search_path = admin, pg_catalog;");
+    PgTable table = new PgTable("acl_role", "");
     schema.addTable(table);
     
     PgColumn col = new PgColumn("id");
@@ -763,14 +763,14 @@ class PgDB10 extends PgDatabaseObjectCreator {
     col.setNullValue(false);
     table.addColumn(col);
     
-    PgConstraint constraint = new PgConstraint("acl_role_pkey", "", "");
+    PgConstraint constraint = new PgConstraint("acl_role_pkey", "");
     constraint.setTableName("acl_role");
     constraint.setDefinition("PRIMARY KEY (id)");
     table.addConstraint(constraint);
     
     table.setOwner("postgres");
     
-    table = new PgTable("user", "", "SET search_path = admin, pg_catalog;");
+    table = new PgTable("user", "");
     schema.addTable(table);
     
     col = new PgColumn("id");
@@ -822,12 +822,12 @@ class PgDB10 extends PgDatabaseObjectCreator {
     col.setNullValue(false);
     table.addColumn(col);
     
-    PgIndex idx = new PgIndex("fki_user_role_id_fkey", "", "");
+    PgIndex idx = new PgIndex("fki_user_role_id_fkey", "");
     idx.setTableName("user");
     idx.setDefinition("USING btree (role_id)");
     table.addIndex(idx);
     
-    constraint = new PgConstraint("user_role_id_fkey", "", "");
+    constraint = new PgConstraint("user_role_id_fkey", "");
     constraint.setTableName("user");
     constraint.setDefinition("FOREIGN KEY (role_id) REFERENCES acl_role(id)");
     table.addConstraint(constraint);
@@ -844,7 +844,7 @@ class PgDB11 extends PgDatabaseObjectCreator {
     PgDatabase d = new PgDatabase();
     PgSchema schema = d.getDefaultSchema();
     
-    PgFunction func = new PgFunction("curdate", "", "");
+    PgFunction func = new PgFunction("curdate", "");
     func.setBody("LANGUAGE sql\n    AS $$SELECT CAST('now' AS date);\n$$");
     func.setReturns("date");
     schema.addFunction(func);
@@ -870,7 +870,7 @@ class PgDB13 extends PgDatabaseObjectCreator {
     PgDatabase d = new PgDatabase();
     PgSchema schema = d.getDefaultSchema();
     
-    PgFunction func = new PgFunction("drop_fk_except_for", "", "");
+    PgFunction func = new PgFunction("drop_fk_except_for", "");
     func.setBody("LANGUAGE plpgsql\n    AS $$\nDECLARE\nBEGIN\n  -- aaa\nEND;\n$$");
     func.setReturns("SETOF character varying");
     schema.addFunction(func);
@@ -898,7 +898,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
     d.setComment("'comments database'");
     schema.setComment("'public schema'");
     
-    PgFunction func = new PgFunction("test_fnc", "", "");
+    PgFunction func = new PgFunction("test_fnc", "");
     func.setBody("LANGUAGE plpgsql\n    AS $$BEGIN\nRETURN true;\nEND;$$");
     func.setReturns("boolean");
     schema.addFunction(func);
@@ -912,14 +912,14 @@ class PgDB14 extends PgDatabaseObjectCreator {
     
     func.setComment("'test function'");
     
-    func = new PgFunction("trigger_fnc", "", "");
+    func = new PgFunction("trigger_fnc", "");
     func.setBody("LANGUAGE plpgsql\n    AS $$begin\nend;$$");
     func.setReturns("trigger");
     schema.addFunction(func);
     
     func.setOwner("fordfrog");
     
-    PgTable table = new PgTable("test", "", "");
+    PgTable table = new PgTable("test", "");
     schema.addTable(table);
     
     PgColumn col = new PgColumn("id");
@@ -936,7 +936,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
     col.setComment("'text column'");
     table.addColumn(col);
     
-    PgConstraint constraint = new PgConstraint("text_check", "", "");
+    PgConstraint constraint = new PgConstraint("text_check", "");
     constraint.setTableName("test");
     constraint.setDefinition("CHECK ((length((text)::text) > 0))");
     constraint.setComment("'text check'");
@@ -944,7 +944,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
     
     table.setComment("'test table'");
     
-    constraint = new PgConstraint("test_pkey", "", "");
+    constraint = new PgConstraint("test_pkey", "");
     constraint.setTableName("test");
     constraint.setDefinition("PRIMARY KEY (id)");
     table.addConstraint(constraint);
@@ -953,7 +953,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
     
     table.setOwner("fordfrog");
     
-    PgSequence seq = new PgSequence("test_id_seq", "", "");
+    PgSequence seq = new PgSequence("test_id_seq", "");
     seq.setStartWith("1");
     seq.setIncrement("1");
     seq.setCache("1");
@@ -965,14 +965,14 @@ class PgDB14 extends PgDatabaseObjectCreator {
     
     seq.setComment("'test table sequence'");
     
-    PgView view = new PgView("test_view", "", "");
+    PgView view = new PgView("test_view", "");
     view.setQuery("SELECT test.id, test.text FROM test");
     schema.addView(view);
     
     view.setComment("'test view'");
     view.addColumnComment("id", "'view id col'");
     
-    PgSelect select = new PgSelect("", "");
+    PgSelect select = new PgSelect("");
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "test", "id"));
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "test", "text"));
     
@@ -980,7 +980,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
     
     view.setOwner("fordfrog");
     
-    PgTrigger trigger = new PgTrigger("test_trigger", "", "");
+    PgTrigger trigger = new PgTrigger("test_trigger", "");
     trigger.setBefore(true);
     trigger.setOnUpdate(true);
     trigger.setTableName("test");
@@ -1000,7 +1000,7 @@ class PgDB15 extends PgDatabaseObjectCreator {
     PgDatabase d = new PgDatabase();
     PgSchema schema = d.getDefaultSchema();
     
-    PgTable table = new PgTable("test", "", "");
+    PgTable table = new PgTable("test", "");
     schema.addTable(table);
     
     PgColumn col = new PgColumn("id");
@@ -1026,7 +1026,7 @@ class PgDB16 extends PgDatabaseObjectCreator {
     PgSchema schema = d.getDefaultSchema();
 
     // table1
-    PgTable table = new PgTable("t_work", "", "");
+    PgTable table = new PgTable("t_work", "");
     schema.addTable(table);
     
     PgColumn col = new PgColumn("id");
@@ -1034,19 +1034,19 @@ class PgDB16 extends PgDatabaseObjectCreator {
     table.addColumn(col);
     
     // table2
-    PgTable table2 = new PgTable("t_chart", "", "");
+    PgTable table2 = new PgTable("t_chart", "");
     schema.addTable(table2);
     col = new PgColumn("id");
     col.setType("integer");
     table2.addColumn(col);
     
     // view
-    PgView view = new PgView("v_subselect", "", "");
+    PgView view = new PgView("v_subselect", "");
     view.setQuery("SELECT c.id, t.id FROM ( SELECT t_work.id FROM t_work) t"
             + " JOIN t_chart c ON t.id = c.id");
     schema.addView(view);
 
-    PgSelect select = new PgSelect("", "");
+    PgSelect select = new PgSelect("");
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", "id"));
     
@@ -1069,7 +1069,7 @@ class PgDB17 extends PgDatabaseObjectCreator {
     PgSchema schema = d.getDefaultSchema();
 
     // table1
-    PgTable table = new PgTable("t_work", "", "");
+    PgTable table = new PgTable("t_work", "");
     schema.addTable(table);
     
     PgColumn col = new PgColumn("id");
@@ -1077,26 +1077,26 @@ class PgDB17 extends PgDatabaseObjectCreator {
     table.addColumn(col);
     
     // table2
-    PgTable table2 = new PgTable("t_chart", "", "");
+    PgTable table2 = new PgTable("t_chart", "");
     schema.addTable(table2);
     col = new PgColumn("id");
     col.setType("integer");
     table2.addColumn(col);
     
     // table 3
-    PgTable table3 = new PgTable("t_memo", "", "");
+    PgTable table3 = new PgTable("t_memo", "");
     schema.addTable(table3);
     col = new PgColumn("name");
     col.setType("text");
     table3.addColumn(col);
     
     // view
-    PgView view = new PgView("v_subselect", "", "");
+    PgView view = new PgView("v_subselect", "");
     view.setQuery("SELECT c.id, t.id, t.name FROM  ( SELECT w.id, m.name FROM "
             + "(SELECT t_work.id FROM t_work) w JOIN t_memo m ON w.id::text = m.name)  t JOIN t_chart c ON t.id = c.id");
     schema.addView(view);
 
-    PgSelect select = new PgSelect("", "");
+    PgSelect select = new PgSelect("");
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_work", "id"));
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_memo", "name"));
     select.addColumn(new GenericColumn(ApgdiffConsts.PUBLIC, "t_chart", "id"));

@@ -24,7 +24,6 @@ import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -35,20 +34,48 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 */
 abstract class TreeElementCreator {
 
+    /**
+     * Возвращает дерево, представляющее собой выбор пользователя (фильтр дерева диффа по селекшену) 
+     */
     public abstract TreeElement getFilteredTree();
 
+    /**
+     * Возвращает дерево, представляющее собой выбор пользователя. Ожидается, что оно содержит удаляемые объекты.
+     */
     public abstract TreeElement getFilteredTreeForDeletion();
     
+    /**
+     * Возвращает дерево, представляющее собой выбор пользователя. 
+     * Ожидается, что оно должно генерировать конфликты 
+     * (выбран объект edit, но по зависимостям мы хотим его удалить, и наоборот)
+     */
     public abstract TreeElement getFilteredTreeForConflicting();
 
+    /**
+     * Возвращает зависимости от новых объектов в дереве, которое скормили dte
+     * @param db
+     */
     public abstract Set<PgStatement> getDepcySet(PgDatabase db);
 
+    /**
+     * Возвращает предопределенный элемент-зависимость от new/edit.
+     */
     public abstract TreeElement getExtraElement();
 
+    /**
+     * Возвращает некоторые элементы из дерева filtered
+     */
     public abstract Set<TreeElement> getExtraElementInTree(TreeElement filtered);
 
+    /**
+     * Возвращает предустановленное дерево - исходное filtered-дерево + зависимости от удаляемых
+     */
     public abstract TreeElement getFilteredCopy();
 
+    /**
+     * Возвращает предустановленный набор элементов, которые находятся в конфликтном состоянии
+     * @see DepcyTreeExtenderTest#testGetConflicting()
+     */
     public abstract Set<TreeElement> getConflicting(TreeElement copy);
     
     public abstract int getFileIndex();
@@ -70,15 +97,14 @@ abstract class TreeElementCreator {
 @RunWith(value = Parameterized.class)
 public class DepcyTreeExtenderTest {
     
-    private TreeElementCreator predefined;
-    private ParserClass parserType;
+    private final TreeElementCreator predefined;
+    private final ParserClass parserType = ParserClass.getAntlr(null, 1);
     
-    private String filename;
-    private String conflictingFilename;
+    private final String filename;
+    private final String conflictingFilename;
 
-    public DepcyTreeExtenderTest(TreeElementCreator predefined, ParserClass parserType) {
+    public DepcyTreeExtenderTest(TreeElementCreator predefined) {
         this.predefined = predefined;
-        this.parserType = parserType;
         
         this.conflictingFilename = predefined.getConflictingFilename();
         this.filename = predefined.getFilename();
@@ -92,24 +118,19 @@ public class DepcyTreeExtenderTest {
         return Arrays.asList(
                 new Object[][]{
 // SONAR-OFF
-                    {new Predefined1(), ParserClass.getLegacy(null, 1)},
-                    {new Predefined1(), ParserClass.getAntlr(null, 1)},
-                    
-                    {new Predefined2(), ParserClass.getLegacy(null, 1)},
-                    {new Predefined2(), ParserClass.getAntlr(null, 1)},
-                    
-                    {new Predefined3(), ParserClass.getLegacy(null, 1)},
-                    {new Predefined3(), ParserClass.getAntlr(null, 1)},
-                    
-                    {new Predefined4(), ParserClass.getLegacy(null, 1)},
-                    {new Predefined4(), ParserClass.getAntlr(null, 1)},
-                    
-                    {new Predefined5(), ParserClass.getLegacy(null, 1)},
-                    {new Predefined5(), ParserClass.getAntlr(null, 1)}
+                    {new Predefined1()},
+                    {new Predefined2()},
+                    {new Predefined3()},
+                    {new Predefined4()},
+                    {new Predefined5()}
 // SONAR-ON
                 });
     }
     
+    
+    /**
+     * Тестирует зависимости от новых(и возможных edit) объектов, полученные из dte
+     */
     @Test
     public void testGetDependenciesOfNew() throws PgCodekeeperException {
         PgDatabase dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
@@ -117,12 +138,14 @@ public class DepcyTreeExtenderTest {
                 ApgdiffConsts.UTF_8, false, false, parserType);
         
         DepcyTreeExtender dte = new DepcyTreeExtender(dbTarget, dbTarget, predefined.getFilteredTree());
-        
-        Set<PgStatement> depcy = dte.getDependenciesOfNew();
+        Set<PgStatement> depcy = dte.fetchDependenciesOfNewEdit();
         Set<PgStatement> depcyPredefined = predefined.getDepcySet(dbTarget);
         assertTrue("List of dependencies is not as expected", depcy.equals(depcyPredefined));
     }
     
+    /**
+     * Тестирует дерево, получаемое из dte, которое должно быть расширено зависимостями от удаляемых элементов
+     */
     @Test
     public void testGetTreeCopyWithDepcy() throws PgCodekeeperException {
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
@@ -133,7 +156,7 @@ public class DepcyTreeExtenderTest {
         
         DepcyTreeExtender dte = new DepcyTreeExtender(dbSource, dbSource, filtered);
         
-        TreeElement filteredCopy = dte.getTreeCopyWithDepcy();
+        TreeElement filteredCopy = dte.copyInitialTreeWithDependantsOfDeleted();
         
         TreeElement filteredCopyPredefined = predefined.getFilteredCopy();
         
@@ -142,6 +165,12 @@ public class DepcyTreeExtenderTest {
                 treesAreIdentical(filteredCopyPredefined, filteredCopy));
     }
     
+    
+    /**
+     * Тестирует метод "суммирования" зависимостей (те что delete И те что new/edit) 
+     * Здесь filteredCopy - исходное дерево, расширенное зависимостями от удаляемых, 
+     * а predefined.getExtraElement() *типа* возвращает зависимости от new/edit)
+     */
     @Test
     public void testSumAllDepcies() throws PgCodekeeperException {
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
@@ -151,16 +180,24 @@ public class DepcyTreeExtenderTest {
         TreeElement filtered = predefined.getFilteredTree();
         
         DepcyTreeExtender dte = new DepcyTreeExtender(dbSource, dbSource, filtered);
-        TreeElement filteredCopy = dte.getTreeCopyWithDepcy();
+        TreeElement filteredCopy = dte.copyInitialTreeWithDependantsOfDeleted();
         
-        Set<TreeElement> sum = dte.sumAllDepcies(
+        Set<TreeElement> sum = dte.sumNewEditWithInternalDeleted(
                 new HashSet<>(Arrays.asList(predefined.getExtraElement())));
         
         Set<TreeElement> extraInFiltered = predefined.getExtraElementInTree(filteredCopy);
         
-        Assert.assertTrue("Result differs", sum.toArray()[0] == extraInFiltered.toArray()[0]);
+        Assert.assertTrue("Result differs", sum.equals(extraInFiltered));
     }
     
+    /**
+     * Тестирует dte на предмет правильного обнаружения конфликтов.
+     * Тут есть 2 бд, и есть предопределенный выбор пользователя, который должен
+     * генерить конфликты 
+     * (например, пользователь выбрал таблицу на удаление, и зависящую от нее вьюху на редактирование. 
+     * Но по зависимостям от дропнутой таблицы ожидается дроп и зависимой вьюхи. 
+     * Эта вьюха существует как edit, так и delete => конфликтъ).
+     */
     @Test
     public void testGetConflicting() throws PgCodekeeperException {
         PgDatabase dbRemote = PgDumpLoader.loadDatabaseSchemaFromDump(
@@ -173,7 +210,7 @@ public class DepcyTreeExtenderTest {
 
         TreeElement filtered = predefined.getFilteredTreeForConflicting();
         DepcyTreeExtender dte = new DepcyTreeExtender(dbGit, dbRemote, filtered);
-        TreeElement copy = dte.getTreeCopyWithDepcy();
+        TreeElement copy = dte.copyInitialTreeWithDependantsOfDeleted();
         
         Set<TreeElement> conflictingPredefined = predefined.getConflicting(copy);
         Set<TreeElement> conflicting = dte.getConflicting();
@@ -240,9 +277,9 @@ class Predefined1 extends TreeElementCreator{
         PgView view = schema.getView("v2");
         PgTable table = schema.getTable("t1");
         PgColumn column = table.getColumn("c1");
-        return new HashSet<>(Arrays.asList(db, schema, view, table, column));
+        return new HashSet<>(Arrays.asList(schema, view, table, column));
     }
-   
+
     @Override
     public TreeElement getExtraElement() {
         TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
@@ -414,7 +451,7 @@ class Predefined2 extends TreeElementCreator{
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        return new HashSet<>(Arrays.asList(db, db.getSchema(ApgdiffConsts.PUBLIC)));
+        return new HashSet<>();
     }
 
     @Override
@@ -513,6 +550,10 @@ class Predefined2 extends TreeElementCreator{
     }
 }
 
+/**
+ * Тест устарел по причине разрыва цикла зависимостей между таблицей и сиквенсом.
+ * Код закомментирован по этой причине.
+ */
 class Predefined3 extends TreeElementCreator{
 
     @Override
@@ -542,10 +583,10 @@ class Predefined3 extends TreeElementCreator{
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
-        PgTable table = schema.getTable("t1");
-        PgSequence seq = schema.getSequence("s1");
-        return new HashSet<>(Arrays.asList(db, schema, table, seq));
+//        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
+//        PgTable table = schema.getTable("t1");
+//        PgSequence seq = schema.getSequence("s1");
+        return new HashSet<>(/*Arrays.asList(schema, table, seq)*/);
     }
 
     @Override
@@ -589,32 +630,31 @@ class Predefined3 extends TreeElementCreator{
     @Override
     public TreeElement getFilteredCopy() {
         TreeElement root = getFilteredTreeForDeletion();
-        TreeElement initialPublicSchema = root.getChild("Database").
-                getChild("Source only").getChild("Schemas").getChild(ApgdiffConsts.PUBLIC);
-        
-        TreeElement contSeq = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.LEFT);
-        initialPublicSchema.addChild(contSeq);
-
-        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, null, DiffSide.LEFT);
-        contSeq.addChild(seq);
+//        TreeElement initialPublicSchema = root.getChild("Database").
+//                getChild("Source only").getChild("Schemas").getChild(ApgdiffConsts.PUBLIC);
+//        
+//        TreeElement contSeq = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.LEFT);
+//        initialPublicSchema.addChild(contSeq);
+//
+//        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, null, DiffSide.LEFT);
+//        contSeq.addChild(seq);
         
         return root;
     }
 
     @Override
     public TreeElement getFilteredTreeForConflicting() {
-       
         return new Predefined2().getFilteredTreeForConflicting();
     }
 
     @Override
     public HashSet<TreeElement> getConflicting(TreeElement copy) {
-        TreeElement contSeq = copy.getChild("Database").getChild("Different").getChild("Schemas").
-                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences");
-        // КОСТЫЛЬ - конфликтующие объекты копируются в одного парента с разными DiffSide 
-        TreeElement seq = contSeq.getChild(1);
-        
-        return new HashSet<>(Arrays.asList(seq));
+//        TreeElement contSeq = copy.getChild("Database").getChild("Different").getChild("Schemas").
+//                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences");
+//        // КОСТЫЛЬ - конфликтующие объекты копируются в одного парента с разными DiffSide 
+//        TreeElement seq = contSeq.getChild(1);
+//        
+        return new HashSet<>(/*Arrays.asList(seq)*/);
     }
 
     @Override
@@ -652,8 +692,7 @@ class Predefined4 extends TreeElementCreator{
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
-        return new HashSet<>(Arrays.asList(db, schema));
+        return new HashSet<>();
     }
 
     @Override
@@ -726,7 +765,7 @@ class Predefined5 extends TreeElementCreator{
         TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
         root.addChild(database);
         
-        TreeElement sourceOnly = new TreeElement("Source only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.RIGHT);
+        TreeElement sourceOnly = new TreeElement("Target only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.RIGHT);
         database.addChild(sourceOnly);
         
         TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.BOTH);
@@ -752,12 +791,9 @@ class Predefined5 extends TreeElementCreator{
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
-        PgTable table = schema.getTable("t_test2");
-        PgSchema schemaRep = db.getSchema("republic");
-        PgTable tableConstr = schemaRep.getTable("t_test2foreign");
-        PgColumn col = table.getColumn("c_name_t_test2");
-        return new HashSet<>(Arrays.asList(db, schema, table, tableConstr, schemaRep, col));
+        Set<PgStatement> res = new HashSet<>();
+        res.add(db.getSchema("republic"));
+        return res;
     }
    
     @Override

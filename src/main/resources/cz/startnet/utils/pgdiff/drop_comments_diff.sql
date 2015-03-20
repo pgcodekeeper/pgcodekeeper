@@ -1,6 +1,6 @@
 COMMENT ON DATABASE current_database() IS NULL;
 
-COMMENT ON SCHEMA "public" IS NULL;
+COMMENT ON SCHEMA public IS NULL;
 
 COMMENT ON SEQUENCE test_id_seq IS NULL;
 
