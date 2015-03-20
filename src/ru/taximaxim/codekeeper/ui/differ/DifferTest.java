@@ -20,9 +20,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,7 +69,7 @@ public class DifferTest {
     
     @Test
     public void testDiffer() throws PgCodekeeperUIException, URISyntaxException, 
-            IOException, InvocationTargetException{
+            IOException, InvocationTargetException, InterruptedException{
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
         
@@ -109,25 +107,18 @@ public class DifferTest {
         }
         Job job = differ.getDifferJob();
         
-        job.addJobChangeListener(new JobChangeAdapter() {
-            
-            @Override
-            public void done(IJobChangeEvent event) {
-                if (event.getResult().isOK()) {
-                    try {
-                        differ.getScript();
-                        assertEquals("Direct script differs", 
-                                differData.getPredefinedDirectDiff(), differ.getDiffDirect());
-                        assertEquals("Reverse script differs", 
-                                differData.getPredefinedReverseDiff(), differ.getDiffReverse());
-                    } catch (PgCodekeeperUIException | IOException e) {
-                        Assert.fail(e.getMessage());
-                    }
-                }
-            }
-        });
-
         job.schedule();
+        job.join();
+        
+        try {
+            differ.getScript();
+            assertEquals("Direct script differs", 
+                    differData.getPredefinedDirectDiff(), differ.getDiffDirect());
+            assertEquals("Reverse script differs", 
+                    differData.getPredefinedReverseDiff(), differ.getDiffReverse());
+        } catch (PgCodekeeperUIException | IOException e) {
+            Assert.fail(e.getMessage());
+        }
     }
 }
 
