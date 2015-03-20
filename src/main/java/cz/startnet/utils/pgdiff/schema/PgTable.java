@@ -512,6 +512,7 @@ public class PgTable extends PgStatementWithSearchPath {
         PgTable tableDst = new PgTable(getName(), getRawStatement());
         tableDst.setTablespace(getTablespace());
         tableDst.setWith(getWith());
+        tableDst.setClustered(isClustered());
         for(Entry<String, String> inh : inherits) {
             tableDst.addInherits(inh.getKey(), inh.getValue());
         }

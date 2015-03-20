@@ -286,7 +286,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         return (before == trigger.isBefore())
                 && (forEachRow == trigger.isForEachRow())
                 && Objects.equals(function_full, trigger.getFullFunction())
-                && Objects.equals(getFunctionSignature(), trigger.getFunctionSignature())
+                && Objects.equals(func_signature, trigger.getFunctionSignature())
                 && Objects.equals(name, trigger.getName())
                 && (onDelete == trigger.isOnDelete())
                 && (onInsert == trigger.isOnInsert())
@@ -305,17 +305,17 @@ public class PgTrigger extends PgStatementWithSearchPath {
         int result = 1;
         result = prime * result + (before ? itrue : ifalse);
         result = prime * result + (forEachRow ? itrue : ifalse);
-        result = prime * result + ((function_full == null) ? 0 : function_full.hashCode());
-        result = prime * result + ((getFunctionSignature() == null) ? 0 : getFunctionSignature().hashCode());
+        result = prime * result + (function_full == null ? 0 : function_full.hashCode());
+        result = prime * result + (func_signature == null ? 0 : getFunctionSignature().hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + (onDelete ? itrue : ifalse);
         result = prime * result + (onInsert ? itrue : ifalse);
         result = prime * result + (onTruncate ? itrue : ifalse);
         result = prime * result + (onUpdate ? itrue : ifalse);
         result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
-        result = prime * result + ((when == null) ? 0 : when.hashCode());
+        result = prime * result + (when == null ? 0 : when.hashCode());
         result = prime * result + new HashSet<>(updateColumns).hashCode();
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
+        result = prime * result + (comment == null ? 0 : comment.hashCode());
         return result;
     }
     
