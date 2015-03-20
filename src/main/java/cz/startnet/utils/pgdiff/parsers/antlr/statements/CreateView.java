@@ -124,7 +124,7 @@ public class CreateView extends ParserAbstract {
                 Name_or_func_callsContext ctx) {
             if (ctx.function_calls_paren() != null) {
                 addFunction(ctx);
-                return super.visitName_or_func_calls(ctx);
+                return visitChildren(ctx);
             } 
             if (isTableRef) {
                 isTableRef = false;
