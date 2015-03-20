@@ -826,6 +826,7 @@ nonreserved_keywords
   | RESTART
   | RLIKE
   | ROLLUP
+  | SCHEMA
   | SEARCH
   | SECOND
   | SECURITY

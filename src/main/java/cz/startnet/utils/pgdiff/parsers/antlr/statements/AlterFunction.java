@@ -23,7 +23,7 @@ public class AlterFunction extends ParserAbstract {
             schemaName = getDefSchemaName();
         }
         PgFunction function = new PgFunction(name, getFullCtxText(ctx.getParent()));
-        fillArguments(ctx.function_parameters().function_args(), function);
+        fillArguments(ctx.function_parameters().function_args(), function, getDefSchemaName());
         PgFunction func= db.getSchema(schemaName).getFunction(function.getSignature());
         if (func == null) {
             logError("FUNCTION", name);

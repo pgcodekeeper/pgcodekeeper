@@ -45,7 +45,7 @@ public class CreateRule extends ParserAbstract {
             type = DbObjType.FUNCTION;
             for (Function_parametersContext functparam : ctx.body_rule.on_function().obj_name) {
                 PgFunction func = new PgFunction(getName(functparam.name), null);
-                fillArguments(functparam.function_args(), func);
+                fillArguments(functparam.function_args(), func, getDefSchemaName());
                 db.getSchema(getDefSchemaName())
                         .getFunction(func.getSignature())
                         .addPrivilege(

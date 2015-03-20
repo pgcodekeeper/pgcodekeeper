@@ -15,6 +15,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.GeneralLiteralSearch;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Constraint_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_calls_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Name_or_func_callsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
@@ -215,7 +216,7 @@ public abstract class ParserAbstract {
     }
     
     public static void fillArguments(Function_argsContext function_argsContext,
-            PgFunction function) {
+            PgFunction function, String defSchemaName) {
         for (Function_argumentsContext argument : function_argsContext
                 .function_arguments()) {
             PgFunction.Argument arg = new PgFunction.Argument();
@@ -230,12 +231,46 @@ public abstract class ParserAbstract {
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument
                         .function_def_value().def_value));
+                for (GenericColumn objName : parseDefValues(argument
+                        .function_def_value().def_value, defSchemaName)) {
+                    arg.addDefaultObjects(objName);
+                }
             }
             if (argument.arg_mode != null) {
                 arg.setMode(argument.arg_mode.getText());
             }
             function.addArgument(arg);
         }
+    }
+    
+    private static List<GenericColumn> parseDefValues(ParserRuleContext defExpression,
+            final String defSchemaName) {
+        final List<GenericColumn> funcSignature = new ArrayList<>();
+        new ParseTreeWalker().walk(new SQLParserBaseListener() {
+            @Override
+            public void exitName_or_func_calls(Name_or_func_callsContext ctx) {
+                if (ctx.function_calls_paren() == null) {
+                    return;
+                }
+                Schema_qualified_nameContext name = ctx.schema_qualified_name();
+                String objName = getName(name);
+                String schemaName = getSchemaName(name);
+                if (schemaName == null) {
+                    schemaName = defSchemaName;
+                }
+                PgFunction func = new PgFunction(objName, "");
+                for (Function_calls_argsContext par : ctx.function_calls_paren().function_calls_args()) {
+                    PgFunction.Argument arg = new PgFunction.Argument();
+                    if (par.argname != null) {
+                        arg.setName(getFullCtxText(par.argname));
+                    }
+                    arg.setDataType(getFullCtxText(par.argtype_expres));
+                    func.addArgument(arg);
+                }
+                funcSignature.add(new GenericColumn(schemaName, func.getSignature(), null));
+            }
+        }, defExpression);
+        return funcSignature;
     }
 
     protected List<PgConstraint> getConstraint(Table_column_defContext colCtx) {

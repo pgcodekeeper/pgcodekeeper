@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
+import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -126,6 +127,11 @@ public class DepcyGraph {
             for(PgView view : schema.getViews()) {
                 createViewToQueried(view, schema);
             }
+            for (PgFunction func: schema.getFunctions()) {
+                if (func.getReturnsName() != null) {
+                    createFunctionToObject(func, schema);
+                }
+            }
         }
         
         for(PgExtension ext : db.getExtensions()) {
@@ -142,6 +148,34 @@ public class DepcyGraph {
             PgTable tabl = schema.getTable(inherit.getValue());
             if (tabl != null) {
                 graph.addEdge(table, tabl);
+            }
+        }
+    }
+
+    private void createFunctionToObject(PgFunction func, PgSchema schema) {
+        GenericColumn objName = func.getReturnsName();
+        if (objName.schema != null) {
+            schema = db.getSchema(objName.schema);
+        }
+        PgTable tabl = schema.getTable(objName.table);
+        PgView view = schema.getView(objName.table);
+        // TODO написать для типов
+        if (tabl != null) {
+            graph.addEdge(func, tabl);
+        } else if (view != null){
+            graph.addEdge(func, view);
+        }
+        
+        for (Argument arg : func.getArguments()) {
+            for (GenericColumn obj : arg.getDefaultObjects()) {
+                PgSchema pgSchema = schema;
+                if (obj.schema != null) {
+                    pgSchema = db.getSchema(obj.schema); 
+                }
+                PgFunction function = pgSchema.getFunction(obj.table);
+                if (function != null) {
+                    graph.addEdge(func, function);
+                }
             }
         }
     }
@@ -201,7 +235,6 @@ public class DepcyGraph {
                 // do not check for (func == null) because it can be a system function
                 // which currently does not get skipped
                 if (func != null) {    
-                    graph.addEdge(view, func);
                     graph.addEdge(view, func);
                 }
             } else {
