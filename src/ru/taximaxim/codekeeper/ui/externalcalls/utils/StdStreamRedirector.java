@@ -33,7 +33,7 @@ public class StdStreamRedirector {
 
         private BufferedReader in;
         private StringBuilder storage;
-        private AtomicBoolean isDestroyed = new AtomicBoolean(false);
+        private AtomicBoolean isDestroyed = new AtomicBoolean();
         
         /**
          * @param in {@link InputStream} to 
