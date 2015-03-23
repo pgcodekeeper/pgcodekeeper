@@ -5,14 +5,10 @@
  */
 package cz.startnet.utils.pgdiff;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
@@ -30,7 +26,7 @@ public final class PgDiffViews {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void createViews(final PgDiffScript script, PgDiffArguments arguments,
+    public static void createViews(final DepcyResolver depRes, PgDiffArguments arguments,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgView newView : newSchema.getViews()) {
@@ -40,25 +36,7 @@ public final class PgDiffViews {
             if (oldSchema == null
                     || !oldSchema.containsView(newView.getName())
                     || isModified) {
-                PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newView);
-                
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, newView, true);
-                
-                if (isModified){
-                 // check all dependants, drop them if blocking
-                    Set<PgStatement> dependantsSet = new LinkedHashSet<>();
-                    PgDiff.getDependantsSet(oldSchema.getView(newView.getName()), dependantsSet);
-                    
-                    for (PgStatement depnt : dependantsSet){
-                        if (depnt instanceof PgView){
-                            PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
-                                    searchPathHelper, script);
-                            PgDiff.writeCreationSql(script,"-- DEPCY: Following view depends"
-                                    + " on the altered view " + newView.getName(), depnt, false);
-                        }
-                    }
-                }
+                depRes.addCreateStatements(newView);
             }
         }
     }
@@ -71,7 +49,7 @@ public final class PgDiffViews {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropViews(final PgDiffScript script,
+    public static void dropViews(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -82,28 +60,7 @@ public final class PgDiffViews {
             final PgView newView = newSchema.getView(oldView.getName());
             boolean isModified = newView != null && isViewModified(oldView, newView);
             if (newView == null || isModified) {
-                
-                // check all dependants, drop them if blocking
-                Set<PgStatement> dependantsSet = new LinkedHashSet<>();
-                PgDiff.getDependantsSet(oldView, dependantsSet);
-                // wrap Set into array for reverse iteration
-                PgStatement[] dependants = dependantsSet.toArray(
-                        new PgStatement[dependantsSet.size()]);
-                
-                for (int i = dependants.length - 1; i >= 0; i--){
-                    PgStatement depnt = dependants[i];
-                    
-                    if (depnt instanceof PgView) {
-                        PgDiff.tempSwitchSearchPath(depnt.getParent().getName(),
-                                searchPathHelper, script);
-                        PgDiff.writeDropSql(script, "-- DEPCY: This view depends on the "
-                                + "view we are about to drop: " + oldView.getName(), depnt);
-                    }
-                }
-                
-                // output initial view drop
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeDropSql(script, null, oldView);
+                depRes.addDropStatements(oldView);
             }
         }
     }
@@ -140,94 +97,15 @@ public final class PgDiffViews {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterViews(final PgDiffScript script,
-            PgDiffArguments arguments, final PgSchema oldSchema, final PgSchema newSchema,
-            final SearchPathHelper searchPathHelper) {
+    public static void alterViews(final DepcyResolver depRes,
+            PgDiffArguments arguments, final PgSchema oldSchema,
+            final PgSchema newSchema, final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
             return;
         }
 
         for (final PgView oldView : oldSchema.getViews()) {
-            final PgView newView = newSchema.getView(oldView.getName());
-
-            if (newView == null) {
-                continue;
-            }
-            
-            diffDefaultValues(script, oldView, newView, searchPathHelper);
-
-            if (!Objects.equals(oldView.getOwner(), newView.getOwner())) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement(newView.getOwnerSQL());
-            }
-            
-            if (!oldView.getGrants().equals(newView.getGrants())
-                    || !oldView.getRevokes().equals(newView.getRevokes())) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement(newView.getPrivilegesSQL());
-            }
-
-            PgDiff.diffComments(oldView, newView, script);
-            
-            final List<String> columnNames =
-                    new ArrayList<>(newView.getColumnComments().size());
-
-            for (final PgView.ColumnComment columnComment :
-                    newView.getColumnComments()) {
-                columnNames.add(columnComment.getColumnName());
-            }
-
-            for (final PgView.ColumnComment columnComment :
-                    oldView.getColumnComments()) {
-                if (!columnNames.contains(columnComment.getColumnName())) {
-                    columnNames.add(columnComment.getColumnName());
-                }
-            }
-
-            for (final String columnName : columnNames) {
-                PgView.ColumnComment oldColumnComment = null;
-                PgView.ColumnComment newColumnComment = null;
-
-                for (final PgView.ColumnComment columnComment :
-                        oldView.getColumnComments()) {
-                    if (columnName.equals(columnComment.getColumnName())) {
-                        oldColumnComment = columnComment;
-                        break;
-                    }
-                }
-
-                for (final PgView.ColumnComment columnComment :
-                        newView.getColumnComments()) {
-                    if (columnName.equals(columnComment.getColumnName())) {
-                        newColumnComment = columnComment;
-                        break;
-                    }
-                }
-
-                if (oldColumnComment == null && newColumnComment != null
-                        || oldColumnComment != null && newColumnComment != null
-                        && !oldColumnComment.getComment().equals(
-                        newColumnComment.getComment())) {
-                    searchPathHelper.outputSearchPath(script);
-
-                    script.addStatement("COMMENT ON COLUMN "
-                            + PgDiffUtils.getQuotedName(newView.getName())
-                            + '.'
-                            + PgDiffUtils.getQuotedName(newColumnComment.getColumnName())
-                            + " IS "
-                            + newColumnComment.getComment()
-                            + ';');
-                } else if (oldColumnComment != null
-                        && newColumnComment == null) {
-                    searchPathHelper.outputSearchPath(script);
-
-                    script.addStatement("COMMENT ON COLUMN "
-                            + PgDiffUtils.getQuotedName(newView.getName())
-                            + '.'
-                            + PgDiffUtils.getQuotedName(oldColumnComment.getColumnName())
-                            + " IS NULL;");
-                }
-            }
+            depRes.appendAlter(oldView, newSchema.getView(oldView.getName()));
         }
     }
 
@@ -239,9 +117,8 @@ public final class PgDiffViews {
      * @param newView          new view
      * @param searchPathHelper search path helper
      */
-    private static void diffDefaultValues(final PgDiffScript script,
-            final PgView oldView, final PgView newView,
-            final SearchPathHelper searchPathHelper) {
+    public static void diffDefaultValues(final PgDiffScript script,
+            final PgView oldView, final PgView newView) {
         final List<PgView.DefaultValue> oldValues =
                 oldView.getDefaultValues();
         final List<PgView.DefaultValue> newValues =
@@ -256,8 +133,6 @@ public final class PgDiffViews {
                     found = true;
 
                     if (!oldValue.getDefaultValue().equals(newValue.getDefaultValue())) {
-                        searchPathHelper.outputSearchPath(script);
-
                         script.addStatement("ALTER TABLE "
                                 + PgDiffUtils.getQuotedName(newView.getName())
                                 + " ALTER COLUMN "
@@ -272,8 +147,6 @@ public final class PgDiffViews {
             }
 
             if (!found) {
-                searchPathHelper.outputSearchPath(script);
-
                 script.addStatement("ALTER TABLE "
                         + PgDiffUtils.getQuotedName(newView.getName())
                         + " ALTER COLUMN "
@@ -296,8 +169,6 @@ public final class PgDiffViews {
             if (found) {
                 continue;
             }
-
-            searchPathHelper.outputSearchPath(script);
 
             script.addStatement("ALTER TABLE "
                     + PgDiffUtils.getQuotedName(newView.getName())

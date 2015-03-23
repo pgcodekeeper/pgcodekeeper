@@ -4,9 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public final class GenericColumn implements Serializable{
-/**
-     * 
-     */
+
     private static final long serialVersionUID = -5032985077177033449L;
 // SONAR-OFF
     public final String schema;
@@ -21,9 +19,8 @@ public final class GenericColumn implements Serializable{
         this.column = column;
     }
     
-    public GenericColumn setType(ViewReference type) {
+    public void setType(ViewReference type) {
         this.type = type;
-        return this;
     }
     
     public ViewReference getType() {

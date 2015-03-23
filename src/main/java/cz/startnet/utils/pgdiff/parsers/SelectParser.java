@@ -64,7 +64,7 @@ public final class SelectParser {
     private final PgDatabase db;
 
     private SelectParser(PgDatabase db, String statement, String searchPath) {
-        this.select = new PgSelect(statement, searchPath);
+        this.select = new PgSelect(statement);
         this.db = db;
     }
     

@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -83,32 +84,30 @@ public abstract class PgStatement {
         sb.append("COMMENT ON ");
         DbObjType type = getStatementType();
         if (type == null) {
-            if (this instanceof PgColumn) {
-                sb.append("COLUMN ")
-                    .append(PgDiffUtils.getQuotedName(getParent().getName()))
-                    .append('.')
-                    .append(PgDiffUtils.getQuotedName(getName()));
-            } else {
-                throw new IllegalStateException("Object type is null!");
-            }
+            throw new IllegalStateException("Object type is null!");
         } else {
             sb.append(type).append(' ');
             switch (type) {
+            case COLUMN:
+                sb.append(PgDiffUtils.getQuotedName(getParent().getName()))
+                        .append('.')
+                        .append(PgDiffUtils.getQuotedName(getName()));
+                break;
             case FUNCTION:
                 ((PgFunction) this).appendFunctionSignature(sb, false, true);
                 break;
-                
+
             case CONSTRAINT:
             case TRIGGER:
                 sb.append(PgDiffUtils.getQuotedName(getName()))
                     .append(" ON ")
                     .append(PgDiffUtils.getQuotedName(getParent().getName()));
                 break;
-                
+
             case DATABASE:
                 sb.append("current_database()");
                 break;
-                
+
             default:
                 sb.append(PgDiffUtils.getQuotedName(getName()));
             }
@@ -237,6 +236,30 @@ public abstract class PgStatement {
     }
     
     public abstract String getDropSQL();
+    
+    /**
+     * Метод заполняет sb выражением изменения объекта, можно ли изменить объект
+     * ALTER.<br><br>
+     * 
+     * Результат работы метода определяется по паре значений:
+     * возвращаемое значение и длина sb.length().<br>
+     * Возвращаемое значение говорит о статусе объекта: изменился или нет.<br>
+     * sb.length() говорит о возможностиизменить состояние объекта ALTERом
+     * (если объект вообще изменился).<br><br>
+     * 
+     * <code>sb == 0 && rv == false</code> - не требуется действий<br>
+     * <code>sb >  0 && rv == false</code> - illegal state, неизмененный объект с ALTER<br>
+     * <code>sb == 0 && rv == true</code>  - ALTER невозможен, делаем DROP/CREATE<br>
+     * <code>sb >  0 && rv == true</code>  - делаем ALTER
+     * 
+     * @param newCondition новое состоятние объекта
+     * @param sb скрипт изменения
+     * @param isNeedDepcies out параметр: нужно ли использовать зависимости объекта
+     * @return true - необходимо изменить объект, используя DROP в случае
+     *                 невозможности ALTER, false - объект не изменился
+     */
+    public abstract boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies);
     
     /**
      * Copies all object properties into a new object and leaves all its children empty.

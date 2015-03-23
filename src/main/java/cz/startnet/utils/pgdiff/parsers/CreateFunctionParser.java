@@ -56,7 +56,7 @@ public final class CreateFunctionParser {
         }
 
         final PgFunction function = new PgFunction(
-                ParserUtils.getObjectName(functionName), statement, searchPath);
+                ParserUtils.getObjectName(functionName), statement);
         schema.addFunction(function);
         
         parseArguments(parser, function);

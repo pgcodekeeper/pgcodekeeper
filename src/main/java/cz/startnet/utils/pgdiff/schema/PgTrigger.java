@@ -5,13 +5,19 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -49,8 +55,8 @@ public class PgTrigger extends PgStatementWithSearchPath {
         return DbObjType.TRIGGER;
     }
     
-    public PgTrigger(String name, String rawStatement, String searchPath) {
-        super(name, rawStatement, searchPath);        
+    public PgTrigger(String name, String rawStatement) {
+        super(name, rawStatement);        
     }
 
     public void setBefore(final boolean before) {
@@ -147,6 +153,25 @@ public class PgTrigger extends PgStatementWithSearchPath {
     public String getDropSQL() {
         return "DROP TRIGGER " + PgDiffUtils.getQuotedName(getName()) + " ON "
                 + PgDiffUtils.getQuotedName(getTableName()) + ";";
+    }
+    
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+        PgTrigger newTrg;
+        if (newCondition instanceof PgTrigger) {
+            newTrg = (PgTrigger)newCondition; 
+        } else {
+            return false;
+        }
+        PgTrigger oldTrg = this;
+        PgDiffScript script = new PgDiffScript();
+        PgDiff.diffComments(oldTrg, newTrg, script);
+        
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+        script.printStatements(writer);
+        sb.append(diffInput.toString().trim());
+        return sb.length() > 0;
     }
 
     public void setForEachRow(final boolean forEachRow) {
@@ -261,7 +286,7 @@ public class PgTrigger extends PgStatementWithSearchPath {
         return (before == trigger.isBefore())
                 && (forEachRow == trigger.isForEachRow())
                 && Objects.equals(function_full, trigger.getFullFunction())
-                && Objects.equals(getFunctionSignature(), trigger.getFunctionSignature())
+                && Objects.equals(func_signature, trigger.getFunctionSignature())
                 && Objects.equals(name, trigger.getName())
                 && (onDelete == trigger.isOnDelete())
                 && (onInsert == trigger.isOnInsert())
@@ -280,24 +305,24 @@ public class PgTrigger extends PgStatementWithSearchPath {
         int result = 1;
         result = prime * result + (before ? itrue : ifalse);
         result = prime * result + (forEachRow ? itrue : ifalse);
-        result = prime * result + ((function_full == null) ? 0 : function_full.hashCode());
-        result = prime * result + ((getFunctionSignature() == null) ? 0 : getFunctionSignature().hashCode());
+        result = prime * result + (function_full == null ? 0 : function_full.hashCode());
+        result = prime * result + (func_signature == null ? 0 : getFunctionSignature().hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + (onDelete ? itrue : ifalse);
         result = prime * result + (onInsert ? itrue : ifalse);
         result = prime * result + (onTruncate ? itrue : ifalse);
         result = prime * result + (onUpdate ? itrue : ifalse);
         result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
-        result = prime * result + ((when == null) ? 0 : when.hashCode());
+        result = prime * result + (when == null ? 0 : when.hashCode());
         result = prime * result + new HashSet<>(updateColumns).hashCode();
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
+        result = prime * result + (comment == null ? 0 : comment.hashCode());
         return result;
     }
     
     @Override
     public PgTrigger shallowCopy() {
         PgTrigger triggerDst =
-                new PgTrigger(getName(), getRawStatement(), getSearchPath());
+                new PgTrigger(getName(), getRawStatement());
         triggerDst.setBefore(isBefore());
         triggerDst.setForEachRow(isForEachRow());
         triggerDst.setFunction(getFullFunction(), getFunctionSignature());
@@ -317,5 +342,10 @@ public class PgTrigger extends PgStatementWithSearchPath {
     @Override
     public PgTrigger deepCopy() {
         return shallowCopy();
+    }
+    
+    @Override
+    public PgSchema getContainingSchema() {
+        return (PgSchema)this.getParent().getParent();
     }
 }

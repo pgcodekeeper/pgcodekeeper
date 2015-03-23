@@ -1,8 +1,14 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -14,6 +20,8 @@ public class PgExtension extends PgStatement {
 
     private String schema;
     private String version;
+    @Deprecated
+    // TODO remove oldVersion, not create-able field, old field
     private String oldVersion;
 
     @Override
@@ -86,6 +94,32 @@ public class PgExtension extends PgStatement {
     @Override
     public String getDropSQL() {
         return "DROP EXTENSION " + PgDiffUtils.getQuotedName(getName()) + ';';
+    }
+    
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+        PgExtension newExt;
+        if (newCondition instanceof PgExtension) {
+            newExt = (PgExtension)newCondition;
+        } else {
+            return false;    
+        }
+        PgExtension oldExt = this;
+        PgDiffScript script = new PgDiffScript();
+        
+        if(!Objects.equals(newExt.getSchema(), oldExt.getSchema())) {
+            script.addStatement("ALTER EXTENSION "
+                    + PgDiffUtils.getQuotedName(oldExt.getName())
+                    + " SET SCHEMA " + newExt.getSchema() + ";");
+        }
+        // TODO ALTER EXTENSION UPDATE TO ?
+        PgDiff.diffComments(oldExt, newExt, script);
+        
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+        script.printStatements(writer);
+        sb.append(diffInput.toString().trim());
+        return sb.length() > 0;
     }
     
     @Override

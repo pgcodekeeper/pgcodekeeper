@@ -1,6 +1,7 @@
 package cz.startnet.utils.pgdiff.schema;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 
@@ -42,6 +43,11 @@ public class PgPrivilege extends PgStatement {
     @Override
     public String getDropSQL() {
         return null;
+    }
+    
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+        return false;
     }
     
     @Override

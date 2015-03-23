@@ -39,10 +39,11 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 public class DepcyGraph {
 
     private static final Set<String> SYS_TYPES = new HashSet<>(
-            Arrays.asList(ApgdiffConsts.SYS_TYPES));
+            ApgdiffConsts.SYS_TYPES);
     private static final List<String> SYS_COLUMNS = Arrays.asList(new String[]{
             "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
             });
+    
     // expect no nulls here
     private static final List<String> SYS_SCHEMAS = Arrays.asList(new String[]{
             "information_schema", "pg_catalog"});
@@ -136,12 +137,16 @@ public class DepcyGraph {
                 for (Argument arg: func.getArguments()) {
                     addPgStatementToType(arg.getDataType(), schema, func);
                 }
+                if (func.getReturnsName() != null) {
+                    createFunctionToObject(func, schema);
+                }
             }
             
             for(PgTable table : schema.getTables()) {
                 createTableToConstraints(table);
                 createTableToSequences(table, schema);
                 createTableToTriggers(table, schema);
+                createTableToTable(table, schema);
                 for (PgColumn col : table.getColumns()) {
                     addPgStatementToType(col.getType(), schema, table);
                 }
@@ -184,6 +189,46 @@ public class DepcyGraph {
         return result;
     }
 
+    private void createTableToTable(PgTable table, PgSchema schema) {
+        for (Entry<String, String> inherit : table.getInherits()) {
+            if (inherit.getKey() != null) {
+                schema = db.getSchema(inherit.getKey());
+            }
+            PgTable tabl = schema.getTable(inherit.getValue());
+            if (tabl != null) {
+                graph.addEdge(table, tabl);
+            }
+        }
+    }
+
+    private void createFunctionToObject(PgFunction func, PgSchema schema) {
+        GenericColumn objName = func.getReturnsName();
+        if (objName.schema != null) {
+            schema = db.getSchema(objName.schema);
+        }
+        PgTable tabl = schema.getTable(objName.table);
+        PgView view = schema.getView(objName.table);
+        // TODO написать для типов
+        if (tabl != null) {
+            graph.addEdge(func, tabl);
+        } else if (view != null){
+            graph.addEdge(func, view);
+        }
+        
+        for (Argument arg : func.getArguments()) {
+            for (GenericColumn obj : arg.getDefaultObjects()) {
+                PgSchema pgSchema = schema;
+                if (obj.schema != null) {
+                    pgSchema = db.getSchema(obj.schema); 
+                }
+                PgFunction function = resolveFunctionCall(pgSchema, obj.table);
+                if (function != null) {
+                    graph.addEdge(func, function);
+                }
+            }
+        }
+    }
+
     private void testNotNull(Object o, String message) throws PgCodekeeperException{
         if (o == null){
             throw new PgCodekeeperException(message);
@@ -201,7 +246,7 @@ public class DepcyGraph {
             // чтобы пропускать выборку из pg_views - системной таблицы
             if (tblName == null 
                     || col.getType() == ViewReference.SYSTEM 
-                    || (col.table != null && col.table.matches("pg_.*")) 
+                    || (col.table != null && col.table.startsWith("pg_")) 
                     || SYS_SCHEMAS.contains(scmName)){
                 continue;
             }
@@ -235,11 +280,10 @@ public class DepcyGraph {
                 // replace, toChar, now, что делать либо
                 // редактировать правила на эти функции, либо
                 // вычислять в коде, скорее всего правила
-                PgFunction func = scm.getFunction(tblName);
+                PgFunction func = resolveFunctionCall(scm, tblName);
                 // do not check for (func == null) because it can be a system function
                 // which currently does not get skipped
                 if (func != null) {    
-                    graph.addEdge(view, func);
                     graph.addEdge(view, func);
                 }
             } else {
@@ -272,13 +316,14 @@ public class DepcyGraph {
             if (seq != null) {
                 graph.addVertex(seq);
                 graph.addEdge(table, seq);
-                 
+                /*
                 String owned = seq.getOwnedBy();
                 if (owned != null) {
                     if (table.getName().equals(ParserUtils.getSecondObjectName(owned))) {
                         graph.addEdge(seq, table);
                     }
                 }
+                */
             }
         }
     }
@@ -313,6 +358,20 @@ public class DepcyGraph {
                 }
             }
         }
+    }
+
+    private PgFunction resolveFunctionCall(PgSchema schema, String funcName) {
+        int found = 0;
+        PgFunction func = null;
+        for (PgFunction f : schema.getFunctions()) {
+            if (f.getBareName().equals(funcName)) {
+                ++found;
+                func = f;
+            }
+        }
+        // TODO right now we don't have means to resolve overloaded function calls
+        // to avoid false dependencies skip resolving overloaded calls completely
+        return found == 1 ? func : null;
     }
 
     /**

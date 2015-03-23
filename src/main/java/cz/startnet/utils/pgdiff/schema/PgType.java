@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
@@ -288,7 +289,7 @@ public class PgType extends PgStatementWithSearchPath {
     }
 
     public PgType(String name, PgTypeForm form, String rawStatement, String searchPath) {
-        super(name, rawStatement, searchPath);
+        super(name, rawStatement);
         this.form = form;
     }
 
@@ -576,5 +577,17 @@ public class PgType extends PgStatementWithSearchPath {
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
+    }
+
+    @Override
+    public PgSchema getContainingSchema() {
+        return (PgSchema) this.getParent();
+    }
+
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        // TODO Auto-generated method stub
+        return false;
     }
 }

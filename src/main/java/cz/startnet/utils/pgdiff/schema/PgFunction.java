@@ -5,13 +5,20 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffFunctions;
+import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -24,14 +31,15 @@ public class PgFunction extends PgStatementWithSearchPath {
     private final List<Argument> arguments = new ArrayList<>();
     private String body;
     private String returns;
+    private GenericColumn returnsName;
 
     @Override
     public DbObjType getStatementType() {
         return DbObjType.FUNCTION;
     }
     
-    public PgFunction(String name, String rawStatement, String searchPath) {
-        super(name, rawStatement, searchPath);
+    public PgFunction(String name, String rawStatement) {
+        super(name, rawStatement);
     }
 
     @Override
@@ -99,6 +107,21 @@ public class PgFunction extends PgStatementWithSearchPath {
         resetHash();
     }
 
+    /**
+     * @return имя типа объекта на который указывает функция 
+     */
+    public GenericColumn getReturnsName() {
+        return returnsName;
+    }
+
+    
+    /**
+     * @param returnsName имя типа объекта на которое указывает функция
+     */
+    public void setReturnsName(GenericColumn returnsName) {
+        this.returnsName = returnsName;
+    }
+
     @Override
     public String getDropSQL() {
         final StringBuilder sbString = new StringBuilder();
@@ -107,6 +130,35 @@ public class PgFunction extends PgStatementWithSearchPath {
         sbString.append(';');
 
         return sbString.toString();
+    }
+    
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+        PgFunction newFunction;
+        if (newCondition instanceof PgFunction) {
+            newFunction = (PgFunction)newCondition; 
+        } else {
+            return false;
+        }
+        PgFunction oldFunction = this;
+        PgDiffScript script = new PgDiffScript();
+        
+        if (!oldFunction.equalsWhitespace(newFunction, false)) {
+            if (PgDiffFunctions.needDrop(oldFunction, newFunction)) {
+                isNeedDepcies.set(true);
+                return true;
+            } else {
+                sb.append(newFunction.getCreationSQL());
+            }
+        }
+        PgDiff.diffComments(oldFunction, newFunction, script);
+        
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+        script.printStatements(writer);
+        sb.append(diffInput.toString().trim());
+        
+        return sb.length() > 0;
     }
 
     /**
@@ -255,6 +307,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         private String name;
         private String dataType;
         private String defaultExpression;
+        private final List<GenericColumn> defaultObjects = new ArrayList<>();
 
         public String getDataType() {
             return dataType;
@@ -286,6 +339,20 @@ public class PgFunction extends PgStatementWithSearchPath {
 
         public void setName(final String name) {
             this.name = name;
+        }
+
+        /**
+         * @return список сигнатур функций использованных в выражении по умолчанию 
+         */
+        public List<GenericColumn> getDefaultObjects() {
+            return Collections.unmodifiableList(defaultObjects);
+        }
+
+        /**
+         * @param defaultObjects сигнатура функции использованная в выражении по умолчанию
+         */
+        public void addDefaultObject(GenericColumn defaultObject) {
+            defaultObjects.add(defaultObject);
         }
 
         public String getDeclaration(boolean includeDefaultValue, boolean includeArgName) {
@@ -345,8 +412,9 @@ public class PgFunction extends PgStatementWithSearchPath {
     @Override
     public PgFunction shallowCopy() {
         PgFunction functionDst =
-                new PgFunction(getBareName(),getRawStatement(), getSearchPath());
+                new PgFunction(getBareName(),getRawStatement());
         functionDst.setReturns(getReturns());
+        functionDst.setReturnsName(getReturnsName());
         functionDst.setBody(getBody());
         functionDst.setComment(getComment());
         for(Argument argSrc : arguments) {
@@ -355,6 +423,7 @@ public class PgFunction extends PgStatementWithSearchPath {
             argDst.setMode(argSrc.getMode());
             argDst.setDataType(argSrc.getDataType());
             argDst.setDefaultExpression(argSrc.getDefaultExpression());
+            argDst.defaultObjects.addAll(argSrc.defaultObjects);
             functionDst.addArgument(argDst);
         }
         for (PgPrivilege priv : revokes) {
@@ -370,5 +439,10 @@ public class PgFunction extends PgStatementWithSearchPath {
     @Override
     public PgFunction deepCopy() {
         return shallowCopy();
+    }
+    
+    @Override
+    public PgSchema getContainingSchema() {
+        return (PgSchema)this.getParent();
     }
 }

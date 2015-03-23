@@ -8,8 +8,8 @@ public class PgForeignKey extends PgConstraint{
     
     private final List<GenericColumn> refs = new ArrayList<>();
     
-    public PgForeignKey(String name, String rawStatement, String searchPath) {
-        super(name, rawStatement, searchPath);
+    public PgForeignKey(String name, String rawStatement) {
+        super(name, rawStatement);
     }
 
     public void addForeignColumn(GenericColumn referencedColumn) {
@@ -22,7 +22,7 @@ public class PgForeignKey extends PgConstraint{
     
     @Override
     public PgForeignKey shallowCopy() {
-        PgForeignKey foreignDst = new PgForeignKey(getName(), getRawStatement(), getSearchPath());
+        PgForeignKey foreignDst = new PgForeignKey(getName(), getRawStatement());
         foreignDst.setDefinition(getDefinition());
         foreignDst.setTableName(getTableName());
         foreignDst.setComment(getComment());

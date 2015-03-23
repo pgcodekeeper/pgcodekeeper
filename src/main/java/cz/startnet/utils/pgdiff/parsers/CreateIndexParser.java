@@ -62,7 +62,7 @@ public final class CreateIndexParser {
                     statement));
         }
 
-        final PgIndex index = new PgIndex(indexName, statement, searchPath);
+        final PgIndex index = new PgIndex(indexName, statement);
         table.addIndex(index);
         index.setDefinition(definition.trim());
         index.setTableName(table.getName());

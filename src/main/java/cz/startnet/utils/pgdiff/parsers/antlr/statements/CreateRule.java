@@ -44,8 +44,8 @@ public class CreateRule extends ParserAbstract {
         } else if (ctx.body_rule.on_function() != null) {
             type = DbObjType.FUNCTION;
             for (Function_parametersContext functparam : ctx.body_rule.on_function().obj_name) {
-                PgFunction func = new PgFunction(getName(functparam.name), null, db.getDefSearchPath());
-                fillArguments(functparam.function_args(), func);
+                PgFunction func = new PgFunction(getName(functparam.name), null);
+                fillArguments(functparam.function_args(), func, getDefSchemaName());
                 db.getSchema(getDefSchemaName())
                         .getFunction(func.getSignature())
                         .addPrivilege(

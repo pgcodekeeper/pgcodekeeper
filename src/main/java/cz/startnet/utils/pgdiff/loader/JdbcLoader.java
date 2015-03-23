@@ -27,8 +27,6 @@ import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
-import cz.startnet.utils.pgdiff.parsers.CreateFunctionParser;
-import cz.startnet.utils.pgdiff.parsers.Parser;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.SelectParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.CustomErrorListener;
@@ -36,6 +34,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLLexer;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView.SelectQueryVisitor;
+import cz.startnet.utils.pgdiff.parsers.antlr.statements.ParserAbstract;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -88,7 +87,7 @@ public class JdbcLoader implements PgCatalogStrings {
     private Map<Long, String> cachedRolesNamesByOid = new HashMap<>();
     private Map<Long, JdbcType> cachedTypeNamesByOid = new HashMap<>();
     /*
-     * Stores cached results of query "SELECT typmodout(colTypeMod)" for types.
+     * Stores cached results of query "SELECT typmodout(colTypeMod)" for types.<br>
      * Key is the oid of pg_catalog.pg_type table. Inner map stores pairs of colTypeMod 
      * and result of "SELECT typmodout(colTypeMod)" query.
      * typmodout is type-defined function that converts (colTypeMod) into the value we need.
@@ -443,7 +442,7 @@ public class JdbcLoader implements PgCatalogStrings {
             String[] concomments = (String[]) res.getArray("dom_concomments").getArray();
             
             for (int i = 0; i < connames.length; ++i) {
-                PgConstraint c = new PgConstraint(connames[i], "", getSearchPath(schemaName));
+                PgConstraint c = new PgConstraint(connames[i], "");
                 c.setDefinition(condefs[i]);
                 if (convalids[i]) {
                     d.addConstraint(c);
@@ -669,14 +668,14 @@ public class JdbcLoader implements PgCatalogStrings {
             throws SQLException {
         String constraintName = res.getString("conname");
         StringBuilder definition = new StringBuilder();
-        PgConstraint c = new PgConstraint(constraintName, "", getSearchPath(schemaName));
+        PgConstraint c = new PgConstraint(constraintName, "");
         
         List<String> columnNames = res.getArray("conkey") == null ? new ArrayList<String>() : 
                 getColumnNames((Integer[])res.getArray("conkey").getArray(), res.getLong("conrelid"));
         
         switch (res.getString("contype")){
             case "f":
-                c = new PgForeignKey(constraintName, "", getSearchPath(schemaName));
+                c = new PgForeignKey(constraintName, "");
                 List<String> referencedColumnNames = getColumnNames(
                         (Integer[])res.getArray("confkey").getArray(), res.getLong("confrelid"));
                 
@@ -779,7 +778,7 @@ public class JdbcLoader implements PgCatalogStrings {
             viewDef = viewDef.substring(0, viewDef.length() - 1);
         }
         
-        PgView v = new PgView(viewName, "", getSearchPath(schemaName));
+        PgView v = new PgView(viewName, "");
         v.setQuery(viewDef);
         
         // TODO костыль: необходимо передавать БД с дефолтной схемой = текущей схеме,
@@ -793,7 +792,7 @@ public class JdbcLoader implements PgCatalogStrings {
         }
         fakeDb.setDefaultSchema(schemaName);
         if (useAntrlForViews) {
-            v.setSelect(parseAntLrSelect(fakeDb, viewDef, getSearchPath(schemaName)));
+            v.setSelect(parseAntLrSelect(fakeDb, viewDef));
         } else {
             v.setSelect(SelectParser.parse(fakeDb, viewDef, getSearchPath(schemaName)));
         }
@@ -833,10 +832,10 @@ public class JdbcLoader implements PgCatalogStrings {
         return v;
     }
     
-    private PgSelect parseAntLrSelect(PgDatabase db, String statement, String searchPath) {
+    private PgSelect parseAntLrSelect(PgDatabase db, String statement) {
         CustomErrorListener errListener = new CustomErrorListener();
         
-        PgSelect select = new PgSelect(statement, searchPath);
+        PgSelect select = new PgSelect(statement);
         SQLLexer lexer = new SQLLexer(new ANTLRInputStream(statement));
         lexer.removeErrorListeners();
         lexer.addErrorListener(errListener);
@@ -933,7 +932,7 @@ public class JdbcLoader implements PgCatalogStrings {
             columns.add(column);
         }
         
-        PgTable t = new PgTable(tableName, "", getSearchPath(schemaName));
+        PgTable t = new PgTable(tableName, "");
         // INHERITS
         Array arrInherits = res.getArray("inherited");
         String [] inherits = null;
@@ -1013,7 +1012,7 @@ public class JdbcLoader implements PgCatalogStrings {
             throws SQLException, UnsupportedEncodingException {
   
         String triggerName = res.getString("tgname");
-        PgTrigger t = new PgTrigger(triggerName, "", getSearchPath(schemaName));
+        PgTrigger t = new PgTrigger(triggerName, "");
         
         int firingConditions = res.getInt("tgtype");
         if ((firingConditions & TRIGGER_TYPE_DELETE) != 0){
@@ -1072,7 +1071,7 @@ public class JdbcLoader implements PgCatalogStrings {
         String schemaName = res.getString("namespace");
         
         String indexName = res.getString(CLASS_RELNAME);
-        PgIndex i = new PgIndex(indexName, "", getSearchPath(schemaName));
+        PgIndex i = new PgIndex(indexName, "");
         i.setTableName(tableName);
 
         String definition = res.getString("definition"); 
@@ -1105,7 +1104,7 @@ public class JdbcLoader implements PgCatalogStrings {
      */
     private PgFunction getFunction(ResultSet res, String schemaName) throws SQLException{
         String functionName = res.getString("proname");
-        PgFunction f = new PgFunction(functionName, "", getSearchPath(schemaName));
+        PgFunction f = new PgFunction(functionName, "");
         
         f.setBody(getFunctionBody(res));
         
@@ -1131,20 +1130,23 @@ public class JdbcLoader implements PgCatalogStrings {
                 }
             }            
         }
-        
+
         JdbcType returnType = cachedTypeNamesByOid.get(res.getLong("prorettype"));
         if (returnsTable){
             f.setReturns("TABLE(" + returnedTableArguments + ")");
         }else if (res.getBoolean("proretset")){
             f.setReturns("SETOF " + returnType.getSchemaQualifiedName(schemaName));
+            // TODO поставить проверку на системные типы и не добавлять их
+            f.setReturnsName(new GenericColumn(returnType.getParentSchema(), returnType.getTypeName(), null));
         }else{
             f.setReturns(returnType.getSchemaQualifiedName(schemaName));
+            f.setReturnsName(new GenericColumn(returnType.getParentSchema(), returnType.getTypeName(), null));
         }
         
         // ARGUMENTS
         String arguments = res.getString("proarguments");
         if (!arguments.isEmpty()){
-            CreateFunctionParser.parseArguments(new Parser("(" + arguments + ")"), f);
+            parseArguments("(" + arguments + ")", f, schemaName);
         }
         
         // OWNER
@@ -1162,6 +1164,20 @@ public class JdbcLoader implements PgCatalogStrings {
         return f;
     }
     
+    private void parseArguments(String args, PgFunction f, String schemaName) {
+        CustomErrorListener errListener = new CustomErrorListener();
+        
+        SQLLexer lexer = new SQLLexer(new ANTLRInputStream(args));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errListener);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+
+        SQLParser parser = new SQLParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(errListener);
+        ParserAbstract.fillArguments(parser.function_args(), f, schemaName);
+    }
+
     private String getFunctionBody(ResultSet res) throws SQLException {
         StringBuilder body = new StringBuilder();
         
@@ -1236,7 +1252,7 @@ public class JdbcLoader implements PgCatalogStrings {
 
     private PgSequence getSequence(ResultSet res, String schemaName) throws SQLException {
         String sequenceName = res.getString(CLASS_RELNAME);
-        PgSequence s = new PgSequence(sequenceName, "", getSearchPath(schemaName));
+        PgSequence s = new PgSequence(sequenceName, "");
         s.setCycle(res.getBoolean("cycle_option"));
         s.setIncrement(res.getString("increment"));
         
@@ -1344,7 +1360,7 @@ public class JdbcLoader implements PgCatalogStrings {
     }
     
     private String getSearchPath(String schema){
-        return "SET search_path = " + schema + ", pg_catalog;";
+        return MessageFormat.format(ApgdiffConsts.SEARCH_PATH_PATTERN, schema);
     }
 
     private void prepareDataForSchema(Long schemaOid) throws SQLException{

@@ -1,5 +1,8 @@
 package ru.taximaxim.codekeeper.apgdiff;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Stores string constants
  * 
@@ -10,7 +13,8 @@ public interface ApgdiffConsts {
     String UTF_8 = "UTF-8";
     String UTC = "UTC";
     String PUBLIC = "public";
-    
+    String SEARCH_PATH_PATTERN = "SET search_path = {0}, pg_catalog;";
+
     String APGDIFF_PLUGIN_ID = "apgdiff";
     
     String FILENAME_WORKING_DIR_MARKER = ".pgcodekeeper";
@@ -28,7 +32,7 @@ public interface ApgdiffConsts {
         int JDBC_DEFAULT_PORT = 5432;
     }
     
-    String[] SYS_TYPES = {
+    List<String> SYS_TYPES = Arrays.asList(new String[] {
             "abstime", //$NON-NLS-1$
             "aclitem", //$NON-NLS-1$
             "any", //$NON-NLS-1$
@@ -111,5 +115,5 @@ public interface ApgdiffConsts {
             "void", //$NON-NLS-1$
             "xid", //$NON-NLS-1$
             "xml" //$NON-NLS-1$
-    };
+    });
 }

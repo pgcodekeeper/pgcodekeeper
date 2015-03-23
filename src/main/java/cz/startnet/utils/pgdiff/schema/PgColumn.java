@@ -5,11 +5,19 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+import java.text.MessageFormat;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -17,7 +25,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
  *
  * @author fordfrog
  */
-public class PgColumn extends PgStatement {
+public class PgColumn extends PgStatementWithSearchPath {
 
     private static final Pattern PATTERN_NULL = Pattern.compile(
             "^(.+)[\\s]+NULL$", Pattern.CASE_INSENSITIVE);
@@ -29,6 +37,8 @@ public class PgColumn extends PgStatement {
             "^(?:nextval|setval)\\('(?:(?<schema>[\\w&&[^0-9]]\\w*|\"[^\"]+\")\\s*\\.\\s*)?"
             + "(?:(?<seq>[\\w&&[^0-9]]\\w*|\"[^\"]+\"))'(?:[\\s]*::[\\s]*[\\w]+)\\)$",
             Pattern.CASE_INSENSITIVE);
+    private static final String ALTER_TABLE = "ALTER TABLE ";
+    private static final String ALTER_COLUMN = "\n\tALTER COLUMN ";
     
     private Integer statistics;
     private String defaultValue;
@@ -38,7 +48,7 @@ public class PgColumn extends PgStatement {
 
     @Override
     public DbObjType getStatementType() {
-        return null;
+        return DbObjType.COLUMN;
     }
     
     public PgColumn(String name) {
@@ -174,12 +184,130 @@ public class PgColumn extends PgStatement {
     
     @Override
     public String getCreationSQL() {
-        return null;
+        StringBuilder defaultStatement = new StringBuilder();
+        StringBuilder sbSQL = new StringBuilder();
+        sbSQL.append(getAlterTable())
+                .append("\n\tADD COLUMN ")
+                .append(getFullDefinition(false, defaultStatement))
+                .append(';');
+        if (defaultStatement.length() > 0) {
+            sbSQL.append("\n\n")
+                    .append(getAlterTable())
+                    .append(ALTER_COLUMN)
+                    .append(defaultStatement)
+                    .append(';');
+        }
+        if (comment != null && !comment.isEmpty()) {
+            sbSQL.append("\n\n");
+            appendCommentSql(sbSQL);
+        }
+        return sbSQL.toString();
+    }
+
+    private String getAlterTable() {
+        return ALTER_TABLE + this.getParent().getName();
     }
     
     @Override
     public String getDropSQL() {
-        return null;
+        return getAlterTable() + "\n\tDROP COLUMN "
+                + PgDiffUtils.getQuotedName(getName()) + ';';
+    }
+
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        PgColumn newColumn;
+        if (newCondition instanceof PgColumn) {
+            newColumn = (PgColumn) newCondition;
+        } else {
+            return false;
+        }
+        PgDiffScript script = new PgDiffScript();
+        PgColumn oldColumn = this;
+        final Integer oldStat = oldColumn.getStatistics();
+        final Integer newStat = newColumn.getStatistics();
+        Integer newStatValue = null;
+
+        if (newStat != null && (oldStat == null || !newStat.equals(oldStat))) {
+            newStatValue = newStat;
+        } else if (oldStat != null && newStat == null) {
+            newStatValue = Integer.valueOf(-1);
+        }
+
+        if (newStatValue != null) {
+            script.addStatement(ALTER_TABLE + "ONLY "
+                    + PgDiffUtils.getQuotedName(this.getParent().getName())
+                    + ALTER_COLUMN + PgDiffUtils.getQuotedName(getName())
+                    + " SET STATISTICS " + newStatValue + ';');
+        }
+        final String oldStorage =
+                (oldColumn.getStorage() == null ||oldColumn.getStorage().isEmpty()) ?
+                        null : oldColumn.getStorage();
+        final String newStorage =
+                (newColumn.getStorage() == null || newColumn .getStorage().isEmpty()) ?
+                        null : newColumn.getStorage();
+
+        if (newStorage == null && oldStorage != null) {
+            script.addStatement(MessageFormat.format(
+                    Messages.Storage_WarningUnableToDetermineStorageType,
+                    newColumn.getParent().getName(), newColumn.getName()));
+        }
+
+        if (newStorage != null && !newStorage.equalsIgnoreCase(oldStorage)) {
+            script.addStatement(ALTER_TABLE
+                    + "ONLY "
+                    + PgDiffUtils.getQuotedName(newColumn.getParent().getName())
+                    + ALTER_COLUMN
+                    + PgDiffUtils.getQuotedName(newColumn.getName())
+                    + " SET STORAGE " + newStorage + ';');
+        }
+
+        if (!oldColumn.getType().equals(newColumn.getType())) {
+            isNeedDepcies.set(true);
+
+            script.addStatement(getAlterTable()
+                    + ALTER_COLUMN
+                    + newColumn.getName()
+                    + " TYPE "
+                    + newColumn.getType()
+                    + "; /* "
+                    + MessageFormat.format(Messages.Table_TypeParameterChange,
+                            newColumn.getParent().getName(),
+                            oldColumn.getType(), newColumn.getType()) + " */");
+        }
+
+        final String oldDefault = (oldColumn.getDefaultValue() == null) ? ""
+                : oldColumn.getDefaultValue();
+        final String newDefault = (newColumn.getDefaultValue() == null) ? ""
+                : newColumn.getDefaultValue();
+
+        if (!oldDefault.equals(newDefault)) {
+            if (newDefault.isEmpty()) {
+                script.addStatement(getAlterTable() + ALTER_COLUMN
+                        + newColumn.getName() + " DROP DEFAULT;");
+            } else {
+                script.addStatement(getAlterTable() + ALTER_COLUMN
+                        + newColumn.getName() + " SET DEFAULT " + newDefault
+                        + ';');
+            }
+        }
+
+        if (oldColumn.getNullValue() != newColumn.getNullValue()) {
+            if (newColumn.getNullValue()) {
+                script.addStatement(getAlterTable() + ALTER_COLUMN
+                        + newColumn.getName() + " DROP NOT NULL;");
+            } else {
+                script.addStatement(getAlterTable() + ALTER_COLUMN
+                        + newColumn.getName() + " SET NOT NULL;");
+            }
+        }
+        PgDiff.diffComments(oldColumn, newColumn, script);
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+        script.printStatements(writer);
+        sb.append(diffInput.toString().trim());
+        return sb.length() > 0;
     }
     
     @Override
@@ -234,5 +362,10 @@ public class PgColumn extends PgStatement {
     @Override
     public PgColumn deepCopy() {
         return shallowCopy();
+    }
+
+    @Override
+    public PgSchema getContainingSchema() {
+        return (PgSchema)this.getParent().getParent();
     }
 }
