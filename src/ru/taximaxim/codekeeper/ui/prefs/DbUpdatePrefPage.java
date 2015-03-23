@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         IWorkbenchPreferencePage {
 
-    private PrefListEditor listEditor;
+    private StringPrefListEditor listEditor;
     private final XmlHistory history;
     
     public DbUpdatePrefPage() {
@@ -80,7 +80,7 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         grpCommandsEdit.setLayoutData(gd);
         grpCommandsEdit.setText(Messages.dbUpdatePrefPage_add_and_delete_ddl_update_commands);
         
-        listEditor = new PrefListEditor(grpCommandsEdit, false);
+        listEditor = new StringPrefListEditor(grpCommandsEdit, false);
         updateList();
         
         return parent;

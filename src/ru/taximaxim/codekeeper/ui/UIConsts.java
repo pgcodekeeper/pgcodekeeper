@@ -141,4 +141,6 @@ public interface UIConsts {
         String IGNORED_OBJS_ROOT = "ignored_objects"; //$NON-NLS-1$
         String IGNORED_OBJS_ELEMENT = "obj"; //$NON-NLS-1$
     }
+    
+    String IGNORED_OBJECTS = ".pgcodekeeperignore"; //$NON-NLS-1$
 }

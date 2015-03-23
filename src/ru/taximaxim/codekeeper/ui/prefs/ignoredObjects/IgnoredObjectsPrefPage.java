@@ -1,9 +1,11 @@
-package ru.taximaxim.codekeeper.ui.prefs;
+package ru.taximaxim.codekeeper.ui.prefs.ignoredObjects;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
@@ -27,7 +29,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
         implements IWorkbenchPreferencePage {
-    private PrefListEditor listEditor;
+    private IgnoreObjectPrefListEditor listEditor;
 
     public IgnoredObjectsPrefPage() {
         super(GRID);
@@ -41,11 +43,13 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
     private void updateList() {
         String preference = getPreferenceStore().getString(PREF.IGNORE_OBJECTS);
 
-        LinkedList<String> list = new LinkedList<>();
+        LinkedList<IgnoredObject> list = new LinkedList<>();
+        List<String> listFromSettings = new ArrayList<>();
         if (!preference.isEmpty()) {
             XmlStringList xml = new XmlStringList(XML_TAGS.IGNORED_OBJS_ROOT, XML_TAGS.IGNORED_OBJS_ELEMENT);
             try {
-                list = xml.deserializeList(new StringReader(preference));
+                listFromSettings = xml.deserializeList(new StringReader(preference));
+                list = IgnoredObject.parsePrefs(listFromSettings);
             } catch (IOException | SAXException ex) {
                 ExceptionNotifier.notifyDefault(Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, ex);
             }
@@ -68,7 +72,7 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
         
         new Label(parent, SWT.NONE).setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
         
-        listEditor = new PrefListEditor(parent, true);
+        listEditor = new IgnoreObjectPrefListEditor(parent, true);
         
         createFieldEditors();
         

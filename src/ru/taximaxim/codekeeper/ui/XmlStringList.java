@@ -65,7 +65,7 @@ public class XmlStringList {
         return readMap(readXml(reader));
     }
 
-    public void serializeList(List<String> listToConvert, boolean noFormatting,
+    public <T> void serializeList(List<T> listToConvert, boolean noFormatting,
             Writer writer) throws TransformerException, IOException {
         Document xml;
         try {
@@ -77,9 +77,9 @@ public class XmlStringList {
         Element root = xml.createElement(rootTagName);
         xml.appendChild(root);
         
-        for (String listElement : listToConvert) {
+        for (T listElement : listToConvert) {
             Element newElement = xml.createElement(elementTagName);
-            newElement.setTextContent(listElement);
+            newElement.setTextContent(listElement.toString());
             root.appendChild(newElement);
         }
         
