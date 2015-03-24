@@ -213,6 +213,12 @@ public final class Messages extends NLS {
     public static String diffWizard_target_source;
     public static String diffWizard_unexpected_error_while_saving_diff;
     public static String diffWizard_unexpected_target_type_value;
+    public static String ignoredObjectPrefListEditor_ignore_contents;
+
+    public static String ignoredObjectPrefListEditor_name;
+
+    public static String ignoredObjectPrefListEditor_regular;
+
     public static String initProjectFromSource_exporting_db_model;
     public static String initProjectFromSource_init_request_but_no_schema_source;
     public static String initProjectFromSource_initializing_project;
@@ -348,6 +354,10 @@ public final class Messages extends NLS {
     public static String XmlHistory_read_error;
     public static String XmlHistory_write_error;
     public static String XmlStringList_root_name_invalid;
+
+    public static String yesNoEditingSupport_no;
+
+    public static String yesNoEditingSupport_yes;
 
 // SONAR-ON
 

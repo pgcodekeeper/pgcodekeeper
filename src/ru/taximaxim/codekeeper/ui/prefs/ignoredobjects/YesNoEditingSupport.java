@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.prefs.ignoredObjects;
+package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
@@ -9,12 +9,23 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
-import ru.taximaxim.codekeeper.ui.prefs.ignoredObjects.IgnoreObjectPrefListEditor.BooleanChangeValues;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectPrefListEditor.BooleanChangeValues;
 
 public class YesNoEditingSupport extends EditingSupport {
     
     enum Values {
-        NO, YES
+        NO(Messages.yesNoEditingSupport_no), YES(Messages.yesNoEditingSupport_yes);
+        
+        String localizedName;
+        
+        private Values(String localizedName) {
+            this.localizedName = localizedName;
+        }
+        @Override
+        public String toString() {
+            return localizedName;
+        }
     }
 
     private ComboBoxViewerCellEditor cellEditor = null;

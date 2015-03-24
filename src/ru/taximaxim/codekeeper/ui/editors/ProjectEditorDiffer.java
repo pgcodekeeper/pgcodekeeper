@@ -333,7 +333,7 @@ class CommitPage extends DiffPresentationPane {
         Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
         // display commit dialog
         CommitDialog cd = new CommitDialog(getShell(), filtered, sumNewAndDelete,
-                mainPrefs, treeDiffer, isCommitCommandAvailable);
+                mainPrefs, proj, treeDiffer, isCommitCommandAvailable);
         cd.setConflictingElements(considerDepcy ? dte.getConflicting() : Collections.EMPTY_SET);
         if (cd.open() != CommitDialog.OK) {
             return;
@@ -345,7 +345,7 @@ class CommitPage extends DiffPresentationPane {
             // Убрать из списка всех элементов в filteredWithNewAndDelete те
             // элементы, с которых пользователь снял отметку в нижней таблице
             // FIXME убрать шелл, отделить логику от UI
-            DiffTableViewer diffTable = new DiffTableViewer(new Shell(), SWT.NONE, mainPrefs, true);
+            DiffTableViewer diffTable = new DiffTableViewer(new Shell(), SWT.NONE, mainPrefs, proj, true);
             diffTable.setFilteredInput(filteredWithNewAndDelete, treeDiffer, false);
             Set<TreeElement> allElements = diffTable.getCheckedElements(false);
             allElements.removeAll(cd.getBottomTableViewer().getCheckedElements(false));

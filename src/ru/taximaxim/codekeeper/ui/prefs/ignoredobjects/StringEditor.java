@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.prefs.ignoredObjects;
+package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,14 +19,14 @@ public class StringEditor {
         this.path = path;
     }
 
-    List<IgnoredObject> loadSettings() throws IOException {
+    public List<IgnoredObject> loadSettings() throws IOException {
         List<IgnoredObject> list = new ArrayList<>();
         if (Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
             Charset charset = Charset.forName(UIConsts.UTF_8);
             try (BufferedReader reader = Files.newBufferedReader(path, charset)) {
                 String line = null;
                 while ((line = reader.readLine()) != null) {
-                    IgnoredObject parsedObj = IgnoredObject.parseLine(line);
+                    IgnoredObject parsedObj = IgnoredObject.parseLine(line.trim());
                     if (parsedObj != null) {
                         list.add(parsedObj);
                     }

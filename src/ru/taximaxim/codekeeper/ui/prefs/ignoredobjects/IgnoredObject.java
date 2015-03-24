@@ -1,11 +1,12 @@
-package ru.taximaxim.codekeeper.ui.prefs.ignoredObjects;
+package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.prefs.ignoredObjects.IgnoreObjectPrefListEditor.BooleanChangeValues;
+import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectPrefListEditor.BooleanChangeValues;
 
 /**
  * Используется как контейнер для хранения настроек объекта для игнорирования
@@ -47,6 +48,16 @@ public class IgnoredObject {
         this.ignoreContent = ignoreContent;
     }
     
+    public boolean match(String objName) {
+        if (isRegular) {
+            return Pattern.compile(name,
+                            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
+                                .matcher(objName).find();
+        } else {
+            return name.contains(objName);
+        }
+    }
+    
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -78,7 +89,7 @@ public class IgnoredObject {
         return name + " " + result;
     }
     
-    static LinkedList<IgnoredObject> parsePrefs(List<String> propertyValues) {
+    public static LinkedList<IgnoredObject> parsePrefs(List<String> propertyValues) {
         LinkedList<IgnoredObject> result = new LinkedList<>();
         for (String prop : propertyValues) {
             IgnoredObject obj = parseLine(prop);
@@ -98,8 +109,8 @@ public class IgnoredObject {
                 }
                 return null;
             }
-            String name = line.substring(0, lastSpace);
-            String pattern = line.substring(lastSpace + 1, line.length());
+            String name = line.substring(0, lastSpace).trim();
+            String pattern = line.substring(lastSpace + 1, line.length()).trim();
             int val = Integer.parseInt(pattern);
             boolean isRegular = (val & BooleanChangeValues.REGULAR
                     .getStatusFlagValue()) == BooleanChangeValues.REGULAR

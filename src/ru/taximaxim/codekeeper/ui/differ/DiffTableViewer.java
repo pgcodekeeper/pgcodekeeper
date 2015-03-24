@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,9 +71,11 @@ import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.XML_TAGS;
@@ -81,8 +84,12 @@ import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.dialogs.DiffPaneDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObject;
+import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.StringEditor;
 import ru.taximaxim.codekeeper.ui.views.DepcyStructuredSelection;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 /*
  * Call CheckStateListener.updateCountLabels() when programmatically changing 
@@ -126,12 +133,13 @@ public class DiffTableViewer extends Composite {
     private Label lblCheckedCount;
     private ComboViewer cmbPrevChecked;
     
-    private List<String> ignoredElements;
+    private List<IgnoredObject> ignoredElements;
     private DbSource dbSource;
     private DbSource dbTarget;
     
     private Map<String, List<String>> prevChecked; 
     private XmlHistory prevCheckedHistory;
+    private PgDbProject proj;
     
     private enum Columns {
         CHECK,
@@ -142,9 +150,10 @@ public class DiffTableViewer extends Composite {
     }
     
     public DiffTableViewer(Composite parent, int style, final IPreferenceStore mainPrefs, 
-            boolean viewOnly) {
+            PgDbProject proj, boolean viewOnly) {
         super(parent, style);
         this.viewOnly = viewOnly;
+        this.proj = proj;
         
         lrm = new LocalResourceManager(JFaceResources.getResources(), this);
         for (DbObjType objType : DbObjType.values()) {
@@ -655,14 +664,21 @@ public class DiffTableViewer extends Composite {
     }
     
     private void generateFlatElementsMap(TreeElement subtree) {
-        List<TreeElement> elementsList = subtree.generateElementsList(
-                new ArrayList<TreeElement>(), dbSource.getDbObject(), dbTarget.getDbObject());
+        StringEditor se = new StringEditor(Paths.get(proj.getProject()
+                .getLocation().toOSString(), UIConsts.IGNORED_OBJECTS));
+        List<IgnoredObject> all = new ArrayList<>(ignoredElements);
+        try {
+            all.addAll(se.loadSettings());
+        } catch (IOException e1) {
+            Log.log(Log.LOG_WARNING,
+                    "Some problems occured while reading ignore settings from file",
+                    e1);
+        }
+        List<TreeElement> elementsList = generateElementsList(subtree,
+                new ArrayList<TreeElement>(), all, dbSource.getDbObject(), dbTarget.getDbObject());
         
         for(TreeElement e : elementsList){
-            // Do not add elements, that are in ignore list
-            if (!ignoredElements.contains(e.getName())) {
-                elements.put(e, false);
-            }
+            elements.put(e, false);
         }
     }
     
@@ -673,6 +689,48 @@ public class DiffTableViewer extends Composite {
             updateCheckedLabel();
         }
     }
+    /**
+     * Метод немного копирует функциональность {@link TreeElement#generateElementsList(List, PgDatabase, PgDatabase)}
+     * но еще останавливает проход по детям если элемент игнорируется со всеми детями   
+     * @param tree текущий элемент
+     * @param result результат элементов
+     * @param ignores список игнорированных объектов
+     * @param dbSource исходная БД
+     * @param dbTarget целевая БД
+     * @return
+     */
+    private List<TreeElement> generateElementsList(TreeElement tree, 
+            List<TreeElement> result, List<IgnoredObject> ignores,
+            PgDatabase dbSource, PgDatabase dbTarget) {
+        boolean dontAdd = false;
+        if (tree.getType() != DbObjType.CONTAINER) {
+            for (IgnoredObject ign : ignores) {
+                if (ign.match(tree.getName())) {
+                    if (ign.isIgnoreContent()) {
+                        return result;
+                    } else {
+                        dontAdd = true;
+                    }
+                }
+            }
+        }
+        for (TreeElement child : tree.getChildren()) {
+            generateElementsList(child, result, ignores, dbSource, dbTarget);
+        }
+        
+        boolean shouldCompareEdits = tree.getSide() == DiffSide.BOTH && dbSource != null && dbTarget != null;
+        if ((tree.getSide() == DiffSide.BOTH && tree.getParent() != null && tree.getParent().getSide() != DiffSide.BOTH)
+                || tree.getType() == DbObjType.CONTAINER
+                || tree.getType() == DbObjType.DATABASE 
+                || shouldCompareEdits && tree.getPgStatement(dbSource).compare(tree.getPgStatement(dbTarget))
+                || dontAdd) {
+            return result;
+        }
+        
+        result.add(tree);
+        return result;
+    }
+    
     
     private void updateObjectsLabel() {
         lblObjectCount.setText(MessageFormat.format(
@@ -844,8 +902,8 @@ public class DiffTableViewer extends Composite {
                         XML_TAGS.IGNORED_OBJS_ROOT,
                         XML_TAGS.IGNORED_OBJS_ELEMENT);
                 try {
-                    ignoredElements = xml.deserializeList(
-                            new StringReader((String) event.getNewValue()));
+                    ignoredElements = IgnoredObject.parsePrefs(xml.deserializeList(
+                            new StringReader((String) event.getNewValue())));
                 } catch (IOException | SAXException ex) {
                     ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_reading_ignored_objects, ex);
                     return;

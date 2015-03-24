@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.prefs.ignoredObjects;
+package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
         implements IWorkbenchPreferencePage {
-    private IgnoreObjectPrefListEditor listEditor;
+    private IgnoredObjectPrefListEditor listEditor;
 
     public IgnoredObjectsPrefPage() {
         super(GRID);
@@ -72,7 +72,7 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
         
         new Label(parent, SWT.NONE).setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
         
-        listEditor = new IgnoreObjectPrefListEditor(parent, true);
+        listEditor = new IgnoredObjectPrefListEditor(parent, true);
         
         createFieldEditors();
         

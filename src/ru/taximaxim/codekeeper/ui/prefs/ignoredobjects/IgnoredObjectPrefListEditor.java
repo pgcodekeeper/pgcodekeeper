@@ -1,4 +1,4 @@
-package ru.taximaxim.codekeeper.ui.prefs.ignoredObjects;
+package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -9,10 +9,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
-import ru.taximaxim.codekeeper.ui.prefs.ignoredObjects.YesNoEditingSupport.Values;
+import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.YesNoEditingSupport.Values;
 
-public class IgnoreObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
+public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
 
     enum BooleanChangeValues {
         REGULAR(1<<0),
@@ -29,12 +30,15 @@ public class IgnoreObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
         }
     }
     
-    public IgnoreObjectPrefListEditor(Composite parent, boolean doSorting) {
+    public IgnoredObjectPrefListEditor(Composite parent, boolean doSorting) {
         super(parent, doSorting);
     }
 
     @Override
     protected IgnoredObject getObject(String name) {
+        if (name.trim().isEmpty()) {
+            return null;
+        }
         return new IgnoredObject(name, false, false);
     }
 
@@ -55,7 +59,7 @@ public class IgnoreObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
         TableViewer tableViewer = (TableViewer) listViewerObjs;
         TableViewerColumn name = new TableViewerColumn(tableViewer, 0);
         name.getColumn().setResizable(true);
-        name.getColumn().setText("Name");
+        name.getColumn().setText(Messages.ignoredObjectPrefListEditor_name);
         name.getColumn().setResizable(true);
         name.getColumn().setMoveable(true);
         name.setLabelProvider(new ColumnLabelProvider() {
@@ -68,7 +72,7 @@ public class IgnoreObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
         
         TableViewerColumn isRegular = new TableViewerColumn(tableViewer, SWT.CHECK,1);
         isRegular.getColumn().setResizable(true);
-        isRegular.getColumn().setText("Regular");
+        isRegular.getColumn().setText(Messages.ignoredObjectPrefListEditor_regular);
         isRegular.getColumn().setResizable(false);
         isRegular.getColumn().setMoveable(true);
         isRegular.setLabelProvider(new ColumnLabelProvider() {
@@ -82,7 +86,7 @@ public class IgnoreObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
         
         TableViewerColumn ignoreContents = new TableViewerColumn(tableViewer, SWT.CHECK, 2);
         ignoreContents.getColumn().setResizable(true);
-        ignoreContents.getColumn().setText("Ignore Contents");
+        ignoreContents.getColumn().setText(Messages.ignoredObjectPrefListEditor_ignore_contents);
         ignoreContents.getColumn().setResizable(false);
         ignoreContents.getColumn().setMoveable(true);
         ignoreContents.setLabelProvider(new ColumnLabelProvider() {
