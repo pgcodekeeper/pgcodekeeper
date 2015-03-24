@@ -55,6 +55,9 @@ class ParserClassAntlr extends ParserClass {
     public PgDatabase parse(InputStream inputStream, String charsetName,
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
             PgDatabase database, Path path) {
+        if (monitor.isCanceled()) {
+            return database;
+        }
         return PgDumpLoader.loadDatabaseSchemaCoreAntLR(
                 inputStream, charsetName,
                 outputIgnoredStatements, ignoreSlonyTriggers, database, path,
@@ -91,6 +94,9 @@ class ParserAntlrReferences extends ParserClass {
     public PgDatabase parse(InputStream inputStream, String charsetName,
             boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
             PgDatabase database, Path path) {
+        if (monitor.isCanceled()) {
+            return database;
+        }
         return PgDumpLoader.loadObjReferences(
                 inputStream, charsetName,
                 outputIgnoredStatements, ignoreSlonyTriggers, database, path,
