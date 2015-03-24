@@ -1,17 +1,9 @@
--- DEPCY: This object depends on the type we are about to drop: typ_range
+-- DEPCY: This COLUMN depends on the TYPE: typ_range
 
-DROP TABLE distributors;
+ALTER TABLE distributors
+	DROP COLUMN did;
 
 DROP TYPE typ_range;
-
--- DEPCY: This object depends on the type we are about to create: typ_range
-
-CREATE TABLE distributors (
-	did typ_range,
-	name character varying(40)
-);
-
-ALTER TABLE distributors OWNER TO botov_av;
 
 CREATE TYPE typ_range AS RANGE (
 	subtype = character varying,
@@ -19,3 +11,6 @@ CREATE TYPE typ_range AS RANGE (
 );
 
 ALTER TYPE typ_range OWNER TO botov_av;
+
+ALTER TABLE distributors
+	ADD COLUMN did typ_range;

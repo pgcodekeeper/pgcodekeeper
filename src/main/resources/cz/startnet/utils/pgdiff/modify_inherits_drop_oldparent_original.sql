@@ -15,44 +15,32 @@ COMMENT ON SCHEMA public IS 'Standard public schema';
 
 SET search_path = public, pg_catalog;
 
---
--- Name: testseq; Type: SEQUENCE; Schema: public; Owner: fordfrog
---
-
-CREATE SEQUENCE testseq
-    START WITH 1000
-    INCREMENT BY 1
-    NO MAXVALUE
-    NO MINVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.testseq OWNER TO fordfrog;
-
 SET default_tablespace = '';
 
 SET default_with_oids = false;
+
+--
+-- Name: parenttable; Type: TABLE; Schema: public; Owner: fordfrog; Tablespace: 
+--
+
+CREATE TABLE parenttable (
+    id bigserial NOT NULL
+);
+
+
+ALTER TABLE public.parenttable OWNER TO fordfrog;
 
 --
 -- Name: testtable; Type: TABLE; Schema: public; Owner: fordfrog; Tablespace: 
 --
 
 CREATE TABLE testtable (
-    field1 integer,
-    field2 integer,
-    field3 character varying(150) DEFAULT 'none'::character varying,
-    field4 double precision
-);
+    field1 polygon
+)
+INHERITS (parenttable);
 
 
 ALTER TABLE public.testtable OWNER TO fordfrog;
-
---
--- Name: testindex; Type: INDEX; Schema: public; Owner: fordfrog; Tablespace: 
---
-
-CREATE INDEX testindex ON testtable USING btree (field3);
-
 
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres

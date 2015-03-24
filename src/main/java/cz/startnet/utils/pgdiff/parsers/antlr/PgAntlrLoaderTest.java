@@ -669,7 +669,7 @@ class PgDB8 extends PgDatabaseObjectCreator {
     PgSchema schema = d.getDefaultSchema();
     schema.setComment("'Standard public schema'");
     
-    PgType type = new PgType("testtt", PgTypeForm.COMPOSITE, "", "SET search_path = public, pg_catalog;");
+    PgType type = new PgType("testtt", PgTypeForm.COMPOSITE, "");
     PgColumn col = new PgColumn("a");
     col.setType("integer");
     type.addAttr(col);
