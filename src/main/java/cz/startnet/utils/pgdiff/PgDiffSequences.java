@@ -36,29 +36,6 @@ public final class PgDiffSequences {
     }
 
     /**
-     * Outputs statements for altering of new sequences.
-     *
-     * @param writer           writer the output should be written to
-     * @param oldSchema        original schema
-     * @param newSchema        new schema
-     * @param searchPathHelper search path helper
-     */
-    public static void alterCreatedSequences(final PgDiffScript script,
-            final PgSchema oldSchema, final PgSchema newSchema,
-            final SearchPathHelper searchPathHelper) {
-        // Alter created sequences
-        for (final PgSequence sequence : newSchema.getSequences()) {
-            if ((oldSchema == null
-                    || !oldSchema.containsSequence(sequence.getName()))
-                    && sequence.getOwnedBy() != null
-                    && !sequence.getOwnedBy().isEmpty()) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement(sequence.getOwnedBySQL());
-            }
-        }
-    }
-
-    /**
      * Outputs statements for dropping of sequences that do not exist anymore.
      *
      * @param writer           writer the output should be written to

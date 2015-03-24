@@ -359,19 +359,19 @@ public final class PgDiff {
                 depRes, script, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.dropSequences(
                 depRes, oldSchema, newSchema, searchPathHelper);
-        PgDiffDomains.dropDomains(script, oldSchema, newSchema,
-                searchPathHelper);
+        PgDiffDomains.dropDomains(
+                depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffTypes.dropTypes(
-                script, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         
         PgDiffTypes.createTypes(
-                script, oldSchema, newSchema, searchPathHelper);
+                depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffTypes.alterTypes(
-                script, arguments, oldSchema, newSchema, searchPathHelper);
-        PgDiffDomains.createDomains(script, oldSchema, newSchema,
-                searchPathHelper);
-        PgDiffDomains.alterDomains(script, arguments, oldSchema, newSchema,
-                searchPathHelper);
+                depRes, arguments, oldSchema, newSchema, searchPathHelper);
+        PgDiffDomains.createDomains(
+                depRes, oldSchema, newSchema, searchPathHelper);
+        PgDiffDomains.alterDomains(
+                depRes, arguments, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.createSequences(
                 depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffSequences.alterSequences(

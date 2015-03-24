@@ -38,7 +38,7 @@ public class CreateType extends ParserAbstract {
         } else if (ctx.INPUT() != null) {
             form = PgTypeForm.BASE;
         }
-        PgType type = new PgType(name, form, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
+        PgType type = new PgType(name, form, getFullCtxText(ctx.getParent()));
         for (Table_column_definitionContext attr : ctx.attrs) {
             type.addAttr(getColumn(attr, new ArrayList<String>()));
         }

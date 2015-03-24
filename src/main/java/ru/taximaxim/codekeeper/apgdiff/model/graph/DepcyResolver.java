@@ -389,6 +389,10 @@ public class DepcyResolver {
             return oldSchema.getSequence(statement.getName());
         case FUNCTION:
             return oldSchema.getFunction(statement.getName());
+        case TYPE:
+            return oldSchema.getType(statement.getName());
+        case DOMAIN:
+            return oldSchema.getDomain(statement.getName());
         case CONTAINER:
         case DATABASE:
         default:

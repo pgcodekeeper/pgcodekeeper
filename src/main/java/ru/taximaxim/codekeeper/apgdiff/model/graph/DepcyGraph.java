@@ -148,7 +148,7 @@ public class DepcyGraph {
                 createTableToTriggers(table, schema);
                 createTableToTable(table, schema);
                 for (PgColumn col : table.getColumns()) {
-                    addPgStatementToType(col.getType(), schema, table);
+                    addPgStatementToType(col.getType(), schema, col);
                 }
             }
             

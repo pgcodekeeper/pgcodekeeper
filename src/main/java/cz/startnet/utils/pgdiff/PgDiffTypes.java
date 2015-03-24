@@ -1,16 +1,9 @@
 package cz.startnet.utils.pgdiff;
 
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
-import cz.startnet.utils.pgdiff.schema.PgColumn;
-import cz.startnet.utils.pgdiff.schema.PgFunction;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgType;
 
 /**
@@ -27,7 +20,7 @@ public final class PgDiffTypes {
      * @param newSchema new schema
      * @param searchPathHelper search path helper
      */
-    public static void createTypes(final PgDiffScript script,
+    public static void createTypes(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgType type : newSchema.getTypes()) {
@@ -35,11 +28,7 @@ public final class PgDiffTypes {
             
             if (oldType == null ||
                     (!type.equals(oldType) && !canAlter(oldType, type))) {
-                PgDiff.addUniqueDependenciesOnCreateEdit(script, null,
-                        searchPathHelper, type);
-
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, type, true);
+                depRes.addCreateStatements(type);
             }
         }
     }
@@ -52,7 +41,7 @@ public final class PgDiffTypes {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropTypes(final PgDiffScript script,
+    public static void dropTypes(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -64,45 +53,7 @@ public final class PgDiffTypes {
             PgType newType = newSchema.getType(oldType.getName());
             if (newType == null ||
                     (!oldType.equals(newType) && !canAlter(oldType, newType))) {
-                
-                Set<PgStatement> dependantsSet = new LinkedHashSet<>();
-                PgDiff.getDependantsSet(oldType, dependantsSet);
-                PgStatement[] dependants = dependantsSet.toArray(
-                        new PgStatement[dependantsSet.size()]);
-
-                // drop dependants in reverse first
-                for (int i = dependants.length - 1; i >= 0; --i) {
-                    PgStatement depnt = dependants[i];
-                    
-                    if (depnt instanceof PgFunction
-                            || depnt instanceof PgTable) {
-                        PgDiff.tempSwitchSearchPath(
-                                depnt.getParent().getName(),
-                                searchPathHelper, script);
-                        PgDiff.writeDropSql(script,
-                                "-- DEPCY: This object depends on the type"
-                                + " we are about to drop: " + oldType.getName(),
-                                depnt);
-                    }
-                }
-
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeDropSql(script, null, oldType);
-                
-                // create dependants
-                for (PgStatement depnt : dependants) {
-                    
-                    if (depnt instanceof PgFunction
-                            || depnt instanceof PgTable) {
-                        PgDiff.tempSwitchSearchPath(
-                                depnt.getParent().getName(),
-                                searchPathHelper, script);
-                        PgDiff.writeCreationSql(script,
-                                "-- DEPCY: This object depends on the type"
-                                + " we are about to create: " + oldType.getName(),
-                                depnt, true);
-                    }
-                }
+                depRes.addDropStatements(oldType);
             }
         }
     }
@@ -110,7 +61,7 @@ public final class PgDiffTypes {
     /**
      * This method assumes that its arguments are not equal. 
      */
-    private static boolean canAlter(PgType oldType, PgType newType) {
+    public static boolean canAlter(PgType oldType, PgType newType) {
         if (oldType.getForm() != newType.getForm()) {
             return false;
         }
@@ -142,7 +93,7 @@ public final class PgDiffTypes {
                     // thus we will fail to find new.e2 while iterating for old.e2
                 }
             }
-            // since old list is exhausted at this point we always return true
+            // old list is exhausted at this point and we always return true
             // since we can create new enum members
             return true;
         case COMPOSITE:
@@ -161,100 +112,18 @@ public final class PgDiffTypes {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */    
-    public static void alterTypes(final PgDiffScript script,
+    public static void alterTypes(final DepcyResolver depRes,
             final PgDiffArguments arguments, final PgSchema oldSchema,
             final PgSchema newSchema, final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
             return;
         }
-        final StringBuilder sbSQL = new StringBuilder();
-        StringBuilder attrSb = new StringBuilder();
-        for (final PgType newType : newSchema.getTypes()) {
+        for (PgType newType : newSchema.getTypes()) {
             PgType oldType = oldSchema.getType(newType.getName());
-
-            if (oldType == null) {
-                continue;
-            }
-            if (oldType.equals(newType) || !canAlter(oldType, newType)) {
-                continue;
-            }
-            sbSQL.setLength(0);
-            attrSb.setLength(0);
-            
-            for (PgColumn attr : newType.getAttrs()) {
-                PgColumn oldAttr = oldType.getAttr(attr.getName());
-                if (oldAttr != null) {
-                    if (!oldAttr.getType().equals(attr.getType())) {
-                        attrSb.append("\n\tALTER ATTRIBUTE ")
-                                .append(PgDiffUtils.getQuotedName(attr.getName()))
-                                .append(" TYPE ")
-                                .append(attr.getType())
-                                .append(", ");
-                    }
-                } else {
-                    attrSb.append("\n\tADD ATTRIBUTE ")
-                            .append(attr.getFullDefinition(false, null))
-                            .append(", ");
-                }
-            }
-            for (PgColumn attr : oldType.getAttrs()) {
-                if (newType.getAttr(attr.getName()) == null) {
-                    attrSb.append("\n\tDROP ATTRIBUTE ")
-                            .append(PgDiffUtils.getQuotedName(attr.getName()))
-                            .append(", ");
-                }
-            }
-            
-            if (attrSb.length() > 0) {
-                attrSb.setLength(attrSb.length() - ", ".length());
-                if (sbSQL.length() != 0) {
-                    sbSQL.append("\n\n");
-                }
-                sbSQL.append("ALTER TYPE ")
-                        .append(PgDiffUtils.getQuotedName(newType.getName()))
-                        .append(attrSb).append(';');
-            }
-            
-            List<String> enums = newType.getEnums();
-            List<String> oldEnums = oldType.getEnums();
-            for (int i = 0; i < enums.size(); ++i) {
-                String enum_ = enums.get(i);
-                if (!oldEnums.contains(enum_)) {
-                    if (sbSQL.length() != 0) {
-                        sbSQL.append("\n\n");
-                    }
-                    sbSQL.append("ALTER TYPE ")
-                            .append(PgDiffUtils.getQuotedName(newType.getName()))
-                            .append("\n\tADD VALUE ").append(enum_);
-                    if (i == 0) {
-                        sbSQL.append(" BEFORE ").append(oldEnums.get(0));
-                    } else {
-                        sbSQL.append(" AFTER ").append(enums.get(i - 1));
-                    }
-                    sbSQL.append(';');
-                }
-            }
-            
-            if (sbSQL.length() > 0) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement(sbSQL.toString());
-            }
-            if (!Objects.equals(oldType.getOwner(), newType.getOwner())) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement(newType.getOwnerSQL());
-            }
-            if (!oldType.getGrants().equals(newType.getGrants()) ||
-                    !oldType.getRevokes().equals(newType.getRevokes())) {
-                searchPathHelper.outputSearchPath(script);
-                script.addStatement(newType.getPrivilegesSQL());
-            }
-            PgDiff.diffComments(oldType, newType, script);
+            depRes.appendAlter(oldType, newType);
         }
     }
     
-    /**
-     * Creates a new instance of {@link PgDiffTypes}.
-     */
     private PgDiffTypes() {
     }
 }

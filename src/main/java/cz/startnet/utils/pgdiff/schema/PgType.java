@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiffTypes;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 public class PgType extends PgStatementWithSearchPath {
@@ -288,7 +289,7 @@ public class PgType extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public PgType(String name, PgTypeForm form, String rawStatement, String searchPath) {
+    public PgType(String name, PgTypeForm form, String rawStatement) {
         super(name, rawStatement);
         this.form = form;
     }
@@ -452,8 +453,92 @@ public class PgType extends PgStatementWithSearchPath {
     }
 
     @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
+        PgType newType, oldType = this;
+        if (newCondition instanceof PgType) {
+            newType = (PgType) newCondition;
+        } else {
+            return false;
+        }
+        
+        if (oldType.equals(newType) || !PgDiffTypes.canAlter(oldType, newType)) {
+            return false;
+        }
+        
+        StringBuilder attrSb = new StringBuilder();
+        for (PgColumn attr : newType.getAttrs()) {
+            PgColumn oldAttr = oldType.getAttr(attr.getName());
+            if (oldAttr != null) {
+                if (!oldAttr.getType().equals(attr.getType())) {
+                    attrSb.append("\n\tALTER ATTRIBUTE ")
+                            .append(PgDiffUtils.getQuotedName(attr.getName()))
+                            .append(" TYPE ")
+                            .append(attr.getType())
+                            .append(", ");
+                }
+            } else {
+                attrSb.append("\n\tADD ATTRIBUTE ")
+                        .append(attr.getFullDefinition(false, null))
+                        .append(", ");
+            }
+        }
+        for (PgColumn attr : oldType.getAttrs()) {
+            if (newType.getAttr(attr.getName()) == null) {
+                attrSb.append("\n\tDROP ATTRIBUTE ")
+                        .append(PgDiffUtils.getQuotedName(attr.getName()))
+                        .append(", ");
+            }
+        }
+        
+        if (attrSb.length() > 0) {
+            // remove last comma
+            attrSb.setLength(attrSb.length() - ", ".length());
+            if (sb.length() != 0) {
+                sb.append("\n\n");
+            }
+            sb.append("ALTER TYPE ")
+                    .append(PgDiffUtils.getQuotedName(newType.getName()))
+                    .append(attrSb).append(';');
+        }
+        
+        List<String> enums = newType.getEnums();
+        List<String> oldEnums = oldType.getEnums();
+        for (int i = 0; i < enums.size(); ++i) {
+            String enum_ = enums.get(i);
+            if (!oldEnums.contains(enum_)) {
+                if (sb.length() != 0) {
+                    sb.append("\n\n");
+                }
+                sb.append("ALTER TYPE ")
+                        .append(PgDiffUtils.getQuotedName(newType.getName()))
+                        .append("\n\tADD VALUE ").append(enum_);
+                if (i == 0) {
+                    sb.append(" BEFORE ").append(oldEnums.get(0));
+                } else {
+                    sb.append(" AFTER ").append(enums.get(i - 1));
+                }
+                sb.append(';');
+            }
+        }
+        
+        if (!Objects.equals(oldType.getOwner(), newType.getOwner())) {
+            newType.appendOwnerSQL(sb);
+        }
+        if (!oldType.getGrants().equals(newType.getGrants()) ||
+                !oldType.getRevokes().equals(newType.getRevokes())) {
+            newType.appendPrivileges(sb);
+        }
+        if (!Objects.equals(oldType.getComment(), newType.getComment())) {
+            newType.appendCommentSql(sb);
+        }
+        return sb.length() > startLength;
+    }
+
+    @Override
     public PgType shallowCopy() {
-        PgType copy = new PgType(getName(), getForm(), getRawStatement(), getSearchPath());
+        PgType copy = new PgType(getName(), getForm(), getRawStatement());
         for (PgColumn attr : attrs) {
             copy.addAttr(attr.shallowCopy());
         }
@@ -508,7 +593,8 @@ public class PgType extends PgStatementWithSearchPath {
             return false;
         }
         PgType type = (PgType) obj;
-        return form == type.getForm()
+        return Objects.equals(name, type.getName())
+                && form == type.getForm()
                 && attrs.equals(type.attrs)
                 && enums.equals(type.enums)
                 && Objects.equals(subtype, type.getSubtype())
@@ -546,6 +632,7 @@ public class PgType extends PgStatementWithSearchPath {
         final int itrue = 1231;
         final int ifalse = 1237;
         int result = 1;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((form == null) ? 0 : form.hashCode());
         result = prime * result + ((attrs == null) ? 0 : attrs.hashCode());
         result = prime * result + ((enums == null) ? 0 : enums.hashCode());
@@ -582,12 +669,5 @@ public class PgType extends PgStatementWithSearchPath {
     @Override
     public PgSchema getContainingSchema() {
         return (PgSchema) this.getParent();
-    }
-
-    @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        // TODO Auto-generated method stub
-        return false;
     }
 }

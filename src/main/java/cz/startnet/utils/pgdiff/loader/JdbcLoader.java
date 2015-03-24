@@ -414,7 +414,7 @@ public class JdbcLoader implements PgCatalogStrings {
     }
     
     private PgDomain getDomain(ResultSet res, String schemaName) throws SQLException {
-        PgDomain d = new PgDomain(res.getString("typname"), "", getSearchPath(schemaName));
+        PgDomain d = new PgDomain(res.getString("typname"), "");
         
         d.setDataType(res.getString("dom_basetype"));
         long collation = res.getLong("typcollation");  
@@ -463,7 +463,7 @@ public class JdbcLoader implements PgCatalogStrings {
         PgType t = null;
         switch (typtype) {
         case "b":
-            t = new PgType(name, PgTypeForm.BASE, "", getSearchPath(schemaName));
+            t = new PgType(name, PgTypeForm.BASE, "");
             
             t.setInputFunction(res.getString("typinput"));
             t.setOutputFunction(res.getString("typoutput"));
@@ -554,7 +554,7 @@ public class JdbcLoader implements PgCatalogStrings {
             break;
             
         case "c":
-            t = new PgType(name, PgTypeForm.COMPOSITE, "", getSearchPath(schemaName));
+            t = new PgType(name, PgTypeForm.COMPOSITE, "");
             
             Array arrAttnames = res.getArray("comp_attnames");
             if (arrAttnames == null) {
@@ -586,7 +586,7 @@ public class JdbcLoader implements PgCatalogStrings {
             break;
             
         case "e": 
-            t = new PgType(name, PgTypeForm.ENUM, "", getSearchPath(schemaName));
+            t = new PgType(name, PgTypeForm.ENUM, "");
             
             Array arrEnums = res.getArray("enums");
             if (arrEnums == null) {
@@ -599,7 +599,7 @@ public class JdbcLoader implements PgCatalogStrings {
             break;
             
         case "r":
-            t = new PgType(name, PgTypeForm.RANGE, "", getSearchPath(schemaName));
+            t = new PgType(name, PgTypeForm.RANGE, "");
             
             t.setSubtype(res.getString("rngsubtype"));
             if (!res.getBoolean("opcdefault")) {
@@ -1068,8 +1068,6 @@ public class JdbcLoader implements PgCatalogStrings {
     }
     
     private PgIndex getIndex(ResultSet res, String tableName) throws SQLException {
-        String schemaName = res.getString("namespace");
-        
         String indexName = res.getString(CLASS_RELNAME);
         PgIndex i = new PgIndex(indexName, "");
         i.setTableName(tableName);
@@ -1359,6 +1357,7 @@ public class JdbcLoader implements PgCatalogStrings {
         }
     }
     
+    @Deprecated
     private String getSearchPath(String schema){
         return MessageFormat.format(ApgdiffConsts.SEARCH_PATH_PATTERN, schema);
     }
