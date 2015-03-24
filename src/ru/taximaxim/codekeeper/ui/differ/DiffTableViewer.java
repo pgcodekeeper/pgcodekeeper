@@ -715,6 +715,7 @@ public class DiffTableViewer extends Composite {
                     } else {
                         dontAdd = true;
                     }
+                    break;
                 }
             }
         }
