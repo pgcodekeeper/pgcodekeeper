@@ -664,15 +664,19 @@ public class DiffTableViewer extends Composite {
     }
     
     private void generateFlatElementsMap(TreeElement subtree) {
-        StringEditor se = new StringEditor(Paths.get(proj.getProject()
-                .getLocation().toOSString(), UIConsts.IGNORED_OBJECTS));
-        List<IgnoredObject> all = new ArrayList<>(ignoredElements);
-        try {
-            all.addAll(se.loadSettings());
-        } catch (IOException e1) {
-            Log.log(Log.LOG_WARNING,
-                    "Some problems occured while reading ignore settings from file",
-                    e1);
+        List<IgnoredObject> all = new ArrayList<>();
+        // Проект пуст, значит вызывался из коммит диалога, ничего не исключаем
+        if (proj != null) {
+            StringEditor se = new StringEditor(Paths.get(proj.getProject()
+                    .getLocation().toOSString(), UIConsts.IGNORED_OBJECTS));
+            all.addAll(ignoredElements);
+            try {
+                all.addAll(se.loadSettings());
+            } catch (IOException e1) {
+                Log.log(Log.LOG_WARNING,
+                        "Some problems occured while reading ignore settings from file",
+                        e1);
+            }
         }
         List<TreeElement> elementsList = generateElementsList(subtree,
                 new ArrayList<TreeElement>(), all, dbSource.getDbObject(), dbTarget.getDbObject());
