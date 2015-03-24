@@ -1,6 +1,6 @@
 COMMENT ON DATABASE current_database() IS 'comments database';
 
-COMMENT ON SCHEMA "public" IS 'public schema';
+COMMENT ON SCHEMA public IS 'public schema';
 
 COMMENT ON TYPE typ_composite IS 'test type';
 

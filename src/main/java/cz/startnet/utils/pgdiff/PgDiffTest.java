@@ -70,13 +70,13 @@ public class PgDiffTest {
                     {"modify_statistics", false, false, false, false},
                     // Tests scenario where STATISTICS information is dropped.
                     {"drop_statistics", false, false, false, false},
-//                     Tests scenario where DEFAULT value is set on COLUMN.
+                    // Tests scenario where DEFAULT value is set on COLUMN.
                     {"add_default_value", false, false, false, false},
                     // Tests scenario where DEFAULT value is modified.
                     {"modify_default_value", false, false, false, false},
-//                     Tests scenario where DEFAULT value is dropped from COLUMN.
+                    // Tests scenario where DEFAULT value is dropped from COLUMN.
                     {"drop_default_value", false, false, false, false},
-//                     Tests scenario where NOT NULL constraint is set on COLUMN.
+                    // Tests scenario where NOT NULL constraint is set on COLUMN.
                     {"add_not_null", false, false, false, false},
                     // Tests scenario where NOT NULL constraint is dropped
                     // from COLUMN.
@@ -106,14 +106,16 @@ public class PgDiffTest {
                     // Tests scenario where TABLE CONSTRAINT is dropped.
                     {"drop_constraint", false, false, false, false},
                     // Tests scenario where UNIQUE TABLE CONSTRAINT is added.
-                    {"add_unique_constraint", false, false, false, true},
+                    {"add_unique_constraint", false, false, false, false},
                     // Tests reading of TABLE with INHERITS.
                     {"read_inherits", false, false, false, false},
                     // Tests scenario where TABLE with INHERITS is added.
                     {"add_inherits", false, false, false, false},
                     // Tests scenario where original and new TABLE contain
-                    //different INHERITS.
+                    // different INHERITS.
                     {"modify_inherits", false, false, false, false},
+                    // old inherited table is replaced by new and dropped
+                    {"modify_inherits_drop_oldparent", false, false, false, false},
                     // Tests scenario where SEQUENCE is added.
                     {"add_sequence", false, false, false, false},
                     // Tests scenario where SEQUENCE is dropped.
@@ -122,24 +124,15 @@ public class PgDiffTest {
                     {"modify_sequence_increment", false, false, false, false},
                     // Tests scenario where START WITH is modified on SEQUENCE
                     // (both with --ignore-start-with turned off and on).
-                    {"modify_sequence_start_ignore_off", false, false, false,
-                        false
-                    },
-                    {"modify_sequence_start_ignore_on", false, false, false,
-                        true
-                    },
+                    {"modify_sequence_start_ignore_off", false, false, false, false},
                     // Tests scenario where MINVALUE is modified on SEQUENCE
                     // (both setting and unsetting the value).
                     {"modify_sequence_minvalue_set", false, false, false, false},
-                    {"modify_sequence_minvalue_unset", false, false, false,
-                        false
-                    },
+                    {"modify_sequence_minvalue_unset", false, false, false, false},
                     // Tests scenario where MAXVALUE is modified on SEQUENCE
                     // (both setting and unsetting the value).
                     {"modify_sequence_maxvalue_set", false, false, false, false},
-                    {"modify_sequence_maxvalue_unset", false, false, false,
-                        false
-                    },
+                    {"modify_sequence_maxvalue_unset", false, false, false, false},
                     // Tests scenario where CACHE is modified on SEQUENCE.
                     {"modify_sequence_cache", false, false, false, false},
                     // Tests scenario where CYCLE is modified on SEQUENCE.
@@ -182,8 +175,6 @@ public class PgDiffTest {
                     // Tests scenario where FUNCTION with same name but
                     // different args is modified.
                     {"modify_function_similar", false, false, false, false},
-                    // Tests different whitespace formatting in functions
-                    {"function_equal_whitespace", false, false, true, false},
                     // Tests scenario where TRIGGER is added.
                     {"add_trigger", false, false, false, false},
                     // Tests scenario where TRIGGER is added in reverse add.
@@ -202,8 +193,6 @@ public class PgDiffTest {
                     {"drop_view", false, false, false, false},
                     // Tests scenario where VIEW is modified.
                     {"modify_view", false, false, false, false},
-                    // Tests scenario where --add-defaults is specified.
-                    {"add_defaults", true, false, false, false},
                     // Tests scenario where multiple schemas are in the dumps.
                     {"multiple_schemas", false, false, false, false},
                     // Tests scenario where --add-transaction is specified.
@@ -287,6 +276,8 @@ public class PgDiffTest {
     }
     
     private static final List<String> RUN_DIFF_SKIP_FILES = Arrays.asList(
+            // FIXME modify_inherits_drop_oldparent
+            "modify_inherits_drop_oldparent"
             );
     /**
      * Template name for file names that should be used for the test. Testing
@@ -402,9 +393,6 @@ public class PgDiffTest {
             }
         }
 
-        if (!sbExpDiff.toString().trim().equals(diffInput.toString().trim())) {
-            System.out.println(fileNameTemplate);
-        }
         Assert.assertEquals("File name template: " + fileNameTemplate,
                 sbExpDiff.toString().trim(),
                 diffInput.toString().trim());
