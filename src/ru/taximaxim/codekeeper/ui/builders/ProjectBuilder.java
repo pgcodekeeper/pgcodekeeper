@@ -2,6 +2,7 @@ package ru.taximaxim.codekeeper.ui.builders;
 
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -47,23 +48,26 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
     
     private void buildIncrement(IResourceDelta delta, final PgDbParser parser,
             IProgressMonitor monitor) throws CoreException {
-        final int[] count = new int[1];
+        final AtomicInteger count = new AtomicInteger();
         delta.accept(new IResourceDeltaVisitor() {
 
             @Override
             public boolean visit(IResourceDelta delta) throws CoreException {
                 if (delta.getResource() instanceof IFile) {
-                    ++count[0];
+                    count.incrementAndGet();
                 }
                 return true;
             }
         });
-        final SubMonitor sub = SubMonitor.convert(monitor, count[0]);
+        final SubMonitor sub = SubMonitor.convert(monitor, count.get());
         
         delta.accept(new IResourceDeltaVisitor() {
             
             @Override
             public boolean visit(IResourceDelta delta) {
+                if (sub.isCanceled()) {
+                    return false;
+                }
                 if (!(delta.getResource() instanceof IFile)) {
                     return true;
                 }

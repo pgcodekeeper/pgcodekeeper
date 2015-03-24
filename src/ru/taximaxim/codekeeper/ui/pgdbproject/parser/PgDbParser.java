@@ -159,6 +159,9 @@ public class PgDbParser implements IResourceChangeListener {
                 Paths.get(locationURI).toAbsolutePath().toString(),
                 charset, 
                 false, false, ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
+        if (monitor.isCanceled()) {
+            return;
+        }
         objDefinitions = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjDefinitions());
         objReferences = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjReferences());
         fillFunctionBodies(objDefinitions, objReferences, funcBodies);
@@ -175,6 +178,9 @@ public class PgDbParser implements IResourceChangeListener {
         PgDatabase db = PgDumpLoader.loadRefsFromInputStream(input, Paths.get(""), //$NON-NLS-1$
                 scriptFileEncoding, false, false,
                 ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
+        if (monitor.isCanceled()) {
+            return;
+        }
         objDefinitions = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjDefinitions());
         objReferences = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjReferences());
     }

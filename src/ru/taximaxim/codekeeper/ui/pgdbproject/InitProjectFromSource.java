@@ -72,13 +72,13 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         switch (DBSources.getEnum(props.getPrefs().get(PROJ_PREF.SOURCE, ""))) { //$NON-NLS-1$
         case SOURCE_TYPE_DB:
             db = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1),
+                    ParserClass.getAntlr(taskpm, 1) : ParserClass.getLegacy(null, 1),
                     exePgdump, pgdumpCustom, props, password).get(taskpm);
             break;
 
         case SOURCE_TYPE_DUMP:
             db = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1), dumpPath,
+                    ParserClass.getAntlr(taskpm, 1) : ParserClass.getLegacy(null, 1), dumpPath,
                     props.getProjectCharset()).get(taskpm);
             break;
 
@@ -91,7 +91,9 @@ public class InitProjectFromSource implements IRunnableWithProgress {
             throw new InvocationTargetException(new IllegalStateException(
                     Messages.initProjectFromSource_init_request_but_no_schema_source));
         }
-
+        if (taskpm.isCanceled()) {
+            Log.log(Log.LOG_WARNING, "Task was cancelled");
+        }
         pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model); // 75
         new ProjectUpdater(db, null, null, props).updateFull();
     }
