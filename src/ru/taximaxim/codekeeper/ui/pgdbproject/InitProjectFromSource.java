@@ -92,7 +92,7 @@ public class InitProjectFromSource implements IRunnableWithProgress {
                     Messages.initProjectFromSource_init_request_but_no_schema_source));
         }
         if (taskpm.isCanceled()) {
-            Log.log(Log.LOG_WARNING, "Task was cancelled");
+            throw new InvocationTargetException(null, "Task was cancelled by user");
         }
         pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model); // 75
         new ProjectUpdater(db, null, null, props).updateFull();
