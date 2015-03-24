@@ -9,6 +9,7 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -544,7 +545,7 @@ public abstract class DiffPresentationPane extends Composite {
             int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
             dbsRemote = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1),
+                    ParserClass.getAntlr(new NullProgressMonitor(), 1) : ParserClass.getLegacy(new NullProgressMonitor(), 1),
                     mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     dbSrc.getTxtDbHost().getText(), port, dbSrc.getTxtDbUser().getText(),

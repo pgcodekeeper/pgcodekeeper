@@ -14,8 +14,10 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -113,12 +115,25 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     public void handlePageChanging(PageChangingEvent e) {
         try {
             if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
-                TreeDiffer treediffer = new TreeDiffer(
-                        DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                                ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1), proj),
-                        pageDiff.getTargetDbSource());
-
+                TreeDiffer treediffer = null;
                 try {
+                    getContainer().run(false, true, new IRunnableWithProgress() {
+                        
+                        @Override
+                        public void run(IProgressMonitor monitor) throws InvocationTargetException,
+                                InterruptedException {
+                            dbSource = DbSource.fromProject(
+                                    mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+                                            ParserClass.getAntlr(monitor, 1) 
+                                            : ParserClass.getLegacy(monitor, 1), proj);
+                            try {
+                                dbTarget = pageDiff.getTargetDbSource(monitor);
+                            } catch (PgCodekeeperUIException e) {
+                                throw new InvocationTargetException(e);
+                            }
+                        }
+                    });
+                    treediffer = new TreeDiffer(dbSource, dbTarget);
                     getContainer().run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
                     e.doit = false;
@@ -260,13 +275,13 @@ class PageDiff extends WizardPage implements Listener {
         return cmbTimezone.getText();
     }
 
-    public DbSource getTargetDbSource() throws PgCodekeeperUIException {
+    public DbSource getTargetDbSource(IProgressMonitor monitor) throws PgCodekeeperUIException {
         DbSource dbs;
 
         switch (getTargetType()) {
         case DB:
             dbs = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1), 
+                    ParserClass.getAntlr(monitor, 1) : ParserClass.getLegacy(monitor, 1), 
                     mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     getDbHost(), getDbPort(), getDbUser(), getDbPass(),
@@ -281,13 +296,13 @@ class PageDiff extends WizardPage implements Listener {
             
         case DUMP:
             dbs = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1),
+                    ParserClass.getAntlr(monitor, 1) : ParserClass.getLegacy(monitor, 1),
                     getDumpPath(), getTargetEncoding());
             break;
 
         case PROJ:
             dbs = DbSource.fromDirTree(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1),
+                    ParserClass.getAntlr(monitor, 1) : ParserClass.getLegacy(monitor, 1),
                     getProjPath(), getTargetEncoding());
             break;
 
