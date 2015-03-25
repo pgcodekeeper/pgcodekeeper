@@ -516,7 +516,12 @@ public class ReferenceListener extends SQLParserBaseListener {
             type = DbObjType.VIEW;
         } else if (ctx.INDEX() != null) {
             type = DbObjType.INDEX;
+        } else if (ctx.DOMAIN() != null) {
+            type = DbObjType.DOMAIN;
+        } else if (ctx.TYPE() != null) {
+            type = DbObjType.TYPE;
         }
+        
         for (Schema_qualified_nameContext objName : ctx
                 .if_exist_names_restrict_cascade().names_references().name) {
             int offset=0;
