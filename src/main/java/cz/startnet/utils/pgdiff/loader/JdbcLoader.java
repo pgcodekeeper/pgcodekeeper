@@ -136,7 +136,9 @@ public class JdbcLoader implements PgCatalogStrings {
                 while (res.next()) {
                     Log.log(Log.LOG_INFO, "Querying objects for schema " + res.getString(NAMESPACE_NSPNAME));
                     prepareDataForSchema(res.getLong(OID));
-                    
+                    if (monitor.isCanceled()) {
+                        return d;
+                    }
                     PgSchema schema = getSchema(res);
                     if (res.getString(NAMESPACE_NSPNAME).equals(ApgdiffConsts.PUBLIC)){
                         d.replaceSchema(d.getSchema(ApgdiffConsts.PUBLIC), schema);
