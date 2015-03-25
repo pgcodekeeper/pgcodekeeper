@@ -1,3 +1,4 @@
+DROP FUNCTION multiply_numbers(number2 smallint, number1 smallint);
 
 CREATE OR REPLACE FUNCTION multiply_numbers(number1 smallint, number2 smallint) RETURNS smallint
     AS $$

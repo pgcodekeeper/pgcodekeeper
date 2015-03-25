@@ -1,3 +1,4 @@
+DROP FUNCTION multiply_numbers(number1 integer, number2 integer);
 
 CREATE OR REPLACE FUNCTION multiply_numbers(number2 integer, number1 integer) RETURNS integer
     AS $$
