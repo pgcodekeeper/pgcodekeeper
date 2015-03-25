@@ -75,14 +75,18 @@ public class JdbcType{
         return parentSchema;
     }
     
+    public String getSchemaQualifiedName(String targetSchemaName) {
+        return (getParentSchema().equals("pg_catalog") || getParentSchema().equals(targetSchemaName)) ? 
+                getTypeName() : getParentSchema().concat(".").concat(getTypeName());
+    }
+    
     /**
      * Returns the name of this type. If the type's schema name 
      * differs from targetSchemaName, the returned type name is schema-qualified.
      * If this type is of array type, appends "[]" to the end.
      */
-    public String getSchemaQualifiedName(String targetSchemaName){
-        String schemaQualName = (getParentSchema().equals("pg_catalog") || getParentSchema().equals(targetSchemaName)) ? 
-                getTypeName() : getParentSchema().concat(".").concat(getTypeName());
+    public String getFullName(String targetSchemaName){
+        String schemaQualName = getSchemaQualifiedName(targetSchemaName);
         return isArrayType ? schemaQualName + "[]" : schemaQualName;
     }
     
@@ -92,9 +96,8 @@ public class JdbcType{
      * Appends typMod after the type name. If this type is of array type, 
      * appends "[]" to the end.
      */
-    public String getSchemaQualifiedName(String targetSchemaName, String typMod) {
-        String schemaQualName = (getParentSchema().equals("pg_catalog") || getParentSchema().equals(targetSchemaName)) ? 
-                getTypeName() : getParentSchema().concat(".").concat(getTypeName());
+    public String getFullName(String targetSchemaName, String typMod) {
+        String schemaQualName = getSchemaQualifiedName(targetSchemaName);
         return isArrayType ? schemaQualName + typMod + "[]" : schemaQualName + typMod;
     }
 }

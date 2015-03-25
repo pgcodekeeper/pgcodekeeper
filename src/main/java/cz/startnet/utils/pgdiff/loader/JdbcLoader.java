@@ -913,7 +913,7 @@ public class JdbcLoader implements PgCatalogStrings {
                     }
                 }
             }
-            String columnTypeName = columnType.getSchemaQualifiedName(schemaName, typMod);
+            String columnTypeName = columnType.getFullName(schemaName, typMod);
             column.setType(columnTypeName);
             
             String columnDefault = colDefaults[i];
@@ -1124,7 +1124,7 @@ public class JdbcLoader implements PgCatalogStrings {
                     returnedTableArguments.append(argNames[i]).append(" ");
                     
                     JdbcType returnType = cachedTypeNamesByOid.get(argTypeOids[i]);
-                    returnedTableArguments.append(returnType.getSchemaQualifiedName(schemaName));
+                    returnedTableArguments.append(returnType.getFullName(schemaName));
                 }
             }            
         }
@@ -1132,13 +1132,13 @@ public class JdbcLoader implements PgCatalogStrings {
         JdbcType returnType = cachedTypeNamesByOid.get(res.getLong("prorettype"));
         if (returnsTable){
             f.setReturns("TABLE(" + returnedTableArguments + ")");
-        }else if (res.getBoolean("proretset")){
-            f.setReturns("SETOF " + returnType.getSchemaQualifiedName(schemaName));
-            // TODO поставить проверку на системные типы и не добавлять их
-            f.setReturnsName(new GenericColumn(returnType.getParentSchema(), returnType.getTypeName(), null));
-        }else{
-            f.setReturns(returnType.getSchemaQualifiedName(schemaName));
-            f.setReturnsName(new GenericColumn(returnType.getParentSchema(), returnType.getTypeName(), null));
+        }else  {
+            f.setReturns((res.getBoolean("proretset") ? "SETOF " : "") +
+                    returnType.getFullName(schemaName));
+            if (!ApgdiffConsts.SYS_TYPES.contains(returnType.getSchemaQualifiedName(schemaName))) {
+                f.setReturnsName(new GenericColumn(returnType.getParentSchema(),
+                        returnType.getTypeName(), null));
+            }
         }
         
         // ARGUMENTS

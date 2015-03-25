@@ -2,10 +2,8 @@ package ru.taximaxim.codekeeper.apgdiff.model.graph;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -38,8 +36,6 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 
 public class DepcyGraph {
 
-    private static final Set<String> SYS_TYPES = new HashSet<>(
-            ApgdiffConsts.SYS_TYPES);
     private static final List<String> SYS_COLUMNS = Arrays.asList(new String[]{
             "oid", "tableoid", "xmin", "cmin", "xmax", "cmax", "ctid"
             });
@@ -166,7 +162,7 @@ public class DepcyGraph {
     private void addPgStatementToType(String dataType, PgSchema schema,
             PgStatement statement) {
         String typeName = extractType(dataType);
-        if (!SYS_TYPES.contains(typeName)) {
+        if (!ApgdiffConsts.SYS_TYPES.contains(typeName)) {
             String name = ParserUtils.getObjectName(typeName);
             PgStatement type = getSchemaForObject(schema, typeName).getType(name);
             if (type == null) {

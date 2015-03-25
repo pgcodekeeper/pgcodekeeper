@@ -1,7 +1,9 @@
 package ru.taximaxim.codekeeper.apgdiff;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Stores string constants
@@ -32,7 +34,7 @@ public interface ApgdiffConsts {
         int JDBC_DEFAULT_PORT = 5432;
     }
     
-    List<String> SYS_TYPES = Arrays.asList(new String[] {
+    Set<String> SYS_TYPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(new String[] {
             "abstime", //$NON-NLS-1$
             "aclitem", //$NON-NLS-1$
             "any", //$NON-NLS-1$
@@ -115,5 +117,5 @@ public interface ApgdiffConsts {
             "void", //$NON-NLS-1$
             "xid", //$NON-NLS-1$
             "xml" //$NON-NLS-1$
-    });
+    })));
 }
