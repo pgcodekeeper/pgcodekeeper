@@ -477,6 +477,9 @@ public class DepcyResolver {
             }
             if (getObjectFromDB(statement, oldDb) != null) {
                 // delegate to alter
+                
+                // Если альтер требует зависимости - вызов итератора, который проходит как дроп, но не дропает стартер
+                // пишем стайтмент альтер
                 return true;
             }
             if (statement.getStatementType() == DbObjType.COLUMN) {
@@ -505,6 +508,8 @@ public class DepcyResolver {
             if (super.notAllowedToAdd(statement)) {
                 return true;
             }
+            // Если альтер требует зависимости - вызов итератора, который проходит как креате, но не создает стартер
+            // пишем стайтмент альтер
             if (statement.getStatementType() == DbObjType.COLUMN) {
                 PgStatement newTable = getObjectFromDB(statement.getParent(),
                         newDb);
