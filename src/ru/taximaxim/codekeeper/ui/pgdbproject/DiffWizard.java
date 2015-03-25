@@ -110,31 +110,29 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     };
 
     private DbSource dbSource, dbTarget;
-
+    private TreeDiffer treediffer;
     @Override
     public void handlePageChanging(PageChangingEvent e) {
         try {
             if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
-                TreeDiffer treediffer = null;
+                treediffer = null;
                 try {
                     getContainer().run(false, true, new IRunnableWithProgress() {
                         
                         @Override
                         public void run(IProgressMonitor monitor) throws InvocationTargetException,
                                 InterruptedException {
-                            dbSource = DbSource.fromProject(
+                            try {
+                            treediffer = new TreeDiffer(DbSource.fromProject(
                                     mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
                                             ParserClass.getAntlr(monitor, 1) 
-                                            : ParserClass.getLegacy(monitor, 1), proj);
-                            try {
-                                dbTarget = pageDiff.getTargetDbSource(monitor);
+                                            : ParserClass.getLegacy(monitor, 1), proj), pageDiff.getTargetDbSource(monitor));
+                            treediffer.run(monitor);
                             } catch (PgCodekeeperUIException e) {
                                 throw new InvocationTargetException(e);
                             }
                         }
                     });
-                    treediffer = new TreeDiffer(dbSource, dbTarget);
-                    getContainer().run(true, false, treediffer);
                 } catch (InvocationTargetException ex) {
                     e.doit = false;
                     ExceptionNotifier.notifyDefault(
@@ -148,6 +146,10 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     return;
                 }
 
+                if (treediffer.isCanceled()) {
+                    e.doit = false;
+                    return;
+                }
                 dbSource = treediffer.getDbSource();
                 dbTarget = treediffer.getDbTarget();
 

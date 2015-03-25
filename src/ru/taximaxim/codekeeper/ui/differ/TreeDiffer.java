@@ -20,6 +20,8 @@ public class TreeDiffer implements IRunnableWithProgress {
 
     private boolean finished;
     
+    private volatile boolean isCanceled;
+    
     private TreeElement diffTree;
     
     public DbSource getDbSource() throws PgCodekeeperUIException {
@@ -69,6 +71,13 @@ public class TreeDiffer implements IRunnableWithProgress {
         diffTree = DiffTree.create(dbSrc, dbTgt);
         
         pm.done();
+        if (pm.isCanceled()) {
+            isCanceled = true;
+        }
         finished = true;
+    }
+
+    public boolean isCanceled() {
+        return isCanceled;
     }
 }
