@@ -101,7 +101,9 @@ public final class PgDiffFunctions {
             // [IN]OUT args that change their names implicitly change the function's
             // return type due to it being "SETOF record" in case of
             // multiple [IN]OUT args present
-            if (argOld.getMode() != null && argOld.getMode().endsWith("OUT") &&
+            
+            // actually any argument name change requires drop
+            if (/*argOld.getMode() != null && argOld.getMode().endsWith("OUT") &&*/
                     !Objects.equals(argOld.getName(), argNew.getName())) {
                 return true;
             }
