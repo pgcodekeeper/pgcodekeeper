@@ -15,9 +15,9 @@ import java.util.TimeZone;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -110,30 +110,19 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
     };
 
     private DbSource dbSource, dbTarget;
-    private TreeDiffer treediffer;
     @Override
     public void handlePageChanging(PageChangingEvent e) {
         try {
             if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
-                treediffer = null;
+                // TODO передавать прогресс монитор для отмены
+                TreeDiffer treediffer = new TreeDiffer(
+                        DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
+                                ParserClass.getAntlr(new NullProgressMonitor(), 1) : ParserClass.getLegacy(new NullProgressMonitor(), 1), proj),
+                        pageDiff.getTargetDbSource(new NullProgressMonitor()));
+
                 try {
-                    getContainer().run(false, true, new IRunnableWithProgress() {
-                        
-                        @Override
-                        public void run(IProgressMonitor monitor) throws InvocationTargetException,
-                                InterruptedException {
-                            try {
-                            treediffer = new TreeDiffer(DbSource.fromProject(
-                                    mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                                            ParserClass.getAntlr(monitor, 1) 
-                                            : ParserClass.getLegacy(monitor, 1), proj), pageDiff.getTargetDbSource(monitor));
-                            treediffer.run(monitor);
-                            } catch (PgCodekeeperUIException e) {
-                                throw new InvocationTargetException(e);
-                            }
-                        }
-                    });
-                } catch (InvocationTargetException ex) {
+                    getContainer().run(true, true, treediffer);
+                }  catch (InvocationTargetException ex) {
                     e.doit = false;
                     ExceptionNotifier.notifyDefault(
                             Messages.error_in_differ_thread, ex);
