@@ -74,12 +74,18 @@ public class DepcyResolver {
      *            объект для удаления из старой базы
      */
     public void addDropStatements(PgStatement toDrop) {
+        toDrop = addDrop(toDrop);
+        addToListWithoutDepcies(StatementActions.DROP, toDrop, toDrop);
+    }
+    
+    private PgStatement addDrop(PgStatement toDrop) {
         toDrop = getObjectFromDB(toDrop, oldDb);
         if (oldDepcyGraph.getReversedGraph().containsVertex(toDrop)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     oldDepcyGraph.getReversedGraph(), toDrop);
             customIteration(dfi, new CommonTraversalAdapter(toDrop, StatementActions.DROP));
         }
+        return toDrop;
     }
 
     /**
@@ -92,12 +98,18 @@ public class DepcyResolver {
      * @param toCreate
      */
     public void addCreateStatements(PgStatement toCreate) {
+        toCreate = addCreate(toCreate);
+        addToListWithoutDepcies(StatementActions.CREATE, toCreate, toCreate);
+    }
+    
+    private PgStatement addCreate(PgStatement toCreate) {
         toCreate = getObjectFromDB(toCreate, newDb);
         if (newDepcyGraph.getGraph().containsVertex(toCreate)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     newDepcyGraph.getGraph(), toCreate);
             customIteration(dfi, new CommonTraversalAdapter(toCreate, StatementActions.CREATE));
         }
+        return toCreate;
     }
 
     /**
@@ -111,12 +123,18 @@ public class DepcyResolver {
      * @param toAlter
      */
     public void addAlterStatements(PgStatement toAlter) {
+        toAlter = addAlter(toAlter);
+        addToListWithoutDepcies(StatementActions.ALTER, toAlter, toAlter);
+    }
+    
+    public PgStatement addAlter(PgStatement toAlter) {
         toAlter = getObjectFromDB(toAlter, oldDb);
         if (oldDepcyGraph.getGraph().containsVertex(toAlter)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     oldDepcyGraph.getReversedGraph(), toAlter);
-            customIteration(dfi, new CommonTraversalAdapter(toAlter, StatementActions.ALTER));
+            customIteration(dfi, new CommonTraversalAdapter(toAlter, StatementActions.DROP));
         }
+        return toAlter;
     }
 
     /**
@@ -411,6 +429,8 @@ public class DepcyResolver {
      */
     public void appendAlter(PgStatement oldObj, PgStatement newObj) {
         if (newObj != null && oldObj != null) {
+            oldObj = getObjectFromDB(oldObj, oldDb);
+            newObj = getObjectFromDB(newObj, newDb);
             StringBuilder sb = new StringBuilder();
             AtomicBoolean isNeedDepcies = new AtomicBoolean();
             boolean isChanged = oldObj.appendAlterSQL(newObj, sb, isNeedDepcies);
@@ -454,28 +474,39 @@ public class DepcyResolver {
 
         @Override
         protected boolean notAllowedToAdd(PgStatement statement) {
-            if (super.notAllowedToAdd(statement)) {
+            // если текущий объект равен начальному не добавляем его добавит
+            // вызывающий итератор метод
+            if (super.notAllowedToAdd(statement)
+                    || statement == starter) {
                 return true;
             }
+            StringBuilder sb = new StringBuilder();
+            AtomicBoolean isNeedDepcies = new AtomicBoolean();
+            PgStatement oppositeObj = null;
+            action = startAction;
             switch (startAction) {
-            case ALTER:
-                PgStatement newSt = getObjectFromDB(statement, newDb);
-                StringBuilder sb = new StringBuilder();
-                AtomicBoolean isNeedDepcies = new AtomicBoolean();
-                statement.appendAlterSQL(newSt, sb, isNeedDepcies);
-                action = sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP;
-                return false;
             case CREATE:
                 if (inDropsList(statement)) {
                     // always create if droppped before
                     return false;
                 }
-                if (getObjectFromDB(statement, oldDb) != null) {
-                    // delegate to alter
-                    
+                if ((oppositeObj = getObjectFromDB(statement, oldDb)) != null) {
                     // Если альтер требует зависимости - вызов итератора, который проходит как дроп, но не дропает стартер
                     // пишем стайтмент альтер
-                    return true;
+                    boolean isChanged = oppositeObj.appendAlterSQL(statement, sb, isNeedDepcies);
+                    if (isChanged) {
+                        if (isNeedDepcies.get()) {
+                            addDrop(oppositeObj);
+                        } 
+                        if (sb.length() > 0) {
+                            action = StatementActions.ALTER;
+                        }
+                        return false;
+                    } else {
+                        if (sb.length() == 0) {
+                            return true;
+                        }
+                    }
                 }
                 if (statement.getStatementType() == DbObjType.COLUMN) {
                     PgStatement oldTable = getObjectFromDB(statement.getParent(),
@@ -487,8 +518,20 @@ public class DepcyResolver {
                 }
                 return false;
             case DROP:
-             // Если альтер требует зависимости - вызов итератора, который проходит как креате, но не создает стартер
-                // пишем стайтмент альтер
+                if ((oppositeObj = getObjectFromDB(statement, newDb)) != null) {
+                    // Если альтер требует зависимости - вызов итератора, который проходит как креате, но не создает стартер
+                    // пишем стайтмент альтер
+                    boolean isChanged = statement.appendAlterSQL(oppositeObj, sb, isNeedDepcies);
+                    if (isChanged) {
+                        if (isNeedDepcies.get()) {
+                            addCreate(oppositeObj);
+                        }
+                        if (sb.length() > 0) {
+                            action = StatementActions.ALTER;    
+                        }
+                        return false;
+                    }
+                }
                 if (statement.getStatementType() == DbObjType.COLUMN) {
                     PgStatement newTable = getObjectFromDB(statement.getParent(),
                             newDb);
@@ -509,7 +552,7 @@ public class DepcyResolver {
     private abstract class CustomTraversalListenerAdapter extends
             TraversalListenerAdapter<PgStatement, DefaultEdge> {
         
-        private PgStatement starter;
+        protected PgStatement starter;
         protected StatementActions action;
         protected StatementActions startAction;
 
