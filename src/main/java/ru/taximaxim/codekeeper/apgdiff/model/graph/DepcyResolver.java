@@ -78,7 +78,7 @@ public class DepcyResolver {
         if (oldDepcyGraph.getReversedGraph().containsVertex(toDrop)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     oldDepcyGraph.getReversedGraph(), toDrop);
-            customIteration(dfi, new DropTraversalAdapter(toDrop));
+            customIteration(dfi, new CommonTraversalAdapter(toDrop, StatementActions.DROP));
         }
     }
 
@@ -96,7 +96,7 @@ public class DepcyResolver {
         if (newDepcyGraph.getGraph().containsVertex(toCreate)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     newDepcyGraph.getGraph(), toCreate);
-            customIteration(dfi, new CreateTraversalAdapter(toCreate));
+            customIteration(dfi, new CommonTraversalAdapter(toCreate, StatementActions.CREATE));
         }
     }
 
@@ -115,7 +115,7 @@ public class DepcyResolver {
         if (oldDepcyGraph.getGraph().containsVertex(toAlter)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     oldDepcyGraph.getReversedGraph(), toAlter);
-            customIteration(dfi, new AlterTraversalAdapter(toAlter));
+            customIteration(dfi, new CommonTraversalAdapter(toAlter, StatementActions.ALTER));
         }
     }
 
@@ -208,20 +208,8 @@ public class DepcyResolver {
                 oldObj.appendAlterSQL(action.getNewObj(), sb,
                         new AtomicBoolean());
                 if (sb.length() > 0) {
-                    // TODO check schema alters
-                    /*if (oldObj.getStatementType() == DbObjType.SCHEMA) {
-                        String schemaPath = MessageFormat.format(
-                                ApgdiffConsts.SEARCH_PATH_PATTERN,
-                                oldObj.getName());
-                        if (!schemaPath.equals(currentSearchPath)) {
-                            currentSearchPath = schemaPath;
-                            script.addStatement(currentSearchPath);
-                        }
-                    } else {*/
-                        currentSearchPath = setSearchPath(currentSearchPath,
-                                oldObj, script);
-                    //}
-                    
+                    currentSearchPath = setSearchPath(currentSearchPath,
+                            oldObj, script);
                     if (depcy != null) {
                         script.addStatement(depcy);
                     }
@@ -455,15 +443,13 @@ public class DepcyResolver {
             }
         }
     }
-    
     /**
      * Используется для прохода по графу зависимостей для формирования
-     * созданных (CREATE) объектов
+     * зависимостей (ALTER, DROP, CREATE)
      */
-    private class CreateTraversalAdapter extends CustomTraversalListenerAdapter {
-
-        CreateTraversalAdapter(PgStatement starter) {
-            super(starter, StatementActions.CREATE);
+    private class CommonTraversalAdapter extends CustomTraversalListenerAdapter {
+        CommonTraversalAdapter(PgStatement starter, StatementActions action) {
+            super(starter, action);
         }
 
         @Override
@@ -471,77 +457,49 @@ public class DepcyResolver {
             if (super.notAllowedToAdd(statement)) {
                 return true;
             }
-            if (inDropsList(statement)) {
-                // always create if droppped before
+            switch (startAction) {
+            case ALTER:
+                PgStatement newSt = getObjectFromDB(statement, newDb);
+                StringBuilder sb = new StringBuilder();
+                AtomicBoolean isNeedDepcies = new AtomicBoolean();
+                statement.appendAlterSQL(newSt, sb, isNeedDepcies);
+                action = sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP;
                 return false;
-            }
-            if (getObjectFromDB(statement, oldDb) != null) {
-                // delegate to alter
-                
-                // Если альтер требует зависимости - вызов итератора, который проходит как дроп, но не дропает стартер
+            case CREATE:
+                if (inDropsList(statement)) {
+                    // always create if droppped before
+                    return false;
+                }
+                if (getObjectFromDB(statement, oldDb) != null) {
+                    // delegate to alter
+                    
+                    // Если альтер требует зависимости - вызов итератора, который проходит как дроп, но не дропает стартер
+                    // пишем стайтмент альтер
+                    return true;
+                }
+                if (statement.getStatementType() == DbObjType.COLUMN) {
+                    PgStatement oldTable = getObjectFromDB(statement.getParent(),
+                            oldDb);
+                    if (oldTable == null) {
+                        // columns are integrated into CREATE TABLE
+                        return true;
+                    }
+                }
+                return false;
+            case DROP:
+             // Если альтер требует зависимости - вызов итератора, который проходит как креате, но не создает стартер
                 // пишем стайтмент альтер
-                return true;
-            }
-            if (statement.getStatementType() == DbObjType.COLUMN) {
-                PgStatement oldTable = getObjectFromDB(statement.getParent(),
-                        oldDb);
-                if (oldTable == null) {
-                    // columns are integrated into CREATE TABLE
-                    return true;
+                if (statement.getStatementType() == DbObjType.COLUMN) {
+                    PgStatement newTable = getObjectFromDB(statement.getParent(),
+                            newDb);
+                    if (newTable == null) {
+                        return true;
+                    }
                 }
+                return false;
+            default:
+                throw new IllegalStateException("Not implemented action");
             }
-            return false;
-        }
-    }
-    /**
-     * Используется для прохода по графу зависимостей для формирования
-     * удаленных (DROP) объектов
-     */
-    private class DropTraversalAdapter extends CustomTraversalListenerAdapter {
-
-        DropTraversalAdapter(PgStatement starter) {
-            super(starter, StatementActions.DROP);
-        }
-
-        @Override
-        protected boolean notAllowedToAdd(PgStatement statement) {
-            if (super.notAllowedToAdd(statement)) {
-                return true;
-            }
-            // Если альтер требует зависимости - вызов итератора, который проходит как креате, но не создает стартер
-            // пишем стайтмент альтер
-            if (statement.getStatementType() == DbObjType.COLUMN) {
-                PgStatement newTable = getObjectFromDB(statement.getParent(),
-                        newDb);
-                if (newTable == null) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
-    /**
-     * Используется для прохода по графу зависимостей для формирования
-     * измененных (ALTER) объектов
-     */
-    private class AlterTraversalAdapter extends CustomTraversalListenerAdapter {
-
-        AlterTraversalAdapter(PgStatement starter) {
-            super(starter, StatementActions.ALTER);
-        }
-
-        @Override
-        protected boolean notAllowedToAdd(PgStatement statement) {
-            if (super.notAllowedToAdd(statement)) {
-                return true;
-            }
-            PgStatement newSt = getObjectFromDB(statement, newDb);
-            StringBuilder sb = new StringBuilder();
-            AtomicBoolean isNeedDepcies = new AtomicBoolean();
-            statement.appendAlterSQL(newSt, sb, isNeedDepcies);
-            action = sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP;
-            return false;
         }
     }
 
@@ -553,11 +511,13 @@ public class DepcyResolver {
         
         private PgStatement starter;
         protected StatementActions action;
+        protected StatementActions startAction;
 
         CustomTraversalListenerAdapter(PgStatement starter,
                 StatementActions action) {
             this.starter = starter;
             this.action = action;
+            this.startAction = action;
         }
 
         @Override
