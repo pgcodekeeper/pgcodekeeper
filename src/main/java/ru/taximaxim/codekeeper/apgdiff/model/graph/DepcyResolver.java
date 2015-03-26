@@ -176,7 +176,8 @@ public class DepcyResolver {
             PgStatement oldObj = action.getOldObj();
             String depcy = null;
             PgStatement objStarter = action.getStarter();
-            if (objStarter != null && objStarter != oldObj) {
+            if (objStarter != null && objStarter != oldObj
+                    && objStarter != action.getNewObj()) {
                 String objName = "";
                 if (objStarter.getStatementType() == DbObjType.COLUMN) {
                     objName = ((PgColumn) objStarter).getParent().getName()
@@ -459,11 +460,11 @@ public class DepcyResolver {
 
         @Override
         protected boolean notAllowedToAdd(PgStatement statement) {
-            // если текущий объект равен начальному не добавляем его добавит
-            // вызывающий итератор метод
+
             if (super.notAllowedToAdd(statement)) {
                 return true;
             }
+            // Если это вызывающий объект, и его нужно пропустить
             if (statement == starter) {
                 if (!skipStarter) {
                     skipStarter = true;
@@ -488,7 +489,7 @@ public class DepcyResolver {
                     if (isChanged) {
                         if (isNeedDepcies.get()) {
                             addDrop(oppositeObj, true);
-                        } 
+                        }
                         if (sb.length() > 0) {
                             addToListWithoutDepcies(StatementActions.ALTER, oppositeObj, statement);
                             return true;
@@ -519,7 +520,7 @@ public class DepcyResolver {
                             addCreate(oppositeObj, true);
                         }
                         if (sb.length() > 0) {
-                            action = StatementActions.ALTER;    
+                            action = StatementActions.ALTER;
                         }
                         return false;
                     }
@@ -545,9 +546,13 @@ public class DepcyResolver {
             TraversalListenerAdapter<PgStatement, DefaultEdge> {
         
         protected PgStatement starter;
+        /**
+         * меняется в {@link #notAllowedToAdd(PgStatement)} для вызова
+         * добавления в список с правильным действием
+         */
         protected StatementActions action;
         protected StatementActions startAction;
-        protected boolean skipStarter = false;
+        protected boolean skipStarter;
 
         CustomTraversalListenerAdapter(PgStatement starter,
                 StatementActions action, boolean skipStarter) {
