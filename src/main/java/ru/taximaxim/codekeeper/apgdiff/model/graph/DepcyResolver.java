@@ -505,7 +505,7 @@ public class DepcyResolver {
             if (super.notAllowedToAdd(statement)) {
                 return true;
             }
-            if (statement.getStatementType() == DbObjType.COLUMN) {
+            if (statement.getParent().getStatementType() == DbObjType.TABLE) {
                 PgStatement newTable = getObjectFromDB(statement.getParent(),
                         newDb);
                 if (newTable == null) {
