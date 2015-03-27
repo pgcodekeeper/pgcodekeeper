@@ -4,10 +4,6 @@ SET search_path = testschema1, pg_catalog;
 
 DROP TABLE testtable1;
 
--- DEPCY: This SEQUENCE depends on the SCHEMA: testschema1
-
-DROP SEQUENCE testtable1_id_seq;
-
 DROP SCHEMA testschema1;
 
 CREATE SCHEMA testschema2;
@@ -17,8 +13,6 @@ ALTER SCHEMA testschema2 OWNER TO fordfrog;
 SET search_path = public, pg_catalog;
 
 DROP TABLE testtable2;
-
-DROP SEQUENCE testtable2_id_seq;
 
 CREATE SEQUENCE testtable3_id_seq
 	START WITH 1
