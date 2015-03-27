@@ -512,6 +512,15 @@ public class DepcyResolver {
                     return true;
                 }
             }
+            // TODO Костыль не совсем рабочий, нужно проверить статус таблицы и
+            // колонки, и если хотя бы одна из них удаляется то не дропать
+            // сиквенс
+            if (statement.getStatementType() == DbObjType.SEQUENCE) {
+                PgSequence seq = (PgSequence)statement;
+                if (seq.getOwnedBy() != null) {
+                    return true;
+                }
+            }
             return false;
         }
     }
