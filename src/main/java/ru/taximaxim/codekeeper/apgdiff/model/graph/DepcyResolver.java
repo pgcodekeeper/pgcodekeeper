@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -506,6 +507,9 @@ public class DepcyResolver {
                 return true;
             }
             if (statement.getParent().getStatementType() == DbObjType.TABLE) {
+                if (statement instanceof PgForeignKey) {
+                    return false;
+                }
                 PgStatement newTable = getObjectFromDB(statement.getParent(),
                         newDb);
                 if (newTable == null) {
