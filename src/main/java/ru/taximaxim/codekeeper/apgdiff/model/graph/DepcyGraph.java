@@ -201,18 +201,20 @@ public class DepcyGraph {
         if (!ApgdiffConsts.SYS_TYPES.contains(dataType.table)) {
             PgSchema resolvedSchema = dataType.schema == null ? 
                     schema : db.getSchema(dataType.schema);
-            PgStatement type = resolvedSchema.getType(dataType.table);
-            if (type == null) {
-                type = resolvedSchema.getDomain(dataType.table);
-            }
-            if (type == null) {
-                type = resolvedSchema.getTable(dataType.table);
-            }
-            if (type == null) {
-                type = resolvedSchema.getView(dataType.table);
-            }
-            if (type != null) {
-                graph.addEdge(statement, type);
+            if (resolvedSchema != null) {
+                PgStatement type = resolvedSchema.getType(dataType.table);
+                if (type == null) {
+                    type = resolvedSchema.getDomain(dataType.table);
+                }
+                if (type == null) {
+                    type = resolvedSchema.getTable(dataType.table);
+                }
+                if (type == null) {
+                    type = resolvedSchema.getView(dataType.table);
+                }
+                if (type != null) {
+                    graph.addEdge(statement, type);
+                }
             }
         }
     }
