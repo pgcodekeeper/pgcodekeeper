@@ -139,6 +139,14 @@ public class DepcyGraph {
 
         // second loop: dependencies of objects from likely different schemas
         for(PgSchema schema : db.getSchemas()) {
+            for (PgType type : schema.getTypes()) {
+                createTypeToObject(type, schema);
+            }
+            
+            for (PgDomain dom : schema.getDomains()) {
+                createPgStatementToType(dom.getDataType(), schema, dom);
+            }
+            
             for (PgFunction func : schema.getFunctions()) {
                 createFunctionToObject(func, schema);
             }
@@ -161,12 +169,26 @@ public class DepcyGraph {
         for(PgExtension ext : db.getExtensions()) {
             graph.addVertex(ext);
             graph.addEdge(ext, db);
+            
+            if (ext.getSchema() != null) {
+                PgSchema schema = db.getSchema(ext.getSchema());
+                if (schema != null) {
+                    graph.addEdge(ext, schema);
+                }
+            }
         }
     }
     
     private void createPgStatementToType(String dataType, PgSchema schema,
             PgStatement statement) {
-        String typeName = extractType(dataType);
+        String typeName = dataType;
+        if (dataType.lastIndexOf(')') != -1) {
+            typeName = dataType.substring(0, dataType.lastIndexOf('('));
+        }
+        if (typeName.lastIndexOf(']') != -1) {
+            typeName = typeName.substring(0, typeName.lastIndexOf('['));
+        }
+        
         createPgStatementToType(
                 new GenericColumn(
                         ParserUtils.getSecondObjectName(typeName),
@@ -194,18 +216,23 @@ public class DepcyGraph {
             }
         }
     }
-    
-    private String extractType(String dataType) {
-        String result = dataType;
-        if (dataType.lastIndexOf(')') != -1) {
-            result = dataType.substring(0, dataType.lastIndexOf('('));
-        }
-        if (result.lastIndexOf(']') != -1) {
-            result = result.substring(0, result.lastIndexOf('['));
-        }
-        return result;
-    }
 
+    private void createTypeToObject(PgType type, PgSchema schema) {
+        if (type.getSubtype() != null) {
+            createPgStatementToType(type.getSubtype(), schema, type);
+        }
+        if (type.getElement() != null) {
+            // assume that implicit array types are never loaded
+            // and we have only explicit element definitions
+            createPgStatementToType(type.getElement(), schema, type);
+        }
+        for (PgColumn attr : type.getAttrs()) {
+            createPgStatementToType(attr.getType(), schema, type);
+        }
+        
+        // TODO type funcs, caution: may introduce cyclic depcies
+    }
+    
     private void createFunctionToObject(PgFunction func, PgSchema schema) {
         if (func.getReturnsName() != null) {
             createPgStatementToType(func.getReturnsName(), schema, func);
