@@ -67,7 +67,7 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         
         BooleanFieldEditor transaction = new BooleanFieldEditor(
                 DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
-                Messages.dbUpdatePrefPage_conclude_script_in_transaction,
+                Messages.dbUpdatePrefPage_script_add_transaction,
                 getFieldEditorParent());
         addField(transaction);
         
