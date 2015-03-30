@@ -22,6 +22,7 @@ import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -505,10 +506,22 @@ public class DepcyResolver {
             if (super.notAllowedToAdd(statement)) {
                 return true;
             }
-            if (statement.getStatementType() == DbObjType.COLUMN) {
+            if (statement.getParent().getStatementType() == DbObjType.TABLE) {
+                if (statement instanceof PgForeignKey) {
+                    return false;
+                }
                 PgStatement newTable = getObjectFromDB(statement.getParent(),
                         newDb);
                 if (newTable == null) {
+                    return true;
+                }
+            }
+            // TODO Костыль не совсем рабочий, нужно проверить статус таблицы и
+            // колонки, и если хотя бы одна из них удаляется то не дропать
+            // сиквенс
+            if (statement.getStatementType() == DbObjType.SEQUENCE) {
+                PgSequence seq = (PgSequence)statement;
+                if (seq.getOwnedBy() != null) {
                     return true;
                 }
             }
