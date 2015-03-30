@@ -30,12 +30,8 @@ public final class PgDiffViews {
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgView newView : newSchema.getViews()) {
-            boolean isModified = oldSchema != null
-                    && oldSchema.containsView(newView.getName()) 
-                    && isViewModified(oldSchema.getView(newView.getName()), newView);
             if (oldSchema == null
-                    || !oldSchema.containsView(newView.getName())
-                    || isModified) {
+                    || !oldSchema.containsView(newView.getName())) {
                 depRes.addCreateStatements(newView);
             }
         }
@@ -57,9 +53,7 @@ public final class PgDiffViews {
         }
 
         for (final PgView oldView : oldSchema.getViews()) {
-            final PgView newView = newSchema.getView(oldView.getName());
-            boolean isModified = newView != null && isViewModified(oldView, newView);
-            if (newView == null || isModified) {
+            if (!newSchema.containsView(oldView.getName())) {
                 depRes.addDropStatements(oldView);
             }
         }
@@ -74,7 +68,7 @@ public final class PgDiffViews {
      *
      * @return true if view has been modified, otherwise false
      */
-    private static boolean isViewModified(final PgView oldView,
+    public static boolean isViewModified(final PgView oldView,
             final PgView newView) {
         List<String> oldColumnNames = oldView.getColumnNames();
         List<String> newColumnNames = newView.getColumnNames();

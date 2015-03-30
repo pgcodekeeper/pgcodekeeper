@@ -91,6 +91,10 @@ public class PgConstraint extends PgStatementWithSearchPath {
             return false;
         }
         PgConstraint oldConstr = this;
+        if (!oldConstr.compareWithoutComments(newConstr)) {
+            isNeedDepcies.set(true);
+            return true;
+        }
         PgDiffScript script = new PgDiffScript();
         PgDiff.diffComments(oldConstr, newConstr, script);
         

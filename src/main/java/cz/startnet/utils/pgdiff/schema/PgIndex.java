@@ -96,7 +96,10 @@ public class PgIndex extends PgStatementWithSearchPath {
         }
         PgIndex oldIndex = this;
         PgDiffScript script = new PgDiffScript();
-        
+        if (!oldIndex.compareWithoutComments(newIndex)) {
+            isNeedDepcies.set(true);
+            return true;
+        }
         boolean oldCluster = oldIndex.isClusterIndex();
         
         if (oldCluster && !newIndex.isClusterIndex() && 

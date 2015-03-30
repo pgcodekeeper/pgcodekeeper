@@ -1,7 +1,6 @@
 package cz.startnet.utils.pgdiff;
 
 import java.util.List;
-import java.util.Objects;
 
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -26,9 +25,7 @@ public final class PgDiffDomains {
             final SearchPathHelper searchPathHelper) {
         for (final PgDomain domain : newSchema.getDomains()) {
             PgDomain oldDomain = oldSchema == null ? null : oldSchema.getDomain(domain.getName());
-            if (oldDomain == null ||
-                    !Objects.equals(oldDomain.getDataType(), domain.getDataType()) ||
-                    !Objects.equals(oldDomain.getCollation(), domain.getCollation())) {
+            if (oldDomain == null) {
                 depRes.addCreateStatements(domain);
             }
         }
@@ -51,10 +48,7 @@ public final class PgDiffDomains {
 
         // Drop domains that do not exist in new schema
         for (final PgDomain oldDomain : oldSchema.getDomains()) {
-            PgDomain newDomain = newSchema.getDomain(oldDomain.getName());
-            if (newDomain == null ||
-                    !Objects.equals(newDomain.getDataType(), oldDomain.getDataType()) ||
-                    !Objects.equals(newDomain.getCollation(), oldDomain.getCollation())) {
+            if (!newSchema.containsDomain(oldDomain.getName())) {
                 depRes.addDropStatements(oldDomain);
             }
         }
@@ -75,9 +69,9 @@ public final class PgDiffDomains {
         if (oldSchema == null) {
             return;
         }
-        for (final PgDomain newDomain : newSchema.getDomains()) {
-            PgDomain oldDomain = oldSchema.getDomain(newDomain.getName());
-            depRes.appendAlter(oldDomain, newDomain);
+        for (final PgDomain oldDomain : oldSchema.getDomains()) {
+            depRes.appendAlter(oldDomain,
+                    newSchema.getDomain(oldDomain.getName()));
         }
     }
     

@@ -463,8 +463,9 @@ public class PgType extends PgStatementWithSearchPath {
             return false;
         }
         
-        if (oldType.equals(newType) || !PgDiffTypes.canAlter(oldType, newType)) {
-            return false;
+        if (!oldType.equals(newType) && !PgDiffTypes.canAlter(oldType, newType)) {
+            isNeedDepcies.set(true);
+            return true;
         }
         
         StringBuilder attrSb = new StringBuilder();

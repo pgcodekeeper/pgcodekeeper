@@ -26,8 +26,7 @@ public final class PgDiffTypes {
         for (final PgType type : newSchema.getTypes()) {
             PgType oldType = oldSchema == null ? null : oldSchema.getType(type.getName());
             
-            if (oldType == null ||
-                    (!type.equals(oldType) && !canAlter(oldType, type))) {
+            if (oldType == null) {
                 depRes.addCreateStatements(type);
             }
         }
@@ -50,9 +49,7 @@ public final class PgDiffTypes {
 
         // Drop types that do not exist in new schema
         for (final PgType oldType : oldSchema.getTypes()) {
-            PgType newType = newSchema.getType(oldType.getName());
-            if (newType == null ||
-                    (!oldType.equals(newType) && !canAlter(oldType, newType))) {
+            if (!newSchema.containsType(oldType.getName())) {
                 depRes.addDropStatements(oldType);
             }
         }

@@ -137,6 +137,10 @@ public class PgView extends PgStatementWithSearchPath {
         }
         PgView oldView = this;
         PgDiffScript script = new PgDiffScript();
+        if (PgDiffViews.isViewModified(oldView, newView)) {
+            isNeedDepcies.set(true);
+            return true;
+        }
         PgDiffViews.diffDefaultValues(script, oldView, newView);
 
         if (!Objects.equals(oldView.getOwner(), newView.getOwner())) {

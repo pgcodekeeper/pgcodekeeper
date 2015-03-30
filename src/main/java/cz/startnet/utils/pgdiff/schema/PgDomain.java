@@ -169,7 +169,8 @@ public class PgDomain extends PgStatementWithSearchPath {
 
         if (!Objects.equals(newDomain.getDataType(), oldDomain.getDataType()) ||
                 !Objects.equals(newDomain.getCollation(), oldDomain.getCollation())) {
-            return false;
+            isNeedDepcies.set(true);
+            return true;
         }
         
         if (!Objects.equals(newDomain.getDefaultValue(), oldDomain.getDefaultValue())) {

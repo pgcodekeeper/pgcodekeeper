@@ -42,8 +42,7 @@ public final class PgDiffFunctions {
                 oldFunction = oldSchema.getFunction(newFunction.getSignature());
             }
 
-            if ((oldFunction == null) || !newFunction.equalsWhitespace(
-                    oldFunction, arguments.isIgnoreFunctionWhitespace())) {
+            if (oldFunction == null) {
                 depRes.addCreateStatements(newFunction);
             }
         }
@@ -66,16 +65,11 @@ public final class PgDiffFunctions {
 
         // Drop functions that exist no more
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
-            if (needsDrop(oldFunction, newSchema)) {
+            if (!newSchema.containsFunction(oldFunction.getSignature())) {
                 depRes.addDropStatements(oldFunction);
             }
+            
         }
-    }
-
-    private static boolean needsDrop(PgFunction oldFunction, PgSchema newSchema) {
-        PgFunction newFunction = newSchema.getFunction(oldFunction.getSignature());
-        
-        return needDrop(oldFunction, newFunction);
     }
 
     public static boolean needDrop(PgFunction oldFunction,

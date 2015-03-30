@@ -164,6 +164,10 @@ public class PgTrigger extends PgStatementWithSearchPath {
             return false;
         }
         PgTrigger oldTrg = this;
+        if (!oldTrg.compareWithoutComments(newTrg)) {
+            isNeedDepcies.set(true);
+            return true;
+        }
         PgDiffScript script = new PgDiffScript();
         PgDiff.diffComments(oldTrg, newTrg, script);
         
