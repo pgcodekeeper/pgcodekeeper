@@ -42,8 +42,8 @@ public final class PgDiffFunctions {
                 oldFunction = oldSchema.getFunction(newFunction.getSignature());
             }
 
-            if ((oldFunction == null) || !newFunction.equalsWhitespace(
-                    oldFunction, arguments.isIgnoreFunctionWhitespace())) {
+            if ((oldFunction == null) || !newFunction.compareWithoutComments(
+                    oldFunction)) {
                 depRes.addCreateStatements(newFunction);
             }
         }

@@ -143,7 +143,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         PgFunction oldFunction = this;
         PgDiffScript script = new PgDiffScript();
         
-        if (!oldFunction.equalsWhitespace(newFunction, false)) {
+        if (!oldFunction.compareWithoutComments(newFunction)) {
             if (PgDiffFunctions.needDrop(oldFunction, newFunction)) {
                 isNeedDepcies.set(true);
                 return true;
@@ -237,14 +237,11 @@ public class PgFunction extends PgStatementWithSearchPath {
      * considered being equal.
      *
      * @param func                     object to be compared
-     * @param ignoreFunctionWhitespace whether multiple whitespaces in function
-     *                                 {@link #body} should be ignored
-     *
      * @return true if {@code object} is PgFunction and the function code is
      *         the same when compared ignoring whitespace, otherwise returns
      *         false
      */
-    public boolean equalsWhitespace(PgFunction func, boolean ignoreFunctionWhitespace) {
+    public boolean compareWithoutComments(PgFunction func) {
         boolean equals = false;
 
         if (this == func) {
@@ -254,21 +251,9 @@ public class PgFunction extends PgStatementWithSearchPath {
                     && arguments.equals(func.arguments)
                     && grants.equals(func.grants)
                     && revokes.equals(func.revokes)
-                    && Objects.equals(owner, func.getOwner());
-            
-            if(equals) {
-                String thisBody, thatBody;
-                if(ignoreFunctionWhitespace) {
-                    thisBody = body.replaceAll("\\s+", " ");
-                    thatBody = func.getBody().replaceAll("\\s+", " ");
-                } else {
-                    thisBody = body;
-                    thatBody = func.getBody();
-                }
-                equals = equals
-                        && Objects.equals(thisBody, thatBody)
-                        && Objects.equals(returns, func.getReturns());
-            }
+                    && Objects.equals(owner, func.getOwner())
+                    && Objects.equals(body, func.getBody())
+                    && Objects.equals(returns, func.getReturns());
         }
         return equals;
     }
@@ -280,8 +265,8 @@ public class PgFunction extends PgStatementWithSearchPath {
         }
         
         if (obj instanceof PgFunction) {
-            return equalsWhitespace((PgFunction) obj, false)
-                    && Objects.equals(comment, ((PgFunction)obj).getComment());
+            return compareWithoutComments((PgFunction) obj)
+                    && Objects.equals(comment, obj.getComment());
         }
         return false;
     }

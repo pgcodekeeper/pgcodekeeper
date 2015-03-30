@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
@@ -64,13 +65,9 @@ public final class PgDiff {
             final PgDiffArguments arguments, final InputStream oldInputStream,
             final InputStream newInputStream) {
         PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
-                oldInputStream, arguments.getInCharsetName(),
-                arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers(), ParserClass.getAntlr(null, 1));
+                oldInputStream, arguments, ParserClass.getAntlr(null, 1));
         PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
-                newInputStream, arguments.getInCharsetName(),
-                arguments.isOutputIgnoredStatements(),
-                arguments.isIgnoreSlonyTriggers(), ParserClass.getAntlr(null, 1));
+                newInputStream, arguments, ParserClass.getAntlr(null, 1));
 
         diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase,
                 oldDatabase, newDatabase);
@@ -90,12 +87,10 @@ public final class PgDiff {
                 final PgDiffArguments arguments) {
         if(format.equals("dump")) {
             return PgDumpLoader.loadDatabaseSchemaFromDump(srcPath,
-                    arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
-                    arguments.isIgnoreSlonyTriggers(), ParserClass.getAntlr(null, 1));
+                    arguments, ParserClass.getAntlr(null, 1));
         } else if(format.equals("parsed")) {
             return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
-                    arguments.getInCharsetName(), arguments.isOutputIgnoredStatements(),
-                    arguments.isIgnoreSlonyTriggers(), ParserClass.getAntlr(null, 1));
+                    arguments, ParserClass.getAntlr(null, 1));
         } else if(format.equals("db")) {
             throw new UnsupportedOperationException("DB connection is not yet implemented!");
         }
@@ -133,6 +128,15 @@ public final class PgDiff {
         
         PgDiffScript script = new PgDiffScript();
 
+        if (arguments.getTimeZone() != null) {
+            script.addStatement(MessageFormat.format(
+                    ApgdiffConsts.SET_TIMEZONE, arguments.getTimeZone()));
+        }
+        
+        if (!arguments.isCheckFunctionBodies()) {
+            script.addStatement("SET check_function_bodies = false;");
+        }
+        
         if (arguments.isAddTransaction()) {
             script.addStatement("START TRANSACTION;");
         }
@@ -168,7 +172,7 @@ public final class PgDiff {
 
         depRes.fillScript(script);
         if (arguments.isAddTransaction()) {
-            script.addStatement("\nCOMMIT TRANSACTION;");
+            script.addStatement("COMMIT TRANSACTION;");
         }
 
         script.printStatements(writer);
@@ -407,7 +411,7 @@ public final class PgDiff {
                 depRes, oldSchema, newSchema, searchPathHelper);
         PgDiffTriggers.alterComments(
                 depRes, oldSchema, newSchema, searchPathHelper);
-        
+    
         depRes.recreateDrops();
     }
 

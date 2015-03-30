@@ -56,8 +56,8 @@ public final class PgDiffTables {
 
     /**
      * Outputs statements for dropping tables.
-     * @param depRes 
      *
+     * @param depRes 
      * @param writer           writer the output should be written to
      * @param oldSchema        original schema
      * @param newSchema        new schema

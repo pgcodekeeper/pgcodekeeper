@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.parsers.AlterFunctionParser;
 import cz.startnet.utils.pgdiff.parsers.AlterSchemaParser;
 import cz.startnet.utils.pgdiff.parsers.AlterSequenceParser;
@@ -210,11 +211,11 @@ public final class PgDumpLoader { //NOPMD
      * @return database schema from dump file
      */
     static PgDatabase loadDatabaseSchemaCore(
-            InputStream inputStream, String charsetName,
-            boolean outputIgnoredStatements, final boolean ignoreSlonyTriggers,
+            InputStream inputStream, PgDiffArguments arguments,
             final PgDatabase database) {
+        database.setArguments(arguments);
         try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(inputStream, charsetName))) {
+                    new InputStreamReader(inputStream, arguments.getInCharsetName()))) {
         
             String statement = getWholeStatement(reader);
     
@@ -231,29 +232,29 @@ public final class PgDumpLoader { //NOPMD
                 } else if (PATTERN_CREATE_TABLE.matcher(statement).matches()) {
                     CreateTableParser.parse(database, statement, activeSearchPath);
                 } else if (PATTERN_ALTER_TABLE.matcher(statement).matches()) {
-                    AlterTableParser.parse(database, statement, outputIgnoredStatements, activeSearchPath);
+                    AlterTableParser.parse(database, statement, arguments.isOutputIgnoredStatements(), activeSearchPath);
                 } else if (PATTERN_CREATE_SEQUENCE.matcher(statement).matches()) {
                     CreateSequenceParser.parse(database, statement, activeSearchPath);
                 } else if (PATTERN_ALTER_SEQUENCE.matcher(statement).matches()) {
-                    AlterSequenceParser.parse(database, statement, outputIgnoredStatements);
+                    AlterSequenceParser.parse(database, statement, arguments.isOutputIgnoredStatements());
                 } else if (PATTERN_CREATE_INDEX.matcher(statement).matches()) {
                     CreateIndexParser.parse(database, statement, activeSearchPath);
                 } else if (PATTERN_CREATE_VIEW.matcher(statement).matches()) {
                     CreateViewParser.parse(database, statement, activeSearchPath);
                 } else if (PATTERN_ALTER_VIEW.matcher(statement).matches()) {
-                    AlterViewParser.parse(database, statement, outputIgnoredStatements);
+                    AlterViewParser.parse(database, statement, arguments.isOutputIgnoredStatements());
                 } else if (PATTERN_ALTER_FUNCTION.matcher(statement).matches()) {
-                    AlterFunctionParser.parse(database, statement, outputIgnoredStatements);
+                    AlterFunctionParser.parse(database, statement, arguments.isOutputIgnoredStatements());
                 } else if (PATTERN_ALTER_SCHEMA.matcher(statement).matches()) {
-                    AlterSchemaParser.parse(database, statement, outputIgnoredStatements);
+                    AlterSchemaParser.parse(database, statement, arguments.isOutputIgnoredStatements());
                 } else if (PATTERN_CREATE_TRIGGER.matcher(statement).matches()) {
-                    CreateTriggerParser.parse(database, statement, activeSearchPath, ignoreSlonyTriggers);
+                    CreateTriggerParser.parse(database, statement, activeSearchPath, arguments.isIgnoreSlonyTriggers());
                 } else if (PATTERN_CREATE_FUNCTION.matcher(statement).matches()) {
                     CreateFunctionParser.parse(database, statement, activeSearchPath);
                 } else if (PATTERN_COMMENT.matcher(statement).matches()) {
-                    CommentParser.parse(database, statement, outputIgnoredStatements);
+                    CommentParser.parse(database, statement, arguments.isOutputIgnoredStatements());
                 } else if (PATTERN_PRIVILIGE.matcher(statement).matches()) {
-                    PrivilegeParser.parse(database, statement, outputIgnoredStatements);
+                    PrivilegeParser.parse(database, statement, arguments.isOutputIgnoredStatements());
                 } else if (PATTERN_SELECT.matcher(statement).matches()
                         || PATTERN_INSERT_INTO.matcher(statement).matches()
                         || PATTERN_UPDATE.matcher(statement).matches()
@@ -261,7 +262,7 @@ public final class PgDumpLoader { //NOPMD
                     // we just ignore these statements
                     // add them as ignoredDataStatements
                     database.addIgnoredDataStatement(statement);
-                } else if (outputIgnoredStatements) {
+                } else if (arguments.isOutputIgnoredStatements()) {
                     database.addIgnoredStatement(statement);
                 } else {
                     // these statements are ignored if outputIgnoredStatements
@@ -274,7 +275,7 @@ public final class PgDumpLoader { //NOPMD
             return database;
         } catch (final UnsupportedEncodingException ex) {
             throw new UnsupportedOperationException(MessageFormat.format(
-                    Messages.Loader_UnsupportedEncoding, charsetName), ex);
+                    Messages.Loader_UnsupportedEncoding, arguments.getInCharsetName()), ex);
         } catch(IOException ex) {
             throw new FileException(MessageFormat.format(
                     "Exception while closing dump file: {0}",
@@ -283,11 +284,12 @@ public final class PgDumpLoader { //NOPMD
     }
     
     static PgDatabase loadDatabaseSchemaCoreAntLR(
-            InputStream inputStream, String charsetName, 
-            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers, 
+            InputStream inputStream, PgDiffArguments arguments, 
             PgDatabase database, Path path, IProgressMonitor monitor, int monitoringLevel) {
         try {
-            new AntlrParser(monitor, monitoringLevel).parseInputStream(inputStream, charsetName, 
+            database.setArguments(arguments);
+            new AntlrParser(monitor, monitoringLevel).parseInputStream(
+                    inputStream, arguments.getInCharsetName(),
                     new CustomSQLParserListener(database, path), path);
         } catch (IOException e) {
             throw new FileException(MessageFormat.format(
@@ -310,16 +312,19 @@ public final class PgDumpLoader { //NOPMD
      * @return database schema
      */
     public static PgDatabase loadDatabaseSchemaFromDirTree(
-            String dirPath, String charsetName,
-            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+            String dirPath, PgDiffArguments arguments,
             ParserClass parser) {
         final PgDatabase db = new PgDatabase();
         File dir = new File(dirPath);
 
         // step 1
         // read files in schema folder, add schemas to db
-        loadSchemasExtensions(charsetName, outputIgnoredStatements,
-                ignoreSlonyTriggers, parser, db, dir);
+        ApgdiffConsts.WORK_DIR_NAMES[] dirEnums = ApgdiffConsts.WORK_DIR_NAMES.values();
+        String[] dirs = new String[dirEnums.length];
+        for (int i = 0; i < dirEnums.length; ++i) {
+            dirs[i] = dirEnums[i].toString();
+        }
+        walkSubdirsRunCore(dir, arguments, dirs, db, parser);
 
         File schemasCommonDir = new File(dir, ApgdiffConsts.WORK_DIR_NAMES.SCHEMA.name());
         // skip walking SCHEMA folder if it does not exist
@@ -332,20 +337,19 @@ public final class PgDumpLoader { //NOPMD
         for (PgSchema schema : db.getSchemas()) {
             File schemaFolder = new File(schemasCommonDir, ModelExporter.getExportedFilename(schema));
             if (schemaFolder.isDirectory()) {
-                walkSubdirsRunCore(schemaFolder, charsetName, outputIgnoredStatements,
-                        ignoreSlonyTriggers, DIR_LOAD_ORDER, db, parser);
+                walkSubdirsRunCore(schemaFolder, arguments, DIR_LOAD_ORDER, db, parser);
             }
         }
         return db;
     }
 
-    static PgDatabase loadObjReferences(InputStream inputStream, String charsetName, 
-            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+    static PgDatabase loadObjReferences(InputStream inputStream, PgDiffArguments arguments,
             PgDatabase database, Path path, IProgressMonitor monitor, int monitoringLevel,
             List<FunctionBodyContainer> funcBodies) {
         try {
+            database.setArguments(arguments);
             ReferenceListener refListener = new ReferenceListener(database, path);
-            new AntlrParser(monitor, monitoringLevel).parseInputStream(inputStream, charsetName, 
+            new AntlrParser(monitor, monitoringLevel).parseInputStream(inputStream, arguments.getInCharsetName(), 
                     refListener, path);
             funcBodies.addAll(refListener.getFunctionBodies());
         } catch (IOException e) {
@@ -360,40 +364,23 @@ public final class PgDumpLoader { //NOPMD
      * @param filePath path to file
      * @return database with schemas, extensions and parsed file contents
      */
-    public static PgDatabase loadSchemasAndFile(String filePath, String charsetName,
-            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+    public static PgDatabase loadSchemasAndFile(String filePath, PgDiffArguments arguments,
             ParserClass parser) {
         final PgDatabase db = new PgDatabase();
 
-        parseFile(charsetName, outputIgnoredStatements,
-                ignoreSlonyTriggers, db, parser, new File(filePath));
+        parseFile(arguments, db, parser, new File(filePath));
         
         return db;
     }
 
     public static PgDatabase loadRefsFromInputStream(InputStream inputStream, Path path,
-            String charsetName, boolean outputIgnoredStatements,
-            boolean ignoreSlonyTriggers, ParserClass parser) {
+            PgDiffArguments arguments, ParserClass parser) {
         final PgDatabase db = new PgDatabase();
-        parser.parse(inputStream, charsetName,
-                outputIgnoredStatements, ignoreSlonyTriggers, db, path);
+        parser.parse(inputStream, arguments, db, path);
         return db;
     }
 
-    private static void loadSchemasExtensions(String charsetName,
-            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
-            ParserClass parser, final PgDatabase db, File dir) {
-        ApgdiffConsts.WORK_DIR_NAMES[] dirEnums = ApgdiffConsts.WORK_DIR_NAMES.values();
-        String[] dirs = new String[dirEnums.length];
-        for (int i = 0; i < dirEnums.length; ++i) {
-            dirs[i] = dirEnums[i].toString();
-        }
-        walkSubdirsRunCore(dir, charsetName, outputIgnoredStatements,
-                ignoreSlonyTriggers, dirs, db, parser);
-    }
-    
-    private static void walkSubdirsRunCore(File dir, String charsetName,
-            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+    private static void walkSubdirsRunCore(File dir, PgDiffArguments arguments,
             String[] subDir, PgDatabase db, ParserClass parser) {
         for (String s : subDir) {
             File folder = new File(dir, s);
@@ -403,19 +390,16 @@ public final class PgDumpLoader { //NOPMD
                 Arrays.sort(files);
                 
                 for (File f : files) {
-                    parseFile(charsetName, outputIgnoredStatements,
-                            ignoreSlonyTriggers, db, parser, f);
+                    parseFile(arguments, db, parser, f);
                 }
             }
         }
     }
 
-    private static void parseFile(String charsetName, boolean outputIgnoredStatements,
-            boolean ignoreSlonyTriggers, PgDatabase db, ParserClass parser, File f) {
+    private static void parseFile(PgDiffArguments arguments, PgDatabase db, ParserClass parser, File f) {
         if (f.exists() && !f.isDirectory() && f.getName().toLowerCase().endsWith(".sql")) {
             try (FileInputStream inputStream = new FileInputStream(f)) {
-                parser.parse(inputStream, charsetName, outputIgnoredStatements,
-                        ignoreSlonyTriggers, db, f.toPath());
+                parser.parse(inputStream, arguments, db, f.toPath());
             } catch (FileNotFoundException ex) {
                 throw new FileException(MessageFormat.format(
                         Messages.Loader_FileNotFound, f.getAbsolutePath()), ex);
@@ -439,11 +423,9 @@ public final class PgDumpLoader { //NOPMD
      * @return database schema from dump file
      */
     public static PgDatabase loadDatabaseSchemaFromDump(
-            InputStream inputStream, String charsetName, 
-            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+            InputStream inputStream, PgDiffArguments arguments,
             ParserClass parser) {
-        return parser.parse(inputStream, charsetName, outputIgnoredStatements,
-                ignoreSlonyTriggers, new PgDatabase(), Paths.get("/"));
+        return parser.parse(inputStream, arguments, new PgDatabase(), Paths.get("/"));
     }
     
     /**
@@ -459,12 +441,10 @@ public final class PgDumpLoader { //NOPMD
      * @return database schema from dump file
      */
     public static PgDatabase loadDatabaseSchemaFromDump(
-            String file, String charsetName, 
-            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+            String file, PgDiffArguments arguments,
             ParserClass parser) {
         try {
-            return loadDatabaseSchemaFromDump(new FileInputStream(file), charsetName,
-                    outputIgnoredStatements, ignoreSlonyTriggers, parser);
+            return loadDatabaseSchemaFromDump(new FileInputStream(file), arguments, parser);
         } catch (final FileNotFoundException ex) {
             throw new FileException(MessageFormat.format(
                     Messages.Loader_FileNotFound, file), ex);
