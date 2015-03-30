@@ -76,15 +76,15 @@ public class DepcyResolver {
      *            объект для удаления из старой базы
      */
     public void addDropStatements(PgStatement toDrop) {
-        addDrop(toDrop, new HashSet<Entry<PgStatement, StatementActions>>(), false);
+        addDrop(toDrop, new HashSet<Entry<PgStatement, StatementActions>>());
     }
     
-    private void addDrop(PgStatement toDrop, Set<Entry<PgStatement, StatementActions>> sKippedObjects, boolean skipStarter) {
+    private void addDrop(PgStatement toDrop, Set<Entry<PgStatement, StatementActions>> sKippedObjects) {
         toDrop = getObjectFromDB(toDrop, oldDb);
         if (oldDepcyGraph.getReversedGraph().containsVertex(toDrop)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     oldDepcyGraph.getReversedGraph(), toDrop);
-            customIteration(dfi, new CommonTraversalAdapter(toDrop, sKippedObjects, StatementActions.DROP, skipStarter));
+            customIteration(dfi, new CommonTraversalAdapter(toDrop, sKippedObjects, StatementActions.DROP));
         }
     }
 
@@ -98,15 +98,15 @@ public class DepcyResolver {
      * @param toCreate
      */
     public void addCreateStatements(PgStatement toCreate) {
-        addCreate(toCreate, new HashSet<Entry<PgStatement, StatementActions>>(), false);
+        addCreate(toCreate, new HashSet<Entry<PgStatement, StatementActions>>());
     }
     
-    private void addCreate(PgStatement toCreate, Set<Entry<PgStatement, StatementActions>> sKippedObjects, boolean skipStarter) {
+    private void addCreate(PgStatement toCreate, Set<Entry<PgStatement, StatementActions>> sKippedObjects) {
         toCreate = getObjectFromDB(toCreate, newDb);
         if (newDepcyGraph.getGraph().containsVertex(toCreate)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     newDepcyGraph.getGraph(), toCreate);
-            customIteration(dfi, new CommonTraversalAdapter(toCreate, sKippedObjects, StatementActions.CREATE, skipStarter));
+            customIteration(dfi, new CommonTraversalAdapter(toCreate, sKippedObjects, StatementActions.CREATE));
         }
     }
 
@@ -121,7 +121,7 @@ public class DepcyResolver {
      * @param toAlter
      */
     public void addAlterStatements(PgStatement toAlter) {
-        addDrop(toAlter, new HashSet<Entry<PgStatement, StatementActions>>(), false);
+        addDrop(toAlter, new HashSet<Entry<PgStatement, StatementActions>>());
     }
 
     /**
@@ -456,8 +456,8 @@ public class DepcyResolver {
      * зависимостей (ALTER, DROP, CREATE)
      */
     private class CommonTraversalAdapter extends CustomTraversalListenerAdapter {
-        CommonTraversalAdapter(PgStatement starter, Set<Entry<PgStatement, StatementActions>> sKippedObjects, StatementActions action, boolean skipStarter) {
-            super(starter, action, skipStarter, sKippedObjects);
+        CommonTraversalAdapter(PgStatement starter, Set<Entry<PgStatement, StatementActions>> sKippedObjects, StatementActions action) {
+            super(starter, action, sKippedObjects);
         }
 
         @Override
@@ -522,7 +522,7 @@ public class DepcyResolver {
                     if (startAction == StatementActions.CREATE) {
                         if (!sKippedObjects.contains(new AbstractMap.SimpleEntry<>(oldSt, StatementActions.DROP))) {
                             sKippedObjects.add(new AbstractMap.SimpleEntry<>(oldSt, StatementActions.DROP));
-                            addDrop(oldSt, sKippedObjects, true);
+                            addDrop(oldSt, sKippedObjects);
                         }
                     } else {
                         if (!sKippedObjects.contains(new AbstractMap.SimpleEntry<>(newSt, StatementActions.CREATE))) {
@@ -533,16 +533,15 @@ public class DepcyResolver {
                             if (action != StatementActions.ALTER) {
                                 addToList(oldSt);
                             }
-                            addCreate(newSt, sKippedObjects, true);
+                            addCreate(newSt, sKippedObjects);
                         }
                     }
                 }
             } else {
                 action = StatementActions.NONE;
             }
-            // если сам объект не требует пересоздания своих
-            // зависимых объектов, то нужно проверить а не
-            // требует ли пересоздания родителькие объекты
+            // проверить а не
+            // требует ли пересоздания(Drop/create) родителькие объекты
             IsDropped iter = new IsDropped();
             customIteration(
                     new DepthFirstIterator<PgStatement, DefaultEdge>(
@@ -568,15 +567,13 @@ public class DepcyResolver {
          */
         protected StatementActions action;
         protected StatementActions startAction;
-        protected boolean skipStarter;
         protected Set<Entry<PgStatement, StatementActions>> sKippedObjects;
 
         CustomTraversalListenerAdapter(PgStatement starter,
-                StatementActions action, boolean skipStarter, Set<Entry<PgStatement, StatementActions>> sKippedObjects) {
+                StatementActions action, Set<Entry<PgStatement, StatementActions>> sKippedObjects) {
             this.starter = starter;
             this.action = action;
             this.startAction = action;
-            this.skipStarter = skipStarter;
             this.sKippedObjects = sKippedObjects;
         }
 
