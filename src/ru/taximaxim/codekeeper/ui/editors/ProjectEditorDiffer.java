@@ -63,7 +63,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -546,7 +545,7 @@ class DiffPage extends DiffPresentationPane {
         final Differ differ = new Differ(
                 DbSource.fromFilter(dbSource, filtered, DiffSide.LEFT),
                 DbSource.fromFilter(dbTarget, filtered, DiffSide.RIGHT),
-                false, proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
+                false, proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
         differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);

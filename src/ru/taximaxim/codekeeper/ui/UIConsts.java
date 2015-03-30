@@ -4,9 +4,6 @@ public interface UIConsts {
 
     String _NL = System.lineSeparator();
     
-    String UTF_8 = "UTF-8"; //$NON-NLS-1$
-    String UTC = "UTC"; //$NON-NLS-1$
-
     interface PLUGIN_ID {
         String THIS = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
         String HELP = THIS + ".help"; //$NON-NLS-1$
@@ -57,6 +54,8 @@ public interface UIConsts {
         String DROP_TABLE_STATEMENT = "prefDropTableStatement"; //$NON-NLS-1$
         String ALTER_COLUMN_STATEMENT = "prefAlterColumnStatement"; //$NON-NLS-1$
         String DROP_COLUMN_STATEMENT = "prefDropColumnStatement"; //$NON-NLS-1$
+        String SCRIPT_IN_TRANSACTION = "prefScriptInTransaction"; //$NON-NLS-1$
+        String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
     }
     
     public enum DBSources {

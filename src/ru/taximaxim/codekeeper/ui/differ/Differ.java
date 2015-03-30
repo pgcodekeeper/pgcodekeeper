@@ -16,14 +16,13 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgDiff;
-import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
@@ -142,17 +141,17 @@ public class Differ implements IRunnableWithProgress {
                 + " to: " + this.dbTarget.getOrigin()); //$NON-NLS-1$
         
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
-        PgDiffArguments args = new PgDiffArguments();
         ByteArrayOutputStream diffOut = new ByteArrayOutputStream(INITIAL_BUFFER_CAPACITY);
         try {
             PrintWriter writer = new UnixPrintWriter(
-                    new OutputStreamWriter(diffOut, UIConsts.UTF_8), true);
-
-            script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, args,
-                    dbSrc, dbTgt, sourceDbFull, targetDbFull, 
-                    additionalDepciesSource, additionalDepciesTarget);
+                    new OutputStreamWriter(diffOut, ApgdiffConsts.UTF_8), true);
+            
+            script = PgDiff.diffDatabaseSchemasAdditionalDepcies(writer,
+                    DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone), dbSrc, dbTgt,
+                    sourceDbFull, targetDbFull, additionalDepciesSource,
+                    additionalDepciesTarget);
             writer.flush();
-            diffDirect = prependTimezone(diffOut.toString(UIConsts.UTF_8).trim());
+            diffDirect = diffOut.toString(ApgdiffConsts.UTF_8).trim();
 
             if (needTwoWay) {
                 Log.log(Log.LOG_INFO, "Diff from: " + this.dbTarget.getOrigin() //$NON-NLS-1$
@@ -160,19 +159,16 @@ public class Differ implements IRunnableWithProgress {
                 
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
                 diffOut.reset();
-                PgDiff.diffDatabaseSchemas(writer, args, dbTgt, dbSrc,
+                PgDiff.diffDatabaseSchemas(writer,
+                        DbSource.getPgDiffArgs(ApgdiffConsts.UTF_8, timezone), dbTgt, dbSrc,
                         targetDbFull, sourceDbFull);
                 writer.flush();
-                diffReverse = prependTimezone(diffOut.toString(UIConsts.UTF_8).trim());
+                diffReverse = diffOut.toString(ApgdiffConsts.UTF_8).trim();
             }
         } catch (UnsupportedEncodingException ex) {
             throw new InvocationTargetException(ex, ex.getLocalizedMessage());
         }
         pm.done();
         finished = true;
-    }
-    
-    private String prependTimezone(String diff){
-        return "SET TIMEZONE TO '" + timezone + "';\n\n" + diff; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }
