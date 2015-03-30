@@ -27,12 +27,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.PartialExporterTest;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -77,9 +77,9 @@ public class DifferTest {
         File targetFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(targetFilename));
 
         DbSource dbSource = 
-                DbSource.fromFile(ParserClass.getLegacy(null, 1), sourceFile.getAbsolutePath(), UIConsts.UTF_8);
+                DbSource.fromFile(ParserClass.getLegacy(null, 1), sourceFile.getAbsolutePath(), ApgdiffConsts.UTF_8);
         DbSource dbTarget = 
-                DbSource.fromFile(ParserClass.getLegacy(null, 1), targetFile.getAbsolutePath(), UIConsts.UTF_8);
+                DbSource.fromFile(ParserClass.getLegacy(null, 1), targetFile.getAbsolutePath(), ApgdiffConsts.UTF_8);
         
         final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget);
         
@@ -93,7 +93,7 @@ public class DifferTest {
         final Differ differ = new Differ(
                 DbSource.fromFilter(dbSource, filtered, DiffSide.LEFT),
                 DbSource.fromFilter(dbTarget, filtered, DiffSide.RIGHT),
-                true, UIConsts.UTC);
+                true, ApgdiffConsts.UTC);
         differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
         
         differ.setAdditionalDepciesSource(differData.getAdditionalDepciesSource(dbSource.getDbObject()));

@@ -32,10 +32,10 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.fileutils.TempDir;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.TEST;
 import cz.startnet.utils.pgdiff.loader.JdbcLoaderTest;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
@@ -56,9 +56,11 @@ public class DbSourceTest {
         ApgdiffTestUtils.createDB(dbName);
         ApgdiffTestUtils.fillDB(dbName);
         
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(ApgdiffConsts.UTF_8);
         dbPredefined = PgDumpLoader.loadDatabaseSchemaFromDump(
                 JdbcLoaderTest.class.getResourceAsStream(TEST.RESOURCE_DUMP),
-                ApgdiffConsts.UTF_8, false, false, ParserClass.getAntlr(null, 1));
+                args, ParserClass.getAntlr(null, 1));
         
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         workspacePath = workspaceRoot.getLocation().toFile();
@@ -72,17 +74,17 @@ public class DbSourceTest {
                                             TEST.REMOTE_USERNAME, 
                                             TEST.REMOTE_PASSWORD, 
                                             dbName, 
-                                            UIConsts.UTF_8, 
-                                            UIConsts.UTC, true));
+                                            ApgdiffConsts.UTF_8, 
+                                            ApgdiffConsts.UTC, true));
     }
     
     @Test
     public void testDirTree() throws IOException{
         try(TempDir exportDir = new TempDir("pgcodekeeper-test")){
-            new ModelExporter(exportDir.get(), dbPredefined, UIConsts.UTF_8).exportFull();
+            new ModelExporter(exportDir.get(), dbPredefined, ApgdiffConsts.UTF_8).exportFull();
             
             performTest(DbSource.fromDirTree(ParserClass.getAntlr(null, 1),
-                    exportDir.get().getAbsolutePath(), UIConsts.UTF_8));
+                    exportDir.get().getAbsolutePath(), ApgdiffConsts.UTF_8));
         }
     }
     
@@ -102,7 +104,7 @@ public class DbSourceTest {
         URL urla = JdbcLoaderTest.class.getResource(TEST.RESOURCE_DUMP);
         
         performTest(DbSource.fromFile(ParserClass.getAntlr(null, 1), 
-                ApgdiffUtils.getFileFromOsgiRes(urla).getCanonicalPath(), UIConsts.UTF_8));
+                ApgdiffUtils.getFileFromOsgiRes(urla).getCanonicalPath(), ApgdiffConsts.UTF_8));
     }
     
     @Test
@@ -112,7 +114,7 @@ public class DbSourceTest {
             IProject project = createProjectInWorkspace(tempDir.get());
             
             // populate project with data
-            new ModelExporter(tempDir.get(), dbPredefined, UIConsts.UTF_8).exportFull();
+            new ModelExporter(tempDir.get(), dbPredefined, ApgdiffConsts.UTF_8).exportFull();
             
             // testing itself
             PgDbProject proj = new PgDbProject(project);
@@ -133,7 +135,7 @@ public class DbSourceTest {
             IProject project = createProjectInWorkspace(tempDir.get());
             
             // populate project with data
-            new ModelExporter(tempDir.get(), dbPredefined, UIConsts.UTF_8).exportFull();
+            new ModelExporter(tempDir.get(), dbPredefined, ApgdiffConsts.UTF_8).exportFull();
             
             // set required settings
             PgDbProject proj = new PgDbProject(project);
