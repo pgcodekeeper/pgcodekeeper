@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.schema.GenericColumn;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -139,9 +140,11 @@ public class PgDumpLoaderTest {
         
         // first test the dump loader itself
         String filename = "schema_" + fileIndex + ".sql";
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(encoding);
         PgDatabase d = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PgDumpLoaderTest.class.getResourceAsStream(filename), encoding,
-                false, false, ParserClass.getLegacy(null, 1));
+                PgDumpLoaderTest.class.getResourceAsStream(filename), args,
+                ParserClass.getLegacy(null, 1));
         
         // then check result's validity against handmade DB object
         if(fileIndex > DB_OBJS.length) {        
@@ -193,18 +196,23 @@ public class PgDumpLoaderTest {
 
         // prepare db object from sql file
         String filename = "schema_" + fileIndex + ".sql";
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(encoding);
         PgDatabase dbFromFile = PgDumpLoader.loadDatabaseSchemaFromDump(
-                PgDumpLoaderTest.class.getResourceAsStream(filename), encoding,
-                false, false, ParserClass.getLegacy(null, 1));
+                PgDumpLoaderTest.class.getResourceAsStream(filename), args,
+                ParserClass.getLegacy(null, 1));
         
         PgDatabase dbPredefined = DB_OBJS[fileIndex - 1].getDatabase();
         Path exportDir = null;
         try{
             exportDir = Files.createTempDirectory("pgCodekeeper-test-files");
             new ModelExporter(exportDir.toFile(), dbPredefined, encoding).exportFull();
-            
+            args = new PgDiffArguments();
+            args.setInCharsetName(encoding);
+            args.setIgnoreSlonyTriggers(true);
+            args.setOutputIgnoredStatements(true);
             PgDatabase dbAfterExport = PgDumpLoader.loadDatabaseSchemaFromDirTree(
-                    exportDir.toString(), encoding, true, true, ParserClass.getLegacy(null, 1));
+                    exportDir.toString(), args, ParserClass.getLegacy(null, 1));
 
             // check the same db similarity before and after export
             Assert.assertEquals("ModelExporter: predefined object PgDB" + fileIndex + 

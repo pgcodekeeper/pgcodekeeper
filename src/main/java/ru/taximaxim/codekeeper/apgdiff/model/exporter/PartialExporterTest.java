@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -110,12 +111,16 @@ public class PartialExporterTest {
     public static void initDiffTree() {
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(encoding);
         dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
                 PartialExporterTest.class.getResourceAsStream(sourceFilename),
-                encoding, false, false, ParserClass.getLegacy(null, 1));
+                args, ParserClass.getLegacy(null, 1));
+        args = new PgDiffArguments();
+        args.setInCharsetName(encoding);
         dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
                 PartialExporterTest.class.getResourceAsStream(targetFilename),
-                encoding, false, false, ParserClass.getLegacy(null, 1));
+                args, ParserClass.getLegacy(null, 1));
         
         Assert.assertNotNull(dbSource);
         Assert.assertNotNull(dbTarget);
