@@ -90,6 +90,11 @@ public class PgSet extends PgStatement {
         }
         return false;
     }
+    
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 
     @Override
     protected int computeHash() {

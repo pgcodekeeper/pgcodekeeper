@@ -164,7 +164,7 @@ public class JdbcLoader implements PgCatalogStrings {
             Log.log(Log.LOG_INFO, "Database object has been successfully queried from JDBC");
         } catch (SQLException e) {
             try {
-            connection.rollback();
+                connection.rollback();
             } catch (SQLException ex) {
                 Log.log(Log.LOG_ERROR, "Cannot rollBack changes", ex);
             }
