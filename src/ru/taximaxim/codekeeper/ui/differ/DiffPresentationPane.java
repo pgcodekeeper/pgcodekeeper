@@ -6,6 +6,7 @@ import java.text.MessageFormat;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -14,7 +15,9 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.layout.PixelConverter;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -222,13 +225,33 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    showNotificationArea(false);
+                    IRunnableWithProgress runRefresh = new IRunnableWithProgress() {
+                        
+                        @Override
+                        public void run(IProgressMonitor monitor) throws InvocationTargetException,
+                                InterruptedException {
+                            try {
+                                proj.getProject().refreshLocal(
+                                        IResource.DEPTH_INFINITE, monitor);
+                            } catch (CoreException ex) {
+                                throw new InvocationTargetException(ex);
+                            }
+                        }
+                    };
+                    try {
+                        new ProgressMonitorDialog(getShell()).run(true, true, runRefresh);
+                    } catch (InterruptedException ex) {
+                        // cancelled
+                        return;
+                    }
+                    
                     if (fillDbSources(proj, projProps)) {
+                        showNotificationArea(false);
                         clearInputs();
                         loadChanges();
                         saveDBPrefs(projProps);
                     }
-                } catch (PgCodekeeperUIException | CoreException e1) {
+                } catch (PgCodekeeperUIException | CoreException | InvocationTargetException e1) {
                     ExceptionNotifier.notifyDefault(
                             Messages.DiffPresentationPane_error_loading_changes, e1);
                 } catch (BackingStoreException e1) {
