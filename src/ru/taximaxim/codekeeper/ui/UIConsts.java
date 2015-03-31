@@ -34,6 +34,7 @@ public interface UIConsts {
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String DB_STORE = "prefDbStore"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
+        String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
         
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
@@ -56,7 +57,6 @@ public interface UIConsts {
         String DROP_COLUMN_STATEMENT = "prefDropColumnStatement"; //$NON-NLS-1$
         String SCRIPT_IN_TRANSACTION = "prefScriptInTransaction"; //$NON-NLS-1$
         String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
-        String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
     }
     
     public enum DBSources {

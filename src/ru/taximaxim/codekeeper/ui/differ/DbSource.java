@@ -20,6 +20,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.fileutils.TempFile;
@@ -71,7 +72,7 @@ public abstract class DbSource {
         args.setInCharsetName(charset);
         args.setAddTransaction(mainPS.getBoolean(UIConsts.DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
         args.setCheckFunctionBodies(mainPS.getBoolean(UIConsts.DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
-        args.setIgnorePrivileges(mainPS.getBoolean(UIConsts.DB_UPDATE_PREF.NO_PRIVILEGES));
+        args.setIgnorePrivileges(mainPS.getBoolean(PREF.NO_PRIVILEGES));
         args.setTimeZone(timeZone);
         return args;
     }
