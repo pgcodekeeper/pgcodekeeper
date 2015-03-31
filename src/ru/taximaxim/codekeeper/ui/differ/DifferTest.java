@@ -21,18 +21,23 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.PartialExporterTest;
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -44,6 +49,7 @@ import cz.startnet.utils.pgdiff.schema.PgView;
 @RunWith(value = Parameterized.class)
 public class DifferTest {
     
+    private static boolean defaultCheckBodies;
     private final DifferData differData;
     
     @Parameters
@@ -62,6 +68,19 @@ public class DifferTest {
         new DifferData_1(), new DifferData_2(), new DifferData_3(), new DifferData_4(), new DifferData_5()
     };
     
+    @BeforeClass
+    public static void beforeClass() {
+        IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
+        defaultCheckBodies = prefs.getDefaultBoolean(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES);
+        prefs.setValue(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, true);
+    }
+    
+    @AfterClass
+    public static void afterClass() {
+        IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
+        prefs.setValue(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, defaultCheckBodies);
+    }
+    
     public DifferTest(int param) {
         this.differData = DB_OBJS[param - 1];
         differData.setCaseNumber(param);
@@ -77,9 +96,9 @@ public class DifferTest {
         File targetFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(targetFilename));
 
         DbSource dbSource = 
-                DbSource.fromFile(ParserClass.getLegacy(null, 1), sourceFile.getAbsolutePath(), UIConsts.UTF_8);
+                DbSource.fromFile(ParserClass.getLegacy(null, 1), sourceFile.getAbsolutePath(), ApgdiffConsts.UTF_8);
         DbSource dbTarget = 
-                DbSource.fromFile(ParserClass.getLegacy(null, 1), targetFile.getAbsolutePath(), UIConsts.UTF_8);
+                DbSource.fromFile(ParserClass.getLegacy(null, 1), targetFile.getAbsolutePath(), ApgdiffConsts.UTF_8);
         
         final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget);
         
@@ -93,7 +112,7 @@ public class DifferTest {
         final Differ differ = new Differ(
                 DbSource.fromFilter(dbSource, filtered, DiffSide.LEFT),
                 DbSource.fromFilter(dbTarget, filtered, DiffSide.RIGHT),
-                true, UIConsts.UTC);
+                true, ApgdiffConsts.UTC);
         differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
         
         differ.setAdditionalDepciesSource(differData.getAdditionalDepciesSource(dbSource.getDbObject()));
