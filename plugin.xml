@@ -510,4 +510,16 @@
           </includes>
        </viewerContentBinding>
     </extension>
+    <extension
+          point="org.eclipse.ui.console.consolePageParticipants">
+       <consolePageParticipant
+             class="ru.taximaxim.codekeeper.ui.consoles.ShowConsoleParticipant"
+             id="ru.taximaxim.codekeeper.ui.consoles.ForceShowConsole">
+          <enablement>
+             <instanceof
+                   value="ru.taximaxim.codekeeper.ui.consoles.CodekeeperConsole">
+             </instanceof>
+          </enablement>
+       </consolePageParticipant>
+    </extension>
 </plugin>

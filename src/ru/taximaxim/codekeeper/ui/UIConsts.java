@@ -130,6 +130,7 @@ public interface UIConsts {
         String ICONBALLRED = "/icons/ball_red.png"; //$NON-NLS-1$
         String ICONREFRESH = "/icons/refresh.gif"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
+        String ICONWRITEOUTCONSOLE = "/icons/writeout_co.gif"; //$NON-NLS-1$
         String DDL_UPDATE_COMMANDS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
     }
     
