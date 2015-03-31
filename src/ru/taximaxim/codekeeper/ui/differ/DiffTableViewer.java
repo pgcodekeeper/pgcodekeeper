@@ -113,17 +113,16 @@ public class DiffTableViewer extends Composite {
     private boolean reverseDiffSide;
     
     private TreeElement treeRoot;
+    private final PgDbProject proj;
+    private final IgnoresChangeListener ignoresListener = new IgnoresChangeListener();
+    private List<IgnoredObject> ignoredElements;
+    
     // values are checkedSet states of the elements
     private ElementsModel<TreeElement> elements = new ElementsModel<>();
-    
-    private final IgnoresChangeListener ignoresListener = new IgnoresChangeListener();
-    
     private final CheckStateListener checkListener = new CheckStateListener();
-    
     private final TableViewerComparator comparator = new TableViewerComparator();
     
     private final LocalResourceManager lrm;
-    
     private Text txtFilterName;
     private Button useRegEx;
     private final CheckboxTableViewer viewer;
@@ -133,13 +132,11 @@ public class DiffTableViewer extends Composite {
     private Label lblCheckedCount;
     private ComboViewer cmbPrevChecked;
     
-    private List<IgnoredObject> ignoredElements;
     private DbSource dbSource;
     private DbSource dbTarget;
     
     private Map<String, List<String>> prevChecked; 
     private XmlHistory prevCheckedHistory;
-    private PgDbProject proj;
     
     private enum Columns {
         CHECK,
@@ -664,22 +661,19 @@ public class DiffTableViewer extends Composite {
     }
     
     private void generateFlatElementsMap(TreeElement subtree) {
-        List<IgnoredObject> all = new ArrayList<>();
-        // Проект пуст, значит вызывался из коммит диалога, ничего не исключаем
+        List<IgnoredObject> ignores = new ArrayList<>(ignoredElements);
         if (proj != null) {
             StringEditor se = new StringEditor(Paths.get(proj.getProject()
                     .getLocation().toOSString(), UIConsts.IGNORED_OBJECTS));
-            all.addAll(ignoredElements);
             try {
-                all.addAll(se.loadSettings());
+                ignores.addAll(se.loadSettings());
             } catch (IOException e1) {
                 Log.log(Log.LOG_WARNING,
-                        "Some problems occured while reading ignore settings from file",
-                        e1);
+                        "Some problems occured while reading ignore settings from file", e1);
             }
         }
         List<TreeElement> elementsList = generateElementsList(subtree,
-                new ArrayList<TreeElement>(), all, dbSource.getDbObject(), dbTarget.getDbObject());
+                new ArrayList<TreeElement>(), ignores, dbSource.getDbObject(), dbTarget.getDbObject());
         
         for(TreeElement e : elementsList){
             elements.put(e, false);

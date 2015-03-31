@@ -333,7 +333,7 @@ class CommitPage extends DiffPresentationPane {
         Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
         // display commit dialog
         CommitDialog cd = new CommitDialog(getShell(), filtered, sumNewAndDelete,
-                mainPrefs, proj, treeDiffer, isCommitCommandAvailable);
+                mainPrefs, treeDiffer, isCommitCommandAvailable);
         cd.setConflictingElements(considerDepcy ? dte.getConflicting() : Collections.EMPTY_SET);
         if (cd.open() != CommitDialog.OK) {
             return;

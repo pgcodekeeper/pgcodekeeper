@@ -17,54 +17,49 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ShowConsoleParticipant implements IConsolePageParticipant {
 
-    ShowConsoleAction faction;
+    ShowConsoleAction action;
     IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
+    
     @Override
-    public Object getAdapter(Class adapter) {
-        // TODO Auto-generated method stub
+    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         return null;
     }
 
     @Override
     public void init(IPageBookViewPage page, IConsole console) {
-        if (faction== null) {
-            faction = new ShowConsoleAction(prefs);
+        if (action== null) {
+            action = new ShowConsoleAction(prefs);
         }
         page.getSite().getActionBars().getToolBarManager()
-                .appendToGroup(IConsoleConstants.OUTPUT_GROUP, faction);
-        prefs.addPropertyChangeListener(faction);
+                .appendToGroup(IConsoleConstants.OUTPUT_GROUP, action);
+        prefs.addPropertyChangeListener(action);
     }
 
     @Override
     public void dispose() {
-        prefs.removePropertyChangeListener(faction);
-        prefs = null;
+        prefs.removePropertyChangeListener(action);
     }
 
     @Override
     public void activated() {
-        
     }
 
     @Override
     public void deactivated() {
-
     }
     
     private static class ShowConsoleAction extends Action implements IPropertyChangeListener {
+        
         private IPreferenceStore prefs;
+        
         ShowConsoleAction(IPreferenceStore prefs) {
             super(Messages.generalPrefPage_show_console_when_program_write_to_console);
+            this.prefs = prefs;
+            
             setToolTipText(Messages.generalPrefPage_show_console_when_program_write_to_console);
-            setHoverImageDescriptor(ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(FILE.ICONWRITEOUTCONSOLE)));
-            setDisabledImageDescriptor(ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(FILE.ICONWRITEOUTCONSOLE)));
             setImageDescriptor(ImageDescriptor.createFromURL(
                     Activator.getContext().getBundle().getResource(FILE.ICONWRITEOUTCONSOLE)));
-            this.prefs = prefs;
             setChecked(prefs.getBoolean(PREF.FORCE_SHOW_CONSOLE));
-//          PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IConsoleHelpContextIds.CLEAR_CONSOLE_ACTION);
         }
 
         @Override
@@ -74,13 +69,10 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
                 setChecked((boolean)event.getNewValue()); 
             }
         }
+
         @Override
         public void run() {
             prefs.setValue(PREF.FORCE_SHOW_CONSOLE, isChecked());
         }
     }
-
-
 }
-
-

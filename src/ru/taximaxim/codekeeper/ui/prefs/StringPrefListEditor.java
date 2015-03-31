@@ -20,11 +20,10 @@ public class StringPrefListEditor extends PrefListEditor<String> {
 
     @Override
     protected void createViewer(Composite parent) {
-        listViewerObjs = new ListViewer(parent);
-        listViewerObjs.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+        viewerObjs = new ListViewer(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+        viewerObjs.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
-        listViewerObjs.setContentProvider(new ArrayContentProvider());
-        listViewerObjs.setLabelProvider(new LabelProvider());
+        viewerObjs.setContentProvider(new ArrayContentProvider());
+        viewerObjs.setLabelProvider(new LabelProvider());
     }
-
 }

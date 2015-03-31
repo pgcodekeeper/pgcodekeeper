@@ -12,12 +12,13 @@ import org.eclipse.swt.widgets.Composite;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectPrefListEditor.BooleanChangeValues;
 
-public class YesNoEditingSupport extends EditingSupport {
+class YesNoEditingSupport extends EditingSupport {
     
     enum Values {
-        NO(Messages.yesNoEditingSupport_no), YES(Messages.yesNoEditingSupport_yes);
+        NO(Messages.yesNoEditingSupport_no),
+        YES(Messages.yesNoEditingSupport_yes);
         
-        String localizedName;
+        private String localizedName;
         
         private Values(String localizedName) {
             this.localizedName = localizedName;
@@ -28,7 +29,7 @@ public class YesNoEditingSupport extends EditingSupport {
         }
     }
 
-    private ComboBoxViewerCellEditor cellEditor = null;
+    private ComboBoxViewerCellEditor cellEditor;
     private BooleanChangeValues type;
     private ColumnViewer viewer;
     
@@ -69,18 +70,17 @@ public class YesNoEditingSupport extends EditingSupport {
             boolean boolValue = newValue == Values.NO ? false : true;
             switch (type) {
             case IGNORE_CONTENT:
-                if (data.isIgnoreContent() != (boolValue)) {
+                if (data.isIgnoreContent() != boolValue) {
                     data.setIgnoreContent(boolValue);
-                    viewer.refresh();
                 }
                 break;
             case REGULAR:
-                if (data.isRegular() != (boolValue)) {
+                if (data.isRegular() != boolValue) {
                     data.setRegular(boolValue);
-                    viewer.refresh();
                 }
                 break;
             }
+            viewer.refresh();
         }
     }
 }

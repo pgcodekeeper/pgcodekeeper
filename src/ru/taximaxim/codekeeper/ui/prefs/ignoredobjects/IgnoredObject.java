@@ -14,7 +14,7 @@ import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectPrefListEdit
  */
 public class IgnoredObject {
 
-    private String name;
+    private final String name;
     private boolean isRegular;
     private boolean ignoreContent;
 
@@ -36,10 +36,6 @@ public class IgnoredObject {
         return ignoreContent;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public void setRegular(boolean isRegular) {
         this.isRegular = isRegular;
     }
@@ -50,11 +46,10 @@ public class IgnoredObject {
     
     public boolean match(String objName) {
         if (isRegular) {
-            return Pattern.compile(name,
-                            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
-                                .matcher(objName).find();
+            return Pattern.compile(name,Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
+                    .matcher(objName).find();
         } else {
-            return name.contains(objName);
+            return name.equals(objName);
         }
     }
     
@@ -84,8 +79,13 @@ public class IgnoredObject {
     
     @Override
     public String toString() {
-        Long result = 0 | (isRegular? BooleanChangeValues.REGULAR.getStatusFlagValue() : 0)
-                | (ignoreContent ? BooleanChangeValues.IGNORE_CONTENT.getStatusFlagValue() : 0);
+        int result = 0;
+        if (isRegular) {
+            result |= BooleanChangeValues.REGULAR.getStatusFlagValue();
+        }
+        if (ignoreContent) {
+            result |= BooleanChangeValues.IGNORE_CONTENT.getStatusFlagValue();
+        }
         return name + " " + result;
     }
     
@@ -100,7 +100,7 @@ public class IgnoredObject {
         return result;
     }
     
-    static IgnoredObject parseLine(String line) {
+    private static IgnoredObject parseLine(String line) {
         try {
             int lastSpace = line.lastIndexOf(' ');
             if (lastSpace == -1) {

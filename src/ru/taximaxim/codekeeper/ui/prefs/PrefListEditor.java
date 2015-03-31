@@ -25,7 +25,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public abstract class PrefListEditor<T> extends Composite {
-    protected StructuredViewer listViewerObjs;
+    
+    protected StructuredViewer viewerObjs;
     private LinkedList<T> objsList = new LinkedList<>();
     private final boolean doSorting;
     private Button upBtn;
@@ -66,7 +67,7 @@ public abstract class PrefListEditor<T> extends Composite {
                     objsList.add(0, newValue);
                     newVal = newValue; 
                     txtNewValue.setText(""); //$NON-NLS-1$
-                    listViewerObjs.refresh();
+                    viewerObjs.refresh();
                 } else {
                     newVal = null;
                 }
@@ -105,12 +106,13 @@ public abstract class PrefListEditor<T> extends Composite {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (listViewerObjs.getSelection().isEmpty()) {
+                if (viewerObjs.getSelection().isEmpty()) {
                     return;
                 }
-                IStructuredSelection selection = (IStructuredSelection) listViewerObjs
+                IStructuredSelection selection = (IStructuredSelection) viewerObjs
                         .getSelection();
-                T sel = (T) selection.getFirstElement();
+                @SuppressWarnings("unchecked")
+                T sel = ((T) selection.getFirstElement());
                 ListIterator<T> it = objsList.listIterator();
                 while (it.hasNext()) {
                     T match = it.next();
@@ -122,7 +124,7 @@ public abstract class PrefListEditor<T> extends Composite {
                             it.next();
                             it.next();
                             it.set(prev);
-                            listViewerObjs.refresh();
+                            viewerObjs.refresh();
                         }
                         return;
                     }
@@ -139,12 +141,13 @@ public abstract class PrefListEditor<T> extends Composite {
             
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (listViewerObjs.getSelection().isEmpty()) {
+                if (viewerObjs.getSelection().isEmpty()) {
                     return;
                 }
-                IStructuredSelection selection = (IStructuredSelection) listViewerObjs
+                IStructuredSelection selection = (IStructuredSelection) viewerObjs
                         .getSelection();
-                T sel = (T) selection.getFirstElement();
+                @SuppressWarnings("unchecked")
+                T sel = ((T) selection.getFirstElement());
                 ListIterator<T> it = objsList.listIterator();
                 while (it.hasNext()) {
                     T match = it.next();
@@ -155,7 +158,7 @@ public abstract class PrefListEditor<T> extends Composite {
                             it.previous();
                             it.previous();
                             it.set(next);
-                            listViewerObjs.refresh();
+                            viewerObjs.refresh();
                         }
                         return;
                     }
@@ -163,31 +166,31 @@ public abstract class PrefListEditor<T> extends Composite {
             }
         });
         if (doSorting){
-            listViewerObjs.setSorter(new ViewerSorter());
+            viewerObjs.setSorter(new ViewerSorter());
             upBtn.setEnabled(false);
             downBtn.setEnabled(false);
         }
     }
     
-    protected abstract  T getObject(String name);
+    protected abstract T getObject(String name);
 
     protected abstract void createViewer(Composite parent);
     
     public Object deleteSelected() {
         IStructuredSelection selection = 
-                (IStructuredSelection) listViewerObjs.getSelection();
+                (IStructuredSelection) viewerObjs.getSelection();
         Object objToRemove = selection.getFirstElement();
         if (objToRemove == null) {
             return null;
         }
 
         objsList.remove(objToRemove);
-        listViewerObjs.refresh();
+        viewerObjs.refresh();
         return objToRemove;
     }
     
     public Object getSelected() {
-        return ((IStructuredSelection)listViewerObjs.getSelection()).getFirstElement();
+        return ((IStructuredSelection)viewerObjs.getSelection()).getFirstElement();
     }
     
     public List<T> getList(){
@@ -195,7 +198,7 @@ public abstract class PrefListEditor<T> extends Composite {
     }
     
     public StructuredViewer getListViewer() {
-        return listViewerObjs;
+        return viewerObjs;
     }
     
     public Button getDelDtn() {
@@ -208,16 +211,16 @@ public abstract class PrefListEditor<T> extends Composite {
     
     public void setInputList(LinkedList<T> list){
         objsList = list;
-        listViewerObjs.setInput(objsList);
-        listViewerObjs.refresh();
+        viewerObjs.setInput(objsList);
+        viewerObjs.refresh();
     }
 
     public void select(T name) {
-        listViewerObjs.setSelection(new StructuredSelection(name));
+        viewerObjs.setSelection(new StructuredSelection(name));
     }
     
     public void select(int index) {
-        listViewerObjs.setSelection(new StructuredSelection(objsList.get(index)));
+        viewerObjs.setSelection(new StructuredSelection(objsList.get(index)));
     }
 
     public T getNewEntry() {

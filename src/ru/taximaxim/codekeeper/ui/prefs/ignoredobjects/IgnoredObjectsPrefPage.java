@@ -3,13 +3,11 @@ package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
-import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -27,13 +25,9 @@ import ru.taximaxim.codekeeper.ui.XmlStringList;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
+public class IgnoredObjectsPrefPage extends PreferencePage
         implements IWorkbenchPreferencePage {
     private IgnoredObjectPrefListEditor listEditor;
-
-    public IgnoredObjectsPrefPage() {
-        super(GRID);
-    }
     
     @Override
     public void init(IWorkbench workbench) {
@@ -44,22 +38,15 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
         String preference = getPreferenceStore().getString(PREF.IGNORE_OBJECTS);
 
         LinkedList<IgnoredObject> list = new LinkedList<>();
-        List<String> listFromSettings = new ArrayList<>();
         if (!preference.isEmpty()) {
             XmlStringList xml = new XmlStringList(XML_TAGS.IGNORED_OBJS_ROOT, XML_TAGS.IGNORED_OBJS_ELEMENT);
             try {
-                listFromSettings = xml.deserializeList(new StringReader(preference));
-                list = IgnoredObject.parsePrefs(listFromSettings);
+                list = IgnoredObject.parsePrefs(xml.deserializeList(new StringReader(preference)));
             } catch (IOException | SAXException ex) {
                 ExceptionNotifier.notifyDefault(Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, ex);
             }
         }
         listEditor.setInputList(list);
-    }
-
-    @Override
-    protected void createFieldEditors() {
-        updateList();
     }
 
     @Override
@@ -73,8 +60,8 @@ public class IgnoredObjectsPrefPage extends FieldEditorPreferencePage
         new Label(parent, SWT.NONE).setText(Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info);
         
         listEditor = new IgnoredObjectPrefListEditor(parent, true);
-        
-        createFieldEditors();
+
+        updateList();
         
         return parent;
     }

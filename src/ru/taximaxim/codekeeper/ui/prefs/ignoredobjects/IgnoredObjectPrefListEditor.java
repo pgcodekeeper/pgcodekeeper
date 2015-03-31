@@ -19,13 +19,13 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
         REGULAR(1<<0),
         IGNORE_CONTENT(1<<1);
         
-        private final long statusFlagValue;
+        private final int statusFlagValue;
 
-        BooleanChangeValues(long statusFlagValue) {
+        BooleanChangeValues(int statusFlagValue) {
             this.statusFlagValue = statusFlagValue;
         }
 
-        public long getStatusFlagValue(){
+        public int getStatusFlagValue(){
             return statusFlagValue;
         }
     }
@@ -44,9 +44,9 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
 
     @Override
     protected void createViewer(Composite parent) {
-        TableViewer viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL
+        TableViewer viewer = new TableViewer(parent, SWT.H_SCROLL
                 | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-        listViewerObjs = viewer;
+        viewerObjs = viewer;
         viewer.setContentProvider(new ArrayContentProvider());
         
         addColumns();
@@ -56,13 +56,14 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
     }
 
     private void addColumns() {
-        TableViewer tableViewer = (TableViewer) listViewerObjs;
+        TableViewer tableViewer = (TableViewer) viewerObjs;
         TableViewerColumn name = new TableViewerColumn(tableViewer, 0);
         name.getColumn().setResizable(true);
         name.getColumn().setText(Messages.ignoredObjectPrefListEditor_name);
         name.getColumn().setResizable(true);
         name.getColumn().setMoveable(true);
         name.setLabelProvider(new ColumnLabelProvider() {
+            
             @Override
             public String getText(Object element) {
                 IgnoredObject obj = (IgnoredObject) element;
@@ -70,12 +71,13 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
             }
         });
         
-        TableViewerColumn isRegular = new TableViewerColumn(tableViewer, SWT.CHECK,1);
+        TableViewerColumn isRegular = new TableViewerColumn(tableViewer, SWT.CHECK, 1);
         isRegular.getColumn().setResizable(true);
         isRegular.getColumn().setText(Messages.ignoredObjectPrefListEditor_regular);
         isRegular.getColumn().setResizable(false);
         isRegular.getColumn().setMoveable(true);
         isRegular.setLabelProvider(new ColumnLabelProvider() {
+            
             @Override
             public String getText(Object element) {
                 IgnoredObject obj = (IgnoredObject) element;
@@ -90,6 +92,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
         ignoreContents.getColumn().setResizable(false);
         ignoreContents.getColumn().setMoveable(true);
         ignoreContents.setLabelProvider(new ColumnLabelProvider() {
+            
             @Override
             public String getText(Object element) {
                 IgnoredObject obj = (IgnoredObject) element;
@@ -98,11 +101,12 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
         });
         ignoreContents.setEditingSupport(new YesNoEditingSupport(tableViewer, BooleanChangeValues.IGNORE_CONTENT));
         
-        PixelConverter pc = new PixelConverter(tableViewer.getControl());
         // name column will take half of the space
         int width = (int)(tableViewer.getTable().getSize().x * 0.5);
         // not less than 200
         name.getColumn().setWidth(Math.max(width, 200));
+        
+        PixelConverter pc = new PixelConverter(tableViewer.getControl());
         isRegular.getColumn().setWidth(pc.convertWidthInCharsToPixels(10));
         ignoreContents.getColumn().setWidth(pc.convertWidthInCharsToPixels(11));        
     }
