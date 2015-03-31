@@ -269,7 +269,6 @@ public class DepcyResolver {
             toRecreate.add(action.getOldObj());
         }
         for (PgStatement drop : toRecreate) {
-            // TODO check if was recreated?
             if (getObjectFromDB(drop, newDb) != null) {
                 addCreateStatements(drop);
             }
