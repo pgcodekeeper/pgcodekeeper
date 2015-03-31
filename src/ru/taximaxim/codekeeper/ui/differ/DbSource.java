@@ -71,6 +71,7 @@ public abstract class DbSource {
         args.setInCharsetName(charset);
         args.setAddTransaction(mainPS.getBoolean(UIConsts.DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
         args.setCheckFunctionBodies(mainPS.getBoolean(UIConsts.DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
+        args.setIgnorePrivileges(mainPS.getBoolean(UIConsts.DB_UPDATE_PREF.NO_PRIVILEGES));
         args.setTimeZone(timeZone);
         return args;
     }
@@ -362,7 +363,7 @@ class DbSourceJdbc extends DbSource {
         super(dbName);
         jdbcLoader = new JdbcLoader(
                 new JdbcConnector(host, port, user, pass, dbName, encoding, timezone),
-                useAntrlForViews);
+                useAntrlForViews, getPgDiffArgs(encoding, timezone));
     }
     
     @Override

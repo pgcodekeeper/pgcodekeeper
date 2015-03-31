@@ -76,6 +76,11 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
                 Messages.dbUpdatePrefPage_check_function_bodies,
                 getFieldEditorParent());
         addField(functionBodies);
+        
+        BooleanFieldEditor ignoreACL = new BooleanFieldEditor(
+                DB_UPDATE_PREF.NO_PRIVILEGES, Messages.dbUpdatePrefPage_ignore_privileges,
+                getFieldEditorParent());
+        addField(ignoreACL);
     }
     
     @Override
