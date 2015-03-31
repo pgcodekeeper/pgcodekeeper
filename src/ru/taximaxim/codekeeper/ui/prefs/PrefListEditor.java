@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -8,11 +7,9 @@ import java.util.ListIterator;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
-import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -21,23 +18,21 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class PrefListEditor extends Composite {
-    private ListViewer listViewerObjs;
-    private LinkedList<String> objsList = new LinkedList<>();
+public abstract class PrefListEditor<T> extends Composite {
+    protected StructuredViewer listViewerObjs;
+    private LinkedList<T> objsList = new LinkedList<>();
     private final boolean doSorting;
     private Button upBtn;
     private Button downBtn;
     private Button btnDelete;
     private Button btnAdd;
-    private String newVal = "";
-    private List<Listener> listeners = new ArrayList<>();
+    private T newVal;
     
     public PrefListEditor(Composite parent, boolean doSorting) {
         super(parent, SWT.NONE);
@@ -66,22 +61,19 @@ public class PrefListEditor extends Composite {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                String newValue = txtNewValue.getText().trim();
-                if (!newValue.isEmpty() && !objsList.contains(newValue)) {
+                T newValue = getObject(txtNewValue.getText().trim());
+                if (newValue != null && !objsList.contains(newValue)) {
                     objsList.add(0, newValue);
                     newVal = newValue; 
                     txtNewValue.setText(""); //$NON-NLS-1$
                     listViewerObjs.refresh();
                 } else {
-                    newVal = "";
+                    newVal = null;
                 }
             }
         });
-        listViewerObjs = new ListViewer(parent);
-        listViewerObjs.getList().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
-        listViewerObjs.setContentProvider(new ArrayContentProvider());
-        listViewerObjs.setLabelProvider(new LabelProvider());
+        createViewer(this);
 
         Composite comp = new Composite(parent, SWT.NONE);
         GridLayout gridLayout = new GridLayout(3, false);
@@ -118,14 +110,14 @@ public class PrefListEditor extends Composite {
                 }
                 IStructuredSelection selection = (IStructuredSelection) listViewerObjs
                         .getSelection();
-                String sel = (String) selection.getFirstElement();
-                ListIterator<String> it = objsList.listIterator();
+                T sel = (T) selection.getFirstElement();
+                ListIterator<T> it = objsList.listIterator();
                 while (it.hasNext()) {
-                    String match = it.next();
+                    T match = it.next();
                     if (match == sel) {
                         it.previous();
                         if (it.hasPrevious()) {
-                            String prev = it.previous();
+                            T prev = it.previous();
                             it.set(sel);
                             it.next();
                             it.next();
@@ -152,13 +144,13 @@ public class PrefListEditor extends Composite {
                 }
                 IStructuredSelection selection = (IStructuredSelection) listViewerObjs
                         .getSelection();
-                String sel = (String) selection.getFirstElement();
-                ListIterator<String> it = objsList.listIterator();
+                T sel = (T) selection.getFirstElement();
+                ListIterator<T> it = objsList.listIterator();
                 while (it.hasNext()) {
-                    String match = it.next();
+                    T match = it.next();
                     if (match == sel) {
                         if (it.hasNext()) {
-                            String next = it.next();
+                            T next = it.next();
                             it.set(sel);
                             it.previous();
                             it.previous();
@@ -177,6 +169,10 @@ public class PrefListEditor extends Composite {
         }
     }
     
+    protected abstract  T getObject(String name);
+
+    protected abstract void createViewer(Composite parent);
+    
     public Object deleteSelected() {
         IStructuredSelection selection = 
                 (IStructuredSelection) listViewerObjs.getSelection();
@@ -194,11 +190,11 @@ public class PrefListEditor extends Composite {
         return ((IStructuredSelection)listViewerObjs.getSelection()).getFirstElement();
     }
     
-    public List<String> getList(){
+    public List<T> getList(){
         return objsList;
     }
     
-    public ListViewer getListViewer() {
+    public StructuredViewer getListViewer() {
         return listViewerObjs;
     }
     
@@ -210,13 +206,13 @@ public class PrefListEditor extends Composite {
         return btnAdd;
     }
     
-    public void setInputList(LinkedList<String> list){
+    public void setInputList(LinkedList<T> list){
         objsList = list;
         listViewerObjs.setInput(objsList);
         listViewerObjs.refresh();
     }
 
-    public void select(String name) {
+    public void select(T name) {
         listViewerObjs.setSelection(new StructuredSelection(name));
     }
     
@@ -224,7 +220,7 @@ public class PrefListEditor extends Composite {
         listViewerObjs.setSelection(new StructuredSelection(objsList.get(index)));
     }
 
-    public String getNewEntry() {
+    public T getNewEntry() {
         return newVal;
     }
 }

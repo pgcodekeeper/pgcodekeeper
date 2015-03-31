@@ -255,7 +255,7 @@ public abstract class DiffPresentationPane extends Composite {
         gl.horizontalSpacing = gl.verticalSpacing = 2;
         containerDb.setLayout(gl);
 
-        diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs, false);
+        diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs, proj, false);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.getViewer().addPostSelectionChangedListener(new ISelectionChangedListener() {
 

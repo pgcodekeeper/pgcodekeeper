@@ -22,6 +22,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 
 public class CommitDialog extends TrayDialog {
@@ -37,10 +38,11 @@ public class CommitDialog extends TrayDialog {
     private DiffTableViewer dtvTop;
     private DiffTableViewer dtvBottom;
     private Button btnAutocommit;
+    private PgDbProject proj;
     
     public CommitDialog(Shell parentShell, TreeElement filtered,
             Set<TreeElement> depcyElementsSet, IPreferenceStore mainPrefs,
-            TreeDiffer treeDiffer, boolean egitCommitAvailable) {
+            PgDbProject proj, TreeDiffer treeDiffer, boolean egitCommitAvailable) {
         super(parentShell);
         
         this.filtered = filtered;
@@ -48,6 +50,7 @@ public class CommitDialog extends TrayDialog {
         this.egitCommitAvailable = egitCommitAvailable;
         this.treeDiffer = treeDiffer;
         this.depcyElementsSet = depcyElementsSet;
+        this.proj = proj;
         
         setShellStyle(getShellStyle() | SWT.RESIZE);
     }
@@ -77,7 +80,7 @@ public class CommitDialog extends TrayDialog {
         gTop.setLayoutData(gd);
         gTop.setText(Messages.commitDialog_user_selected_elements);
         
-        dtvTop = new DiffTableViewer(gTop, SWT.NONE, prefs, true);
+        dtvTop = new DiffTableViewer(gTop, SWT.NONE, prefs, null, true);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.widthHint = 1000;
@@ -92,7 +95,7 @@ public class CommitDialog extends TrayDialog {
             gBottom.setLayoutData(gd);
             gBottom.setText(Messages.commitDialog_depcy_elements);
             
-            dtvBottom = new DiffTableViewer(gBottom, SWT.NONE, prefs, false);
+            dtvBottom = new DiffTableViewer(gBottom, SWT.NONE, prefs, null, false);
             gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             gd.widthHint = 1000;

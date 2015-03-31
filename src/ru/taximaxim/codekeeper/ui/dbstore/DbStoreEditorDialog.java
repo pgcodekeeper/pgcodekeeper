@@ -35,7 +35,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
+import ru.taximaxim.codekeeper.ui.prefs.StringPrefListEditor;
 
 public class DbStoreEditorDialog extends TrayDialog {
 
@@ -43,7 +43,7 @@ public class DbStoreEditorDialog extends TrayDialog {
     
     private final IPreferenceStore prefStore;
 
-    private PrefListEditor listEdit;
+    private StringPrefListEditor listEdit;
     private Button btnSave;
     private DbPicker grpDbData;
     
@@ -127,7 +127,7 @@ public class DbStoreEditorDialog extends TrayDialog {
         container.setLayout(gridLayout);
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
         
-        listEdit = new PrefListEditor(container, false);
+        listEdit = new StringPrefListEditor(container, false);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 150;
         listEdit.setLayoutData(gd);
