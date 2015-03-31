@@ -151,6 +151,15 @@ public class PgFunction extends PgStatementWithSearchPath {
                 sb.append(newFunction.getCreationSQL());
             }
         }
+
+        if (!Objects.equals(oldFunction.getOwner(), newFunction.getOwner())) {
+            script.addStatement(newFunction.getOwnerSQL());
+        }
+        if (!oldFunction.getGrants().equals(newFunction.getGrants())
+                || !oldFunction.getRevokes().equals(newFunction.getRevokes())) {
+            script.addStatement(newFunction.getPrivilegesSQL());
+        }
+        
         PgDiff.diffComments(oldFunction, newFunction, script);
         
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
