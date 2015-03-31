@@ -75,9 +75,6 @@ public class MainTest {
             
             assertFalse("Predefined file is a directory: " + predefined.getAbsolutePath(), predefined.isDirectory());
             assertFalse("Resulting file is a directory: " + resFile.getAbsolutePath(), resFile.isDirectory());
-            if (!filesEqualIgnoreNewLines(predefined, resFile)) {
-                System.err.println("");
-            }
             assertTrue("Predefined and resulting script differ", filesEqualIgnoreNewLines(predefined, resFile));
             break;
         case TEST_PARSE:
@@ -607,6 +604,7 @@ class ArgumentsProvider_16 extends ArgumentsProvider{
         return new String[]{"--diff", "--output-ignored-statements", 
                 "--ignore-slony-triggers", "--add-transaction", 
                 "--no-check-function-bodies", "--time-zone", "UTC",
+                "--no-privileges",
                 "--allow-danger-ddl", "ALTER_COLUMN", fOriginal.getAbsolutePath(), 
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
