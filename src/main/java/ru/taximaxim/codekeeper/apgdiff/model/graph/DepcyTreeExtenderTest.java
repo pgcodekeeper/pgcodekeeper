@@ -273,11 +273,11 @@ class Predefined1 extends TreeElementCreator{
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
-        PgView view = schema.getView("v2");
-        PgTable table = schema.getTable("t1");
-        PgColumn column = table.getColumn("c1");
-        return new HashSet<>(Arrays.asList(schema, view, table, column));
+//        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
+//        PgView view = schema.getView("v2");
+//        PgTable table = schema.getTable("t1");
+//        PgColumn column = table.getColumn("c1");
+        return new HashSet<>(/*Arrays.asList(schema, view, table, column)*/);
     }
 
     @Override
@@ -359,8 +359,8 @@ class Predefined1 extends TreeElementCreator{
         TreeElement view = new TreeElement("v2", DbObjType.VIEW, null, DiffSide.LEFT);
         contViews.addChild(view);
         
-        TreeElement viewDependant = new TreeElement("v1", DbObjType.VIEW, null, DiffSide.LEFT);
-        contViews.addChild(viewDependant);
+//        TreeElement viewDependant = new TreeElement("v1", DbObjType.VIEW, null, DiffSide.LEFT);
+//        contViews.addChild(viewDependant);
         
         return root;
     }
@@ -792,7 +792,7 @@ class Predefined5 extends TreeElementCreator{
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
         Set<PgStatement> res = new HashSet<>();
-        res.add(db.getSchema("republic"));
+//        res.add(db.getSchema("republic"));
         return res;
     }
    
