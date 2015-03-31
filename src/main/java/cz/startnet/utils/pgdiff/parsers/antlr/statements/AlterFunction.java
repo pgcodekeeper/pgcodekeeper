@@ -29,9 +29,7 @@ public class AlterFunction extends ParserAbstract {
             logError("FUNCTION", name);
             return null;
         }
-        if (ctx.owner_to() != null) {
-            func.setOwner(ctx.owner_to().name.getText());
-        }
+        fillOwnerTo(ctx.owner_to(), func);
         return null;
     }
 

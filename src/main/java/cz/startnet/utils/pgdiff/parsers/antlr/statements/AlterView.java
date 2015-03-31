@@ -28,9 +28,7 @@ public class AlterView extends ParserAbstract {
             logError("VIEW", name);
             return null;
         }
-        if (ctx.owner_to() != null) {
-            dbView.setOwner(removeQuotes(ctx.owner_to().name));
-        }
+        fillOwnerTo(ctx.owner_to(), dbView);
         if (ctx.set_def_column() != null) {
             dbView.addColumnDefaultValue(getFullCtxText(ctx.column_name),
                     getFullCtxText(ctx.set_def_column().expression));
