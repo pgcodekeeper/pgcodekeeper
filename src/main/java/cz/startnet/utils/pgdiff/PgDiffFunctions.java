@@ -68,7 +68,6 @@ public final class PgDiffFunctions {
             if (!newSchema.containsFunction(oldFunction.getSignature())) {
                 depRes.addDropStatements(oldFunction);
             }
-            
         }
     }
 

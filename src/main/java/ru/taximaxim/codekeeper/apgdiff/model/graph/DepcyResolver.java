@@ -24,6 +24,7 @@ import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgForeignKey;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
@@ -451,6 +452,7 @@ public class DepcyResolver {
             }
         }
     }
+    
     /**
      * Используется для прохода по графу зависимостей для формирования
      * зависимостей (ALTER, DROP, CREATE)
@@ -462,7 +464,6 @@ public class DepcyResolver {
 
         @Override
         protected boolean notAllowedToAdd(PgStatement statement) {
-
             if (super.notAllowedToAdd(statement)) {
                 return true;
             }
