@@ -604,7 +604,6 @@ class ArgumentsProvider_16 extends ArgumentsProvider{
         return new String[]{"--diff", "--output-ignored-statements", 
                 "--ignore-slony-triggers", "--add-transaction", 
                 "--no-check-function-bodies", "--time-zone", "UTC",
-                "--no-privileges",
                 "--allow-danger-ddl", "ALTER_COLUMN", fOriginal.getAbsolutePath(), 
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
