@@ -299,4 +299,8 @@ public class TreeElement {
         }
         return false;
     }
+    @Override
+    public String toString() {
+        return getName() == null ? "no name" : getName();
+    }
 }
