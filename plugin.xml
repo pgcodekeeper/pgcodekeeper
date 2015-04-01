@@ -15,7 +15,11 @@
          point="org.eclipse.core.runtime.products">
       <product
             application="ru.taximaxim.codekeeper.mainapp.application-standalone"
-            name="%product.name">
+            name="pgCodeKeeper standalone">
+         <property
+               name="appName"
+               value="pgCodeKeeper standalone">
+         </property>
       </product>
    </extension>
 </plugin>
