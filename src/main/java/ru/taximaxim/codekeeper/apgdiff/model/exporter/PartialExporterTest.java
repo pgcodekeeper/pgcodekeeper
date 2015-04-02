@@ -108,7 +108,7 @@ public class PartialExporterTest {
     }
     
     @BeforeClass
-    public static void initDiffTree() {
+    public static void initDiffTree() throws InterruptedException {
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
         PgDiffArguments args = new PgDiffArguments();

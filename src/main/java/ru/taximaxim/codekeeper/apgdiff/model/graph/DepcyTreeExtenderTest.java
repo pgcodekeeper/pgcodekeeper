@@ -131,9 +131,10 @@ public class DepcyTreeExtenderTest {
     
     /**
      * Тестирует зависимости от новых(и возможных edit) объектов, полученные из dte
+     * @throws InterruptedException 
      */
     @Test
-    public void testGetDependenciesOfNew() throws PgCodekeeperException {
+    public void testGetDependenciesOfNew() throws PgCodekeeperException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ApgdiffConsts.UTF_8);
         PgDatabase dbTarget = PgDumpLoader.loadDatabaseSchemaFromDump(
@@ -148,9 +149,10 @@ public class DepcyTreeExtenderTest {
     
     /**
      * Тестирует дерево, получаемое из dte, которое должно быть расширено зависимостями от удаляемых элементов
+     * @throws InterruptedException 
      */
     @Test
-    public void testGetTreeCopyWithDepcy() throws PgCodekeeperException {
+    public void testGetTreeCopyWithDepcy() throws PgCodekeeperException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ApgdiffConsts.UTF_8);
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
@@ -175,9 +177,10 @@ public class DepcyTreeExtenderTest {
      * Тестирует метод "суммирования" зависимостей (те что delete И те что new/edit) 
      * Здесь filteredCopy - исходное дерево, расширенное зависимостями от удаляемых, 
      * а predefined.getExtraElement() *типа* возвращает зависимости от new/edit)
+     * @throws InterruptedException 
      */
     @Test
-    public void testSumAllDepcies() throws PgCodekeeperException {
+    public void testSumAllDepcies() throws PgCodekeeperException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ApgdiffConsts.UTF_8);
         PgDatabase dbSource = PgDumpLoader.loadDatabaseSchemaFromDump(
@@ -204,9 +207,10 @@ public class DepcyTreeExtenderTest {
      * (например, пользователь выбрал таблицу на удаление, и зависящую от нее вьюху на редактирование. 
      * Но по зависимостям от дропнутой таблицы ожидается дроп и зависимой вьюхи. 
      * Эта вьюха существует как edit, так и delete => конфликтъ).
+     * @throws InterruptedException 
      */
     @Test
-    public void testGetConflicting() throws PgCodekeeperException {
+    public void testGetConflicting() throws PgCodekeeperException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ApgdiffConsts.UTF_8);
         PgDatabase dbRemote = PgDumpLoader.loadDatabaseSchemaFromDump(
