@@ -75,9 +75,6 @@ public class MainTest {
             
             assertFalse("Predefined file is a directory: " + predefined.getAbsolutePath(), predefined.isDirectory());
             assertFalse("Resulting file is a directory: " + resFile.getAbsolutePath(), resFile.isDirectory());
-            if (!filesEqualIgnoreNewLines(predefined, resFile)) {
-                System.err.println("");
-            }
             assertTrue("Predefined and resulting script differ", filesEqualIgnoreNewLines(predefined, resFile));
             break;
         case TEST_PARSE:
