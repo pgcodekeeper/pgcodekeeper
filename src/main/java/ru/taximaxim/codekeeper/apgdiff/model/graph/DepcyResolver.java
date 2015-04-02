@@ -49,6 +49,7 @@ public class DepcyResolver {
     private DepcyGraph newDepcyGraph;
     private Set<ActionContainer> actions = new LinkedHashSet<>();
     private Set<PgSequence> sequencesOwnedBy = new LinkedHashSet<>();
+    private Set<Entry<PgStatement, StatementActions>> sKippedObjects = new HashSet<>();
 
     public DepcyResolver(PgDatabase oldDatabase, PgDatabase newDatabase)
             throws PgCodekeeperException {
@@ -77,15 +78,15 @@ public class DepcyResolver {
      *            объект для удаления из старой базы
      */
     public void addDropStatements(PgStatement toDrop) {
-        addDrop(toDrop, new HashSet<Entry<PgStatement, StatementActions>>());
+        addDrop(toDrop);
     }
     
-    private void addDrop(PgStatement toDrop, Set<Entry<PgStatement, StatementActions>> sKippedObjects) {
+    private void addDrop(PgStatement toDrop) {
         toDrop = getObjectFromDB(toDrop, oldDb);
         if (oldDepcyGraph.getReversedGraph().containsVertex(toDrop)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     oldDepcyGraph.getReversedGraph(), toDrop);
-            customIteration(dfi, new CommonTraversalAdapter(toDrop, sKippedObjects, StatementActions.DROP));
+            customIteration(dfi, new CommonTraversalAdapter(toDrop, StatementActions.DROP));
         }
     }
 
@@ -99,15 +100,15 @@ public class DepcyResolver {
      * @param toCreate
      */
     public void addCreateStatements(PgStatement toCreate) {
-        addCreate(toCreate, new HashSet<Entry<PgStatement, StatementActions>>());
+        addCreate(toCreate);
     }
     
-    private void addCreate(PgStatement toCreate, Set<Entry<PgStatement, StatementActions>> sKippedObjects) {
+    private void addCreate(PgStatement toCreate) {
         toCreate = getObjectFromDB(toCreate, newDb);
         if (newDepcyGraph.getGraph().containsVertex(toCreate)) {
             DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
                     newDepcyGraph.getGraph(), toCreate);
-            customIteration(dfi, new CommonTraversalAdapter(toCreate, sKippedObjects, StatementActions.CREATE));
+            customIteration(dfi, new CommonTraversalAdapter(toCreate, StatementActions.CREATE));
         }
     }
 
@@ -122,7 +123,7 @@ public class DepcyResolver {
      * @param toAlter
      */
     public void addAlterStatements(PgStatement toAlter) {
-        addDrop(toAlter, new HashSet<Entry<PgStatement, StatementActions>>());
+        addDrop(toAlter);
     }
 
     /**
@@ -193,6 +194,7 @@ public class DepcyResolver {
                         oldObj.getStatementType(),
                         objStarter.getStatementType(), objName);
             }
+            System.out.println(action.getAction() + " " + action.getOldObj().getName());
             switch (action.getAction()) {
             case CREATE:
                 currentSearchPath = setSearchPath(currentSearchPath, oldObj,
@@ -304,6 +306,7 @@ public class DepcyResolver {
      */
     public void addToListWithoutDepcies(StatementActions action,
             PgStatement oldObj, PgStatement starter) {
+//        System.err.println(action + " " + oldObj.getName());
         switch (action) {
         case CREATE:
             if (oldObj.getStatementType() == DbObjType.SEQUENCE) {
@@ -457,8 +460,8 @@ public class DepcyResolver {
      * зависимостей (ALTER, DROP, CREATE)
      */
     private class CommonTraversalAdapter extends CustomTraversalListenerAdapter {
-        CommonTraversalAdapter(PgStatement starter, Set<Entry<PgStatement, StatementActions>> sKippedObjects, StatementActions action) {
-            super(starter, action, sKippedObjects);
+        CommonTraversalAdapter(PgStatement starter, StatementActions action) {
+            super(starter, action);
         }
 
         @Override
@@ -477,6 +480,10 @@ public class DepcyResolver {
                 if ((oppositeObj = getObjectFromDB(statement, oldDb)) != null) {
                     action = askAlter(oppositeObj, statement);
                     if (action == StatementActions.NONE) {
+                        return true;
+                    }
+                    if (action == StatementActions.ALTER) {
+                        addToListWithoutDepcies(action, oppositeObj, starter);
                         return true;
                     }
                 }
@@ -525,7 +532,7 @@ public class DepcyResolver {
         
         private StatementActions askAlter(PgStatement oldSt, PgStatement newSt) {
             StringBuilder sb = new StringBuilder();
-            StatementActions action = startAction; 
+            StatementActions action = startAction;
             AtomicBoolean isNeedDepcies = new AtomicBoolean();
             // Проверяем меняется ли объект
             if (oldSt.appendAlterSQL(newSt, sb, isNeedDepcies)) {
@@ -536,7 +543,7 @@ public class DepcyResolver {
                     if (startAction == StatementActions.CREATE) {
                         if (!sKippedObjects.contains(new AbstractMap.SimpleEntry<>(oldSt, StatementActions.DROP))) {
                             sKippedObjects.add(new AbstractMap.SimpleEntry<>(oldSt, StatementActions.DROP));
-                            addDrop(oldSt, sKippedObjects);
+                            addDrop(oldSt);
                         }
                     } else {
                         if (!sKippedObjects.contains(new AbstractMap.SimpleEntry<>(newSt, StatementActions.CREATE))) {
@@ -545,9 +552,9 @@ public class DepcyResolver {
                             // новое состояние, удалять объект нужно перед его
                             // пересозданием по зависимостям
                             if (action != StatementActions.ALTER) {
-                                addToList(oldSt);
+                                addToListWithoutDepcies(action, oldSt, newSt);
                             }
-                            addCreate(newSt, sKippedObjects);
+                            addCreate(newSt);
                         }
                     }
                 }
@@ -559,9 +566,10 @@ public class DepcyResolver {
             IsDropped iter = new IsDropped();
             customIteration(
                     new DepthFirstIterator<PgStatement, DefaultEdge>(
-                            newDepcyGraph.getGraph(), newSt), iter);
+                            oldDepcyGraph.getGraph(), oldSt), iter);
             if (iter.getDropped() != null
-                    && iter.getDropped() != oldSt) {
+                    && iter.getDropped() != oldSt
+                    && startAction == StatementActions.DROP) {
                 action = StatementActions.DROP;
             }
             return action;
@@ -580,15 +588,13 @@ public class DepcyResolver {
          * добавления в список с правильным действием
          */
         protected StatementActions action;
-        protected StatementActions startAction;
-        protected Set<Entry<PgStatement, StatementActions>> sKippedObjects;
+        protected final StatementActions startAction;
 
         CustomTraversalListenerAdapter(PgStatement starter,
-                StatementActions action, Set<Entry<PgStatement, StatementActions>> sKippedObjects) {
+                StatementActions action) {
             this.starter = starter;
             this.action = action;
             this.startAction = action;
-            this.sKippedObjects = sKippedObjects;
         }
 
         @Override
@@ -622,14 +628,14 @@ public class DepcyResolver {
                 return;
             }
             PgStatement st = e.getVertex();
-            PgStatement oldSt = getObjectFromDB(st, oldDb);
-            if (oldSt == null) {
+            PgStatement newSt = getObjectFromDB(st, newDb);
+            if (newSt == null) {
                 return;
             }
             AtomicBoolean isNeedDepcy = new AtomicBoolean(); 
-            if (oldSt.appendAlterSQL(st, new StringBuilder(), isNeedDepcy)) {
+            if (st.appendAlterSQL(newSt, new StringBuilder(), isNeedDepcy)) {
                 if (isNeedDepcy.get()) {
-                    needDrop = oldSt;
+                    needDrop = st;
                 }
             }
         }
@@ -699,6 +705,6 @@ class ActionContainer {
     }
     @Override
     public String toString() {
-        return oldObj == null? " " : oldObj.getName() + " " + action;
+        return action + " " + (oldObj == null? " " : oldObj.getName());
     }
 }
