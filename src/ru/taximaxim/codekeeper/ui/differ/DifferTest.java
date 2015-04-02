@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.junit.AfterClass;
@@ -38,7 +37,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.exporter.PartialExporterTest;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
-import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -96,13 +94,13 @@ public class DifferTest {
         File targetFile = ApgdiffUtils.getFileFromOsgiRes(PartialExporterTest.class.getResource(targetFilename));
 
         DbSource dbSource = 
-                DbSource.fromFile(ParserClass.getLegacy(null, 1), sourceFile.getAbsolutePath(), ApgdiffConsts.UTF_8);
+                DbSource.fromFile(true, sourceFile.getAbsolutePath(), ApgdiffConsts.UTF_8);
         DbSource dbTarget = 
-                DbSource.fromFile(ParserClass.getLegacy(null, 1), targetFile.getAbsolutePath(), ApgdiffConsts.UTF_8);
+                DbSource.fromFile(true, targetFile.getAbsolutePath(), ApgdiffConsts.UTF_8);
         
         final TreeDiffer newDiffer = new TreeDiffer(dbSource, dbTarget);
         
-        newDiffer.run(new NullProgressMonitor());
+        newDiffer.run(null);
         
         TreeElement root = newDiffer.getDiffTree();
         

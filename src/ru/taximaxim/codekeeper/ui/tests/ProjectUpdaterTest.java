@@ -43,7 +43,7 @@ public class ProjectUpdaterTest {
     private TempDir workingDir, referenceDir;
     
     @Before
-    public void before() throws IOException{
+    public void before() throws IOException, InterruptedException{
         try(InputStream isOld = ProjectUpdaterTest.class.getResourceAsStream("old.sql"); //$NON-NLS-1$
                 InputStream isNew = ProjectUpdaterTest.class.getResourceAsStream("new.sql");){ //$NON-NLS-1$
             Assert.assertNotNull("Could not load resource", isOld); //$NON-NLS-1$
@@ -52,12 +52,12 @@ public class ProjectUpdaterTest {
             PgDiffArguments args = new PgDiffArguments();
             args.setInCharsetName(ENCODING);
             dbOld = PgDumpLoader.loadDatabaseSchemaFromDump(isOld, args,
-                    ParserClass.getLegacy(null, 1));
+                    ParserClass.getAntlr(null, 1));
             
             args = new PgDiffArguments();
             args.setInCharsetName(ENCODING);
             dbNew = PgDumpLoader.loadDatabaseSchemaFromDump(isNew, args,
-                    ParserClass.getLegacy(null, 1));
+                    ParserClass.getAntlr(null, 1));
         }
         
         workingDir = new TempDir("test_new"); //$NON-NLS-1$
