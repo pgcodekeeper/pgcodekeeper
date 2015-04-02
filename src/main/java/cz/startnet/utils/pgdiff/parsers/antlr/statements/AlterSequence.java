@@ -27,9 +27,7 @@ private Alter_sequence_statementContext ctx;
             logError("SEQUENCE", name);
             return null;
         }
-        if (ctx.owner_to() != null) {
-            sequence.setOwner(removeQuotes(ctx.owner_to().name));
-        }
+        fillOwnerTo(ctx.owner_to(), sequence);
         for (Sequence_bodyContext seqbody : ctx.sequence_body()) {
             if (seqbody.OWNED() != null && seqbody.col_name != null) {
                 sequence.setOwnedBy(getFullCtxText(seqbody.col_name));

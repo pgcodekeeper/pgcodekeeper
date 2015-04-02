@@ -184,7 +184,7 @@ public final class PgDumpLoader { //NOPMD
     /**
      * Pattern for testing whether it is GRANT or REVOKE statement.
      */
-    private static final Pattern PATTERN_PRIVILIGE = Pattern.compile(
+    private static final Pattern PATTERN_PRIVILEGE = Pattern.compile(
             "^(?:GRANT|REVOKE)[\\s]+.*$",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
     /**
@@ -253,7 +253,7 @@ public final class PgDumpLoader { //NOPMD
                     CreateFunctionParser.parse(database, statement, activeSearchPath);
                 } else if (PATTERN_COMMENT.matcher(statement).matches()) {
                     CommentParser.parse(database, statement, arguments.isOutputIgnoredStatements());
-                } else if (PATTERN_PRIVILIGE.matcher(statement).matches()) {
+                } else if (PATTERN_PRIVILEGE.matcher(statement).matches()) {
                     PrivilegeParser.parse(database, statement, arguments.isOutputIgnoredStatements());
                 } else if (PATTERN_SELECT.matcher(statement).matches()
                         || PATTERN_INSERT_INTO.matcher(statement).matches()

@@ -122,6 +122,10 @@ public class PgDiffArguments {
      * timeZone for script operations
      */
     private String timeZone;
+    /**
+     *  Whether ignore privilleges.
+     */
+    private boolean ignorePrivileges;
 
     /**
      * Setter for {@link #modeDiff}
@@ -494,6 +498,8 @@ public class PgDiffArguments {
                 setAddTransaction(true);
             } else if ("--no-check-function-bodies".equals(args[i])) {
                 setCheckFunctionBodies(false);
+            } else if ("--no-privileges".equals(args[i])) {
+                setIgnorePrivileges(true);
             } else if ("--ignore-slony-triggers".equals(args[i])) {
                 setIgnoreSlonyTriggers(true);
             } else if ("--in-charset-name".equals(args[i])) {
@@ -703,5 +709,22 @@ public class PgDiffArguments {
      */
     public String getTimeZone() {
         return timeZone;
+    }
+
+    /**
+     * Setter for {@link #ignorePrivileges}.
+     *
+     * @param ignorePrivilleges {@link #ignorePrivileges}
+     */
+    public void setIgnorePrivileges(boolean ignorePrivilleges) {
+        this.ignorePrivileges = ignorePrivilleges;
+    }
+    /**
+     * Getter for {@link #ignorePrivileges}.
+     *
+     * @return {@link #ignorePrivileges}
+     */
+    public boolean isIgnorePrivileges() {
+        return ignorePrivileges;
     }
 }

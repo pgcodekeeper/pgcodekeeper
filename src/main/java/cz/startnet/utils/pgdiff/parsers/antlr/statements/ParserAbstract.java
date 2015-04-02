@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Name_or_func_callsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
@@ -341,5 +342,19 @@ public abstract class ParserAbstract {
             return constraint;
         }
         return null;
+    }
+    
+    /**
+     * Заполняет владельца
+     * @param ctx контекст парсера с владельцем
+     * @param st объект
+     */
+    protected void fillOwnerTo(Owner_toContext ctx, PgStatement st) {
+        if (db.getArguments().isIgnorePrivileges()) {
+            return;
+        }
+        if (ctx != null) {
+            st.setOwner(removeQuotes(ctx.name));
+        }
     }
 }

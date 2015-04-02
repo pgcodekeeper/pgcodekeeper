@@ -34,16 +34,14 @@ public class AlterTable extends ParserAbstract {
         
         List<String> sequences = new ArrayList<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
-
+            PgStatement st = null;
             if (tablAction.owner_to() != null) {
-                if (tabl != null) {
-                    tabl.setOwner(tablAction.owner_to().name.getText());
-                } else if (db.getSchema(schemaName).getSequence(name) != null) {
-                    db.getSchema(schemaName).getSequence(name)
-                            .setOwner(tablAction.owner_to().name.getText());
-                } else if (db.getSchema(schemaName).getView(name) != null) {
-                    db.getSchema(schemaName).getView(name)
-                            .setOwner(tablAction.owner_to().name.getText());
+                if ((st = tabl) != null) {
+                    fillOwnerTo(tablAction.owner_to(), st);
+                } else if ((st = db.getSchema(schemaName).getSequence(name)) != null) {
+                    fillOwnerTo(tablAction.owner_to(), st);
+                } else if ((st = db.getSchema(schemaName).getView(name)) != null) {
+                    fillOwnerTo(tablAction.owner_to(), st);
                 }
             }
             if (tabl == null) {

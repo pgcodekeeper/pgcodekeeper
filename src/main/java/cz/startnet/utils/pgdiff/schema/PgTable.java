@@ -276,6 +276,15 @@ public class PgTable extends PgStatementWithSearchPath {
                     + PgDiffUtils.getQuotedName(newTable.getName())
                     + "\n\tTABLESPACE " + newTable.getTablespace() + ';');
         }
+        
+        if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
+            script.addStatement(newTable.getOwnerSQL());
+        }
+        if (!oldTable.getGrants().equals(newTable.getGrants())
+                || !oldTable.getRevokes().equals(newTable.getRevokes())) {
+            script.addStatement(newTable.getPrivilegesSQL());
+        }
+        
         PgDiff.diffComments(oldTable, newTable, script);
         
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();

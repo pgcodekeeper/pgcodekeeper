@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.parsers.ParserUtils;
 import cz.startnet.utils.pgdiff.parsers.SelectParser;
@@ -99,15 +100,18 @@ public class JdbcLoader implements PgCatalogStrings {
     private JdbcConnector connector;
     private IProgressMonitor monitor;
     private final boolean useAntrlForViews;
+    private PgDiffArguments args;
     
-    public JdbcLoader(JdbcConnector connector, boolean useAntrlForViews){
+    public JdbcLoader(JdbcConnector connector, boolean useAntrlForViews, PgDiffArguments pgDiffArguments){
         this.connector = connector;
         this.useAntrlForViews = useAntrlForViews;
+        this.args = pgDiffArguments;
     }
 
     public PgDatabase getDbFromJdbc(IProgressMonitor mon) throws IOException{
         monitor = mon == null ? new NullProgressMonitor() : SubMonitor.convert(mon, 1);
         PgDatabase d = new PgDatabase();
+        d.setArguments(args);
         try {
             Log.log(Log.LOG_INFO, "Reading db using JDBC.");
             connection = connector.getConnection();
@@ -277,7 +281,7 @@ public class JdbcLoader implements PgCatalogStrings {
         PgSchema s = new PgSchema(schemaName, "");
 
         if (!schemaName.equals(ApgdiffConsts.PUBLIC)){
-            s.setOwner(res.getString("owner"));
+            setOwner(s, res.getString("owner"));
         }
         setPrivileges(s, schemaName, res.getString("nspacl"), res.getString("owner"), null);
         
@@ -413,7 +417,7 @@ public class JdbcLoader implements PgCatalogStrings {
             st = getType(res, schemaName, typtype);
         }
         if (st != null) {
-            st.setOwner(getRoleNameByOid(res.getLong("typowner")));
+            setOwner(st, res.getLong("typowner"));
             setPrivileges(st, st.getName(), res.getString("typacl"), st.getOwner(), null);
             String comment = res.getString("description");
             if (comment != null && !comment.isEmpty()) {
@@ -665,7 +669,7 @@ public class JdbcLoader implements PgCatalogStrings {
     private PgExtension getExtension(ResultSet res) throws SQLException {
         PgExtension e = new PgExtension(res.getString("extname"), "");
 //        e.setVersion(res.getString("extversion"));
-        e.setOwner(getRoleNameByOid(res.getLong("extowner")));
+        setOwner(e, res.getLong("extowner"));
         e.setSchema(res.getString("namespace"));
         
         String comment = res.getString("description");
@@ -828,7 +832,7 @@ public class JdbcLoader implements PgCatalogStrings {
         }
         
         // OWNER
-        v.setOwner(getRoleNameByOid(res.getLong(CLASS_RELOWNER)));
+        setOwner(v, res.getLong(CLASS_RELOWNER));
         
         // Query view privileges
         setPrivileges(v, viewName, res.getString("relacl"), v.getOwner(), null);
@@ -990,7 +994,7 @@ public class JdbcLoader implements PgCatalogStrings {
         }
         
         // PRIVILEGES, OWNER
-        t.setOwner(tableOwner);
+        setOwner(t, tableOwner);
         setPrivileges(t, t.getName(), res.getString("aclarray"), t.getOwner(), null);
         
         // COLUMNS PRIVILEGES
@@ -1096,7 +1100,9 @@ public class JdbcLoader implements PgCatalogStrings {
     }
     
     private void setOwner(PgStatement statement, String ownerName){
-        statement.setOwner(ownerName);
+        if (!args.isIgnorePrivileges()) {
+            statement.setOwner(ownerName);
+        }
     }
 
     /**
@@ -1304,7 +1310,8 @@ public class JdbcLoader implements PgCatalogStrings {
      */
     private void setPrivileges(PgStatement st, String stSignature, 
             String aclItemsArrayAsString, String owner, String columnName){
-        if (aclItemsArrayAsString == null){
+        if (aclItemsArrayAsString == null
+                || args.isIgnorePrivileges()){
             return;
         }
         String stType;
