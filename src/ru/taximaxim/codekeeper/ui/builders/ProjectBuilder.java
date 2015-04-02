@@ -40,7 +40,11 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             break;
             
         case IncrementalProjectBuilder.FULL_BUILD:
-            parser.getObjFromProject(monitor);
+            try {
+                parser.getObjFromProject(monitor);
+            } catch (InterruptedException ex) {
+                // cancelled
+            }
             break;
         }
         return new IProject[] { proj };
@@ -81,7 +85,13 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                     break;
                     
                 default:
-                    parser.getObjFromProjFile(delta.getResource().getLocationURI());
+                    try {
+                        parser.getObjFromProjFile(delta.getResource().getLocationURI(),
+                                sub);
+                    } catch (InterruptedException e) {
+                        // cancelled
+                        return false;
+                    }
                     break;
                 }
                 return true;

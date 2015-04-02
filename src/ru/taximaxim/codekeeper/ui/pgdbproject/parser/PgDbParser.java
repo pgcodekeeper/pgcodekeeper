@@ -73,17 +73,20 @@ public class PgDbParser implements IResourceChangeListener {
     }
     
     public static PgDbParser getRollOnParser(InputStream input,
-            String scriptFileEncoding, IProgressMonitor monitor, List<FunctionBodyContainer> funcBodies) {
+            String scriptFileEncoding, IProgressMonitor monitor,
+            List<FunctionBodyContainer> funcBodies) throws InterruptedException {
         PgDbParser rollOnParser = new PgDbParser();
         rollOnParser.fillRefsFromInputStream(input, monitor, scriptFileEncoding, funcBodies);
         return rollOnParser;
     }
 
-    public void getObjFromProject(IProgressMonitor monitor) {
+    public void getObjFromProject(IProgressMonitor monitor)
+            throws InterruptedException {
         getFullDBFromDirectory(proj.getLocationURI(), monitor);
     }
     
-    public void getObjFromProjFile(URI fileURI) {
+    public void getObjFromProjFile(URI fileURI, IProgressMonitor monitor)
+            throws InterruptedException {
         Path path = Paths.get(fileURI);
         String filePath = path.toAbsolutePath().toString();
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
@@ -96,7 +99,7 @@ public class PgDbParser implements IResourceChangeListener {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(charset);
         PgDatabase db = PgDumpLoader.loadSchemasAndFile(filePath, args,
-                ParserClass.getParserAntlrReferences(null, 1, funcBodies));
+                ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
         for (Path key : db.getObjDefinitions().keySet()) {
             objDefinitions.put(key, db.getObjDefinitions().get(key));
         }
@@ -141,7 +144,11 @@ public class PgDbParser implements IResourceChangeListener {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                getFullDBFromDirectory(locationURI, monitor);
+                try {
+                    getFullDBFromDirectory(locationURI, monitor);
+                } catch (InterruptedException e) {
+                    return Status.CANCEL_STATUS;
+                }
                 return Status.OK_STATUS;
             }
             
@@ -150,7 +157,8 @@ public class PgDbParser implements IResourceChangeListener {
         job.schedule();
     }
     
-    private void getFullDBFromDirectory(URI locationURI, IProgressMonitor monitor) {
+    private void getFullDBFromDirectory(URI locationURI, IProgressMonitor monitor)
+            throws InterruptedException {
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
         String charset = ApgdiffConsts.UTF_8;
         try {
@@ -163,9 +171,6 @@ public class PgDbParser implements IResourceChangeListener {
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 Paths.get(locationURI).toAbsolutePath().toString(),
                 args, ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
-        if (monitor.isCanceled()) {
-            return;
-        }
         objDefinitions = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjDefinitions());
         objReferences = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjReferences());
         fillFunctionBodies(objDefinitions, objReferences, funcBodies);
@@ -178,15 +183,13 @@ public class PgDbParser implements IResourceChangeListener {
     }
     
     private void fillRefsFromInputStream(InputStream input,
-            IProgressMonitor monitor, String scriptFileEncoding, List<FunctionBodyContainer> funcBodies) {
+            IProgressMonitor monitor, String scriptFileEncoding,
+            List<FunctionBodyContainer> funcBodies) throws InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(scriptFileEncoding);
         PgDatabase db = PgDumpLoader.loadRefsFromInputStream(
-                input,Paths.get(""), //$NON-NLS-1$
+                input, Paths.get(""), //$NON-NLS-1$
                 args, ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
-        if (monitor.isCanceled()) {
-            return;
-        }
         objDefinitions = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjDefinitions());
         objReferences = new ConcurrentHashMap<Path, List<PgObjLocation>>(db.getObjReferences());
     }
@@ -269,6 +272,7 @@ public class PgDbParser implements IResourceChangeListener {
             e.handleEvent(new Event());
         }      
     }
+    
     public List<Listener> getListeners() {
         return listeners;
     }

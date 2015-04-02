@@ -51,7 +51,7 @@ public abstract class DbSource {
         return dbObject;
     }
 
-    public PgDatabase get(SubMonitor monitor) throws IOException {
+    public PgDatabase get(SubMonitor monitor) throws IOException, InterruptedException {
         Log.log(Log.LOG_INFO, "Loading DB from " + origin); //$NON-NLS-1$
         
         dbObject = this.loadInternal(monitor);
@@ -66,7 +66,7 @@ public abstract class DbSource {
         this.origin = origin;
     }
     
-    protected static PgDiffArguments getPgDiffArgs(String charset, String timeZone) {
+    static PgDiffArguments getPgDiffArgs(String charset, String timeZone) {
         PgDiffArguments args = new PgDiffArguments();
         IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
         args.setInCharsetName(charset);
@@ -78,32 +78,32 @@ public abstract class DbSource {
     }
 
     protected abstract PgDatabase loadInternal(SubMonitor monitor)
-            throws IOException;
+            throws IOException, InterruptedException;
 
-    public static DbSource fromDirTree(ParserClass parser,
+    public static DbSource fromDirTree(boolean useAntlr,
             String dirTreePath, String encoding) {
-        return new DbSourceDirTree(parser, dirTreePath, encoding);
+        return new DbSourceDirTree(useAntlr, dirTreePath, encoding);
     }
 
-    public static DbSource fromProject(ParserClass parser, PgDbProject proj) {
-        return new DbSourceProject(parser, proj);
+    public static DbSource fromProject(boolean useAntlr, PgDbProject proj) {
+        return new DbSourceProject(useAntlr, proj);
     }
 
-    public static DbSource fromFile(ParserClass parser,
+    public static DbSource fromFile(boolean useAntlr,
             String filename, String encoding) {
-        return new DbSourceFile(parser, filename, encoding);
+        return new DbSourceFile(useAntlr, filename, encoding);
     }
 
-    public static DbSource fromDb(ParserClass parser,
+    public static DbSource fromDb(boolean useAntlr,
             String exePgdump, String customParams,
             PgDbProject proj, String password) throws CoreException {
-        return new DbSourceDb(parser, exePgdump, customParams, proj, password);
+        return new DbSourceDb(useAntlr, exePgdump, customParams, proj, password);
     }
 
-    public static DbSource fromDb(ParserClass parser, String exePgdump, String customParams,
+    public static DbSource fromDb(boolean useAntlr, String exePgdump, String customParams,
             String host, int port, String user, String pass, String dbname,
             String encoding, String timezone) {
-        return new DbSourceDb(parser, exePgdump, customParams,
+        return new DbSourceDb(useAntlr, exePgdump, customParams,
                 host, port, user, pass, dbname, encoding, timezone);
     }
 
@@ -137,47 +137,46 @@ public abstract class DbSource {
 
 class DbSourceDirTree extends DbSource {
 
-    private final ParserClass parser;
+    private final boolean useAntlr;
     private final String dirTreePath;
     private final String encoding;
 
-    DbSourceDirTree(ParserClass parser, String dirTreePath, String encoding) {
+    DbSourceDirTree(boolean useAntlr, String dirTreePath, String encoding) {
         super(dirTreePath);
 
-        this.parser = parser;
+        this.useAntlr = useAntlr;
         this.dirTreePath = dirTreePath;
         this.encoding = encoding;
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) {
+    protected PgDatabase loadInternal(SubMonitor monitor) throws InterruptedException {
         monitor.subTask(Messages.dbSource_loading_tree);
 
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(dirTreePath,
-                getPgDiffArgs(encoding, ApgdiffConsts.UTC), parser);
+                getPgDiffArgs(encoding, ApgdiffConsts.UTC),
+                useAntlr ? ParserClass.getAntlr(monitor, 1) : ParserClass.getLegacy(monitor, 1));
     }
 }
 
 class DbSourceProject extends DbSource {
 
-    private final ParserClass parser;
+    private final boolean useAntlr;
     private final PgDbProject proj;
 
-    DbSourceProject(ParserClass parser, PgDbProject proj) {
+    DbSourceProject(boolean useAntlr, PgDbProject proj) {
         super(proj.getPathToProject().toString());
 
-        this.parser = parser;
+        this.useAntlr = useAntlr;
         this.proj = proj;
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
+    protected PgDatabase loadInternal(SubMonitor monitor) 
+            throws IOException, InterruptedException {
         int filesCount = countFilesInDir(proj.getPathToProject());  
         monitor.subTask(Messages.dbSource_loading_tree);
         monitor.setWorkRemaining(filesCount);
-        
-        parser.setMonitor(monitor);
-        parser.setMonitoringLevel(1);
         
         String charset;
         try {
@@ -187,7 +186,8 @@ class DbSourceProject extends DbSource {
         }
         return PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 proj.getPathToProject().toString(), 
-                getPgDiffArgs(charset, ApgdiffConsts.UTC), parser);
+                getPgDiffArgs(charset, ApgdiffConsts.UTC),
+                useAntlr ? ParserClass.getAntlr(monitor, 1) : ParserClass.getLegacy(monitor, 1));
     }
     
     private int countFilesInDir(Path path) {
@@ -214,22 +214,22 @@ class DbSourceFile extends DbSource {
      * 
      * По подсчетам, это число в районе 6. Для верности берем 5.
      */
-    final static int AVERAGE_STATEMENT_LENGTH = 5;
+    private final static int AVERAGE_STATEMENT_LENGTH = 5;
     
-    private final ParserClass parser;
+    private final boolean useAntlr;
     private final String filename;
     private final String encoding;
 
-    DbSourceFile(ParserClass parser, String filename, String encoding) {
+    DbSourceFile(boolean useAntlr, String filename, String encoding) {
         super(filename);
 
-        this.parser = parser;
+        this.useAntlr = useAntlr;
         this.filename = filename;
         this.encoding = encoding;
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) {
+    protected PgDatabase loadInternal(SubMonitor monitor) throws InterruptedException {
         monitor.subTask(Messages.dbSource_loading_dump);
         
         try {
@@ -240,11 +240,10 @@ class DbSourceFile extends DbSource {
             Log.log(Log.LOG_INFO, "Error counting file lines. Setting 1000"); //$NON-NLS-1$
             monitor.setWorkRemaining(1000);
         }
-        parser.setMonitor(monitor);
-        parser.setMonitoringLevel(2);
         
         return PgDumpLoader.loadDatabaseSchemaFromDump(filename, 
-                getPgDiffArgs(encoding, ApgdiffConsts.UTC), parser);
+                getPgDiffArgs(encoding, ApgdiffConsts.UTC), 
+                useAntlr ? ParserClass.getAntlr(monitor, 2) : ParserClass.getLegacy(monitor, 2));
     }
     
     private int countLines(String filename) throws IOException {
@@ -269,16 +268,16 @@ class DbSourceFile extends DbSource {
 
 class DbSourceDb extends DbSource {
 
-    private final ParserClass parser;
+    private final boolean useAntlr;
     private final String exePgdump;
     private final String customParams;
 
     private final String host, user, pass, dbname, encoding, timezone;
     private final int port;
 
-    DbSourceDb(ParserClass parser, String exePgdump, String customParams,
+    DbSourceDb(boolean useAntlr, String exePgdump, String customParams,
             PgDbProject props, String password) throws CoreException {
-        this(parser, exePgdump, customParams,
+        this(useAntlr, exePgdump, customParams,
                 props.getPrefs().get(PROJ_PREF.DB_HOST, ""), //$NON-NLS-1$
                 props.getPrefs().getInt(PROJ_PREF.DB_PORT, JDBC_CONSTS.JDBC_DEFAULT_PORT),
                 props.getPrefs().get(PROJ_PREF.DB_USER, ""), //$NON-NLS-1$
@@ -288,13 +287,13 @@ class DbSourceDb extends DbSource {
                 props.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
     }
 
-    DbSourceDb(ParserClass parser, String exePgdump, String customParams,
+    DbSourceDb(boolean useAntlr, String exePgdump, String customParams,
             String host, int port, String user, String pass,
             String dbname, String encoding, String timezone) {
-        super((dbname.isEmpty() ? Messages.unknown_db : dbname) + "@" //$NON-NLS-1$
+        super((dbname.isEmpty() ? Messages.unknown_db : dbname) + '@'
                 + (host.isEmpty() ? Messages.unknown_host : host));
 
-        this.parser = parser;
+        this.useAntlr = useAntlr;
         this.exePgdump = exePgdump;
         this.customParams = customParams;
         this.host = host;
@@ -307,7 +306,8 @@ class DbSourceDb extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
+    protected PgDatabase loadInternal(SubMonitor monitor)
+            throws IOException, InterruptedException {
         SubMonitor pm = SubMonitor.convert(monitor, 2);
 
         try (TempFile tf = new TempFile("tmp_dump_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
@@ -322,7 +322,8 @@ class DbSourceDb extends DbSource {
             pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
             return PgDumpLoader.loadDatabaseSchemaFromDump(
-                    dump.getAbsolutePath(), getPgDiffArgs(encoding, timezone), parser);
+                    dump.getAbsolutePath(), getPgDiffArgs(encoding, timezone),
+                    useAntlr ? ParserClass.getAntlr(monitor, 1) : ParserClass.getLegacy(monitor, 1));
         }
     }
 }
@@ -343,7 +344,8 @@ class DbSourceFilter extends DbSource {
     }
 
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
+    protected PgDatabase loadInternal(SubMonitor monitor)
+            throws IOException, InterruptedException {
         PgDatabase db;
         try {
             db = src.getDbObject();
@@ -368,7 +370,8 @@ class DbSourceJdbc extends DbSource {
     }
     
     @Override
-    protected PgDatabase loadInternal(SubMonitor monitor) throws IOException {
+    protected PgDatabase loadInternal(SubMonitor monitor)
+            throws IOException, InterruptedException {
         monitor.subTask(Messages.reading_db_from_jdbc);
         return jdbcLoader.getDbFromJdbc(monitor);
     }

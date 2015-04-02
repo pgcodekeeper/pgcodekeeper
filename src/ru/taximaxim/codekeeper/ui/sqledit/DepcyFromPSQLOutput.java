@@ -123,7 +123,8 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         return addDepcy.isEmpty();
     }
     
-    public void updateParser(IProgressMonitor monitor) throws CoreException {
+    public void updateParser(IProgressMonitor monitor)
+            throws CoreException, InterruptedException {
         List<Listener> listener = new ArrayList<>();
         if (parser != null) {
             listener.addAll(parser.getListeners());
@@ -136,6 +137,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         listener.clear();
         parser.notifyListeners();
     }
+    
     public PgDbParser getParser() {
         return parser;
     }
@@ -247,8 +249,9 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
     public void updateScript(String newScript) {
         script = newScript;
     }
+    
     @Override
-    public IStorage getStorage() throws CoreException {
+    public IStorage getStorage() {
         try {
             if (script == null) {
                 script = differ.getDiffDirect();

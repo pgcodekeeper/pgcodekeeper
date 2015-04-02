@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,7 +20,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -160,21 +163,37 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             throws PartInitException {
         // открыть с помощью кодкипера на каком-то скрипте
         if (input instanceof DepcyFromPSQLOutput) {
-            DepcyFromPSQLOutput in = (DepcyFromPSQLOutput)input;
+            final DepcyFromPSQLOutput in = (DepcyFromPSQLOutput)input;
             initializeDepcyInput(in);
             try {
                 if (this.getSourceViewer() != null) {
                     in.updateScript(this.getSourceViewer().getDocument().get());
                 }
-                in.updateParser(null);
-            } catch (CoreException e) {
+                IRunnableWithProgress runParse = new IRunnableWithProgress() {
+                    
+                    @Override
+                    public void run(IProgressMonitor monitor) throws InvocationTargetException,
+                            InterruptedException {
+                        try {
+                            in.updateParser(monitor);
+                        } catch (CoreException ex) {
+                            throw new InvocationTargetException(ex, ex.getLocalizedMessage());
+                        }
+                    }
+                };
+                new ProgressMonitorDialog(site.getShell()).run(true, true, runParse);
+            } catch (InvocationTargetException e) {
                throw new PartInitException(e.getLocalizedMessage(), e);
+            } catch (InterruptedException ex) {
+                throw new PartInitException(
+                        "Parsing cancelled! " + ex.getLocalizedMessage(), ex);
             }
         }
         // после создания парсера вызвать создание основного редактора
         super.init(site, input);
         getEditorSite().getWorkbenchWindow().getPartService().addPartListener(this);
     }
+    
     @Override
     public void doSave(IProgressMonitor progressMonitor) {
         super.doSave(progressMonitor);
@@ -186,6 +205,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 in.updateParser(progressMonitor);
             } catch (CoreException e) {
                 Log.log(Log.LOG_ERROR, "Cannot parse Editor input"); //$NON-NLS-1$
+            } catch (InterruptedException ex) {
+                progressMonitor.setCanceled(true);
             }
         }
     }    

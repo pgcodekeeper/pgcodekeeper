@@ -29,7 +29,6 @@ import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class NormalizeProject extends AbstractHandler {
@@ -59,18 +58,15 @@ public class NormalizeProject extends AbstractHandler {
                         Messages.NormalizeProject_normalizing_project, 2);
                 try {
                     PgDatabase db = DbSource.fromProject(Activator.getDefault()
-                            .getPreferenceStore().getBoolean(PREF.USE_ANTLR) ? 
-                                    ParserClass.getAntlr(monitor, 1) : ParserClass.getLegacy(null, 1), proj)
+                            .getPreferenceStore().getBoolean(PREF.USE_ANTLR), proj)
                                     .get(mon.newChild(1));
-                    if (monitor.isCanceled()) {
-                        new Status(IStatus.INFO, PLUGIN_ID.THIS,
-                                "Normalizing was cancelled");
-                    }
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
                     new ProjectUpdater(db, null, null, proj).updateFull();
                 } catch (IOException | CoreException ex) {
                     return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                             Messages.NormalizeProject_error_while_updating_project, ex);
+                } catch (InterruptedException e) {
+                    return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
             }

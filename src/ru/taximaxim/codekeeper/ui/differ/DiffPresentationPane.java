@@ -10,7 +10,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -67,7 +66,6 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
-import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public abstract class DiffPresentationPane extends Composite {
@@ -235,7 +233,7 @@ public abstract class DiffPresentationPane extends Composite {
                                 proj.getProject().refreshLocal(
                                         IResource.DEPTH_INFINITE, monitor);
                             } catch (CoreException ex) {
-                                throw new InvocationTargetException(ex);
+                                throw new InvocationTargetException(ex, ex.getLocalizedMessage());
                             }
                         }
                     };
@@ -549,8 +547,7 @@ public abstract class DiffPresentationPane extends Composite {
         }
         
         DbSource dbsProj, dbsRemote;
-        dbsProj = DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1), proj);
+        dbsProj = DbSource.fromProject(mainPrefs.getBoolean(PREF.USE_ANTLR), proj);
         switch (selectedDBSource) {
         case SOURCE_TYPE_DUMP:
             FileDialog dialog = new FileDialog(getShell());
@@ -559,16 +556,14 @@ public abstract class DiffPresentationPane extends Composite {
             if (dumpfile == null) {
                 return false;
             }
-            dbsRemote = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.getAntlr(null, 1) : ParserClass.getLegacy(null, 1), dumpfile,
-                    proj.getProjectCharset());
+            dbsRemote = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR),
+                    dumpfile, proj.getProjectCharset());
             break;
         case SOURCE_TYPE_DB:
             String sPort = dbSrc.getTxtDbPort().getText();
             int port = sPort.isEmpty() ? 0 : Integer.parseInt(sPort);
 
-            dbsRemote = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.getAntlr(new NullProgressMonitor(), 1) : ParserClass.getLegacy(new NullProgressMonitor(), 1),
+            dbsRemote = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR),
                     mainPrefs.getString(PREF.PGDUMP_EXE_PATH),
                     mainPrefs.getString(PREF.PGDUMP_CUSTOM_PARAMS),
                     dbSrc.getTxtDbHost().getText(), port, dbSrc.getTxtDbUser().getText(),
@@ -610,8 +605,7 @@ public abstract class DiffPresentationPane extends Composite {
                 } catch (InvocationTargetException e) {
                     return new Status(Status.ERROR, PLUGIN_ID.THIS,
                             Messages.error_in_differ_thread, e);
-                }
-                if (monitor.isCanceled()) {
+                } catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;

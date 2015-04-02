@@ -17,7 +17,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class InitProjectFromSource implements IRunnableWithProgress {
@@ -42,7 +41,8 @@ public class InitProjectFromSource implements IRunnableWithProgress {
     }
 
     @Override
-    public void run(IProgressMonitor monitor) throws InvocationTargetException {
+    public void run(IProgressMonitor monitor)
+            throws InvocationTargetException, InterruptedException {
         try {
             Log.log(Log.LOG_INFO, "Init project at " + props.getPathToProject()); //$NON-NLS-1$
             
@@ -63,22 +63,21 @@ public class InitProjectFromSource implements IRunnableWithProgress {
      * clean repository, generate new file structure, preserve and fix repo
      * metadata, repo rm/add, commit new revision
      * @throws CoreException 
+     * @throws InterruptedException 
      */
     private void initRepoFromSource(SubMonitor pm)
-            throws IOException, InvocationTargetException, CoreException {
+            throws IOException, InvocationTargetException, CoreException, InterruptedException {
         SubMonitor taskpm = pm.newChild(25); // 50
 
         PgDatabase db;
         switch (DBSources.getEnum(props.getPrefs().get(PROJ_PREF.SOURCE, ""))) { //$NON-NLS-1$
         case SOURCE_TYPE_DB:
-            db = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.getAntlr(taskpm, 1) : ParserClass.getLegacy(null, 1),
+            db = DbSource.fromDb(mainPrefs.getBoolean(PREF.USE_ANTLR),
                     exePgdump, pgdumpCustom, props, password).get(taskpm);
             break;
 
         case SOURCE_TYPE_DUMP:
-            db = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR) ? 
-                    ParserClass.getAntlr(taskpm, 1) : ParserClass.getLegacy(null, 1), dumpPath,
+            db = DbSource.fromFile(mainPrefs.getBoolean(PREF.USE_ANTLR), dumpPath,
                     props.getProjectCharset()).get(taskpm);
             break;
 
@@ -90,9 +89,6 @@ public class InitProjectFromSource implements IRunnableWithProgress {
         default:
             throw new InvocationTargetException(new IllegalStateException(
                     Messages.initProjectFromSource_init_request_but_no_schema_source));
-        }
-        if (taskpm.isCanceled()) {
-            throw new InvocationTargetException(null, "Task was cancelled by user");
         }
         pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model); // 75
         new ProjectUpdater(db, null, null, props).updateFull();

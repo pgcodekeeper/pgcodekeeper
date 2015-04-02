@@ -90,8 +90,7 @@ public class Differ implements IRunnableWithProgress {
                 } catch (InvocationTargetException e) {
                     return new Status(Status.ERROR, PLUGIN_ID.THIS, 
                             Messages.error_in_the_project_modifier_thread, e);
-                }
-                if (monitor.isCanceled()) {
+                } catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
@@ -125,7 +124,8 @@ public class Differ implements IRunnableWithProgress {
     }
     
     @Override
-    public void run(IProgressMonitor monitor) throws InvocationTargetException{
+    public void run(IProgressMonitor monitor) throws InvocationTargetException,
+            InterruptedException {
         SubMonitor pm = SubMonitor.convert(monitor, Messages.calculating_diff, 100); // 0
         
         PgDatabase dbSrc, dbTgt;
