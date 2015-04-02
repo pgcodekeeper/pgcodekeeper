@@ -43,12 +43,23 @@ statement
   : data_statement
    /*| data_change_statement*/
   | schema_statement
-  
+  | script_statement
   ;
 
 data_statement
   : query_expression 
   | copy_statement
+  ;
+
+  script_statement
+  : START TRANSACTION transaction_mode*
+  | COMMIT (WORK | TRANSACTION)?
+  ;
+
+  transaction_mode
+  : ISOLATION LEVEL (SERIALIZABLE | REPEATABLE READ | READ COMMITTED | READ UNCOMMITTED)
+  | READ WRITE | READ ONLY
+  | (NOT)? DEFERRABLE
   ;
 
 copy_statement
@@ -806,6 +817,7 @@ nonreserved_keywords
   | COMMENT
   | COMMENTS
   | COMMIT
+  | COMMITTED
   | CONCURRENTLY
   | CONFIGURATION
   | COST
@@ -846,6 +858,7 @@ nonreserved_keywords
   | INTERSECTION
   | ISCACHABLE
   | ISODOW
+  | ISOLATION
   | ISOYEAR
   | ISSTRICT
   | KEY
@@ -853,6 +866,7 @@ nonreserved_keywords
   | LARGE
   | LAST
   | LESS
+  | LEVEL
   | LIST
   | LOCATION
   | MAIN
@@ -888,9 +902,11 @@ nonreserved_keywords
   | PURGE
   | QUARTER
   | RANGE
+  | READ
   | REGCONFIG
   | REGEXP
   | RENAME
+  | REPEATABLE
   | REPLACE
   | REPLICA
   | RESET
@@ -901,6 +917,7 @@ nonreserved_keywords
   | SEARCH
   | SECOND
   | SECURITY
+  | SERIALIZABLE
   | SERVER
   | SET
   | SIMILAR
@@ -920,10 +937,12 @@ nonreserved_keywords
   | TIMEZONE
   | TIMEZONE_HOUR
   | TIMEZONE_MINUTE
+  | TRANSACTION
   | TRIM
   | TO
   | TYPE
   | TYPES
+  | UNCOMMITTED
   | UNKNOWN
   | UNLOGGED
   | USER
@@ -938,7 +957,9 @@ nonreserved_keywords
   | VOLATILE
   | WEEK
   | WINDOW
+  | WORK
   | WRAPPER
+  | WRITE
   | YEAR
   | ZONE
 
