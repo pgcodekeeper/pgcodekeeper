@@ -45,12 +45,12 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbPicker;
@@ -154,7 +154,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                         filtered, DiffSide.RIGHT);
 
                 Differ differ = new Differ(fdbSource, fdbTarget, true, 
-                        proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
+                        proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
                 differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
                 try {
                     getContainer().run(true, false, differ);
@@ -454,7 +454,7 @@ class PageDiff extends WizardPage implements Listener {
             setErrorMessage("Cannot get project charset, will use default");
             Log.log(Log.LOG_ERROR, "Cannot get project charset", e1);
             cmbEncoding.select(
-                    cmbEncoding.indexOf(UIConsts.UTF_8));
+                    cmbEncoding.indexOf(ApgdiffConsts.UTF_8));
         }
 
         new Label(grpEncoding, SWT.NONE).setText(Messages.diffWizard_target_timezone);
@@ -465,7 +465,7 @@ class PageDiff extends WizardPage implements Listener {
         cmbTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbTimezone.setItems(availableTimezones);
         cmbTimezone.select(cmbTimezone.indexOf(
-                proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC)));
+                proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC)));
         
         setControl(container);
     }
@@ -700,7 +700,7 @@ class PageResult extends WizardPage {
     }
 
     private void saveScript(String saveTo) {
-        String charset = UIConsts.UTF_8;
+        String charset = ApgdiffConsts.UTF_8;
         try {
             charset = proj.getProjectCharset();
         } catch (CoreException e) {

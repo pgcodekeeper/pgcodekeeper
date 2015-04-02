@@ -4,9 +4,6 @@ public interface UIConsts {
 
     String _NL = System.lineSeparator();
     
-    String UTF_8 = "UTF-8"; //$NON-NLS-1$
-    String UTC = "UTC"; //$NON-NLS-1$
-
     interface PLUGIN_ID {
         String THIS = "ru.taximaxim.codekeeper.ui"; //$NON-NLS-1$
         String HELP = THIS + ".help"; //$NON-NLS-1$
@@ -37,6 +34,7 @@ public interface UIConsts {
         String FORCE_SHOW_CONSOLE = "prefForceShowConsole"; //$NON-NLS-1$
         String DB_STORE = "prefDbStore"; //$NON-NLS-1$
         String IGNORE_OBJECTS = "prefIgnoreObjects"; //$NON-NLS-1$
+        String NO_PRIVILEGES = "prefNoPrivileges"; //$NON-NLS-1$
         
         String LAST_OPENED_LOCATION = "prefLastOpenedLocation"; //$NON-NLS-1$
         String IS_FLIPPED_DB_SOURCE = "isFlippedDbSource"; //$NON-NLS-1$
@@ -57,6 +55,8 @@ public interface UIConsts {
         String DROP_TABLE_STATEMENT = "prefDropTableStatement"; //$NON-NLS-1$
         String ALTER_COLUMN_STATEMENT = "prefAlterColumnStatement"; //$NON-NLS-1$
         String DROP_COLUMN_STATEMENT = "prefDropColumnStatement"; //$NON-NLS-1$
+        String SCRIPT_IN_TRANSACTION = "prefScriptInTransaction"; //$NON-NLS-1$
+        String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
     }
     
     public enum DBSources {
@@ -130,6 +130,7 @@ public interface UIConsts {
         String ICONBALLRED = "/icons/ball_red.png"; //$NON-NLS-1$
         String ICONREFRESH = "/icons/refresh.gif"; //$NON-NLS-1$
         String ICONCLOSE = "/icons/close_view.png"; //$NON-NLS-1$
+        String ICONWRITEOUTCONSOLE = "/icons/writeout_co.gif"; //$NON-NLS-1$
         String DDL_UPDATE_COMMANDS_HIST_FILENAME = "rollon_cmd_history.xml"; //$NON-NLS-1$
     }
     
@@ -141,4 +142,6 @@ public interface UIConsts {
         String IGNORED_OBJS_ROOT = "ignored_objects"; //$NON-NLS-1$
         String IGNORED_OBJS_ELEMENT = "obj"; //$NON-NLS-1$
     }
+    
+    String IGNORED_OBJECTS = ".pgcodekeeperignore"; //$NON-NLS-1$
 }

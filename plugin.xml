@@ -239,7 +239,7 @@
       </page>
       <page
             category="ru.taximaxim.codekeeper.ui.general"
-            class="ru.taximaxim.codekeeper.ui.prefs.IgnoredObjectsPrefPage"
+            class="ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectsPrefPage"
             id="ru.taximaxim.codekeeper.ui.ignoredobjects"
             name="%page.name.ignored_objects">
       </page>
@@ -509,5 +509,17 @@
              </contentExtension>
           </includes>
        </viewerContentBinding>
+    </extension>
+    <extension
+          point="org.eclipse.ui.console.consolePageParticipants">
+       <consolePageParticipant
+             class="ru.taximaxim.codekeeper.ui.consoles.ShowConsoleParticipant"
+             id="ru.taximaxim.codekeeper.ui.consoles.ForceShowConsole">
+          <enablement>
+             <instanceof
+                   value="ru.taximaxim.codekeeper.ui.consoles.CodekeeperConsole">
+             </instanceof>
+          </enablement>
+       </consolePageParticipant>
     </extension>
 </plugin>

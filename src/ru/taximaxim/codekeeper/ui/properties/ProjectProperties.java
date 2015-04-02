@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -66,7 +67,7 @@ public class ProjectProperties extends PropertyPage implements
         cmbTimezone = new Combo(panel, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
         cmbTimezone.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbTimezone.setItems(getSortedTimezones());
-        cmbTimezone.select(cmbTimezone.indexOf(prefs.get(PROJ_PREF.TIMEZONE, UIConsts.UTC)));
+        cmbTimezone.select(cmbTimezone.indexOf(prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC)));
         
         ModifyListener ml = new ModifyListener() {
             
@@ -91,7 +92,7 @@ public class ProjectProperties extends PropertyPage implements
     
     private void checkSwitchWarnLbl() {
         boolean show = 
-                !cmbTimezone.getText().equals(prefs.get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
+                !cmbTimezone.getText().equals(prefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
         ((GridData) lblWarn.getLayoutData()).exclude = !show;
         lblWarn.setVisible(show);
         lblWarn.getParent().layout();
@@ -99,7 +100,7 @@ public class ProjectProperties extends PropertyPage implements
     
     @Override
     protected void performDefaults() {
-        cmbTimezone.select(cmbTimezone.indexOf(UIConsts.UTC));
+        cmbTimezone.select(cmbTimezone.indexOf(ApgdiffConsts.UTC));
         try {
             fillPrefs();
         } catch (BackingStoreException e) {

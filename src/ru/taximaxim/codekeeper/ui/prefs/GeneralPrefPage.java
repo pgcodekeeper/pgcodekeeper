@@ -41,5 +41,9 @@ public class GeneralPrefPage extends FieldEditorPreferencePage
         
         addField(new BooleanFieldEditor(PREF.FORCE_SHOW_CONSOLE,
                 Messages.generalPrefPage_show_console_when_program_write_to_console, getFieldEditorParent()));
+        
+        addField(new BooleanFieldEditor(PREF.NO_PRIVILEGES,
+                Messages.dbUpdatePrefPage_ignore_privileges,
+                getFieldEditorParent()));
     }
 }

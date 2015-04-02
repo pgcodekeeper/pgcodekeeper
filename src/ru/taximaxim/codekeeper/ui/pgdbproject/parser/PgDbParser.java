@@ -24,7 +24,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
-import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
@@ -86,14 +87,16 @@ public class PgDbParser implements IResourceChangeListener {
         Path path = Paths.get(fileURI);
         String filePath = path.toAbsolutePath().toString();
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
-        String charset = UIConsts.UTF_8;
+        String charset = ApgdiffConsts.UTF_8;
         try {
             charset = proj.getDefaultCharset(true);
         } catch (CoreException e) {
             // ignore
         }
-        PgDatabase db = PgDumpLoader.loadSchemasAndFile(filePath, charset, false,
-                false, ParserClass.getParserAntlrReferences(null, 1, funcBodies));
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(charset);
+        PgDatabase db = PgDumpLoader.loadSchemasAndFile(filePath, args,
+                ParserClass.getParserAntlrReferences(null, 1, funcBodies));
         for (Path key : db.getObjDefinitions().keySet()) {
             objDefinitions.put(key, db.getObjDefinitions().get(key));
         }
@@ -149,16 +152,17 @@ public class PgDbParser implements IResourceChangeListener {
     
     private void getFullDBFromDirectory(URI locationURI, IProgressMonitor monitor) {
         List<FunctionBodyContainer> funcBodies = new ArrayList<>();
-        String charset = UIConsts.UTF_8;
+        String charset = ApgdiffConsts.UTF_8;
         try {
             charset = proj.getDefaultCharset(true);
         } catch (CoreException e) {
             // ignore
         }
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(charset);
         PgDatabase db = PgDumpLoader.loadDatabaseSchemaFromDirTree(
                 Paths.get(locationURI).toAbsolutePath().toString(),
-                charset, 
-                false, false, ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
+                args, ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
         if (monitor.isCanceled()) {
             return;
         }
@@ -175,9 +179,11 @@ public class PgDbParser implements IResourceChangeListener {
     
     private void fillRefsFromInputStream(InputStream input,
             IProgressMonitor monitor, String scriptFileEncoding, List<FunctionBodyContainer> funcBodies) {
-        PgDatabase db = PgDumpLoader.loadRefsFromInputStream(input, Paths.get(""), //$NON-NLS-1$
-                scriptFileEncoding, false, false,
-                ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
+        PgDiffArguments args = new PgDiffArguments();
+        args.setInCharsetName(scriptFileEncoding);
+        PgDatabase db = PgDumpLoader.loadRefsFromInputStream(
+                input,Paths.get(""), //$NON-NLS-1$
+                args, ParserClass.getParserAntlrReferences(monitor, 1, funcBodies));
         if (monitor.isCanceled()) {
             return;
         }

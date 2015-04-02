@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         IWorkbenchPreferencePage {
 
-    private PrefListEditor listEditor;
+    private StringPrefListEditor listEditor;
     private final XmlHistory history;
     
     public DbUpdatePrefPage() {
@@ -64,6 +64,18 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
                 DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY,
                 Messages.dbUpdatePrefPage_show_script_output_in_separate_window, getFieldEditorParent());
         addField(showScriptOutputSeparately);
+        
+        BooleanFieldEditor transaction = new BooleanFieldEditor(
+                DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
+                Messages.dbUpdatePrefPage_script_add_transaction,
+                getFieldEditorParent());
+        addField(transaction);
+        
+        BooleanFieldEditor functionBodies = new BooleanFieldEditor(
+                DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
+                Messages.dbUpdatePrefPage_check_function_bodies,
+                getFieldEditorParent());
+        addField(functionBodies);
     }
     
     @Override
@@ -80,7 +92,7 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         grpCommandsEdit.setLayoutData(gd);
         grpCommandsEdit.setText(Messages.dbUpdatePrefPage_add_and_delete_ddl_update_commands);
         
-        listEditor = new PrefListEditor(grpCommandsEdit, false);
+        listEditor = new StringPrefListEditor(grpCommandsEdit, false);
         updateList();
         
         return parent;
@@ -104,13 +116,15 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements
     }
     
     private void updateList() {
-        LinkedList<String> list = new LinkedList<>();
+        LinkedList<String> list= null;
         try {
             list = history.getHistory();
         } catch (IOException e) {
             ExceptionNotifier.notifyDefault(Messages.dbUpdatePrefPage_error_getting_commands_list, e);
         }
-        
+        if (list == null) {
+            list = new LinkedList<>();
+        }
         listEditor.setInputList(list);
     }
 }

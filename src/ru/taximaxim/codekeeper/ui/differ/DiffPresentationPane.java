@@ -6,6 +6,7 @@ import java.text.MessageFormat;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -15,7 +16,9 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.layout.PixelConverter;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -46,13 +49,13 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.osgi.service.prefs.BackingStoreException;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DBSources;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -223,13 +226,33 @@ public abstract class DiffPresentationPane extends Composite {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    showNotificationArea(false);
+                    IRunnableWithProgress runRefresh = new IRunnableWithProgress() {
+                        
+                        @Override
+                        public void run(IProgressMonitor monitor) throws InvocationTargetException,
+                                InterruptedException {
+                            try {
+                                proj.getProject().refreshLocal(
+                                        IResource.DEPTH_INFINITE, monitor);
+                            } catch (CoreException ex) {
+                                throw new InvocationTargetException(ex);
+                            }
+                        }
+                    };
+                    try {
+                        new ProgressMonitorDialog(getShell()).run(true, true, runRefresh);
+                    } catch (InterruptedException ex) {
+                        // cancelled
+                        return;
+                    }
+                    
                     if (fillDbSources(proj, projProps)) {
+                        showNotificationArea(false);
                         clearInputs();
                         loadChanges();
                         saveDBPrefs(projProps);
                     }
-                } catch (PgCodekeeperUIException | CoreException e1) {
+                } catch (PgCodekeeperUIException | CoreException | InvocationTargetException e1) {
                     ExceptionNotifier.notifyDefault(
                             Messages.DiffPresentationPane_error_loading_changes, e1);
                 } catch (BackingStoreException e1) {
@@ -256,7 +279,7 @@ public abstract class DiffPresentationPane extends Composite {
         gl.horizontalSpacing = gl.verticalSpacing = 2;
         containerDb.setLayout(gl);
 
-        diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs, false);
+        diffTable = new DiffTableViewer(containerDb, SWT.NONE, mainPrefs, proj, false);
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.getViewer().addPostSelectionChangedListener(new ISelectionChangedListener() {
 
@@ -551,7 +574,7 @@ public abstract class DiffPresentationPane extends Composite {
                     dbSrc.getTxtDbHost().getText(), port, dbSrc.getTxtDbUser().getText(),
                     dbSrc.getTxtDbPass().getText(), dbSrc.getTxtDbName().getText(),
                     proj.getProjectCharset(), 
-                    projProps.get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
+                    projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
             break;
         case SOURCE_TYPE_JDBC:
             sPort = dbSrc.getTxtDbPort().getText();
@@ -561,7 +584,7 @@ public abstract class DiffPresentationPane extends Composite {
                     dbSrc.getTxtDbUser().getText(), dbSrc.getTxtDbPass().getText(),
                     dbSrc.getTxtDbName().getText(), 
                     proj.getProjectCharset(), 
-                    projProps.get(PROJ_PREF.TIMEZONE, UIConsts.UTC),
+                    projProps.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC),
                     mainPrefs.getBoolean(PREF.USE_ANTLR));
             break;
         default:

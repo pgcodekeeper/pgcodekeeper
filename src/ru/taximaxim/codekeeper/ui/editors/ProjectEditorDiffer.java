@@ -63,7 +63,6 @@ import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
-import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -307,27 +306,28 @@ class CommitPage extends DiffPresentationPane {
             // Получить список зависимых от NEW/EDIT элементов
             dte = new DepcyTreeExtender(dbSource.getDbObject(), 
                     dbTarget.getDbObject(), filtered);
-            Set<PgStatement> dependencies = dte.getDependenciesOfNew();
+            Set<PgStatement> dependencies = dte.fetchDependenciesOfNewEdit();
             PgDatabase depcyTargetDb = dte.getDepcyTargetDb();
             
             // Дополнительно пометить в таблице зависимости от NEW/EDIT и
             // получить новое фильтрованное дерево с этими зависимостями
-            Set<TreeElement> elementsNewEditDependentFrom = 
-                    dte.getDepcyElementsContainedInDb(diffTable.getCheckedElements(false),
+            Set<TreeElement> dependenciesUnselectedOnly = 
+                    DepcyTreeExtender.filterDepcyElementsContainedInDb(
+                            diffTable.getCheckedElements(false),
                             dependencies, depcyTargetDb); 
             
-            diffTable.setCheckedElements(elementsNewEditDependentFrom.toArray(), true);
+            diffTable.setCheckedElements(dependenciesUnselectedOnly.toArray(), true);
             TreeElement filteredWithNew = diffTable.filterDiffTree();
-            diffTable.setCheckedElements(elementsNewEditDependentFrom.toArray(), false);
+            diffTable.setCheckedElements(dependenciesUnselectedOnly.toArray(), false);
 
             // Расширить дерево filteredWithNew элементами, зависящими от удаляемых
             dte = new DepcyTreeExtender(dbSource.getDbObject(), 
                     dbTarget.getDbObject(), filteredWithNew);
-            filteredWithNewAndDelete = dte.getTreeCopyWithDepcy();
+            filteredWithNewAndDelete = dte.copyInitialTreeWithDependantsOfDeleted();
             // Получить список всех зависимостей для заполнения нижней 
             // таблицы CommitDialog'a
             // Эти зависимости - потомки filteredWithNewAndDelete
-            sumNewAndDelete = dte.sumAllDepcies(elementsNewEditDependentFrom);
+            sumNewAndDelete = dte.sumNewEditWithInternalDeleted(dependenciesUnselectedOnly);
         }
         
         Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
@@ -345,7 +345,7 @@ class CommitPage extends DiffPresentationPane {
             // Убрать из списка всех элементов в filteredWithNewAndDelete те
             // элементы, с которых пользователь снял отметку в нижней таблице
             // FIXME убрать шелл, отделить логику от UI
-            DiffTableViewer diffTable = new DiffTableViewer(new Shell(), SWT.NONE, mainPrefs, true);
+            DiffTableViewer diffTable = new DiffTableViewer(new Shell(), SWT.NONE, mainPrefs, proj, true);
             diffTable.setFilteredInput(filteredWithNewAndDelete, treeDiffer, false);
             Set<TreeElement> allElements = diffTable.getCheckedElements(false);
             allElements.removeAll(cd.getBottomTableViewer().getCheckedElements(false));
@@ -545,7 +545,7 @@ class DiffPage extends DiffPresentationPane {
         final Differ differ = new Differ(
                 DbSource.fromFilter(dbSource, filtered, DiffSide.LEFT),
                 DbSource.fromFilter(dbTarget, filtered, DiffSide.RIGHT),
-                false, proj.getPrefs().get(PROJ_PREF.TIMEZONE, UIConsts.UTC));
+                false, proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
         differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);

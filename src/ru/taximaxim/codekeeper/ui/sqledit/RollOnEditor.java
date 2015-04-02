@@ -53,6 +53,7 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -110,8 +111,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
     
     private volatile boolean isRunning;
     private Thread scriptThread;
-    private String scriptFileEncoding = UIConsts.UTF_8;
-    private String connectionTimezone = UIConsts.UTC;
+    private String scriptFileEncoding = ApgdiffConsts.UTF_8;
+    private String connectionTimezone = ApgdiffConsts.UTC;
 
     private Button runScriptBtn;
     private Button saveAsBtn;
@@ -209,7 +210,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 FILE.DDL_UPDATE_COMMANDS_HIST_FILENAME, 
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ROOT, 
                 XML_TAGS.DDL_UPDATE_COMMANDS_HIST_ELEMENT).build();
-        this.connectionTimezone = projPrefs.get(PROJ_PREF.TIMEZONE, UIConsts.UTC);
+        this.connectionTimezone = projPrefs.get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC);
         this.scriptFileEncoding = addDepcy.getScriptFileEncoding();
         setDbParams(addDepcy.dbHost, addDepcy.dbPort, addDepcy.dbName,
                 addDepcy.dbUser, addDepcy.dbPass);
@@ -553,7 +554,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
             
             if (scriptFileName != null) {
                 File script = new File(scriptFileName);
-                try (PrintWriter writer = new PrintWriter(script, UIConsts.UTF_8)) {
+                try (PrintWriter writer = new PrintWriter(script, ApgdiffConsts.UTF_8)) {
                     writer.write(textRetrieved);
                 } catch (IOException ex) {
                     ExceptionNotifier.notifyDefault(
