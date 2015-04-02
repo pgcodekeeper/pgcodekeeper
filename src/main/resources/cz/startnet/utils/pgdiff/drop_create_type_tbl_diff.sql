@@ -5,6 +5,8 @@ ALTER TABLE distributors
 
 DROP TYPE typ_range;
 
+-- DEPCY: This TYPE is a dependency of COLUMN: distributors.did
+
 CREATE TYPE typ_range AS RANGE (
 	subtype = character varying,
 	collation = pg_catalog."ru_RU"

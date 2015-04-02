@@ -17,12 +17,6 @@ DROP VIEW v2;
 ALTER TABLE t1
 	ALTER COLUMN id TYPE bigint; /* TYPE change - table: t1 original: integer new: bigint */
 
-CREATE VIEW v2 AS
-	SELECT t1.id
-   FROM t1;
-
-ALTER VIEW v2 OWNER TO levsha_aa;
-
 SET search_path = s, pg_catalog;
 
 CREATE VIEW v1 AS
@@ -30,6 +24,18 @@ CREATE VIEW v1 AS
    FROM public.t1;
 
 ALTER VIEW v1 OWNER TO levsha_aa;
+
+SET search_path = public, pg_catalog;
+
+-- DEPCY: This VIEW is a dependency of VIEW: v3
+
+CREATE VIEW v2 AS
+	SELECT t1.id
+   FROM t1;
+
+ALTER VIEW v2 OWNER TO levsha_aa;
+
+SET search_path = s, pg_catalog;
 
 CREATE VIEW v3 AS
 	SELECT v2.id
