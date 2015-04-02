@@ -27,9 +27,7 @@ public class AlterType extends ParserAbstract {
         if (type == null) {
             return null;
         }
-        if (ctx.owner_to() != null) {
-            type.setOwner(getFullCtxText(ctx.owner_to().name));
-        }
+        fillOwnerTo(ctx.owner_to(), type);
         return type;
     }
 

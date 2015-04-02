@@ -254,7 +254,7 @@ public final class CommentParser {
 
         parser.expect("(");
 
-        final PgFunction tmpFunction = new PgFunction(objectName, null, null);
+        final PgFunction tmpFunction = new PgFunction(objectName, null);
 
         while (!parser.expectOptional(")")) {
             final String mode;

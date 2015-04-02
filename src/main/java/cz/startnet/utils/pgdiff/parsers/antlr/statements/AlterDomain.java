@@ -28,9 +28,7 @@ public class AlterDomain extends ParserAbstract {
         if (domain == null) {
             return null;
         }
-        if (ctx.owner_to() != null) {
-            domain.setOwner(getFullCtxText(ctx.owner_to().name));
-        }
+        fillOwnerTo(ctx.owner_to(), domain);
         if (ctx.dom_constraint != null) {
             PgConstraint contraint = parseDomainConstraint(ctx.dom_constraint);
             if (contraint != null) {

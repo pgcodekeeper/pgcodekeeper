@@ -32,7 +32,7 @@ public final class CreateSequenceParser {
 
         final String sequenceName = parser.parseIdentifier();
         final PgSequence sequence =
-                new PgSequence(ParserUtils.getObjectName(sequenceName), statement, searchPath);
+                new PgSequence(ParserUtils.getObjectName(sequenceName), statement);
         final String schemaName =
                 ParserUtils.getSchemaName(sequenceName, database);
         final PgSchema schema = database.getSchema(schemaName);

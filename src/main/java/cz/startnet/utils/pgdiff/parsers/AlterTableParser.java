@@ -80,8 +80,10 @@ public final class AlterTableParser {
             if (parser.expectOptional("ALTER")) {
                 parseAlterColumn(parser, table);
             } else if (parser.expectOptional("CLUSTER", "ON")) {
-                table.setClusterIndexName(
-                        ParserUtils.getObjectName(parser.parseIdentifier()));
+                table.setClustered(true);
+                table.getIndex(
+                        ParserUtils.getObjectName(parser.parseIdentifier()))
+                        .setClusterIndex(true);
             } else if (parser.expectOptional("OWNER", "TO")) {
                 table.setOwner(parser.parseIdentifier());
             } else if (parser.expectOptional("ADD")) {
@@ -209,10 +211,10 @@ public final class AlterTableParser {
         final PgConstraint constraint;
         int posBefore = parser.getPosition();
         if (parser.expectOptional("FOREIGN", "KEY")){
-            constraint = new PgForeignKey(constraintName, null, searchPath);
+            constraint = new PgForeignKey(constraintName, null);
             parseAddConstraintForeignKey(parser, table, (PgForeignKey)constraint);
         }else{
-            constraint = new PgConstraint(constraintName, null, searchPath);
+            constraint = new PgConstraint(constraintName, null);
         }
         parser.setPosition(posBefore);
         constraint.setDefinition(parser.getExpression());

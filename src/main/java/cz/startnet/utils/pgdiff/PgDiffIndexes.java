@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -27,7 +28,7 @@ public final class PgDiffIndexes {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void createIndexes(final PgDiffScript script,
+    public static void createIndexes(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgTable newTable : newSchema.getTables()) {
@@ -36,17 +37,11 @@ public final class PgDiffIndexes {
             // Add new indexes
             if (oldSchema == null) {
                 for (PgIndex index : newTable.getIndexes()) {
-                    PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, index);
-                    
-                    searchPathHelper.outputSearchPath(script);
-                    PgDiff.writeCreationSql(script, null, index, true);
+                    depRes.addCreateStatements(index);
                 }
             } else {
                 for (PgIndex index : getNewIndexes(oldSchema.getTable(newTableName), newTable)) {
-                    PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, index);
-                    
-                    searchPathHelper.outputSearchPath(script);
-                    PgDiff.writeCreationSql(script, null, index, true);
+                    depRes.addCreateStatements(index);
                 }
             }
         }
@@ -60,7 +55,7 @@ public final class PgDiffIndexes {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropIndexes(final PgDiffScript script,
+    public static void dropIndexes(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         for (final PgTable newTable : newSchema.getTables()) {
@@ -75,11 +70,9 @@ public final class PgDiffIndexes {
 
             // Drop indexes that do not exist in new schema or are modified
             for (final PgIndex index : getDropIndexes(oldTable, newTable)) {
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeDropSql(script, null, index);
+                depRes.addDropStatements(index);
             }
         }
-        
         // КОСТЫЛЬ
         if (oldSchema == null){
             return;
@@ -87,10 +80,9 @@ public final class PgDiffIndexes {
         
         for (final PgTable oldTable : oldSchema.getTables()) {
             if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
-                PgTable newTable = new PgTable(oldTable.getName(), null, null);
+                PgTable newTable = new PgTable(oldTable.getName(), null);
                 for (final PgIndex index : getDropIndexes(oldTable, newTable)) {
-                    searchPathHelper.outputSearchPath(script);
-                    PgDiff.writeDropSql(script, null, index);
+                    depRes.addDropStatements(index);
                 }
             }
         }// КОСТЫЛЬ
@@ -113,8 +105,7 @@ public final class PgDiffIndexes {
 
         if (newTable != null && oldTable != null) {
             for (final PgIndex index : oldTable.getIndexes()) {
-                if (!newTable.containsIndex(index.getName())
-                        || !newTable.getIndex(index.getName()).compareWithoutComments(index)) {
+                if (!newTable.containsIndex(index.getName())) {
                     list.add(index);
                 }
             }
@@ -142,9 +133,7 @@ public final class PgDiffIndexes {
                 }
             } else {
                 for (final PgIndex index : newTable.getIndexes()) {
-                    if (!oldTable.containsIndex(index.getName())
-                            || !oldTable.getIndex(index.getName()).
-                            compareWithoutComments(index)) {
+                    if (!oldTable.containsIndex(index.getName())) {
                         list.add(index);
                     }
                 }
@@ -162,28 +151,21 @@ public final class PgDiffIndexes {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterComments(final PgDiffScript script,
+    public static void alterComments(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
             return;
         }
 
-        for(PgTable oldTable : oldSchema.getTables()) {
+        for (PgTable oldTable : oldSchema.getTables()) {
             final PgTable newTable = newSchema.getTable(oldTable.getName());
-
             if (newTable == null) {
                 continue;
             }
-            
             for (final PgIndex oldIndex : oldTable.getIndexes()) {
-                final PgIndex newIndex = newTable.getIndex(oldIndex.getName());
-                
-                if (newIndex == null) {
-                    continue;
-                }
-
-                PgDiff.diffComments(oldIndex, newIndex, script);
+                depRes.appendAlter(oldIndex,
+                        newTable.getIndex(oldIndex.getName()));
             }
         }
     }

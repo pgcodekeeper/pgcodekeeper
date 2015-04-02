@@ -8,6 +8,7 @@ package cz.startnet.utils.pgdiff;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgTable;
@@ -30,7 +31,7 @@ public final class PgDiffConstraints {
      *                         processed
      * @param searchPathHelper search path helper
      */
-    public static void createConstraints(final PgDiffScript script,
+    public static void createConstraints(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final boolean primaryKey, final SearchPathHelper searchPathHelper) {
         for (final PgTable newTable : newSchema.getTables()) {
@@ -45,10 +46,7 @@ public final class PgDiffConstraints {
             // Add new constraints
             for (final PgConstraint constraint :
                     getNewConstraints(oldTable, newTable, primaryKey)) {
-                PgDiff.addUniqueDependenciesOnCreateEdit(script, null, searchPathHelper, constraint);
-                
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, constraint, true);
+                depRes.addCreateStatements(constraint);
             }
         }
     }
@@ -64,7 +62,7 @@ public final class PgDiffConstraints {
      *                         processed
      * @param searchPathHelper search path helper
      */
-    public static void dropConstraints(final PgDiffScript script,
+    public static void dropConstraints(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final boolean primaryKey, final SearchPathHelper searchPathHelper) {
         for (final PgTable newTable : newSchema.getTables()) {
@@ -79,11 +77,9 @@ public final class PgDiffConstraints {
             // Drop constraints that no more exist or are modified
             for (final PgConstraint constraint :
                     getDropConstraints(oldTable, newTable, primaryKey)) {
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeDropSql(script, null, constraint);
+                depRes.addDropStatements(constraint);
             }
-        }
-        
+        } 
         // КОСТЫЛЬ
         if (oldSchema == null){
             return;
@@ -91,10 +87,9 @@ public final class PgDiffConstraints {
         
         for (final PgTable oldTable : oldSchema.getTables()) {
             if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
-                PgTable newTable = new PgTable(oldTable.getName(), null, null);
+                PgTable newTable = new PgTable(oldTable.getName(), null);
                 for (final PgConstraint constraint : getDropConstraints(oldTable, newTable, primaryKey)) {
-                    searchPathHelper.outputSearchPath(script);
-                    PgDiff.writeDropSql(script, null, constraint);
+                    depRes.addDropStatements(constraint);
                 }
             }
         }// КОСТЫЛЬ
@@ -178,7 +173,7 @@ public final class PgDiffConstraints {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterComments(final PgDiffScript script,
+    public static void alterComments(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -187,20 +182,12 @@ public final class PgDiffConstraints {
 
         for (PgTable oldTable : oldSchema.getTables()) {
             final PgTable newTable = newSchema.getTable(oldTable.getName());
-
             if (newTable == null) {
                 continue;
             }
-
             for (final PgConstraint oldConstraint : oldTable.getConstraints()) {
-                final PgConstraint newConstraint =
-                        newTable.getConstraint(oldConstraint.getName());
-
-                if (newConstraint == null) {
-                    continue;
-                }
-                
-                PgDiff.diffComments(oldConstraint, newConstraint, script);
+                depRes.appendAlter(oldConstraint,
+                        newTable.getConstraint(oldConstraint.getName()));
             }
         }
     }

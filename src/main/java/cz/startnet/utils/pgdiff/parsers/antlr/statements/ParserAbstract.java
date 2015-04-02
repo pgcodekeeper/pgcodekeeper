@@ -18,6 +18,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_argumentsContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Name_or_func_callsContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Owner_toContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_defContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_definitionContext;
@@ -215,7 +216,7 @@ public abstract class ParserAbstract {
     }
     
     public static void fillArguments(Function_argsContext function_argsContext,
-            PgFunction function) {
+            PgFunction function, String defSchemaName) {
         for (Function_argumentsContext argument : function_argsContext
                 .function_arguments()) {
             PgFunction.Argument arg = new PgFunction.Argument();
@@ -230,12 +231,37 @@ public abstract class ParserAbstract {
             if (argument.function_def_value() != null) {
                 arg.setDefaultExpression(getFullCtxText(argument
                         .function_def_value().def_value));
+                for (GenericColumn objName : parseDefValues(argument
+                        .function_def_value().def_value, defSchemaName)) {
+                    arg.addDefaultObject(objName);
+                }
             }
             if (argument.arg_mode != null) {
                 arg.setMode(argument.arg_mode.getText());
             }
             function.addArgument(arg);
         }
+    }
+    
+    private static List<GenericColumn> parseDefValues(ParserRuleContext defExpression,
+            final String defSchemaName) {
+        final List<GenericColumn> funcSignature = new ArrayList<>();
+        new ParseTreeWalker().walk(new SQLParserBaseListener() {
+            @Override
+            public void exitName_or_func_calls(Name_or_func_callsContext ctx) {
+                if (ctx.function_calls_paren() == null) {
+                    return;
+                }
+                Schema_qualified_nameContext name = ctx.schema_qualified_name();
+                String objName = getName(name);
+                String schemaName = getSchemaName(name);
+                if (schemaName == null) {
+                    schemaName = defSchemaName;
+                }
+                funcSignature.add(new GenericColumn(schemaName, objName, null));
+            }
+        }, defExpression);
+        return funcSignature;
     }
 
     protected List<PgConstraint> getConstraint(Table_column_defContext colCtx) {
@@ -255,10 +281,10 @@ public abstract class ParserAbstract {
 
     protected PgConstraint getTableConstraint(Constraint_commonContext ctx) {
         String constrName = ctx.constraint_name == null ? "" : removeQuotes(ctx.constraint_name);
-        PgConstraint constr = new PgConstraint(constrName, getFullCtxText(ctx), db.getDefSearchPath());
+        PgConstraint constr = new PgConstraint(constrName, getFullCtxText(ctx));
         
         if (ctx.constr_body().FOREIGN() != null) {
-            constr = new PgForeignKey(constrName, "", db.getDefSearchPath());
+            constr = new PgForeignKey(constrName, "");
 
             Table_referencesContext tblRef = ctx.constr_body().table_references();
 
@@ -311,10 +337,24 @@ public abstract class ParserAbstract {
                 constr_name = getName(constr.name);
             }
             PgConstraint constraint = new PgConstraint(constr_name,
-                    getFullCtxText(constr), db.getDefSearchPath());            
+                    getFullCtxText(constr));            
             constraint.setDefinition(getFullCtxText(constr.common_constraint()));
             return constraint;
         }
         return null;
+    }
+    
+    /**
+     * Заполняет владельца
+     * @param ctx контекст парсера с владельцем
+     * @param st объект
+     */
+    protected void fillOwnerTo(Owner_toContext ctx, PgStatement st) {
+        if (db.getArguments().isIgnorePrivileges()) {
+            return;
+        }
+        if (ctx != null) {
+            st.setOwner(removeQuotes(ctx.name));
+        }
     }
 }

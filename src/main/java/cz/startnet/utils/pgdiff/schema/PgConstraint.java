@@ -5,10 +5,16 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -32,8 +38,8 @@ public class PgConstraint extends PgStatementWithSearchPath {
         return DbObjType.CONSTRAINT;
     }
     
-    public PgConstraint(String name, String rawStatement, String searchPath) {
-        super(name, rawStatement, searchPath);
+    public PgConstraint(String name, String rawStatement) {
+        super(name, rawStatement);
     }
 
     @Override
@@ -74,6 +80,25 @@ public class PgConstraint extends PgStatementWithSearchPath {
         sbSQL.append(';');
 
         return sbSQL.toString();
+    }
+    
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+        PgConstraint newConstr;
+        if (newCondition instanceof PgConstraint) {
+            newConstr = (PgConstraint)newCondition; 
+        } else {
+            return false;
+        }
+        PgConstraint oldConstr = this;
+        PgDiffScript script = new PgDiffScript();
+        PgDiff.diffComments(oldConstr, newConstr, script);
+        
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+        script.printStatements(writer);
+        sb.append(diffInput.toString().trim());
+        return sb.length() > 0;
     }
 
     public boolean isPrimaryKeyConstraint() {
@@ -125,7 +150,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
     
     @Override
     public PgConstraint shallowCopy() {
-        PgConstraint constraintDst = new PgConstraint(getName(), getRawStatement(), getSearchPath());
+        PgConstraint constraintDst = new PgConstraint(getName(), getRawStatement());
         constraintDst.setDefinition(getDefinition());
         constraintDst.setTableName(getTableName());
         constraintDst.setComment(getComment());
@@ -135,5 +160,10 @@ public class PgConstraint extends PgStatementWithSearchPath {
     @Override
     public PgConstraint deepCopy() {
         return shallowCopy();
+    }
+    
+    @Override
+    public PgSchema getContainingSchema() {
+        return (PgSchema)this.getParent().getParent();
     }
 }

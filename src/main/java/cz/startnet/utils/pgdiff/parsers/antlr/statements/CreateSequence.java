@@ -22,7 +22,7 @@ public class CreateSequence extends ParserAbstract {
         if (schemaName==null) {
             schemaName = getDefSchemaName();
         }
-        PgSequence sequence = new PgSequence(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
+        PgSequence sequence = new PgSequence(name, getFullCtxText(ctx.getParent()));
         for (Sequence_bodyContext body : ctx.sequence_body()) {
             if (body.cache_val != null) {
                 sequence.setCache(body.cache_val.getText());

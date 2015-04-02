@@ -3,6 +3,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 
@@ -10,6 +11,8 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
  * This is a support class for comment objects, it doesn't have name and should 
  * not be used in objects database 
  */
+// TODO refactor, this shouldn't extend PgStatement and isn't really needed
+@Deprecated
 public class PgSet extends PgStatement {
     
     private String param;
@@ -51,6 +54,11 @@ public class PgSet extends PgStatement {
     public String getDropSQL() {
         return null;
     }
+    
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+        return false;
+    }
 
     @Override
     public PgStatement shallowCopy() {
@@ -81,6 +89,11 @@ public class PgSet extends PgStatement {
             return compare((PgSet)obj);
         }
         return false;
+    }
+    
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     @Override

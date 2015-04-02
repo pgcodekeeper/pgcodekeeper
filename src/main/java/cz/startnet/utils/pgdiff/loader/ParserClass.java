@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.parsers.antlr.FunctionBodyContainer;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
@@ -32,8 +33,7 @@ public abstract class ParserClass {
         this.monitoringLevel = monitoringLevel > 0 ? monitoringLevel : 1;
     }
     
-    public abstract PgDatabase parse(InputStream inputStream, String charsetName,
-            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+    public abstract PgDatabase parse(InputStream inputStream, PgDiffArguments arguments,
             PgDatabase database, Path path);
 
     public void setMonitor(IProgressMonitor monitor) {
@@ -52,15 +52,13 @@ class ParserClassAntlr extends ParserClass {
     }
     
     @Override
-    public PgDatabase parse(InputStream inputStream, String charsetName,
-            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+    public PgDatabase parse(InputStream inputStream, PgDiffArguments arguments,
             PgDatabase database, Path path) {
         if (monitor.isCanceled()) {
             return database;
         }
         return PgDumpLoader.loadDatabaseSchemaCoreAntLR(
-                inputStream, charsetName,
-                outputIgnoredStatements, ignoreSlonyTriggers, database, path,
+                inputStream, arguments, database, path,
                 monitor, monitoringLevel);
     }
 }
@@ -72,11 +70,9 @@ class ParserClassLegacy extends ParserClass {
     }
     
     @Override
-    public PgDatabase parse(InputStream inputStream, String charsetName,
-            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+    public PgDatabase parse(InputStream inputStream, PgDiffArguments arguments,
             PgDatabase database, Path path) {
-        return PgDumpLoader.loadDatabaseSchemaCore(inputStream, charsetName,
-                outputIgnoredStatements, ignoreSlonyTriggers, database);
+        return PgDumpLoader.loadDatabaseSchemaCore(inputStream, arguments, database);
     }
 }
 
@@ -91,15 +87,13 @@ class ParserAntlrReferences extends ParserClass {
     }
     
     @Override
-    public PgDatabase parse(InputStream inputStream, String charsetName,
-            boolean outputIgnoredStatements, boolean ignoreSlonyTriggers,
+    public PgDatabase parse(InputStream inputStream, PgDiffArguments arguments,
             PgDatabase database, Path path) {
         if (monitor.isCanceled()) {
             return database;
         }
         return PgDumpLoader.loadObjReferences(
-                inputStream, charsetName,
-                outputIgnoredStatements, ignoreSlonyTriggers, database, path,
+                inputStream, arguments, database, path,
                 monitor, monitoringLevel, funcBodies);
     }
 }

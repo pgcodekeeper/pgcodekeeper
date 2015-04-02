@@ -4,15 +4,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 
-public class PgSelect extends PgStatementWithSearchPath {
+public class PgSelect extends PgStatement {
     
     private final List<GenericColumn> columns = new ArrayList<>();
     
-    public PgSelect(String rawStatement, String searchPath) {
-        super(null, rawStatement, searchPath);
+    public PgSelect(String rawStatement) {
+        super(null, rawStatement);
     }
     
     @Override
@@ -46,10 +47,15 @@ public class PgSelect extends PgStatementWithSearchPath {
     public String getDropSQL() {
         return null;
     }
+    
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+        return false;
+    }
 
     @Override
     public PgSelect shallowCopy() {
-        PgSelect selectDst = new PgSelect(getRawStatement(), getSearchPath());
+        PgSelect selectDst = new PgSelect(getRawStatement());
         selectDst.columns.addAll(columns);
         return selectDst;
     }

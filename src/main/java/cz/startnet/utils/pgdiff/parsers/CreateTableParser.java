@@ -37,7 +37,7 @@ public final class CreateTableParser {
 
         final String tableName = parser.parseIdentifier();
         final PgTable table = new PgTable(ParserUtils.getObjectName(tableName),
-                statement, searchPath);
+                statement);
         final String schemaName =
                 ParserUtils.getSchemaName(tableName, database);
         final PgSchema schema = database.getSchema(schemaName);
@@ -122,7 +122,7 @@ public final class CreateTableParser {
             final PgTable table, final String searchPath) {
         final PgConstraint constraint = new PgConstraint(
                 ParserUtils.getObjectName(parser.parseIdentifier()),
-                null, searchPath);
+                null);
         table.addConstraint(constraint);
         constraint.setTableName(table.getName());
         constraint.setDefinition(parser.getExpression());

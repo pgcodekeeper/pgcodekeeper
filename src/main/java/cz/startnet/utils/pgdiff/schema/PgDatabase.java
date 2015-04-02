@@ -12,7 +12,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import cz.startnet.utils.pgdiff.PgDiffArguments;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 
@@ -37,6 +39,8 @@ public class PgDatabase extends PgStatement {
     private final Map<Path, List<PgObjLocation>> objDefinitions = new HashMap<>();
     // Содержит ссылки на объекты
     private final Map<Path, List<PgObjLocation>> objReferences = new HashMap<>();
+
+    private PgDiffArguments arguments;
     
     @Override
     public DbObjType getStatementType() {
@@ -237,6 +241,11 @@ public class PgDatabase extends PgStatement {
     }
     
     @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+        return false;
+    }
+    
+    @Override
     public boolean compare(PgStatement obj) {
         // for now all instances of PgDatabase considered to be shallow equal
         return obj instanceof PgDatabase;
@@ -307,5 +316,12 @@ public class PgDatabase extends PgStatement {
             statements.addAll(schema.getTables());
         }
         return statements;
+    }
+
+    public void setArguments(PgDiffArguments arguments) {
+        this.arguments = arguments;
+    }
+    public PgDiffArguments getArguments() {
+        return arguments;
     }
 }

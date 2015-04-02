@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiffDomains;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 public class PgDomain extends PgStatementWithSearchPath {
@@ -91,8 +93,8 @@ public class PgDomain extends PgStatementWithSearchPath {
         resetHash();
     }
 
-    public PgDomain(String name, String rawStatement, String searchPath) {
-        super(name, rawStatement, searchPath);
+    public PgDomain(String name, String rawStatement) {
+        super(name, rawStatement);
     }
 
     @Override
@@ -155,8 +157,69 @@ public class PgDomain extends PgStatementWithSearchPath {
     }
 
     @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
+        PgDomain newDomain, oldDomain = this;
+        if (newCondition instanceof PgDomain) {
+            newDomain = (PgDomain) newCondition;
+        } else {
+            return false;
+        }
+
+        if (!Objects.equals(newDomain.getDataType(), oldDomain.getDataType()) ||
+                !Objects.equals(newDomain.getCollation(), oldDomain.getCollation())) {
+            return false;
+        }
+        
+        if (!Objects.equals(newDomain.getDefaultValue(), oldDomain.getDefaultValue())) {
+            if (sb.length() != 0) {
+                sb.append("\n\n");
+            }
+            sb.append("ALTER DOMAIN ").append(PgDiffUtils.getQuotedName(newDomain.getName()));
+            if (newDomain.getDefaultValue() == null) {
+                sb.append("\n\tDROP DEFAULT");
+            } else {
+                sb.append("\n\tSET DEFAULT ").append(newDomain.getDefaultValue());
+            }
+            sb.append(';');
+        }
+        
+        if (newDomain.isNotNull() != oldDomain.isNotNull()) {
+            if (sb.length() != 0) {
+                sb.append("\n\n");
+            }
+            sb.append("ALTER DOMAIN ").append(PgDiffUtils.getQuotedName(newDomain.getName()));
+            if (newDomain.isNotNull()) {
+                sb.append("\n\tSET NOT NULL");
+            } else {
+                sb.append("\n\tDROP NOT NULL");
+            }
+            sb.append(';');
+        }
+        
+        PgDiffDomains.compareConstraints(newDomain.getName(), oldDomain.getConstraints(),
+                newDomain.getConstraints(), sb);
+        PgDiffDomains.compareConstraints(newDomain.getName(), oldDomain.getConstrsNotValid(),
+                newDomain.getConstrsNotValid(), sb);
+        
+        if (!Objects.equals(oldDomain.getOwner(), newDomain.getOwner())) {
+            newDomain.appendOwnerSQL(sb);
+        }
+        if (!oldDomain.getGrants().equals(newDomain.getGrants()) || 
+                !oldDomain.getRevokes().equals(newDomain.getRevokes())) {
+            newDomain.appendPrivileges(sb);
+        }
+        if (!Objects.equals(oldDomain.getComment(), newDomain.getComment())) {
+            //sb.append("\n\n");
+            newDomain.appendCommentSql(sb);
+        }
+        return sb.length() > startLength;
+    }
+
+    @Override
     public PgDomain shallowCopy() {
-        PgDomain copy = new PgDomain(getName(), getRawStatement(), getSearchPath());
+        PgDomain copy = new PgDomain(getName(), getRawStatement());
         copy.setDataType(getDataType());
         copy.setCollation(getCollation());
         copy.setDefaultValue(getDefaultValue());
@@ -192,7 +255,8 @@ public class PgDomain extends PgStatementWithSearchPath {
             return false;
         }
         PgDomain dom = (PgDomain) obj;
-        return Objects.equals(dataType, dom.getDataType())
+        return Objects.equals(name, dom.getName())
+                && Objects.equals(dataType, dom.getDataType())
                 && Objects.equals(collation, dom.getCollation())
                 && Objects.equals(defaultValue, dom.getDefaultValue())
                 && notNull == dom.isNotNull()
@@ -210,6 +274,7 @@ public class PgDomain extends PgStatementWithSearchPath {
         final int itrue = 1231;
         final int ifalse = 1237;
         int result = 1;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((dataType == null) ? 0 : dataType.hashCode());
         result = prime * result + ((collation == null) ? 0 : collation.hashCode());
         result = prime * result + ((defaultValue == null) ? 0 : defaultValue.hashCode());
@@ -221,5 +286,10 @@ public class PgDomain extends PgStatementWithSearchPath {
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
         return result;
+    }
+
+    @Override
+    public PgSchema getContainingSchema() {
+        return (PgSchema) this.getParent();
     }
 }

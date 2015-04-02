@@ -5,6 +5,8 @@
  */
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,8 +14,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffScript;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 
 /**
@@ -32,7 +38,7 @@ public class PgTable extends PgStatementWithSearchPath {
     // DEFAULT (nextval)('sequenceName'::Type)
     private final List<String> sequences = new ArrayList<>();
 
-    private String clusterIndexName;
+    private boolean isClustered;
     /**
      * WITH clause. If value is null then it is not set, otherwise can be set to
      * OIDS=true, OIDS=false, or storage parameters can be set.
@@ -45,17 +51,16 @@ public class PgTable extends PgStatementWithSearchPath {
         return DbObjType.TABLE;
     }
     
-    public PgTable(String name, String rawStatement, String searchPath) {
-        super(name, rawStatement, searchPath);
+    public PgTable(String name, String rawStatement) {
+        super(name, rawStatement);
     }
 
-    public void setClusterIndexName(final String name) {
-        clusterIndexName = name;
-        resetHash();
+    public void setClustered(boolean value) {
+        isClustered = value;
     }
 
-    public String getClusterIndexName() {
-        return clusterIndexName;
+    public boolean isClustered() {
+        return isClustered;
     }
 
     /**
@@ -209,28 +214,84 @@ public class PgTable extends PgStatementWithSearchPath {
     }
     
     @Override
-    public String getFullSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append(getCreationSQL()).append(getClusterSQL());
-        
-        return sbSQL.toString();
-    }
-    
-    @Override
     public String getDropSQL() {
         return "DROP TABLE " + PgDiffUtils.getQuotedName(getName()) + ';';
     }
     
-    private String getClusterSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
-        if (clusterIndexName != null && !clusterIndexName.isEmpty()) {
-            sbSQL.append("\n\nALTER TABLE ");
-            sbSQL.append(PgDiffUtils.getQuotedName(name));
-            sbSQL.append(" CLUSTER ON ");
-            sbSQL.append(getClusterIndexName());
-            sbSQL.append(';');
+    @Override
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sbuilder, AtomicBoolean isNeedDepcies) {
+        PgTable newTable;
+        if (newCondition instanceof PgTable) {
+            newTable = (PgTable)newCondition; 
+        } else {
+            return false;
         }
-        return sbSQL.toString();
+        PgDiffScript script = new PgDiffScript();
+        PgTable oldTable = this;
+
+        List<Entry<String, String>> oldInherits = oldTable.getInherits();
+        List<Entry<String, String>> newInherits = newTable.getInherits();
+        for (final Entry<String, String> tableName : oldInherits) {
+            if (!newInherits.contains(tableName)) {
+                script.addStatement("ALTER TABLE "
+                        + PgDiffUtils.getQuotedName(newTable.getName())
+                        + "\n\tNO INHERIT "
+                        + (tableName.getKey() == null ? 
+                                "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
+                        + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
+            }
+        }
+        for (final Entry<String, String> tableName : newInherits) {
+            if (!oldInherits.contains(tableName)) {
+                script.addStatement("ALTER TABLE "
+                        + PgDiffUtils.getQuotedName(newTable.getName())
+                        + "\n\tINHERIT "
+                        + (tableName.getKey() == null ? 
+                                "" : PgDiffUtils.getQuotedName(tableName.getKey()) + '.')
+                        + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
+            }
+        }
+        
+        if (!Objects.equals(oldTable.getWith(), newTable.getWith())) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("ALTER TABLE ");
+            sb.append(PgDiffUtils.getQuotedName(newTable.getName()));
+
+            if (newTable.getWith() == null
+                    || "OIDS=false".equalsIgnoreCase(newTable.getWith())) {
+                sb.append("\n\tSET WITHOUT OIDS;");
+            } else if ("OIDS".equalsIgnoreCase(newTable.getWith())
+                    || "OIDS=true".equalsIgnoreCase(newTable.getWith())) {
+                sb.append("\n\tSET WITH OIDS;");
+            } else {
+                sb.append("\n\tSET ");
+                sb.append(newTable.getWith());
+                sb.append(';');
+            }
+            script.addStatement(sb.toString());
+        }
+        
+        if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
+            script.addStatement("ALTER TABLE "
+                    + PgDiffUtils.getQuotedName(newTable.getName())
+                    + "\n\tTABLESPACE " + newTable.getTablespace() + ';');
+        }
+        
+        if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {
+            script.addStatement(newTable.getOwnerSQL());
+        }
+        if (!oldTable.getGrants().equals(newTable.getGrants())
+                || !oldTable.getRevokes().equals(newTable.getRevokes())) {
+            script.addStatement(newTable.getPrivilegesSQL());
+        }
+        
+        PgDiff.diffComments(oldTable, newTable, script);
+        
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+        script.printStatements(writer);
+        sbuilder.append(diffInput.toString().trim());
+        return sbuilder.length() > 0;
     }
 
     /**
@@ -396,7 +457,6 @@ public class PgTable extends PgStatementWithSearchPath {
             PgTable table = (PgTable) obj;
             
             eq = Objects.equals(name, table.getName())
-                    && Objects.equals(clusterIndexName, table.getClusterIndexName())
                     && Objects.equals(tablespace, table.getTablespace())
                     && Objects.equals(with, table.getWith())
                     
@@ -441,8 +501,7 @@ public class PgTable extends PgStatementWithSearchPath {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
-        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
-        result = prime * result + ((clusterIndexName == null) ? 0 : clusterIndexName.hashCode());
+        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());        
         result = prime * result + ((columns == null) ? 0 : columns.hashCode());
         result = prime * result + new HashSet<>(constraints).hashCode();
         result = prime * result + new HashSet<>(indexes).hashCode();
@@ -459,10 +518,10 @@ public class PgTable extends PgStatementWithSearchPath {
 
     @Override
     public PgTable shallowCopy() {
-        PgTable tableDst = new PgTable(getName(), getRawStatement(), getSearchPath());
-        tableDst.setClusterIndexName(getClusterIndexName());
+        PgTable tableDst = new PgTable(getName(), getRawStatement());
         tableDst.setTablespace(getTablespace());
         tableDst.setWith(getWith());
+        tableDst.setClustered(isClustered());
         for(Entry<String, String> inh : inherits) {
             tableDst.addInherits(inh.getKey(), inh.getValue());
         }
@@ -498,5 +557,10 @@ public class PgTable extends PgStatementWithSearchPath {
         }
         
         return copy;
+    }
+    
+    @Override
+    public PgSchema getContainingSchema() {
+        return (PgSchema)this.getParent();
     }
 }

@@ -145,7 +145,7 @@ public final class PrivilegeParser {
             break;
             
         case "FUNCTION":
-            PgFunction tmp = new PgFunction(objName, null, null);
+            PgFunction tmp = new PgFunction(objName, null);
             CreateFunctionParser.parseArguments(p, tmp);
             CreateFunctionParser.parseReturns(p, tmp);
             

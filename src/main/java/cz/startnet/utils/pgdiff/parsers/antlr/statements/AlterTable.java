@@ -9,6 +9,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_actionContext;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
+import cz.startnet.utils.pgdiff.schema.PgIndex;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 
@@ -33,16 +34,14 @@ public class AlterTable extends ParserAbstract {
         
         List<String> sequences = new ArrayList<>();
         for (Table_actionContext tablAction : ctx.table_action()) {
-
+            PgStatement st = null;
             if (tablAction.owner_to() != null) {
-                if (tabl != null) {
-                    tabl.setOwner(tablAction.owner_to().name.getText());
-                } else if (db.getSchema(schemaName).getSequence(name) != null) {
-                    db.getSchema(schemaName).getSequence(name)
-                            .setOwner(tablAction.owner_to().name.getText());
-                } else if (db.getSchema(schemaName).getView(name) != null) {
-                    db.getSchema(schemaName).getView(name)
-                            .setOwner(tablAction.owner_to().name.getText());
+                if ((st = tabl) != null) {
+                    fillOwnerTo(tablAction.owner_to(), st);
+                } else if ((st = db.getSchema(schemaName).getSequence(name)) != null) {
+                    fillOwnerTo(tablAction.owner_to(), st);
+                } else if ((st = db.getSchema(schemaName).getView(name)) != null) {
+                    fillOwnerTo(tablAction.owner_to(), st);
                 }
             }
             if (tabl == null) {
@@ -64,7 +63,14 @@ public class AlterTable extends ParserAbstract {
                 tabl.addConstraint(constr);
             }
             if (tablAction.index_name != null) {
-                tabl.setClusterIndexName(getFullCtxText(tablAction.index_name));
+                String indexName = getName(tablAction.index_name);
+                PgIndex index = tabl.getIndex(indexName);
+                if (index == null) {
+                    logError(indexName, schemaName);
+                } else {
+                    index.setClusterIndex(true);
+                    tabl.setClustered(true);
+                }
             }
 
             if (tablAction.WITHOUT() != null && tablAction.OIDS() != null) {

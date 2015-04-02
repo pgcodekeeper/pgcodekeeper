@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
@@ -53,7 +54,7 @@ import cz.startnet.utils.pgdiff.schema.StatementActions;
  */
 public class ReferenceListener extends SQLParserBaseListener {
 
-    private String defSchema = "public";
+    private String defSchema = ApgdiffConsts.PUBLIC;
     private final Path filePath;
     private Map<Path, List<PgObjLocation>> definitions;
     private Map<Path, List<PgObjLocation>> references;
@@ -160,8 +161,8 @@ public class ReferenceListener extends SQLParserBaseListener {
         if (schemaName==null) {
             schemaName = getDefSchemaName();
         }
-        PgFunction function = new PgFunction(name, ParserAbstract.getFullCtxText(ctx.getParent()), "");
-        ParserAbstract.fillArguments(ctx.function_parameters().function_args(), function);
+        PgFunction function = new PgFunction(name, ParserAbstract.getFullCtxText(ctx.getParent()));
+        ParserAbstract.fillArguments(ctx.function_parameters().function_args(), function, getDefSchemaName());
         funcBodies.add(new FunctionBodyContainer(filePath, ctx.funct_body
                 .getStart().getStartIndex(), ctx.funct_body
                 .getStart().getLine(), ParserAbstract
@@ -231,9 +232,8 @@ public class ReferenceListener extends SQLParserBaseListener {
         }
         // function
         if (ctx.function_args() != null) {
-            PgFunction func = new PgFunction(ParserAbstract.getName(ctx.name),
-                    null, "");
-            ParserAbstract.fillArguments(ctx.function_args(), func);
+            PgFunction func = new PgFunction(ParserAbstract.getName(ctx.name), null);
+            ParserAbstract.fillArguments(ctx.function_args(), func, getDefSchemaName());
             name = func.getSignature();
             addObjReference(schemaName, name, DbObjType.FUNCTION,
                     StatementActions.COMMENT, ctx.name.getStart()
@@ -343,8 +343,8 @@ public class ReferenceListener extends SQLParserBaseListener {
         } else if (ctx.body_rule.on_function() != null) {
             type = DbObjType.FUNCTION;
             for (Function_parametersContext functparam : ctx.body_rule.on_function().obj_name) {
-                PgFunction func = new PgFunction(ParserAbstract.getName(functparam.name), null, "");
-                ParserAbstract.fillArguments(functparam.function_args(), func);
+                PgFunction func = new PgFunction(ParserAbstract.getName(functparam.name), null);
+                ParserAbstract.fillArguments(functparam.function_args(), func, getDefSchemaName());
                 addObjReference(getDefSchemaName(), func.getSignature(),
                         DbObjType.FUNCTION, StatementActions.NONE,
                         functparam.name.getStart().getStartIndex(), func
@@ -406,8 +406,8 @@ public class ReferenceListener extends SQLParserBaseListener {
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         }
-        PgFunction function = new PgFunction(name, ParserAbstract.getFullCtxText(ctx.getParent()), "");
-        ParserAbstract.fillArguments(ctx.function_parameters().function_args(), function);
+        PgFunction function = new PgFunction(name, ParserAbstract.getFullCtxText(ctx.getParent()));
+        ParserAbstract.fillArguments(ctx.function_parameters().function_args(), function, getDefSchemaName());
         addObjReference(schemaName, function.getSignature(),
                 DbObjType.FUNCTION, StatementActions.ALTER,
                 ctx.function_parameters().name.getStart().getStartIndex(),
@@ -516,7 +516,12 @@ public class ReferenceListener extends SQLParserBaseListener {
             type = DbObjType.VIEW;
         } else if (ctx.INDEX() != null) {
             type = DbObjType.INDEX;
+        } else if (ctx.DOMAIN() != null) {
+            type = DbObjType.DOMAIN;
+        } else if (ctx.TYPE() != null) {
+            type = DbObjType.TYPE;
         }
+        
         for (Schema_qualified_nameContext objName : ctx
                 .if_exist_names_restrict_cascade().names_references().name) {
             int offset=0;
@@ -570,8 +575,8 @@ public class ReferenceListener extends SQLParserBaseListener {
                             .getStartIndex(), 0, name.getStart()
                             .getLine());
         }
-        PgFunction func = new PgFunction(ParserAbstract.getName(name), "", "");
-        ParserAbstract.fillArguments(ctx.function_parameters().function_args(), func);
+        PgFunction func = new PgFunction(ParserAbstract.getName(name), "");
+        ParserAbstract.fillArguments(ctx.function_parameters().function_args(), func, getDefSchemaName());
         addObjReference(schemaName, func.getSignature(), DbObjType.FUNCTION,
                 StatementActions.DROP, name.getStart().getStartIndex()
                         + offset, func.getBareName().length(), name.getStart().getLine());

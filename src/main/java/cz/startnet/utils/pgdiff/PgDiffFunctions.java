@@ -6,15 +6,12 @@
 package cz.startnet.utils.pgdiff;
 
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.Set;
 
+import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
-import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTrigger;
 
 /**
  * Diffs functions.
@@ -32,7 +29,7 @@ public final class PgDiffFunctions {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void createFunctions(final PgDiffScript script,
+    public static void createFunctions(final DepcyResolver depRes,
             final PgDiffArguments arguments, final PgSchema oldSchema,
             final PgSchema newSchema, final SearchPathHelper searchPathHelper) {
         // Add new functions and replace modified functions
@@ -45,12 +42,9 @@ public final class PgDiffFunctions {
                 oldFunction = oldSchema.getFunction(newFunction.getSignature());
             }
 
-            if ((oldFunction == null) || !newFunction.equalsWhitespace(
-                    oldFunction, arguments.isIgnoreFunctionWhitespace())) {
-                PgDiff.addUniqueDependenciesOnCreateEdit(script, arguments, searchPathHelper, newFunction);
-                
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeCreationSql(script, null, newFunction, true);
+            if ((oldFunction == null) || !newFunction.compareWithoutComments(
+                    oldFunction)) {
+                depRes.addCreateStatements(newFunction);
             }
         }
     }
@@ -63,7 +57,7 @@ public final class PgDiffFunctions {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void dropFunctions(final PgDiffScript script,
+    public static void dropFunctions(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -73,33 +67,7 @@ public final class PgDiffFunctions {
         // Drop functions that exist no more
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
             if (needsDrop(oldFunction, newSchema)) {
-                Set<PgStatement> dependantsSet = new LinkedHashSet<>();
-                PgDiff.getDependantsSet(oldFunction, dependantsSet);
-                PgStatement[] dependants = dependantsSet.toArray(
-                        new PgStatement[dependantsSet.size()]);
-
-                // drop dependants in reverse first
-                for (int i = dependants.length - 1; i >= 0; --i) {
-                    PgStatement depnt = dependants[i];
-                    
-                    if (depnt instanceof PgTrigger) {
-                        PgDiff.tempSwitchSearchPath(
-                                depnt.getParent().getParent().getName(),
-                                searchPathHelper, script);
-                        PgDiff.writeDropSql(script,
-                                "-- DEPCY: This trigger depends on the function"
-                                + " we are about to drop: " + oldFunction.getName(),
-                                depnt);
-                    }
-                }
-                
-                searchPathHelper.outputSearchPath(script);
-                PgDiff.writeDropSql(script, null, oldFunction);
-                
-                // no re-creation because the only dependants we have so far are triggers
-                // trigger funcs cannot change in a way that will require a drop+create
-                // that is they never have arguments and always have the return type of TRIGGER
-                // add dependants re-creation if necessary at a later point
+                depRes.addDropStatements(oldFunction);
             }
         }
     }
@@ -107,6 +75,11 @@ public final class PgDiffFunctions {
     private static boolean needsDrop(PgFunction oldFunction, PgSchema newSchema) {
         PgFunction newFunction = newSchema.getFunction(oldFunction.getSignature());
         
+        return needDrop(oldFunction, newFunction);
+    }
+
+    public static boolean needDrop(PgFunction oldFunction,
+            PgFunction newFunction) {
         if (newFunction == null || 
                 !Objects.equals(oldFunction.getReturns(), newFunction.getReturns())) {
             return true;
@@ -128,7 +101,9 @@ public final class PgDiffFunctions {
             // [IN]OUT args that change their names implicitly change the function's
             // return type due to it being "SETOF record" in case of
             // multiple [IN]OUT args present
-            if (argOld.getMode() != null && argOld.getMode().endsWith("OUT") &&
+            
+            // actually any argument name change requires drop
+            if (/*argOld.getMode() != null && argOld.getMode().endsWith("OUT") &&*/
                     !Objects.equals(argOld.getName(), argNew.getName())) {
                 return true;
             }
@@ -145,7 +120,7 @@ public final class PgDiffFunctions {
      * @param newSchema        new schema
      * @param searchPathHelper search path helper
      */
-    public static void alterComments(final PgDiffScript script,
+    public static void alterComments(final DepcyResolver depRes,
             final PgSchema oldSchema, final PgSchema newSchema,
             final SearchPathHelper searchPathHelper) {
         if (oldSchema == null) {
@@ -153,14 +128,8 @@ public final class PgDiffFunctions {
         }
 
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
-            final PgFunction newFunction =
-                    newSchema.getFunction(oldFunction.getSignature());
-
-            if (newFunction == null) {
-                continue;
-            }
-
-            PgDiff.diffComments(oldFunction, newFunction, script);
+            depRes.appendAlter(oldFunction,
+                    newSchema.getFunction(oldFunction.getName()));
         }
     }
 

@@ -26,7 +26,7 @@ public class CreateDomain extends ParserAbstract {
         if (schemaName == null) {
             schemaName = getDefSchemaName();
         }
-        PgDomain domain = new PgDomain(name, getFullCtxText(ctx.getParent()), db.getDefSearchPath());
+        PgDomain domain = new PgDomain(name, getFullCtxText(ctx.getParent()));
         domain.setDataType(getFullCtxText(ctx.dat_type));
         for (Collate_identifierContext coll : ctx.collate_identifier()) {
             domain.setCollation(getFullCtxText(coll.collation));
