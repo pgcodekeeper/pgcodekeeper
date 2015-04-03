@@ -54,7 +54,25 @@ public class PgDiffTestDepcies {
                 // долгий тест накатывает перемещение объектов из одной
                 // схемы в другую, пользователь выбирает все измененные
                 // объекты для наката
-                {"move_object_between_schemas", "move_object_between_schemas"}
+                {"move_object_between_schemas", "move_object_between_schemas"},
+                // тестирует накат только измененных колонок, пользователь выбирает таблицу
+                {"multi_alter_table", "multi_alter_table_usr_t_house"},
+                // пользователь выбирает только v_house
+                {"multi_alter_table", "multi_alter_table_usr_v_house"},
+                // пользователь выбирает только v_house_w
+                {"multi_alter_table", "multi_alter_table_usr_v_house_w"},
+                // пользователь выбирает только функцию update_house_reached
+                {"multi_alter_table", "multi_alter_table_usr_func"},
+                // пользователь выбрал: функцию update_house_reached, v_house, v_house_w, t_house
+                {"multi_alter_table", "multi_alter_table_usr_all"},
+                // накат триггера и функции из разных схем, пользователь выбрал только функцию 
+                {"trigger_before_insert", "trigger_before_insert_usr_funct"},
+                // пользователь выбрал только триггер
+                {"trigger_before_insert", "trigger_before_insert_usr_trig"},
+                // пользователь выбрал триггер и функцию
+                {"trigger_before_insert", "trigger_before_insert_usr_all"},
+                // задача из редмайна по номеру, пользователь выбирает все объекты
+                {"err6049", "err6049"}
             });
     }
     
