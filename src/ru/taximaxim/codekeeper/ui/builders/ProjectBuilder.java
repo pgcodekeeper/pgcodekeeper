@@ -26,7 +26,18 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
         if (!proj.hasNature(NATURE.ID)) {
             return null;
         }
-        final PgDbParser parser = PgDbParser.getParser(proj);
+        PgDbParser parser = null;
+        try {
+            parser = PgDbParser.getParserForBuilder(proj, monitor);
+        } catch (InterruptedException ex) {
+            // cancelled
+        } finally {
+            // parser loaded from scratch or cancelled in the process
+            // no futher changes to load
+            if (parser == null) {
+                return new IProject[] { proj };
+            }
+        }
         
         switch (kind) {
         case IncrementalProjectBuilder.AUTO_BUILD:

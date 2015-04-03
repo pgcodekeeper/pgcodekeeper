@@ -73,6 +73,24 @@ public class PgDbParser implements IResourceChangeListener {
         return parser;
     }
     
+    /**
+     * @return existing parser or null if parser was fully created by this call
+     * @throws InterruptedException
+     */
+    public static PgDbParser getParserForBuilder(IProject proj, IProgressMonitor builderMonitor)
+            throws InterruptedException {
+        PgDbParser parser = PROJ_PARSERS.get(proj);
+        if (parser != null) {
+            return parser;
+        }
+        
+        parser = new PgDbParser(proj);
+        parser.getFullDBFromDirectory(proj.getLocationURI(), builderMonitor);
+        PROJ_PARSERS.put(proj, parser);
+        // signify newly loaded parser
+        return null;
+    }
+    
     public static PgDbParser getRollOnParser(InputStream input,
             String scriptFileEncoding, IProgressMonitor monitor,
             List<FunctionBodyContainer> funcBodies) throws InterruptedException {
