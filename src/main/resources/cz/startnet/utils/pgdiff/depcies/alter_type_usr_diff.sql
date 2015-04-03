@@ -1,0 +1,2 @@
+ALTER TYPE ty1
+	ADD VALUE 'z' AFTER 'd';

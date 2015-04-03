@@ -83,9 +83,17 @@ public class PgDiffTestDepcies {
                 // TODO здесь ошибка не должно
                 // быть добавления колонки исправится правильной реализацией
                 // inherits
-                {"table_inherits", "table_inherits_usr_t2"}
-                
-                
+                {"table_inherits", "table_inherits_usr_t2"},
+                // колонка меняет тип на новый, пользователь выбрал только тип
+                {"chg_col_type", "chg_col_type_usr_dom2"},
+                // колонка меняет тип на новый, пользователь выбрал только таблицу
+                {"chg_col_type", "chg_col_type_usr_t1"},
+                // колонка меняет тип на новый, пользователь выбрал таблицу и тип
+                {"chg_col_type", "chg_col_type_usr_all"},
+                // тип изменяется как альтер, пользователь выбрал его
+                {"alter_type", "alter_type_usr"},
+                // тип изменяется через drop create, пользователь выбирает его
+                {"drop_type", "drop_type_usr"}
             });
     }
     
