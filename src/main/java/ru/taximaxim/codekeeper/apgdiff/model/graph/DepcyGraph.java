@@ -298,7 +298,12 @@ public class DepcyGraph {
                 }
                 
                 PgColumn clmn = tbl.getColumn(clmnName);
-                testNotNull(scm, MessageFormat.format(Messages.View_CannotFindColumn,
+                // TODO реализовать нормально inherits сейчас колонка с inherits
+                // не содержить элементов
+                if (clmn == null) {
+                    continue;    
+                }
+                testNotNull(clmn, MessageFormat.format(Messages.View_CannotFindColumn,
                         view.getName(), scm.getName(), tblName, clmnName));
                 graph.addEdge(view, clmn);
                 continue;
