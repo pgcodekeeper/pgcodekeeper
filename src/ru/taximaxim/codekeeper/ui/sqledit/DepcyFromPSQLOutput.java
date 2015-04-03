@@ -123,6 +123,7 @@ public class DepcyFromPSQLOutput implements IEditorInput, IStorageEditorInput {
         return addDepcy.isEmpty();
     }
     
+    // currently cannot be cancelled because of antlr 
     public void updateParser(IProgressMonitor monitor)
             throws CoreException, InterruptedException {
         List<Listener> listener = new ArrayList<>();

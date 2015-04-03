@@ -44,6 +44,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                 parser.getObjFromProject(monitor);
             } catch (InterruptedException ex) {
                 // cancelled
+                break;
             }
             break;
         }

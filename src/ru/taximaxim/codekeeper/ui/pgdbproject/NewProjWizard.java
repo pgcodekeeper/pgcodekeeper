@@ -147,7 +147,7 @@ public class NewProjWizard extends Wizard
             
             if (pageRepo.isDoInit()) {
                 try {
-                    getContainer().run(false, false,
+                    getContainer().run(true, true,
                             new InitProjectFromSource(mainPrefStore, props,
                                     pageDb.getDumpPath(), pageDb.getDbPass()));
                 } catch (InvocationTargetException ex) {
@@ -157,11 +157,8 @@ public class NewProjWizard extends Wizard
                                     ex);
                     return false;
                 } catch (InterruptedException ex) {
-                    // assume run() was called as non cancelable
+                    // cancelled
                     props.deleteFromWorkspace();
-                    ExceptionNotifier.notifyDefault(
-                            Messages.newProjWizard_project_initializer_thread_interrupted,
-                                    ex);
                     return false;
                 }
             } else if (!new File(new File(pageRepo.getLocationURI()),
@@ -179,8 +176,7 @@ public class NewProjWizard extends Wizard
             try {
                 props.getProject().setDefaultCharset(pageMisc.getEncoding(), null);
             } catch (CoreException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
+                Log.log(e1);
             }
             try {
                 PgDbProject.addNatureToProject(props.getProject());

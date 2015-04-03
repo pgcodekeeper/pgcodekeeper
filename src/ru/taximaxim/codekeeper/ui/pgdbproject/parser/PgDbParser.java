@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.ui.Log;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
@@ -94,7 +95,7 @@ public class PgDbParser implements IResourceChangeListener {
         try {
             charset = proj.getDefaultCharset(true);
         } catch (CoreException e) {
-            // ignore
+            Log.log(e);
         }
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(charset);

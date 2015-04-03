@@ -119,8 +119,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                     getContainer().run(true, true, treediffer);
                 }  catch (InvocationTargetException ex) {
                     e.doit = false;
-                    ExceptionNotifier.notifyDefault(
-                            Messages.error_in_differ_thread, ex);
+                    ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex);
                     return;
                 } catch (InterruptedException ex) {
                     // cancelled
@@ -145,16 +144,14 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                         proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
                 differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
                 try {
-                    getContainer().run(true, false, differ);
+                    getContainer().run(true, true, differ);
                 } catch (InvocationTargetException ex) {
                     e.doit = false;
                     ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex);
                     return;
                 } catch (InterruptedException ex) {
-                    // assume run() was called as non cancelable
+                    // cancelled
                     e.doit = false;
-                    ExceptionNotifier.notifyDefault(
-                            Messages.differ_thread_cancelled_shouldnt_happen, ex);
                     return;
                 }
 
