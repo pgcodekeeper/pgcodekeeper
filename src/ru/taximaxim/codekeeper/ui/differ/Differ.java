@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffScript;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
@@ -168,6 +169,8 @@ public class Differ implements IRunnableWithProgress {
         } catch (UnsupportedEncodingException ex) {
             throw new InvocationTargetException(ex, ex.getLocalizedMessage());
         }
+        
+        PgDumpLoader.checkCancelled(pm);
         pm.done();
         finished = true;
     }

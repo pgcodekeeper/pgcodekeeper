@@ -12,6 +12,7 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
 public class TreeDiffer implements IRunnableWithProgress {
@@ -68,6 +69,7 @@ public class TreeDiffer implements IRunnableWithProgress {
         pm.newChild(34).subTask(Messages.treeDiffer_building_diff_tree); // 100
         diffTree = DiffTree.create(dbSrc, dbTgt);
         
+        PgDumpLoader.checkCancelled(pm);
         pm.done();
         finished = true;
     }
