@@ -39,10 +39,23 @@ public class PgDiffTestDepcies {
      */
     @Parameters
     public static Collection<?> parameters() {
-        return Arrays.asList(
-                new Object[][]{
-                        {"empty", "empty_usr"},
-                });
+        return Arrays.asList(new Object[][] { 
+                { "empty", "empty_usr" },
+                // изменяется тип колонок у обоих таблиц, пользователь выбирает
+                // view v1
+                { "add_change_col_type", "add_change_col_type_usr_v1" },
+                // --||-- , , пользователь выбирает t1.c1
+                // TODO по зависимостям тянет дроп v1, затем при пересоздании v1
+                // тянется изменение другой колонки правильно ли?
+                { "add_change_col_type", "add_change_col_type_usr_t1_c1" },
+                // изменяется тип колонок у обоих таблиц, изменяется v1, пользователь выбирает
+                // view v2
+                {"add_v2_change_col_type", "add_v2_change_col_type_usr_v2"},
+                // долгий тест накатывает перемещение объектов из одной
+                // схемы в другую, пользователь выбирает все измененные
+                // объекты для наката
+                {"move_object_between_schemas", "move_object_between_schemas"}
+            });
     }
     
     /**
@@ -73,7 +86,7 @@ public class PgDiffTestDepcies {
     /**
      * Runs single test on original schema.
      */
-    @Test(timeout = 5000)
+    @Test(timeout = 15000)
     public void runDiffSameOriginal() throws IOException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
@@ -90,7 +103,7 @@ public class PgDiffTestDepcies {
     /**
      * Runs single test on new schema.
      */
-    @Test(timeout = 5000)
+    @Test(timeout = 15000)
     public void runDiffSameNew() throws IOException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
@@ -107,7 +120,7 @@ public class PgDiffTestDepcies {
     /**
      * Runs single test using class member variables.
      */
-    @Test(timeout = 5000)
+    @Test(timeout = 30000)
     public void runDiff() throws IOException {
         
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();

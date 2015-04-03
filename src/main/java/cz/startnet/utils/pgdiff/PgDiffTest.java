@@ -270,7 +270,7 @@ public class PgDiffTest {
                     {"drop_create_type_tbl", false},
                     // Test table domain depcy
                     {"create_dom_tbl", false},
-                    {"drop_dom_tbl", false},
+                    {"drop_dom_tbl", false}
                 });
     }
     
