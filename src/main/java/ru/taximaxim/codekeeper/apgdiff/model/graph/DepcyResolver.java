@@ -468,6 +468,67 @@ public class DepcyResolver {
             }
         }
     }
+    /**
+     * TODO костыльный метод убрать при переделке дерева TreeElement
+     * @param toCreate
+     * @return
+     */
+    public Set<PgStatement> getCreateDepcies(PgStatement toCreate) {
+        toCreate = getObjectFromDB(toCreate, newDb);
+        Set<PgStatement> depcies = new HashSet<>();
+        if (newDepcyGraph.getGraph().containsVertex(toCreate)) {
+            
+            DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
+                    newDepcyGraph.getGraph(), toCreate);
+            customIteration(dfi, new DepcyIterator(depcies));
+        }
+        return depcies;
+    }
+    
+    /**
+     * TODO костыльный метод убрать при переделке дерева TreeElement
+     * Внимание, DTE ждет что элементы для редактирования будут из новой базы!!! 
+     * @param toDrop
+     * @return
+     */
+    public Set<PgStatement> getAlterDepcies(PgStatement toDrop) {
+        toDrop = getObjectFromDB(toDrop, newDb);
+        Set<PgStatement> depcies = new HashSet<>();
+        if (newDepcyGraph.getReversedGraph().containsVertex(toDrop)) {
+            DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
+                    newDepcyGraph.getReversedGraph(), toDrop);
+            customIteration(dfi, new DepcyIterator(depcies));
+        }
+        return depcies;
+    }
+    /**
+     * TODO костыльный метод убрать при переделке дерева TreeElement
+     * @param toDrop
+     * @return
+     */
+    public Set<PgStatement> getDropDepcies(PgStatement toDrop) {
+        toDrop = getObjectFromDB(toDrop, oldDb);
+        Set<PgStatement> depcies = new HashSet<>();
+        if (oldDepcyGraph.getReversedGraph().containsVertex(toDrop)) {
+            DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
+                    oldDepcyGraph.getReversedGraph(), toDrop);
+            customIteration(dfi, new DepcyIterator(depcies));
+        }
+        return depcies;
+    }
+    
+    private class DepcyIterator extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
+        Set<PgStatement> depcies = new HashSet<>();
+        
+        public DepcyIterator(Set<PgStatement> depcies) {
+            this.depcies = depcies;
+        }
+        @Override
+        public void vertexFinished(VertexTraversalEvent<PgStatement> e) {
+            depcies.add(e.getVertex());
+        }
+    }
+    
     
     /**
      * Используется для прохода по графу зависимостей для формирования

@@ -128,12 +128,11 @@ public class DepcyTreeExtender {
         if (filtered.getSide() != DiffSide.LEFT && 
                 filtered.getType() != DbObjType.CONTAINER && 
                 (markedToCreate = filtered.getPgStatement(dbTarget)) != null){
+            
             if (filtered.getSide() == DiffSide.BOTH) {
-                depRes.addAlterStatements(markedToCreate);
-                depcySet.addAll(depRes.getOrderedDepcies(StatementActions.ALTER));
+                depcySet.addAll(depRes.getAlterDepcies(markedToCreate));
             } else {
-                depRes.addCreateStatements(markedToCreate);
-                depcySet.addAll(depRes.getOrderedDepcies(StatementActions.CREATE));
+                depcySet.addAll(depRes.getCreateDepcies(markedToCreate));
             }
         }
         
@@ -156,8 +155,7 @@ public class DepcyTreeExtender {
                 filtered.getType() != DbObjType.CONTAINER && 
                 filtered.getType() != DbObjType.SEQUENCE && 
                 (markedToDelete = filtered.getPgStatement(dbSource)) != null){
-            depRes.addDropStatements(markedToDelete);
-            dependantsOfDeleted.addAll(depRes.getOrderedDepcies(StatementActions.DROP));
+            dependantsOfDeleted.addAll(depRes.getDropDepcies(markedToDelete));
         }
         
         for(TreeElement child : filtered.getChildren()) {
@@ -372,8 +370,21 @@ public class DepcyTreeExtender {
                 continue;
             }
             PgStatement elementInDb = element.getPgStatement(db);
-            if (elementInDb != null && dependencies.contains(elementInDb)){
-                result.add(element);
+            if (elementInDb != null) {
+                // TODO костыль, т.к. в TreeElement колонки представлены
+                // таблицей, нужно перековырять всю таблицу в посках измененной
+                // колонки
+                if (elementInDb.getStatementType() == DbObjType.TABLE) {
+                    for (PgColumn col : ((PgTable) elementInDb).getColumns()) {
+                        if (dependencies.contains(col)) {
+                            result.add(element);
+                            break;
+                        }
+                    }
+                }
+                if (dependencies.contains(elementInDb)) {
+                    result.add(element);
+                }
             }
         }
         return result;
