@@ -44,7 +44,7 @@ public class CreateView extends ParserAbstract {
             view.setSelect(parseSelect(ctx.v_query));
         }
         if (ctx.column_name != null) {
-            for (String column : getNames(ctx.column_name.name)) {
+            for (String column : getNames(ctx.column_name.names_references().name)) {
                 view.addColumnName(column);
             }
         }
