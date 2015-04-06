@@ -487,22 +487,6 @@ public class DepcyResolver {
     
     /**
      * TODO костыльный метод убрать при переделке дерева TreeElement
-     * Внимание, DTE ждет что элементы для редактирования будут из новой базы!!! 
-     * @param toDrop
-     * @return
-     */
-    public Set<PgStatement> getAlterDepcies(PgStatement toDrop) {
-        toDrop = getObjectFromDB(toDrop, newDb);
-        Set<PgStatement> depcies = new HashSet<>();
-        if (newDepcyGraph.getReversedGraph().containsVertex(toDrop)) {
-            DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                    newDepcyGraph.getReversedGraph(), toDrop);
-            customIteration(dfi, new DepcyIterator(depcies));
-        }
-        return depcies;
-    }
-    /**
-     * TODO костыльный метод убрать при переделке дерева TreeElement
      * @param toDrop
      * @return
      */
@@ -525,7 +509,10 @@ public class DepcyResolver {
         }
         @Override
         public void vertexFinished(VertexTraversalEvent<PgStatement> e) {
-            depcies.add(e.getVertex());
+            PgStatement statement = e.getVertex();
+            if (statement.getStatementType() != DbObjType.DATABASE) {
+                depcies.add(statement);
+            }
         }
     }
     

@@ -22,7 +22,6 @@ import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 public class DepcyTreeExtender {
     private final Set<PgStatement> dependantsOfDeleted = new HashSet<>();
@@ -128,12 +127,7 @@ public class DepcyTreeExtender {
         if (filtered.getSide() != DiffSide.LEFT && 
                 filtered.getType() != DbObjType.CONTAINER && 
                 (markedToCreate = filtered.getPgStatement(dbTarget)) != null){
-            
-            if (filtered.getSide() == DiffSide.BOTH) {
-                depcySet.addAll(depRes.getAlterDepcies(markedToCreate));
-            } else {
-                depcySet.addAll(depRes.getCreateDepcies(markedToCreate));
-            }
+            depcySet.addAll(depRes.getCreateDepcies(markedToCreate));
         }
         
         for(TreeElement child : filtered.getChildren()) {
