@@ -48,19 +48,22 @@ public class SQLEditorTemplateAssistProcessor extends
     protected String extractPrefix(ITextViewer viewer, int offset) {
         int i = offset;
         IDocument document = viewer.getDocument();
-        if (i > document.getLength())
+        if (i > document.getLength()) {
             return ""; //$NON-NLS-1$
+        }
         try {
             while (i > 0) {
                 char ch = document.getChar(i - 1);
-                if (!Character.isJavaIdentifierPart(ch))
+                if (!Character.isJavaIdentifierPart(ch)) {
                     break;
+                }
                 i--;
             }
             if (i > 0) {
                 int j = i;
-                if (document.getChar(j - 1) == '<')
+                if (document.getChar(j - 1) == '<') {
                     i--;
+                }
             }
             return document.get(i, offset - i);
         } catch (BadLocationException e) {
