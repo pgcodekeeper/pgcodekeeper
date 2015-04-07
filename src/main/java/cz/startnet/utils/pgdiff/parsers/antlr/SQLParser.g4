@@ -1860,7 +1860,7 @@ limit_clause
   ;
 
 null_ordering
-  : NULL (FIRST | LAST)
+  : NULLS (FIRST | LAST)
   ;
 
 /*
