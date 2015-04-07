@@ -39,10 +39,10 @@ public class AddBuilder extends AbstractHandler implements IHandler {
     public static void addBuilder(final IProject project) {
         try {
             // verify already registered builders
-            if (hasBuilder(project))
+            if (hasBuilder(project)) {
                 // already enabled
                 return;
-
+            }
             // add builder to project properties
             IProjectDescription description = project.getDescription();
             final ICommand buildCommand = description.newCommand();
@@ -77,8 +77,9 @@ public class AddBuilder extends AbstractHandler implements IHandler {
         try {
             for (final ICommand buildSpec : project.getDescription()
                     .getBuildSpec()) {
-                if (BUILDER.ID.equals(buildSpec.getBuilderName()))
+                if (BUILDER.ID.equals(buildSpec.getBuilderName())) {
                     return true;
+                }
             }
         } catch (final CoreException e) {
             Log.log(Log.LOG_ERROR, "Cannot determine project builder", e); //$NON-NLS-1$

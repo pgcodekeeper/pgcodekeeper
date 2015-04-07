@@ -17,8 +17,9 @@ public class BuilderTester extends PropertyTester {
             final IProject project = (IProject) Platform.getAdapterManager()
                     .getAdapter(receiver, IProject.class);
 
-            if (project != null)
+            if (project != null) {
                 return AddBuilder.hasBuilder(project);
+            }
         }
 
         return false;
