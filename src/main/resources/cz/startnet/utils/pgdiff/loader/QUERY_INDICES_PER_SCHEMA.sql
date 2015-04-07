@@ -16,3 +16,4 @@ WHERE ccc.relkind = 'r'
     AND i.indisprimary = FALSE
     AND i.indisexclusion = FALSE
     AND cons.conindid is NULL
+ORDER BY relname
