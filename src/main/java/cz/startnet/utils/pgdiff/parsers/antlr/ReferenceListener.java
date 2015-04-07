@@ -528,8 +528,9 @@ public class ReferenceListener extends SQLParserBaseListener {
             String schemaName = ParserAbstract.getSchemaName(objName);
             if (schemaName == null) {
                 if (type != DbObjType.EXTENSION 
-                        && type != DbObjType.SCHEMA)
+                        && type != DbObjType.SCHEMA) {
                 schemaName = getDefSchemaName();
+                }
             } else {
                 offset = schemaName.length() + 1;
                 addObjReference(null, schemaName, DbObjType.SCHEMA,
