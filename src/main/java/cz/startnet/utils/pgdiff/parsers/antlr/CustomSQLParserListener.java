@@ -26,6 +26,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_view_statementCon
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Index_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statementContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Set_statement_valueContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterDomain;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterFunction;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.AlterSchema;
@@ -45,9 +46,7 @@ import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTable;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateTrigger;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateType;
 import cz.startnet.utils.pgdiff.parsers.antlr.statements.CreateView;
-import cz.startnet.utils.pgdiff.parsers.antlr.statements.Set;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
-import cz.startnet.utils.pgdiff.schema.PgSet;
 
 public class CustomSQLParserListener extends SQLParserBaseListener {
 
@@ -134,10 +133,10 @@ public class CustomSQLParserListener extends SQLParserBaseListener {
     
     @Override
     public void exitSet_statement(Set_statementContext ctx) {
-        PgSet set = (PgSet)new Set(ctx, db, filePath).getObject();
-        if (set.getParam().equalsIgnoreCase("search_path")) {
-            for (String value : set.getValues()) {
-                db.setDefaultSchema(ParserUtils.getObjectName(value));
+        String confParam = ctx.config_param.getText();
+        if (confParam.equalsIgnoreCase("search_path")) {
+            for (Set_statement_valueContext value :  ctx.config_param_val) {
+                db.setDefaultSchema(ParserUtils.getObjectName(value.getText()));
                 break;
             }
         }
