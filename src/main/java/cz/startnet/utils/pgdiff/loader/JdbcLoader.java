@@ -108,7 +108,7 @@ public class JdbcLoader implements PgCatalogStrings {
         this.args = pgDiffArguments;
     }
 
-    public PgDatabase getDbFromJdbc(IProgressMonitor mon) throws IOException{
+    public PgDatabase getDbFromJdbc(IProgressMonitor mon) throws IOException, InterruptedException{
         monitor = mon == null ? new NullProgressMonitor() : SubMonitor.convert(mon, 1);
         PgDatabase d = new PgDatabase();
         d.setArguments(args);
@@ -142,7 +142,7 @@ public class JdbcLoader implements PgCatalogStrings {
                 while (res.next()) {
                     Log.log(Log.LOG_INFO, "Querying objects for schema " + res.getString(NAMESPACE_NSPNAME));
                     prepareDataForSchema(res.getLong(OID));
-                    
+                    PgDumpLoader.checkCancelled(monitor);
                     PgSchema schema = getSchema(res);
                     if (res.getString(NAMESPACE_NSPNAME).equals(ApgdiffConsts.PUBLIC)){
                         d.replaceSchema(d.getSchema(ApgdiffConsts.PUBLIC), schema);
@@ -156,6 +156,7 @@ public class JdbcLoader implements PgCatalogStrings {
             try(Statement stmnt = connection.createStatement(); 
                     ResultSet res = stmnt.executeQuery(JdbcQueries.QUERY_EXTENSIONS)){
                 while(res.next()){
+                    PgDumpLoader.checkCancelled(monitor);
                     PgExtension extension = getExtension(res);
                     monitor.worked(1);
                     if (extension != null){
@@ -275,7 +276,7 @@ public class JdbcLoader implements PgCatalogStrings {
         }
     }
     
-    private PgSchema getSchema(ResultSet res) throws SQLException, UnsupportedEncodingException{
+    private PgSchema getSchema(ResultSet res) throws SQLException, UnsupportedEncodingException, InterruptedException{
         String schemaName = res.getString(NAMESPACE_NSPNAME);
         Long schemaOid = res.getLong(OID);
         PgSchema s = new PgSchema(schemaName, "");
@@ -299,7 +300,8 @@ public class JdbcLoader implements PgCatalogStrings {
         // TYPES
         prepStatTypes.setLong(1, schemaOid);
         try(ResultSet resTypes = prepStatTypes.executeQuery()){
-            while (resTypes.next()) {                
+            while (resTypes.next()) {
+                PgDumpLoader.checkCancelled(monitor);
                 PgStatement typeOrDomain = getTypeDomain(resTypes, schemaName);
                 monitor.worked(1);
                 if (typeOrDomain != null){
@@ -315,7 +317,8 @@ public class JdbcLoader implements PgCatalogStrings {
         // TABLES
         prepStatTables.setLong(1, schemaOid);
         try(ResultSet resTables = prepStatTables.executeQuery()){
-            while (resTables.next()) {                
+            while (resTables.next()) {     
+                PgDumpLoader.checkCancelled(monitor);
                 PgTable table = getTable(resTables, schemaName);
                 monitor.worked(1);
                 if (table != null){
@@ -329,6 +332,7 @@ public class JdbcLoader implements PgCatalogStrings {
         prepStatConstraints.setLong(1, schemaOid);
         try(ResultSet resConstraints = prepStatConstraints.executeQuery()){
             while (resConstraints.next()){
+                PgDumpLoader.checkCancelled(monitor);
                 table = s.getTable(resConstraints.getString(CLASS_RELNAME));
                 if (table != null){
                     PgConstraint constraint = getConstraint(resConstraints, schemaName, table.getName());
@@ -343,6 +347,7 @@ public class JdbcLoader implements PgCatalogStrings {
         prepStatIndices.setLong(1, schemaOid);
         try(ResultSet resIndecies = prepStatIndices.executeQuery()){
             while (resIndecies.next()){
+                PgDumpLoader.checkCancelled(monitor);
                 table = s.getTable(resIndecies.getString("table_name"));
                 if (table != null){
                     PgIndex index = getIndex(resIndecies, table.getName());
@@ -359,6 +364,7 @@ public class JdbcLoader implements PgCatalogStrings {
         prepStatTriggers.setLong(1, schemaOid);
         try(ResultSet resTriggers = prepStatTriggers.executeQuery()){
             while(resTriggers.next()){
+                PgDumpLoader.checkCancelled(monitor);
                 table = s.getTable(resTriggers.getString(CLASS_RELNAME));
                 if (table != null){
                     PgTrigger trigger = getTrigger(resTriggers, schemaName);
@@ -373,6 +379,7 @@ public class JdbcLoader implements PgCatalogStrings {
         prepStatViews.setLong(1, schemaOid);
         try(ResultSet resViews = prepStatViews.executeQuery()){
             while (resViews.next()) {
+                PgDumpLoader.checkCancelled(monitor);
                 PgView view = getView(resViews, schemaName);
                 monitor.worked(1);
                 if (view != null){
@@ -385,6 +392,7 @@ public class JdbcLoader implements PgCatalogStrings {
         prepStatFunctions.setLong(1, schemaOid);
         try(ResultSet resFuncs = prepStatFunctions.executeQuery()){
             while (resFuncs.next()){
+                PgDumpLoader.checkCancelled(monitor);
                 PgFunction function = getFunction(resFuncs, schemaName);
                 if (function != null){
                     s.addFunction(function);
@@ -396,6 +404,7 @@ public class JdbcLoader implements PgCatalogStrings {
         prepStatSequences.setLong(1, schemaOid);
         try(ResultSet resSeq = prepStatSequences.executeQuery()){
             while(resSeq.next()){
+                PgDumpLoader.checkCancelled(monitor);
                 PgSequence sequence = getSequence(resSeq, schemaName);
                 monitor.worked(1);
                 if (sequence != null){
@@ -585,7 +594,10 @@ public class JdbcLoader implements PgCatalogStrings {
             for (int i = 0; i < attnames.length; ++i) {
                 PgColumn a = new PgColumn(attnames[i]);
                 StringBuilder sbDef = new StringBuilder(atttypes[i]);
-                if (attcollations[i] != 0 && attcollations[i] != atttypcollations[i]) {
+                
+                // unbox
+                long attcollation = attcollations[i]; 
+                if (attcollation != 0 && attcollation != atttypcollations[i]) {
                     sbDef.append(" COLLATE ")
                             .append(PgDiffUtils.getQuotedName(attcollationnspnames[i]))
                             .append('.')
@@ -877,8 +889,13 @@ public class JdbcLoader implements PgCatalogStrings {
         String[] colComments = (String[])res.getArray("col_comments").getArray();
         Integer[] colTypeMod = (Integer[])res.getArray("col_typemod").getArray();
         Boolean[] colNotNull = (Boolean[])res.getArray("col_notnull").getArray();
+        Long[] colCollation = (Long[])res.getArray("col_collation").getArray();
+        Long[] colTypCollation = (Long[])res.getArray("col_typcollation").getArray();
+        String[] colCollationName = (String[])res.getArray("col_collationname").getArray();
+        String[] colCollationSchema = (String[])res.getArray("col_collationnspname").getArray();
         for (int i = 0; i < colNumbers.length; i++) {
             if (colNumbers[i] < 1){
+                // system columns
                 continue;
             }
             
@@ -928,6 +945,13 @@ public class JdbcLoader implements PgCatalogStrings {
                 }
             }
             String columnTypeName = columnType.getFullName(schemaName, typMod);
+            
+            // unbox
+            long collation = colCollation[i];
+            if (collation != 0 && collation != colTypCollation[i]) {
+                columnTypeName += " COLLATE " + PgDiffUtils.getQuotedName(colCollationSchema[i])
+                        + '.' + PgDiffUtils.getQuotedName(colCollationName[i]);
+            }
             column.setType(columnTypeName);
             
             String columnDefault = colDefaults[i];

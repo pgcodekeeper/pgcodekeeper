@@ -29,7 +29,7 @@ public class CreateIndex extends ParserAbstract {
         ind.setUnique(ctx.UNIQUE() != null);
         if (name != null) {
             if (db.getSchema(schemaName) == null) {
-                logSkipedObject(schemaName, "TRIGGER", ind.getTableName());
+                logSkipedObject(schemaName, "INDEX", ind.getTableName());
                 return null;
             } else if(db.getSchema(schemaName).getTable(ind.getTableName()) == null) {
                 Log.log(Log.LOG_ERROR,

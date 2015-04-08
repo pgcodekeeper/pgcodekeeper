@@ -30,19 +30,11 @@ public abstract class ParserClass {
     
     protected ParserClass(IProgressMonitor monitor, int monitoringLevel) {
         this.monitor = monitor;
-        this.monitoringLevel = monitoringLevel > 0 ? monitoringLevel : 1;
+        this.monitoringLevel = monitoringLevel;
     }
     
     public abstract PgDatabase parse(InputStream inputStream, PgDiffArguments arguments,
-            PgDatabase database, Path path);
-
-    public void setMonitor(IProgressMonitor monitor) {
-        this.monitor = monitor;
-    }
-
-    public void setMonitoringLevel(int monitoringLevel) {
-        this.monitoringLevel = monitoringLevel;
-    }
+            PgDatabase database, Path path) throws InterruptedException;
 }
 
 class ParserClassAntlr extends ParserClass {
@@ -53,7 +45,8 @@ class ParserClassAntlr extends ParserClass {
     
     @Override
     public PgDatabase parse(InputStream inputStream, PgDiffArguments arguments,
-            PgDatabase database, Path path) {
+            PgDatabase database, Path path) throws InterruptedException {
+        PgDumpLoader.checkCancelled(monitor);
         return PgDumpLoader.loadDatabaseSchemaCoreAntLR(
                 inputStream, arguments, database, path,
                 monitor, monitoringLevel);
@@ -85,7 +78,8 @@ class ParserAntlrReferences extends ParserClass {
     
     @Override
     public PgDatabase parse(InputStream inputStream, PgDiffArguments arguments,
-            PgDatabase database, Path path) {
+            PgDatabase database, Path path) throws InterruptedException {
+        PgDumpLoader.checkCancelled(monitor);
         return PgDumpLoader.loadObjReferences(
                 inputStream, arguments, database, path,
                 monitor, monitoringLevel, funcBodies);

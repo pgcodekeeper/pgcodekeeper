@@ -310,10 +310,11 @@ public final class PgDumpLoader { //NOPMD
      * @param ignoreSlonyTriggers     whether Slony triggers should be ignored
      *
      * @return database schema
+     * @throws InterruptedException 
      */
     public static PgDatabase loadDatabaseSchemaFromDirTree(
             String dirPath, PgDiffArguments arguments,
-            ParserClass parser) {
+            ParserClass parser) throws InterruptedException {
         final PgDatabase db = new PgDatabase();
         File dir = new File(dirPath);
 
@@ -365,7 +366,7 @@ public final class PgDumpLoader { //NOPMD
      * @return database with schemas, extensions and parsed file contents
      */
     public static PgDatabase loadSchemasAndFile(String filePath, PgDiffArguments arguments,
-            ParserClass parser) {
+            ParserClass parser) throws InterruptedException {
         final PgDatabase db = new PgDatabase();
 
         parseFile(arguments, db, parser, new File(filePath));
@@ -374,14 +375,14 @@ public final class PgDumpLoader { //NOPMD
     }
 
     public static PgDatabase loadRefsFromInputStream(InputStream inputStream, Path path,
-            PgDiffArguments arguments, ParserClass parser) {
+            PgDiffArguments arguments, ParserClass parser) throws InterruptedException {
         final PgDatabase db = new PgDatabase();
         parser.parse(inputStream, arguments, db, path);
         return db;
     }
 
     private static void walkSubdirsRunCore(File dir, PgDiffArguments arguments,
-            String[] subDir, PgDatabase db, ParserClass parser) {
+            String[] subDir, PgDatabase db, ParserClass parser) throws InterruptedException {
         for (String s : subDir) {
             File folder = new File(dir, s);
             
@@ -396,7 +397,8 @@ public final class PgDumpLoader { //NOPMD
         }
     }
 
-    private static void parseFile(PgDiffArguments arguments, PgDatabase db, ParserClass parser, File f) {
+    private static void parseFile(PgDiffArguments arguments, PgDatabase db,
+            ParserClass parser, File f) throws InterruptedException {
         if (f.exists() && !f.isDirectory() && f.getName().toLowerCase().endsWith(".sql")) {
             try (FileInputStream inputStream = new FileInputStream(f)) {
                 parser.parse(inputStream, arguments, db, f.toPath());
@@ -421,10 +423,11 @@ public final class PgDumpLoader { //NOPMD
      * @param ignoreSlonyTriggers     whether Slony triggers should be ignored
      *
      * @return database schema from dump file
+     * @throws InterruptedException 
      */
     public static PgDatabase loadDatabaseSchemaFromDump(
             InputStream inputStream, PgDiffArguments arguments,
-            ParserClass parser) {
+            ParserClass parser) throws InterruptedException {
         return parser.parse(inputStream, arguments, new PgDatabase(), Paths.get("/"));
     }
     
@@ -439,10 +442,11 @@ public final class PgDumpLoader { //NOPMD
      * @param ignoreSlonyTriggers     whether Slony triggers should be ignored
      *
      * @return database schema from dump file
+     * @throws InterruptedException 
      */
     public static PgDatabase loadDatabaseSchemaFromDump(
             String file, PgDiffArguments arguments,
-            ParserClass parser) {
+            ParserClass parser) throws InterruptedException {
         try {
             return loadDatabaseSchemaFromDump(new FileInputStream(file), arguments, parser);
         } catch (final FileNotFoundException ex) {
@@ -583,6 +587,12 @@ public final class PgDumpLoader { //NOPMD
         return isQuoted || isDoubleQuoted;
     }
 
+    public static void checkCancelled(IProgressMonitor monitor) throws InterruptedException {
+        if (monitor != null && monitor.isCanceled()) {
+            throw new InterruptedException();
+        }
+    }
+    
     /**
      * Creates a new instance of PgDumpLoader.
      */

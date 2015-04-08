@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
@@ -64,13 +65,16 @@ public final class PgDiff {
     public static void createDiff(final PrintWriter writer,
             final PgDiffArguments arguments, final InputStream oldInputStream,
             final InputStream newInputStream) {
-        PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
-                oldInputStream, arguments, ParserClass.getAntlr(null, 1));
-        PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
-                newInputStream, arguments, ParserClass.getAntlr(null, 1));
-
-        diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase,
-                oldDatabase, newDatabase);
+        try {
+            PgDatabase oldDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
+                    oldInputStream, arguments, ParserClass.getAntlr(null, 1));
+            PgDatabase newDatabase = PgDumpLoader.loadDatabaseSchemaFromDump(
+                    newInputStream, arguments, ParserClass.getAntlr(null, 1));
+            diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase,
+                    oldDatabase, newDatabase);
+        } catch (InterruptedException ex) {
+            Log.log(Log.LOG_ERROR, "Parser cancelled unexpectedly!", ex);
+        }
     }
     
     /**
@@ -85,14 +89,18 @@ public final class PgDiff {
      */
     static PgDatabase loadDatabaseSchema(final String format, final String srcPath,
                 final PgDiffArguments arguments) {
-        if(format.equals("dump")) {
-            return PgDumpLoader.loadDatabaseSchemaFromDump(srcPath,
-                    arguments, ParserClass.getAntlr(null, 1));
-        } else if(format.equals("parsed")) {
-            return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
-                    arguments, ParserClass.getAntlr(null, 1));
-        } else if(format.equals("db")) {
-            throw new UnsupportedOperationException("DB connection is not yet implemented!");
+        try {
+            if(format.equals("dump")) {
+                return PgDumpLoader.loadDatabaseSchemaFromDump(srcPath,
+                        arguments, ParserClass.getAntlr(null, 1));
+            } else if(format.equals("parsed")) {
+                return PgDumpLoader.loadDatabaseSchemaFromDirTree(srcPath,
+                        arguments, ParserClass.getAntlr(null, 1));
+            } else if(format.equals("db")) {
+                throw new UnsupportedOperationException("DB connection is not yet implemented!");
+            }
+        } catch (InterruptedException ex) {
+            Log.log(Log.LOG_ERROR, "Parser cancelled unexpectedly!", ex);
         }
         
         throw new UnsupportedOperationException(

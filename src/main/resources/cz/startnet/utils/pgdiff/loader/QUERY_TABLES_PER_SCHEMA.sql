@@ -3,6 +3,16 @@ WITH extension_deps AS (
     FROM pg_catalog.pg_depend dep 
     WHERE refclassid = 'pg_extension'::regclass 
         AND dep.deptype = 'e'
+), nspnames AS (
+    SELECT n.oid,
+        n.nspname
+    FROM pg_catalog.pg_namespace n
+), collations AS (
+    SELECT c.oid,
+        c.collname,
+        n.nspname
+    FROM pg_catalog.pg_collation c
+    LEFT JOIN nspnames n ON n.oid = c.collnamespace
 )
 
 SELECT subselectColumns.oid::bigint,
@@ -16,6 +26,10 @@ SELECT subselectColumns.oid::bigint,
        subselectColumns.col_comments,
        subselectColumns.col_typemod,
        subselectColumns.col_notnull,
+       subselectColumns.col_collation,
+       subselectColumns.col_typcollation,
+       subselectColumns.col_collationname,
+       subselectColumns.col_collationnspname,
        subselectColumns.seqs,
        subselectColumns.col_acl,
        comments.description AS table_comment,
@@ -35,7 +49,11 @@ FROM
             array_agg(columnsData.attnotnull) AS col_notnull,
             array_agg(columnsData.col_seq) AS seqs,
             array_agg(columnsData.attacl) AS col_acl,
-            columnsData.reloptions
+            columnsData.reloptions,
+            array_agg(columnsData.attcollation) AS col_collation,
+            array_agg(columnsData.typcollation) AS col_typcollation,
+            array_agg(columnsData.attcollationname) AS col_collationname,
+            array_agg(columnsData.attcollationnspname) AS col_collationnspname
      FROM
          (SELECT c.oid,
               c.relname,
@@ -53,7 +71,11 @@ FROM
                WHERE c2.oid = depseq.refobjid
                    AND c2.relkind = 'S') col_seq,
               attr.attacl::text,
-              c.reloptions
+              c.reloptions,
+              attr.attcollation,
+              t.typcollation,
+              (SELECT cl.collname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationname,
+              (SELECT cl.nspname FROM collations cl WHERE cl.oid = attr.attcollation) AS attcollationnspname
           FROM pg_catalog.pg_class c
           JOIN pg_catalog.pg_attribute attr ON c.oid = attr.attrelid
               AND attr.attisdropped IS FALSE
@@ -63,6 +85,7 @@ FROM
               AND comments.objsubid = attr.attnum
           LEFT JOIN pg_catalog.pg_depend depseq ON attrdef.oid = depseq.objid
               AND depseq.refobjid != c.oid
+          LEFT JOIN pg_catalog.pg_type t ON t.oid = attr.atttypid
           WHERE c.relnamespace = ?
               AND c.relkind = 'r'
               AND c.oid NOT IN (SELECT objid FROM extension_deps)
