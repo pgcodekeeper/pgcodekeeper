@@ -594,7 +594,10 @@ public class JdbcLoader implements PgCatalogStrings {
             for (int i = 0; i < attnames.length; ++i) {
                 PgColumn a = new PgColumn(attnames[i]);
                 StringBuilder sbDef = new StringBuilder(atttypes[i]);
-                if (attcollations[i] != 0 && attcollations[i] != atttypcollations[i]) {
+                
+                // unbox
+                long attcollation = attcollations[i]; 
+                if (attcollation != 0 && attcollation != atttypcollations[i]) {
                     sbDef.append(" COLLATE ")
                             .append(PgDiffUtils.getQuotedName(attcollationnspnames[i]))
                             .append('.')
@@ -886,8 +889,13 @@ public class JdbcLoader implements PgCatalogStrings {
         String[] colComments = (String[])res.getArray("col_comments").getArray();
         Integer[] colTypeMod = (Integer[])res.getArray("col_typemod").getArray();
         Boolean[] colNotNull = (Boolean[])res.getArray("col_notnull").getArray();
+        Long[] colCollation = (Long[])res.getArray("col_collation").getArray();
+        Long[] colTypCollation = (Long[])res.getArray("col_typcollation").getArray();
+        String[] colCollationName = (String[])res.getArray("col_collationname").getArray();
+        String[] colCollationSchema = (String[])res.getArray("col_collationnspname").getArray();
         for (int i = 0; i < colNumbers.length; i++) {
             if (colNumbers[i] < 1){
+                // system columns
                 continue;
             }
             
@@ -937,6 +945,13 @@ public class JdbcLoader implements PgCatalogStrings {
                 }
             }
             String columnTypeName = columnType.getFullName(schemaName, typMod);
+            
+            // unbox
+            long collation = colCollation[i];
+            if (collation != 0 && collation != colTypCollation[i]) {
+                columnTypeName += " COLLATE " + PgDiffUtils.getQuotedName(colCollationSchema[i])
+                        + '.' + PgDiffUtils.getQuotedName(colCollationName[i]);
+            }
             column.setType(columnTypeName);
             
             String columnDefault = colDefaults[i];
