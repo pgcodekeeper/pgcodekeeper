@@ -158,9 +158,10 @@ public class PgDiffTestDepcies {
 
     /**
      * Runs single test using class member variables.
+     * @throws InterruptedException 
      */
     @Test(timeout = 30000)
-    public void runDiff() throws IOException {
+    public void runDiff() throws IOException, InterruptedException {
         
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
@@ -189,7 +190,7 @@ public class PgDiffTestDepcies {
                 diffInput.toString().trim());
     }
     
-    private PgDatabase getDB(InputStream is, PgDiffArguments args) {
+    private PgDatabase getDB(InputStream is, PgDiffArguments args) throws InterruptedException {
         return PgDumpLoader.loadDatabaseSchemaFromDump(
                 is, args, ParserClass.getAntlr(null, 1));
     }
