@@ -47,7 +47,7 @@ public class TreeElementTest {
     }
    
     @Test
-    public void testGetFilteredCopy() {
+    public void testGetFilteredCopy() throws InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ApgdiffConsts.UTF_8);
         PgDatabase dbFull = PgDumpLoader.loadDatabaseSchemaFromDump(

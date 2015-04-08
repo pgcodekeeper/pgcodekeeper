@@ -141,7 +141,7 @@ public class PgAntlrLoaderTest {
     }
 
     @Test
-    public void loadSchema() {
+    public void loadSchema() throws InterruptedException {
         
         // first test the dump loader itself
         String filename = "schema_" + fileIndex + ".sql";
@@ -193,9 +193,10 @@ public class PgAntlrLoaderTest {
 
     /**
      * Tests ModelExporter exportFull() method
+     * @throws InterruptedException 
      */
     @Test
-    public void exportFullDb() throws IOException {
+    public void exportFullDb() throws IOException, InterruptedException {
         // skip cases with illegal object names (with file-system reserved chars)
         Assume.assumeFalse(skipForExport.contains(fileIndex));
 
