@@ -217,6 +217,7 @@ public class PgColumn extends PgStatementWithSearchPath {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
         PgColumn newColumn;
         if (newCondition instanceof PgColumn) {
             newColumn = (PgColumn) newCondition;
@@ -307,7 +308,7 @@ public class PgColumn extends PgStatementWithSearchPath {
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
-        return sb.length() > 0;
+        return sb.length() > startLength;
     }
     
     @Override

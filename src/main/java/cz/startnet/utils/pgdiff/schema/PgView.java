@@ -129,6 +129,7 @@ public class PgView extends PgStatementWithSearchPath {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
         PgView newView;
         if (newCondition instanceof PgView) {
             newView = (PgView) newCondition;
@@ -215,7 +216,7 @@ public class PgView extends PgStatementWithSearchPath {
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
-        return sb.length() > 0;
+        return sb.length() > startLength;
     }
 
     public void setQuery(final String query) {

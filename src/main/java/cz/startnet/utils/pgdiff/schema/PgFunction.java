@@ -133,7 +133,9 @@ public class PgFunction extends PgStatementWithSearchPath {
     }
     
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
         PgFunction newFunction;
         if (newCondition instanceof PgFunction) {
             newFunction = (PgFunction)newCondition; 
@@ -167,7 +169,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
         
-        return sb.length() > 0;
+        return sb.length() > startLength;
     }
 
     /**

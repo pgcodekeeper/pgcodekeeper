@@ -83,13 +83,16 @@ public class PgConstraint extends PgStatementWithSearchPath {
     }
     
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
         PgConstraint newConstr;
         if (newCondition instanceof PgConstraint) {
             newConstr = (PgConstraint)newCondition; 
         } else {
             return false;
         }
+        // TODO alterable state resulting in VALIDATE CONSTRAINT
         PgConstraint oldConstr = this;
         if (!oldConstr.compareWithoutComments(newConstr)) {
             isNeedDepcies.set(true);
@@ -102,7 +105,7 @@ public class PgConstraint extends PgStatementWithSearchPath {
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
-        return sb.length() > 0;
+        return sb.length() > startLength;
     }
 
     public boolean isPrimaryKeyConstraint() {

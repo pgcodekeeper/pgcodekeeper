@@ -219,7 +219,9 @@ public class PgTable extends PgStatementWithSearchPath {
     }
     
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sbuilder, AtomicBoolean isNeedDepcies) {
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
         PgTable newTable;
         if (newCondition instanceof PgTable) {
             newTable = (PgTable)newCondition; 
@@ -253,22 +255,22 @@ public class PgTable extends PgStatementWithSearchPath {
         }
         
         if (!Objects.equals(oldTable.getWith(), newTable.getWith())) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("ALTER TABLE ");
-            sb.append(PgDiffUtils.getQuotedName(newTable.getName()));
+            StringBuilder sbWith = new StringBuilder();
+            sbWith.append("ALTER TABLE ");
+            sbWith.append(PgDiffUtils.getQuotedName(newTable.getName()));
 
             if (newTable.getWith() == null
                     || "OIDS=false".equalsIgnoreCase(newTable.getWith())) {
-                sb.append("\n\tSET WITHOUT OIDS;");
+                sbWith.append("\n\tSET WITHOUT OIDS;");
             } else if ("OIDS".equalsIgnoreCase(newTable.getWith())
                     || "OIDS=true".equalsIgnoreCase(newTable.getWith())) {
-                sb.append("\n\tSET WITH OIDS;");
+                sbWith.append("\n\tSET WITH OIDS;");
             } else {
-                sb.append("\n\tSET ");
-                sb.append(newTable.getWith());
-                sb.append(';');
+                sbWith.append("\n\tSET ");
+                sbWith.append(newTable.getWith());
+                sbWith.append(';');
             }
-            script.addStatement(sb.toString());
+            script.addStatement(sbWith.toString());
         }
         
         if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
@@ -290,8 +292,8 @@ public class PgTable extends PgStatementWithSearchPath {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
-        sbuilder.append(diffInput.toString().trim());
-        return sbuilder.length() > 0;
+        sb.append(diffInput.toString().trim());
+        return sb.length() > startLength;
     }
 
     /**

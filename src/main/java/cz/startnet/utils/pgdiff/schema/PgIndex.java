@@ -87,7 +87,9 @@ public class PgIndex extends PgStatementWithSearchPath {
     }
     
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
         PgIndex newIndex;
         if (newCondition instanceof PgIndex) {
             newIndex = (PgIndex)newCondition; 
@@ -115,7 +117,7 @@ public class PgIndex extends PgStatementWithSearchPath {
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
-        return sb.length() > 0;
+        return sb.length() > startLength;
     }
 
     private String getClusterSQL() {

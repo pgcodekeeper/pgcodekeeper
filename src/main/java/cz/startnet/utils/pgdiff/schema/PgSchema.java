@@ -123,7 +123,9 @@ public class PgSchema extends PgStatement {
     }
     
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
         PgSchema newSchema;
         if (newCondition instanceof PgSchema) {
             newSchema = (PgSchema) newCondition;
@@ -146,7 +148,7 @@ public class PgSchema extends PgStatement {
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
-        return sb.length() > 0;
+        return sb.length() > startLength;
     }
     
     /**

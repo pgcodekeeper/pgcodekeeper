@@ -152,7 +152,9 @@ public class PgSequence extends PgStatementWithSearchPath {
     }
     
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+            AtomicBoolean isNeedDepcies) {
+        final int startLength = sb.length();
         PgSequence newSequence;
         if (newCondition instanceof PgSequence) {
             newSequence = (PgSequence) newCondition;
@@ -241,7 +243,7 @@ public class PgSequence extends PgStatementWithSearchPath {
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
         script.printStatements(writer);
         sb.append(diffInput.toString().trim());
-        return sb.length() > 0;
+        return sb.length() > startLength;
     }
 
     public boolean alterOwnedBy(PgStatement newCondition, StringBuilder sbSQL) {
