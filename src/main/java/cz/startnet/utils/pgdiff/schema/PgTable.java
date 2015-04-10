@@ -276,7 +276,7 @@ public class PgTable extends PgStatementWithSearchPath {
         if (!Objects.equals(oldTable.getTablespace(), newTable.getTablespace())) {
             script.addStatement("ALTER TABLE "
                     + PgDiffUtils.getQuotedName(newTable.getName())
-                    + "\n\tTABLESPACE " + newTable.getTablespace() + ';');
+                    + "\n\tSET TABLESPACE " + newTable.getTablespace() + ';');
         }
         
         if (!Objects.equals(oldTable.getOwner(), newTable.getOwner())) {

@@ -102,9 +102,8 @@ public class PgIndex extends PgStatementWithSearchPath {
             isNeedDepcies.set(true);
             return true;
         }
-        boolean oldCluster = oldIndex.isClusterIndex();
         
-        if (oldCluster && !newIndex.isClusterIndex() && 
+        if (oldIndex.isClusterIndex() && !newIndex.isClusterIndex() && 
                 !((PgTable)newIndex.getParent()).isClustered()) { 
              script.addStatement("ALTER TABLE "
                         + PgDiffUtils.getQuotedName(oldIndex.getTableName())

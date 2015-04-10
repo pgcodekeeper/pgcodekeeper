@@ -473,6 +473,7 @@ public class PgType extends PgStatementWithSearchPath {
             PgColumn oldAttr = oldType.getAttr(attr.getName());
             if (oldAttr != null) {
                 if (!oldAttr.getType().equals(attr.getType())) {
+                    isNeedDepcies.set(true);
                     attrSb.append("\n\tALTER ATTRIBUTE ")
                             .append(PgDiffUtils.getQuotedName(attr.getName()))
                             .append(" TYPE ")
