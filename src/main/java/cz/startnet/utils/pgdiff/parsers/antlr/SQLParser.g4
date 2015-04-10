@@ -884,6 +884,7 @@ nonreserved_keywords
   | NO
   | NONE
   | NULLIF
+  | NULLS
   | OBJECT
   | ON
   | ONLY
