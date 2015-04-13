@@ -38,7 +38,6 @@ import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.StatementActions;
 
 public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, ISelectionListener, IStateListener{
     
@@ -140,10 +139,8 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                 continue;
             }
 
-            depRes.clearLists();
-            depRes.addDropStatements(el.getPgStatement(currentDb));
             for (PgStatement dependant : depRes
-                    .getOrderedDepcies(StatementActions.DROP)) {
+                    .getDropDepcies(el.getPgStatement(currentDb))) {
                 if (!(dependant instanceof PgColumn)) {
                     newInput.add(dependant);
                 }
