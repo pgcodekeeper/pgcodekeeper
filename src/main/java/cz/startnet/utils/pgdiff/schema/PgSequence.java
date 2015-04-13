@@ -246,24 +246,6 @@ public class PgSequence extends PgStatementWithSearchPath {
         return sb.length() > startLength;
     }
 
-    public boolean alterOwnedBy(PgStatement newCondition, StringBuilder sbSQL) {
-        PgSequence newSequence;
-        if (newCondition instanceof PgSequence) {
-            newSequence = (PgSequence) newCondition;
-        } else {
-            return false;
-        }
-        PgSequence oldSequence = this;
-        final String oldOwnedBy = oldSequence.getOwnedBy();
-        final String newOwnedBy = newSequence.getOwnedBy();
-
-        if (newOwnedBy != null && !newOwnedBy.equals(oldOwnedBy)) {
-            sbSQL.append("\n\tOWNED BY ");
-            sbSQL.append(newOwnedBy);
-        }
-        return sbSQL.length() > 0;
-    }
-
     public void setIncrement(final String increment) {
         this.increment = increment;
         resetHash();

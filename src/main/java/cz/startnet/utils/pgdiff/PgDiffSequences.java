@@ -76,8 +76,7 @@ public final class PgDiffSequences {
 
         for (final PgSequence oldSequence : oldSchema.getSequences()) {
             PgSequence newSequence = newSchema.getSequence(oldSequence.getName());
-            depRes.appendAlter(oldSequence, newSequence);
-            depRes.appendAlterOwnedBy(oldSequence, newSequence);
+            depRes.addAlterStatements(oldSequence, newSequence);
         }
     }
 

@@ -99,7 +99,7 @@ public final class PgDiffViews {
         }
 
         for (final PgView oldView : oldSchema.getViews()) {
-            depRes.appendAlter(oldView, newSchema.getView(oldView.getName()));
+            depRes.addAlterStatements(oldView, newSchema.getView(oldView.getName()));
         }
     }
 

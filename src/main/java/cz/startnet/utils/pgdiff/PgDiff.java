@@ -15,6 +15,7 @@ import java.util.Objects;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
+import ru.taximaxim.codekeeper.apgdiff.model.graph.ActionsToScriptConverter;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
@@ -178,7 +179,7 @@ public final class PgDiff {
         updateExtensions(depRes, oldDatabase, newDatabase);
         updateSchemas(script, arguments, oldDatabase, newDatabase);
 
-        depRes.fillScript(script);
+        new ActionsToScriptConverter(depRes.getActions()).fillScript(script);
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT TRANSACTION;");
         }
@@ -253,7 +254,7 @@ public final class PgDiff {
     private static void updateExtensions(final DepcyResolver depRes,
             final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for(final PgExtension oldExt : oldDatabase.getExtensions()) {
-            depRes.appendAlter(oldExt,
+            depRes.addAlterStatements(oldExt,
                     newDatabase.getExtension(oldExt.getName()));
         }
     }
@@ -330,7 +331,7 @@ public final class PgDiff {
                     new SearchPathHelper(newSchema.getName());
 
             final PgSchema oldSchema = oldDatabase.getSchema(newSchema.getName());
-            depRes.appendAlter(oldSchema, newSchema);
+            depRes.addAlterStatements(oldSchema, newSchema);
             updateSchemaContent(script, oldSchema, newSchema, searchPathHelper, arguments);
         }
         

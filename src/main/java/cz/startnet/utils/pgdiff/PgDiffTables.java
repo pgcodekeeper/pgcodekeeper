@@ -50,7 +50,7 @@ public final class PgDiffTables {
         }
 
         for (final PgTable oldTable : oldSchema.getTables()) {
-            depRes.appendAlter(oldTable, newSchema.getTable(oldTable.getName()));
+            depRes.addAlterStatements(oldTable, newSchema.getTable(oldTable.getName()));
         }
     }
 

@@ -70,7 +70,7 @@ public final class PgDiffDomains {
             return;
         }
         for (final PgDomain oldDomain : oldSchema.getDomains()) {
-            depRes.appendAlter(oldDomain,
+            depRes.addAlterStatements(oldDomain,
                     newSchema.getDomain(oldDomain.getName()));
         }
     }

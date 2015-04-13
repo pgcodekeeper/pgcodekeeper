@@ -117,7 +117,7 @@ public final class PgDiffTypes {
         }
         for (PgType newType : newSchema.getTypes()) {
             PgType oldType = oldSchema.getType(newType.getName());
-            depRes.appendAlter(oldType, newType);
+            depRes.addAlterStatements(oldType, newType);
         }
     }
     

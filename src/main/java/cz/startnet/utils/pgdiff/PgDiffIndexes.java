@@ -164,7 +164,7 @@ public final class PgDiffIndexes {
                 continue;
             }
             for (final PgIndex oldIndex : oldTable.getIndexes()) {
-                depRes.appendAlter(oldIndex,
+                depRes.addAlterStatements(oldIndex,
                         newTable.getIndex(oldIndex.getName()));
             }
         }

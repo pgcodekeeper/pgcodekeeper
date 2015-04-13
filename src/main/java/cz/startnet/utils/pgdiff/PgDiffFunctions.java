@@ -121,7 +121,7 @@ public final class PgDiffFunctions {
         }
 
         for (final PgFunction oldFunction : oldSchema.getFunctions()) {
-            depRes.appendAlter(oldFunction,
+            depRes.addAlterStatements(oldFunction,
                     newSchema.getFunction(oldFunction.getName()));
         }
     }
