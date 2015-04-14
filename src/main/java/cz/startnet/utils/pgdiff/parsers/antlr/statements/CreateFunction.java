@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Create_function_statementContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParserBaseListener;
@@ -53,9 +54,11 @@ public class CreateFunction extends ParserAbstract {
         new ParseTreeWalker().walk(snl, ctx);
         Schema_qualified_nameContext name = snl.getName(); 
         if (name != null) {
-            String schemaName = getSchemaName(name);
             String typeName = getName(name);
-            //TODO проверить на наличие имени объекта в списке системных типов (константа в apgdiffConsts)
+            if (ApgdiffConsts.SYS_TYPES.contains(typeName)) {
+                return null;
+            }
+            String schemaName = getSchemaName(name);
             if (schemaName == null) {
                 schemaName = getDefSchemaName();
             }
