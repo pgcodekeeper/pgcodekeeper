@@ -884,6 +884,7 @@ nonreserved_keywords
   | NO
   | NONE
   | NULLIF
+  | NULLS
   | OBJECT
   | ON
   | ONLY
@@ -1684,6 +1685,7 @@ predicate
   | pattern_matching_predicate // like predicate and other similar predicates
   | null_predicate
   | exists_predicate
+  | distinct_predicate
   ;
 
 /*
@@ -1809,6 +1811,16 @@ exists_predicate
 */
 
 /*
+==============================================================================================
+  8.10 <Distinct predicate>
+
+  Specify a test for the absence of duplicate rows
+==============================================================================================
+*/
+distinct_predicate
+  : left=value_expression_primary_cast IS NOT? DISTINCT FROM right=value_expression_primary_cast
+  ;
+/*
 ===============================================================================
   10.1 <interval qualifier>
 
@@ -1847,7 +1859,7 @@ sort_specifier_list
   ;
 
 sort_specifier
-  : key=value_expression_primary_cast order=order_specification? null_order=null_ordering?
+  : key=value_expression_primary_cast collate_iden=collate_identifier? opclass=schema_qualified_name? order=order_specification? null_order=null_ordering?
   ;
 
 order_specification

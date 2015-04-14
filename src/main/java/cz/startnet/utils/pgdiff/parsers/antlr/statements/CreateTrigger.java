@@ -44,7 +44,7 @@ public class CreateTrigger extends ParserAbstract {
             }
         }
         if (ctx.when_expr != null) {
-            trigger.setWhen(ctx.when_expr.getText());
+            trigger.setWhen(getFullCtxText(ctx.when_expr));
         }
         if (db.getSchema(schemaName) == null) {
             logSkipedObject(schemaName, "TRIGGER", trigger.getTableName());
