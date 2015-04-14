@@ -30,7 +30,7 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
  *
  */
 @RunWith(value = Parameterized.class)
-public class PgDiffTestDepcies {
+public class PgDiffDepciesTest {
 
     /**
      * Provides parameters for running the tests.
@@ -114,7 +114,7 @@ public class PgDiffTestDepcies {
      * @param fileNameTemplate {@link #dbTemplate}
      * @param userSelTemplate {@link #userSelTemplate}
      */
-    public PgDiffTestDepcies(final String fileNameTemplate,
+    public PgDiffDepciesTest(final String fileNameTemplate,
             final String userSelTemplate) {
         super();
         this.dbTemplate = fileNameTemplate;
@@ -204,6 +204,6 @@ public class PgDiffTestDepcies {
     }
     
     private InputStream getIS(String name) {
-        return PgDiffTestDepcies.class.getResourceAsStream(name);
+        return PgDiffDepciesTest.class.getResourceAsStream(name);
     }
 }
