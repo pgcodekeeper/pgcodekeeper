@@ -20,7 +20,7 @@ public class PgType extends PgStatementWithSearchPath {
     
     // attributes (fields) for composite type
     private final List<PgColumn> attrs = new ArrayList<>();
-    // enum labels for composite type
+    // enum labels for enum type
     private final List<String> enums = new ArrayList<>();
     
     // range type fields
