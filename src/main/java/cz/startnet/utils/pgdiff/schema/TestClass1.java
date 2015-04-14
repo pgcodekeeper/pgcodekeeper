@@ -1,5 +1,8 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
@@ -8,11 +11,12 @@ import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 
 public class TestClass1 {
-
-    public static void main(String[] wat) throws InterruptedException  {
+    @Test
+    public void TestCompareParser() throws InterruptedException  {
         PgDatabase dbPredef = fillDB();
         PgDatabase dbDump = PgDumpLoader.loadDatabaseSchemaFromDump(TestClass1.class.getResourceAsStream("test.sql"), new PgDiffArguments(), ParserClass.getAntlr(null, 1));
-        System.out.println(CompareStatements.getDifferences(dbPredef, dbDump));
+        String result = CompareStatements.getDifferences(dbPredef, dbDump).toString();
+        Assert.assertEquals("Db not equals: " + result, "Diff:\n", result);
     }
     
     private static PgDatabase fillDB() {
