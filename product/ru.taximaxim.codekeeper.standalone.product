@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="pgCodeKeeper standalone" uid="ru.taximaxim.codekeeper.standalone.product" id="ru.taximaxim.codekeeper.mainapp.product-codekeeper-standalone" application="ru.taximaxim.codekeeper.mainapp.application-standalone" version="3.1.0.qualifier" useFeatures="false" includeLaunchers="true">
+<product name="pgCodeKeeper cli" uid="ru.taximaxim.codekeeper.standalone.product" id="ru.taximaxim.codekeeper.mainapp.product-codekeeper-standalone" application="ru.taximaxim.codekeeper.mainapp.application-standalone" version="3.1.0.qualifier" useFeatures="false" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -13,7 +13,7 @@
 
    <windowImages/>
 
-   <launcher name="pgcodekeeper-standalone">
+   <launcher name="pgcodekeeper-cli">
       <linux icon="icons/product.xpm"/>
       <solaris/>
       <win useIco="true">
@@ -148,7 +148,7 @@ the disclosure of confidential information.
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
       <property name="eclipse.log.level" value="INFO" />
-      <property name="osgi.instance.area" value="@user.home/.pgcodekeeper-standalone" />
+      <property name="osgi.instance.area" value="@user.home/.pgcodekeeper-cli" />
    </configurations>
 
 </product>

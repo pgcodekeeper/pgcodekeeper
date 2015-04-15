@@ -46,7 +46,7 @@
                             <products>
                                 <product>
                                     <id>ru.taximaxim.codekeeper.standalone.product</id>
-                                    <archiveFileName>pgCodeKeeper-standalone-${unqualifiedVersion}.${buildQualifier}</archiveFileName>
+                                    <archiveFileName>pgCodeKeeper-cli-${unqualifiedVersion}.${buildQualifier}</archiveFileName>
                                 </product>
                             </products>
                         </configuration>
@@ -67,7 +67,7 @@
                                     <serverId>placeholder</serverId>
                                     <fromDir>${project.build.directory}/products/</fromDir>
                                     <includes>*.zip</includes>
-                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/standalone/${unqualifiedVersion}.${buildQualifier}</url>
+                                    <url>scp://codekeeper@storage/home/codekeeper/webroot/cli/${unqualifiedVersion}.${buildQualifier}</url>
                                 </configuration>
                             </execution>
                         </executions>
