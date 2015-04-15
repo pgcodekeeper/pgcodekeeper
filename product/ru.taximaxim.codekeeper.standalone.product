@@ -3,6 +3,7 @@
 
 <product name="pgCodeKeeper cli" uid="ru.taximaxim.codekeeper.standalone.product" id="ru.taximaxim.codekeeper.mainapp.product-codekeeper-standalone" application="ru.taximaxim.codekeeper.mainapp.application-standalone" version="3.1.0.qualifier" useFeatures="false" includeLaunchers="true">
 
+
    <configIni use="default">
    </configIni>
 
@@ -13,6 +14,7 @@
 
    <windowImages/>
 
+
    <launcher name="pgcodekeeper-cli">
       <linux icon="icons/product.xpm"/>
       <solaris/>
@@ -21,6 +23,7 @@
          <bmp/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>
@@ -139,8 +142,6 @@ the disclosure of confidential information.
       <plugin id="org.eclipse.equinox.weaving.hook" fragment="true"/>
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.osgi.compatibility.state" fragment="true"/>
-      <plugin id="org.hamcrest.core"/>
-      <plugin id="org.junit"/>
       <plugin id="ru.taximaxim.codekeeper.mainapp"/>
    </plugins>
 
