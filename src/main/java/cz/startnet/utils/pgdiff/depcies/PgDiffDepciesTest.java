@@ -125,7 +125,7 @@ public class PgDiffDepciesTest {
     /**
      * Runs single test on original schema.
      */
-//    @Test(timeout = 40000)
+    @Test(timeout = 40000)
     public void runDiffSameOriginal() throws IOException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
@@ -142,7 +142,7 @@ public class PgDiffDepciesTest {
     /**
      * Runs single test on new schema.
      */
-//    @Test(timeout = 40000)
+    @Test(timeout = 40000)
     public void runDiffSameNew() throws IOException {
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);
@@ -160,7 +160,7 @@ public class PgDiffDepciesTest {
      * Runs single test using class member variables.
      * @throws InterruptedException 
      */
-//    @Test(timeout = 80000)
+    @Test(timeout = 80000)
     public void runDiff() throws IOException, InterruptedException {
         
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
