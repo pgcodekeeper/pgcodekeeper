@@ -25,6 +25,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
 
 /**
@@ -269,7 +270,7 @@ public class PgDiffTest {
                     {"drop_create_type_tbl", false},
                     // Test table domain depcy
                     {"create_dom_tbl", false},
-                    {"drop_dom_tbl", false},
+                    {"drop_dom_tbl", false}
                 });
     }
     
@@ -309,9 +310,9 @@ public class PgDiffTest {
         final PgDiffArguments arguments = new PgDiffArguments();
         PgDiff.createDiff(writer, arguments,
                 PgDiffTest.class.getResourceAsStream(
-                fileNameTemplate + "_original.sql"),
+                fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL),
                 PgDiffTest.class.getResourceAsStream(
-                fileNameTemplate + "_original.sql"));
+                fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL));
         writer.flush();
 
         Assert.assertEquals("File name template: " + fileNameTemplate,
@@ -328,9 +329,9 @@ public class PgDiffTest {
         final PgDiffArguments arguments = new PgDiffArguments();
         PgDiff.createDiff(writer, arguments,
                 PgDiffTest.class.getResourceAsStream(
-                fileNameTemplate + "_new.sql"),
+                fileNameTemplate + FILES_POSTFIX.NEW_SQL),
                 PgDiffTest.class.getResourceAsStream(
-                fileNameTemplate + "_new.sql"));
+                fileNameTemplate + FILES_POSTFIX.NEW_SQL));
         writer.flush();
 
         Assert.assertEquals("File name template: " + fileNameTemplate,
@@ -350,15 +351,15 @@ public class PgDiffTest {
         final PgDiffArguments arguments = new PgDiffArguments();
         PgDiff.createDiff(writer, arguments,
                 PgDiffTest.class.getResourceAsStream(
-                fileNameTemplate + "_original.sql"),
+                fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL),
                 PgDiffTest.class.getResourceAsStream(
-                fileNameTemplate + "_new.sql"));
+                fileNameTemplate + FILES_POSTFIX.NEW_SQL));
         writer.flush();
 
         StringBuilder sbExpDiff;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 PgDiffTest.class.getResourceAsStream(fileNameTemplate 
-                        + "_diff.sql")))) {
+                        + FILES_POSTFIX.DIFF_SQL)))) {
             sbExpDiff = new StringBuilder(1024);
 
             String line;

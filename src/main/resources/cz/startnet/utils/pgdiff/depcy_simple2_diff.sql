@@ -8,6 +8,8 @@ SET search_path = public, pg_catalog;
 
 DROP VIEW v2;
 
+-- DEPCY: This VIEW is a dependency of VIEW: v3
+
 CREATE VIEW v2 AS
 	SELECT t1.id,
     'qwe' AS c1

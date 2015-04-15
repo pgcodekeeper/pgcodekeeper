@@ -4,6 +4,8 @@ DROP FUNCTION "add"(typ_range, integer);
 
 DROP TYPE typ_range;
 
+-- DEPCY: This TYPE is a dependency of FUNCTION: "add"(typ_range, integer)
+
 CREATE TYPE typ_range AS RANGE (
 	subtype = character varying,
 	collation = pg_catalog."ru_RU"

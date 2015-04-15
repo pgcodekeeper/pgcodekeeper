@@ -806,9 +806,11 @@ class Predefined5 extends TreeElementCreator{
 
     @Override
     public Set<PgStatement> getDepcySet(PgDatabase db) {
-        Set<PgStatement> res = new HashSet<>();
-        res.add(db.getSchema("republic"));
-        return res;
+        PgSchema schema = db.getSchema(ApgdiffConsts.PUBLIC);
+        PgTable table = schema.getTable("t_test2");
+        PgSchema schemaRep = db.getSchema("republic");
+        PgColumn col = table.getColumn("c_name_t_test2");
+        return new HashSet<>(Arrays.asList(schema, table, schemaRep, col));
     }
    
     @Override

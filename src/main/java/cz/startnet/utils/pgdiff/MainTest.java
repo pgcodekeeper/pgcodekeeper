@@ -27,6 +27,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.osgi.framework.BundleContext;
 
+import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.apgdiff.Activator;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
@@ -155,7 +156,7 @@ abstract class ArgumentsProvider implements Closeable{
     }
     
     public File getPredefinedResultFile() throws URISyntaxException, IOException {
-        return ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_diff.sql"));
+        return ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.DIFF_SQL));
     }
 
     public File getDiffResultFile() throws IOException {
@@ -298,8 +299,8 @@ class ArgumentsProvider_6 extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_new.sql"));
-        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_original.sql"));
+        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
+        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
         
         return new String[]{"--diff", "--dbOld-format", "dump", "--allow-danger-ddl", "DROP_TABLE", 
                 fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
@@ -327,8 +328,8 @@ class ArgumentsProvider_7 extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_new.sql"));
-        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_original.sql"));
+        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
+        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
         
         return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_TABLE", 
                 fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
@@ -409,8 +410,8 @@ class ArgumentsProvider_DangerTbl extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_new.sql"));
-        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_original.sql"));
+        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
+        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
         
         return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), 
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
@@ -443,8 +444,8 @@ class ArgumentsProvider_DangerTblOk extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_new.sql"));
-        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_original.sql"));
+        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
+        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
         
         return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", "DROP_TABLE", 
                 fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
@@ -471,8 +472,8 @@ class ArgumentsProvider_DangerDropCol extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_new.sql"));
-        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_original.sql"));
+        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
+        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
         
         return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), 
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
@@ -505,8 +506,8 @@ class ArgumentsProvider_DangerDropColOk extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_new.sql"));
-        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_original.sql"));
+        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
+        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
         
         return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", 
                 "DROP_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), 
@@ -534,8 +535,8 @@ class ArgumentsProvider_DangerAlterCol extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_new.sql"));
-        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_original.sql"));
+        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
+        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
         
         return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), 
                 fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
@@ -568,8 +569,8 @@ class ArgumentsProvider_DangerAlterColOk extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_new.sql"));
-        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_original.sql"));
+        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
+        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
         
         return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", 
                 "ALTER_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), 
@@ -598,8 +599,8 @@ class ArgumentsProvider_16 extends ArgumentsProvider{
     
     @Override
     public String[] arguments() throws URISyntaxException, IOException {
-        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_new.sql"));
-        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + "_original.sql"));
+        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
+        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
         
         return new String[]{"--diff", "--output-ignored-statements", 
                 "--ignore-slony-triggers", "--add-transaction", 
@@ -610,7 +611,7 @@ class ArgumentsProvider_16 extends ArgumentsProvider{
     
     @Override
     public File getPredefinedResultFile() throws URISyntaxException, IOException {
-        URL resourceUrl = MainTest.class.getResource("MainTest_" + resName + "_diff.sql");
+        URL resourceUrl = MainTest.class.getResource("MainTest_" + resName + FILES_POSTFIX.DIFF_SQL);
         return ApgdiffUtils.getFileFromOsgiRes(resourceUrl);
     }
     
