@@ -37,7 +37,7 @@ public final class CreateSchemaParser {
                 database.tryReplacePublicDef(schema);
             }
             
-            schema.setAuthorization(schema.getName());
+            schema.setOwner(schema.getName());
 
             final String definition = parser.getRest();
             if (definition != null && !definition.isEmpty()) {
@@ -55,7 +55,7 @@ public final class CreateSchemaParser {
             }
 
             if (parser.expectOptional("AUTHORIZATION")) {
-                schema.setAuthorization(
+                schema.setOwner(
                         ParserUtils.getObjectName(parser.parseIdentifier()));
             }
 
