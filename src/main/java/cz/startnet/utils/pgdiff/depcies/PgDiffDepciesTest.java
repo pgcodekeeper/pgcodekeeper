@@ -44,10 +44,10 @@ public class PgDiffDepciesTest {
                 // изменяется тип колонок у обоих таблиц, пользователь выбирает
                 // view v1
                 { "add_change_col_type", "add_change_col_type_usr_v1" },
-                // --||-- , , пользователь выбирает t1.c1
-                // TODO по зависимостям тянет дроп v1, затем при пересоздании v1
-                // тянется изменение другой колонки правильно ли?
+                // --\\-- , пользователь выбирает t1.c1
                 { "add_change_col_type", "add_change_col_type_usr_t1_c1" },
+                // --\\--, у вью меняется только комментарий
+                { "add_change_only_col_type", "add_change_only_col_type_usr_t1_c1" },
                 // изменяется тип колонок у обоих таблиц, изменяется v1, пользователь выбирает
                 // view v2
                 {"add_v2_change_col_type", "add_v2_change_col_type_usr_v2"},
