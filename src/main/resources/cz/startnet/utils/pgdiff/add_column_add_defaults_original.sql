@@ -40,14 +40,6 @@ CREATE TABLE table1 (
 ALTER TABLE public.table1 OWNER TO fordfrog;
 
 --
--- Data for Name: table1; Type: TABLE DATA; Schema: public; Owner: fordfrog
---
-
-COPY table1 (col1) FROM stdin;
-\.
-
-
---
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
 --
 

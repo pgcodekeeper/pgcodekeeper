@@ -73,15 +73,6 @@ SELECT pg_catalog.setval('table1_col1_seq', 1, false);
 
 ALTER TABLE ONLY table1 ALTER COLUMN col1 SET DEFAULT nextval('table1_col1_seq'::regclass);
 
-
---
--- Data for Name: table1; Type: TABLE DATA; Schema: public; Owner: fordfrog
---
-
-COPY table1 (col1) FROM stdin;
-\.
-
-
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
 --

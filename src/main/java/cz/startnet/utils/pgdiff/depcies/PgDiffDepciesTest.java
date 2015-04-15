@@ -168,8 +168,14 @@ public class PgDiffDepciesTest {
         final PgDiffArguments arguments = new PgDiffArguments();
         PgDatabase oldDatabase = getDB(getUsrSelIS(FILES_POSTFIX.ORIGINAL_SQL), arguments);
         PgDatabase newDatabase = getDB(getUsrSelIS(FILES_POSTFIX.NEW_SQL), arguments);
-        PgDatabase oldDbFull = getDB(getDBIS(FILES_POSTFIX.ORIGINAL_SQL), arguments);
-        PgDatabase newDbFull = getDB(getDBIS(FILES_POSTFIX.NEW_SQL), arguments);
+        PgDatabase oldDbFull, newDbFull;
+        if (userSelTemplate.equals(dbTemplate)) {
+            oldDbFull = oldDatabase;
+            newDbFull = newDatabase;
+        } else {
+            oldDbFull = getDB(getDBIS(FILES_POSTFIX.ORIGINAL_SQL), arguments);
+            newDbFull = getDB(getDBIS(FILES_POSTFIX.NEW_SQL), arguments);
+        }
         PgDiff.diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase, oldDbFull, newDbFull);
         writer.flush();
 

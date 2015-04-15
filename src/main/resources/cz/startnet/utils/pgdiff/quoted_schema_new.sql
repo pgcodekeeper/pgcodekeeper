@@ -64,22 +64,6 @@ CREATE TABLE testtable2 (
 ALTER TABLE "ABC".testtable2 OWNER TO fordfrog;
 
 --
--- Data for Name: testtable; Type: TABLE DATA; Schema: ABC; Owner: fordfrog
---
-
-COPY testtable (field1, field2, field3, field4) FROM stdin;
-\.
-
-
---
--- Data for Name: testtable2; Type: TABLE DATA; Schema: ABC; Owner: fordfrog
---
-
-COPY testtable2 (id, name) FROM stdin;
-\.
-
-
---
 -- Name: testindex; Type: INDEX; Schema: ABC; Owner: fordfrog; Tablespace: 
 --
 
