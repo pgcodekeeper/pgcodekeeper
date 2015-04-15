@@ -1,34 +1,76 @@
 package cz.startnet.utils.pgdiff.schema;
 
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.Random;
+
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.TEST;
+import cz.startnet.utils.pgdiff.loader.JdbcConnector;
+import cz.startnet.utils.pgdiff.loader.JdbcLoader;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
 import cz.startnet.utils.pgdiff.schema.PgType.PgTypeForm;
 
 public class TestClass1 {
+    
+    private static final String TEST_SQL = "test.sql";
+    private static final String dbName = MessageFormat.format(
+            TEST.REMOTE_DB_PATTERN,
+            String.valueOf(new Random().nextInt(Integer.MAX_VALUE)));
+    
+    private static PgDatabase dbPredef = fillDB();
+    @BeforeClass
+    public static void initDB() throws IOException {
+        ApgdiffTestUtils.createDB(dbName);
+        ApgdiffTestUtils.fillDB(dbName, TestClass1.class.getResourceAsStream(TEST_SQL));
+    }
+    
     @Test
-    public void TestCompareParser() throws InterruptedException  {
-        PgDatabase dbPredef = fillDB();
-        PgDatabase dbDump = PgDumpLoader.loadDatabaseSchemaFromDump(TestClass1.class.getResourceAsStream("test.sql"), new PgDiffArguments(), ParserClass.getAntlr(null, 1));
+    public void compareParser() throws InterruptedException  {
+        PgDatabase dbDump = PgDumpLoader.loadDatabaseSchemaFromDump(TestClass1.class.getResourceAsStream(TEST_SQL), new PgDiffArguments(), ParserClass.getAntlr(null, 1));
+        
         String result = CompareStatements.getDifferences(dbPredef, dbDump).toString();
         Assert.assertEquals("Db not equals: " + result, "Diff:\n", result);
     }
     
+    @Test
+    public void compareJDBC() throws IOException, InterruptedException {
+        JdbcConnector connector = new JdbcConnector(  TEST.REMOTE_HOST, 
+                TEST.REMOTE_PORT,
+                TEST.REMOTE_USERNAME, 
+                TEST.REMOTE_PASSWORD, 
+                dbName,
+                ApgdiffConsts.UTF_8, 
+                ApgdiffConsts.UTC);
+
+        PgDatabase dbJdbc = new JdbcLoader(connector, true, new PgDiffArguments()).getDbFromJdbc(null);
+        String result = CompareStatements.getDifferences(dbPredef, dbJdbc).toString();
+        Assert.assertEquals("Db not equals: " + result, "Diff:\n", result);
+    }
+    
+    @AfterClass
+    public static void removeDB() throws IOException {
+        ApgdiffTestUtils.dropDB(dbName);
+    }
     private static PgDatabase fillDB() {
         PgDatabase db = new PgDatabase();
         db.setComment("'Test DB'");
-        PgExtension ex1 = new PgExtension("dblink", "CREATE EXTENSION dblink SCHEMA dblink");
-        ex1.setSchema("dblink");
-        db.addExtension(ex1);
+//        PgExtension ex1 = new PgExtension("dblink", "CREATE EXTENSION dblink SCHEMA dblink");
+//        ex1.setSchema("dblink");
+//        db.addExtension(ex1);
         // schema
         PgSchema scm = new PgSchema("dblink", "Create schema dblink;");
         scm.setComment("'This is test schema'");
-        scm.setOwner("botov_av");
+        scm.setOwner("unit_test");
         db.addSchema(scm);
         scm = db.getSchema(ApgdiffConsts.PUBLIC);
         
@@ -50,14 +92,14 @@ public class TestClass1 {
         PgConstraint constr = new PgConstraint("dom1_check", "");
         constr.setDefinition("CHECK ((VALUE <> ''::text))");
         dom.addConstraint(constr);
-        dom.setOwner("botov_av");
+        dom.setOwner("unit_test");
         scm.addDomain(dom);
         // function
         PgFunction func = new PgFunction("increment", "CREATE OR REPLACE FUNCTION increment(IN i integer = 0, j integer default 0) RETURNS integer AS $$ BEGIN RETURN i + 1; END; $$ LANGUAGE plpgsql;");
         func.setComment("'this is test function'");
         func.setBody("LANGUAGE plpgsql\n    AS $$ BEGIN RETURN i + 1; END; $$");
         func.setReturns("integer");
-        func.setOwner("botov_av");
+        func.setOwner("unit_test");
         PgFunction.Argument arg = new Argument();
         arg.setName("i");
         arg.setDataType("integer");
@@ -94,7 +136,7 @@ public class TestClass1 {
         constr.setTableName("t1");
         constr.setDefinition("CHECK ((c2 <> ''::text))");
         tbl.addConstraint(constr);
-        tbl.setOwner("botov_av");
+        tbl.setOwner("unit_test");
         scm.addTable(tbl);
         // Sequence
         PgSequence seq = new PgSequence("seq1", "Create sequence seq1 increment by 1 minvalue 0 no maxvalue start with 0 cache 1 no cycle owned by t1.c1;");
@@ -105,12 +147,12 @@ public class TestClass1 {
         seq.setStartWith("0");
         seq.setCycle(false);
         seq.setOwnedBy("t1.c1");
-        seq.setOwner("botov_av");
+        seq.setOwner("unit_test");
         scm.addSequence(seq);
         // trig funct 
         func = new PgFunction("trfunc", "CREATE OR REPLACE FUNCTION trFunc() RETURNS trigger AS $$BEGIN RETURN 1; END; $$ LANGUAGE plpgsql;");
         func.setBody("LANGUAGE plpgsql\n    AS $$BEGIN RETURN 1; END; $$");
-        func.setOwner("botov_av");
+        func.setOwner("unit_test");
         func.setReturns("trigger");
         scm.addFunction(func);
         //trigger
@@ -136,7 +178,7 @@ public class TestClass1 {
         PgSelect sel = new PgSelect("SELECT t1.c1 AS i\n   FROM t1");
         sel.addColumn(new GenericColumn("public", "t1", "c1"));
         v1.setSelect(sel);
-        v1.setOwner("botov_av");
+        v1.setOwner("unit_test");
         scm.addView(v1);
         // type composite
         PgType typ1 = new PgType("typ_composite", PgTypeForm.COMPOSITE, "CREATE TYPE typ_composite AS (\nkey character varying(80) COLLATE pg_catalog.\"ru_RU.utf8\",\nval text COLLATE pg_catalog.\"en_GB\"\n);");
@@ -147,20 +189,20 @@ public class TestClass1 {
         col = new PgColumn("val");
         col.setType("text COLLATE pg_catalog.\"en_GB\"");
         typ1.addAttr(col);
-        typ1.setOwner("botov_av");
+        typ1.setOwner("unit_test");
         scm.addType(typ1);
         // type enum
         typ1 = new PgType("typ_enum", PgTypeForm.ENUM, "CREATE TYPE typ_enum AS ENUM (\n'wat',\n'wut',\n'weed'\n);");
         typ1.addEnum("'wat'");
         typ1.addEnum("'wut'");
         typ1.addEnum("'weed'");
-        typ1.setOwner("botov_av");
+        typ1.setOwner("unit_test");
         scm.addType(typ1);
         // type range
         typ1 = new PgType("typ_range", PgTypeForm.RANGE, "CREATE TYPE typ_range AS RANGE (\n\tsubtype = character varying,\n\tcollation = pg_catalog.\"ru_RU.utf8\"\n)");
         typ1.setSubtype("character varying");
         typ1.setCollation("pg_catalog.\"ru_RU.utf8\"");
-        typ1.setOwner("botov_av");
+        typ1.setOwner("unit_test");
         scm.addType(typ1);
         return db;
     }

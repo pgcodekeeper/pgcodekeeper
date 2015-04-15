@@ -2,7 +2,9 @@ package ru.taximaxim.codekeeper.apgdiff;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 
 import org.junit.Assert;
@@ -39,12 +41,16 @@ public class ApgdiffTestUtils {
     }
     
     public static void fillDB(String dbName) throws IOException {
+        fillDB(dbName, JdbcLoaderTest.class.getResourceAsStream(TEST.RESOURCE_DUMP));
+    }
+    
+    public static void fillDB(String dbName, InputStream in) throws IOException {
         JdbcConnector connector = new JdbcConnector(TEST.REMOTE_HOST, TEST.REMOTE_PORT,
                 TEST.REMOTE_USERNAME, TEST.REMOTE_PASSWORD, dbName,
                 ApgdiffConsts.UTF_8, ApgdiffConsts.UTC);
-        // dump schemas back
+     // dump schemas back
         try (InputStreamReader isr = new InputStreamReader(
-                JdbcLoaderTest.class.getResourceAsStream(TEST.RESOURCE_DUMP),
+                in,
                 "UTF-8");
                 BufferedReader reader = new BufferedReader(isr)) {
 
