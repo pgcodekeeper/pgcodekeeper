@@ -197,6 +197,8 @@ public class PgColumn extends PgStatementWithSearchPath {
                     .append(defaultStatement)
                     .append(';');
         }
+        appendPrivileges(sbSQL);
+        
         if (comment != null && !comment.isEmpty()) {
             sbSQL.append("\n\n");
             appendCommentSql(sbSQL);
@@ -303,6 +305,12 @@ public class PgColumn extends PgStatementWithSearchPath {
                         + newColumn.getName() + " SET NOT NULL;");
             }
         }
+        
+        if (!oldColumn.getGrants().equals(newColumn.getGrants())
+                || !oldColumn.getRevokes().equals(newColumn.getRevokes())) {
+            script.addStatement(newColumn.getPrivilegesSQL());
+        }
+        
         PgDiff.diffComments(oldColumn, newColumn, script);
         final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
         final PrintWriter writer = new UnixPrintWriter(diffInput, true);

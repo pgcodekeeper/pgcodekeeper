@@ -6,12 +6,15 @@ import java.util.List;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgPrivilege;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
+import cz.startnet.utils.pgdiff.schema.PgTable;
 
 public class CreateRule extends ParserAbstract {
     private Rule_commonContext ctx;
@@ -28,6 +31,7 @@ public class CreateRule extends ParserAbstract {
         }
         DbObjType type = null;
         List<Schema_qualified_nameContext> obj_name = new ArrayList<>();
+        List<IdentifierContext> col_names = new ArrayList<>();
         if (ctx.body_rule.obj_name != null) {
             obj_name = ctx.body_rule.obj_name.name;
         } else if (ctx.body_rule.on_table() != null) {
@@ -36,6 +40,7 @@ public class CreateRule extends ParserAbstract {
         } else if (ctx.body_rule.on_column() != null) {
             type = DbObjType.COLUMN;
             obj_name = ctx.body_rule.on_column().obj_name.name;
+            col_names = ctx.body_rule.on_column().column;
         } else if (ctx.body_rule.on_sequence() != null) {
             type = DbObjType.SEQUENCE;
             obj_name = ctx.body_rule.on_sequence().obj_name.name;
@@ -74,14 +79,15 @@ public class CreateRule extends ParserAbstract {
         
         for (Schema_qualified_nameContext name : obj_name) {
             addToDB(name, type, new PgPrivilege(ctx.REVOKE() != null,
-                    getFullCtxText(ctx.body_rule), getFullCtxText(ctx)));
+                    getFullCtxText(ctx.body_rule), getFullCtxText(ctx)),
+                    col_names);
         }
 
         return null;
     }
 
     private PgStatement addToDB(Schema_qualified_nameContext name,
-            DbObjType type, PgPrivilege pgPrivilege) {
+            DbObjType type, PgPrivilege pgPrivilege, List<IdentifierContext> col_names) {
         if (type == null) {
             return null;
         }
@@ -92,8 +98,6 @@ public class CreateRule extends ParserAbstract {
         PgStatement statement = null;
         switch (type) {
         case TABLE:
-        case COLUMN:
-            // нашли колонку, суем привилегии в таблицу так как так договорились
             if (thirdPart != null && !thirdPart.equals(secondPart)) {
                 schemaName = thirdPart;
                 firstPart = secondPart;
@@ -106,6 +110,28 @@ public class CreateRule extends ParserAbstract {
                 statement = db.getSchema(schemaName).getSequence(firstPart);
             }
             break;
+        case COLUMN:
+            if (thirdPart != null && !thirdPart.equals(secondPart)) {
+                schemaName = thirdPart;
+                firstPart = secondPart;
+            }
+            statement = db.getSchema(schemaName).getTable(firstPart);
+            if (statement == null) {
+                statement = db.getSchema(schemaName).getView(firstPart);
+            }
+            if (statement == null) {
+                statement = db.getSchema(schemaName).getSequence(firstPart);
+            }
+            if (statement.getStatementType() == DbObjType.TABLE) {
+                PgTable tbl = (PgTable) statement;
+                for (IdentifierContext col_name : col_names) {
+                    PgColumn col = tbl.getColumn(col_name.getText());
+                    if (col != null) {
+                        col.addPrivilege(pgPrivilege);
+                    }
+                }
+                return statement;
+            }
         case SEQUENCE:
             statement = db.getSchema(schemaName).getSequence(firstPart);
             break;

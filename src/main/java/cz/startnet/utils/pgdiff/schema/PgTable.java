@@ -186,6 +186,10 @@ public class PgTable extends PgStatementWithSearchPath {
 
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
+        
+        for (PgColumn col : columns) {
+            col.appendPrivileges(sbSQL);
+        }
 
         for (PgColumn column : getColumnsWithStatistics()) {
             sbSQL.append("\nALTER TABLE ONLY ");
