@@ -34,6 +34,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.DROP_TABLE_STATEMENT, true);
+        store.setDefault(DB_UPDATE_PREF.RESTART_WITH_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.SHOW_SCRIPT_OUTPUT_SEPARATELY, true);
         
         store.setDefault(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT, true);
