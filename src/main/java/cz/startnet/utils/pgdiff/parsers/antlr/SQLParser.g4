@@ -582,7 +582,7 @@ create_sequence_statement
     ;
 
 sequence_body
-    : INCREMENT BY? incr=NUMBER
+    : INCREMENT BY? incr=signed_numerical_literal
         | (MINVALUE minval=signed_numerical_literal | NO MINVALUE) 
         | (MAXVALUE maxval=signed_numerical_literal | NO MAXVALUE)
         | START WITH? start_val=signed_numerical_literal

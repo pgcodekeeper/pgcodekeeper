@@ -1404,7 +1404,7 @@ public class JdbcLoader implements PgCatalogStrings {
     }
 
     private void prepareDataForSchema(Long schemaOid) throws SQLException{
-        // fill in map with columns of tables and indecies of schema
+        // fill in map with columns of tables and indices of schema
         prepStatColumnsOfSchema.setLong(1, schemaOid);
         try(ResultSet res = prepStatColumnsOfSchema.executeQuery();){
             cachedColumnNamesByTableOid.clear();
