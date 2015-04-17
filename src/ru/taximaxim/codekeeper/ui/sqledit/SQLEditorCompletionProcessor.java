@@ -1,6 +1,7 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -65,9 +66,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             ICompletionProposal[] templates = new SQLEditorTemplateAssistProcessor()
                     .computeCompletionProposals(viewer, offset);
             if (templates != null) {
-                for (int i = 0; i < templates.length; i++) {
-                    result.add(templates[i]);
-                }
+                result.addAll(Arrays.asList(templates));
             }    
         }
         IEditorPart page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
