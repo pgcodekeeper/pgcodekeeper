@@ -9,6 +9,7 @@ import org.eclipse.ui.editors.text.templates.ContributionContextTypeRegistry;
 import org.eclipse.ui.editors.text.templates.ContributionTemplateStore;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 
 public class SQLEditorTemplateManager {
@@ -37,8 +38,7 @@ public class SQLEditorTemplateManager {
             try {
                 fStore.load();
             } catch (IOException e) {
-                e.printStackTrace();
-
+                Log.log(Log.LOG_ERROR, "Cannot load templates", e);
             }
         }
         return fStore;
