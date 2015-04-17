@@ -81,4 +81,6 @@ public class ApgdiffTestUtils {
                     "success", res);
         }
     }
+    
+    private ApgdiffTestUtils() {}
 }
