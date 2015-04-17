@@ -118,11 +118,12 @@ public class AlterTable extends ParserAbstract {
         if (table.getColumn(getName(tablAction.column)) == null) {
             PgColumn col = new PgColumn(getName(tablAction.column));
             String number = tablAction.integer.getText();
-            col.setStatistics(new Integer(number));
+            
+            col.setStatistics(Integer.valueOf(number));
             table.addColumn(col);
         } else {
             table.getColumn(getName(tablAction.column)).setStatistics(
-                    new Integer(tablAction.integer.getText()));
+                    Integer.valueOf(tablAction.integer.getText()));
         }
     }
 
