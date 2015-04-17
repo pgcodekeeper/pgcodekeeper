@@ -1,7 +1,5 @@
 package ru.taximaxim.codekeeper.ui.prefs;
 
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.texteditor.templates.TemplatePreferencePage;
 
@@ -26,10 +24,5 @@ public class SQLEditorTemplatePrefPage extends TemplatePreferencePage implements
 
     protected boolean isShowFormatterSetting() {
         return false;
-    }
-
-    @Override
-    protected Control createContents(Composite parent) {
-        return super.createContents(parent);
     }
 }
