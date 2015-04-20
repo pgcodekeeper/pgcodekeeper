@@ -548,8 +548,7 @@ public class DiffTableViewer extends Composite {
         String path = null;
         TreeElement parent = e.getParent();
         while(parent != null){
-            if (parent.getType() == DbObjType.CONTAINER || 
-                    parent.getType() == DbObjType.DATABASE){
+            if (parent.getType() == DbObjType.DATABASE){
                 parent = parent.getParent();
                 continue;
             }
@@ -701,16 +700,14 @@ public class DiffTableViewer extends Composite {
             List<TreeElement> result, List<IgnoredObject> ignores,
             PgDatabase dbSource, PgDatabase dbTarget) {
         boolean dontAdd = false;
-        if (tree.getType() != DbObjType.CONTAINER) {
-            for (IgnoredObject ign : ignores) {
-                if (ign.match(tree.getName())) {
-                    if (ign.isIgnoreContent()) {
-                        return result;
-                    } else {
-                        dontAdd = true;
-                    }
-                    break;
+        for (IgnoredObject ign : ignores) {
+            if (ign.match(tree.getName())) {
+                if (ign.isIgnoreContent()) {
+                    return result;
+                } else {
+                    dontAdd = true;
                 }
+                break;
             }
         }
         for (TreeElement child : tree.getChildren()) {
@@ -719,7 +716,6 @@ public class DiffTableViewer extends Composite {
         
         boolean shouldCompareEdits = tree.getSide() == DiffSide.BOTH && dbSource != null && dbTarget != null;
         if ((tree.getSide() == DiffSide.BOTH && tree.getParent() != null && tree.getParent().getSide() != DiffSide.BOTH)
-                || tree.getType() == DbObjType.CONTAINER
                 || tree.getType() == DbObjType.DATABASE 
                 || shouldCompareEdits && tree.getPgStatement(dbSource).compare(tree.getPgStatement(dbTarget))
                 || dontAdd) {
