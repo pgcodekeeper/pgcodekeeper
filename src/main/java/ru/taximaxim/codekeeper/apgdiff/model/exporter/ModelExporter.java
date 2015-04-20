@@ -601,8 +601,6 @@ public class ModelExporter {
             break;
             
         case DATABASE:
-        case CONTAINER:
-            // warning suppressor
         }
         
         return new File(file, ModelExporter.getExportedFilename(st) + (addExtension ? ".sql" : ""));

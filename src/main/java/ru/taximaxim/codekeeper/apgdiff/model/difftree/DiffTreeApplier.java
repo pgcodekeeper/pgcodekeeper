@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -144,12 +143,12 @@ public class DiffTreeApplier {
             return;
         }
         // and non-left CONTAINERs (except root)
-        if(el.getSide() == DiffSide.BOTH && el.getType() == DbObjType.CONTAINER && el.getParent() != null) {
+        if(el.getSide() == DiffSide.BOTH && el.getParent() != null) {
             return;
         }
         
         // add LEFT statements to no-copy list
-        if(el.getSide() == DiffSide.LEFT && el.getType() != DbObjType.CONTAINER) {
+        if(el.getSide() == DiffSide.LEFT) {
             lstNoCopy.add(el.getPgStatement(dbSource));
             return;
         }

@@ -14,7 +14,6 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
 public class TreeElement {
 
     public enum DbObjType {
-        CONTAINER, // not a DB object, just a container for further tree elements
         DATABASE,
         SCHEMA, EXTENSION,
         TYPE, DOMAIN, FUNCTION, SEQUENCE, TABLE, VIEW,
@@ -88,51 +87,6 @@ public class TreeElement {
         this.type = statement.getStatementType();
     }
     
-    public static TreeElement createContainer(DbObjType containerType, DiffSide side) {
-        String name = null;
-        switch(containerType) {
-        case CONTAINER:
-            name = "<Container>";
-            break;
-        case DATABASE:
-            name = "Databases";
-            break;
-        case EXTENSION:
-            name = "Extensions";
-            break;
-        case SCHEMA:
-            name = "Schemas";
-            break;
-        case FUNCTION:
-            name = "Functions";
-            break;
-        case SEQUENCE:
-            name = "Sequences";
-            break;
-        case TYPE:
-            name = "Types";
-            break;
-        case DOMAIN:
-            name = "Domains";
-            break;
-        case VIEW:
-            name = "Views";
-            break;
-        case TABLE:
-            name = "Tables";
-            break;
-        case INDEX:
-            name = "Indexes";
-            break;
-        case TRIGGER:
-            name = "Triggers";
-            break;
-        case CONSTRAINT:
-            name = "Constraints";
-            break;
-        }
-        return new TreeElement(name, DbObjType.CONTAINER, containerType, side);
-    }
     
     public boolean hasChildren() {
         return !children.isEmpty();
@@ -178,9 +132,7 @@ public class TreeElement {
     public int countDescendants() {
         int descendants = 0;
         for(TreeElement sub : children) {
-            if(sub.getType() != DbObjType.CONTAINER) {
-                descendants++;
-            }
+            descendants++;
             descendants += sub.countDescendants();
         }
         
@@ -201,7 +153,6 @@ public class TreeElement {
         switch(type) {
         // container (if root) and database end recursion
         // if container is not root - just pass through it
-        case CONTAINER:  return (parent == null) ? db : parent.getPgStatement(db);
         case DATABASE:   return db;
         
         // other elements just get from their parent, and their parent from a parent above them etc
@@ -231,7 +182,6 @@ public class TreeElement {
         
         boolean shouldCompareEdits = side == DiffSide.BOTH && dbSource != null && dbTarget != null;
         if ((side == DiffSide.BOTH && parent != null && parent.getSide() != DiffSide.BOTH)
-                || type == DbObjType.CONTAINER
                 || type == DbObjType.DATABASE 
                 || shouldCompareEdits && getPgStatement(dbSource).compare(getPgStatement(dbTarget))) {
             return result;

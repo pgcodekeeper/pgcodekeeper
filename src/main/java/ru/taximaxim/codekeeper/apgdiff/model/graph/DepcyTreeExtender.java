@@ -93,7 +93,7 @@ public class DepcyTreeExtender {
      * @return
      */
     public TreeElement copyInitialTreeWithDependantsOfDeleted(){
-        copy = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        copy = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
         
         // подготовка данных - заполняем сет dependantsOfDeleted
         fillInDependantsOfDeleted(root);
@@ -125,7 +125,6 @@ public class DepcyTreeExtender {
         
         // if not a Container and is marked for creation/edit
         if (filtered.getSide() != DiffSide.LEFT && 
-                filtered.getType() != DbObjType.CONTAINER && 
                 (markedToCreate = filtered.getPgStatement(dbTarget)) != null){
             depcySet.addAll(depRes.getCreateDepcies(markedToCreate));
         }
@@ -146,7 +145,6 @@ public class DepcyTreeExtender {
         
         // if not a Container and is marked for deletion
         if (filtered.getSide() == DiffSide.LEFT && 
-                filtered.getType() != DbObjType.CONTAINER && 
                 filtered.getType() != DbObjType.SEQUENCE && 
                 (markedToDelete = filtered.getPgStatement(dbSource)) != null){
             dependantsOfDeleted.addAll(depRes.getDropDepcies(markedToDelete));

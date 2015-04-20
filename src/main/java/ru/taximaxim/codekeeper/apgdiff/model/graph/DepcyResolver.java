@@ -309,7 +309,6 @@ public class DepcyResolver {
             return oldSchema.getType(statement.getName());
         case DOMAIN:
             return oldSchema.getDomain(statement.getName());
-        case CONTAINER:
         case DATABASE:
         default:
             break;
