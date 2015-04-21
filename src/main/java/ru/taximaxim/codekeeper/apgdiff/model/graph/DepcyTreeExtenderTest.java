@@ -350,7 +350,7 @@ class Predefined1 extends TreeElementCreator{
     public HashSet<TreeElement> getConflicting(TreeElement copy) {
         TreeElement contViews = copy.getChild(ApgdiffConsts.PUBLIC);
         // КОСТЫЛЬ - конфликтующие объекты копируются в одного парента с разными DiffSide 
-        TreeElement view = contViews.getChild(1);
+        TreeElement view = contViews.getChild(2);
         return new HashSet<>(Arrays.asList(view));
     }
 
