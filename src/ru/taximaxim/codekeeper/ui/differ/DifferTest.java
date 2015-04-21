@@ -205,8 +205,8 @@ class DifferData_2 extends DifferData{
     @Override
     Set<TreeElement> getUserSelection(TreeElement root) {
         Set<TreeElement> selection = new HashSet<>();
-        TreeElement schema = root.getChild("Database").getChild("Different").getChild("Schemas").getChild("public");
-        selection.add(schema.getChild("Tables").getChild("table1").getChild("Constraints").getChild("chk_table1"));
+        TreeElement schema = root.getChild("public");
+        selection.add(schema.getChild("table1").getChild("chk_table1"));
         return selection;
     }
     
@@ -235,8 +235,8 @@ class DifferData_3 extends DifferData{
     @Override
     Set<TreeElement> getUserSelection(TreeElement root) {
         Set<TreeElement> selection = new HashSet<>();
-        TreeElement schema = root.getChild("Database").getChild("Different").getChild("Schemas").getChild("public");
-        selection.add(schema.getChild("Tables").getChild("table1").getChild("Constraints").getChild("chk_table1"));
+        TreeElement schema = root.getChild("public");
+        selection.add(schema.getChild("table1").getChild("chk_table1"));
         return selection;
     }
     
@@ -264,8 +264,8 @@ class DifferData_4 extends DifferData{
     @Override
     Set<TreeElement> getUserSelection(TreeElement root) {
         Set<TreeElement> selection = new HashSet<>();
-        TreeElement schema = root.getChild("Database").getChild("Source only").getChild("Schemas").getChild("audit");
-        selection.add(schema.getChild("Tables").getChild("logged_actions"));
+        TreeElement schema = root.getChild("audit");
+        selection.add(schema.getChild("logged_actions"));
         return selection;
     }
 }
@@ -279,8 +279,8 @@ class DifferData_5 extends DifferData{
     @Override
     Set<TreeElement> getUserSelection(TreeElement root) {
         Set<TreeElement> selection = new HashSet<>();
-        TreeElement schema = root.getChild("Database").getChild("Target only").getChild("Schemas").getChild("public");
-        selection.add(schema.getChild("Views").getChild("v_auto_mark_two"));
+        TreeElement schema = root.getChild("public");
+        selection.add(schema.getChild("v_auto_mark_two"));
         return selection;
     }
     
