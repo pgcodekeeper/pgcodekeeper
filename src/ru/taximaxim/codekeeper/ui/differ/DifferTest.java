@@ -190,8 +190,8 @@ class DifferData_1 extends DifferData{
     @Override
     Set<TreeElement> getUserSelection(TreeElement root) {
         Set<TreeElement> selection = new HashSet<>();
-        TreeElement schema = root.getChild("Database").getChild("Different").getChild("Schemas").getChild("public");
-        selection.add(schema.getChild("Tables").getChild("table1").getChild("Constraints").getChild("chk_table1"));
+        TreeElement schema = root.getChild("public");
+        selection.add(schema.getChild("table1").getChild("chk_table1"));
         return selection;
     }
 }
