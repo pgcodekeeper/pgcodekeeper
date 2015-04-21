@@ -142,10 +142,6 @@ public class DiffTreeApplier {
         if(el.getSide() == DiffSide.RIGHT) {
             return;
         }
-        // and non-left CONTAINERs (except root)
-        if(el.getSide() == DiffSide.BOTH && el.getParent() != null) {
-            return;
-        }
         
         // add LEFT statements to no-copy list
         if(el.getSide() == DiffSide.LEFT) {

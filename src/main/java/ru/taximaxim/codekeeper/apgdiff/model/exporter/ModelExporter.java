@@ -154,7 +154,7 @@ public class ModelExporter {
     private void deleteObject(TreeElement el) throws IOException{
         PgStatement st = el.getPgStatement(oldDb);
 
-        TreeElement elParent = el.getParent().getParent();
+        TreeElement elParent = el.getParent();
         switch (st.getStatementType()) {
         case SCHEMA:
             // delete schema sql file
@@ -212,7 +212,7 @@ public class ModelExporter {
      */
     private void editObject(TreeElement el) throws IOException{
         PgStatement stInNew = el.getPgStatement(newDb);
-        TreeElement elParent = el.getParent().getParent();
+        TreeElement elParent = el.getParent();
 
         switch (stInNew.getStatementType()) {
         case SCHEMA:
@@ -287,7 +287,7 @@ public class ModelExporter {
      */
     private void createObject(TreeElement el) throws IOException{
         PgStatement stInNew = el.getPgStatement(newDb);
-        TreeElement elParent = el.getParent().getParent();
+        TreeElement elParent = el.getParent();
         
         switch (stInNew.getStatementType()) {
         case SCHEMA:

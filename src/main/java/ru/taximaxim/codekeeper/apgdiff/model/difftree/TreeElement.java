@@ -40,8 +40,6 @@ public class TreeElement {
     
     private final DbObjType type;
     
-    private final DbObjType containerType;
-    
     private final DiffSide side;
     
     private TreeElement parent;
@@ -56,10 +54,6 @@ public class TreeElement {
         return type;
     }
     
-    public DbObjType getContainerType() {
-        return containerType;
-    }
-    
     public DiffSide getSide() {
         return side;
     }
@@ -72,18 +66,15 @@ public class TreeElement {
         return parent;
     }
     
-    public TreeElement(String name, DbObjType type, DbObjType containerType,
-            DiffSide side) {
+    public TreeElement(String name, DbObjType type, DiffSide side) {
         this.name = name;
         this.type = type;
-        this.containerType = containerType;
         this.side = side;
     }
     
     public TreeElement(PgStatement statement, DiffSide side) {
         this.name = statement.getName();
         this.side = side;
-        this.containerType = null;
         this.type = statement.getStatementType();
     }
     
@@ -101,14 +92,6 @@ public class TreeElement {
         child.parent = this;
         child.hashcode = 0;
         children.add(child);
-    }
-    
-    public void addChildNotEmpty(TreeElement container) {
-        if(!container.hasChildren()) {
-            return;
-        }
-        
-        addChild(container);
     }
     
     public TreeElement getChild(String name, DbObjType type) {
@@ -203,14 +186,14 @@ public class TreeElement {
             
             if (child != null) {
                 if (copy == null){
-                    copy = new TreeElement(getName(), getType(), getContainerType(), getSide());
+                    copy = new TreeElement(getName(), getType(), getSide());
                 }
                 copy.addChild(child);
             }
         }
         
         if (copy == null && filterSubset.contains(this)){
-            copy = new TreeElement(getName(), getType(), getContainerType(), getSide());
+            copy = new TreeElement(getName(), getType(), getSide());
         }
         return copy;
     }
@@ -220,7 +203,6 @@ public class TreeElement {
         if (hashcode == 0) {
             final int prime = 31;
             int result = 1;
-            result = prime * result + ((containerType == null) ? 0 : containerType.hashCode());
             result = prime * result + ((name == null) ? 0 : name.hashCode());
             result = prime * result + ((side == null) ? 0 : side.hashCode());
             result = prime * result + ((type == null) ? 0 : type.hashCode());
@@ -243,7 +225,6 @@ public class TreeElement {
             TreeElement other = (TreeElement) obj;
             return Objects.equals(name, other.getName())
                     && Objects.equals(type, other.getType())
-                    && Objects.equals(containerType, other.getContainerType())
                     && Objects.equals(side, other.getSide())
                     && this.parent == other.parent;
         }

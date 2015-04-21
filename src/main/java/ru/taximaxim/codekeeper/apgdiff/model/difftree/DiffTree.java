@@ -17,7 +17,7 @@ public final class DiffTree {
             Collections.unmodifiableList(new ArrayList<PgStatement>());
 
     public static TreeElement create(PgDatabase left, PgDatabase right) {
-        TreeElement db = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
+        TreeElement db = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
         for (CompareResult res : compareLists(left.getExtensions(), right.getExtensions())) {
             db.addChild(new TreeElement(res.getStatement(), res.getSide()));

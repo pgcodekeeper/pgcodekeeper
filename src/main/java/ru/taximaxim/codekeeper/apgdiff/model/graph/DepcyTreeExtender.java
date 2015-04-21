@@ -93,7 +93,7 @@ public class DepcyTreeExtender {
      * @return
      */
     public TreeElement copyInitialTreeWithDependantsOfDeleted(){
-        copy = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
+        copy = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
         // подготовка данных - заполняем сет dependantsOfDeleted
         fillInDependantsOfDeleted(root);
@@ -205,7 +205,7 @@ public class DepcyTreeExtender {
                     side = DiffSide.BOTH;
                 }
                 TreeElement child = new TreeElement(elementInEmptyTree.getName(),
-                        elementInEmptyTree.getType(), elementInEmptyTree.getContainerType(), side);
+                        elementInEmptyTree.getType(), side);
                 elementInCopy.addChild(child);
                 elementInCopy = child;
                 
@@ -292,11 +292,11 @@ public class DepcyTreeExtender {
                     dependantsOfDeleted.remove(objectInSourceDb)){
                 sideChanged = true;
                 copy.addChild(new TreeElement(child.getName(), child.getType(),
-                        child.getContainerType(), DiffSide.LEFT));
+                        DiffSide.LEFT));
             }
             
             TreeElement childCopy = new TreeElement(child.getName(), child.getType(),
-                    child.getContainerType(), child.getSide());
+                    child.getSide());
             copy.addChild(childCopy);
             if(sideChanged){
                 conflictingDeletedElements.add(childCopy);
