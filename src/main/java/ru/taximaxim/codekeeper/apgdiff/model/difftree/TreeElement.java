@@ -42,6 +42,8 @@ public class TreeElement {
     
     private final DiffSide side;
     
+    private boolean selected;
+    
     private TreeElement parent;
     
     private List<TreeElement> children = new ArrayList<>();
@@ -66,6 +68,14 @@ public class TreeElement {
         return parent;
     }
     
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
     public TreeElement(String name, DbObjType type, DiffSide side) {
         this.name = name;
         this.type = type;
@@ -152,9 +162,9 @@ public class TreeElement {
         case INDEX:      return ((PgTable) parent.getPgStatement(db)).getIndex(name);
         case TRIGGER:    return ((PgTable) parent.getPgStatement(db)).getTrigger(name);
         case CONSTRAINT: return ((PgTable) parent.getPgStatement(db)).getConstraint(name);
+        default:
+            throw new IllegalStateException("Unknown element type: " + type);
         }
-        
-        throw new IllegalStateException("Unknown element type: " + type);
     }
 
     public List<TreeElement> generateElementsList(List<TreeElement> result, 
@@ -202,10 +212,13 @@ public class TreeElement {
     public int hashCode() {
         if (hashcode == 0) {
             final int prime = 31;
+            final int itrue = 1231;
+            final int ifalse = 1237;
             int result = 1;
             result = prime * result + ((name == null) ? 0 : name.hashCode());
             result = prime * result + ((side == null) ? 0 : side.hashCode());
             result = prime * result + ((type == null) ? 0 : type.hashCode());
+            result = prime * result + (selected ? itrue : ifalse);
             result = prime * result + System.identityHashCode(parent);
             
             if (result == 0) {
@@ -226,7 +239,8 @@ public class TreeElement {
             return Objects.equals(name, other.getName())
                     && Objects.equals(type, other.getType())
                     && Objects.equals(side, other.getSide())
-                    && this.parent == other.parent;
+                    && this.parent == other.parent
+                    && selected == other.selected;
         }
         return false;
     }

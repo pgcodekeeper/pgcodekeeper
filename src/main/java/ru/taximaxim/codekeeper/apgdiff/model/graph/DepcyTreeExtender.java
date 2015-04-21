@@ -23,6 +23,10 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
+/**
+ * дополняет дерево диффа новыми элементами, найденными по зависимостям
+ * имеющихся
+ */
 public class DepcyTreeExtender {
     private final Set<PgStatement> dependantsOfDeleted = new HashSet<>();
     /**

@@ -19,11 +19,14 @@ import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
- * Copies source DB into a new one updating, adding (from target DB)
- * and removing entries as per diff tree.
+ * Copies source DB into a new one updating, adding (from target DB) and
+ * removing entries as per diff tree.
  * 
  * LEFT elements are not copied (removed), RIGHT & BOTH elements are copied from
- * target DB (updated/added). 
+ * target DB (updated/added).
+ * 
+ * сливает 2 БД в новую на основании дерева диффа (и селекшенов в нем): дропает
+ * LEFT элементы, копирует новое состояние для RIGHT и BOTH
  */
 public class DiffTreeApplier {
 

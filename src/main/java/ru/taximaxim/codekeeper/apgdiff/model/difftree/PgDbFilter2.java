@@ -15,6 +15,10 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
+/**
+ * фильтрует базу на основании дерева диффа (и селекшенов в нем): не копирует
+ * элементы БД, которые не выбраны/отсутствуют в дереве
+ */
 public class PgDbFilter2 {
 
     private final PgDatabase db;
