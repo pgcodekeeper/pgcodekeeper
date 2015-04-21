@@ -58,8 +58,6 @@ public class DiffTreeViewer extends Composite {
     
     private LocalResourceManager lrm;
     
-    private String subTreeLeft, subTreeRight, subTreeBoth;
-    
     public DiffTreeViewer(Composite parent, int style) {
         super(parent, style);
 
@@ -273,15 +271,6 @@ public class DiffTreeViewer extends Composite {
     public void setTreeInput(TreeElement tree) {
         this.tree = tree;
         viewer.setInput(tree);
-    }
-    
-    public void setSubtreeNames(String subTreeLeft, String subTreeRight,
-            String subTreeBoth) {
-        this.subTreeLeft = subTreeLeft;
-        this.subTreeRight = subTreeRight;
-        this.subTreeBoth = subTreeBoth;
-        
-        viewer.refresh();
     }
     
     /**

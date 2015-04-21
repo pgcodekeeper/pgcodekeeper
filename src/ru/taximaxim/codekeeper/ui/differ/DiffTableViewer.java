@@ -118,7 +118,7 @@ public class DiffTableViewer extends Composite {
     private List<IgnoredObject> ignoredElements;
     
     // values are checkedSet states of the elements
-    private ElementsModel<TreeElement> elements = new ElementsModel<>();
+    private Set<TreeElement> elements = new HashSet<>();
     private final CheckStateListener checkListener = new CheckStateListener();
     private final TableViewerComparator comparator = new TableViewerComparator();
     
@@ -241,7 +241,7 @@ public class DiffTableViewer extends Composite {
 
                 @Override
                 public boolean isChecked(Object element) {
-                    return elements.get(element);
+                    return ((TreeElement)element).isSelected();
                 }
 
                 @Override
@@ -411,7 +411,7 @@ public class DiffTableViewer extends Composite {
             List<String> elementsToCheck = prevChecked.get(comboText);
             if (elementsToCheck != null && !elementsToCheck.isEmpty()) {
                 List<TreeElement> prevCheckedList = new ArrayList<>();
-                for (TreeElement elementKey : elements.keySet()) {
+                for (TreeElement elementKey : elements) {
                     if (elementsToCheck.contains((elementKey.getName()))) {
                         prevCheckedList.add(elementKey);
                     }
@@ -632,11 +632,11 @@ public class DiffTableViewer extends Composite {
     }
     
     private void setInputTreeElement(TreeElement treeElement) {
-        elements = new ElementsModel<>();
+        elements = new HashSet<>();
         if (treeElement != null) {
             generateFlatElementsMap(treeElement);
         }
-        viewer.setInput(elements.keySet());
+        viewer.setInput(elements);
         
         updateColumnsWidth();
         
@@ -675,7 +675,8 @@ public class DiffTableViewer extends Composite {
                 new ArrayList<TreeElement>(), ignores, dbSource.getDbObject(), dbTarget.getDbObject());
         
         for(TreeElement e : elementsList){
-            elements.put(e, false);
+            e.setSelected(false);
+            elements.add(e);
         }
     }
     
@@ -736,20 +737,31 @@ public class DiffTableViewer extends Composite {
     private void updateCheckedLabel() {
         lblCheckedCount.setText(MessageFormat.format(
                 Messages.DiffTableViewer_selected,
-                elements.getCheckedElementsCount()));
+                getSelected(elements).size()));
         lblCheckedCount.getParent().layout();
     }
     
     public int getCheckedElementsCount() {
-        return elements.getCheckedElementsCount();
+        return getSelected(elements).size();
     }
     
     public CheckboxTableViewer getViewer() {
         return viewer;
     }
     
+    /**
+     * Выставляет элементам статус 
+     * @param checkedStatus выбрано\не выбрано
+     * @return
+     */
     public Set<TreeElement> getCheckedElements(boolean checkedStatus) {
-        return elements.getCheckedElements(checkedStatus);
+        if (checkedStatus) {
+            return getSelected(elements);
+        } else {
+            Set<TreeElement> difference = new HashSet<>(elements);
+            difference.removeAll(getSelected(elements));
+            return difference;
+        }
     }
     
     /**
@@ -855,11 +867,12 @@ public class DiffTableViewer extends Composite {
     public void setInputCollection(Set<TreeElement> shouldBeDeleted, 
             TreeDiffer rootDiffer, boolean reverseDiffSide) {
         setDiffer(rootDiffer, reverseDiffSide);
-        elements = new ElementsModel<>();
+        elements = new HashSet<>();
         for (TreeElement e : shouldBeDeleted){
-            elements.put(e, true);
+            e.setSelected(true);
+            elements.add(e);
         }
-        viewer.setInput(elements.keySet());
+        viewer.setInput(elements);
         
         updateColumnsWidth();
         
@@ -872,6 +885,15 @@ public class DiffTableViewer extends Composite {
         initialSorting();
     }
     
+    private Set<TreeElement> getSelected(Set<TreeElement> elements) {
+        Set<TreeElement> res = new HashSet<>();
+        for (TreeElement el : elements) {
+            if (el.isSelected()) {
+                res.add(el);
+            }
+        }
+        return res;
+    }
     private void updateColumnsWidth(){
         PixelConverter pc = new PixelConverter(viewer.getControl());
         // set check column size to 4 chars
@@ -928,9 +950,9 @@ public class DiffTableViewer extends Composite {
         }
         
         private void setChecked(TreeElement element, boolean state) {
-            // do not populate the map outside of setInput()
-            if (elements.containsKey(element)) {
-                elements.put(element, state);
+            if (elements.contains(element)) {
+                element.setSelected(state);
+                elements.add(element);
             }
         }
     }
@@ -1004,7 +1026,7 @@ public class DiffTableViewer extends Composite {
                     res = getLocationColumnText(el1).compareTo(getLocationColumnText(el2));
                     break;
                 case CHECK:
-                    res = -Boolean.compare(elements.get(el1), elements.get(el2));
+                    res = -Boolean.compare(el1.isSelected(), el2.isSelected());
                     break;
                 case NAME:
                     res = el1.getName().compareTo(el2.getName());
@@ -1093,66 +1115,4 @@ public class DiffTableViewer extends Composite {
         }
     }
 
-}
-
-class ElementsModel<T> {
-    
-    private Map<T, Boolean> elements = new HashMap<>();
-
-    private boolean updateChecked;
-    private int checkedCount;
-    private Set<T> checkedSet = new HashSet<>();
-
-    public Boolean get(Object el) {
-        return elements.get(el);
-    }
-
-    public void put(T el, boolean isChecked) {
-        elements.put(el, isChecked);
-        if (isChecked) {
-            checkedSet.add(el);
-        } else {
-            checkedSet.remove(el);
-        }
-        updateChecked = true;
-    }
-
-    public boolean containsKey(Object element) {
-        return elements.containsKey(element);
-    }
-    
-    public Set<T> keySet() {
-        return elements.keySet();
-    }
-
-    public Set<Map.Entry<T, Boolean>> entrySet() {
-        return elements.entrySet();
-    }
-
-    public int size() {
-        return elements.size();
-    }
-    
-    public int getCheckedElementsCount() {
-        if (updateChecked) {
-            checkedCount = 0;
-            updateChecked = false;
-            for (boolean checked : elements.values()) {
-                if (checked) {
-                    ++checkedCount;
-                }
-            }
-        }
-        return checkedCount;
-    }
-    
-    public Set<T> getCheckedElements(boolean checkedStatus) {
-        if (checkedStatus) {
-            return checkedSet;
-        } else {
-            Set<T> difference = new HashSet<>(elements.keySet());
-            difference.removeAll(checkedSet);
-            return difference;
-        }
-    }
 }
