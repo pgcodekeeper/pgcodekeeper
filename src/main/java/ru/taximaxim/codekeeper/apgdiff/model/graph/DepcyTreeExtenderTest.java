@@ -253,7 +253,6 @@ public class DepcyTreeExtenderTest {
         }
         return     Objects.equals(firstTree.getName(), secondTree.getName())
                 && Objects.equals(firstTree.getType(), secondTree.getType())
-                && Objects.equals(firstTree.getContainerType(), secondTree.getContainerType())
                 && Objects.equals(firstTree.getSide(), secondTree.getSide());
     }
 }
@@ -263,27 +262,15 @@ class Predefined1 extends TreeElementCreator{
 
     @Override
     public TreeElement getFilteredTree() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
-        root.addChild(database);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
+        database.addChild(publicSchema);
         
-        TreeElement sourceOnly = new TreeElement("Target only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.RIGHT);
-        database.addChild(sourceOnly);
+        TreeElement view = new TreeElement("v1", DbObjType.VIEW, DiffSide.RIGHT);
+        publicSchema.addChild(view);
         
-        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.RIGHT);
-        sourceOnly.addChild(contSchemas);
-        
-        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
-        contSchemas.addChild(publicSchema);
-        
-        TreeElement contViews = new TreeElement("Views", DbObjType.CONTAINER, DbObjType.VIEW, DiffSide.RIGHT);
-        publicSchema.addChild(contViews);
-        
-        TreeElement view = new TreeElement("v1", DbObjType.VIEW, null, DiffSide.RIGHT);
-        contViews.addChild(view);
-        
-        return root;
+        return database;
     }
 
     @Override
@@ -297,135 +284,71 @@ class Predefined1 extends TreeElementCreator{
 
     @Override
     public TreeElement getExtraElement() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
-        root.addChild(database);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
+        database.addChild(publicSchema);
         
-        TreeElement sourceOnly = new TreeElement("Target only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.RIGHT);
-        database.addChild(sourceOnly);
-        
-        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.RIGHT);
-        sourceOnly.addChild(contSchemas);
-        
-        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
-        contSchemas.addChild(publicSchema);
-        
-        TreeElement contViews = new TreeElement("Views", DbObjType.CONTAINER, DbObjType.VIEW, DiffSide.RIGHT);
-        publicSchema.addChild(contViews);
-        
-        TreeElement view = new TreeElement("v1", DbObjType.VIEW, null, DiffSide.RIGHT);
-        contViews.addChild(view);
+        TreeElement view = new TreeElement("v1", DbObjType.VIEW, DiffSide.RIGHT);
+        publicSchema.addChild(view);
         
         return view;
     }
 
     @Override
     public Set<TreeElement> getExtraElementInTree(TreeElement filtered) {
-        TreeElement o = filtered.getChild("Database").getChild("Target only").getChild("Schemas").
-                getChild(ApgdiffConsts.PUBLIC).getChild("Views").getChild("v1");
+        TreeElement o = filtered.getChild(ApgdiffConsts.PUBLIC).getChild("v1");
         return new HashSet<>(Arrays.asList(o));
     }
 
     @Override
     public TreeElement getFilteredTreeForDeletion() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
-        root.addChild(database);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
+        database.addChild(publicSchema);
         
-        TreeElement sourceOnly = new TreeElement("Source only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.LEFT);
-        database.addChild(sourceOnly);
+        TreeElement view = new TreeElement("v2", DbObjType.VIEW, DiffSide.LEFT);
+        publicSchema.addChild(view);
         
-        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.LEFT);
-        sourceOnly.addChild(contSchemas);
-        
-        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
-        contSchemas.addChild(publicSchema);
-        
-        TreeElement contViews = new TreeElement("Views", DbObjType.CONTAINER, DbObjType.VIEW, DiffSide.LEFT);
-        publicSchema.addChild(contViews);
-        
-        TreeElement view = new TreeElement("v2", DbObjType.VIEW, null, DiffSide.LEFT);
-        contViews.addChild(view);
-        
-        return root;
+        return database;
     }
 
     @Override
     public TreeElement getFilteredCopy() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
-        root.addChild(database);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
+        database.addChild(publicSchema);
         
-        TreeElement sourceOnly = new TreeElement("Source only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.LEFT);
-        database.addChild(sourceOnly);
+        TreeElement view = new TreeElement("v2", DbObjType.VIEW, DiffSide.LEFT);
+        publicSchema.addChild(view);
         
-        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.LEFT);
-        sourceOnly.addChild(contSchemas);
+        TreeElement viewDependant = new TreeElement("v1", DbObjType.VIEW, DiffSide.LEFT);
+        publicSchema.addChild(viewDependant);
         
-        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
-        contSchemas.addChild(publicSchema);
-        
-        TreeElement contViews = new TreeElement("Views", DbObjType.CONTAINER, DbObjType.VIEW, DiffSide.LEFT);
-        publicSchema.addChild(contViews);
-        
-        TreeElement view = new TreeElement("v2", DbObjType.VIEW, null, DiffSide.LEFT);
-        contViews.addChild(view);
-        
-        TreeElement viewDependant = new TreeElement("v1", DbObjType.VIEW, null, DiffSide.LEFT);
-        contViews.addChild(viewDependant);
-        
-        return root;
+        return database;
     }
 
     @Override
     public TreeElement getFilteredTreeForConflicting() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
-        root.addChild(database);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
+        database.addChild(publicSchema);
         
+        TreeElement table = new TreeElement("t2", DbObjType.TABLE, DiffSide.LEFT);
+        publicSchema.addChild(table);
         
-        TreeElement sourceOnly = new TreeElement("Source only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.LEFT);
-        database.addChild(sourceOnly);
+        TreeElement view = new TreeElement("v1", DbObjType.VIEW, DiffSide.BOTH);
+        publicSchema.addChild(view);
         
-        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.LEFT);
-        sourceOnly.addChild(contSchemas);
-        
-        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
-        contSchemas.addChild(publicSchema);
-        
-        TreeElement contTable = new TreeElement("Tables", DbObjType.CONTAINER, DbObjType.TABLE, DiffSide.LEFT);
-        publicSchema.addChild(contTable);
-        
-        TreeElement table = new TreeElement("t2", DbObjType.TABLE, null, DiffSide.LEFT);
-        contTable.addChild(table);
-        
-        
-        TreeElement different = new TreeElement("Different", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.BOTH);
-        database.addChild(different);
-        
-        TreeElement contSchemasBoth = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.BOTH);
-        different.addChild(contSchemasBoth);
-        
-        TreeElement publicSchemaBoth = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
-        contSchemasBoth.addChild(publicSchemaBoth);
-        
-        TreeElement contViews = new TreeElement("Views", DbObjType.CONTAINER, DbObjType.VIEW, DiffSide.BOTH);
-        publicSchemaBoth.addChild(contViews);
-        
-        TreeElement view = new TreeElement("v1", DbObjType.VIEW, null, DiffSide.BOTH);
-        contViews.addChild(view);
-        
-        return root;
+        return database;
     }
 
     @Override
     public HashSet<TreeElement> getConflicting(TreeElement copy) {
-        TreeElement contViews = copy.getChild("Database").getChild("Different").getChild("Schemas").
-                getChild(ApgdiffConsts.PUBLIC).getChild("Views");
+        TreeElement contViews = copy.getChild(ApgdiffConsts.PUBLIC);
         // КОСТЫЛЬ - конфликтующие объекты копируются в одного парента с разными DiffSide 
         TreeElement view = contViews.getChild(1);
         return new HashSet<>(Arrays.asList(view));
@@ -441,27 +364,15 @@ class Predefined2 extends TreeElementCreator{
 
     @Override
     public TreeElement getFilteredTree() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
-        root.addChild(database);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.RIGHT);
+        database.addChild(publicSchema);
         
-        TreeElement sourceOnly = new TreeElement("Target only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.RIGHT);
-        database.addChild(sourceOnly);
+        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, DiffSide.RIGHT);
+        publicSchema.addChild(seq);
         
-        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.RIGHT);
-        sourceOnly.addChild(contSchemas);
-        
-        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.RIGHT);
-        contSchemas.addChild(publicSchema);
-        
-        TreeElement contSequences = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.RIGHT);
-        publicSchema.addChild(contSequences);
-        
-        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, null, DiffSide.RIGHT);
-        contSequences.addChild(seq);
-        
-        return root;
+        return database;
     }
 
     @Override
@@ -471,41 +382,27 @@ class Predefined2 extends TreeElementCreator{
 
     @Override
     public Set<TreeElement> getExtraElementInTree(TreeElement filtered) {
-        TreeElement o = filtered.getChild("Database").getChild("Target only").getChild("Schemas").
-        getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
+        TreeElement o = filtered.getChild(ApgdiffConsts.PUBLIC).getChild("s1");
         return new HashSet<>(Arrays.asList(o));
     }
 
     @Override
     public TreeElement getExtraElement() {
         TreeElement root = getFilteredTree();
-        return root.getChild("Database").getChild("Target only").getChild("Schemas").
-                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
+        return root.getChild(ApgdiffConsts.PUBLIC).getChild("s1");
     }
 
     @Override
     public TreeElement getFilteredTreeForDeletion() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
-        root.addChild(database);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
+        database.addChild(publicSchema);
         
-        TreeElement sourceOnly = new TreeElement("Source only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.LEFT);
-        database.addChild(sourceOnly);
+        TreeElement table = new TreeElement("t1", DbObjType.TABLE, DiffSide.LEFT);
+        publicSchema.addChild(table);
         
-        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.LEFT);
-        sourceOnly.addChild(contSchemas);
-        
-        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
-        contSchemas.addChild(publicSchema);
-        
-        TreeElement contTable = new TreeElement("Tables", DbObjType.CONTAINER, DbObjType.TABLE, DiffSide.LEFT);
-        publicSchema.addChild(contTable);
-        
-        TreeElement table = new TreeElement("t1", DbObjType.TABLE, null, DiffSide.LEFT);
-        contTable.addChild(table);
-        
-        return root;
+        return database;
     }
 
     @Override
@@ -515,43 +412,18 @@ class Predefined2 extends TreeElementCreator{
 
     @Override
     public TreeElement getFilteredTreeForConflicting() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
-        root.addChild(database);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
+        database.addChild(publicSchema);
         
-        TreeElement sourceOnly = new TreeElement("Source only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.LEFT);
-        database.addChild(sourceOnly);
+        TreeElement table = new TreeElement("t2", DbObjType.TABLE, DiffSide.LEFT);
+        publicSchema.addChild(table);
         
-        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.LEFT);
-        sourceOnly.addChild(contSchemas);
+        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, DiffSide.BOTH);
+        publicSchema.addChild(seq);
         
-        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
-        contSchemas.addChild(publicSchema);
-        
-        TreeElement contTable = new TreeElement("Tables", DbObjType.CONTAINER, DbObjType.TABLE, DiffSide.LEFT);
-        publicSchema.addChild(contTable);
-        
-        TreeElement table = new TreeElement("t2", DbObjType.TABLE, null, DiffSide.LEFT);
-        contTable.addChild(table);
-        
-        
-        TreeElement different = new TreeElement("Different", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.BOTH);
-        database.addChild(different);
-        
-        TreeElement contSchemasBoth = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.BOTH);
-        different.addChild(contSchemasBoth);
-        
-        TreeElement publicSchemaBoth = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
-        contSchemasBoth.addChild(publicSchemaBoth);
-        
-        TreeElement contSequencesBoth = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.BOTH);
-        publicSchemaBoth.addChild(contSequencesBoth);
-        
-        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, null, DiffSide.BOTH);
-        contSequencesBoth.addChild(seq);
-        
-        return root;
+        return database;
     }
 
     @Override
@@ -573,27 +445,15 @@ class Predefined3 extends TreeElementCreator{
 
     @Override
     public TreeElement getFilteredTree() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
-        root.addChild(database);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.RIGHT);
+        database.addChild(publicSchema);
         
-        TreeElement sourceOnly = new TreeElement("Target only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.RIGHT);
-        database.addChild(sourceOnly);
+        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, DiffSide.RIGHT);
+        publicSchema.addChild(seq);
         
-        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.RIGHT);
-        sourceOnly.addChild(contSchemas);
-        
-        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.RIGHT);
-        contSchemas.addChild(publicSchema);
-        
-        TreeElement contSequences = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.RIGHT);
-        publicSchema.addChild(contSequences);
-        
-        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, null, DiffSide.RIGHT);
-        contSequences.addChild(seq);
-        
-        return root;
+        return database;
     }
 
     @Override
@@ -606,40 +466,26 @@ class Predefined3 extends TreeElementCreator{
 
     @Override
     public Set<TreeElement> getExtraElementInTree(TreeElement filtered) {
-        TreeElement o = filtered.getChild("Database").getChild("Target only").getChild("Schemas").
-                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
+        TreeElement o = filtered.getChild(ApgdiffConsts.PUBLIC).getChild("s1");
         return new HashSet<>(Arrays.asList(o));
     }
 
     @Override
     public TreeElement getExtraElement() {
         TreeElement root = getFilteredTree();
-        return root.getChild("Database").getChild("Target only").getChild("Schemas").
-                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
+        return root.getChild(ApgdiffConsts.PUBLIC).getChild("s1");
     }
 
     @Override
     public TreeElement getFilteredTreeForDeletion() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
-        root.addChild(database);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
+        database.addChild(publicSchema);
         
-        TreeElement sourceOnly = new TreeElement("Source only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.LEFT);
-        database.addChild(sourceOnly);
-        
-        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.LEFT);
-        sourceOnly.addChild(contSchemas);
-        
-        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
-        contSchemas.addChild(publicSchema);
-        
-        TreeElement contTable = new TreeElement("Tables", DbObjType.CONTAINER, DbObjType.TABLE, DiffSide.LEFT);
-        publicSchema.addChild(contTable);
-        
-        TreeElement table = new TreeElement("t1", DbObjType.TABLE, null, DiffSide.LEFT);
-        contTable.addChild(table);
-        return root;
+        TreeElement table = new TreeElement("t1", DbObjType.TABLE, DiffSide.LEFT);
+        publicSchema.addChild(table);
+        return database;
     }
 
     @Override
@@ -682,27 +528,15 @@ class Predefined4 extends TreeElementCreator{
 
     @Override
     public TreeElement getFilteredTree() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
-        root.addChild(database);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.RIGHT);
+        database.addChild(publicSchema);
         
-        TreeElement sourceOnly = new TreeElement("Target only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.RIGHT);
-        database.addChild(sourceOnly);
+        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, DiffSide.RIGHT);
+        publicSchema.addChild(seq);
         
-        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.RIGHT);
-        sourceOnly.addChild(contSchemas);
-        
-        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.RIGHT);
-        contSchemas.addChild(publicSchema);
-        
-        TreeElement contSequences = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.RIGHT);
-        publicSchema.addChild(contSequences);
-        
-        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, null, DiffSide.RIGHT);
-        contSequences.addChild(seq);
-        
-        return root;
+        return database;
     }
 
     @Override
@@ -712,41 +546,27 @@ class Predefined4 extends TreeElementCreator{
 
     @Override
     public Set<TreeElement> getExtraElementInTree(TreeElement filtered) {
-        TreeElement o = filtered.getChild("Database").getChild("Target only").getChild("Schemas").
-                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
+        TreeElement o = filtered.getChild(ApgdiffConsts.PUBLIC).getChild("s1");
         return new HashSet<>(Arrays.asList(o));
     }
 
     @Override
     public TreeElement getExtraElement() {
         TreeElement root = getFilteredTree();
-        return root.getChild("Database").getChild("Target only").getChild("Schemas").
-                getChild(ApgdiffConsts.PUBLIC).getChild("Sequences").getChild("s1");
+        return root.getChild(ApgdiffConsts.PUBLIC).getChild("s1");
     }
 
     @Override
     public TreeElement getFilteredTreeForDeletion() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
-        root.addChild(database);
-        
-        TreeElement sourceOnly = new TreeElement("Source only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.LEFT);
-        database.addChild(sourceOnly);
-        
-        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.LEFT);
-        sourceOnly.addChild(contSchemas);
-        
-        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, null, DiffSide.BOTH);
-        contSchemas.addChild(publicSchema);
-        
-        TreeElement contSeq = new TreeElement("Sequences", DbObjType.CONTAINER, DbObjType.SEQUENCE, DiffSide.LEFT);
-        publicSchema.addChild(contSeq);
+        TreeElement publicSchema = new TreeElement(ApgdiffConsts.PUBLIC, DbObjType.SCHEMA, DiffSide.BOTH);
+        database.addChild(publicSchema);
 
-        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, null, DiffSide.LEFT);
-        contSeq.addChild(seq);
+        TreeElement seq = new TreeElement("s1", DbObjType.SEQUENCE, DiffSide.LEFT);
+        publicSchema.addChild(seq);
         
-        return root;
+        return database;
     }
 
     @Override
@@ -775,33 +595,18 @@ class Predefined5 extends TreeElementCreator{
 
     @Override
     public TreeElement getFilteredTree() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         
-        TreeElement database = new TreeElement("Database", DbObjType.DATABASE, null, DiffSide.BOTH);
-        root.addChild(database);
+        TreeElement republicSchema = new TreeElement("republic", DbObjType.SCHEMA, DiffSide.BOTH);
+        database.addChild(republicSchema);
         
-        TreeElement sourceOnly = new TreeElement("Target only", DbObjType.CONTAINER, DbObjType.CONTAINER, DiffSide.RIGHT);
-        database.addChild(sourceOnly);
+        TreeElement table = new TreeElement("t_test2foreign", DbObjType.TABLE, DiffSide.RIGHT);
+        republicSchema.addChild(table);
         
-        TreeElement contSchemas = new TreeElement("Schemas", DbObjType.CONTAINER, DbObjType.SCHEMA, DiffSide.BOTH);
-        sourceOnly.addChild(contSchemas);
+        TreeElement cons = new TreeElement("fk_t_test2foreign", DbObjType.CONSTRAINT, DiffSide.RIGHT);
+        table.addChild(cons);
         
-        TreeElement republicSchema = new TreeElement("republic", DbObjType.SCHEMA, null, DiffSide.BOTH);
-        contSchemas.addChild(republicSchema);
-        
-        TreeElement contTables = new TreeElement("Tables", DbObjType.CONTAINER, DbObjType.TABLE, DiffSide.BOTH);
-        republicSchema.addChild(contTables);
-        
-        TreeElement table = new TreeElement("t_test2foreign", DbObjType.TABLE, null, DiffSide.RIGHT);
-        contTables.addChild(table);
-        
-        TreeElement consCont = new TreeElement("Constraints", DbObjType.CONTAINER, null, DiffSide.RIGHT);
-        table.addChild(consCont);
-        
-        TreeElement cons = new TreeElement("fk_t_test2foreign", DbObjType.CONSTRAINT, null, DiffSide.RIGHT);
-        consCont.addChild(cons);
-        
-        return root;
+        return database;
     }
 
     @Override
@@ -815,7 +620,7 @@ class Predefined5 extends TreeElementCreator{
    
     @Override
     public TreeElement getExtraElement() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement root = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         return root;
     }
 
@@ -826,19 +631,19 @@ class Predefined5 extends TreeElementCreator{
 
     @Override
     public TreeElement getFilteredTreeForDeletion() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement root = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         return root;
     }
 
     @Override
     public TreeElement getFilteredCopy() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement root = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         return root;
     }
 
     @Override
     public TreeElement getFilteredTreeForConflicting() {
-        TreeElement root = new TreeElement("<root>", DbObjType.CONTAINER, DbObjType.DATABASE, DiffSide.BOTH);
+        TreeElement root = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         return root;
     }
 

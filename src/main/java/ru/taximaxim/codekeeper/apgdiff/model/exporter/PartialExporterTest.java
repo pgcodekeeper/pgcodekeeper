@@ -152,7 +152,7 @@ public class PartialExporterTest {
             new ModelExporter(exportDirPartial.toFile(), dbSource, encoding).exportFull();
             // full export of new to newFull directory
             new ModelExporter(exportDirNewFull.toFile(), dbNew, encoding).exportFull();
-            
+            // накатываем на полную базу частичные изменения
             new ModelExporter(exportDirPartial.toFile(), dbNew, dbSource, preset.getSelectedList(), encoding).exportPartial();
             
             walkAndComare(exportDirFull, exportDirPartial, exportDirNewFull, preset);
@@ -241,8 +241,8 @@ class PartialExportInfoImpl_1 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Different").getChild("Schemas").getChild("public");
-        selected.add(schema.getChild("Tables").getChild("table1").getChild("Constraints").getChild("chk_table1"));
+        TreeElement schema = diffTree.getChild("public");
+        selected.add(schema.getChild("table1").getChild("chk_table1"));
         return selected;
     }
 
@@ -261,8 +261,8 @@ class PartialExportInfoImpl_2 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Source only").getChild("Schemas").getChild("public");
-        selected.add(schema.getChild("Tables").getChild("rep2_statistics"));
+        TreeElement schema = diffTree.getChild("public");
+        selected.add(schema.getChild("rep2_statistics"));
         return selected;
     }
 
@@ -281,8 +281,8 @@ class PartialExportInfoImpl_3 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Source only").getChild("Schemas").getChild("public");
-        selected.add(schema.getChild("Tables").getChild("tz_worker_group").getChild("Triggers").getChild("trd_tz_worker_group"));
+        TreeElement schema = diffTree.getChild("public");
+        selected.add(schema.getChild("tz_worker_group").getChild("trd_tz_worker_group"));
         return selected;
     }
 
@@ -301,8 +301,8 @@ class PartialExportInfoImpl_4 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Source only").getChild("Schemas").getChild("public");
-        selected.add(schema.getChild("Functions").getChild("autocategorydel(integer)"));
+        TreeElement schema = diffTree.getChild("public");
+        selected.add(schema.getChild("autocategorydel(integer)"));
         return selected;
     }
 
@@ -321,8 +321,8 @@ class PartialExportInfoImpl_5 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Source only").getChild("Schemas").getChild("public");
-        selected.add(schema.getChild("Functions").getChild("atsqueuedel(integer, integer, integer)"));
+        TreeElement schema = diffTree.getChild("public");
+        selected.add(schema.getChild("atsqueuedel(integer, integer, integer)"));
         return selected;
     }
 
@@ -341,8 +341,8 @@ class PartialExportInfoImpl_6 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Different").getChild("Schemas").getChild("public");
-        selected.add(schema.getChild("Tables").getChild("rep2_workpool_data"));
+        TreeElement schema = diffTree.getChild("public");
+        selected.add(schema.getChild("rep2_workpool_data"));
         return selected;
     }
 
@@ -361,8 +361,8 @@ class PartialExportInfoImpl_7 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Target only").getChild("Schemas").getChild("public");
-        selected.add(schema.getChild("Functions").getChild("automarkdel_new(integer)"));
+        TreeElement schema = diffTree.getChild("public");
+        selected.add(schema.getChild("automarkdel_new(integer)"));
         return selected;
     }
 
@@ -381,8 +381,8 @@ class PartialExportInfoImpl_8 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Target only").getChild("Schemas").getChild("public");
-        selected.add(schema.getChild("Functions").getChild("automarkdel_new_new(integer)"));
+        TreeElement schema = diffTree.getChild("public");
+        selected.add(schema.getChild("automarkdel_new_new(integer)"));
         return selected;
     }
 
@@ -401,9 +401,9 @@ class PartialExportInfoImpl_9 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Target only").getChild("Schemas").getChild("public");
-        selected.add(schema.getChild("Functions").getChild("automarkdel_new_new(integer)"));
-        selected.add(schema.getChild("Functions").getChild("automarkdel_new_new(integer, integer)"));
+        TreeElement schema = diffTree.getChild("public");
+        selected.add(schema.getChild("automarkdel_new_new(integer)"));
+        selected.add(schema.getChild("automarkdel_new_new(integer, integer)"));
         return selected;
     }
 
@@ -422,8 +422,8 @@ class PartialExportInfoImpl_10 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Target only").getChild("Schemas").getChild("public");
-        selected.add(schema.getChild("Views").getChild("v_auto_mark_two"));
+        TreeElement schema = diffTree.getChild("public");
+        selected.add(schema.getChild("v_auto_mark_two"));
         return selected;
     }
 
@@ -442,8 +442,8 @@ class PartialExportInfoImpl_11 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Target only").getChild("Schemas").getChild("public");
-        selected.add(schema.getChild("Tables").getChild("t_auto_mark").getChild("Constraints").getChild("chk_t_auto_mark"));
+        TreeElement schema = diffTree.getChild("public");
+        selected.add(schema.getChild("t_auto_mark").getChild("chk_t_auto_mark"));
         return selected;
     }
 
@@ -462,7 +462,7 @@ class PartialExportInfoImpl_12 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Target only").getChild("Schemas").getChild("newschema");
+        TreeElement schema = diffTree.getChild("newschema");
         selected.add(schema);
         return selected;
     }
@@ -482,8 +482,8 @@ class PartialExportInfoImpl_13 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Source only").getChild("Schemas").getChild("audit");
-        selected.add(schema.getChild("Tables").getChild("logged_actions"));
+        TreeElement schema = diffTree.getChild("audit");
+        selected.add(schema.getChild("logged_actions"));
         return selected;
     }
 
@@ -502,9 +502,9 @@ class PartialExportInfoImpl_14 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Source only").getChild("Schemas").getChild("audit");
-        selected.add(schema.getChild("Tables").getChild("logged_actions"));
-        selected.add(schema.getChild("Tables").getChild("tz_audit_201305"));
+        TreeElement schema = diffTree.getChild("audit");
+        selected.add(schema.getChild("logged_actions"));
+        selected.add(schema.getChild("tz_audit_201305"));
         return selected;
     }
 
@@ -523,7 +523,7 @@ class PartialExportInfoImpl_15 extends PartialExportInfo{
     @Override
     public List<TreeElement> getSelectedList() {
         List<TreeElement> selected = new ArrayList<>();
-        TreeElement schema = diffTree.getChild("Database").getChild("Source only").getChild("Schemas").getChild("audit");
+        TreeElement schema = diffTree.getChild("audit");
         selected.add(schema);
         return selected;
     }
