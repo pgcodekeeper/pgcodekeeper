@@ -11,6 +11,10 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
 
+/**
+ * служит оберткой для объектов БД, представляет состояние объекта между старой
+ * и новой БД
+ */
 public class TreeElement {
 
     public enum DbObjType {
@@ -166,7 +170,30 @@ public class TreeElement {
             throw new IllegalStateException("Unknown element type: " + type);
         }
     }
-
+    
+    /**
+     * Ищет элемент в дереве
+     * @param st
+     * @return
+     */
+    public TreeElement findElement(PgStatement st) {
+        if (st.getStatementType() == DbObjType.DATABASE) {
+            TreeElement root = this;
+            while (root.parent != null) {
+                root = root.parent;
+            }
+            return root;
+        }
+        TreeElement parent = findElement(st.getParent());
+        return parent == null ? null : parent.getChild(st.getName(), st.getStatementType());
+    }
+    /**
+     * создает список с измененными элементами
+     * @param result
+     * @param dbSource
+     * @param dbTarget
+     * @return
+     */
     public List<TreeElement> generateElementsList(List<TreeElement> result, 
             PgDatabase dbSource, PgDatabase dbTarget) {
         for (TreeElement child : getChildren()) {
@@ -185,13 +212,27 @@ public class TreeElement {
     }
     
     /**
+     * Принимает дерево и выбирает из него все выбранные элементы
+     * @param root дерево
+     * @param result список с выбранными элементами
+     */
+    public static void getSelected(TreeElement root, List<TreeElement> result){
+        if (root.isSelected()) {
+            result.add(root);
+        }
+        for (TreeElement child : root.getChildren()) {
+            getSelected(child, result);
+        }
+    }
+    
+    /**
      * Recursively walk a tree, copying nodes that exist in filterSubset to returned tree.
      * Important: filterSubset should be a subset of this tree
      * (because TreeElement equals method compares references of parents)
      */
     public TreeElement getFilteredCopy(Set<TreeElement> filterSubset){
         TreeElement copy = null;
-        for(TreeElement e : children){
+        for(TreeElement e : children) {
             TreeElement child = e.getFilteredCopy(filterSubset);
             
             if (child != null) {
@@ -212,13 +253,10 @@ public class TreeElement {
     public int hashCode() {
         if (hashcode == 0) {
             final int prime = 31;
-            final int itrue = 1231;
-            final int ifalse = 1237;
             int result = 1;
             result = prime * result + ((name == null) ? 0 : name.hashCode());
             result = prime * result + ((side == null) ? 0 : side.hashCode());
             result = prime * result + ((type == null) ? 0 : type.hashCode());
-            result = prime * result + (selected ? itrue : ifalse);
             result = prime * result + System.identityHashCode(parent);
             
             if (result == 0) {
@@ -239,8 +277,7 @@ public class TreeElement {
             return Objects.equals(name, other.getName())
                     && Objects.equals(type, other.getType())
                     && Objects.equals(side, other.getSide())
-                    && this.parent == other.parent
-                    && selected == other.selected;
+                    && this.parent == other.parent;
         }
         return false;
     }
