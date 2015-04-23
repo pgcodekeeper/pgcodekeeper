@@ -93,6 +93,10 @@ public class PgDiffArguments {
      */
     private boolean ignoreAlterColumn;
     /**
+     * Whether to ignore ALTER SEQUENCE RESTART WITH on script.
+     */
+    private boolean ignoreRestartWith;
+    /**
      * Whether to display apgdiff version.
      */
     private boolean version;
@@ -370,6 +374,22 @@ public class PgDiffArguments {
         return ignoreAlterColumn;
     }
 
+
+    /**
+     * Setter for {@link #ignoreRestartWith}.
+     * @param ignoreDropTable {@link #ignoreRestartWith}.
+     */
+    public void setIgnoreRestartWith(boolean ignoreRestartWith) {
+        this.ignoreRestartWith = ignoreRestartWith;
+    }
+    /**
+      * Getter for {@link #ignoreRestartWith}.
+     * @return {@link #ignoreRestartWith}.
+     */
+    public boolean isIgnoreRestartWith() {
+        return ignoreRestartWith;
+    }
+    
     /**
      * Getter for {@link #outputIgnoredStatements}.
      *
@@ -482,6 +502,9 @@ public class PgDiffArguments {
                         break;
                     case DROP_TABLE:
                         setIgnoreDropTable(true);
+                        break;
+                    case RESTART_WITH:
+                        setIgnoreRestartWith(true);
                         break;
                     }
                 }
