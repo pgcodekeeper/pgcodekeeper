@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -601,18 +602,39 @@ public class DiffTableViewer extends Composite {
         viewer.getTable().setSortDirection(comparator.getSwtDirection());
         viewer.getTable().setSortColumn(column);
     }
-    
+    /**
+     * Устанавливает входные данные для таблицы
+     * @param treediffer содержит дерево + базы
+     * @param reverseSide содержит сторону
+     */
     public void setInput(TreeDiffer treediffer, boolean reverseSide) {
         setDiffer(treediffer, reverseSide);
         
         setInputTreeElement(treeRoot);
     }
-    
-    public void setFilteredInput(TreeElement filteredElement, 
+    /**
+     * Используется в коммит диалоге для установки нижних элементов(зависимостей)
+     * @param shouldBeDeleted элементы для показа
+     * @param rootDiffer дерево + базы
+     * @param reverseDiffSide сторона
+     */
+    public void setInputCollection(Collection<TreeElement> shouldBeDeleted, 
             TreeDiffer rootDiffer, boolean reverseDiffSide) {
         setDiffer(rootDiffer, reverseDiffSide);
         
-        setInputTreeElement(filteredElement);
+        elements = new HashSet<>();
+        elements.addAll(shouldBeDeleted);
+        
+        initializeViewer();
+    }
+    
+    private void setInputTreeElement(TreeElement treeElement) {
+        elements = new HashSet<>();
+        if (treeElement != null) {
+            generateFlatElementsMap(treeElement);
+        }
+        
+        initializeViewer();
     }
 
     private void setDiffer(TreeDiffer differ, boolean reverseDiffSide) {
@@ -630,12 +652,8 @@ public class DiffTableViewer extends Composite {
             this.dbTarget = null;
         }
     }
-    
-    private void setInputTreeElement(TreeElement treeElement) {
-        elements = new HashSet<>();
-        if (treeElement != null) {
-            generateFlatElementsMap(treeElement);
-        }
+
+    private void initializeViewer() {
         viewer.setInput(elements);
         
         updateColumnsWidth();
@@ -750,7 +768,7 @@ public class DiffTableViewer extends Composite {
     }
     
     /**
-     * Выставляет элементам статус 
+     * Возвращает элементы с указанным статусом 
      * @param checkedStatus выбрано\не выбрано
      * @return
      */
@@ -769,12 +787,11 @@ public class DiffTableViewer extends Composite {
      * 
      * Список объектов в таблице должен быть поднабором рута, который попадает в таблицу из TreeDiffer
      */
-    public TreeElement filterDiffTree() {
+    public TreeElement getInputTree() {
         if (treeRoot == null){
             return null;
         }
-        Log.log(Log.LOG_INFO, "Filtering diff tree based on user selection"); //$NON-NLS-1$
-        return treeRoot.getFilteredCopy(getCheckedElements(true));
+        return treeRoot;
     }
     
     private MenuManager getViewerMenu() {
@@ -864,27 +881,6 @@ public class DiffTableViewer extends Composite {
         viewerRefresh();
     }
     
-    public void setInputCollection(Set<TreeElement> shouldBeDeleted, 
-            TreeDiffer rootDiffer, boolean reverseDiffSide) {
-        setDiffer(rootDiffer, reverseDiffSide);
-        elements = new HashSet<>();
-        for (TreeElement e : shouldBeDeleted){
-            e.setSelected(true);
-            elements.add(e);
-        }
-        viewer.setInput(elements);
-        
-        updateColumnsWidth();
-        
-        updateObjectsLabel();
-        
-        if (!viewOnly) {
-            updateCheckedLabel();
-        }
-        
-        initialSorting();
-    }
-    
     private Set<TreeElement> getSelected(Set<TreeElement> elements) {
         Set<TreeElement> res = new HashSet<>();
         for (TreeElement el : elements) {
@@ -950,9 +946,11 @@ public class DiffTableViewer extends Composite {
         }
         
         private void setChecked(TreeElement element, boolean state) {
-            if (elements.contains(element)) {
-                element.setSelected(state);
-                elements.add(element);
+            for (TreeElement el : elements) {
+                if (el.equals(element)) {
+                    el.setSelected(state);
+                    break;
+                }
             }
         }
     }

@@ -15,6 +15,9 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 
+/**
+ * строит дерево сравнения из двух баз 
+ */
 public class TreeDiffer implements IRunnableWithProgress {
     
     private final DbSource dbSource, dbTarget;

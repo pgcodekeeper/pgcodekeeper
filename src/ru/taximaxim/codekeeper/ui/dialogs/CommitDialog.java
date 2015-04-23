@@ -1,6 +1,8 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jface.dialogs.TrayDialog;
@@ -18,6 +20,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
@@ -26,7 +30,6 @@ import ru.taximaxim.codekeeper.ui.prefs.PreferenceInitializer;
 
 public class CommitDialog extends TrayDialog {
     
-    private final TreeElement filtered;
     private final IPreferenceStore prefs;
     private final boolean egitCommitAvailable;
     
@@ -38,12 +41,11 @@ public class CommitDialog extends TrayDialog {
     private DiffTableViewer dtvBottom;
     private Button btnAutocommit;
     
-    public CommitDialog(Shell parentShell, TreeElement filtered,
+    public CommitDialog(Shell parentShell,
             Set<TreeElement> depcyElementsSet, IPreferenceStore mainPrefs,
             TreeDiffer treeDiffer, boolean egitCommitAvailable) {
         super(parentShell);
         
-        this.filtered = filtered;
         this.prefs = mainPrefs;
         this.egitCommitAvailable = egitCommitAvailable;
         this.treeDiffer = treeDiffer;
@@ -82,7 +84,14 @@ public class CommitDialog extends TrayDialog {
         gd.heightHint = 300;
         gd.widthHint = 1000;
         dtvTop.setLayoutData(gd);
-        dtvTop.setFilteredInput(filtered, treeDiffer, false);
+        List<TreeElement> result = new ArrayList<>();
+        try {
+            TreeElement.getSelected(treeDiffer.getDiffTree(), result);
+        } catch (PgCodekeeperUIException e1) {
+            Log.log(Log.LOG_ERROR, "Error while trying to get DiffTree", e1);
+            result = new ArrayList<>();
+        }
+        dtvTop.setInputCollection(result, treeDiffer, false);
         
         if (depcyElementsSet != null){
             Group gBottom = new Group(container, SWT.NONE);

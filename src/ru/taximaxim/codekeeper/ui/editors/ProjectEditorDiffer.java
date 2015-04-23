@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.ui.editors;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -294,47 +293,21 @@ class CommitPage extends DiffPresentationPane {
         }
         boolean considerDepcy = mainPrefs.getBoolean(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT);
         
-        final TreeElement filtered = diffTable.filterDiffTree();
+        final TreeElement tblInputTree = diffTable.getInputTree();
         
-        DepcyTreeExtender dte = null;
         Set<TreeElement> sumNewAndDelete = null;
-        TreeElement filteredWithNewAndDelete = null;
         
         if(considerDepcy){
             Log.log(Log.LOG_INFO, "Processing depcies for project update"); //$NON-NLS-1$
-            
-            // Получить список зависимых от NEW/EDIT элементов
-            dte = new DepcyTreeExtender(dbSource.getDbObject(), 
-                    dbTarget.getDbObject(), filtered);
-            Set<PgStatement> dependencies = dte.fetchDependenciesOfNewEdit();
-            PgDatabase depcyTargetDb = dte.getDepcyTargetDb();
-            
-            // Дополнительно пометить в таблице зависимости от NEW/EDIT и
-            // получить новое фильтрованное дерево с этими зависимостями
-            Set<TreeElement> dependenciesUnselectedOnly = 
-                    DepcyTreeExtender.filterDepcyElementsContainedInDb(
-                            diffTable.getCheckedElements(false),
-                            dependencies, depcyTargetDb); 
-            
-            diffTable.setCheckedElements(dependenciesUnselectedOnly.toArray(), true);
-            TreeElement filteredWithNew = diffTable.filterDiffTree();
-            diffTable.setCheckedElements(dependenciesUnselectedOnly.toArray(), false);
-
-            // Расширить дерево filteredWithNew элементами, зависящими от удаляемых
-            dte = new DepcyTreeExtender(dbSource.getDbObject(), 
-                    dbTarget.getDbObject(), filteredWithNew);
-            filteredWithNewAndDelete = dte.copyInitialTreeWithDependantsOfDeleted();
-            // Получить список всех зависимостей для заполнения нижней 
-            // таблицы CommitDialog'a
-            // Эти зависимости - потомки filteredWithNewAndDelete
-            sumNewAndDelete = dte.sumNewEditWithInternalDeleted(dependenciesUnselectedOnly);
+            sumNewAndDelete = new DepcyTreeExtender(dbSource.getDbObject(), 
+                    dbTarget.getDbObject(), tblInputTree).getDepcies();
         }
         
         Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
         // display commit dialog
-        CommitDialog cd = new CommitDialog(getShell(), filtered, sumNewAndDelete,
+        CommitDialog cd = new CommitDialog(getShell(), sumNewAndDelete,
                 mainPrefs, treeDiffer, isCommitCommandAvailable);
-        cd.setConflictingElements(considerDepcy ? dte.getConflicting() : Collections.EMPTY_SET);
+//        cd.setConflictingElements(considerDepcy ? dte.getConflicting() : Collections.EMPTY_SET);
         if (cd.open() != CommitDialog.OK) {
             return;
         }
@@ -346,14 +319,14 @@ class CommitPage extends DiffPresentationPane {
             // элементы, с которых пользователь снял отметку в нижней таблице
             // FIXME убрать шелл, отделить логику от UI
             DiffTableViewer diffTable = new DiffTableViewer(new Shell(), SWT.NONE, mainPrefs, proj, true);
-            diffTable.setFilteredInput(filteredWithNewAndDelete, treeDiffer, false);
+            diffTable.setInput(treeDiffer, false);
             Set<TreeElement> allElements = diffTable.getCheckedElements(false);
             allElements.removeAll(cd.getBottomTableViewer().getCheckedElements(false));
-            filteredTwiceWithAllDepcy = 
-                    filteredWithNewAndDelete.getFilteredCopy(allElements);
+//            filteredTwiceWithAllDepcy = 
+//                    filteredWithNewAndDelete.getFilteredCopy(allElements);
         }
         
-        final TreeElement resultingTree = considerDepcy ? filteredTwiceWithAllDepcy : filtered;
+        final TreeElement resultingTree = considerDepcy ? filteredTwiceWithAllDepcy : tblInputTree;
 
         Log.log(Log.LOG_INFO, "Updating project " + proj.getProjectName()); //$NON-NLS-1$
         Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project, resultingTree);
@@ -540,7 +513,7 @@ class DiffPage extends DiffPresentationPane {
             mb.open();
             return;
         }
-        final TreeElement filtered = diffTable.filterDiffTree();
+        final TreeElement filtered = diffTable.getInputTree();
 
         final Differ differ = new Differ(
                 DbSource.fromFilter(dbSource, filtered, DiffSide.LEFT),
