@@ -53,6 +53,8 @@ public class MainTest {
                                 {new ArgumentsProvider_DangerDropColOk()},
                                 {new ArgumentsProvider_DangerAlterCol()},
                                 {new ArgumentsProvider_DangerAlterColOk()},
+                                {new ArgumentsProvider_DangerSequenceRestartWith()},
+                                {new ArgumentsProvider_DangerSequenceRestartWithok()},
                                 {new ArgumentsProvider_16()},
                                 {new ArgumentsProvider_17()},
                             });
@@ -575,6 +577,70 @@ class ArgumentsProvider_DangerAlterColOk extends ArgumentsProvider{
         return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", 
                 "ALTER_COLUMN", fOriginal.getAbsolutePath(), fNew.getAbsolutePath(), 
                 getDiffResultFile().getAbsolutePath()};
+    }
+    
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+        
+        return resFile;
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing ALTER SEQUENCE RESTART WITH
+ * dangerous statements
+ */
+class ArgumentsProvider_DangerSequenceRestartWith extends ArgumentsProvider{
+    
+    {
+        super.resName = "modify_sequence_start_ignore_off";
+    }
+    
+    @Override
+    public String[] arguments() throws URISyntaxException, IOException {
+        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
+        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
+        
+        return new String[]{"--diff", "--dbNew-format", "dump", fOriginal.getAbsolutePath(), 
+                fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
+    }
+    
+    @Override
+    public File getDiffResultFile() throws IOException {
+        if (resFile == null){
+            resFile = Files.createTempFile("pgcodekeeper_standalone_", "").toFile();
+        }
+        
+        return resFile;
+    }
+    
+    @Override
+    public String output() {
+        return "Script contains dangerous statements, use --allow-danger-ddl to override\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing successfull ALTER SEQUENCE RESTART WITH
+ * dangerous statements
+ */
+class ArgumentsProvider_DangerSequenceRestartWithok extends ArgumentsProvider{
+    
+    {
+        super.resName = "modify_sequence_start_ignore_off";
+    }
+    
+    @Override
+    public String[] arguments() throws URISyntaxException, IOException {
+        File fNew = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.NEW_SQL));
+        File fOriginal = ApgdiffUtils.getFileFromOsgiRes(MainTest.class.getResource(resName + FILES_POSTFIX.ORIGINAL_SQL));
+        
+        return new String[]{"--diff", "--dbNew-format", "dump", "--allow-danger-ddl", 
+                "RESTART_WITH", fOriginal.getAbsolutePath(), 
+                fNew.getAbsolutePath(), getDiffResultFile().getAbsolutePath()};
     }
     
     @Override
