@@ -94,6 +94,7 @@ public class DbSourceTest {
                 DbSource.fromDbObject(new PgDatabase(), "empty"));
         differ.run(null);
         TreeElement diff = differ.getDiffTree();
+        ApgdiffTestUtils.setAllchecked(diff);
         
         performTest(DbSource.fromFilter(predefined, diff, DiffSide.LEFT));
     }

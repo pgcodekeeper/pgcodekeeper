@@ -14,10 +14,8 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -105,11 +103,11 @@ public class DifferTest {
         TreeElement root = newDiffer.getDiffTree();
         
         // filtered input
-        final TreeElement filtered = root.getFilteredCopy(differData.getUserSelection(root));
+        differData.setUserSelection(root);
 
         final Differ differ = new Differ(
-                DbSource.fromFilter(dbSource, filtered, DiffSide.LEFT),
-                DbSource.fromFilter(dbTarget, filtered, DiffSide.RIGHT),
+                DbSource.fromFilter(dbSource, root, DiffSide.LEFT),
+                DbSource.fromFilter(dbTarget, root, DiffSide.RIGHT),
                 true, ApgdiffConsts.UTC);
         differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
         
@@ -142,7 +140,7 @@ public class DifferTest {
 abstract class DifferData{
     int caseNumber = -1;
 
-    abstract Set<TreeElement> getUserSelection(TreeElement root);
+    abstract void setUserSelection(TreeElement root);
     
     List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource(PgDatabase source){
         return new ArrayList<Entry<PgStatement,PgStatement>>();
@@ -188,11 +186,9 @@ abstract class DifferData{
 class DifferData_1 extends DifferData{
 
     @Override
-    Set<TreeElement> getUserSelection(TreeElement root) {
-        Set<TreeElement> selection = new HashSet<>();
+    void setUserSelection(TreeElement root) {
         TreeElement schema = root.getChild("public");
-        selection.add(schema.getChild("table1").getChild("chk_table1"));
-        return selection;
+        schema.getChild("table1").getChild("chk_table1").setSelected(true);
     }
 }
 
@@ -203,11 +199,9 @@ class DifferData_1 extends DifferData{
 class DifferData_2 extends DifferData{
 
     @Override
-    Set<TreeElement> getUserSelection(TreeElement root) {
-        Set<TreeElement> selection = new HashSet<>();
+    void setUserSelection(TreeElement root) {
         TreeElement schema = root.getChild("public");
-        selection.add(schema.getChild("table1").getChild("chk_table1"));
-        return selection;
+        schema.getChild("table1").getChild("chk_table1").setSelected(true);;
     }
     
     @Override
@@ -233,11 +227,9 @@ class DifferData_2 extends DifferData{
 class DifferData_3 extends DifferData{
 
     @Override
-    Set<TreeElement> getUserSelection(TreeElement root) {
-        Set<TreeElement> selection = new HashSet<>();
+    void setUserSelection(TreeElement root) {
         TreeElement schema = root.getChild("public");
-        selection.add(schema.getChild("table1").getChild("chk_table1"));
-        return selection;
+        schema.getChild("table1").getChild("chk_table1").setSelected(true);;
     }
     
     @Override
@@ -262,11 +254,9 @@ class DifferData_3 extends DifferData{
 class DifferData_4 extends DifferData{
 
     @Override
-    Set<TreeElement> getUserSelection(TreeElement root) {
-        Set<TreeElement> selection = new HashSet<>();
+    void setUserSelection(TreeElement root) {
         TreeElement schema = root.getChild("audit");
-        selection.add(schema.getChild("logged_actions"));
-        return selection;
+        schema.getChild("logged_actions").setSelected(true);;
     }
 }
 
@@ -277,11 +267,9 @@ class DifferData_4 extends DifferData{
 class DifferData_5 extends DifferData{
 
     @Override
-    Set<TreeElement> getUserSelection(TreeElement root) {
-        Set<TreeElement> selection = new HashSet<>();
+    void setUserSelection(TreeElement root) {
         TreeElement schema = root.getChild("public");
-        selection.add(schema.getChild("v_auto_mark_two"));
-        return selection;
+        schema.getChild("v_auto_mark_two").setSelected(true);;
     }
     
     @Override
