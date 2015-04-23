@@ -1,8 +1,5 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
