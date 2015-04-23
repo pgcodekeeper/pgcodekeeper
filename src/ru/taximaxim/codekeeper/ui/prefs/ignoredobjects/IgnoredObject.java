@@ -86,7 +86,7 @@ public class IgnoredObject {
         if (ignoreContent) {
             result |= BooleanChangeValues.IGNORE_CONTENT.getStatusFlagValue();
         }
-        return name + " " + result;
+        return name + " " + result; //$NON-NLS-1$
     }
     
     public static LinkedList<IgnoredObject> parsePrefs(List<String> propertyValues) {
@@ -121,7 +121,7 @@ public class IgnoredObject {
             return new IgnoredObject(name, isRegular, ignoreContent);
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
             Log.log(Log.LOG_ERROR,
-                    "Object has unnormal format will be skipped", e);
+                    "Object has unnormal format will be skipped", e); //$NON-NLS-1$
             return null;
         }
     }

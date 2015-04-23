@@ -186,7 +186,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                throw new PartInitException(e.getLocalizedMessage(), e);
             } catch (InterruptedException ex) {
                 throw new PartInitException(
-                        "Parsing cancelled! " + ex.getLocalizedMessage(), ex);
+                        Messages.RollOnEditor_parsing_cancelled + ex.getLocalizedMessage(), ex);
             }
         }
         // после создания парсера вызвать создание основного редактора
