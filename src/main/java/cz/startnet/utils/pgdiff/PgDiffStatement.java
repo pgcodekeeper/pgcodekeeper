@@ -2,7 +2,7 @@ package cz.startnet.utils.pgdiff;
 
 import java.util.regex.Pattern;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 
 /**

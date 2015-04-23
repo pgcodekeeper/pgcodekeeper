@@ -3,7 +3,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.io.Serializable;
 import java.nio.file.Path;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgObjLocation implements Serializable {
     /**

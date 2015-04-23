@@ -17,13 +17,6 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
  */
 public class TreeElement {
 
-    public enum DbObjType {
-        DATABASE,
-        SCHEMA, EXTENSION,
-        TYPE, DOMAIN, FUNCTION, SEQUENCE, TABLE, VIEW,
-        INDEX, TRIGGER, CONSTRAINT, COLUMN
-    }
-    
     public enum DiffSide {
         LEFT("delete"), RIGHT("new"), BOTH("edit");
         private String changeType;
@@ -202,6 +195,7 @@ public class TreeElement {
         
         boolean shouldCompareEdits = side == DiffSide.BOTH && dbSource != null && dbTarget != null;
         if ((side == DiffSide.BOTH && parent != null && parent.getSide() != DiffSide.BOTH)
+                || !selected
                 || type == DbObjType.DATABASE 
                 || shouldCompareEdits && getPgStatement(dbSource).compare(getPgStatement(dbTarget))) {
             return result;
@@ -223,6 +217,17 @@ public class TreeElement {
         for (TreeElement child : root.getChildren()) {
             getSelected(child, result);
         }
+    }
+    /**
+     * @return признак наличия выбранных элементов в поддереве начиная с текущего узла
+     */
+    public boolean isSubTreeSelected() {
+        for(TreeElement child : getChildren()) {
+            if (child.isSubTreeSelected()) {
+                return true;
+            }
+        }
+        return isSelected();
     }
     
     /**
@@ -268,6 +273,7 @@ public class TreeElement {
         return hashcode;
     }
 
+    //TODO не учитывает вложенность родителей
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

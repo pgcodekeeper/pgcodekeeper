@@ -1,5 +1,8 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -61,7 +64,10 @@ public class PgDbFilter2 {
         if(!checkSide(el)) {
             return;
         }
-        
+        // Если элемент или его дети не выбраны, его добавлять в базу не нужно
+        if (!el.isSubTreeSelected()) {
+            return;
+        }
         ProcessResult res = null;
         try {
             switch(el.getType()) {
@@ -161,7 +167,7 @@ public class PgDbFilter2 {
             processElement(sub, res.src, res.dst);
         }
     }
-    
+
     private boolean checkSide(TreeElement el) {
         return el.getSide() == side || el.getSide() == DiffSide.BOTH;
     }

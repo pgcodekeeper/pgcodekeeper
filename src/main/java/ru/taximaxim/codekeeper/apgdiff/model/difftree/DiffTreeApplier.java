@@ -147,7 +147,8 @@ public class DiffTreeApplier {
         }
         
         // add LEFT statements to no-copy list
-        if(el.getSide() == DiffSide.LEFT) {
+        if(el.getSide() == DiffSide.LEFT
+                && el.isSelected()) {
             lstNoCopy.add(el.getPgStatement(dbSource));
             return;
         }
