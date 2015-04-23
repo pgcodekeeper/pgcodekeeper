@@ -106,6 +106,10 @@ public class CommitDialog extends TrayDialog {
             gd.heightHint = 300;
             gd.widthHint = 1000;
             dtvBottom.setLayoutData(gd);
+            // выбрать все зависимые эелементы для наката
+            for (TreeElement el : depcyElementsSet) {
+                el.setSelected(true);
+            }
             dtvBottom.setInputCollection(depcyElementsSet, treeDiffer, false);
             dtvBottom.setCheckedElements(conflictingElementsSet.toArray(), false);
             dtvBottom.redraw();
@@ -132,5 +136,15 @@ public class CommitDialog extends TrayDialog {
 
     public void setConflictingElements(Set<?> conflictingElementsSet) {
         this.conflictingElementsSet = conflictingElementsSet;
+    }
+    @Override
+    protected void cancelPressed() {
+        // Если пользователь нажал отмену - снять выделения с зависимых элементов
+        if (depcyElementsSet != null) {
+            for (TreeElement el : depcyElementsSet) {
+                el.setSelected(false);
+            }
+        }
+        super.cancelPressed();
     }
 }

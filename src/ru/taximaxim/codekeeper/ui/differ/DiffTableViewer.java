@@ -782,18 +782,6 @@ public class DiffTableViewer extends Composite {
         }
     }
     
-    /**
-     * ВНИМАНИЕ!!!<br>
-     * 
-     * Список объектов в таблице должен быть поднабором рута, который попадает в таблицу из TreeDiffer
-     */
-    public TreeElement getInputTree() {
-        if (treeRoot == null){
-            return null;
-        }
-        return treeRoot;
-    }
-    
     private MenuManager getViewerMenu() {
         MenuManager menuMgr = new MenuManager();
         if (!viewOnly) {

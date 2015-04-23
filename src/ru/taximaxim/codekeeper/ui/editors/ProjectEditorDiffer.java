@@ -44,7 +44,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
@@ -76,7 +75,6 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffPresentationPane;
-import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
@@ -266,7 +264,7 @@ class CommitPage extends DiffPresentationPane {
             public void widgetSelected(SelectionEvent e) {
                 try {
                     commit();
-                } catch (PgCodekeeperException ex) {
+                } catch (PgCodekeeperException | PgCodekeeperUIException ex) {
                     ExceptionNotifier.notifyDefault(Messages.error_creating_dependency_graph, ex);
                 }
             }
@@ -279,7 +277,7 @@ class CommitPage extends DiffPresentationPane {
         isCommitCommandAvailable = commandIds.contains(COMMAND.COMMIT_COMMAND_ID);
     }
     
-    private void commit() throws PgCodekeeperException {
+    private void commit() throws PgCodekeeperException, PgCodekeeperUIException {
         Log.log(Log.LOG_INFO, "Started project update"); //$NON-NLS-1$
         if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), getShell(), true)) {
             return;
@@ -293,8 +291,7 @@ class CommitPage extends DiffPresentationPane {
         }
         boolean considerDepcy = mainPrefs.getBoolean(COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT);
         
-        final TreeElement tblInputTree = diffTable.getInputTree();
-        
+        final TreeElement tblInputTree = treeDiffer.getDiffTree();
         Set<TreeElement> sumNewAndDelete = null;
         
         if(considerDepcy){
@@ -307,29 +304,12 @@ class CommitPage extends DiffPresentationPane {
         // display commit dialog
         CommitDialog cd = new CommitDialog(getShell(), sumNewAndDelete,
                 mainPrefs, treeDiffer, isCommitCommandAvailable);
-//        cd.setConflictingElements(considerDepcy ? dte.getConflicting() : Collections.EMPTY_SET);
         if (cd.open() != CommitDialog.OK) {
             return;
         }
         
-        TreeElement filteredTwiceWithAllDepcy = null;
-        if(considerDepcy){
-            Log.log(Log.LOG_INFO, "Filtering depcies on user selection"); //$NON-NLS-1$
-            // Убрать из списка всех элементов в filteredWithNewAndDelete те
-            // элементы, с которых пользователь снял отметку в нижней таблице
-            // FIXME убрать шелл, отделить логику от UI
-            DiffTableViewer diffTable = new DiffTableViewer(new Shell(), SWT.NONE, mainPrefs, proj, true);
-            diffTable.setInput(treeDiffer, false);
-            Set<TreeElement> allElements = diffTable.getCheckedElements(false);
-            allElements.removeAll(cd.getBottomTableViewer().getCheckedElements(false));
-//            filteredTwiceWithAllDepcy = 
-//                    filteredWithNewAndDelete.getFilteredCopy(allElements);
-        }
-        
-        final TreeElement resultingTree = considerDepcy ? filteredTwiceWithAllDepcy : tblInputTree;
-
         Log.log(Log.LOG_INFO, "Updating project " + proj.getProjectName()); //$NON-NLS-1$
-        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project, resultingTree);
+        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project, tblInputTree);
         job.addJobChangeListener(new JobChangeAdapter() {
             
             @Override
@@ -513,7 +493,7 @@ class DiffPage extends DiffPresentationPane {
             mb.open();
             return;
         }
-        final TreeElement filtered = diffTable.getInputTree();
+        final TreeElement filtered = treeDiffer.getDiffTree();
 
         final Differ differ = new Differ(
                 DbSource.fromFilter(dbSource, filtered, DiffSide.LEFT),
