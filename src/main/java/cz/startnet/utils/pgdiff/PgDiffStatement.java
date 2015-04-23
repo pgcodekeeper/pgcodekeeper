@@ -44,7 +44,7 @@ class PgDiffStatement {
                 // but *not* 'DROP CONSTRAINT constraint_name'
                 + "DROP[\\s]+(?!CONSTRAINT[\\s]+)([\\w]+).*"),
         
-        RESTART_WITH("^ALTER[\\s]+SEQUENCE.*RESTART.*");
+        RESTART_WITH("^ALTER[\\s]+SEQUENCE.*[\\s]+RESTART[\\s]+.*");
         
         private final Pattern regex;
         
