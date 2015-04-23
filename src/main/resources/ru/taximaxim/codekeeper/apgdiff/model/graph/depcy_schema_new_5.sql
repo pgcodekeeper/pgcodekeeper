@@ -50,6 +50,20 @@ CREATE TABLE t_test2 (
 
 ALTER TABLE public.t_test2 OWNER TO botov_av;
 
+SET search_path = republic, pg_catalog;
+
+--
+-- Name: t_test2foreign; Type: TABLE; Schema: republic; Owner: botov_av; Tablespace: 
+--
+
+CREATE TABLE t_test2foreign (
+    column_referencing text,
+    column_referencing2 character(1)[]
+);
+
+
+ALTER TABLE republic.t_test2foreign OWNER TO botov_av;
+
 SET search_path = public, pg_catalog;
 
 --
@@ -58,6 +72,17 @@ SET search_path = public, pg_catalog;
 
 ALTER TABLE ONLY t_test2
     ADD CONSTRAINT unique_referenced UNIQUE (c_name_t_test2);
+
+
+SET search_path = republic, pg_catalog;
+
+--
+-- Name: fk_t_test2foreign; Type: FK CONSTRAINT; Schema: republic; Owner: botov_av
+--
+
+ALTER TABLE ONLY t_test2foreign
+    ADD CONSTRAINT fk_t_test2foreign FOREIGN KEY (column_referencing) REFERENCES public.t_test2(c_name_T_test2);
+
 
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
