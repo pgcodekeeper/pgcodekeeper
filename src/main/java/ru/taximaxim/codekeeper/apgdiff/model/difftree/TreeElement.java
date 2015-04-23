@@ -230,30 +230,6 @@ public class TreeElement {
         return isSelected();
     }
     
-    /**
-     * Recursively walk a tree, copying nodes that exist in filterSubset to returned tree.
-     * Important: filterSubset should be a subset of this tree
-     * (because TreeElement equals method compares references of parents)
-     */
-    public TreeElement getFilteredCopy(Set<TreeElement> filterSubset){
-        TreeElement copy = null;
-        for(TreeElement e : children) {
-            TreeElement child = e.getFilteredCopy(filterSubset);
-            
-            if (child != null) {
-                if (copy == null){
-                    copy = new TreeElement(getName(), getType(), getSide());
-                }
-                copy.addChild(child);
-            }
-        }
-        
-        if (copy == null && filterSubset.contains(this)){
-            copy = new TreeElement(getName(), getType(), getSide());
-        }
-        return copy;
-    }
-    
     @Override
     public int hashCode() {
         if (hashcode == 0) {
