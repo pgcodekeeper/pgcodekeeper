@@ -2,6 +2,12 @@ COMMENT ON DATABASE current_database() IS 'comments database 2';
 
 COMMENT ON SCHEMA public IS 'public schema 2';
 
+COMMENT ON COLUMN typ_composite."key" IS 'Type column of composite comment 2';
+
+COMMENT ON TYPE typ_composite IS 'This composite type 2';
+
+COMMENT ON DOMAIN dom IS 'Domain comment 2';
+
 COMMENT ON SEQUENCE test_id_seq IS 'test table sequence 2';
 
 COMMENT ON TABLE test IS 'test table 2';

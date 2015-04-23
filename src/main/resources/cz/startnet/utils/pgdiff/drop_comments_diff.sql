@@ -2,6 +2,12 @@ COMMENT ON DATABASE current_database() IS NULL;
 
 COMMENT ON SCHEMA public IS NULL;
 
+COMMENT ON COLUMN typ_composite."key" IS NULL;
+
+COMMENT ON TYPE typ_composite IS NULL;
+
+COMMENT ON DOMAIN dom IS NULL;
+
 COMMENT ON SEQUENCE test_id_seq IS NULL;
 
 COMMENT ON TABLE test IS NULL;

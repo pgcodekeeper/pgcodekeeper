@@ -21,6 +21,7 @@
                 <artifactId>tycho-surefire-plugin</artifactId>
                 <version>${tycho.version}</version>
                 <configuration>
+                    <appArgLine>-nl en</appArgLine>
                     <product>ru.taximaxim.codeKeeper</product>
                 </configuration>
             </plugin>
