@@ -186,7 +186,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                throw new PartInitException(e.getLocalizedMessage(), e);
             } catch (InterruptedException ex) {
                 throw new PartInitException(
-                        "Parsing cancelled! " + ex.getLocalizedMessage(), ex);
+                        Messages.RollOnEditor_parsing_cancelled + ex.getLocalizedMessage(), ex);
             }
         }
         // после создания парсера вызвать создание основного редактора
@@ -486,7 +486,8 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
         return differ.getScript().isDangerDdl(
                 !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_TABLE_STATEMENT), 
                 !mainPrefs.getBoolean(DB_UPDATE_PREF.ALTER_COLUMN_STATEMENT),
-                !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT));
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.DROP_COLUMN_STATEMENT),
+                !mainPrefs.getBoolean(DB_UPDATE_PREF.RESTART_WITH_STATEMENT));
     }
     
     private class RunButtonHandler extends SelectionAdapter{

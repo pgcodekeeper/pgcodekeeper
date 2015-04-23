@@ -433,8 +433,8 @@ class PageDiff extends WizardPage implements Listener {
             cmbEncoding.select(
                     cmbEncoding.indexOf(proj.getProjectCharset()));
         } catch (CoreException e1) {
-            setErrorMessage("Cannot get project charset, will use default");
-            Log.log(Log.LOG_ERROR, "Cannot get project charset", e1);
+            setErrorMessage(Messages.DiffWizard_project_charset_error);
+            Log.log(Log.LOG_ERROR, "Cannot get project charset", e1); //$NON-NLS-1$
             cmbEncoding.select(
                     cmbEncoding.indexOf(ApgdiffConsts.UTF_8));
         }
@@ -686,8 +686,8 @@ class PageResult extends WizardPage {
         try {
             charset = proj.getProjectCharset();
         } catch (CoreException e) {
-            setErrorMessage("Cannot get project charset, will use default");
-            Log.log(Log.LOG_ERROR, "Cannot get project charset", e);
+            setErrorMessage(Messages.DiffWizard_project_charset_error);
+            Log.log(Log.LOG_ERROR, "Cannot get project charset", e); //$NON-NLS-1$
         }
         try (PrintWriter encodedWriter = new UnixPrintWriter(
                 // TODO save to proj encoding can be incorrect. 
