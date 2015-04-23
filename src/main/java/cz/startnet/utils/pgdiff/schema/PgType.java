@@ -484,7 +484,7 @@ public class PgType extends PgStatementWithSearchPath {
                 attrSb.append("\n\tADD ATTRIBUTE ")
                         .append(attr.getFullDefinition(false, null))
                         .append(", ");
-            }
+            }            
         }
         for (PgColumn attr : oldType.getAttrs()) {
             if (newType.getAttr(attr.getName()) == null) {
@@ -504,6 +504,7 @@ public class PgType extends PgStatementWithSearchPath {
                     .append(PgDiffUtils.getQuotedName(newType.getName()))
                     .append(attrSb).append(';');
         }
+        columnsComments(newType, oldType, sb);
         
         List<String> enums = newType.getEnums();
         List<String> oldEnums = oldType.getEnums();
@@ -538,6 +539,23 @@ public class PgType extends PgStatementWithSearchPath {
         return sb.length() > startLength;
     }
 
+    private void columnsComments(PgType newType, PgType oldType, StringBuilder sb) {
+        for (PgColumn newAttr : newType.getAttrs()) {
+            PgColumn oldAttr = oldType.getAttr(newAttr.getName());
+            if (oldAttr != null) {
+                if (!Objects.equals(oldAttr.getComment(), newAttr.getComment())) {
+                    newAttr.appendCommentSql(sb);
+                    sb.append("\n\n");
+                }
+            } else {
+                if (newAttr.getComment() != null 
+                        && !newAttr.getComment().isEmpty()) {
+                    newAttr.appendCommentSql(sb);
+                    sb.append("\n\n");
+                }
+            }
+        }
+    }
     @Override
     public PgType shallowCopy() {
         PgType copy = new PgType(getName(), getForm(), getRawStatement());
