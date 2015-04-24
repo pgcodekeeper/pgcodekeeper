@@ -18,6 +18,10 @@ ALTER TYPE typ_composite OWNER TO fordfrog;
 
 COMMENT ON TYPE typ_composite IS 'test type';
 
+COMMENT ON COLUMN typ_composite.key IS 'Type composite key comment';
+
+COMMENT ON COLUMN typ_composite.val IS 'Type composite val comment';
+
 CREATE DOMAIN dom AS integer NOT NULL DEFAULT (-1)
 	CONSTRAINT dom_check CHECK ((VALUE <> 0));
     
