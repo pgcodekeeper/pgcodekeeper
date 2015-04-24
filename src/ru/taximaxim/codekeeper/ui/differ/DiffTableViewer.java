@@ -686,7 +686,7 @@ public class DiffTableViewer extends Composite {
                 ignores.addAll(se.loadSettings());
             } catch (IOException e1) {
                 Log.log(Log.LOG_WARNING,
-                        "Some problems occured while reading ignore settings from file", e1);
+                        "Some problems occured while reading ignore settings from file", e1); //$NON-NLS-1$
             }
         }
         List<TreeElement> elementsList = generateElementsList(subtree,

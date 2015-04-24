@@ -24,7 +24,6 @@ public final class Messages extends NLS {
     public static String choose_dump_file_with_changes;
     public static String db;
     public static String db_source;
-    public static String differ_thread_cancelled_shouldnt_happen;
     public static String dump;
     public static String empty_selection;
     public static String error_in_differ_thread;
@@ -35,7 +34,6 @@ public final class Messages extends NLS {
     public static String source;
     public static String please_check_at_least_one_row;
     public static String projectEditorDiffer_save_project;
-    public static String projectProperties_encoding_for_all_operation_with_project;
     public static String projectProperties_timezone_for_all_db_connections;
     public static String projectProperties_error_occurs_while_saving_properties;
     public static String undefined_source_for_db_changes;
@@ -119,7 +117,6 @@ public final class Messages extends NLS {
     public static String dbStoreEditorDialog_db_store_editor;
     public static String dbStoreEditorDialog_entry_with_this_name_already_exists;
     public static String dbStoreEditorDialog_name_cannot_be_empty_or_whitespace;
-    public static String dbStoreEditorDialog_new_entry;
     public static String dbStoreEditorDialog_not_valid_port_number;
     
     // ui.differ
@@ -231,7 +228,6 @@ public final class Messages extends NLS {
     public static String newProjWizard_new_pg_db_project;
     public static String newProjWizard_no_schema_source_selected;
     public static String newProjWizard_project_encoding;
-    public static String newProjWizard_project_initializer_thread_interrupted;
     public static String newProjWizard_repository_settings;
     public static String newProjWizard_schema_source;
     public static String newProjWizard_schema_source_settings;
@@ -254,6 +250,8 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_error_saving_commands_list;
 
     public static String dbUpdatePrefPage_ignore_privileges;
+    public static String DbUpdatePrefPage_alter_seq_restart_statement;
+
     public static String DiffPaneViewer_project;
     public static String DiffPresentationPane_attention;
 
@@ -271,6 +269,8 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_error_setting_input;
     public static String DiffTableViewer_selected;
     public static String DiffWizard_bad_target_db;
+
+    public static String DiffWizard_project_charset_error;
     public static String DiffWizard_unexpected_error;
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
     public static String generalPrefPage_pg_dump_custom_parameters;
@@ -343,6 +343,8 @@ public final class Messages extends NLS {
     public static String ProjectUpdater_error_update;
 
     public static String ProjectUpdater_old_db_null;
+
+    public static String RollOnEditor_parsing_cancelled;
     public static String SqlScriptDialog_add_it_to_script;
     public static String SqlScriptDialog_command_to_execute;
     public static String SqlScriptDialog__results_of_script_revealed_dependent_objects;
