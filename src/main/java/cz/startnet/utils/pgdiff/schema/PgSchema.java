@@ -37,7 +37,6 @@ public class PgSchema extends PgStatement {
     private final List<PgView> views = new ArrayList<>();
     private final List<PgType> types = new ArrayList<>();
 
-    private String authorization;
     private String definition;
 
     @Override
@@ -47,15 +46,6 @@ public class PgSchema extends PgStatement {
     
     public PgSchema(String name, String rawStatement) {
         super(name, rawStatement);
-    }
-
-    public void setAuthorization(final String authorization) {
-        this.authorization = authorization;
-        resetHash();
-    }
-
-    public String getAuthorization() {
-        return authorization;
     }
 
     public String getDefinition() {
@@ -72,11 +62,6 @@ public class PgSchema extends PgStatement {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SCHEMA ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-
-        if (getAuthorization() != null) {
-            sbSQL.append(" AUTHORIZATION ");
-            sbSQL.append(PgDiffUtils.getQuotedName(getAuthorization()));
-        }
 
         sbSQL.append(';');
 
@@ -359,7 +344,6 @@ public class PgSchema extends PgStatement {
             addPrivilege(priv.shallowCopy());
         }
         
-        setAuthorization(newSchema.getAuthorization());
         setDefinition(newSchema.getDefinition());
         setComment(newSchema.getComment());
     }
@@ -374,7 +358,6 @@ public class PgSchema extends PgStatement {
             PgSchema schema = (PgSchema) obj;
             
             eq = Objects.equals(name, schema.getName())
-                    && Objects.equals(authorization, schema.getAuthorization())
                     && Objects.equals(definition, schema.getDefinition())
                     && grants.equals(schema.grants)
                     && revokes.equals(schema.revokes)
@@ -417,7 +400,6 @@ public class PgSchema extends PgStatement {
         int result = 1;
         result = prime * result + ((grants == null) ? 0 : grants.hashCode());
         result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
-        result = prime * result + ((authorization == null) ? 0 : authorization.hashCode());
         result = prime * result + ((definition == null) ? 0 : definition.hashCode());
         result = prime * result + new HashSet<>(domains).hashCode();
         result = prime * result + new HashSet<>(functions).hashCode();
@@ -433,7 +415,6 @@ public class PgSchema extends PgStatement {
     @Override
     public PgSchema shallowCopy() {
         PgSchema schemaDst = new PgSchema(getName(), getRawStatement());
-        schemaDst.setAuthorization(getAuthorization());
         schemaDst.setDefinition(getDefinition());
         schemaDst.setComment(getComment());
         for (PgPrivilege priv : revokes) {

@@ -339,15 +339,13 @@ public final class PgDiff {
         // update contents of schema, if it is not present in new db and 
         // is partly selected by the user
         for (final PgSchema oldSchema : oldDatabase.getSchemas()) {
-            if (newDatabase.getSchema(oldSchema.getName()) == null && !isFullSelection(oldSchema)){
+            if (newDatabase.getSchema(oldSchema.getName()) == null 
+                    && !isFullSelection(oldSchema)){
                 SearchPathHelper searchPath =
                         new SearchPathHelper(oldSchema.getName());
-                PgSchema newSchema = new PgSchema(oldSchema.getName(), null);
-                newSchema.setAuthorization(oldSchema.getAuthorization());
-                newSchema.setComment(oldSchema.getComment());
-                newSchema.setDefinition(oldSchema.getDefinition());
                 
-                updateSchemaContent(script, oldSchema, newSchema, searchPath, arguments);
+                updateSchemaContent(script, oldSchema, oldSchema.shallowCopy(),
+                        searchPath, arguments);
             }
         }// КОСТЫЛЬ
     }

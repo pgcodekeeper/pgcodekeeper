@@ -27,7 +27,7 @@ public class PgDiffScript {
     private final Set<PgDiffStatement> unique = new HashSet<>();
     
     public boolean isDangerDdl(boolean ignoreDropCol, boolean ignoreAlterCol,
-            boolean ignoreDropTable) {
+            boolean ignoreDropTable, boolean ignoreRestartWith) {
         // no need to traverse the list if all ignores are set
         if (ignoreDropCol && ignoreAlterCol && ignoreDropTable) {
             return false;
@@ -36,7 +36,8 @@ public class PgDiffScript {
         for (PgDiffStatement st : statements) {
             if ((!ignoreDropCol && st.isDangerStatement(DangerStatement.DROP_COLUMN))
                     || (!ignoreAlterCol && st.isDangerStatement(DangerStatement.ALTER_COLUMN))
-                    || (!ignoreDropTable && st.isDangerStatement(DangerStatement.DROP_TABLE))) {
+                    || (!ignoreDropTable && st.isDangerStatement(DangerStatement.DROP_TABLE))
+                    || (!ignoreRestartWith && st.isDangerStatement(DangerStatement.RESTART_WITH))) {
                 return true;
             }
         }

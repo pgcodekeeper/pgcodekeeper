@@ -23,7 +23,7 @@ public class CreateSchema extends ParserAbstract {
         }
         PgSchema schema = new PgSchema(name, getFullCtxText(ctx.getParent()));
         if (ctx.user_name!=null) {
-            schema.setAuthorization(ctx.user_name.getText());
+            schema.setOwner(ctx.user_name.getText());
         }
         StringBuilder elements = new StringBuilder(10);
         for (StatementContext element : ctx.schema_element) {
