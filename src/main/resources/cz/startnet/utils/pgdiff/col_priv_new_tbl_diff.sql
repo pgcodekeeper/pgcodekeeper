@@ -1,5 +1,6 @@
 CREATE TABLE t1 (
-	c1 integer
+	c1 integer,
+	c2 text
 );
 
 ALTER TABLE t1 OWNER TO botov_av;
@@ -9,4 +10,4 @@ ALTER TABLE t1 OWNER TO botov_av;
 REVOKE ALL(c1) ON TABLE t1 FROM PUBLIC;
 REVOKE ALL(c1) ON TABLE t1 FROM botov_av;
 GRANT ALL ON TABLE public.t1 TO PUBLIC;
-GRANT ALL(c1) ON TABLE t1 TO maindb;
+GRANT ALL(c1, c2) ON TABLE t1 TO maindb;
