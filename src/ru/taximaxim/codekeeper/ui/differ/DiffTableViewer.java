@@ -236,7 +236,7 @@ public class DiffTableViewer extends Composite {
                 getViewerMenu().createContextMenu(viewer.getControl()));
         
         if (!viewOnly) {
-            viewer.addCheckStateListener(checkListener);
+            addCheckStateListener(checkListener);
 
             viewer.setCheckStateProvider(new ICheckStateProvider() {
 
@@ -404,6 +404,10 @@ public class DiffTableViewer extends Composite {
         } else {
             ignoredElements = new LinkedList<>();
         }
+    }
+    
+    public void addCheckStateListener(ICheckStateListener listener) {
+        viewer.addCheckStateListener(listener);
     }
 
     private void setCheckedFromPrevCheckedCombo() {

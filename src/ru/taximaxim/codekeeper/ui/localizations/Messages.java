@@ -174,6 +174,8 @@ public final class Messages extends NLS {
     public static String commitPartDescr_success_project_updated;
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
     public static String commitPartDescr_used_connection_template;
+    public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
+
     public static String ConsoleFactory_error_opening_console;
     public static String to;
     public static String diffPaneDialog_diff_to_selected_object;

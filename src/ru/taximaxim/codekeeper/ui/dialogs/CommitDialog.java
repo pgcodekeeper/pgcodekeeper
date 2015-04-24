@@ -1,12 +1,13 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
+import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -15,6 +16,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -35,11 +37,10 @@ public class CommitDialog extends TrayDialog {
     
     private final TreeDiffer treeDiffer;
     private final Set<TreeElement> depcyElementsSet;
-    private Set<?> conflictingElementsSet = Collections.EMPTY_SET;
-    
     private DiffTableViewer dtvTop;
     private DiffTableViewer dtvBottom;
     private Button btnAutocommit;
+    private Label warningLbl;
     
     public CommitDialog(Shell parentShell,
             Set<TreeElement> depcyElementsSet, IPreferenceStore mainPrefs,
@@ -88,7 +89,7 @@ public class CommitDialog extends TrayDialog {
         try {
             TreeElement.getSelected(treeDiffer.getDiffTree(), result);
         } catch (PgCodekeeperUIException e1) {
-            Log.log(Log.LOG_ERROR, "Error while trying to get DiffTree", e1);
+            Log.log(Log.LOG_ERROR, "Error while trying to get DiffTree", e1); //$NON-NLS-1$
             result = new ArrayList<>();
         }
         dtvTop.setInputCollection(result, treeDiffer, false);
@@ -106,13 +107,20 @@ public class CommitDialog extends TrayDialog {
             gd.heightHint = 300;
             gd.widthHint = 1000;
             dtvBottom.setLayoutData(gd);
-            // выбрать все зависимые эелементы для наката
+            // выбрать все зависимые элементы для наката
             for (TreeElement el : depcyElementsSet) {
                 el.setSelected(true);
             }
             dtvBottom.setInputCollection(depcyElementsSet, treeDiffer, false);
-            dtvBottom.setCheckedElements(conflictingElementsSet.toArray(), false);
             dtvBottom.redraw();
+            
+            dtvBottom.addCheckStateListener(new MyCheckStateListener());
+            warningLbl = new Label(gBottom, SWT.NONE);
+            gd = new GridData(GridData.FILL_BOTH);
+            warningLbl.setLayoutData(gd);
+            warningLbl.setText(Messages.CommitDialog_unchecked_objects_can_occur_unexpected_errors);
+            warningLbl.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
+            warningLbl.setVisible(false);
         }
         
         btnAutocommit = new Button(container, SWT.CHECK);
@@ -134,9 +142,6 @@ public class CommitDialog extends TrayDialog {
         return dtvBottom;
     }
 
-    public void setConflictingElements(Set<?> conflictingElementsSet) {
-        this.conflictingElementsSet = conflictingElementsSet;
-    }
     @Override
     protected void cancelPressed() {
         // Если пользователь нажал отмену - снять выделения с зависимых элементов
@@ -146,5 +151,47 @@ public class CommitDialog extends TrayDialog {
             }
         }
         super.cancelPressed();
+    }
+    
+    /**
+     * Задача этого класса - смотреть на снятие галочки с элемента и если
+     * галочка снимается то проверить следующее: <br>
+     * 1. Элемент удаляется: если есть выбранные родители - показать предупреждение; <br>
+     * 2. Элемент создается: если есть выбранные дети - показать предупреждение
+     * @author botov_av
+     *
+     */
+    class MyCheckStateListener implements ICheckStateListener {
+
+        @Override
+        public void checkStateChanged(CheckStateChangedEvent event) {
+            boolean showWarning = false;
+            for (TreeElement el : depcyElementsSet) {
+                if (!el.isSelected()) {
+                    switch (el.getSide()) {
+                    // удаляется
+                    case LEFT:
+                        TreeElement parent = el.getParent();
+                        while (parent != null) {
+                            if (parent.isSelected()) {
+                                showWarning = true;
+                            }
+                            parent = parent.getParent();
+                        }
+                        break;
+                    // создается
+                    case RIGHT:
+                        if (el.isSubTreeSelected()) {
+                            showWarning = true;    
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
+            warningLbl.setVisible(showWarning);
+            getButton(OK).setEnabled(!showWarning);
+        }
     }
 }
