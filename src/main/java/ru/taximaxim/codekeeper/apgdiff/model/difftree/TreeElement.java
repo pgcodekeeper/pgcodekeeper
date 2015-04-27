@@ -1,15 +1,19 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.ListGeneratorPredicate.ADD_STATUS;
+import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.PgTrigger;
 
 /**
  * служит оберткой для объектов БД, представляет состояние объекта между старой
@@ -17,6 +21,13 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
  */
 public class TreeElement {
 
+    public static abstract class ListGeneratorPredicate {
+        
+        public enum ADD_STATUS { ADD, SKIP_THIS, SKIP_SUBTREE }
+        
+        public abstract ADD_STATUS shouldAddToList(TreeElement el);
+    }
+    
     public enum DiffSide {
         LEFT("delete"), RIGHT("new"), BOTH("edit");
         private String changeType;
@@ -181,23 +192,28 @@ public class TreeElement {
         return parent == null ? null : parent.getChild(st.getName(), st.getStatementType());
     }
     /**
-     * создает список с измененными элементами
-     * @param result
-     * @param dbSource
-     * @param dbTarget
-     * @return
+     * создает коллекцию с измененными элементами
      */
-    public List<TreeElement> generateElementsList(List<TreeElement> result, 
-            PgDatabase dbSource, PgDatabase dbTarget) {
-        for (TreeElement child : getChildren()) {
-            child.generateElementsList(result, dbSource, dbTarget);
+    public Collection<TreeElement> flattenAlteredElements(Collection<TreeElement> result, 
+            PgDatabase dbSource, PgDatabase dbTarget, boolean onlySelected,
+            ListGeneratorPredicate predicate) {
+        ADD_STATUS addStatus = ADD_STATUS.ADD;
+        if (predicate != null) {
+            addStatus = predicate.shouldAddToList(this);
+        }
+        if (addStatus == ADD_STATUS.SKIP_SUBTREE) {
+            return result;
         }
         
-        boolean shouldCompareEdits = side == DiffSide.BOTH && dbSource != null && dbTarget != null;
-        if ((side == DiffSide.BOTH && parent != null && parent.getSide() != DiffSide.BOTH)
-                || !selected
+        for (TreeElement child : getChildren()) {
+            child.flattenAlteredElements(result, dbSource, dbTarget, onlySelected, predicate);
+        }
+        
+        boolean canCompareEdits = side == DiffSide.BOTH && dbSource != null && dbTarget != null;
+        if ((onlySelected && !selected)
                 || type == DbObjType.DATABASE 
-                || shouldCompareEdits && getPgStatement(dbSource).compare(getPgStatement(dbTarget))) {
+                || addStatus == ADD_STATUS.SKIP_THIS
+                || canCompareEdits && getPgStatement(dbSource).compare(getPgStatement(dbTarget))) {
             return result;
         }
         
@@ -238,7 +254,7 @@ public class TreeElement {
             result = prime * result + ((name == null) ? 0 : name.hashCode());
             result = prime * result + ((side == null) ? 0 : side.hashCode());
             result = prime * result + ((type == null) ? 0 : type.hashCode());
-            result = prime * result + System.identityHashCode(parent);
+            result = prime * result + getContainerQName().hashCode();
             
             if (result == 0) {
                 ++result;
@@ -249,7 +265,6 @@ public class TreeElement {
         return hashcode;
     }
 
-    //TODO не учитывает вложенность родителей
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -259,10 +274,27 @@ public class TreeElement {
             return Objects.equals(name, other.getName())
                     && Objects.equals(type, other.getType())
                     && Objects.equals(side, other.getSide())
-                    && this.parent == other.parent;
+                    && getContainerQName().equals(other.getContainerQName());
         }
         return false;
     }
+    
+    public String getContainerQName() {
+        String qname = "";
+        
+        TreeElement par = this.parent;
+        while (par != null) {
+            if (par.getType() == DbObjType.DATABASE) {
+                break;
+            }
+            qname = PgDiffUtils.getQuotedName(par.getName())
+                    + (qname.isEmpty() ? qname : '.' + qname);
+            par = par.getParent();
+        }
+        
+        return qname;
+    }
+    
     @Override
     public String toString() {
         return getName() == null ? "no name" : getName();
