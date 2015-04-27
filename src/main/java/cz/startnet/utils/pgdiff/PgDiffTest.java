@@ -271,6 +271,8 @@ public class PgDiffTest {
                     // Test table domain depcy
                     {"create_dom_tbl", false},
                     {"drop_dom_tbl", false},
+                    // Test authorization schema
+                    {"authorization_schema", false},
                     // Test column privilege
                     {"col_priv", false},
                     {"col_revoke_priv", false},

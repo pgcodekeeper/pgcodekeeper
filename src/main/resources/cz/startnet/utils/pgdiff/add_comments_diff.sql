@@ -2,6 +2,10 @@ COMMENT ON DATABASE current_database() IS 'comments database';
 
 COMMENT ON SCHEMA public IS 'public schema';
 
+COMMENT ON COLUMN typ_composite."key" IS 'Type composite key comment';
+
+COMMENT ON COLUMN typ_composite.val IS 'Type composite val comment';
+
 COMMENT ON TYPE typ_composite IS 'test type';
 
 COMMENT ON DOMAIN dom IS 'test domain';

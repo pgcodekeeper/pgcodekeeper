@@ -119,23 +119,6 @@ ALTER TABLE ONLY table1 ALTER COLUMN col1 SET DEFAULT nextval('table1_col1_seq':
 
 ALTER TABLE ONLY table2 ALTER COLUMN col1 SET DEFAULT nextval('table2_col1_seq'::regclass);
 
-
---
--- Data for Name: table1; Type: TABLE DATA; Schema: public; Owner: fordfrog
---
-
-COPY table1 (col1) FROM stdin;
-\.
-
-
---
--- Data for Name: table2; Type: TABLE DATA; Schema: public; Owner: fordfrog
---
-
-COPY table2 (col1) FROM stdin;
-\.
-
-
 --
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
 --
