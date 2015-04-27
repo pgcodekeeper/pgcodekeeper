@@ -36,7 +36,8 @@ public final class Main {
                     script = PgDiff.createDiff(encodedWriter, arguments);
                 }
                 if (script.isDangerDdl(arguments.isIgnoreDropColumn(),
-                        arguments.isIgnoreAlterColumn(), arguments.isIgnoreDropTable())) {
+                        arguments.isIgnoreAlterColumn(), arguments.isIgnoreDropTable(),
+                        arguments.isIgnoreRestartWith())) {
                     try(final PrintWriter encodedWriter = new UnixPrintWriter(
                             new OutputStreamWriter(
                                 new FileOutputStream(arguments.getDiffOutfile()),
