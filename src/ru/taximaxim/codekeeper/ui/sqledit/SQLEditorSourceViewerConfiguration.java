@@ -71,6 +71,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                     IRegion info= document.getLineInformation(lineNumber);
                     return document.get(info.getOffset(), info.getLength());
                 } catch (BadLocationException x) {
+                    // do nothing
                 }
                 return null;
             }
@@ -80,51 +81,8 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         ContentAssistant assistant= new ContentAssistant();
-        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(sqlSyntax)
-                /*new IContentAssistProcessor() {
-            
-            @Override
-            public String getErrorMessage() {
-                return "Error Message";
-            }
-            
-            @Override
-            public IContextInformationValidator getContextInformationValidator() {
-                return null;
-            }
-            
-            @Override
-            public char[] getContextInformationAutoActivationCharacters() {
-                return new char[] { '#' };
-            }
-            
-            @Override
-            public char[] getCompletionProposalAutoActivationCharacters() {
-                return new char[] { '.', '(' };
-            }
-            
-            @Override
-            public IContextInformation[] computeContextInformation(ITextViewer viewer,
-                    int offset) {
-                IContextInformation[] result= new IContextInformation[5];
-                for (int i= 0; i < result.length; i++)
-                    result[i]= new ContextInformation("CompletionProcessor.ContextInfo.display.pattern " + i + " " + offset,
-                        "CompletionProcessor.ContextInfo.value.pattern " + i + " " + (offset - 5) + " " +(offset + 5));
-                return result;
-            }
-            
-            @Override
-            public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
-                    int offset) {
-                List<ICompletionProposal> result= new ArrayList<ICompletionProposal>();
-                for (String fgProposal : sqlSyntax.getReservedwords()) {
-                    IContextInformation info = new ContextInformation(fgProposal, fgProposal);
-                    result.add(new CompletionProposal(fgProposal, offset, 0, fgProposal.length(), null, fgProposal, info, fgProposal));
-                }
-                return result.toArray(new ICompletionProposal[result.size()]);
-            }
-        }*/
-        , SQLEditorCommonDocumentProvider.SQL_CODE);
+        assistant.setContentAssistProcessor(new SQLEditorCompletionProcessor(
+                sqlSyntax), SQLEditorCommonDocumentProvider.SQL_CODE);
         assistant.enableAutoActivation(true);
         assistant.setAutoActivationDelay(500);
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);

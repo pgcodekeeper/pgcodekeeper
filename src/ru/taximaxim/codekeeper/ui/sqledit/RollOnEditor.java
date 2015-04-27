@@ -475,6 +475,19 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                 job.addJobChangeListener(new DiffReGenerationListener(saveToRestore));
                 job.setUser(true);
                 job.schedule();
+                job.addJobChangeListener(new JobChangeAdapter() {
+                    @Override
+                    public void done(IJobChangeEvent event) {
+                        IEditorInput input = getEditorInput();
+                        if (input instanceof DepcyFromPSQLOutput) {
+                            try {
+                                ((DepcyFromPSQLOutput)input).updateScript(differ.getDiffDirect());
+                            } catch (PgCodekeeperUIException e) {
+                                Log.log(Log.LOG_ERROR, "Cannot set new input to Editor", e);
+                            }
+                        }
+                    }
+                });
             }
         }
     }
