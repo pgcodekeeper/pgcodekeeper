@@ -248,19 +248,6 @@ public class DiffTreeViewer extends Composite {
                 styles.add(styleCount);
             }
             
-            if(el.getSide() == DiffSide.BOTH
-                    && el.getParent().getSide() != DiffSide.BOTH) {
-                TextStyle styleDarkGray = new TextStyle();
-                styleDarkGray.foreground = getDisplay().getSystemColor(
-                        SWT.COLOR_DARK_GRAY);
-                
-                StyleRange styleUnaltered = new StyleRange(styleDarkGray);
-                styleUnaltered.start = 0;
-                styleUnaltered.length = name.length();
-                
-                styles.add(styleUnaltered);
-            }
-            
             cell.setText(label.toString());
         }
         

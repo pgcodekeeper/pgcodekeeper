@@ -397,9 +397,11 @@ class CommitPage extends DiffPresentationPane {
             pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
             try {
                 if (mainPrefs.getBoolean(COMMIT_PREF.USE_PARTIAL_EXPORT_ON_COMMIT)){
-                    List<TreeElement> checked = tree.generateElementsList(
+                    // TODO пробросить использование коллекций в updater и exporter
+                    List<TreeElement> checked = (List<TreeElement>) tree.flattenAlteredElements(
                             new ArrayList<TreeElement>(),
-                            dbSource.getDbObject(), dbTarget.getDbObject());
+                            dbSource.getDbObject(), dbTarget.getDbObject(),
+                            true, null);
                     new ProjectUpdater(dbNew, dbSource.getDbObject(), checked, proj)
                             .updatePartial();
                 }else{
