@@ -424,6 +424,7 @@ public class DiffTableViewer extends Composite {
                     if (el != null) {
                         setSubTreeChecked(el, true);
                         updateCheckedLabel();
+                        notifyExternalCheckListener();
                         viewerRefresh();
                     }
                 }
@@ -438,6 +439,7 @@ public class DiffTableViewer extends Composite {
                     if (el != null) {
                         setSubTreeChecked(el, false);
                         updateCheckedLabel();
+                        notifyExternalCheckListener();
                         viewerRefresh();
                     }
                 }
@@ -825,7 +827,12 @@ public class DiffTableViewer extends Composite {
     }
     
     private void setSubTreeChecked(TreeElement element, boolean selected) {
-        element.setSelected(selected);
+        // Если элемент был проигнорирован, он будет в дереве, но его не будет в
+        // таблице и выбор или снятие галочки не должно затрагивать статус
+        // игнорированного элемента
+        if (elements.contains(element)) {
+            element.setSelected(selected);
+        }
         
         for (TreeElement child : element.getChildren()) {
             setSubTreeChecked(child, selected);
@@ -865,13 +872,16 @@ public class DiffTableViewer extends Composite {
             for (Object element : elements) {
                 ((TreeElement)element).setSelected(state);
             }
-            for (ICheckStateListener list : commitCheckListeners) {
-                list.checkStateChanged(null);
-            }
+            notifyExternalCheckListener();
             updateCheckedLabel();
         }
     }
     
+    public void notifyExternalCheckListener() {
+        for (ICheckStateListener list : commitCheckListeners) {
+            list.checkStateChanged(null);
+        }
+    }
     private static class TableViewerComparator extends ViewerComparator {
         
         private static class SortingColumn {
