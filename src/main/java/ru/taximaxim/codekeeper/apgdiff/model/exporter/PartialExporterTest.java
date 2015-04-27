@@ -149,8 +149,8 @@ public class PartialExporterTest {
             DiffTreeApplier applier = new DiffTreeApplier(dbSource, dbTarget, diffTree);
             PgDatabase dbNew = applier.apply();
             
-            List<TreeElement> list = diffTree.generateElementsList(new ArrayList<TreeElement>(), dbSource,
-                    dbTarget);
+            List<TreeElement> list = (List<TreeElement>) diffTree.flattenAlteredElements(
+                    new ArrayList<TreeElement>(), dbSource, dbTarget, true, null);
             // full export of source to target directory
             new ModelExporter(exportDirPartial.toFile(), dbSource, encoding).exportFull();
             // full export of new to newFull directory
