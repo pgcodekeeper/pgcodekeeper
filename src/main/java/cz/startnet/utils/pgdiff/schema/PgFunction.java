@@ -276,8 +276,8 @@ public class PgFunction extends PgStatementWithSearchPath {
             PgFunction func  = (PgFunction) obj;
             return checkForChanges(func)
                     && Objects.equals(owner, func.getOwner())
-                    && Objects.equals(grants, func.getGrants())
-                    && Objects.equals(revokes, func.getRevokes())
+                    && Objects.equals(grants, func.grants)
+                    && Objects.equals(revokes, func.revokes)
                     && Objects.equals(comment, func.getComment());
         }
         return false;
