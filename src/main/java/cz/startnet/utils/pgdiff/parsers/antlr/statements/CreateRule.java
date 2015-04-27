@@ -1,10 +1,12 @@
 package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Col_rulesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
@@ -29,18 +31,25 @@ public class CreateRule extends ParserAbstract {
         if (db.getArguments().isIgnorePrivileges()) {
             return null;
         }
+        String col_rule = "";
         DbObjType type = null;
         List<Schema_qualified_nameContext> obj_name = new ArrayList<>();
         List<IdentifierContext> col_names = new ArrayList<>();
-        if (ctx.body_rule.obj_name != null) {
-            obj_name = ctx.body_rule.obj_name.name;
+        if (ctx.body_rule.body_rules_rest().obj_name != null) {
+            obj_name = ctx.body_rule.body_rules_rest().obj_name.name;
         } else if (ctx.body_rule.on_table() != null) {
             type = DbObjType.TABLE;
             obj_name = ctx.body_rule.on_table().obj_name.name;
         } else if (ctx.body_rule.on_column() != null) {
             type = DbObjType.COLUMN;
-            obj_name = ctx.body_rule.on_column().obj_name.name;
+            obj_name = ctx.body_rule.on_column().on_col_table().obj_name.name;
             col_names = ctx.body_rule.on_column().column;
+            for (Col_rulesContext rul : ctx.body_rule.on_column().col_rules()) {
+                col_rule += rul.getText();
+            }
+            col_rule += "({0}) "
+                    + getFullCtxText(ctx.body_rule.on_column().on_col_table())
+                            + " " + getFullCtxText(ctx.body_rule.body_rules_rest());
         } else if (ctx.body_rule.on_sequence() != null) {
             type = DbObjType.SEQUENCE;
             obj_name = ctx.body_rule.on_sequence().obj_name.name;
@@ -79,7 +88,7 @@ public class CreateRule extends ParserAbstract {
         
         for (Schema_qualified_nameContext name : obj_name) {
             addToDB(name, type, new PgPrivilege(ctx.REVOKE() != null,
-                    getFullCtxText(ctx.body_rule), getFullCtxText(ctx)),
+                    col_rule.isEmpty() ? getFullCtxText(ctx.body_rule) : col_rule, getFullCtxText(ctx)),
                     col_names);
         }
 
@@ -127,7 +136,10 @@ public class CreateRule extends ParserAbstract {
                 for (IdentifierContext col_name : col_names) {
                     PgColumn col = tbl.getColumn(col_name.getText());
                     if (col != null) {
-                        col.addPrivilege(pgPrivilege);
+                        String privTxt = MessageFormat.format(pgPrivilege.getDefinition(), col.getName());
+                        col.addPrivilege(new PgPrivilege(
+                                pgPrivilege.isRevoke(), privTxt, pgPrivilege
+                                        .getRawStatement()));
                     }
                 }
                 return statement;

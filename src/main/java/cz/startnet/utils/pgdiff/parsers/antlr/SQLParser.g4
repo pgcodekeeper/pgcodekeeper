@@ -425,7 +425,11 @@ body_rules
     | on_tablespace
     | on_type
     | on_domain)
-    (grant_to_rule | revoke_from_cascade_restrict)
+    body_rules_rest
+    ;
+    
+body_rules_rest
+    :(grant_to_rule | revoke_from_cascade_restrict)
     | GRANT obj_name=names_references TO role_name=names_references (WITH ADMIN OPTION)?
     | REVOKE (ADMIN OPTION FOR)? obj_name=names_references FROM role_name=names_references
       cascade_restrict?
@@ -446,9 +450,16 @@ on_table
     ;
 
 on_column
-    : (((SELECT | INSERT | UPDATE | REFERENCES) LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)+
-         | ALL PRIVILEGES? LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN )
-        ON TABLE? obj_name=names_references
+    : col_rules+ LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN
+        on_col_table
+    ;
+    
+col_rules
+    :SELECT | INSERT | UPDATE | REFERENCES | ALL PRIVILEGES?
+    ;
+    
+on_col_table
+    : ON TABLE? obj_name=names_references
     ;
 
 on_sequence
