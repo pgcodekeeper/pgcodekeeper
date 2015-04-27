@@ -1114,7 +1114,7 @@ public class JdbcLoader implements PgCatalogStrings {
         i.setDefinition(definition.substring(definition.indexOf("USING ")));
         
         i.setUnique(res.getBoolean("indisunique"));
-        setOwner(i, res.getLong(CLASS_RELOWNER));
+        //setOwner(i, res.getLong(CLASS_RELOWNER));
         
         return i;
     }
