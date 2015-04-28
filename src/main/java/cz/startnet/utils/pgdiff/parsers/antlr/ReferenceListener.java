@@ -329,9 +329,6 @@ public class ReferenceListener extends SQLParserBaseListener {
         } else if (ctx.body_rule.on_table() != null) {
             type = DbObjType.TABLE;
             obj_name = ctx.body_rule.on_table().obj_name.name;
-        } else if (ctx.body_rule.on_column() != null) {
-            type = DbObjType.COLUMN;
-            obj_name = ctx.body_rule.on_column().on_col_table().obj_name.name;
         } else if (ctx.body_rule.on_sequence() != null) {
             type = DbObjType.SEQUENCE;
             obj_name = ctx.body_rule.on_sequence().obj_name.name;

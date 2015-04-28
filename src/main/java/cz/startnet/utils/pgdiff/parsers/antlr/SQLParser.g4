@@ -232,8 +232,7 @@ alter_default_privileges
 
 abbreviated_grant_or_revoke
     : (GRANT | REVOKE grant_option_for?) (
-      (( common_query_list (COMMA common_query_list)*)
-        | ALL PRIVILEGES?)
+       common_query_list (COMMA common_query_list)*
         ON TABLES
 
     | ((usage_select_update(COMMA usage_select_update)*)
@@ -414,8 +413,7 @@ rule_common
     ;
 
 body_rules
-    :(on_table 
-    | on_column 
+    :(on_table
     | on_sequence
     | on_database
     | on_datawrapper_server_lang
@@ -444,22 +442,13 @@ revoke_from_cascade_restrict
     ;
 
 on_table
-    : (common_query_list (COMMA common_query_list)* | ALL PRIVILEGES?) 
+    : priv_tbl_col+=on_column (COMMA priv_tbl_col+=on_column)*
         ON ( (TABLE? obj_name=names_references)
              | ALL TABLES IN SCHEMA (schema_name+=identifier)+)
     ;
 
 on_column
-    : col_rules+ LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN
-        on_col_table
-    ;
-    
-col_rules
-    :SELECT | INSERT | UPDATE | REFERENCES | ALL PRIVILEGES?
-    ;
-    
-on_col_table
-    : ON TABLE? obj_name=names_references
+    : common_query_list (LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)?
     ;
 
 on_sequence
@@ -737,7 +726,7 @@ schema_with_name
     ;
 
 common_query_list
-    : SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER
+    : SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER | ALL PRIVILEGES?
     ;
 
 usage_select_update
