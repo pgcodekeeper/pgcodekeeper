@@ -7,7 +7,7 @@ ALTER TABLE t2 OWNER TO botov_av;
 
 -- TABLE t2 GRANT
 
-GRANT SELECT ON TABLE public.t2 TO levsha_aa;
+GRANT SELECT ON TABLE t2 TO levsha_aa;
 
 -- COLUMN c1 GRANT
 
@@ -15,7 +15,7 @@ GRANT INSERT(c1), REFERENCES(c1), UPDATE(c1) ON TABLE t2 TO levsha_aa;
 
 -- TABLE t1 GRANT
 
-GRANT SELECT ON TABLE public.t1 TO levsha_aa;
+GRANT SELECT ON TABLE t1 TO levsha_aa;
 
 ALTER TABLE t1
 	ADD COLUMN c2 text;
