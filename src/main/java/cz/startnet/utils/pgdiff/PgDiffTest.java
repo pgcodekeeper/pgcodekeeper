@@ -273,7 +273,12 @@ public class PgDiffTest {
                     {"drop_dom_tbl", false},
                     // Test authorization schema
                     {"authorization_schema", false},
-                    // Test privillege
+                    // Test column privilege
+                    {"col_priv", false},
+                    {"col_revoke_priv", false},
+                    {"col_priv_new_tbl", false},
+                    {"col_priv_tbl", false},
+                    // Test privilege
                     {"add_privilege", false},
                     {"drop_privilege", false},
                     {"chg_privilege", false},

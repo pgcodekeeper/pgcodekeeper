@@ -17,10 +17,13 @@ GRANT ALL ON SEQUENCE test_id_seq TO fordfrog;
 
 REVOKE ALL ON TABLE test FROM PUBLIC;
 REVOKE ALL ON TABLE test FROM botov_av;
-REVOKE ALL(id) ON TABLE test FROM PUBLIC;
-REVOKE ALL(id) ON TABLE test FROM botov_av;
 GRANT ALL ON TABLE test TO botov_av;
 GRANT ALL ON TABLE test TO fordfrog;
+
+-- COLUMN id GRANT
+
+REVOKE ALL(id) ON TABLE test FROM PUBLIC;
+REVOKE ALL(id) ON TABLE test FROM botov_av;
 GRANT ALL(id) ON TABLE test TO fordfrog;
 
 -- VIEW test_view GRANT
