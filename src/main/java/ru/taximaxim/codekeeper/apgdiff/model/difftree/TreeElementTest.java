@@ -14,7 +14,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
@@ -72,23 +71,20 @@ public class TreeElementTest {
 
         TreeElement treeFull = DiffTree.create(dbFull, new PgDatabase());
         
-        Set<TreeElement> checked = new HashSet<>();
-        visitAndFindNew(treeFull, checked);
+        selectFunctionInFUNCNAMES(treeFull);
         
-        TreeElement treeFiltered = treeFull.getFilteredCopy(checked);
-        
-        PgDatabase dbFiltered = new PgDbFilter2(dbFull, treeFiltered, DiffSide.LEFT).apply();
+        PgDatabase dbFiltered = new PgDbFilter2(dbFull, treeFull, DiffSide.LEFT).apply();
         
         assertEquals("filtered database is not equal to the reference one",
                 dbPartial, dbFiltered);
     }
     
-    private void visitAndFindNew (TreeElement element, Set<TreeElement> set){
+    private void selectFunctionInFUNCNAMES (TreeElement element){
         if (element.getType() == DbObjType.FUNCTION && FUNC_NAMES.contains(element.getName())){
-            set.add(element);
+            element.setSelected(true);
         }
         for (TreeElement e : element.getChildren()){
-            visitAndFindNew(e, set);
+            selectFunctionInFUNCNAMES(e);
         }
     }
 }
