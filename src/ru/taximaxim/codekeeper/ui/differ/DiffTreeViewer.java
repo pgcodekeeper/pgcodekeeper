@@ -37,7 +37,6 @@ import org.eclipse.swt.widgets.Composite;
 
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -47,8 +46,6 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class DiffTreeViewer extends Composite {
     
     private final Map<DbObjType, Image> mapObjIcons =
-            new HashMap<>(DbObjType.values().length);
-    private final Map<DbObjType, Image> mapContIcons = 
             new HashMap<>(DbObjType.values().length);
     
     private TreeElement tree;
@@ -68,14 +65,8 @@ public class DiffTreeViewer extends Composite {
                             FILE.ICONPGADMIN
                             + objType.toString().toLowerCase()
                             + ".png")); //$NON-NLS-1$
-            ImageDescriptor iCont = ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(
-                            FILE.ICONPGADMIN
-                            + objType.toString().toLowerCase()
-                            + "s.png")); //$NON-NLS-1$
             
             mapObjIcons.put(objType, lrm.createImage(iObj));
-            mapContIcons.put(objType, lrm.createImage(iCont));
         }
         
         GridLayout gl = new GridLayout();
@@ -220,7 +211,7 @@ public class DiffTreeViewer extends Composite {
         List<StyleRange> styles = new ArrayList<>();
         
         Image icon = mapObjIcons.get(el.getType());
-        String name  = el.getName();
+        String name = el.getName();
         
         if(btnDebugView.getSelection()) {
             cell.setText(String.format("%s:%s:%s", //$NON-NLS-1$
@@ -263,6 +254,7 @@ public class DiffTreeViewer extends Composite {
     /**
      * Recursively copy only selected tree elements into a new tree
      */
+    @Deprecated
     public TreeElement filterDiffTree() {
         if (tree == null) {
             return null;
@@ -273,6 +265,7 @@ public class DiffTreeViewer extends Composite {
         return filterDiffTree(tree);
     }
     
+    @Deprecated
     private TreeElement filterDiffTree(TreeElement tree) {
         if(!viewer.getChecked(tree)
                 && !viewer.getGrayed(tree)) {

@@ -137,7 +137,7 @@ public class DiffTableViewer extends Composite {
     
     private Map<String, List<String>> prevChecked; 
     private XmlHistory prevCheckedHistory;
-    private List<ICheckStateListener> commitCheckListeners = new ArrayList<>();
+    private List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
     
     private enum Columns {
         CHECK,
@@ -647,7 +647,7 @@ public class DiffTableViewer extends Composite {
      */
     public void addCheckStateListener(ICheckStateListener listener) {
         viewer.addCheckStateListener(listener);
-        commitCheckListeners.add(listener);
+        programmaticCheckListeners.add(listener);
     }
 
     private void setCheckedFromPrevCheckedCombo() {
@@ -878,10 +878,11 @@ public class DiffTableViewer extends Composite {
     }
     
     public void notifyExternalCheckListener() {
-        for (ICheckStateListener list : commitCheckListeners) {
+        for (ICheckStateListener list : programmaticCheckListeners) {
             list.checkStateChanged(null);
         }
     }
+    
     private static class TableViewerComparator extends ViewerComparator {
         
         private static class SortingColumn {

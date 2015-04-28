@@ -90,7 +90,6 @@ public class CommitDialog extends TrayDialog {
             TreeElement.getSelected(treeDiffer.getDiffTree(), result);
         } catch (PgCodekeeperUIException e1) {
             Log.log(Log.LOG_ERROR, "Error while trying to get DiffTree", e1); //$NON-NLS-1$
-            result = new ArrayList<>();
         }
         dtvTop.setInputCollection(result, treeDiffer, false);
         
@@ -114,7 +113,7 @@ public class CommitDialog extends TrayDialog {
             dtvBottom.setInputCollection(depcyElementsSet, treeDiffer, false);
             dtvBottom.redraw();
             
-            dtvBottom.addCheckStateListener(new MyCheckStateListener());
+            dtvBottom.addCheckStateListener(new ValidationCheckStateListener());
             warningLbl = new Label(gBottom, SWT.NONE);
             gd = new GridData(GridData.FILL_BOTH);
             warningLbl.setLayoutData(gd);
@@ -159,9 +158,8 @@ public class CommitDialog extends TrayDialog {
      * 1. Элемент удаляется: если есть выбранные родители - показать предупреждение; <br>
      * 2. Элемент создается: если есть выбранные дети - показать предупреждение
      * @author botov_av
-     *
      */
-    class MyCheckStateListener implements ICheckStateListener {
+    private class ValidationCheckStateListener implements ICheckStateListener {
 
         @Override
         public void checkStateChanged(CheckStateChangedEvent event) {
@@ -175,15 +173,14 @@ public class CommitDialog extends TrayDialog {
                         while (parent != null) {
                             if (parent.isSelected()) {
                                 showWarning = true;
+                                break;
                             }
                             parent = parent.getParent();
                         }
                         break;
                     // создается
                     case RIGHT:
-                        if (el.isSubTreeSelected()) {
-                            showWarning = true;    
-                        }
+                        showWarning = el.isSubTreeSelected();
                         break;
                     default:
                         break;
