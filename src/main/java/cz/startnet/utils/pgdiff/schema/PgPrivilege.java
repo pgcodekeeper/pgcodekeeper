@@ -3,7 +3,7 @@ package cz.startnet.utils.pgdiff.schema;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 
 public class PgPrivilege extends PgStatement {
     

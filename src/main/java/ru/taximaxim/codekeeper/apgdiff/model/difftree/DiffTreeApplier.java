@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -20,11 +19,14 @@ import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
- * Copies source DB into a new one updating, adding (from target DB)
- * and removing entries as per diff tree.
+ * Copies source DB into a new one updating, adding (from target DB) and
+ * removing entries as per diff tree.
  * 
  * LEFT elements are not copied (removed), RIGHT & BOTH elements are copied from
- * target DB (updated/added). 
+ * target DB (updated/added).
+ * 
+ * сливает 2 БД в новую на основании дерева диффа (и селекшенов в нем): дропает
+ * LEFT элементы, копирует новое состояние для RIGHT и BOTH
  */
 public class DiffTreeApplier {
 
@@ -143,13 +145,10 @@ public class DiffTreeApplier {
         if(el.getSide() == DiffSide.RIGHT) {
             return;
         }
-        // and non-left CONTAINERs (except root)
-        if(el.getSide() == DiffSide.BOTH && el.getType() == DbObjType.CONTAINER && el.getParent() != null) {
-            return;
-        }
         
         // add LEFT statements to no-copy list
-        if(el.getSide() == DiffSide.LEFT && el.getType() != DbObjType.CONTAINER) {
+        if(el.getSide() == DiffSide.LEFT
+                && el.isSelected()) {
             lstNoCopy.add(el.getPgStatement(dbSource));
             return;
         }

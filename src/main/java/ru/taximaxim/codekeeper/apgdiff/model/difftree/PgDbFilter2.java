@@ -1,6 +1,5 @@
 package ru.taximaxim.codekeeper.apgdiff.model.difftree;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
@@ -16,6 +15,10 @@ import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
+/**
+ * фильтрует базу на основании дерева диффа (и селекшенов в нем): не копирует
+ * элементы БД, которые не выбраны/отсутствуют в дереве
+ */
 public class PgDbFilter2 {
 
     private final PgDatabase db;
@@ -28,9 +31,6 @@ public class PgDbFilter2 {
         if(side != DiffSide.LEFT && side != DiffSide.RIGHT) {
             throw new IllegalArgumentException(
                     "Must specify concrete filter side: LEFT or RIGHT!");
-        }
-        if(root.getType() != DbObjType.CONTAINER) {
-            illegalTreeStructure(root, null);
         }
         
         this.db = db;
@@ -61,15 +61,13 @@ public class PgDbFilter2 {
         if(!checkSide(el)) {
             return;
         }
-        
+        // Если элемент или его дети не выбраны, его добавлять в базу не нужно
+        if (!el.isSubTreeSelected()) {
+            return;
+        }
         ProcessResult res = null;
         try {
             switch(el.getType()) {
-            case CONTAINER:
-                // just go straight to processing children
-                res = new ProcessResult(src, dst);
-                break;
-                
             case DATABASE:
                 PgDatabase dbSrc = (PgDatabase) src;
                 PgDatabase dbDst = (PgDatabase) dst;
@@ -166,10 +164,9 @@ public class PgDbFilter2 {
             processElement(sub, res.src, res.dst);
         }
     }
-    
+
     private boolean checkSide(TreeElement el) {
-        return (el.getType() == DbObjType.CONTAINER)? true : // do not check for CONTAINER elements 
-            (el.getSide() == side || el.getSide() == DiffSide.BOTH);
+        return el.getSide() == side || el.getSide() == DiffSide.BOTH;
     }
     
     /**

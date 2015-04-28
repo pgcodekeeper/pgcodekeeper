@@ -22,8 +22,8 @@ import java.util.regex.Pattern;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import cz.startnet.utils.pgdiff.PgDiffUtils;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -154,7 +154,7 @@ public class ModelExporter {
     private void deleteObject(TreeElement el) throws IOException{
         PgStatement st = el.getPgStatement(oldDb);
 
-        TreeElement elParent = el.getParent().getParent();
+        TreeElement elParent = el.getParent();
         switch (st.getStatementType()) {
         case SCHEMA:
             // delete schema sql file
@@ -212,7 +212,7 @@ public class ModelExporter {
      */
     private void editObject(TreeElement el) throws IOException{
         PgStatement stInNew = el.getPgStatement(newDb);
-        TreeElement elParent = el.getParent().getParent();
+        TreeElement elParent = el.getParent();
 
         switch (stInNew.getStatementType()) {
         case SCHEMA:
@@ -287,7 +287,7 @@ public class ModelExporter {
      */
     private void createObject(TreeElement el) throws IOException{
         PgStatement stInNew = el.getPgStatement(newDb);
-        TreeElement elParent = el.getParent().getParent();
+        TreeElement elParent = el.getParent();
         
         switch (stInNew.getStatementType()) {
         case SCHEMA:
@@ -601,8 +601,6 @@ public class ModelExporter {
             break;
             
         case DATABASE:
-        case CONTAINER:
-            // warning suppressor
         }
         
         return new File(file, ModelExporter.getExportedFilename(st) + (addExtension ? ".sql" : ""));

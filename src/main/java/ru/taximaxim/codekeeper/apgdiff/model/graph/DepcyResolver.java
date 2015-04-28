@@ -16,7 +16,7 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import cz.startnet.utils.pgdiff.PgCodekeeperException;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgConstraint;
@@ -309,7 +309,6 @@ public class DepcyResolver {
             return oldSchema.getType(statement.getName());
         case DOMAIN:
             return oldSchema.getDomain(statement.getName());
-        case CONTAINER:
         case DATABASE:
         default:
             break;
