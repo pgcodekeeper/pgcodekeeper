@@ -276,7 +276,8 @@ public class PgDiffTest {
                     // Test column privilege
                     {"col_priv", false},
                     {"col_revoke_priv", false},
-                    {"col_priv_new_tbl", false}
+                    {"col_priv_new_tbl", false},
+                    {"col_priv_tbl", false}
                 });
     }
     
