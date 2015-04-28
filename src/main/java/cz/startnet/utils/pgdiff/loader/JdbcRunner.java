@@ -19,9 +19,11 @@ public class JdbcRunner {
     public String runScript(final String script) throws IOException{
         try (Connection connection = connector.getConnection();
                 Statement stmnt = connection.createStatement();) {
+            stmnt.setEscapeProcessing(false);
             
             Future<String> queryFuture = Executors.newCachedThreadPool().submit(
                     new Callable<String>() {
+                        
                         @Override
                         public String call() throws Exception {
                             stmnt.execute(script);

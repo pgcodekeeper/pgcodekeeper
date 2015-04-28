@@ -145,7 +145,7 @@ public class PgFunction extends PgStatementWithSearchPath {
         PgFunction oldFunction = this;
         PgDiffScript script = new PgDiffScript();
         
-        if (!oldFunction.compareWithoutComments(newFunction)) {
+        if (!oldFunction.checkForChanges(newFunction)) {
             if (PgDiffFunctions.needDrop(oldFunction, newFunction)) {
                 isNeedDepcies.set(true);
                 return true;
@@ -252,7 +252,7 @@ public class PgFunction extends PgStatementWithSearchPath {
      *         the same when compared ignoring whitespace, otherwise returns
      *         false
      */
-    public boolean compareWithoutComments(PgFunction func) {
+    public boolean checkForChanges(PgFunction func) {
         boolean equals = false;
 
         if (this == func) {
@@ -260,9 +260,6 @@ public class PgFunction extends PgStatementWithSearchPath {
         } else {
             equals = Objects.equals(name, func.getBareName())
                     && arguments.equals(func.arguments)
-                    && grants.equals(func.grants)
-                    && revokes.equals(func.revokes)
-                    && Objects.equals(owner, func.getOwner())
                     && Objects.equals(body, func.getBody())
                     && Objects.equals(returns, func.getReturns());
         }
@@ -276,8 +273,12 @@ public class PgFunction extends PgStatementWithSearchPath {
         }
         
         if (obj instanceof PgFunction) {
-            return compareWithoutComments((PgFunction) obj)
-                    && Objects.equals(comment, obj.getComment());
+            PgFunction func  = (PgFunction) obj;
+            return checkForChanges(func)
+                    && Objects.equals(owner, func.getOwner())
+                    && Objects.equals(grants, func.grants)
+                    && Objects.equals(revokes, func.revokes)
+                    && Objects.equals(comment, func.getComment());
         }
         return false;
     }
