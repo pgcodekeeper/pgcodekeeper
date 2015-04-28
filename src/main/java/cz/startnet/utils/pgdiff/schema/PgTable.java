@@ -7,7 +7,6 @@ package cz.startnet.utils.pgdiff.schema;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,7 +29,7 @@ import cz.startnet.utils.pgdiff.PgDiffUtils;
 public class PgTable extends PgStatementWithSearchPath {
 
     private final List<PgColumn> columns = new ArrayList<>();
-    private final List<Entry<String, String>> inherits = new ArrayList<>();
+    private final List<Inherits> inherits = new ArrayList<>();
     private final List<PgConstraint> constraints = new ArrayList<>();
     private final List<PgIndex> indexes = new ArrayList<>();
     private final List<PgTrigger> triggers = new ArrayList<>();
@@ -146,7 +145,7 @@ public class PgTable extends PgStatementWithSearchPath {
 
             first = true;
 
-            for (final Entry<String, String> tableName : inherits) {
+            for (final Inherits tableName : inherits) {
                 if (first) {
                     first = false;
                 } else {
@@ -235,9 +234,9 @@ public class PgTable extends PgStatementWithSearchPath {
         PgDiffScript script = new PgDiffScript();
         PgTable oldTable = this;
 
-        List<Entry<String, String>> oldInherits = oldTable.getInherits();
-        List<Entry<String, String>> newInherits = newTable.getInherits();
-        for (final Entry<String, String> tableName : oldInherits) {
+        List<Inherits> oldInherits = oldTable.getInherits();
+        List<Inherits> newInherits = newTable.getInherits();
+        for (final Inherits tableName : oldInherits) {
             if (!newInherits.contains(tableName)) {
                 script.addStatement("ALTER TABLE "
                         + PgDiffUtils.getQuotedName(newTable.getName())
@@ -247,7 +246,7 @@ public class PgTable extends PgStatementWithSearchPath {
                         + PgDiffUtils.getQuotedName(tableName.getValue()) + ';');
             }
         }
-        for (final Entry<String, String> tableName : newInherits) {
+        for (final Inherits tableName : newInherits) {
             if (!oldInherits.contains(tableName)) {
                 script.addStatement("ALTER TABLE "
                         + PgDiffUtils.getQuotedName(newTable.getName())
@@ -344,7 +343,7 @@ public class PgTable extends PgStatementWithSearchPath {
     }
 
     public void addInherits(final String schemaName, final String tableName) {
-        inherits.add(new SimpleEntry<>(schemaName, tableName));
+        inherits.add(new Inherits(schemaName, tableName));
         resetHash();
     }
 
@@ -353,7 +352,7 @@ public class PgTable extends PgStatementWithSearchPath {
      *
      * @return {@link #inherits}
      */
-    public List<Entry<String, String>> getInherits() {
+    public List<Inherits> getInherits() {
         return Collections.unmodifiableList(inherits);
     }
 
@@ -528,7 +527,7 @@ public class PgTable extends PgStatementWithSearchPath {
         tableDst.setTablespace(getTablespace());
         tableDst.setWith(getWith());
         tableDst.setClustered(isClustered());
-        for(Entry<String, String> inh : inherits) {
+        for(Inherits inh : inherits) {
             tableDst.addInherits(inh.getKey(), inh.getValue());
         }
         for(PgColumn colSrc : columns) {
@@ -569,4 +568,38 @@ public class PgTable extends PgStatementWithSearchPath {
     public PgSchema getContainingSchema() {
         return (PgSchema)this.getParent();
     }
+    
+    public static class Inherits {
+        private final String key;
+        private final String value;
+        
+        public String getKey() {
+            return key;
+        }
+        public String getValue() {
+            return value;
+        }
+        public Inherits(String key, String value) {
+            super();
+            this.key = key;
+            this.value = value;
+        }
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((key == null) ? 0 : key.hashCode());
+            result = prime * result + ((value == null) ? 0 : value.hashCode());
+            return result;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Inherits) {
+                Inherits other = (Inherits) obj;
+                return Objects.equals(key, other.key)
+                        && Objects.equals(value, other.value);
+            }
+            return false;
+        }
+    } 
 }

@@ -334,7 +334,9 @@ public class PgColumn extends PgStatementWithSearchPath {
                     && Objects.equals(defaultValue, col.getDefaultValue())
                     && Objects.equals(statistics, col.getStatistics())
                     && Objects.equals(storage, col.getStorage())
-                    && Objects.equals(comment, col.getComment());
+                    && Objects.equals(comment, col.getComment())
+                    && grants.equals(col.grants)
+                    && revokes.equals(col.revokes);
         }
         
         return eq;
@@ -353,6 +355,8 @@ public class PgColumn extends PgStatementWithSearchPath {
         result = prime * result + ((storage == null) ? 0 : storage.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         result = prime * result + ((comment == null) ? 0 : comment.hashCode());
+        result = prime * result + ((grants == null) ? 0 : grants.hashCode());
+        result = prime * result + ((revokes == null) ? 0 : revokes.hashCode());
         return result;
     }
     
@@ -365,6 +369,12 @@ public class PgColumn extends PgStatementWithSearchPath {
         colDst.setStorage(getStorage());
         colDst.setType(getType());
         colDst.setComment(getComment());
+        for (PgPrivilege priv : grants) {
+            colDst.addPrivilege(priv.shallowCopy());
+        }
+        for (PgPrivilege priv : revokes) {
+            colDst.addPrivilege(priv.shallowCopy());
+        }
         return colDst;
     }
     

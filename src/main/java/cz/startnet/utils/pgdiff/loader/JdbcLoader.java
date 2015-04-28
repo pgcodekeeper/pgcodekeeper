@@ -1348,7 +1348,11 @@ public class JdbcLoader implements PgCatalogStrings {
             order = "X";
         }else if (st instanceof PgTable || st instanceof PgView || st instanceof PgColumn){
             stType = "TABLE";
-            order = "raxdtDw";
+            if (st instanceof PgColumn) {
+                order = "raxw";
+            } else {
+                order = "raxdtDw";
+            }
         }else if (st instanceof PgSchema){
             stType = "SCHEMA";
             order = "CU";
