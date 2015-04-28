@@ -232,7 +232,7 @@ alter_default_privileges
 
 abbreviated_grant_or_revoke
     : (GRANT | REVOKE grant_option_for?) (
-       common_query_list (COMMA common_query_list)*
+       table_column_privilege (COMMA table_column_privilege)*
         ON TABLES
 
     | ((usage_select_update(COMMA usage_select_update)*)
@@ -442,13 +442,13 @@ revoke_from_cascade_restrict
     ;
 
 on_table
-    : priv_tbl_col+=on_column (COMMA priv_tbl_col+=on_column)*
+    : priv_tbl_col+=table_column_privileges (COMMA priv_tbl_col+=table_column_privileges)*
         ON ( (TABLE? obj_name=names_references)
              | ALL TABLES IN SCHEMA (schema_name+=identifier)+)
     ;
 
-on_column
-    : common_query_list (LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)?
+table_column_privileges
+    : table_column_privilege (LEFT_PAREN column+=identifier (COMMA column+=identifier)* RIGHT_PAREN)?
     ;
 
 on_sequence
@@ -725,7 +725,7 @@ schema_with_name
     : SCHEMA name=schema_qualified_name
     ;
 
-common_query_list
+table_column_privilege
     : SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER | ALL PRIVILEGES?
     ;
 

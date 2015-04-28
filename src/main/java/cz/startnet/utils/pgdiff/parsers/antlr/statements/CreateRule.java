@@ -11,9 +11,9 @@ import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Body_rulesContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Function_parametersContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.IdentifierContext;
-import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.On_columnContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Rule_commonContext;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Schema_qualified_nameContext;
+import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Table_column_privilegesContext;
 import cz.startnet.utils.pgdiff.schema.PgColumn;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
@@ -96,8 +96,8 @@ public class CreateRule extends ParserAbstract {
         List<String> tbl_priv = new ArrayList<>();
         // собрать информацию о привилегиях на колонки
         Map<String, List<String>> colPriv = new HashMap<>();
-        for (On_columnContext priv : ctx_body.on_table().priv_tbl_col) {
-            String privName = priv.common_query_list().getText();
+        for (Table_column_privilegesContext priv : ctx_body.on_table().priv_tbl_col) {
+            String privName = priv.table_column_privilege().getText();
             // это привилегия на таблицу
             if (priv.column.isEmpty()) {
                 tbl_priv.add(privName);
