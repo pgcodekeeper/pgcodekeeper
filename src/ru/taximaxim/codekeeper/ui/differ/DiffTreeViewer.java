@@ -35,9 +35,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DbObjType;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
@@ -48,8 +47,6 @@ public class DiffTreeViewer extends Composite {
     
     private final Map<DbObjType, Image> mapObjIcons =
             new HashMap<>(DbObjType.values().length);
-    private final Map<DbObjType, Image> mapContIcons = 
-            new HashMap<>(DbObjType.values().length);
     
     private TreeElement tree;
     private final CheckedTreeViewer viewer;
@@ -57,8 +54,6 @@ public class DiffTreeViewer extends Composite {
     private final Button btnDebugView;
     
     private LocalResourceManager lrm;
-    
-    private String subTreeLeft, subTreeRight, subTreeBoth;
     
     public DiffTreeViewer(Composite parent, int style) {
         super(parent, style);
@@ -70,14 +65,8 @@ public class DiffTreeViewer extends Composite {
                             FILE.ICONPGADMIN
                             + objType.toString().toLowerCase()
                             + ".png")); //$NON-NLS-1$
-            ImageDescriptor iCont = ImageDescriptor.createFromURL(
-                    Activator.getContext().getBundle().getResource(
-                            FILE.ICONPGADMIN
-                            + objType.toString().toLowerCase()
-                            + "s.png")); //$NON-NLS-1$
             
             mapObjIcons.put(objType, lrm.createImage(iObj));
-            mapContIcons.put(objType, lrm.createImage(iCont));
         }
         
         GridLayout gl = new GridLayout();
@@ -222,25 +211,7 @@ public class DiffTreeViewer extends Composite {
         List<StyleRange> styles = new ArrayList<>();
         
         Image icon = mapObjIcons.get(el.getType());
-        String name = null;
-        
-        if(el.getType() == DbObjType.CONTAINER
-                && el.getContainerType() == DbObjType.CONTAINER) {
-            switch(el.getSide()) {
-            case LEFT:
-                name = subTreeLeft;
-                break;
-            case RIGHT:
-                name = subTreeRight;
-                break;
-            case BOTH:
-                name = subTreeBoth;
-                break;
-            }
-        }
-        if(name == null) {
-            name = el.getName();
-        }
+        String name = el.getName();
         
         if(btnDebugView.getSelection()) {
             cell.setText(String.format("%s:%s:%s", //$NON-NLS-1$
@@ -248,8 +219,7 @@ public class DiffTreeViewer extends Composite {
         } else {
             StringBuilder label = new StringBuilder(name);
             
-            if(el.getType() == DbObjType.CONTAINER 
-                    || el.getType() == DbObjType.DATABASE
+            if(el.getType() == DbObjType.DATABASE
                     || el.getType() == DbObjType.SCHEMA
                     || el.getType() == DbObjType.TABLE) {
                 label.append(" (") //$NON-NLS-1$
@@ -267,23 +237,6 @@ public class DiffTreeViewer extends Composite {
                 styleCount.length = label.length() - name.length();
                 
                 styles.add(styleCount);
-                
-                if(el.getType() == DbObjType.CONTAINER) {
-                    icon = mapContIcons.get(el.getContainerType());
-                }
-            }
-            
-            if(el.getSide() == DiffSide.BOTH
-                    && el.getParent().getSide() != DiffSide.BOTH) {
-                TextStyle styleDarkGray = new TextStyle();
-                styleDarkGray.foreground = getDisplay().getSystemColor(
-                        SWT.COLOR_DARK_GRAY);
-                
-                StyleRange styleUnaltered = new StyleRange(styleDarkGray);
-                styleUnaltered.start = 0;
-                styleUnaltered.length = name.length();
-                
-                styles.add(styleUnaltered);
             }
             
             cell.setText(label.toString());
@@ -298,18 +251,10 @@ public class DiffTreeViewer extends Composite {
         viewer.setInput(tree);
     }
     
-    public void setSubtreeNames(String subTreeLeft, String subTreeRight,
-            String subTreeBoth) {
-        this.subTreeLeft = subTreeLeft;
-        this.subTreeRight = subTreeRight;
-        this.subTreeBoth = subTreeBoth;
-        
-        viewer.refresh();
-    }
-    
     /**
      * Recursively copy only selected tree elements into a new tree
      */
+    @Deprecated
     public TreeElement filterDiffTree() {
         if (tree == null) {
             return null;
@@ -320,17 +265,16 @@ public class DiffTreeViewer extends Composite {
         return filterDiffTree(tree);
     }
     
+    @Deprecated
     private TreeElement filterDiffTree(TreeElement tree) {
-        if(tree.getType() != DbObjType.CONTAINER 
-                && !viewer.getChecked(tree)
+        if(!viewer.getChecked(tree)
                 && !viewer.getGrayed(tree)) {
             // skip unselected non-root nodes and all their children
             return null;
         }
         
         TreeElement copy = new TreeElement(
-                tree.getName(), tree.getType(),
-                tree.getContainerType(), tree.getSide());
+                tree.getName(), tree.getType(), tree.getSide());
         
         for(TreeElement sub : tree.getChildren()) {
             TreeElement subCopy = filterDiffTree(sub);

@@ -43,8 +43,6 @@ class DepcyGraphLabelProvider extends LabelProvider implements IFigureProvider, 
                 break;
             case CONSTRAINT:
                 return "CONSTR " + st.getBareName(); //$NON-NLS-1$
-            case CONTAINER:
-                break;
             case DATABASE:
                 return "DB"; //$NON-NLS-1$
             case DOMAIN:
