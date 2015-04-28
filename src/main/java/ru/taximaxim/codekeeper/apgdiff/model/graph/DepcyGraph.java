@@ -30,6 +30,7 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgSequence;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
 import cz.startnet.utils.pgdiff.schema.PgTable;
+import cz.startnet.utils.pgdiff.schema.PgTable.Inherits;
 import cz.startnet.utils.pgdiff.schema.PgTrigger;
 import cz.startnet.utils.pgdiff.schema.PgType;
 import cz.startnet.utils.pgdiff.schema.PgView;
@@ -257,7 +258,7 @@ public class DepcyGraph {
     }
 
     private void createTableToTable(PgTable table, PgSchema schema) {
-        for (Entry<String, String> inherit : table.getInherits()) {
+        for (Inherits inherit : table.getInherits()) {
             if (inherit.getKey() != null) {
                 schema = db.getSchema(inherit.getKey());
             }

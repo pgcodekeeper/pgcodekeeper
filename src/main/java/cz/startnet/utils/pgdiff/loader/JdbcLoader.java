@@ -1026,7 +1026,7 @@ public class JdbcLoader implements PgCatalogStrings {
         for (int i = 0; i < colNumbers.length; i++) {
             String columnPrivileges = colAcl[i];
             if (columnPrivileges != null && !columnPrivileges.isEmpty()){
-                setPrivileges(t, tableName, columnPrivileges, tableOwner, colNames[i]);
+                setPrivileges(t.getColumn(colNames[i]), tableName, columnPrivileges, tableOwner, colNames[i]);
             }
         }
 
@@ -1346,9 +1346,13 @@ public class JdbcLoader implements PgCatalogStrings {
         }else if (st instanceof PgFunction){
             stType = "FUNCTION";
             order = "X";
-        }else if (st instanceof PgTable || st instanceof PgView){
+        }else if (st instanceof PgTable || st instanceof PgView || st instanceof PgColumn){
             stType = "TABLE";
-            order = "raxdtDw";
+            if (st instanceof PgColumn) {
+                order = "raxw";
+            } else {
+                order = "raxdtDw";
+            }
         }else if (st instanceof PgSchema){
             stType = "SCHEMA";
             order = "CU";

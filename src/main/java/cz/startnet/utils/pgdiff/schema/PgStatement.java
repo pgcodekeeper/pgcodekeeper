@@ -156,10 +156,11 @@ public abstract class PgStatement {
         case FUNCTION:
         case DOMAIN:
         case TYPE:
+        case COLUMN:
             break;
         default:
             throw new IllegalStateException("GRANTs allowed only for SCHEMA, "
-                    + "SEQUENCE, TABLE, VIEW, FUNCTION, TYPE, DOMAIN objects.");
+                    + "SEQUENCE, TABLE, COLUMN, VIEW, FUNCTION, TYPE, DOMAIN objects.");
         }
         sb.append("\n\n-- ")
             .append(type)

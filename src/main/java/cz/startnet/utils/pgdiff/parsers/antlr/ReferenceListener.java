@@ -324,14 +324,11 @@ public class ReferenceListener extends SQLParserBaseListener {
     public void exitRule_common(Rule_commonContext ctx) {
         DbObjType type = null;
         List<Schema_qualified_nameContext> obj_name = new ArrayList<>();
-        if (ctx.body_rule.obj_name != null) {
-            obj_name = ctx.body_rule.obj_name.name;
+        if (ctx.body_rule.body_rules_rest().obj_name != null) {
+            obj_name = ctx.body_rule.body_rules_rest().obj_name.name;
         } else if (ctx.body_rule.on_table() != null) {
             type = DbObjType.TABLE;
             obj_name = ctx.body_rule.on_table().obj_name.name;
-        } else if (ctx.body_rule.on_column() != null) {
-            type = DbObjType.COLUMN;
-            obj_name = ctx.body_rule.on_column().obj_name.name;
         } else if (ctx.body_rule.on_sequence() != null) {
             type = DbObjType.SEQUENCE;
             obj_name = ctx.body_rule.on_sequence().obj_name.name;
