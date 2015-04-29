@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?NLS TYPE="org.eclipse.help.toc"?>
+
+<toc label="Начало работы" link_to="toc.xml#gettingstarted"> 
+ <topic href="html/gettingstarted/installation_eclipse.html" label="Установка">
+    <topic href="html/gettingstarted/new_proj_wzd/new_wizard.html" label="Мастер создания нового проекта">
+       <topic href="html/gettingstarted/new_proj_wzd/project_initializer.html" label="Инициализация проекта">
+       </topic>
+       <topic href="html/gettingstarted/new_proj_wzd/schema_src_settings.html" label="Установки источника схемы">
+       </topic>
+       <topic href="html/gettingstarted/new_proj_wzd/miscellaneous.html" label="Прочее">
+       </topic>
+    </topic>
+    <topic href="html/gettingstarted/import_project.html" label="Импорт проекта">
+    </topic>
+ </topic>
+ <topic href="html/gettingstarted/pgcodekeeper_editor.html" label="Редактор pgCodeKeeper">
+    <topic href="html/gettingstarted/roll_on_script.html" label="Скрипт наката изменений">
+    </topic>
+    <topic href="html/gettingstarted/manual_depcy.html" label="Ручное добавление зависимостей">
+    </topic>
+ </topic>
+</toc>

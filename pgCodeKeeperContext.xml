@@ -1,0 +1,32 @@
+<contexts>
+    <context id="pgcodekeeper_editor">
+        <description>Редактор pgCodeKeeper используется для проведения операций над проектом pgCodeKeeper.</description>
+        <topic href="html/gettingstarted/pgcodekeeper_editor.html"
+            label="Использование редактора pgCodeKeeper" />
+    </context>
+    <context id="new_wizard">
+       <description>Мастер создания проекта pgCodeKeeper используется для создания нового и импорта существующего проекта pgCodeKeeper.</description>
+       <topic href="html/gettingstarted/new_proj_wzd/new_wizard.html" label="Мастер создания проекта"/>
+    </context>
+    <context id="project_initializer">
+       <description>Установки настроек проекта</description>
+       <topic href="html/gettingstarted/new_proj_wzd/project_initializer.html" label="Инициализация проекта"/>
+    </context>
+    <context id="schema_src_settings">
+       <description>Установки источника схемы БД</description>
+       <topic href="html/gettingstarted/new_proj_wzd/schema_src_settings.html" label="Установки источника схемы БД"/>
+    </context>
+    <context id="miscellaneous">
+       <description>Общее</description>
+       <topic href="html/gettingstarted/new_proj_wzd/miscellaneous.html" label="Общее"/>
+    </context>
+    <context id="roll_on_script">
+       <description>Окно редакторования и выполения скрипта наката изменений</description>
+       <topic href="html/gettingstarted/roll_on_script.html" label="Скрипт наката изменений"/>
+    </context>
+    <context id="manual_depcies">
+       <description>В этом окне можно задать дополнительные зависимости, 
+которые будут учитываться при проведении операций над объектами.</description>
+       <topic href="html/gettingstarted/manual_depcy.html" label="Ручное добавление зависимостей"/>
+    </context>
+</contexts>
