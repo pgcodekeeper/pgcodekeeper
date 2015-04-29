@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ru.taximaxim.codekeeper.ui.tests
+Bundle-SymbolicName: ru.taximaxim.codekeeper.ui.tests;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Fragment-Host: ru.taximaxim.codekeeper.ui
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.junit

@@ -1,0 +1,29 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>ru.taximaxim.codeKeeper</groupId>
+    <artifactId>ru.taximaxim.codeKeeper</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../ru.taximaxim.codekeeper.mainapp/ru.taximaxim.codeKeeper/</relativePath>
+  </parent>
+
+  <artifactId>ru.taximaxim.codekeeper.ui.tests</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>eclipse-test-plugin</packaging>
+  
+  <build>
+	  <plugins>
+	     <plugin>
+	 	    <groupId>org.eclipse.tycho</groupId>
+	 	    <artifactId>tycho-surefire-plugin</artifactId>
+	 	    <version>${tycho.version}</version>
+	 	    <configuration>
+              <appArgLine>-nl en</appArgLine>
+	 	      <product>ru.taximaxim.codeKeeper</product>
+	        </configuration>
+	 	  </plugin>
+	 </plugins>
+ </build>
+</project>
