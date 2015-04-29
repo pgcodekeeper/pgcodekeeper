@@ -608,7 +608,7 @@ public class RollOnEditor extends SQLEditor implements IPartListener2 {
                         new PrintWriter(outFile, scriptFileEncoding)) {
                     writer.write(textRetrieved);
                 }
-   
+
                 String filepath = outFile.getAbsolutePath();
                 ListIterator<String> it = command.listIterator();
                 while (it.hasNext()) {

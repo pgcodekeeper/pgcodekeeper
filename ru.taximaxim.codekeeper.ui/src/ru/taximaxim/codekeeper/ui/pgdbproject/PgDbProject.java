@@ -81,7 +81,7 @@ public class PgDbProject {
         if (!newProject.exists()) {
             IProjectDescription desc = newProject.getWorkspace()
                     .newProjectDescription(newProject.getName());
- 
+
             desc.setLocationURI(location);
             try {
                 newProject.create(desc, null);

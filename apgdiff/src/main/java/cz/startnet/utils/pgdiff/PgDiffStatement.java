@@ -106,4 +106,3 @@ class PgDiffStatement {
         return result;
     }
 }
- 

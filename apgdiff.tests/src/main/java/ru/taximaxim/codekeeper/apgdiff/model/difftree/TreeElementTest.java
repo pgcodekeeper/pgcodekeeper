@@ -4,9 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +42,7 @@ public class TreeElementTest {
                     {"schema_4.sql"},{"schema_5.sql"},{"schema_6.sql"}
                 });
     }
-   
+    
     @Test
     public void testGetFilteredCopy() throws InterruptedException {
         PgDiffArguments args = new PgDiffArguments();

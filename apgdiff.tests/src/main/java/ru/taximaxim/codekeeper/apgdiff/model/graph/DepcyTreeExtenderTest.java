@@ -285,7 +285,7 @@ class Predefined5 extends TreeElementCreator{
         TreeElement table = tree.findElement(target.getSchema("republic").getTable("t_test2foreign"));
         return new HashSet<>(Arrays.asList(table));
     }
-   
+
     @Override
     public int getFileIndex() {
         return 5;

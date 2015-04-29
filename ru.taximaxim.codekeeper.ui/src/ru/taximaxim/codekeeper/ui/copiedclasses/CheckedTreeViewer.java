@@ -156,7 +156,6 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
         }
     }
 
-    
     /* (non-Javadoc)
      * @see org.eclipse.jface.viewers.ICheckable#setChecked(java.lang.Object, boolean)
      */
@@ -169,7 +168,6 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
         return false;
     }
 
- 
     /* (non-Javadoc)
      * @see org.eclipse.jface.viewers.CheckboxTreeViewer#setCheckedElements(java.lang.Object[])
      */
@@ -193,7 +191,6 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
         }
     }
 
-   
     /* (non-Javadoc)
      * @see org.eclipse.jface.viewers.CheckboxTreeViewer#getCheckedElements()
      */

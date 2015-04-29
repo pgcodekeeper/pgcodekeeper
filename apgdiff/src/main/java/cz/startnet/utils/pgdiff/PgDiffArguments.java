@@ -708,7 +708,6 @@ public class PgDiffArguments {
     public void setCheckFunctionBodies(boolean checkFunctionBodies) {
         this.checkFunctionBodies = checkFunctionBodies;
     }
-   
     /**
      * Getter for {@link #checkFunctionBodies}.
      *

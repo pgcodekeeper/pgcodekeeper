@@ -1048,7 +1048,6 @@ public class JdbcLoader implements PgCatalogStrings {
      */
     private PgTrigger getTrigger(ResultSet res, String schemaName)
             throws SQLException, UnsupportedEncodingException {
-  
         String triggerName = res.getString("tgname");
         PgTrigger t = new PgTrigger(triggerName, "");
         
