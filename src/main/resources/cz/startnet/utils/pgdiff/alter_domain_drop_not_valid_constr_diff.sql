@@ -1,0 +1,2 @@
+ALTER DOMAIN dom5
+	DROP CONSTRAINT dom5_check2;

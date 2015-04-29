@@ -1,0 +1,215 @@
+package cz.startnet.utils.pgdiff.depcies;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Locale;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import cz.startnet.utils.pgdiff.PgDiff;
+import cz.startnet.utils.pgdiff.PgDiffArguments;
+import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
+import cz.startnet.utils.pgdiff.loader.ParserClass;
+import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
+import cz.startnet.utils.pgdiff.schema.PgDatabase;
+
+/**
+ * Тестирует сравнение БД с неполным выбором различающихся объектов
+ * @author botov_av
+ *
+ */
+@RunWith(value = Parameterized.class)
+public class PgDiffDepciesTest {
+
+    /**
+     * Provides parameters for running the tests.
+     *
+     * @return parameters for the tests
+     */
+    @Parameters
+    public static Collection<?> parameters() {
+        return Arrays.asList(new Object[][] { 
+                { "empty", "empty_usr" },
+                // изменяется тип колонок у обоих таблиц, пользователь выбирает
+                // view v1
+                { "add_change_col_type", "add_change_col_type_usr_v1" },
+                // --\\-- , пользователь выбирает t1.c1
+                { "add_change_col_type", "add_change_col_type_usr_t1_c1" },
+                // --\\--, у вью меняется только комментарий
+                { "add_change_only_col_type", "add_change_only_col_type_usr_t1_c1" },
+                // изменяется тип колонок у обоих таблиц, изменяется v1, пользователь выбирает
+                // view v2
+                {"add_v2_change_col_type", "add_v2_change_col_type_usr_v2"},
+                // долгий тест накатывает перемещение объектов из одной
+                // схемы в другую, пользователь выбирает все измененные
+                // объекты для наката
+                {"move_object_between_schemas", "move_object_between_schemas"},
+                // тестирует накат только измененных колонок, пользователь выбирает таблицу
+                {"multi_alter_table", "multi_alter_table_usr_t_house"},
+                // пользователь выбирает только v_house
+                {"multi_alter_table", "multi_alter_table_usr_v_house"},
+                // пользователь выбирает только v_house_w
+                {"multi_alter_table", "multi_alter_table_usr_v_house_w"},
+                // пользователь выбирает только функцию update_house_reached
+                {"multi_alter_table", "multi_alter_table_usr_func"},
+                // пользователь выбрал: функцию update_house_reached, v_house, v_house_w, t_house
+                {"multi_alter_table", "multi_alter_table_usr_all"},
+                // накат триггера и функции из разных схем, пользователь выбрал только функцию 
+                {"trigger_before_insert", "trigger_before_insert_usr_funct"},
+                // пользователь выбрал только триггер
+                {"trigger_before_insert", "trigger_before_insert_usr_trig"},
+                // пользователь выбрал триггер и функцию
+                {"trigger_before_insert", "trigger_before_insert_usr_all"},
+                // задача из редмайна по номеру, пользователь выбирает все объекты
+                {"err6049", "err6049"},
+                // удаляется исходная таблица, пользователь выбрал на удаление t1
+                {"table_inherits_del_t1", "table_inherits_del_t1_usr_t1"},
+                // удаляется исходная таблица, пользователь выбрал t2
+                // TODO здесь не нужно создавать колонку, она путем удаления
+                // наследования создастся
+                {"table_inherits_del_t1", "table_inherits_del_t1_usr_t2"},
+                // Таблица перестает наследовать, 
+                // TODO здесь ошибка не должно
+                // быть добавления колонки исправится правильной реализацией
+                // inherits
+                {"table_inherits", "table_inherits_usr_t2"},
+                // колонка меняет тип на новый, пользователь выбрал только тип
+                {"chg_col_type", "chg_col_type_usr_dom2"},
+                // колонка меняет тип на новый, пользователь выбрал только таблицу
+                {"chg_col_type", "chg_col_type_usr_t1"},
+                // колонка меняет тип на новый, пользователь выбрал таблицу и тип
+                {"chg_col_type", "chg_col_type_usr_all"},
+                // тип изменяется как альтер, пользователь выбрал его
+                {"alter_type", "alter_type_usr"},
+                // тип изменяется через drop create, пользователь выбирает его
+                {"drop_type", "drop_type_usr"}
+            });
+    }
+    
+    /**
+     * Template name for file names that should be used for the test. Testing
+     * method adds _original.sql and _new.sql to the file name
+     * template.
+     */
+    private final String dbTemplate;
+    /**
+     * Шаблон для выбора пользователя, содержит часть БД, выбранную пользователем
+     * _original.sql, _new.sql and _diff.sql to the file name
+     */
+    private final String userSelTemplate;
+
+    /**
+     *  Creates a new PgDiffTestDepcies object.
+     * @param fileNameTemplate {@link #dbTemplate}
+     * @param userSelTemplate {@link #userSelTemplate}
+     */
+    public PgDiffDepciesTest(final String fileNameTemplate,
+            final String userSelTemplate) {
+        super();
+        this.dbTemplate = fileNameTemplate;
+        this.userSelTemplate = userSelTemplate;
+        Locale.setDefault(Locale.ENGLISH);
+    }
+
+    /**
+     * Runs single test on original schema.
+     */
+    @Test(timeout = 40000)
+    public void runDiffSameOriginal() throws IOException {
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+        final PgDiffArguments arguments = new PgDiffArguments();
+        PgDiff.createDiff(writer, arguments,
+                getDBIS(FILES_POSTFIX.ORIGINAL_SQL),
+                getDBIS(FILES_POSTFIX.ORIGINAL_SQL));
+        writer.flush();
+
+        Assert.assertEquals("File name template: " + dbTemplate,
+                "", diffInput.toString().trim());
+    }
+
+    /**
+     * Runs single test on new schema.
+     */
+    @Test(timeout = 40000)
+    public void runDiffSameNew() throws IOException {
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+        final PgDiffArguments arguments = new PgDiffArguments();
+        PgDiff.createDiff(writer, arguments,
+                getDBIS(FILES_POSTFIX.NEW_SQL),
+                getDBIS(FILES_POSTFIX.NEW_SQL));
+        writer.flush();
+
+        Assert.assertEquals("File name template: " + dbTemplate,
+                "", diffInput.toString().trim());
+    }
+
+    /**
+     * Runs single test using class member variables.
+     * @throws InterruptedException 
+     */
+    @Test(timeout = 80000)
+    public void runDiff() throws IOException, InterruptedException {
+        
+        final ByteArrayOutputStream diffInput = new ByteArrayOutputStream();
+        final PrintWriter writer = new UnixPrintWriter(diffInput, true);
+        final PgDiffArguments arguments = new PgDiffArguments();
+        PgDatabase oldDatabase = getDB(getUsrSelIS(FILES_POSTFIX.ORIGINAL_SQL), arguments);
+        PgDatabase newDatabase = getDB(getUsrSelIS(FILES_POSTFIX.NEW_SQL), arguments);
+        PgDatabase oldDbFull, newDbFull;
+        if (userSelTemplate.equals(dbTemplate)) {
+            oldDbFull = oldDatabase;
+            newDbFull = newDatabase;
+        } else {
+            oldDbFull = getDB(getDBIS(FILES_POSTFIX.ORIGINAL_SQL), arguments);
+            newDbFull = getDB(getDBIS(FILES_POSTFIX.NEW_SQL), arguments);
+        }
+        PgDiff.diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase, oldDbFull, newDbFull);
+        writer.flush();
+
+        StringBuilder sbExpDiff;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                getUsrSelIS(FILES_POSTFIX.DIFF_SQL)))) {
+            sbExpDiff = new StringBuilder(1024);
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sbExpDiff.append(line);
+                sbExpDiff.append('\n');
+            }
+        }
+
+        Assert.assertEquals("File name template: " + userSelTemplate,
+                sbExpDiff.toString().trim(),
+                diffInput.toString().trim());
+    }
+    
+    private PgDatabase getDB(InputStream is, PgDiffArguments args) throws InterruptedException {
+        return PgDumpLoader.loadDatabaseSchemaFromDump(
+                is, args, ParserClass.getAntlr(null, 1));
+    }
+    
+    private InputStream getUsrSelIS(FILES_POSTFIX postfix) {
+        return getIS(userSelTemplate + postfix);
+    }
+    
+    private InputStream getDBIS(FILES_POSTFIX postfix) {
+        return getIS(dbTemplate + postfix);
+    }
+    
+    private InputStream getIS(String name) {
+        return PgDiffDepciesTest.class.getResourceAsStream(name);
+    }
+}

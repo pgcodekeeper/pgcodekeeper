@@ -1,0 +1,10 @@
+
+DROP EXTENSION testext1;
+
+CREATE SCHEMA other;
+
+CREATE EXTENSION testext3 SCHEMA other VERSION 2;
+
+ALTER EXTENSION testext2 SET SCHEMA other;
+
+COMMENT ON EXTENSION testext_comment IS 'new comment';
