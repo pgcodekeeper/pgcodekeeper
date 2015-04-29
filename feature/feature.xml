@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="ru.taximaxim.codekeeper.feature"
+      label="%feature.label"
+      version="3.2.0.qualifier"
+      provider-name="%feature.provider-name"
+      plugin="ru.taximaxim.codekeeper.mainapp">
+
+   <description>
+      %feature.description
+   </description>
+
+   <copyright>
+      %feature.copyright
+   </copyright>
+
+   <license url="%feature.license.url">
+      %feature.license
+   </license>
+
+   <url>
+      <update label="%url.update.label" url="http://storage.chelny.taximaxim.ru/codekeeper/p2/codekeeperplugins/"/>
+      <discovery label="Eclipse Data Tools Platform (DTP) Project" url="http://download.eclipse.org/datatools/updates"/>
+      <discovery label="Eclipse Git Team Provider" url="http://download.eclipse.org/egit/updates"/>
+   </url>
+
+   <requires>
+      <import plugin="org.eclipse.osgi" version="3.7.0" match="compatible"/>
+      <import plugin="org.eclipse.compare" version="3.5.0" match="compatible"/>
+      <import plugin="org.eclipse.core.resources" version="3.7.0" match="compatible"/>
+      <import plugin="org.eclipse.core.runtime" version="3.4.0" match="compatible"/>
+      <import plugin="org.eclipse.ui" version="3.0.0" match="compatible"/>
+      <import plugin="org.eclipse.ui.console" version="3.5.0" match="compatible"/>
+      <import plugin="org.eclipse.ui.ide" version="3.7.0" match="compatible"/>
+      <import plugin="org.eclipse.zest.core"/>
+   </requires>
+
+   <plugin
+         id="apgdiff"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="ru.taximaxim.codekeeper.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="ru.taximaxim.codekeeper.ui.help"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="ru.taximaxim.codekeeper.mainapp"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>
