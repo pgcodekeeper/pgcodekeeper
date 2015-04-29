@@ -1,7 +1,7 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.graphics.RGB;
 
 public class SQLEditorSyntaxModel {
@@ -62,8 +62,8 @@ public class SQLEditorSyntaxModel {
     private IPreferenceStore prefStore;
     
     public SQLEditorSyntaxModel load() {
-        color = PreferenceConverter.getColor(prefStore,
-                type.getPrefName() + PREF_COLOR);
+        color = StringConverter.asRGB(prefStore.getString(
+                type.getPrefName() + PREF_COLOR));
         bold = prefStore.getBoolean(type.getPrefName() + PREF_BOLD);
         italic = prefStore.getBoolean(type.getPrefName() + PREF_ITALIC);
         strikethrough = prefStore.getBoolean(type.getPrefName() + PREF_STRIKETHROUGH);
@@ -77,7 +77,7 @@ public class SQLEditorSyntaxModel {
     }
     
     public void setDefault() {
-        PreferenceConverter.setDefault(prefStore, type.getPrefName() + PREF_COLOR, color);
+        prefStore.setDefault(type.getPrefName() + PREF_COLOR, StringConverter.asString(color));
         prefStore.setDefault(type.getPrefName() + PREF_BOLD, bold);
         prefStore.setDefault(type.getPrefName() + PREF_ITALIC, italic);
         prefStore.setDefault(type.getPrefName() + PREF_STRIKETHROUGH, strikethrough);
@@ -85,8 +85,8 @@ public class SQLEditorSyntaxModel {
     }
     
     public SQLEditorSyntaxModel loadDefault() {
-        color = PreferenceConverter.getDefaultColor(prefStore,
-                type.getPrefName() + PREF_COLOR);
+        color = StringConverter.asRGB(prefStore.getDefaultString(
+                type.getPrefName()+ PREF_COLOR));
         bold = prefStore.getDefaultBoolean(type.getPrefName() + PREF_BOLD);
         italic = prefStore.getDefaultBoolean(type.getPrefName() + PREF_ITALIC);
         strikethrough = prefStore.getDefaultBoolean(type.getPrefName() + PREF_STRIKETHROUGH);
@@ -95,7 +95,7 @@ public class SQLEditorSyntaxModel {
     }
     
     public void store() {
-        PreferenceConverter.setValue(prefStore, type.getPrefName() + PREF_COLOR, color);
+        prefStore.setValue(type.getPrefName() + PREF_COLOR, StringConverter.asString(color));
         prefStore.setValue(type.getPrefName() + PREF_BOLD, bold);
         prefStore.setValue(type.getPrefName() + PREF_ITALIC, italic);
         prefStore.setValue(type.getPrefName() + PREF_STRIKETHROUGH, strikethrough);
