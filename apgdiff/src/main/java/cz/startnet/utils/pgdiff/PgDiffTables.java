@@ -73,11 +73,6 @@ public final class PgDiffTables {
         
         for (final PgTable table : oldSchema.getTables()) {
             if (!newSchema.containsTable(table.getName())) {
-                if (!PgDiff.isFullSelection(table)){
-                    script.addStatement("-- table \"" + table.getName() + "\" was not "
-                            + "dropped because it was not selected entirely");
-                    continue;
-                }
                 depRes.addDropStatements(table);
             }
         }

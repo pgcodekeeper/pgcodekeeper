@@ -93,7 +93,10 @@ public class PgDiffDepciesTest {
                 // тип изменяется как альтер, пользователь выбрал его
                 {"alter_type", "alter_type_usr"},
                 // тип изменяется через drop create, пользователь выбирает его
-                {"drop_type", "drop_type_usr"}
+                {"drop_type", "drop_type_usr"},
+                // удаляется таблица с содержимым индексом и триггером,
+                // пользователь выбрал только таблицу
+                {"drop_tbl", "drop_tbl_usr_tbl"}
             });
     }
     
