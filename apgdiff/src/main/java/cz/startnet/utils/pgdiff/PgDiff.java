@@ -16,7 +16,6 @@ import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.Log;
 import ru.taximaxim.codekeeper.apgdiff.localizations.Messages;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.ActionsToScriptConverter;
-import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyGraph;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.loader.ParserClass;
 import cz.startnet.utils.pgdiff.loader.PgDumpLoader;
@@ -24,7 +23,6 @@ import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgExtension;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgStatement;
-import cz.startnet.utils.pgdiff.schema.PgTable;
 
 /**
  * Creates diff of two database schemas.
@@ -33,8 +31,6 @@ import cz.startnet.utils.pgdiff.schema.PgTable;
  */
 public final class PgDiff {
 
-    private static DepcyGraph depcyOld;
-    
     private static DepcyResolver depRes;
 
     /**
@@ -154,7 +150,6 @@ public final class PgDiff {
         // temp solution
         if (oldDbFull != null && newDbFull != null) {
             try {
-                depcyOld = new DepcyGraph(oldDbFull);
                 depRes = new DepcyResolver(oldDbFull, newDbFull);
             } catch (PgCodekeeperException e) {
                 throw new IllegalStateException(MessageFormat.format(
@@ -288,31 +283,10 @@ public final class PgDiff {
             DepcyResolver depRes, PgDiffArguments arguments, final PgDatabase oldDatabase, final PgDatabase newDatabase) {
         for (final PgSchema oldSchema : oldDatabase.getSchemas()) {
             if (newDatabase.getSchema(oldSchema.getName()) == null) {
-                if (!isFullSelection(oldSchema)){
-                    script.addStatement("-- schema " + oldSchema.getName() + " was "
-                            + "not dropped because it was not selected entirely");
-                    continue;
-                }
                 // drop all contents of the schema
                 depRes.addDropStatements(oldSchema);
             }
         }
-    }
-
-    static boolean isFullSelection(PgStatement filtered) {
-        PgDatabase fullDb = depcyOld.getDb();
-        if (filtered instanceof PgSchema) {
-            PgSchema filteredSchema = (PgSchema) filtered;
-            PgSchema fullSchema = fullDb.getSchema(filteredSchema.getName());
-            return fullSchema.equals(filteredSchema);
-        } else if (filtered instanceof PgTable) {
-            PgTable filteredTable = (PgTable) filtered;
-            PgSchema fullSchema = fullDb.getSchema(filteredTable.getParent().getName()); 
-            PgTable fullTable = fullSchema.getTable(filteredTable.getName());
-            return fullTable.equals(filteredTable);
-        }
-        
-        return true;
     }
 
     /**
@@ -334,20 +308,6 @@ public final class PgDiff {
             depRes.addAlterStatements(oldSchema, newSchema);
             updateSchemaContent(script, oldSchema, newSchema, searchPathHelper, arguments);
         }
-        
-        // КОСТЫЛЬ
-        // update contents of schema, if it is not present in new db and 
-        // is partly selected by the user
-        for (final PgSchema oldSchema : oldDatabase.getSchemas()) {
-            if (newDatabase.getSchema(oldSchema.getName()) == null 
-                    && !isFullSelection(oldSchema)){
-                SearchPathHelper searchPath =
-                        new SearchPathHelper(oldSchema.getName());
-                
-                updateSchemaContent(script, oldSchema, oldSchema.shallowCopy(),
-                        searchPath, arguments);
-            }
-        }// КОСТЫЛЬ
     }
 
     private static void updateSchemaContent(PgDiffScript script, PgSchema oldSchema,

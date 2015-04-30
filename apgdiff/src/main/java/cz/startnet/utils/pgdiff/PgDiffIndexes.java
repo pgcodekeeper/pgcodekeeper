@@ -73,19 +73,6 @@ public final class PgDiffIndexes {
                 depRes.addDropStatements(index);
             }
         }
-        // КОСТЫЛЬ
-        if (oldSchema == null){
-            return;
-        }
-        
-        for (final PgTable oldTable : oldSchema.getTables()) {
-            if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
-                PgTable newTable = new PgTable(oldTable.getName(), null);
-                for (final PgIndex index : getDropIndexes(oldTable, newTable)) {
-                    depRes.addDropStatements(index);
-                }
-            }
-        }// КОСТЫЛЬ
     }
 
     /**

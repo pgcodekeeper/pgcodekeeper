@@ -73,19 +73,6 @@ public final class PgDiffTriggers {
                 depRes.addDropStatements(trigger);
             }
         }
-        // КОСТЫЛЬ
-        if (oldSchema == null){
-            return;
-        }
-        
-        for (final PgTable oldTable : oldSchema.getTables()) {
-            if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
-                PgTable newTable = new PgTable(oldTable.getName(), null);
-                for (final PgTrigger trigger : getDropTriggers(oldTable, newTable)) {
-                    depRes.addDropStatements(trigger);
-                }
-            }
-        }// КОСТЫЛЬ
     }
 
     /**

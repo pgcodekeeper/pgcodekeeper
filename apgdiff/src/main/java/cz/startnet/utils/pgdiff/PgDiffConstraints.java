@@ -80,19 +80,6 @@ public final class PgDiffConstraints {
                 depRes.addDropStatements(constraint);
             }
         } 
-        // КОСТЫЛЬ
-        if (oldSchema == null){
-            return;
-        }
-        
-        for (final PgTable oldTable : oldSchema.getTables()) {
-            if (newSchema.getTable(oldTable.getName()) == null && !PgDiff.isFullSelection(oldTable)) {
-                PgTable newTable = new PgTable(oldTable.getName(), null);
-                for (final PgConstraint constraint : getDropConstraints(oldTable, newTable, primaryKey)) {
-                    depRes.addDropStatements(constraint);
-                }
-            }
-        }// КОСТЫЛЬ
     }
 
     /**
