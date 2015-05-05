@@ -316,20 +316,6 @@ public abstract class ParserAbstract {
                         .append(name).append("will be skipped").toString());
     }
 
-    private void getColumnConstraint(
-            Constraint_commonContext column_constraint,
-            List<PgConstraint> result) {
-        PgConstraint constr = null;
-        // skip null and def values, it parsed to column def
-        if (column_constraint.constr_body().common_constraint().null_value != null
-                || column_constraint.constr_body().default_expr != null
-                || column_constraint.constr_body().default_expr_data != null) {
-            return;
-        }
-        constr = getTableConstraint(column_constraint);
-        result.add(constr);
-    }
-    
     protected PgConstraint parseDomainConstraint(Domain_constraintContext constr) {
         if (constr.common_constraint().check_boolean_expression() != null) {
             String constr_name = "";
