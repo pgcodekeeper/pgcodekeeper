@@ -2,58 +2,12 @@ package cz.startnet.utils.pgdiff;
 
 import java.util.Iterator;
 
-import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgType;
 
 /**
  * Diff Types
  */
 public final class PgDiffTypes {
-    
-    /**
-     * Outputs statements for creation of new types.
-     *
-     * @param writer
-     *            writer the output should be written to
-     * @param oldSchema original schema
-     * @param newSchema new schema
-     * @param searchPathHelper search path helper
-     */
-    public static void createTypes(final DepcyResolver depRes,
-            final PgSchema oldSchema, final PgSchema newSchema,
-            final SearchPathHelper searchPathHelper) {
-        for (final PgType type : newSchema.getTypes()) {
-            PgType oldType = oldSchema == null ? null : oldSchema.getType(type.getName());
-            
-            if (oldType == null) {
-                depRes.addCreateStatements(type);
-            }
-        }
-    }
-        
-    /**
-     * Outputs statements for dropping of types that do not exist anymore.
-     *
-     * @param writer           writer the output should be written to
-     * @param oldSchema        original schema
-     * @param newSchema        new schema
-     * @param searchPathHelper search path helper
-     */
-    public static void dropTypes(final DepcyResolver depRes,
-            final PgSchema oldSchema, final PgSchema newSchema,
-            final SearchPathHelper searchPathHelper) {
-        if (oldSchema == null) {
-            return;
-        }
-
-        // Drop types that do not exist in new schema
-        for (final PgType oldType : oldSchema.getTypes()) {
-            if (!newSchema.containsType(oldType.getName())) {
-                depRes.addDropStatements(oldType);
-            }
-        }
-    }
     
     /**
      * This method assumes that its arguments are not equal. 
@@ -97,27 +51,6 @@ public final class PgDiffTypes {
             return true;
         default:
             return false;
-        }
-    }
-    
-    /**
-     * Outputs statement for modified types.
-     *
-     * @param writer           writer the output should be written to
-     * @param arguments        object containing arguments settings
-     * @param oldSchema        original schema
-     * @param newSchema        new schema
-     * @param searchPathHelper search path helper
-     */    
-    public static void alterTypes(final DepcyResolver depRes,
-            final PgDiffArguments arguments, final PgSchema oldSchema,
-            final PgSchema newSchema, final SearchPathHelper searchPathHelper) {
-        if (oldSchema == null) {
-            return;
-        }
-        for (PgType newType : newSchema.getTypes()) {
-            PgType oldType = oldSchema.getType(newType.getName());
-            depRes.addAlterStatements(oldType, newType);
         }
     }
     

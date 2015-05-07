@@ -7,8 +7,6 @@ package cz.startnet.utils.pgdiff;
 
 import java.util.List;
 
-import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 import cz.startnet.utils.pgdiff.schema.PgView;
 
 /**
@@ -17,47 +15,6 @@ import cz.startnet.utils.pgdiff.schema.PgView;
  * @author fordfrog
  */
 public final class PgDiffViews {
-
-    /**
-     * Outputs statements for creation of views.
-     *
-     * @param writer           writer the output should be written to
-     * @param oldSchema        original schema
-     * @param newSchema        new schema
-     * @param searchPathHelper search path helper
-     */
-    public static void createViews(final DepcyResolver depRes, PgDiffArguments arguments,
-            final PgSchema oldSchema, final PgSchema newSchema,
-            final SearchPathHelper searchPathHelper) {
-        for (final PgView newView : newSchema.getViews()) {
-            if (oldSchema == null
-                    || !oldSchema.containsView(newView.getName())) {
-                depRes.addCreateStatements(newView);
-            }
-        }
-    }
-
-    /**
-     * Outputs statements for dropping views.
-     *
-     * @param writer           writer the output should be written to
-     * @param oldSchema        original schema
-     * @param newSchema        new schema
-     * @param searchPathHelper search path helper
-     */
-    public static void dropViews(final DepcyResolver depRes,
-            final PgSchema oldSchema, final PgSchema newSchema,
-            final SearchPathHelper searchPathHelper) {
-        if (oldSchema == null) {
-            return;
-        }
-
-        for (final PgView oldView : oldSchema.getViews()) {
-            if (!newSchema.containsView(oldView.getName())) {
-                depRes.addDropStatements(oldView);
-            }
-        }
-    }
 
     /**
      * Returns true if either column names or query of the view has been
@@ -79,27 +36,6 @@ public final class PgDiffViews {
             return !nOldQuery.equals(nNewQuery);
         } else {
             return !oldColumnNames.equals(newColumnNames);
-        }
-    }
-
-    /**
-     * Outputs statements for altering view default values.
-     * @param arguments 
-     *
-     * @param writer           writer
-     * @param oldSchema        old schema
-     * @param newSchema        new schema
-     * @param searchPathHelper search path helper
-     */
-    public static void alterViews(final DepcyResolver depRes,
-            PgDiffArguments arguments, final PgSchema oldSchema,
-            final PgSchema newSchema, final SearchPathHelper searchPathHelper) {
-        if (oldSchema == null) {
-            return;
-        }
-
-        for (final PgView oldView : oldSchema.getViews()) {
-            depRes.addAlterStatements(oldView, newSchema.getView(oldView.getName()));
         }
     }
 

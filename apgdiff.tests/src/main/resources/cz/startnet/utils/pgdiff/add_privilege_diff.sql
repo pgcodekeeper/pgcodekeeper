@@ -1,3 +1,12 @@
+-- SCHEMA test_schema GRANT
+
+REVOKE ALL ON SCHEMA test_schema FROM PUBLIC;
+REVOKE ALL ON SCHEMA test_schema FROM botov_av;
+GRANT ALL ON SCHEMA test_schema TO botov_av;
+GRANT ALL ON SCHEMA test_schema TO maindb;
+
+
+
 -- TYPE typ_composite GRANT
 
 REVOKE ALL ON TYPE typ_composite FROM PUBLIC;
@@ -26,13 +35,6 @@ REVOKE ALL(id) ON TABLE test FROM PUBLIC;
 REVOKE ALL(id) ON TABLE test FROM botov_av;
 GRANT ALL(id) ON TABLE test TO maindb;
 
--- VIEW test_view GRANT
-
-REVOKE ALL ON TABLE test_view FROM PUBLIC;
-REVOKE ALL ON TABLE test_view FROM botov_av;
-GRANT ALL ON TABLE test_view TO botov_av;
-GRANT ALL ON TABLE test_view TO maindb;
-
 -- FUNCTION test_fnc(character varying) GRANT
 
 REVOKE ALL ON FUNCTION test_fnc(arg character varying) FROM PUBLIC;
@@ -49,9 +51,9 @@ GRANT ALL ON FUNCTION trigger_fnc() TO botov_av;
 GRANT ALL ON FUNCTION trigger_fnc() TO PUBLIC;
 GRANT ALL ON FUNCTION trigger_fnc() TO maindb;
 
--- SCHEMA test_schema GRANT
+-- VIEW test_view GRANT
 
-REVOKE ALL ON SCHEMA test_schema FROM PUBLIC;
-REVOKE ALL ON SCHEMA test_schema FROM botov_av;
-GRANT ALL ON SCHEMA test_schema TO botov_av;
-GRANT ALL ON SCHEMA test_schema TO maindb;
+REVOKE ALL ON TABLE test_view FROM PUBLIC;
+REVOKE ALL ON TABLE test_view FROM botov_av;
+GRANT ALL ON TABLE test_view TO botov_av;
+GRANT ALL ON TABLE test_view TO maindb;

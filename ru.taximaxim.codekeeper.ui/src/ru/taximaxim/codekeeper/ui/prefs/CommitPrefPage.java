@@ -27,9 +27,5 @@ public class CommitPrefPage extends FieldEditorPreferencePage implements
                 COMMIT_PREF.CONSIDER_DEPCY_IN_COMMIT, Messages.generalPrefPage_use_depcy_on_commit_page,
                 getFieldEditorParent());
         addField(useDepcyCommit);
-        BooleanFieldEditor usePartialExportCommit = new BooleanFieldEditor(
-                COMMIT_PREF.USE_PARTIAL_EXPORT_ON_COMMIT, Messages.generalPrefPage_use_partial_project_update,
-                getFieldEditorParent());
-        addField(usePartialExportCommit);
     }
 }

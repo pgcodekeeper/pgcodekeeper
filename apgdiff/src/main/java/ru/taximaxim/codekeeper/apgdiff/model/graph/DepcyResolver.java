@@ -257,6 +257,8 @@ public class DepcyResolver {
             return db.getExtension(statement.getName());
         case SCHEMA:
             return db.getSchema(statement.getName());
+        case DATABASE:
+            return db;
         default:
             break;
         }

@@ -21,7 +21,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
@@ -167,7 +166,7 @@ public class PgAntlrLoaderTest {
         // applying full unchanged diff tree created against an empty DB
         // should result in a fully copied or empty (depending on filter side) DB object
         TreeElement dbTree = DiffTree.create(d, empty);
-        ApgdiffTestUtils.setAllchecked(dbTree);
+        dbTree.setAllchecked();
         PgDatabase dbFilteredFullTree = new PgDbFilter2(d, dbTree, DiffSide.LEFT).apply();
         
         Assert.assertEquals("PgDbFilter2: filter altered the result", d, dbFilteredFullTree);
@@ -183,9 +182,9 @@ public class PgAntlrLoaderTest {
         // test applying one DB to another using DiffTree
         TreeElement removeAll = dbTree;
         TreeElement onlyNew = DiffTree.create(d, oneDiff);
-        ApgdiffTestUtils.setAllchecked(onlyNew);
+        onlyNew.setAllchecked();
         TreeElement onlyOld = DiffTree.create(d, d);
-        ApgdiffTestUtils.setAllchecked(onlyOld);
+        onlyOld.setAllchecked();
         
         Assert.assertEquals("DiffTreeApplier: not empty", empty,
                 new DiffTreeApplier(d, oneDiff, removeAll).apply());
@@ -598,7 +597,7 @@ class PgDB6 extends PgDatabaseObjectCreator {
     public PgDatabase getDatabase() {
     PgDatabase d = new PgDatabase();
     PgSchema schema = d.getDefaultSchema();
-    schema.setComment("'Standard public schema'");
+//    schema.setComment("'Standard public schema'");
     
     schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM PUBLIC", ""));
     schema.addPrivilege(new PgPrivilege(true, "ALL ON SCHEMA public FROM postgres", ""));
@@ -681,7 +680,7 @@ class PgDB8 extends PgDatabaseObjectCreator {
     public PgDatabase getDatabase() {
     PgDatabase d = new PgDatabase();
     PgSchema schema = d.getDefaultSchema();
-    schema.setComment("'Standard public schema'");
+//    schema.setComment("'Standard public schema'");
     
     PgType type = new PgType("testtt", PgTypeForm.COMPOSITE, "");
     PgColumn col = new PgColumn("a");
@@ -925,7 +924,7 @@ class PgDB14 extends PgDatabaseObjectCreator {
     schema.addPrivilege(new PgPrivilege(false, "ALL ON SCHEMA public TO PUBLIC", ""));
 
     d.setComment("'comments database'");
-    schema.setComment("'public schema'");
+//    schema.setComment("'public schema'");
     
     PgFunction func = new PgFunction("test_fnc", "");
     func.setBody("LANGUAGE plpgsql\n    AS $$BEGIN\nRETURN true;\nEND;$$");

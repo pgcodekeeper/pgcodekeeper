@@ -30,7 +30,6 @@ import org.junit.runners.Parameterized.Parameters;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.exporter.PartialExporterTest;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -105,10 +104,7 @@ public class DifferTest {
         // filtered input
         differData.setUserSelection(root);
 
-        final Differ differ = new Differ(
-                DbSource.fromFilter(dbSource, root, DiffSide.LEFT),
-                DbSource.fromFilter(dbTarget, root, DiffSide.RIGHT),
-                true, ApgdiffConsts.UTC);
+        final Differ differ = new Differ(root, true, ApgdiffConsts.UTC);
         differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
         
         differ.setAdditionalDepciesSource(differData.getAdditionalDepciesSource(dbSource.getDbObject()));

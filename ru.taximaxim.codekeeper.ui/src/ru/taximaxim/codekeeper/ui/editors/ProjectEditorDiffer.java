@@ -56,7 +56,6 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -73,7 +72,6 @@ import ru.taximaxim.codekeeper.ui.consoles.ConsoleFactory;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
-import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffPresentationPane;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.fileutils.ProjectUpdater;
@@ -396,17 +394,13 @@ class CommitPage extends DiffPresentationPane {
 
             pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
             try {
-                if (mainPrefs.getBoolean(COMMIT_PREF.USE_PARTIAL_EXPORT_ON_COMMIT)){
-                    // TODO пробросить использование коллекций в updater и exporter
-                    List<TreeElement> checked = (List<TreeElement>) tree.flattenAlteredElements(
-                            new ArrayList<TreeElement>(),
-                            dbSource.getDbObject(), dbTarget.getDbObject(),
-                            true, null);
-                    new ProjectUpdater(dbNew, dbSource.getDbObject(), checked, proj)
-                            .updatePartial();
-                }else{
-                    new ProjectUpdater(dbNew, null, null, proj).updateFull();
-                }
+                // TODO пробросить использование коллекций в updater и exporter
+                List<TreeElement> checked = (List<TreeElement>) tree.flattenAlteredElements(
+                        new ArrayList<TreeElement>(),
+                        dbSource.getDbObject(), dbTarget.getDbObject(),
+                        true, null);
+                new ProjectUpdater(dbNew, dbSource.getDbObject(), checked, proj)
+                        .updatePartial();
                 pm.done();
             } catch (IOException | CoreException e) {
                 return new Status(Status.ERROR, PLUGIN_ID.THIS, 
@@ -497,9 +491,7 @@ class DiffPage extends DiffPresentationPane {
         }
         final TreeElement filtered = treeDiffer.getDiffTree();
 
-        final Differ differ = new Differ(
-                DbSource.fromFilter(dbSource, filtered, DiffSide.LEFT),
-                DbSource.fromFilter(dbTarget, filtered, DiffSide.RIGHT),
+        final Differ differ = new Differ(filtered,
                 false, proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
         differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
         differ.setAdditionalDepciesSource(manualDepciesSource);

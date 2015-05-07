@@ -140,7 +140,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 DbSource fdbTarget = DbSource.fromFilter(dbTarget,
                         filtered, DiffSide.RIGHT);
 
-                Differ differ = new Differ(fdbSource, fdbTarget, true, 
+                Differ differ = new Differ(filtered, true, 
                         proj.getPrefs().get(PROJ_PREF.TIMEZONE, ApgdiffConsts.UTC));
                 differ.setFullDbs(dbSource.getDbObject(), dbTarget.getDbObject());
                 try {

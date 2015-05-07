@@ -17,6 +17,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.apgdiff.UnixPrintWriter;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.apgdiff.model.difftree.TreeElement;
 import cz.startnet.utils.pgdiff.PgDiff;
 import cz.startnet.utils.pgdiff.PgDiffArguments;
 import cz.startnet.utils.pgdiff.TEST.FILES_POSTFIX;
@@ -179,7 +181,11 @@ public class PgDiffDepciesTest {
             oldDbFull = getDB(getDBIS(FILES_POSTFIX.ORIGINAL_SQL), arguments);
             newDbFull = getDB(getDBIS(FILES_POSTFIX.NEW_SQL), arguments);
         }
-        PgDiff.diffDatabaseSchemas(writer, arguments, oldDatabase, newDatabase, oldDbFull, newDbFull);
+        TreeElement tree = DiffTree.create(oldDatabase, newDatabase);
+        tree.setAllchecked();
+        PgDiff.diffDatabaseSchemasAdditionalDepcies(writer, arguments,
+                tree, oldDbFull, newDbFull, null,
+                null);
         writer.flush();
 
         StringBuilder sbExpDiff;

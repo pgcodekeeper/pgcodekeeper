@@ -8,10 +8,8 @@ package cz.startnet.utils.pgdiff;
 import java.util.Iterator;
 import java.util.Objects;
 
-import ru.taximaxim.codekeeper.apgdiff.model.graph.DepcyResolver;
 import cz.startnet.utils.pgdiff.schema.PgFunction;
 import cz.startnet.utils.pgdiff.schema.PgFunction.Argument;
-import cz.startnet.utils.pgdiff.schema.PgSchema;
 
 /**
  * Diffs functions.
@@ -19,57 +17,6 @@ import cz.startnet.utils.pgdiff.schema.PgSchema;
  * @author fordfrog
  */
 public final class PgDiffFunctions {
-
-    /**
-     * Outputs statements for new or modified functions.
-     *
-     * @param writer           writer the output should be written to
-     * @param arguments        object containing arguments settings
-     * @param oldSchema        original schema
-     * @param newSchema        new schema
-     * @param searchPathHelper search path helper
-     */
-    public static void createFunctions(final DepcyResolver depRes,
-            final PgDiffArguments arguments, final PgSchema oldSchema,
-            final PgSchema newSchema, final SearchPathHelper searchPathHelper) {
-        // Add new functions and replace modified functions
-        for (final PgFunction newFunction : newSchema.getFunctions()) {
-            final PgFunction oldFunction;
-
-            if (oldSchema == null) {
-                oldFunction = null;
-            } else {
-                oldFunction = oldSchema.getFunction(newFunction.getSignature());
-            }
-
-            if (oldFunction == null) {
-                depRes.addCreateStatements(newFunction);
-            }
-        }
-    }
-    
-    /**
-     * Outputs statements for dropping of functions that exist no more.
-     *
-     * @param writer           writer the output should be written to
-     * @param oldSchema        original schema
-     * @param newSchema        new schema
-     * @param searchPathHelper search path helper
-     */
-    public static void dropFunctions(final DepcyResolver depRes,
-            final PgSchema oldSchema, final PgSchema newSchema,
-            final SearchPathHelper searchPathHelper) {
-        if (oldSchema == null) {
-            return;
-        }
-
-        // Drop functions that exist no more
-        for (final PgFunction oldFunction : oldSchema.getFunctions()) {
-            if (!newSchema.containsFunction(oldFunction.getSignature())) {
-                depRes.addDropStatements(oldFunction);
-            }
-        }
-    }
 
     public static boolean needDrop(PgFunction oldFunction,
             PgFunction newFunction) {
@@ -103,27 +50,6 @@ public final class PgDiffFunctions {
         }
         
         return false;
-    }
-
-    /**
-     * Outputs statements for function comments that have changed.
-     *
-     * @param writer           writer
-     * @param oldSchema        old schema
-     * @param newSchema        new schema
-     * @param searchPathHelper search path helper
-     */
-    public static void alterComments(final DepcyResolver depRes,
-            final PgSchema oldSchema, final PgSchema newSchema,
-            final SearchPathHelper searchPathHelper) {
-        if (oldSchema == null) {
-            return;
-        }
-
-        for (final PgFunction oldFunction : oldSchema.getFunctions()) {
-            depRes.addAlterStatements(oldFunction,
-                    newSchema.getFunction(oldFunction.getName()));
-        }
     }
 
     /**

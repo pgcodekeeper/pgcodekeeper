@@ -21,7 +21,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
-import ru.taximaxim.codekeeper.apgdiff.ApgdiffTestUtils;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.DiffTreeApplier;
 import ru.taximaxim.codekeeper.apgdiff.model.difftree.PgDbFilter2;
@@ -162,7 +161,7 @@ public class PgDumpLoaderTest {
         // applying full unchanged diff tree created against an empty DB
         // should result in a fully copied or empty (depending on filter side) DB object
         TreeElement dbTree = DiffTree.create(d, empty);
-        ApgdiffTestUtils.setAllchecked(dbTree);
+        dbTree.setAllchecked();
         PgDatabase dbFilteredFullTree = new PgDbFilter2(d, dbTree, DiffSide.LEFT).apply();
         
         Assert.assertEquals("PgDbFilter2: filter altered the result", d, dbFilteredFullTree);
@@ -178,9 +177,9 @@ public class PgDumpLoaderTest {
         // test applying one DB to another using DiffTree
         TreeElement removeAll = dbTree;
         TreeElement onlyNew = DiffTree.create(d, oneDiff);
-        ApgdiffTestUtils.setAllchecked(onlyNew);
+        onlyNew.setAllchecked();
         TreeElement onlyOld = DiffTree.create(d, d);
-        ApgdiffTestUtils.setAllchecked(onlyOld);
+        onlyOld.setAllchecked();
         
         Assert.assertEquals("DiffTreeApplier: not empty", empty,
                 new DiffTreeApplier(d, oneDiff, removeAll).apply());
