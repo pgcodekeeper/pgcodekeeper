@@ -2,6 +2,7 @@ package cz.startnet.utils.pgdiff.parsers.antlr.statements;
 
 import java.nio.file.Path;
 
+import ru.taximaxim.codekeeper.apgdiff.ApgdiffConsts;
 import cz.startnet.utils.pgdiff.parsers.antlr.SQLParser.Alter_schema_statementContext;
 import cz.startnet.utils.pgdiff.schema.PgDatabase;
 import cz.startnet.utils.pgdiff.schema.PgSchema;
@@ -24,7 +25,9 @@ public class AlterSchema extends ParserAbstract {
             logError("SCHEMA", name);
             return null;
         }
-        fillOwnerTo(ctx.owner_to(), sch);
+        if (!name.equals(ApgdiffConsts.PUBLIC)) {
+            fillOwnerTo(ctx.owner_to(), sch);
+        }
         return null;
     }
 
